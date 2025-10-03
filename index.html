@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FF14 モブハント リアルタイムトラッカー</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>モブハント 討伐状況一覧</h1>
+        <p>討伐報告をすると、データがリアルタイムで更新されます。</p>
+    </header>
+
+    <main>
+        <div id="mob-list">
+            <p>モンスターデータを読み込み中...</p>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 FFXIV Hunt Tracker</p>
+    </footer>
+
+    <div id="report-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>討伐報告フォーム</h2>
+            <form id="report-form">
+                <input type="hidden" id="report_mobName" name="mobName">
+                <input type="hidden" id="report_mobRank" name="mobRank">
+                <input type="hidden" id="report_area" name="area">
+                
+                <p>モブ: <strong id="modal_mob_display"></strong> (<span id="modal_area_display"></span>)</p>
+                
+                <label for="report_time">討伐日時 (JST):</label>
+                <input type="datetime-local" id="report_time" required>
+
+                <label for="report_world">ワールド:</label>
+                <input type="text" id="report_world" required placeholder="例: Ifrit">
+                
+                <label for="report_reporter">報告者名 (任意):</label>
+                <input type="text" id="report_reporter" placeholder="キャラクター名">
+
+                <button type="submit" id="submit-report-button">報告を確定する</button>
+                <p id="message" class="hidden"></p>
+            </form>
+        </div>
+    </div>
+
+    <script src="mob-data.js"></script> 
+    <script src="script.js"></script>
+</body>
+</html>
