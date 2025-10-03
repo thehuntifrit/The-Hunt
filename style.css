@@ -1,0 +1,175 @@
+/* リセットと基本スタイル */
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+header {
+    background-color: #004d40;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+h1 {
+    margin-top: 0;
+    font-size: 1.8em;
+}
+
+main {
+    padding: 15px; 
+    max-width: 1000px; 
+    margin: 0 auto;
+}
+
+/* モブカードの基本レイアウト */
+.mob-card {
+    background-color: white;
+    border: 1px solid #ddd;
+    padding: 15px; /* PCでもスマホでも見やすいパディング */
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display: flex;
+    flex-wrap: wrap; /* 備考欄を下に配置するために必要 */
+    align-items: flex-start; /* 上揃え */
+    justify-content: space-between;
+}
+
+/* ランク表示のスタイル (黄色の四角、角丸) */
+.mob-rank-badge {
+    background-color: #ffb300; 
+    color: #333;
+    padding: 4px 8px;
+    border-radius: 4px; /* 角を少し丸める */
+    font-weight: bold;
+    font-size: 1.0em;
+    flex-shrink: 0; /* 縮小させない */
+    margin-right: 15px;
+    height: fit-content; /* コンテンツに合わせた高さ */
+}
+
+/* モブ情報とエリア情報 */
+.mob-info-group {
+    display: flex;
+    align-items: flex-start;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.mob-name-and-area {
+    flex-grow: 1;
+}
+
+/* 1. モンスター名の表示を以前のものに戻す */
+.mob-name {
+    font-size: 1.4em; /* 以前の大きめフォントに戻す */
+    font-weight: bold;
+    color: #d84315;
+    word-break: break-word; 
+    margin-bottom: 5px;
+}
+
+.mob-area {
+    font-size: 0.9em;
+    color: #555;
+}
+
+/* 3. 討伐ボタンの右揃えと縦表示 */
+.report-button-wrapper {
+    /* 常に右に寄せるための調整 */
+    display: flex;
+    flex-direction: column; 
+    flex-shrink: 0; 
+    align-items: flex-end; /* ボタン全体を右揃えにする */
+    margin-left: 10px;
+}
+
+.report-button {
+    background-color: #00796b;
+    color: white;
+    padding: 8px 15px; 
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    min-width: 100px; /* 縦長の見た目を維持するために最低幅を設定 */
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* 討伐報告エリア（将来のマップツール用） */
+.mob-extra-info {
+    flex-basis: 100%; 
+    margin-top: 10px;
+    padding-top: 5px;
+    border-top: 1px dashed #eee;
+    font-size: 0.85em;
+    color: #555;
+}
+
+
+/* --- モーダル（ポップアップ）のスタイル --- (変更なし) */
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%; 
+    max-width: 500px; 
+    border-radius: 8px;
+    position: relative;
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.close-button:hover, .close-button:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#report-form input[type="datetime-local"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* メッセージ表示エリア (変更なし) */
+#message {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+}
+.hidden {
+    display: none;
+}
+.success {
+    background-color: #c8e6c9;
+    color: #2e7d32;
+}
+.error {
+    background-color: #ffcdd2;
+    color: #c62828;
+}
