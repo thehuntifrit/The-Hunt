@@ -560,8 +560,8 @@
                                         <span class="text-lg font-bold text-white text-outline">${safeHTML(mobName)} ${mapIcon}</span>
                                     </div>
                                     
-                                    <!-- 2行目: エリア名 (FIX: ml-10からml-8に修正) -->
-                                    <span class="text-sm text-gray-300 ml-8">${safeHTML(mob.area || 'エリア不明')}</span>
+                                    <!-- 2行目: エリア名 (FIX: 位置を2.1remに、文字サイズをtext-xsに修正) -->
+                                    <span class="text-xs text-gray-300" style="margin-left: 2.1rem;">${safeHTML(mob.area || 'エリア不明')}</span>
                                 </div>
                                 
                                 <!-- 報告ボタン (クリックが詳細トグルに伝播しないよう event.stopPropagation() を使用) -->
