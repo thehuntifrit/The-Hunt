@@ -242,7 +242,7 @@
 
     // DOM要素の取得
     const mobListContainer = document.getElementById('mob-list-container');
-    const modal = document.getElementById('report-modal');
+    const modal = document.getElementById('report-modal'); // モーダル本体
     const closeButton = document.getElementsByClassName('close-button')[0];
     const reportForm = document.getElementById('report-form');
     const reportTimeInput = document.getElementById('report_time');
@@ -251,6 +251,7 @@
     const tabButtons = document.querySelectorAll('.tab-button');
     const maintenanceBanner = document.getElementById('maintenance-banner');
     const systemMessageElement = document.getElementById('system-message');
+    const modalMobDisplay = document.getElementById('modal_mob_display'); // モーダル内のモブ名表示
 
     // グローバルデータストア
     let globalMobConfig = {};
@@ -338,6 +339,105 @@
     // --- 天候予測ロジック ---
     // (天候判定は天候条件が指定された際に実装するため、現在はスキップ)
     
+    // ==============================================================================
+    // モーダルとフォーム処理
+    // ==============================================================================
+    
+    /**
+     * 討伐報告モーダルを開く
+     */
+    function openReportModal(mobData) {
+        // フォームをリセット
+        reportForm.reset();
+        
+        // モーダルにモブ名を表示
+        modalMobDisplay.textContent = mobData['モブ名'];
+
+        // 隠しフィールドにデータをセット
+        document.getElementById('report_mobName').value = mobData['モブ名'];
+        document.getElementById('report_mobRank').value = mobData['ランク'];
+        document.getElementById('report_area').value = mobData['エリア名'];
+        document.getElementById('report_reporterId').value = REPORTER_UUID;
+
+        // 討伐日時を現在時刻に設定
+        reportTimeInput.value = getCurrentDateTimeLocal();
+
+        // メッセージをクリアしてモーダルを表示
+        messageElement.classList.add('hidden');
+        submitButton.disabled = false;
+        submitButton.textContent = '報告を送信';
+        modal.classList.remove('hidden');
+    }
+
+    /**
+     * 討伐報告モーダルを閉じる
+     */
+    function closeReportModal() {
+        modal.classList.add('hidden');
+    }
+
+    // モーダルを閉じるためのイベントリスナー
+    closeButton.addEventListener('click', closeReportModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeReportModal();
+        }
+    });
+
+    /**
+     * 討伐報告フォームの送信処理
+     */
+    reportForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // UIの更新
+        submitButton.disabled = true;
+        submitButton.textContent = '送信中...';
+        messageElement.classList.add('hidden');
+
+        // フォームデータを取得
+        const formData = new FormData(this);
+        const payload = {};
+        for (const [key, value] of formData.entries()) {
+            payload[key] = value;
+        }
+
+        try {
+            const response = await fetch(GAS_API_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                messageElement.textContent = \`報告成功: \${result.message}\`;
+                messageElement.classList.remove('hidden', 'bg-red-500/20', 'text-red-300');
+                messageElement.classList.add('bg-green-500/20', 'text-green-300');
+                
+                // 成功したらデータを再取得して表示を更新
+                await initApp();
+                
+                // 3秒後にモーダルを閉じる
+                setTimeout(closeReportModal, 3000); 
+
+            } else {
+                messageElement.textContent = \`報告失敗: \${result.message}\`;
+                messageElement.classList.remove('hidden', 'bg-green-500/20', 'text-green-300');
+                messageElement.classList.add('bg-red-500/20', 'text-red-300');
+            }
+        } catch (error) {
+            messageElement.textContent = '通信エラーが発生しました。GASのURLまたは権限を確認してください。';
+            messageElement.classList.remove('hidden', 'bg-green-500/20', 'text-green-300');
+            messageElement.classList.add('bg-red-500/20', 'text-red-300');
+            console.error('Fetch error:', error);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = '報告を送信';
+        }
+    });
+
     // ==============================================================================
     // メイン機能: データ取得とレンダリング
     // ==============================================================================
@@ -490,6 +590,7 @@
         document.querySelectorAll('.mob-card').forEach(card => {
             // カード全体のクリックイベント
             card.addEventListener('click', (e) => {
+                // 報告ボタン上でのクリックは無視
                 if (e.target.closest('.report-button-wrapper')) return; 
                 
                 const details = card.querySelector('.details-slide');
@@ -571,7 +672,7 @@
      * POP地点のチェックイン処理 (非候補地として記録)
      */
     async function handleLocationCheck(mobName, locationId) {
-        // alertの代わりにconfirmで確認
+        // alertの代わりにconfirmで確認 (UIの都合上、カスタムモーダルを使用することを推奨しますが、一旦これで実装します)
         const isConfirmed = window.confirm(\`${mobName} の ${locationId} 地点を「POP非候補地」として記録しますか？\n（このモブの討伐報告があるまでこの記録は有効です。）\`);
         if (!isConfirmed) return;
 
@@ -698,6 +799,7 @@
                         <div class="pt-4">
                             <h4 class="font-bold text-lg mb-2 text-gray-200">座標記録用のMAP</h4>
                             <div class="map-container" data-mob-name="${mob['モブ名']}">
+                                <!-- ⚠️ パスを "./Picture/" に修正しました ⚠️ -->
                                 <img src="./Picture/${mapFileName}" alt="${mob['エリア名']} マップ" 
                                      width="500" height="500"
                                      onerror="this.onerror=null; this.src='https://placehold.co/500x500/334155/ffffff?text=Map+Unavailable';"
