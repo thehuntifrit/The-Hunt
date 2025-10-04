@@ -439,7 +439,6 @@
          * モブリスト全体をレンダリングします。
          */
         function renderMobList() {
-            // mobConfig (静的データ) を配列に変換し、日本語キーから英語キーにマッピング
             const allMobs = Object.keys(globalMobConfig).map(key => {
                 const mob = globalMobConfig[key];
                 return {
@@ -453,7 +452,7 @@
                 };
             });
 
-            // 修正項目5: FATEランクのフィルタリング ('FATE'または'F')
+            // FATEランクのフィルタリング ('FATE'または'F')
             let filteredMobs = allMobs.filter(mob => {
                 const mobRank = mob.rank || 'N/A';
                 if (currentFilter === 'ALL') return true;
@@ -474,11 +473,11 @@
             // 新しいリストをレンダリング
             mobListContainer.innerHTML = filteredMobs.map(mob => createMobCard(mob)).join('');
 
-            // 修正項目2: 詳細表示の状態を保持
+            // 詳細表示の状態を保持
             if (openMobNameId) {
-                // アニメーションを無効にして即座に表示
                 const detailElement = document.getElementById(`detail-${openMobNameId}`);
                 if (detailElement) {
+                    // アニメーションを無効にして即座に表示
                     detailElement.classList.remove('hidden');
                     detailElement.style.maxHeight = '1000px'; 
                     detailElement.style.opacity = '1';
@@ -500,7 +499,7 @@
          */
         function createMobCard(mob) {
             const mobName = mob.mobName;
-            // 修正項目2/3: MobNameを元にしたIDを使用
+            // MobNameを元にしたIDを使用
             const safeMobNameId = safeId(mobName); 
             
             if (mobName === '不明なモブ') {
@@ -541,16 +540,18 @@
                         <!-- コンテンツレイヤー -->
                         <div class="relative z-10 p-4">
                             <div class="flex justify-between items-start mb-1">
-                                <!-- 修正項目4: items-center を追加し、ランクとモンスター名を垂直中央に揃える -->
-                                <div class="flex items-center space-x-2">
-                                    <!-- ランクバッジ -->
-                                    <span class="px-2 py-1 text-sm font-bold rounded-full ${rankColor} text-white flex-shrink-0">${safeHTML(mob.rank || 'N/A')}</span>
-                                    
-                                    <!-- モンスター名, エリア名 -->
-                                    <div class="flex flex-col">
+                                
+                                <!-- 修正項目1: ランクバッジとモンスター名を同一行にし、エリア名を下に配置 -->
+                                <div class="flex flex-col">
+                                    <!-- 1行目: ランクとモンスター名 (垂直中央揃え) -->
+                                    <div class="flex items-center space-x-2 mb-0.5">
+                                        <!-- ランクバッジ -->
+                                        <span class="px-2 py-1 text-sm font-bold rounded-full ${rankColor} text-white flex-shrink-0">${safeHTML(mob.rank || 'N/A')}</span>
+                                        <!-- モンスター名 -->
                                         <span class="text-xl font-bold text-white text-outline">${safeHTML(mobName)} ${mapIcon}</span>
-                                        <span class="text-sm text-gray-300">${safeHTML(mob.area || 'エリア不明')}</span>
                                     </div>
+                                    <!-- 2行目: エリア名 (インデント) -->
+                                    <span class="text-sm text-gray-300 ml-4">${safeHTML(mob.area || 'エリア不明')}</span>
                                 </div>
                                 
                                 <!-- 報告ボタン -->
@@ -639,43 +640,45 @@
 
 
         /**
-         * モブカードの詳細表示をトグルします。
+         * モブカードの詳細表示をトグルします。（修正項目2/3）
          * @param {string} mobId - モンスター名に基づく一意のID (safeId(mobName))
          * @param {string} area - エリア名
          */
         function toggleMobDetail(mobId, area) {
             const detailElement = document.getElementById(`detail-${mobId}`);
-            
-            if (!detailElement) {
-                console.error(`Detail element not found for ID: detail-${mobId}`);
-                return;
-            }
+            if (!detailElement) return;
 
-            // 修正項目3: 他の詳細を閉じるロジック
+            // 現在開いているかどうかを判定
             const isCurrentlyOpen = !detailElement.classList.contains('hidden');
 
-            // 全て閉じる
-            document.querySelectorAll('.detail-content').forEach(el => {
-                el.style.maxHeight = '0';
-                el.style.opacity = '0';
-                // スムーズなアニメーションのために、hiddenクラスはアニメーション後に付与
-                setTimeout(() => el.classList.add('hidden'), 300);
-            });
-            
+            // 1. 開く・閉じるの切り替え
             if (isCurrentlyOpen) {
-                // 現在開いていたものを閉じる場合は、追跡変数をリセット
+                // クリックされたものが既に開いている場合 -> 閉じる
+                detailElement.style.maxHeight = '0';
+                detailElement.style.opacity = '0';
+                setTimeout(() => detailElement.classList.add('hidden'), 300);
                 openMobNameId = null;
             } else {
-                // 開く処理
+                // クリックされたものが閉じている場合 -> 他を閉じて、これを開く
+                
+                // 他の全てを閉じる (単体表示の保証)
+                document.querySelectorAll('.detail-content').forEach(el => {
+                    if (!el.classList.contains('hidden')) {
+                        el.style.maxHeight = '0';
+                        el.style.opacity = '0';
+                        setTimeout(() => el.classList.add('hidden'), 300);
+                    }
+                });
+                
+                // これを開く
                 detailElement.classList.remove('hidden');
                 setTimeout(() => {
                     detailElement.style.maxHeight = '1000px'; 
                     detailElement.style.opacity = '1';
                 }, 10);
                 
-                // 追跡変数を更新
                 openMobNameId = mobId;
-                
+
                 // マップの描画
                 const mobToRender = Object.values(globalMobConfig).find(m => safeId(m['モンスター名']) === mobId);
                 if (mobToRender) {
@@ -907,7 +910,7 @@
                 // 2. 動的データの取得と描画
                 await fetchDynamicData();
 
-                // 修正項目1: 60秒 (60000ms) ごとに自動更新ループを設定
+                // 60秒 (60000ms) ごとに自動更新ループを設定
                 if (initial) {
                     setInterval(fetchDynamicData, 60000); 
                 }
