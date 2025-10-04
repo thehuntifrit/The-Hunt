@@ -296,10 +296,14 @@
 
         /**
          * テンプレートリテラル内のXSS対策
+         * POP条件内の改行用区切り文字を<br>に変換する処理もここで実装
          */
         function safeHTML(str) {
             const div = document.createElement('div');
             div.textContent = str;
+            // <br>タグへの変換は、この関数外で.replace()を使って実施することで、
+            // POP条件以外のテキストへの影響を避けつつ、安全に改行を適用できます。
+            // ここでは基本的なXSS対策のみを行う
             return div.innerHTML;
         }
 
@@ -530,6 +534,11 @@
             } else if (mobRank === 'FATE' || mobRank === 'F') {
                 rankColor = 'bg-blue-400'; // FATE: 青色に変更
             } 
+            
+            // 🚨 修正点: POP条件の改行処理 (「//」を<br>に変換して表示)
+            // mob.popConditionのテキストを safeHTMLでエスケープした後、正規表現で「//」を<br>に置換
+            const formattedPopCondition = safeHTML(mob.popCondition || 'なし').replace(/\/\//g, '<br>');
+
 
             return `
                 <!-- イベントバブリングを停止させないように、全体を囲むDIVには詳細トグル関数のみをバインド -->
@@ -544,10 +553,10 @@
                         <div class="relative z-10 p-4">
                             <div class="flex justify-between items-start mb-1">
                                 
-                                <!-- モンスター名とランクの表示エリア -->
+                                <!-- モンスター名とランク、エリア名の表示エリア -->
                                 <div class="flex flex-col">
                                     
-                                    <!-- 1行目: ランクとモンスター名 (items-baselineで見た目の揃えを改善) -->
+                                    <!-- 1行目: ランクとモンスター名 -->
                                     <div class="flex items-baseline space-x-2 mb-0.5">
                                         <!-- ランクバッジ -->
                                         <span class="px-2 py-1 text-sm font-bold rounded-full ${rankColor} text-white flex-shrink-0">${safeHTML(mob.rank || 'N/A')}</span>
@@ -556,8 +565,9 @@
                                         <span class="text-lg font-bold text-white text-outline">${safeHTML(mobName)} ${mapIcon}</span>
                                     </div>
                                     
-                                    <!-- 2行目: エリア名 (左揃えで独立して表示。インデントなし) -->
-                                    <span class="text-sm text-gray-300 ml-[calc(4rem-0.5rem)]">${safeHTML(mob.area || 'エリア不明')}</span>
+                                    <!-- 2行目: エリア名 (左揃えで独立して表示) -->
+                                    <!-- スペースの幅を調整し、ランクバッジの左端に揃える -->
+                                    <span class="text-sm text-gray-300">${safeHTML(mob.area || 'エリア不明')}</span>
                                 </div>
                                 
                                 <!-- 報告ボタン (クリックが詳細トグルに伝播しないよう event.stopPropagation() を使用) -->
@@ -582,8 +592,8 @@
                             <!-- 前回の討伐時間 -->
                             <p class="mb-1"><strong>前回討伐:</strong> ${formatTimeToJST(lastKillTime)}</p>
                             
-                            <!-- POPさせる条件の説明 -->
-                            <p class="mb-2"><strong>POP条件:</strong> ${safeHTML(mob.popCondition || 'なし')}</p>
+                            <!-- POPさせる条件の説明 (formattedPopConditionを使用) -->
+                            <p class="mb-2"><strong>POP条件:</strong> ${formattedPopCondition}</p>
                             
                             <!-- 座標記録用のMAP -->
                             ${hasMap ? `
