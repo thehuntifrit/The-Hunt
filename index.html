@@ -224,7 +224,7 @@
         let currentFilter = 'ALL';
         let reporterUUID = '';
         
-        // 修正項目2, 3: 現在開いている詳細パネルのIDを追跡するための変数
+        // 現在開いている詳細パネルのIDを追跡するための変数
         let openMobNameId = null;
 
         // リポップ間隔（秒）をランクに応じて設定
@@ -447,7 +447,7 @@
                     rank: mob['ランク'] || 'N/A',
                     area: mob['エリア名'] || 'エリア不明',
                     popCondition: mob['POP条件'] || 'なし',
-                    interval: mob['リポップ間隔 (秒)'],
+                    interval: mob['リポップ間隔 (秒)'] || DEFAULT_INTERVALS[mob['ランク']] || 1800,
                     mapFilename: mob['マップ画像 (ファイル名)']
                 };
             });
@@ -519,17 +519,20 @@
             const cardClasses = `mob-card p-0 transition duration-300`;
             const progressColor = progressPercent > 90 ? 'bg-red-500' : '#68d391'; /* 90%以上は赤 */
 
-            // ランク別カラー設定
-            let rankColor = '';
-            if (mob.rank === 'S') {
-                rankColor = 'bg-blue-600';
-            } else if (mob.rank === 'A') {
-                rankColor = 'bg-green-600';
-            } else {
-                rankColor = 'bg-gray-600';
-            }
+            // ランク別カラー設定 (修正適用)
+            let rankColor = 'bg-gray-600'; // デフォルト
+            const mobRank = mob.rank || 'N/A';
+
+            if (mobRank === 'S') {
+                rankColor = 'bg-orange-500'; // S: オレンジ
+            } else if (mobRank === 'A') {
+                rankColor = 'bg-green-600'; // A: 緑
+            } else if (mobRank === 'FATE' || mobRank === 'F') {
+                rankColor = 'bg-emerald-400'; // FATE: 明るい緑
+            } 
 
             return `
+                <!-- イベントバブリングを停止させないように、全体を囲むDIVには詳細トグル関数のみをバインド -->
                 <div class="${cardClasses}" onclick="toggleMobDetail('${safeMobNameId}', '${safeHTML(mob.area)}')" data-mob-name="${safeHTML(mobName)}">
                     
                     <!-- 1行目と2行目 (ゲージ背景) -->
@@ -541,20 +544,20 @@
                         <div class="relative z-10 p-4">
                             <div class="flex justify-between items-start mb-1">
                                 
-                                <!-- 修正項目1: ランクバッジとモンスター名を同一行にし、エリア名を下に配置 -->
+                                <!-- ランクとモンスター名、エリア名 -->
                                 <div class="flex flex-col">
-                                    <!-- 1行目: ランクとモンスター名 (垂直中央揃え) -->
-                                    <div class="flex items-center space-x-2 mb-0.5">
+                                    <!-- 1行目: ランクとモンスター名 (items-baselineで見た目の揃えを改善) -->
+                                    <div class="flex items-baseline space-x-2 mb-0.5">
                                         <!-- ランクバッジ -->
                                         <span class="px-2 py-1 text-sm font-bold rounded-full ${rankColor} text-white flex-shrink-0">${safeHTML(mob.rank || 'N/A')}</span>
                                         <!-- モンスター名 -->
                                         <span class="text-xl font-bold text-white text-outline">${safeHTML(mobName)} ${mapIcon}</span>
                                     </div>
-                                    <!-- 2行目: エリア名 (インデント) -->
-                                    <span class="text-sm text-gray-300 ml-4">${safeHTML(mob.area || 'エリア不明')}</span>
+                                    <!-- 2行目: エリア名 (ml-4を削除し、モンスター名と左端を揃える) -->
+                                    <span class="text-sm text-gray-300">${safeHTML(mob.area || 'エリア不明')}</span>
                                 </div>
                                 
-                                <!-- 報告ボタン -->
+                                <!-- 報告ボタン (クリックが詳細トグルに伝播しないよう event.stopPropagation() を使用) -->
                                 <button 
                                     class="mt-1 px-2 py-1 bg-red-700 hover:bg-red-600 text-xs text-white font-bold rounded-full transition duration-150 flex-shrink-0"
                                     onclick="event.stopPropagation(); openModal('${safeHTML(mobName)}', '${safeHTML(mob.rank || 'N/A')}', '${safeHTML(mob.area || 'エリア不明')}')"
@@ -640,7 +643,7 @@
 
 
         /**
-         * モブカードの詳細表示をトグルします。（修正項目2/3）
+         * モブカードの詳細表示をトグルします。（修正2: 正しい開閉ロジック）
          * @param {string} mobId - モンスター名に基づく一意のID (safeId(mobName))
          * @param {string} area - エリア名
          */
@@ -648,36 +651,37 @@
             const detailElement = document.getElementById(`detail-${mobId}`);
             if (!detailElement) return;
 
-            // 現在開いているかどうかを判定
-            const isCurrentlyOpen = !detailElement.classList.contains('hidden');
+            // 現在開いているかどうかを、IDトラッカーを元に判定
+            const isCurrentlyOpen = mobId === openMobNameId; 
 
-            // 1. 開く・閉じるの切り替え
+            // 1. 他の要素が開いている場合、それを閉じる (単体表示の保証)
+            if (openMobNameId && openMobNameId !== mobId) {
+                const currentlyOpenEl = document.getElementById(`detail-${openMobNameId}`);
+                if (currentlyOpenEl) {
+                    currentlyOpenEl.style.maxHeight = '0';
+                    currentlyOpenEl.style.opacity = '0';
+                    setTimeout(() => currentlyOpenEl.classList.add('hidden'), 300);
+                }
+            }
+            
+            // 2. 開閉処理
             if (isCurrentlyOpen) {
-                // クリックされたものが既に開いている場合 -> 閉じる
+                // 既に開いているものをクリック -> 閉じる
                 detailElement.style.maxHeight = '0';
                 detailElement.style.opacity = '0';
                 setTimeout(() => detailElement.classList.add('hidden'), 300);
-                openMobNameId = null;
+                openMobNameId = null; // トラッカーをリセット
+
             } else {
-                // クリックされたものが閉じている場合 -> 他を閉じて、これを開く
-                
-                // 他の全てを閉じる (単体表示の保証)
-                document.querySelectorAll('.detail-content').forEach(el => {
-                    if (!el.classList.contains('hidden')) {
-                        el.style.maxHeight = '0';
-                        el.style.opacity = '0';
-                        setTimeout(() => el.classList.add('hidden'), 300);
-                    }
-                });
-                
-                // これを開く
+                // 閉じていたものをクリック -> 開く
                 detailElement.classList.remove('hidden');
+                // DOMが描画されてからCSSを適用
                 setTimeout(() => {
                     detailElement.style.maxHeight = '1000px'; 
                     detailElement.style.opacity = '1';
                 }, 10);
                 
-                openMobNameId = mobId;
+                openMobNameId = mobId; // トラッカーを更新
 
                 // マップの描画
                 const mobToRender = Object.values(globalMobConfig).find(m => safeId(m['モンスター名']) === mobId);
