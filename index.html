@@ -3,52 +3,759 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FF14 モブハント リアルタイムトラッカー</title>
-    <link rel="stylesheet" href="style.css">
+    <title>The Hunt - FF14 Hunt Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons for Map/Tabs -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom Font and Configuration for Tailwind */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        
+        /* Tailwind Custom Configuration */
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-dark': '#1e293b', /* Slate 800 */
+                        'secondary-dark': '#334155', /* Slate 700 */
+                        'accent-blue': '#3b82f6', /* Blue 500 */
+                        'indigo-outline': '#4f46e5', /* Indigo 600 */
+                        'pastel-green': '#a7f3d0', /* Teal/Green for 100% progress */
+                        'pastel-yellow': '#fde047', /* Yellow for 0% progress */
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    maxWidth: {
+                        '512': '512px', /* Max width for single column card */
+                    }
+                }
+            }
+        }
+        
+        /* Dark Mode Base Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+            transition: background-color 0.3s;
+        }
+
+        /* Text Outline Effect (Indigo/Navyでアウトライン) */
+        .text-outline {
+            text-shadow: 
+                1.5px 1.5px 0 #4f46e5, 
+                -1.5px 1.5px 0 #4f46e5, 
+                1.5px -1.5px 0 #4f46e5, 
+                -1.5px -1.5px 0 #4f46e5;
+        }
+
+        /* Custom Transition for Card Details (スライドダウン) */
+        .details-slide {
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+        }
+        .details-slide.active {
+            max-height: 500px; 
+            opacity: 1;
+        }
+
+        /* モブ一覧グリッドのレスポンシブ調整 */
+        #mob-list-container {
+            /* モバイル (1カラム) */
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+        @media (min-width: 768px) {
+             /* タブレット (1カラム 512px) */
+            #mob-list-container {
+                grid-template-columns: repeat(auto-fit, minmax(512px, 1fr));
+            }
+        }
+        @media (min-width: 1280px) { 
+            /* PC (最大3カラム) */
+            #mob-list-container {
+                grid-template-columns: repeat(3, minmax(300px, 1fr));
+            }
+        }
+
+
+        /* Map Container (縦横500px固定) */
+        .map-container {
+            width: 500px;
+            height: 500px;
+            max-width: 100%; /* レスポンシブ対応 */
+            max-height: 100vw; /* レスポンシブ対応 */
+            position: relative;
+            background-color: #000;
+            margin: 0 auto;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        .map-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            user-select: none;
+        }
+
+        /* Pop Point Circle (座標点) */
+        .pop-point {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #000;
+            transform: translate(-50%, -50%); /* 座標に中央を合わせる */
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Pop Point Colors (状態) */
+        .pop-point.status-candidate {
+            background-color: #10b981; /* 緑: POP候補地 */
+        }
+        .pop-point.status-checked {
+            background-color: #ef4444; /* 赤: POP非候補地（チェック済み） */
+        }
+
+        /* Progress Bar Styling (ゲージ) */
+        .progress-background {
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            transition: width 0.5s ease-out, background-color 0.5s;
+            z-index: 1;
+            /* 0% (パステルイエロー) から 100% (パステルグリーン) のグラデーション */
+            background: linear-gradient(to right, #fde047, #a7f3d0); 
+        }
+        .progress-content {
+            position: relative;
+            z-index: 2;
+        }
+
+    </style>
 </head>
-<body>
-    <header>
-        <h1>モブハント 討伐状況一覧</h1>
-        <p>討伐報告をすると、データがリアルタイムで更新されます。</p>
-    </header>
+<body class="min-h-screen p-4 sm:p-6 md:p-8">
 
-    <main>
-        <div id="mob-list">
-            <p>モンスターデータを読み込み中...</p>
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-white mb-2">The Hunt</h1>
+            <p class="text-gray-400 mb-4">FF14 モブハント討伐・リポップトラッカー</p>
+            
+            <!-- Maintenance Banner Area -->
+            <div id="maintenance-banner" class="hidden mx-auto p-3 bg-red-800/50 border-l-4 border-red-500 rounded-lg max-w-lg text-red-300 font-semibold text-sm">
+                <!-- メンテナンス情報がここに表示されます (赤文字) -->
+            </div>
+
+            <!-- UUID Message -->
+            <div id="system-message" class="mt-4 p-3 bg-blue-900/50 border-l-4 border-blue-400 rounded-lg max-w-lg mx-auto text-blue-300 hidden">
+                <!-- 匿名ID情報 -->
+            </div>
+
+        </header>
+
+        <!-- Tabs for Filtering -->
+        <div class="flex justify-center space-x-2 sm:space-x-4 mb-6 sticky top-0 bg-[#0f172a] z-10 py-3 border-b border-secondary-dark">
+            <button class="tab-button px-4 py-2 text-sm sm:text-base rounded-full transition-colors font-semibold" data-rank="all">ALL</button>
+            <button class="tab-button px-4 py-2 text-sm sm:text-base rounded-full transition-colors font-semibold" data-rank="S">Sランク</button>
+            <button class="tab-button px-4 py-2 text-sm sm:text-base rounded-full transition-colors font-semibold" data-rank="A">Aランク</button>
+            <button class="tab-button px-4 py-2 text-sm sm:text-base rounded-full transition-colors font-semibold" data-rank="FATE">FATE</button>
         </div>
-    </main>
-    
-    <footer>
-        <p>&copy; 2025 FFXIV Hunt Tracker</p>
-    </footer>
+        
+        <!-- モブ一覧コンテナ -->
+        <div id="mob-list-container" class="grid gap-6 justify-center">
+            <div id="loading-indicator" class="col-span-full text-center p-12 text-gray-500">データを読み込み中...</div>
+        </div>
 
-    <div id="report-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>討伐報告フォーム</h2>
-            <form id="report-form">
-                <input type="hidden" id="report_mobName" name="mobName">
-                <input type="hidden" id="report_mobRank" name="mobRank">
+    </div>
+
+    <!-- 討伐報告モーダル -->
+    <div id="report-modal" class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 hidden p-4">
+        <div class="bg-primary-dark p-6 rounded-xl shadow-2xl max-w-lg w-full border border-secondary-dark">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">討伐報告</h2>
+                <button class="close-button text-gray-400 hover:text-white transition-colors">&times;</button>
+            </div>
+            
+            <p class="mb-4 text-sm text-gray-400">
+                <span id="modal_mob_display" class="text-lg font-bold text-accent-blue"></span> 
+                の討伐を報告します。
+            </p>
+
+            <form id="report-form" class="space-y-4">
+                <!-- 隠しフィールド (モブ情報と匿名ID) -->
+                <input type="hidden" id="report_mobName" name="mob_name">
+                <input type="hidden" id="report_mobRank" name="mob_rank">
                 <input type="hidden" id="report_area" name="area">
-                
-                <p>モブ: <strong id="modal_mob_display"></strong> (<span id="modal_area_display"></span>)</p>
-                
-                <label for="report_time">討伐日時 (JST):</label>
-                <input type="datetime-local" id="report_time" required>
+                <input type="hidden" id="report_reporterId" name="reporter_id">
+                <input type="hidden" name="reportType" value="hunt">
 
-                <label for="report_world">ワールド:</label>
-                <input type="text" id="report_world" required placeholder="例: Ifrit">
+                <!-- 討伐日時 (JST) -->
+                <div>
+                    <label for="report_time" class="block text-sm font-medium text-gray-300">討伐日時 (JST):</label>
+                    <input type="datetime-local" id="report_time" name="report_time" required 
+                           class="w-full mt-1 p-2 bg-secondary-dark border border-gray-600 rounded-md text-white">
+                </div>
                 
-                <label for="report_reporter">報告者名 (任意):</label>
-                <input type="text" id="report_reporter" placeholder="キャラクター名">
+                <!-- ワールド名 -->
+                <div>
+                    <label for="report_world" class="block text-sm font-medium text-gray-300">ワールド名 (任意):</label>
+                    <input type="text" id="report_world" name="world" placeholder="例: Garuda"
+                           class="w-full mt-1 p-2 bg-secondary-dark border border-gray-600 rounded-md text-white">
+                </div>
 
-                <button type="submit" id="submit-report-button">報告を確定する</button>
-                <p id="message" class="hidden"></p>
+                <!-- ET討伐時間 (任意) -->
+                <div>
+                    <label for="report_etTime" class="block text-sm font-medium text-gray-300">ET討伐時間 (HH:MM 任意):</label>
+                    <input type="text" id="report_etTime" name="et_time" placeholder="例: 19:30"
+                           class="w-full mt-1 p-2 bg-secondary-dark border border-gray-600 rounded-md text-white">
+                </div>
+
+                <!-- 送信ボタンとメッセージ -->
+                <div class="pt-4">
+                    <button type="submit" id="submit-report-button"
+                            class="w-full bg-accent-blue hover:bg-blue-700 text-white font-bold py-2 rounded-md transition duration-200 shadow-lg">
+                        報告を送信
+                    </button>
+                    <div id="message" class="hidden mt-3 p-2 rounded-lg text-center font-medium"></div>
+                </div>
             </form>
         </div>
     </div>
+    
+    <script>
+    // =================================================================================
+    // 🚨 必須: ここにGoogle Apps Script Web AppのデプロイURLを設定してください 🚨
+    // =================================================================================
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwFoWTenTJi8PoCUWUwo1JU1JJOgZKLfr8ILVXez0FvHO2NTzl-1BKr12LLJWSHoTXPyQ/exec'; 
+    // =================================================================================
 
-    <script src="mob-data.js"></script> 
-    <script src="script.js"></script>
+    // DOM要素の取得
+    const mobListContainer = document.getElementById('mob-list-container');
+    const modal = document.getElementById('report-modal');
+    const closeButton = document.getElementsByClassName('close-button')[0];
+    const reportForm = document.getElementById('report-form');
+    const reportTimeInput = document.getElementById('report_time');
+    const messageElement = document.getElementById('message');
+    const submitButton = document.getElementById('submit-report-button');
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const maintenanceBanner = document.getElementById('maintenance-banner');
+    const systemMessageElement = document.getElementById('system-message');
+
+    // グローバルデータストア
+    let globalMobConfig = {};
+    let globalHuntList = [];
+    let globalLocationDef = {};
+    let globalLocationState = [];
+    let currentFilterRank = 'all';
+    
+    // 匿名報告者ID (UUID) の処理
+    const REPORTER_ID_KEY = 'hunt_reporter_uuid';
+    let REPORTER_UUID = localStorage.getItem(REPORTER_ID_KEY);
+
+    if (!REPORTER_UUID) {
+        REPORTER_UUID = self.crypto.randomUUID(); 
+        localStorage.setItem(REPORTER_ID_KEY, REPORTER_UUID);
+        systemMessageElement.textContent = \`匿名報告者IDを生成しました: ${REPORTER_UUID.substring(0, 8)}...\`;
+        systemMessageElement.classList.remove('hidden');
+    } else {
+        systemMessageElement.textContent = \`匿名報告者IDを使用中: ${REPORTER_UUID.substring(0, 8)}...\`;
+        systemMessageElement.classList.remove('hidden');
+    }
+
+    // ==============================================================================
+    // ユーティリティ関数
+    // ==============================================================================
+
+    /**
+     * UTC時間をJSTの文字列に変換
+     */
+    function formatTimeToJST(utcIsoString) {
+        if (!utcIsoString) return '未報告';
+        const utcTime = new Date(utcIsoString);
+        return utcTime.toLocaleString('ja-JP', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            timeZone: 'Asia/Tokyo'
+        });
+    }
+
+    /**
+     * 現在時刻を <input type="datetime-local"> 形式にフォーマット
+     */
+    function getCurrentDateTimeLocal() {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        return now.toISOString().slice(0, 16);
+    }
+    
+    /**
+     * ET (エオルゼア時間) 関連のユーティリティ関数
+     */
+    const ET_RATIO = 3600 / 70; 
+    
+    function calculateET(ltDate) {
+        const BASE_LT = new Date('2010-01-01T00:00:00Z').getTime();
+        const currentLT = ltDate.getTime();
+        const elapsedLT = currentLT - BASE_LT;
+        const elapsedET = elapsedLT * ET_RATIO;
+        const etDate = new Date(BASE_LT + elapsedET);
+        return etDate;
+    }
+
+    function isETConditionMet(conditionString, etHour) {
+        if (!conditionString) return true;
+        
+        const periods = conditionString.split('/').map(p => p.trim()).filter(Boolean);
+
+        for (const period of periods) {
+            const match = period.match(/(\d{1,2}):\d{2}-(\d{1,2}):\d{2}/);
+            if (!match) continue;
+
+            const startHour = parseInt(match[1], 10);
+            const endHour = parseInt(match[2], 10);
+            
+            // 終了時刻が開始時刻より小さい場合は日をまたぐ（例: 22時-02時）
+            if (startHour > endHour) {
+                if (etHour >= startHour || etHour < endHour) return true;
+            } else {
+                if (etHour >= startHour && etHour < endHour) return true; 
+            }
+        }
+        return false;
+    }
+    
+    // --- 天候予測ロジック ---
+    // (天候判定は天候条件が指定された際に実装するため、現在はスキップ)
+    
+    // ==============================================================================
+    // メイン機能: データ取得とレンダリング
+    // ==============================================================================
+
+    /**
+     * GASから全てのデータを取得し、グローバル変数に保存する
+     */
+    async function fetchAllData() {
+        if (GAS_API_URL === 'YOUR_GAS_WEB_APP_URL') {
+             throw new Error("GAS API URLが設定されていません。コード内の 'YOUR_GAS_WEB_APP_URL' を修正してください。");
+        }
+        
+        const response = await fetch(GAS_API_URL);
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            globalMobConfig = result.mobConfig.reduce((acc, mob) => {
+                acc[mob['モブ名']] = mob;
+                return acc;
+            }, {});
+            globalHuntList = result.huntList;
+            
+            // 座標定義データをモブ名でマップ化
+            globalLocationDef = result.locationDef.reduce((acc, loc) => {
+                if (!acc[loc['モブ名']]) acc[loc['モブ名']] = [];
+                acc[loc['モブ名']].push(loc);
+                return acc;
+            }, {});
+            globalLocationState = result.locationState;
+            
+            handleMaintenanceBanner(result.maintenance);
+
+        } else {
+             console.error("GASデータ取得エラー:", result.message);
+             mobListContainer.innerHTML = `<p class="col-span-full text-red-400">データ取得中にエラーが発生しました: ${result.message}</p>`;
+             throw new Error(result.message);
+        }
+    }
+
+    /**
+     * Lodestoneメンテナンス情報の表示を制御する
+     */
+    function handleMaintenanceBanner(info) {
+        const targetString = "日　時：";
+        if (!info.startsWith(targetString)) {
+            maintenanceBanner.classList.add('hidden');
+            return;
+        }
+
+        // 終了日時を抽出（複数行に対応）
+        const dateParts = info.match(/(\d{4}年\d{1,2}月\d{1,2}日)（[^）]+?）(\d{1,2}：\d{2})ごろ?～\s*(\d{4}年\d{1,2}月\d{1,2}日)?（[^）]+?）?(\d{1,2}：\d{2})ごろ/);
+        
+        if (!dateParts) {
+            maintenanceBanner.classList.add('hidden');
+            return;
+        }
+
+        // 終了日時をパース
+        const endDateStr = (dateParts[3] ? dateParts[3].replace(/年|月/g, '/').replace(/日/g, '') : dateParts[1].replace(/年|月/g, '/').replace(/日/g, '')) + ' ' + dateParts[4];
+        const endTime = new Date(endDateStr.replace(/(\d{4}\/\d{1,2}\/\d{1,2})\s+(\d{1,2}：\d{2})/, '$1 $2').replace(/：/g, ':'));
+
+        const now = new Date();
+        // メンテナンス終了時刻 + 3日間
+        const threeDaysAfterEnd = new Date(endTime.getTime() + 3 * 24 * 60 * 60 * 1000);
+        
+        // 現在時刻が終了時刻から3日以内であれば表示
+        if (now < threeDaysAfterEnd) {
+            maintenanceBanner.innerHTML = `
+                <p class="text-base">🚨 **${info}**</p>
+                <p class="text-xs mt-1">メンテナンス終了後3日が経過するまで表示されます。</p>
+            `;
+            maintenanceBanner.classList.remove('hidden');
+        } else {
+            maintenanceBanner.classList.add('hidden');
+        }
+    }
+
+    /**
+     * モブ一覧をフィルタリング、ソートして表示する
+     */
+    function displayMobList() {
+        const mobListArray = Object.values(globalMobConfig);
+        const lastHuntsMap = getLastHuntsMap(globalHuntList);
+        const checkedLocationsMap = getCheckedLocationsMap(globalLocationState);
+        const now = new Date();
+
+        // 1. データ加工
+        const processedMobs = mobListArray
+            .map(mob => {
+                const mobName = mob['モブ名'];
+                const lastHunt = lastHuntsMap[mobName];
+                const respawnSeconds = parseFloat(mob['リポップ間隔 (秒)']) || 3600;
+                
+                let progressPercentage = 0;
+                let lastKillTime = null;
+                let popTimeDisplay = '未報告';
+                let popTimeClass = 'text-gray-400';
+                
+                if (lastHunt) {
+                    lastKillTime = lastHunt.killTime;
+                    const expectedTime = new Date(lastKillTime.getTime() + respawnSeconds * 1000);
+                    
+                    const timeElapsed = now.getTime() - lastKillTime.getTime();
+                    const totalRespawnTime = respawnSeconds * 1000;
+                    
+                    progressPercentage = Math.min(100, Math.floor((timeElapsed / totalRespawnTime) * 100));
+                    popTimeDisplay = formatTimeToJST(expectedTime.toISOString());
+
+                    if (now > expectedTime) {
+                        popTimeClass = 'text-orange-400';
+                        progressPercentage = 100;
+                    } else if (progressPercentage >= 90) {
+                        popTimeClass = 'text-yellow-400';
+                    } else {
+                        popTimeClass = 'text-green-400';
+                    }
+                }
+                
+                const hasMap = globalLocationDef[mobName] && globalLocationDef[mobName].length > 0;
+
+                return {
+                    ...mob,
+                    lastKillTime: lastKillTime,
+                    progress: progressPercentage,
+                    popTimeDisplay,
+                    popTimeClass,
+                    hasMap,
+                    checkedLocations: checkedLocationsMap[mobName] || new Set(),
+                    locationDef: globalLocationDef[mobName] || []
+                };
+            })
+            // 2. フィルタリング
+            .filter(mob => currentFilterRank === 'all' || mob['ランク'] === currentFilterRank)
+            // 3. ソート (経過時間に基づいて降順)
+            .sort((a, b) => b.progress - a.progress); 
+
+        // 4. HTML生成
+        const htmlContent = processedMobs.map(mob => createMobCardHTML(mob)).join('');
+        
+        mobListContainer.innerHTML = htmlContent;
+
+        // 5. イベントリスナーの再設定
+        setupCardEventListeners();
+    }
+    
+    /**
+     * カードのクリックイベント（スライドダウン）を設定
+     */
+    function setupCardEventListeners() {
+        document.querySelectorAll('.mob-card').forEach(card => {
+            // カード全体のクリックイベント
+            card.addEventListener('click', (e) => {
+                if (e.target.closest('.report-button-wrapper')) return; 
+                
+                const details = card.querySelector('.details-slide');
+                const isActive = details.classList.contains('active');
+                
+                // 他の開いているカードを閉じる
+                document.querySelectorAll('.details-slide.active').forEach(d => {
+                    if (d !== details) d.classList.remove('active');
+                });
+                
+                if (!isActive) {
+                    details.classList.add('active');
+                    // マップがあれば描画
+                    const mobData = JSON.parse(card.getAttribute('data-mob'));
+                    const mapElement = card.querySelector('.map-container');
+                    if (mapElement) {
+                         // スライドダウンアニメーション後に描画を試みる
+                         setTimeout(() => drawPopPoints(mapElement, mobData), 350); 
+                    }
+                } else {
+                    details.classList.remove('active');
+                }
+            });
+        });
+        
+        // 報告ボタンのクリックイベント
+        document.querySelectorAll('.report-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                const mobData = JSON.parse(button.closest('.mob-card').getAttribute('data-mob'));
+                openReportModal(mobData);
+            });
+        });
+    }
+    
+    /**
+     * マップ上のPOP地点を描画する
+     */
+    function drawPopPoints(mapContainer, mob) {
+        const existingPoints = mapContainer.querySelectorAll('.pop-point');
+        existingPoints.forEach(p => p.remove());
+
+        const mapImage = mapContainer.querySelector('img');
+        const mapSize = 500; // 縦横500pxで固定
+
+        // 座標定義がなければ終了
+        if (mob.locationDef.length === 0) return;
+        
+        mob.locationDef.forEach(location => {
+            const locationId = location['座標ID'];
+            const isChecked = mob.checkedLocations.has(locationId);
+
+            const point = document.createElement('div');
+            point.classList.add('pop-point');
+            
+            // 状態に基づいて色を決定
+            point.classList.add(isChecked ? 'status-checked' : 'status-candidate');
+
+            // 座標X, Yは500x500の画像基準で記録されていると仮定
+            const x = parseFloat(location['座標X']);
+            const y = parseFloat(location['座標Y']);
+
+            point.style.left = \`${x}px\`;
+            point.style.top = \`${y}px\`;
+            point.dataset.locationId = locationId;
+            point.dataset.mobName = mob['モブ名'];
+
+            // マップの点クリックイベントを設定
+            point.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleLocationCheck(mob['モブ名'], locationId);
+            });
+
+            mapContainer.appendChild(point);
+        });
+    }
+
+    /**
+     * POP地点のチェックイン処理 (非候補地として記録)
+     */
+    async function handleLocationCheck(mobName, locationId) {
+        // alertの代わりにconfirmで確認
+        const isConfirmed = window.confirm(\`${mobName} の ${locationId} 地点を「POP非候補地」として記録しますか？\n（このモブの討伐報告があるまでこの記録は有効です。）\`);
+        if (!isConfirmed) return;
+
+        const payload = {
+            reportType: 'location_check',
+            mobName: mobName,
+            locationId: locationId,
+            reporterId: REPORTER_UUID
+        };
+        
+        try {
+            const response = await fetch(GAS_API_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                alert(\`記録成功: \${result.message}\`);
+                // 成功したらデータを再取得して表示を更新
+                await initApp();
+            } else {
+                alert(\`記録失敗: \${result.message}\`);
+            }
+        } catch (error) {
+            alert('通信エラーが発生しました。GASのURLまたは権限を確認してください。');
+        }
+    }
+
+    /**
+     * 最新の討伐履歴をモブ名でマップ化
+     */
+    function getLastHuntsMap(huntList) {
+        const lastHunts = {};
+        huntList.forEach(hunt => {
+            const mobName = hunt['モブ名'];
+            const killTime = new Date(hunt['討伐日時 (UTC)']); 
+
+            if (!lastHunts[mobName] || killTime.getTime() > lastHunts[mobName].killTime.getTime()) {
+                lastHunts[mobName] = { killTime };
+            }
+        });
+        return lastHunts;
+    }
+    
+    /**
+     * チェック済みの座標をモブ名と座標IDでマップ化
+     */
+    function getCheckedLocationsMap(locationState) {
+        const checkedLocations = {};
+        locationState.forEach(state => {
+            const mobName = state['モブ名'];
+            const locationId = state['チェック済み座標ID'];
+            if (!checkedLocations[mobName]) {
+                checkedLocations[mobName] = new Set();
+            }
+            checkedLocations[mobName].add(locationId);
+        });
+        return checkedLocations;
+    }
+    
+    /**
+     * モブカードのHTMLを生成
+     */
+    function createMobCardHTML(mob) {
+        const rankClass = mob['ランク'] === 'S' ? 'bg-red-600' : 
+                          mob['ランク'] === 'A' ? 'bg-accent-blue' : 
+                          mob['ランク'] === 'FATE' ? 'bg-purple-600' : 'bg-gray-500';
+
+        const lastKillDisplay = mob.lastKillTime ? formatTimeToJST(mob.lastKillTime.toISOString()) : '未報告';
+        const progressWidth = \`${mob.progress}%\`;
+        
+        const popConditions = [
+            mob['POP条件'],
+            mob['時間条件'] ? `ET時間: ${mob['時間条件']}` : null,
+            mob['天候条件'] ? `天候: ${mob['天候条件']}` : null
+        ].filter(Boolean).join(' / ');
+        
+        const mapFileName = mob['マップ画像 (ファイル名)'] || 'placeholder.webp';
+        
+        return `
+            <div class="mob-card bg-secondary-dark rounded-xl shadow-lg border border-primary-dark cursor-pointer transform hover:scale-[1.01] transition duration-150" 
+                 data-mob='${JSON.stringify(mob)}'>
+
+                <!-- 上部2行のプログレス背景 -->
+                <div class="progress-background rounded-t-xl">
+                    <!-- 進捗バー (パステルカラーのグラデーション) -->
+                    <div class="progress-bar" style="width: ${progressWidth};"></div>
+                    <div class="progress-content p-4 space-y-2 text-white">
+                        
+                        <!-- 1行目: モンスター名 エリア名 報告ボタン -->
+                        <div class="flex justify-between items-start">
+                            <div class="flex-grow">
+                                <span class="${rankClass} text-white font-bold px-2 py-0.5 rounded-full text-xs mr-2">${mob['ランク']}</span>
+                                <span class="text-lg font-bold text-outline">${mob['モブ名']}</span>
+                                ${mob.hasMap ? '<span class="ml-1 map-icon text-base" title="POP地点あり">🗺️</span>' : ''}
+                                <div class="text-sm font-medium text-gray-300">${mob['エリア名']}</div>
+                            </div>
+                            <div class="report-button-wrapper flex-shrink-0">
+                                <button class="report-button bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-3 rounded-full transition-colors">
+                                    報告
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 2行目: 次回POP時間 (経過%) -->
+                        <div class="text-sm font-semibold">
+                            次回POP時間: <span class="${mob.popTimeClass} text-base font-bold">${mob.popTimeDisplay}</span> 
+                            (経過: ${mob.progress}%)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 下部3行の詳細エリア (スライドダウン) -->
+                <div class="details-slide bg-primary-dark/80 p-4 rounded-b-xl border-t border-secondary-dark">
+                    <!-- 詳細内容 -->
+                    <div class="text-sm space-y-3">
+                        <p><span class="font-bold text-gray-300">前回の討伐時間 (JST):</span> ${lastKillDisplay}</p>
+                        <p><span class="font-bold text-gray-300">POPさせる条件の説明:</span> ${popConditions || 'なし'}</p>
+                        
+                        <!-- 座標記録用のMAP -->
+                        <div class="pt-4">
+                            <h4 class="font-bold text-lg mb-2 text-gray-200">座標記録用のMAP</h4>
+                            <div class="map-container" data-mob-name="${mob['モブ名']}">
+                                <img src="./Picture/${mapFileName}" alt="${mob['エリア名']} マップ" 
+                                     width="500" height="500"
+                                     onerror="this.onerror=null; this.src='https://placehold.co/500x500/334155/ffffff?text=Map+Unavailable';"
+                                     loading="lazy">
+                                <!-- POP Points will be drawn here -->
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2 text-center">
+                                <span class="text-red-500 font-bold">赤丸</span>: POP非候補地 / 
+                                <span class="text-green-500 font-bold">緑丸</span>: POP候補地
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // ==============================================================================
+    // フィルタリングと初期化
+    // ==============================================================================
+    
+    function setupFilters() {
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const newRank = button.getAttribute('data-rank');
+                currentFilterRank = newRank;
+                
+                tabButtons.forEach(btn => btn.classList.remove('bg-accent-blue', 'text-white'));
+                button.classList.add('bg-accent-blue', 'text-white');
+                
+                displayMobList();
+            });
+        });
+
+        document.querySelector('.tab-button[data-rank="all"]').classList.add('bg-accent-blue', 'text-white');
+    }
+
+    // 初期化関数
+    async function initApp() {
+        try {
+            document.getElementById('loading-indicator').textContent = "データを読み込み中...";
+            await fetchAllData();
+            displayMobList();
+            document.getElementById('loading-indicator').classList.add('hidden');
+        } catch (e) {
+            console.error("アプリケーションの初期化に失敗しました。", e);
+            document.getElementById('loading-indicator').textContent = "データの読み込みに失敗しました。GASのURLとデプロイ状態を確認してください。";
+        }
+    }
+
+    // ページロード時にデータ表示を開始
+    document.addEventListener('DOMContentLoaded', () => {
+        setupFilters();
+        initApp();
+        // リアルタイム更新（5秒ごと）
+        setInterval(initApp, 5000); 
+    });
+
+    </script>
 </body>
 </html>
