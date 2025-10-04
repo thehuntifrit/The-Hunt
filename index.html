@@ -217,14 +217,17 @@
         const STATIC_DATA_URL = './mob_data.json'; 
 
         // グローバルなデータストア
-        let globalMobConfig = {};      // mob_data.json から取得する静的設定
-        let globalLocationDef = {};    // mob_data.json から取得する座標定義
-        let globalHuntList = [];       // GASから取得する最新の討伐履歴
-        let globalLocationState = [];  // GASから取得する最新のチェックイン状態
+        let globalMobConfig = {};      
+        let globalLocationDef = {};    
+        let globalHuntList = [];       
+        let globalLocationState = [];  
         let currentFilter = 'ALL';
         let reporterUUID = '';
+        
+        // 修正項目2, 3: 現在開いている詳細パネルのIDを追跡するための変数
+        let openMobNameId = null;
 
-        // リポップ間隔（秒）をランクに応じて設定（mob_data.jsonにない場合のデフォルト値）
+        // リポップ間隔（秒）をランクに応じて設定
         const DEFAULT_INTERVALS = {
             'S': 27000, 
             'A': 300 
@@ -247,7 +250,6 @@
         function getReporterUUID() {
             let uuid = localStorage.getItem('reporterUUID');
             if (!uuid) {
-                // UUIDを生成 (簡易版)
                 uuid = crypto.randomUUID();
                 localStorage.setItem('reporterUUID', uuid);
             }
@@ -275,11 +277,9 @@
          * Dateオブジェクトを <input type="datetime-local"> 形式 (YYYY-MM-DDThh:mm) に変換します。（JSTとして処理）
          */
         function dateToDateTimeLocal(date) {
-            // ローカルタイムゾーンで処理するためにJST（+9時間）のオフセットを考慮
             const offset = date.getTimezoneOffset() * 60000;
             const jstOffset = 9 * 60 * 60000;
             
-            // JSTのDateオブジェクトを作成
             const jstDate = new Date(date.getTime() + offset + jstOffset);
 
             const pad = (num) => num.toString().padStart(2, '0');
@@ -308,7 +308,7 @@
          */
         function safeId(str) {
             if (!str) return 'id-' + crypto.randomUUID();
-            // スペース、特殊文字、日本語などを除去し、安全な文字のみ残す
+            // モンスター名から安全なIDを生成
             return String(str).replace(/\s/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
         }
 
@@ -328,13 +328,11 @@
                 }
                 const data = await response.json();
                 
-                // global変数を更新
                 globalMobConfig = data.mobConfig || {};
                 globalLocationDef = data.locationDef || {};
                 
                 loadingStatus.textContent = '静的データを正常に読み込みました。リアルタイムデータを取得中です...';
                 
-                // タブの生成
                 generateTabs(); 
 
             } catch (error) {
@@ -345,7 +343,7 @@
                         mob_data.jsonファイルが存在しないか、JSONの形式が正しくありません。コンソールを確認してください。
                     </div>
                 `;
-                throw error; // アプリの続行を停止
+                throw error;
             }
         }
 
@@ -428,7 +426,6 @@
             currentFilter = filter;
             renderMobList();
             
-            // タブのアクティブクラスを切り替える
             document.querySelectorAll('.tab-button').forEach(button => {
                 button.classList.remove('tab-active');
                 if (button.dataset.filter === filter) {
@@ -447,7 +444,6 @@
                 const mob = globalMobConfig[key];
                 return {
                     ...mob,
-                    // mob_data.jsonの日本語キーから必要な情報を抽出
                     mobName: mob['モンスター名'] || key || '不明なモブ',
                     rank: mob['ランク'] || 'N/A',
                     area: mob['エリア名'] || 'エリア不明',
@@ -457,26 +453,46 @@
                 };
             });
 
-            // フィルター処理
+            // 修正項目5: FATEランクのフィルタリング ('FATE'または'F')
             let filteredMobs = allMobs.filter(mob => {
                 const mobRank = mob.rank || 'N/A';
                 if (currentFilter === 'ALL') return true;
-                if (currentFilter === 'FATE') return mobRank === 'FATE'; 
+                if (currentFilter === 'FATE') return mobRank === 'FATE' || mobRank === 'F'; 
                 return mobRank === currentFilter;
             });
             
             // 討伐時間とリポップ率の計算、ソート
             filteredMobs = filteredMobs
-                // 修正: indexを付与して、後で一意のIDを生成するために使用
-                .map((mob, index) => ({...calculateMobTime(mob), uniqueId: index })) 
-                .sort((a, b) => b.progressPercent - a.progressPercent); // 経過%で降順ソート
+                .map(mob => calculateMobTime(mob)) 
+                .sort((a, b) => b.progressPercent - a.progressPercent); 
 
             if (filteredMobs.length === 0) {
                 mobListContainer.innerHTML = `<p class="text-center text-gray-400 col-span-full">選択されたランクのモンスターはいません。</p>`;
                 return;
             }
 
+            // 新しいリストをレンダリング
             mobListContainer.innerHTML = filteredMobs.map(mob => createMobCard(mob)).join('');
+
+            // 修正項目2: 詳細表示の状態を保持
+            if (openMobNameId) {
+                // アニメーションを無効にして即座に表示
+                const detailElement = document.getElementById(`detail-${openMobNameId}`);
+                if (detailElement) {
+                    detailElement.classList.remove('hidden');
+                    detailElement.style.maxHeight = '1000px'; 
+                    detailElement.style.opacity = '1';
+                    
+                    // マップ再描画
+                    const mobToRender = filteredMobs.find(m => safeId(m.mobName) === openMobNameId);
+                    if (mobToRender) {
+                        renderMap(mobToRender.mobName, mobToRender.area);
+                    }
+                } else {
+                    // 開いていたモブがフィルタリングで非表示になった場合、状態をリセット
+                    openMobNameId = null;
+                }
+            }
         }
 
         /**
@@ -484,8 +500,8 @@
          */
         function createMobCard(mob) {
             const mobName = mob.mobName;
-            // 修正: uniqueIdを使って、カードと詳細パネルに一意のIDを付与
-            const uniqueMobId = `${safeId(mobName)}-${mob.uniqueId}`; 
+            // 修正項目2/3: MobNameを元にしたIDを使用
+            const safeMobNameId = safeId(mobName); 
             
             if (mobName === '不明なモブ') {
                 console.warn("Skipping card due to missing mob name:", mob);
@@ -499,10 +515,6 @@
             const rawMapImageFilename = mob.mapFilename || '';
             const hasMap = rawMapImageFilename !== '';
             
-            const mapImagePath = rawMapImageFilename
-                ? `./Picture/${rawMapImageFilename.replace(/\s/g, '_')}`
-                : '';
-
             const mapIcon = hasMap ? '🗺️' : '';
             
             const cardClasses = `mob-card p-0 transition duration-300`;
@@ -519,7 +531,7 @@
             }
 
             return `
-                <div class="${cardClasses}" onclick="toggleMobDetail('${uniqueMobId}', '${safeHTML(mob.area)}')" data-mob-name="${safeHTML(mobName)}">
+                <div class="${cardClasses}" onclick="toggleMobDetail('${safeMobNameId}', '${safeHTML(mob.area)}')" data-mob-name="${safeHTML(mobName)}">
                     
                     <!-- 1行目と2行目 (ゲージ背景) -->
                     <div class="relative overflow-hidden">
@@ -529,10 +541,10 @@
                         <!-- コンテンツレイヤー -->
                         <div class="relative z-10 p-4">
                             <div class="flex justify-between items-start mb-1">
-                                <!-- 修正: ランクバッジをモンスター名の前に配置 -->
-                                <div class="flex items-start space-x-2">
+                                <!-- 修正項目4: items-center を追加し、ランクとモンスター名を垂直中央に揃える -->
+                                <div class="flex items-center space-x-2">
                                     <!-- ランクバッジ -->
-                                    <span class="mt-1 px-2 py-1 text-sm font-bold rounded-full ${rankColor} text-white flex-shrink-0">${safeHTML(mob.rank || 'N/A')}</span>
+                                    <span class="px-2 py-1 text-sm font-bold rounded-full ${rankColor} text-white flex-shrink-0">${safeHTML(mob.rank || 'N/A')}</span>
                                     
                                     <!-- モンスター名, エリア名 -->
                                     <div class="flex flex-col">
@@ -557,8 +569,8 @@
                         </div>
                     </div>
 
-                    <!-- 詳細情報 (スライド表示部分) - uniqueMobIdを使用 -->
-                    <div id="detail-${uniqueMobId}" class="detail-content slide-up-down hidden bg-gray-700 text-gray-300 p-4 pt-2">
+                    <!-- 詳細情報 (スライド表示部分) - safeMobNameIdを使用 -->
+                    <div id="detail-${safeMobNameId}" class="detail-content slide-up-down hidden bg-gray-700 text-gray-300 p-4 pt-2">
                         <div class="text-xs border-t border-gray-600 pt-2">
                             <!-- 前回の討伐時間 -->
                             <p class="mb-1"><strong>前回討伐:</strong> ${formatTimeToJST(lastKillTime)}</p>
@@ -570,7 +582,7 @@
                             ${hasMap ? `
                                 <div class="mt-4">
                                     <h4 class="text-md font-semibold text-white mb-2">POP候補地 (${safeHTML(mob.area || 'エリア不明')})</h4>
-                                    <div id="map-canvas-${uniqueMobId}" class="map-container rounded-lg overflow-hidden border border-gray-600">
+                                    <div id="map-canvas-${safeMobNameId}" class="map-container rounded-lg overflow-hidden border border-gray-600">
                                         <!-- マップと座標点はここに描画されます -->
                                     </div>
                                 </div>
@@ -628,53 +640,47 @@
 
         /**
          * モブカードの詳細表示をトグルします。
-         * @param {string} uniqueMobId - 固有のモンスターID (名前-index)
+         * @param {string} mobId - モンスター名に基づく一意のID (safeId(mobName))
          * @param {string} area - エリア名
          */
-        function toggleMobDetail(uniqueMobId, area) {
-            // 修正: uniqueMobIdを使用して、詳細要素を正確に取得
-            const detailElement = document.getElementById(`detail-${uniqueMobId}`);
+        function toggleMobDetail(mobId, area) {
+            const detailElement = document.getElementById(`detail-${mobId}`);
             
             if (!detailElement) {
-                console.error(`Detail element not found for ID: detail-${uniqueMobId}`);
+                console.error(`Detail element not found for ID: detail-${mobId}`);
                 return;
             }
 
-            // スライドアニメーション
-            if (detailElement.classList.contains('hidden')) {
-                // 開く処理: すべての開いている詳細を閉じる
-                document.querySelectorAll('.detail-content').forEach(el => {
-                    if (el !== detailElement) {
-                        el.style.maxHeight = '0';
-                        el.style.opacity = '0';
-                        setTimeout(() => el.classList.add('hidden'), 300);
-                    }
-                });
+            // 修正項目3: 他の詳細を閉じるロジック
+            const isCurrentlyOpen = !detailElement.classList.contains('hidden');
 
-                // 開く
+            // 全て閉じる
+            document.querySelectorAll('.detail-content').forEach(el => {
+                el.style.maxHeight = '0';
+                el.style.opacity = '0';
+                // スムーズなアニメーションのために、hiddenクラスはアニメーション後に付与
+                setTimeout(() => el.classList.add('hidden'), 300);
+            });
+            
+            if (isCurrentlyOpen) {
+                // 現在開いていたものを閉じる場合は、追跡変数をリセット
+                openMobNameId = null;
+            } else {
+                // 開く処理
                 detailElement.classList.remove('hidden');
                 setTimeout(() => {
                     detailElement.style.maxHeight = '1000px'; 
                     detailElement.style.opacity = '1';
                 }, 10);
                 
-                // マップの描画を呼び出し (uniqueMobIdからmobNameを抽出する)
-                const mobNameMatch = uniqueMobId.match(/^(.+)-(\d+)$/);
-                const mobName = mobNameMatch ? mobNameMatch[1] : null; 
-
-                if (mobName) {
-                    renderMap(mobName, area);
-                } else {
-                    console.error("Could not parse mobName from uniqueMobId:", uniqueMobId);
+                // 追跡変数を更新
+                openMobNameId = mobId;
+                
+                // マップの描画
+                const mobToRender = Object.values(globalMobConfig).find(m => safeId(m['モンスター名']) === mobId);
+                if (mobToRender) {
+                    renderMap(mobToRender.mobName, area);
                 }
-
-            } else {
-                // 閉じる処理
-                detailElement.style.maxHeight = '0';
-                detailElement.style.opacity = '0';
-                setTimeout(() => {
-                    detailElement.classList.add('hidden');
-                }, 300); 
             }
         }
 
@@ -687,7 +693,7 @@
          * 指定されたモブのPOP地点をマップ上に描画します。
          */
         function renderMap(mobName, area) {
-            // mobNameから安全なIDを生成 (マップコンテナはID衝突が起こりにくいよう mobName のみを使用)
+            // マップコンテナは mobName を元にした ID を使用
             const safeNameId = safeId(mobName);
             const mapContainer = document.getElementById(`map-canvas-${safeNameId}`);
             
@@ -901,9 +907,9 @@
                 // 2. 動的データの取得と描画
                 await fetchDynamicData();
 
-                // 3. 30秒ごとに自動更新ループを設定 (初回起動時のみ)
+                // 修正項目1: 60秒 (60000ms) ごとに自動更新ループを設定
                 if (initial) {
-                    setInterval(fetchDynamicData, 30000); 
+                    setInterval(fetchDynamicData, 60000); 
                 }
                 
             } catch (error) {
