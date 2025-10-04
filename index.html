@@ -161,6 +161,8 @@
             <h1 class="text-5xl font-extrabold mb-2 text-yellow-400">The Hunt</h1>
             <p id="site-description" class="text-gray-300">
                 エオルゼアのモブハント情報をリアルタイムで追跡し、POP地点を共有するためのツールです。（仮説明）
+                <br>
+                <span class="text-sm text-yellow-400">現在、Ifritワールド専用で運用中。</span>
             </p>
             <!-- メンテナンス情報表示エリア -->
             <p id="maintenance-message" class="hidden"></p>
@@ -219,6 +221,9 @@
         let currentFilter = 'ALL';
         let reporterUUID = '';
 
+        // Ifritサーバーのみに設定 (ユーザー要望)
+        const WORLDS = ['Ifrit'];
+
         // リポップ間隔（秒）をランクに応じて設定（mob_data.jsonにない場合のデフォルト値）
         const DEFAULT_INTERVALS = {
             'S': 27000, // 7.5時間
@@ -230,12 +235,6 @@
         const loadingStatus = document.getElementById('loading-status');
         const filterTabsContainer = document.getElementById('filter-tabs');
         const maintenanceMessage = document.getElementById('maintenance-message');
-
-        // エオルゼアのワールドリスト (仮設定)
-        const WORLDS = [
-            'Aegis', 'Atomos', 'Carbuncle', 'Garuda', 'Gungnir', 'Kujata', 'Tonberry', 'Typhon', 
-            'Mandragora', 'Chocobo', 'Moogle', 'Bahamut', 'Durandal', 'Ifrit', 'Ramuh', 'Tiamat'
-        ];
 
 
         // ====================================================================
@@ -290,6 +289,16 @@
             const div = document.createElement('div');
             div.textContent = str;
             return div.innerHTML;
+        }
+
+        /**
+         * HTML IDとして安全な文字列を生成します。
+         * スペースや特殊文字をアンダースコアに変換し、空の場合はUUIDを返します。（ID重複対策）
+         */
+        function safeId(str) {
+            if (!str) return 'id-' + crypto.randomUUID();
+            // スペース、特殊文字、日本語などを除去し、安全な文字のみ残す
+            return String(str).replace(/\s/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
         }
 
 
@@ -435,14 +444,20 @@
          * モブリスト全体をレンダリングします。
          */
         function renderMobList() {
-            // mobConfig (静的データ) を配列に変換
-            const allMobs = Object.keys(globalMobConfig).map(key => globalMobConfig[key]);
+            // mobConfig (静的データ) を配列に変換し、mobNameを確実に設定
+            // mobConfigのキーはモンスター名であると想定し、データオブジェクトにmobNameプロパティがない場合のフォールバックとして使用
+            const allMobs = Object.keys(globalMobConfig).map(key => ({
+                ...globalMobConfig[key],
+                // データのmobNameプロパティ、またはキー、または'不明なモブ'を使用
+                mobName: globalMobConfig[key].mobName || key || '不明なモブ'
+            }));
 
             // フィルター処理
             let filteredMobs = allMobs.filter(mob => {
+                const mobRank = mob.rank || 'N/A';
                 if (currentFilter === 'ALL') return true;
-                if (currentFilter === 'FATE') return mob.rank === 'FATE'; // FATEランクを仮定
-                return mob.rank === currentFilter;
+                if (currentFilter === 'FATE') return mobRank === 'FATE'; // FATEランクを仮定
+                return mobRank === currentFilter;
             });
             
             // 討伐時間とリポップ率の計算、ソート
@@ -462,6 +477,14 @@
          * 個別のモブカードのHTMLを生成します。
          */
         function createMobCard(mob) {
+            const mobName = mob.mobName || '不明なモブ';
+            const safeMobNameId = safeId(mobName); // モンスター名から安全なIDを生成（ID重複対策）
+            
+            if (mobName === '不明なモブ') {
+                console.warn("Skipping card due to missing mob name:", mob);
+                return ''; // モンスター名がない場合はカードをスキップ
+            }
+
             const lastKillTime = mob.lastKillTime;
             const progressPercent = mob.progressPercent;
             const nextPopTime = mob.nextPopTime;
@@ -470,9 +493,9 @@
             const rawMapImageFilename = mob['マップ画像 (ファイル名)'] || '';
             const hasMap = rawMapImageFilename !== '';
             
-            // 🚨 エラー修正箇所: `replace` を呼び出す前に rawMapImageFilename が存在するか確認する
+            // rawMapImageFilename が存在するか確認し、ファイル名対策を行う
             const mapImagePath = rawMapImageFilename
-                ? `./Picture/${rawMapImageFilename.replace(/\s/g, '_')}` // スペースをアンダースコアに置換 (ファイル名対策)
+                ? `./Picture/${rawMapImageFilename.replace(/\s/g, '_')}`
                 : '';
 
             const mapIcon = hasMap ? '🗺️' : '';
@@ -491,7 +514,7 @@
             }
 
             return `
-                <div class="${cardClasses}" onclick="toggleMobDetail('${safeHTML(mob.mobName)}', '${safeHTML(mob.area)}')" data-mob-name="${safeHTML(mob.mobName)}">
+                <div class="${cardClasses}" onclick="toggleMobDetail('${safeHTML(mobName)}', '${safeHTML(mob.area)}')" data-mob-name="${safeHTML(mobName)}">
                     
                     <!-- 1行目と2行目 (ゲージ背景) -->
                     <div class="relative overflow-hidden">
@@ -503,15 +526,15 @@
                             <div class="flex justify-between items-start mb-1">
                                 <!-- モンスター名, エリア名, ランク -->
                                 <div class="flex flex-col">
-                                    <span class="text-xl font-bold text-white text-outline">${safeHTML(mob.mobName)} ${mapIcon}</span>
-                                    <span class="text-sm text-gray-300">${safeHTML(mob.area)}</span>
+                                    <span class="text-xl font-bold text-white text-outline">${safeHTML(mobName)} ${mapIcon}</span>
+                                    <span class="text-sm text-gray-300">${safeHTML(mob.area || 'エリア不明')}</span>
                                 </div>
                                 <!-- ランクと報告ボタン -->
                                 <div class="flex flex-col items-end">
-                                    <span class="px-2 py-1 text-sm font-bold rounded-full ${rankColor} text-white">${safeHTML(mob.rank)}</span>
+                                    <span class="px-2 py-1 text-sm font-bold rounded-full ${rankColor} text-white">${safeHTML(mob.rank || 'N/A')}</span>
                                     <button 
                                         class="mt-1 px-2 py-1 bg-red-700 hover:bg-red-600 text-xs text-white font-bold rounded-full transition duration-150"
-                                        onclick="event.stopPropagation(); openModal('${safeHTML(mob.mobName)}', '${safeHTML(mob.rank)}', '${safeHTML(mob.area)}')"
+                                        onclick="event.stopPropagation(); openModal('${safeHTML(mobName)}', '${safeHTML(mob.rank || 'N/A')}', '${safeHTML(mob.area || 'エリア不明')}')"
                                     >
                                         報告
                                     </button>
@@ -526,7 +549,7 @@
                     </div>
 
                     <!-- 詳細情報 (スライド表示部分) -->
-                    <div id="detail-${safeHTML(mob.mobName).replace(/\s/g, '_')}" class="detail-content slide-up-down hidden bg-gray-700 text-gray-300 p-4 pt-2">
+                    <div id="detail-${safeMobNameId}" class="detail-content slide-up-down hidden bg-gray-700 text-gray-300 p-4 pt-2">
                         <div class="text-xs border-t border-gray-600 pt-2">
                             <!-- 前回の討伐時間 -->
                             <p class="mb-1"><strong>前回討伐:</strong> ${formatTimeToJST(lastKillTime)}</p>
@@ -537,8 +560,8 @@
                             <!-- 座標記録用のMAP -->
                             ${hasMap ? `
                                 <div class="mt-4">
-                                    <h4 class="text-md font-semibold text-white mb-2">POP候補地 (${safeHTML(mob.area)})</h4>
-                                    <div id="map-canvas-${safeHTML(mob.mobName).replace(/\s/g, '_')}" class="map-container rounded-lg overflow-hidden border border-gray-600">
+                                    <h4 class="text-md font-semibold text-white mb-2">POP候補地 (${safeHTML(mob.area || 'エリア不明')})</h4>
+                                    <div id="map-canvas-${safeMobNameId}" class="map-container rounded-lg overflow-hidden border border-gray-600">
                                         <!-- マップと座標点はここに描画されます -->
                                     </div>
                                 </div>
@@ -553,7 +576,7 @@
          * モブの最新の討伐時間からリポップ時間や進捗率を計算します。
          */
         function calculateMobTime(mob) {
-            const mobName = mob.mobName;
+            const mobName = mob.mobName || '不明なモブ';
             const mobRank = mob.rank;
             const defaultInterval = DEFAULT_INTERVALS[mobRank] || 1800; // 30分をデフォルト
 
@@ -599,9 +622,14 @@
          * モブカードの詳細表示をトグルします。
          */
         function toggleMobDetail(mobName, area) {
-            const safeName = mobName.replace(/\s/g, '_');
-            const detailElement = document.getElementById(`detail-${safeName}`);
+            const safeNameId = safeId(mobName);
+            const detailElement = document.getElementById(`detail-${safeNameId}`);
             
+            if (!detailElement) {
+                console.error(`Detail element not found for mob: ${mobName} (ID: detail-${safeNameId})`);
+                return;
+            }
+
             // スライドアニメーション
             if (detailElement.classList.contains('hidden')) {
                 // 開く処理
@@ -633,13 +661,13 @@
          * 指定されたモブのPOP地点をマップ上に描画します。
          */
         function renderMap(mobName, area) {
-            const safeName = mobName.replace(/\s/g, '_');
-            const mapContainer = document.getElementById(`map-canvas-${safeName}`);
+            const safeNameId = safeId(mobName);
+            const mapContainer = document.getElementById(`map-canvas-${safeNameId}`);
             
             if (!mapContainer) return;
 
             // マップ画像を特定
-            const mobConfig = Object.values(globalMobConfig).find(m => m.mobName === mobName);
+            const mobConfig = Object.values(globalMobConfig).find(m => (m.mobName || Object.keys(globalMobConfig).find(k => globalMobConfig[k] === m) || '不明なモブ') === mobName);
             const rawMapImageFilename = mobConfig?.['マップ画像 (ファイル名)'] || '';
             
             if (!rawMapImageFilename) {
@@ -739,6 +767,7 @@
 
             // ワールド選択肢の生成
             const worldSelect = document.getElementById('world-select');
+            // Ifritのみ表示
             worldSelect.innerHTML = WORLDS.map(w => `<option value="${safeHTML(w)}">${safeHTML(w)}</option>`).join('');
 
             document.getElementById('report-modal').classList.remove('hidden');
