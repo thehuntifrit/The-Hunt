@@ -553,15 +553,15 @@
                                     
                                     <!-- 1行目: ランクとモンスター名 -->
                                     <div class="flex items-baseline space-x-2 mb-0.5">
-                                        <!-- ランクバッジ -->
-                                        <span class="px-2 py-1 text-sm font-bold rounded-full ${rankColor} text-white flex-shrink-0">${safeHTML(mob.rank || 'N/A')}</span>
+                                        <!-- ランクバッジ: rounded-lgに変更し、paddingを調整 -->
+                                        <span class="px-2 py-0.5 text-sm font-bold rounded-lg ${rankColor} text-white flex-shrink-0">${safeHTML(mob.rank || 'N/A')}</span>
                                         
                                         <!-- モンスター名 (サイズをtext-lgに縮小) -->
                                         <span class="text-lg font-bold text-white text-outline">${safeHTML(mobName)} ${mapIcon}</span>
                                     </div>
                                     
-                                    <!-- 2行目: エリア名 (FIX: 位置を2.1remに、文字サイズをtext-xsに修正) -->
-                                    <span class="text-xs text-gray-300" style="margin-left: 2.1rem;">${safeHTML(mob.area || 'エリア不明')}</span>
+                                    <!-- 2行目: エリア名 (FIX: 位置を2.2remに、文字サイズをtext-xsに修正) -->
+                                    <span class="text-xs text-gray-300" style="margin-left: 2.2rem;">${safeHTML(mob.area || 'エリア不明')}</span>
                                 </div>
                                 
                                 <!-- 報告ボタン (クリックが詳細トグルに伝播しないよう event.stopPropagation() を使用) -->
