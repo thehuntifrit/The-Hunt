@@ -153,10 +153,11 @@
 
         <!-- タブナビゲーション -->
         <div class="flex justify-center space-x-2 mb-6 p-1 bg-primary-dark rounded-lg shadow-lg">
-            <button class="tab-button px-4 py-2 rounded-md font-medium text-slate-300 transition" data-rank="all">全て</button>
-            <button class="tab-button px-4 py-2 rounded-md font-medium text-slate-300 transition" data-rank="S">Sランク</button>
-            <button class="tab-button px-4 py-2 rounded-md font-medium text-slate-300 transition" data-rank="A">Aランク</button>
-            <button class="tab-button px-4 py-2 rounded-md font-medium text-slate-300 transition" data-rank="FATE">FATE</button>
+            <!-- 初期状態のボタンには非アクティブ時のクラスを設定します -->
+            <button class="tab-button px-4 py-2 rounded-md font-medium text-slate-300 hover:bg-slate-700/50 transition" data-rank="all">全て</button>
+            <button class="tab-button px-4 py-2 rounded-md font-medium text-slate-300 hover:bg-slate-700/50 transition" data-rank="S">Sランク</button>
+            <button class="tab-button px-4 py-2 rounded-md font-medium text-slate-300 hover:bg-slate-700/50 transition" data-rank="A">Aランク</button>
+            <button class="tab-button px-4 py-2 rounded-md font-medium text-slate-300 hover:bg-slate-700/50 transition" data-rank="FATE">FATE</button>
         </div>
 
         <!-- モブリスト -->
@@ -300,11 +301,10 @@
 
         /**
          * モブ設定の「時間条件」文字列を満たしているか判定する（例: "19:00-21:59"）
-         * この関数は現在時刻の判定ではなく、条件の表示に使います。
          */
         function isETConditionMet(conditionString, etHour) {
             // 実際に計算で使う際は、もう少し複雑なロジックが必要です
-            return true; // 現時点では表示ロジックに集中し、ダミーで true を返します
+            return true; 
         }
         
         // --- データ取得ロジック ---
@@ -335,21 +335,31 @@
          */
         async function fetchDynamicData() {
             try {
-                const response = await fetch(GAS_API_URL + '?mode=getdata');
-                if (!response.ok) {
-                    throw new Error(`GAS API fetch failed: ${response.statusText}`);
+                // Exponential Backoff を適用
+                let result = null;
+                for (let i = 0; i < 3; i++) { // 最大3回のリトライ
+                    const response = await fetch(GAS_API_URL + '?mode=getdata');
+                    if (response.ok) {
+                        result = await response.json();
+                        break;
+                    }
+                    if (i < 2) {
+                        await new Promise(resolve => setTimeout(resolve, (2 ** i) * 1000)); // 1s, 2s の待機
+                    } else {
+                        throw new Error(`GAS API fetch failed after multiple retries: ${response.statusText}`);
+                    }
                 }
-                const result = await response.json();
-                
-                if (result.status === 'success') {
+
+                if (result && result.status === 'success') {
                     globalHuntList = result.huntList || [];
                     globalLocationState = result.locationState || [];
                     globalMaintenanceInfo = result.maintenance;
                     return true;
-                } else {
+                } else if (result) {
                     console.error('GAS API Error:', result.message);
                     return false;
                 }
+                return false;
             } catch (error) {
                 console.error('Error fetching dynamic data from GAS:', error);
                 return false;
@@ -374,7 +384,7 @@
                 renderMobList();
                 
                 // 30秒ごとに動的データを更新
-                setTimeout(initApp, 30000); 
+                setTimeout(() => initApp(false), 30000); // 静的データは再取得しない
             } else {
                 // 初回ロード失敗時のみエラー表示
                 if (fetchStatic) {
@@ -430,6 +440,9 @@
                 // マップアイコンの表示判定
                 mob.hasMap = globalLocationDef.some(loc => loc.mobName === mob['モブ名']);
                 
+                // 日本語キーを安全に参照
+                mob.mapFileName = mob['マップ画像 (ファイル名)'];
+
                 return mob;
             });
             
@@ -443,10 +456,14 @@
 
             // 4. HTML生成
             mobListContainer.innerHTML = '';
-            filteredMobs.forEach(mob => {
-                const cardHtml = createMobCard(mob);
-                mobListContainer.insertAdjacentHTML('beforeend', cardHtml);
-            });
+            if (filteredMobs.length === 0) {
+                 mobListContainer.innerHTML = '<div class="text-center p-4 text-slate-400">該当するモブがいません。</div>';
+            } else {
+                filteredMobs.forEach(mob => {
+                    const cardHtml = createMobCard(mob);
+                    mobListContainer.insertAdjacentHTML('beforeend', cardHtml);
+                });
+            }
             
             // 5. イベントリスナーの再設定
             setupEventListeners();
@@ -548,14 +565,17 @@
             const mob = globalMobConfig.find(m => m['モブ名'] === mobName);
             const mapContainer = document.getElementById(`map-area-${mobName.replace(/\s/g, '-')}`);
             
-            if (!mob || !mob['マップ画像 (ファイル名)']) {
+            // 日本語キーを安全に参照
+            const mapFileName = mob ? mob['マップ画像 (ファイル名)'] : null;
+
+            if (!mob || !mapFileName) {
                 mapContainer.innerHTML = '<p class="text-slate-500 text-center py-4">マップ画像が設定されていません。</p>';
                 mapContainer.classList.remove('hidden');
                 return;
             }
 
             // マップ画像パスは 'Picture' フォルダを使用
-            const imagePath = `./Picture/${mob['マップ画像 (ファイル名)']}`;
+            const imagePath = `./Picture/${mapFileName}`;
 
             // マップの定義済み座標を取得
             const definedLocations = globalLocationDef.filter(loc => loc.mobName === mobName);
@@ -605,17 +625,13 @@
             const locationId = point.getAttribute('data-location-id');
             const isChecked = point.getAttribute('data-checked') === 'true';
 
-            // 既にチェック済みの場合は、チェックを解除する機能も実装可能だが、
-            // 今回は「POPしなかった場所を除外」という要件なので、チェック済みのみを送信
             if (isChecked) {
-                // すでにチェック済みなら何もしないか、ユーザーに通知
-                console.log(`Location ${locationId} for ${mobName} is already checked.`);
+                console.log(`Location ${locationId} for ${mobName} is already checked. Skipping submission.`);
                 return;
             }
-
-            if (!confirm(`${mobName}の座標 ${locationId} を「POPしなかった場所」として記録しますか？\n（この場所は候補から除外されます）`)) {
-                return;
-            }
+            
+            // カスタムモーダル UI を使用する代わりに、今回はコンソールにメッセージを出力して処理を続行します
+            console.log(`${mobName}の座標 ${locationId} を「POPしなかった場所」として記録を試みます。`);
 
             // GASへチェックインデータを送信
             sendLocationState({
@@ -633,24 +649,37 @@
         async function sendDataToGas(data, type) {
             const url = GAS_API_URL + '?mode=post&type=' + type;
             try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
+                // Exponential Backoff を適用
+                let result = null;
+                for (let i = 0; i < 3; i++) {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (response.ok) {
+                        result = await response.json();
+                        break;
+                    }
+                    if (i < 2) {
+                        await new Promise(resolve => setTimeout(resolve, (2 ** i) * 1000));
+                    } else {
+                         throw new Error(`GAS API post failed after multiple retries: ${response.statusText}`);
+                    }
+                }
                 
-                const result = await response.json();
-                
-                if (result.status === 'success') {
+                if (result && result.status === 'success') {
                     console.log(`${type} report success.`);
                     // 成功したらデータを再取得してリストを更新
                     await fetchDynamicData();
                     renderMobList();
                     return true;
-                } else {
+                } else if (result) {
                     console.error(`${type} report failed:`, result.message);
                     return false;
                 }
+                return false;
             } catch (error) {
                 console.error(`Error sending ${type} data to GAS:`, error);
                 return false;
@@ -699,6 +728,24 @@
             return success;
         }
 
+        /**
+         * タブボタンのCSSクラスを切り替える
+         * @param {HTMLElement} button - 対象のボタン要素
+         * @param {boolean} isActive - アクティブ状態かどうか
+         */
+        function toggleActiveClass(button, isActive) {
+            const activeClasses = ['bg-accent-green', 'text-primary-dark', 'shadow-inner'];
+            const inactiveClasses = ['text-slate-300', 'hover:bg-slate-700/50'];
+
+            if (isActive) {
+                button.classList.add(...activeClasses);
+                button.classList.remove(...inactiveClasses);
+            } else {
+                button.classList.remove(...activeClasses);
+                button.classList.add(...inactiveClasses);
+            }
+        }
+
         // --- イベントハンドラ設定 ---
         function setupEventListeners() {
             // 1. カードクリック時の詳細表示/非表示
@@ -712,7 +759,7 @@
                 mapArea.classList.add('hidden');
 
                 card.addEventListener('click', function(e) {
-                    // 報告ボタンやマップアイコンがクリックされた場合は処理をスキップ
+                    // 報告ボタンやマップアイコン、POP地点がクリックされた場合は処理をスキップ
                     if (e.target.closest('.report-btn') || e.target.closest('.map-icon') || e.target.closest('.pop-point')) {
                         return;
                     }
@@ -728,7 +775,10 @@
                         renderMap(mobName);
                         
                         // 最大高さを計算して展開 (scrollHeightを使う)
-                        detailContent.style.maxHeight = detailContent.scrollHeight + "px";
+                        // マップが展開される前に計算すると高さが足りなくなるため、少し遅延させるか、scrollHeightを正しく取得する必要があります。
+                        // 今回は mapArea の height (500px) + padding/margin を概算して多めに設定します
+                        const requiredHeight = detailContent.scrollHeight + 550; // スクロールハイト + マップの最大高さ
+                        detailContent.style.maxHeight = requiredHeight + "px";
                         detailContent.classList.add('is-expanded');
                     }
                 });
@@ -758,17 +808,22 @@
 
             // 3. フィルターボタン
             document.querySelectorAll('.tab-button').forEach(btn => {
-                // 初期アクティブ状態の設定
-                if (btn.getAttribute('data-rank') === currentFilter) {
-                    btn.classList.add('bg-slate-600');
-                } else {
-                    btn.classList.remove('bg-slate-600');
-                }
+                const rank = btn.getAttribute('data-rank');
+
+                // 初期状態・更新後のアクティブ状態の設定
+                toggleActiveClass(btn, rank === currentFilter);
 
                 btn.onclick = function() {
-                    currentFilter = btn.getAttribute('data-rank');
-                    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('bg-slate-600'));
-                    btn.classList.add('bg-slate-600');
+                    if (rank === currentFilter) return; // すでに選択されている場合は何もしない
+                    
+                    currentFilter = rank;
+                    
+                    // 全ボタンのアクティブ状態を更新
+                    document.querySelectorAll('.tab-button').forEach(b => {
+                        toggleActiveClass(b, b === btn);
+                    });
+                    
+                    // モブリストを再描画
                     renderMobList();
                 };
             });
