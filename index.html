@@ -160,7 +160,7 @@
         <header class="text-center mb-8">
             <h1 class="text-5xl font-extrabold mb-2 text-yellow-400">The Hunt</h1>
             <p id="site-description" class="text-gray-300">
-                エオルゼアのモブハント情報をリアルタイムで追跡し、POP地点を共有するためのツールです。（仮説明）
+                エオルゼアのモブハント情報をリアルタイムで追跡し、POP地点を共有するためのツールです。
                 <br>
                 <span class="text-sm text-yellow-400">現在、Ifritワールド専用で運用中。</span>
             </p>
@@ -184,32 +184,35 @@
         </div>
     </div>
 
-    <!-- 討伐報告モーダル -->
+    <!-- 討伐報告モーダル (日時入力) -->
     <div id="report-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-50">
         <div class="bg-gray-800 p-6 rounded-xl w-11/12 max-w-sm">
             <h2 id="modal-title" class="text-2xl font-bold mb-4 text-white">討伐報告</h2>
-            <p class="text-gray-300 mb-4">モブを討伐したワールドを選択してください。</p>
+            <p class="text-gray-300 mb-4">討伐日時を正確に入力してください。デフォルトで現在のJSTが設定されています。</p>
             
             <input type="hidden" id="report-mob-name">
             <input type="hidden" id="report-mob-rank">
             <input type="hidden" id="report-mob-area">
 
-            <label for="world-select" class="block text-sm font-medium text-gray-400 mb-1">討伐ワールド</label>
-            <select id="world-select" class="w-full p-2 mb-4 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-green-500 focus:border-green-500">
-                <!-- ワールドリストはJavaScriptで設定されます -->
-            </select>
+            <!-- 日時入力フィールド -->
+            <label for="kill-time-input" class="block text-sm font-medium text-gray-400 mb-1">討伐日時 (JST)</label>
+            <input type="datetime-local" id="kill-time-input" 
+                   class="w-full p-2 mb-4 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-green-500 focus:border-green-500">
+
+            <!-- 報告者UUID表示 -->
+            <div id="reporter-uuid-display" class="text-xs text-right text-gray-500 mb-4"></div>
 
             <div id="report-status" class="text-center text-sm mb-4"></div>
 
             <div class="flex justify-end space-x-3">
                 <button onclick="closeModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white font-semibold rounded-lg transition duration-150">キャンセル</button>
-                <button onclick="submitKillReport()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition duration-150">報告</button>
+                <button onclick="submitKillReport()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition duration-150">報告確定</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 🚨 設定項目: GAS API URL (必ずデプロイ後に書き換えてください)
+        // 🚨 設定項目: GAS API URL (ユーザー指定のURLに更新)
         const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxyutpOIZYI9Ce51s4vawk6S460QgM4wYcaLFJKUBi00_LKhNXT9-6N0n178KdoXkP7wg/exec'; 
         const STATIC_DATA_URL = './mob_data.json'; 
 
@@ -270,6 +273,30 @@
                 second: '2-digit'
             });
         }
+        
+        /**
+         * Dateオブジェクトを <input type="datetime-local"> 形式 (YYYY-MM-DDThh:mm) に変換します。
+         * JSTとして処理します。
+         */
+        function dateToDateTimeLocal(date) {
+            // ローカルタイムゾーンで処理するためにJST（+9時間）のオフセットを考慮
+            const offset = date.getTimezoneOffset() * 60000;
+            const jstOffset = 9 * 60 * 60000;
+            
+            // JSTのDateオブジェクトを作成
+            const jstDate = new Date(date.getTime() + offset + jstOffset);
+
+            const pad = (num) => num.toString().padStart(2, '0');
+            
+            const year = jstDate.getFullYear();
+            const month = pad(jstDate.getMonth() + 1);
+            const day = pad(jstDate.getDate());
+            const hours = pad(jstDate.getHours());
+            const minutes = pad(jstDate.getMinutes());
+            
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
 
         /**
          * 秒を H:M:S 形式に変換します。
@@ -293,7 +320,6 @@
 
         /**
          * HTML IDとして安全な文字列を生成します。
-         * スペースや特殊文字をアンダースコアに変換し、空の場合はUUIDを返します。（ID重複対策）
          */
         function safeId(str) {
             if (!str) return 'id-' + crypto.randomUUID();
@@ -320,7 +346,7 @@
                 // global変数を更新
                 globalMobConfig = data.mobConfig || {};
                 globalLocationDef = data.locationDef || {};
-
+                
                 loadingStatus.textContent = '静的データを正常に読み込みました。リアルタイムデータを取得中です...';
                 
                 // タブの生成
@@ -342,12 +368,6 @@
          * Google Apps Script (GAS) API から動的なデータ (ログ、状態) を取得します。
          */
         async function fetchDynamicData() {
-            if (GAS_API_URL === 'YOUR_GAS_WEB_APP_URL') {
-                console.error("🚨 GAS_API_URLが設定されていません!");
-                loadingStatus.innerHTML = '<div class="text-red-400">🚨 GAS API URLが設定されていません。index.htmlのコードを修正してください。</div>';
-                return;
-            }
-
             // ログの表示
             console.log(`[Fetch] Fetching dynamic data from: ${GAS_API_URL}?mode=getdata`);
 
@@ -357,7 +377,6 @@
                     cache: 'no-cache' // キャッシュを無効化して最新データを取得
                 });
 
-                // GASからのレスポンスは常に200 OKとして返されるため、ステータスチェックは不要だが、念のため
                 if (!response.ok) {
                     throw new Error(`GAS API HTTP Error: ${response.status} ${response.statusText}`);
                 }
@@ -396,7 +415,6 @@
             maintenanceMessage.classList.add('hidden');
             
             if (message && message.toLowerCase().includes('maintenance')) {
-                // 簡易的なチェック。実際は正確な日付パースロジックが必要だが、ここではテキストが存在する場合に表示
                 maintenanceMessage.textContent = '🚨 サーバーメンテナンス情報: ' + message;
                 maintenanceMessage.classList.remove('hidden');
             }
@@ -444,19 +462,26 @@
          * モブリスト全体をレンダリングします。
          */
         function renderMobList() {
-            // mobConfig (静的データ) を配列に変換し、mobNameを確実に設定
-            // mobConfigのキーはモンスター名であると想定し、データオブジェクトにmobNameプロパティがない場合のフォールバックとして使用
-            const allMobs = Object.keys(globalMobConfig).map(key => ({
-                ...globalMobConfig[key],
-                // データのmobNameプロパティ、またはキー、または'不明なモブ'を使用
-                mobName: globalMobConfig[key].mobName || key || '不明なモブ'
-            }));
+            // mobConfig (静的データ) を配列に変換し、日本語キーから英語キーにマッピング
+            const allMobs = Object.keys(globalMobConfig).map(key => {
+                const mob = globalMobConfig[key];
+                return {
+                    ...mob,
+                    // mob_data.jsonの日本語キーから必要な情報を抽出
+                    mobName: mob['モンスター名'] || key || '不明なモブ',
+                    rank: mob['ランク'] || 'N/A',
+                    area: mob['エリア名'] || 'エリア不明',
+                    popCondition: mob['POP条件'] || 'なし',
+                    interval: mob['リポップ間隔 (秒)'],
+                    mapFilename: mob['マップ画像 (ファイル名)']
+                };
+            });
 
             // フィルター処理
             let filteredMobs = allMobs.filter(mob => {
                 const mobRank = mob.rank || 'N/A';
                 if (currentFilter === 'ALL') return true;
-                if (currentFilter === 'FATE') return mobRank === 'FATE'; // FATEランクを仮定
+                if (currentFilter === 'FATE') return mobRank === 'FATE'; 
                 return mobRank === currentFilter;
             });
             
@@ -477,23 +502,22 @@
          * 個別のモブカードのHTMLを生成します。
          */
         function createMobCard(mob) {
-            const mobName = mob.mobName || '不明なモブ';
-            const safeMobNameId = safeId(mobName); // モンスター名から安全なIDを生成（ID重複対策）
+            // mobName, rank, area, mapFilename は renderMobListでマッピング済み
+            const mobName = mob.mobName;
+            const safeMobNameId = safeId(mobName); 
             
             if (mobName === '不明なモブ') {
                 console.warn("Skipping card due to missing mob name:", mob);
-                return ''; // モンスター名がない場合はカードをスキップ
+                return ''; 
             }
 
             const lastKillTime = mob.lastKillTime;
             const progressPercent = mob.progressPercent;
             const nextPopTime = mob.nextPopTime;
 
-            // マップアイコンとパスの設定
-            const rawMapImageFilename = mob['マップ画像 (ファイル名)'] || '';
+            const rawMapImageFilename = mob.mapFilename || '';
             const hasMap = rawMapImageFilename !== '';
             
-            // rawMapImageFilename が存在するか確認し、ファイル名対策を行う
             const mapImagePath = rawMapImageFilename
                 ? `./Picture/${rawMapImageFilename.replace(/\s/g, '_')}`
                 : '';
@@ -503,7 +527,7 @@
             const cardClasses = `mob-card p-0 transition duration-300`;
             const progressColor = progressPercent > 90 ? 'bg-red-500' : '#68d391'; /* 90%以上は赤 */
 
-            // ランク別カラー設定 (青背景白文字)
+            // ランク別カラー設定
             let rankColor = '';
             if (mob.rank === 'S') {
                 rankColor = 'bg-blue-600';
@@ -576,9 +600,12 @@
          * モブの最新の討伐時間からリポップ時間や進捗率を計算します。
          */
         function calculateMobTime(mob) {
-            const mobName = mob.mobName || '不明なモブ';
+            const mobName = mob.mobName;
             const mobRank = mob.rank;
+            
+            // 修正: mob.interval (リポップ間隔 (秒)) を使用
             const defaultInterval = DEFAULT_INTERVALS[mobRank] || 1800; // 30分をデフォルト
+            const intervalSeconds = mob.interval || defaultInterval;
 
             // 1. 最新の討伐ログを検索
             const latestKill = globalHuntList
@@ -592,7 +619,6 @@
 
             if (latestKill) {
                 lastKillTime = new Date(latestKill.killTime).getTime();
-                const intervalSeconds = mob['リポップ間隔 (秒)'] || defaultInterval;
                 const now = Date.now();
                 
                 timeSinceKill = Math.floor((now - lastKillTime) / 1000);
@@ -633,7 +659,16 @@
             // スライドアニメーション
             if (detailElement.classList.contains('hidden')) {
                 // 開く処理
-                // 一旦hiddenを外し、max-heightとopacityをリセットしてアニメーションを有効にする
+                // すべての開いている詳細を閉じる (UX向上のため)
+                document.querySelectorAll('.detail-content').forEach(el => {
+                    if (el !== detailElement) {
+                        el.style.maxHeight = '0';
+                        el.style.opacity = '0';
+                        setTimeout(() => el.classList.add('hidden'), 300);
+                    }
+                });
+
+                // 開く
                 detailElement.classList.remove('hidden');
                 setTimeout(() => {
                     detailElement.style.maxHeight = '1000px'; 
@@ -666,8 +701,8 @@
             
             if (!mapContainer) return;
 
-            // マップ画像を特定
-            const mobConfig = Object.values(globalMobConfig).find(m => (m.mobName || Object.keys(globalMobConfig).find(k => globalMobConfig[k] === m) || '不明なモブ') === mobName);
+            // マップ画像を特定 (mobNameはrenderMobListで既に抽出済み)
+            const mobConfig = Object.values(globalMobConfig).find(m => m['モンスター名'] === mobName);
             const rawMapImageFilename = mobConfig?.['マップ画像 (ファイル名)'] || '';
             
             if (!rawMapImageFilename) {
@@ -702,7 +737,6 @@
                 point.title = `座標ID: ${loc.locationId} (${isChecked ? 'チェック済み' : '候補'})`;
                 
                 // マップサイズ500x500を基準にパーセンテージで位置を計算
-                // X, Yがシートに数値として格納されていることを前提
                 const xPercent = (loc.coordX / 500) * 100;
                 const yPercent = (loc.coordY / 500) * 100;
 
@@ -728,7 +762,6 @@
          */
         async function handlePopPointClick(mobName, locationId, pointElement) {
             if (pointElement.classList.contains('pop-checked')) {
-                // すでにチェック済みの場合は何もしない（削除機能は複雑なので一旦除外）
                 console.log(`Location ${locationId} already checked for ${mobName}`);
                 return;
             }
@@ -763,12 +796,15 @@
             document.getElementById('report-mob-rank').value = mobRank;
             document.getElementById('report-mob-area').value = mobArea;
             document.getElementById('report-status').textContent = '';
-            document.getElementById('world-select').value = WORLDS[0]; // デフォルト値を設定
+            
+            // 1. 現在のJST時刻を datetime-local フォーマットで取得し、デフォルト値に設定
+            const now = new Date();
+            const nowJST = dateToDateTimeLocal(now);
+            document.getElementById('kill-time-input').value = nowJST;
 
-            // ワールド選択肢の生成
-            const worldSelect = document.getElementById('world-select');
-            // Ifritのみ表示
-            worldSelect.innerHTML = WORLDS.map(w => `<option value="${safeHTML(w)}">${safeHTML(w)}</option>`).join('');
+            // 2. 報告者UUIDをマスクして表示
+            const maskedUUID = reporterUUID.substring(0, 5) + '*****';
+            document.getElementById('reporter-uuid-display').textContent = `報告者ID: ${maskedUUID}`;
 
             document.getElementById('report-modal').classList.remove('hidden');
         }
@@ -787,15 +823,29 @@
             const mobName = document.getElementById('report-mob-name').value;
             const mobRank = document.getElementById('report-mob-rank').value;
             const mobArea = document.getElementById('report-mob-area').value;
-            const world = document.getElementById('world-select').value;
+            const killTimeLocal = document.getElementById('kill-time-input').value; // YYYY-MM-DDThh:mm (Local Time)
             const statusElement = document.getElementById('report-status');
+
+            if (!killTimeLocal) {
+                // UIメッセージボックスを使用（alert()の代替）
+                loadingStatus.textContent = '🚨 討伐日時を選択してください。';
+                loadingStatus.classList.remove('hidden');
+                setTimeout(() => loadingStatus.classList.add('hidden'), 3000);
+                return;
+            }
+
+            // datetime-local の値をISO 8601形式の文字列に変換
+            const selectedDate = new Date(killTimeLocal);
+            // GAS側でこのISO文字列をJSTとして処理してもらう
+            const killTimeISO = selectedDate.toISOString(); 
 
             const payload = {
                 type: 'kill',
                 mobName: mobName,
                 mobRank: mobRank,
                 area: mobArea,
-                world: world,
+                world: 'Ifrit', // Ifritサーバー固定
+                killTime: killTimeISO, 
                 reporterId: reporterUUID,
             };
             
@@ -804,7 +854,6 @@
             const result = await sendPostRequest(payload, `${mobName} の討伐を報告中...`);
             
             if (result && result.status === 'success') {
-                // 討伐報告が成功したら、動的データを再取得してタイマーをリセット
                 fetchDynamicData();
                 loadingStatus.textContent = `${mobName} の討伐が記録されました。`;
                 loadingStatus.classList.remove('hidden');
@@ -812,7 +861,8 @@
                     loadingStatus.classList.add('hidden');
                 }, 3000);
             } else {
-                alert('討伐報告に失敗しました。GASのログを確認してください。');
+                loadingStatus.textContent = `🚨 討伐報告に失敗しました。詳細: ${result.message || '不明なエラー'}`;
+                loadingStatus.classList.remove('hidden');
             }
         }
         
