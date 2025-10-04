@@ -154,30 +154,37 @@
     </style>
 </head>
 <body>
+    
+    <!-- FIXED HEADER START: タイトル、説明、タブを固定 -->
+    <div id="fixed-header" class="fixed top-0 left-0 right-0 z-20 bg-[#1a202c] shadow-2xl pb-4">
+        <div class="container">
+            <!-- サイトタイトルと説明 -->
+            <header class="text-center pt-8 mb-4">
+                <h1 class="text-5xl font-extrabold mb-2 text-yellow-400">The Hunt</h1>
+                <p id="site-description" class="text-gray-300">
+                    エオルゼアのモブハント情報をリアルタイムで追跡し、POP地点を共有するためのツールです。
+                    <br>
+                    <span class="text-sm text-yellow-400">現在、Ifritワールド専用で運用中。</span>
+                </p>
+                <!-- メンテナンス情報表示エリア -->
+                <p id="maintenance-message" class="hidden"></p>
+            </header>
+            
+            <!-- 読み込み中/エラーメッセージ -->
+            <div id="loading-status" class="text-center text-xl p-2 rounded-lg bg-yellow-900/50 mx-4">
+                データを読み込み中です...
+            </div>
 
-    <div class="container py-8">
-        <!-- サイトタイトルと説明 -->
-        <header class="text-center mb-8">
-            <h1 class="text-5xl font-extrabold mb-2 text-yellow-400">The Hunt</h1>
-            <p id="site-description" class="text-gray-300">
-                エオルゼアのモブハント情報をリアルタイムで追跡し、POP地点を共有するためのツールです。
-                <br>
-                <span class="text-sm text-yellow-400">現在、Ifritワールド専用で運用中。</span>
-            </p>
-            <!-- メンテナンス情報表示エリア -->
-            <p id="maintenance-message" class="hidden"></p>
-        </header>
-        
-        <!-- タブフィルター -->
-        <div id="filter-tabs" class="flex justify-center space-x-2 mb-6 p-1 bg-gray-700 rounded-lg">
-            <!-- タブはJavaScriptで生成されます -->
+            <!-- タブフィルター (FIX: grid-cols-4でサイズ統一) -->
+            <div id="filter-tabs" class="grid grid-cols-4 gap-2 mt-4 mx-4 p-1 bg-gray-700 rounded-lg">
+                <!-- タブはJavaScriptで生成されます -->
+            </div>
         </div>
+    </div>
+    <!-- FIXED HEADER END -->
 
-        <!-- 読み込み中/エラーメッセージ -->
-        <div id="loading-status" class="text-center text-xl p-4 rounded-lg bg-yellow-900/50">
-            データを読み込み中です...
-        </div>
-
+    <!-- コンテンツ本体 (ヘッダーの高さ分、上部にパディングを確保) -->
+    <div class="container pt-[250px] lg:pt-[220px]">
         <!-- モブ一覧コンテナ -->
         <div id="mob-list-container" class="mob-grid">
             <!-- モブカードはJavaScriptでここに挿入されます -->
@@ -410,7 +417,7 @@
             filterTabsContainer.innerHTML = ranks.map(rank => `
                 <button 
                     onclick="setFilter('${rank}')" 
-                    class="tab-button px-4 py-2 text-sm font-semibold rounded-lg bg-gray-600 hover:bg-gray-500 text-white transition duration-150 ${rank === currentFilter ? 'tab-active' : ''}"
+                    class="tab-button w-full px-4 py-2 text-sm font-semibold rounded-lg bg-gray-600 hover:bg-gray-500 text-white transition duration-150 ${rank === currentFilter ? 'tab-active' : ''}"
                     data-filter="${rank}"
                 >
                     ${rank}
