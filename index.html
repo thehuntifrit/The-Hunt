@@ -296,14 +296,10 @@
 
         /**
          * テンプレートリテラル内のXSS対策
-         * POP条件内の改行用区切り文字を<br>に変換する処理もここで実装
          */
         function safeHTML(str) {
             const div = document.createElement('div');
             div.textContent = str;
-            // <br>タグへの変換は、この関数外で.replace()を使って実施することで、
-            // POP条件以外のテキストへの影響を避けつつ、安全に改行を適用できます。
-            // ここでは基本的なXSS対策のみを行う
             return div.innerHTML;
         }
 
@@ -523,7 +519,7 @@
             const cardClasses = `mob-card p-0 transition duration-300`;
             const progressColor = progressPercent > 90 ? 'bg-red-500' : '#68d391'; /* 90%以上は赤 */
 
-            // ランク別カラー設定 (修正適用)
+            // ランク別カラー設定
             let rankColor = 'bg-gray-600'; // デフォルト
             const mobRank = mob.rank || 'N/A';
 
@@ -532,11 +528,10 @@
             } else if (mobRank === 'A') {
                 rankColor = 'bg-green-600'; // A: 緑
             } else if (mobRank === 'FATE' || mobRank === 'F') {
-                rankColor = 'bg-blue-400'; // FATE: 青色に変更
+                rankColor = 'bg-blue-400'; // FATE: 青
             } 
             
-            // 🚨 修正点: POP条件の改行処理 (「//」を<br>に変換して表示)
-            // mob.popConditionのテキストを safeHTMLでエスケープした後、正規表現で「//」を<br>に置換
+            // POP条件の改行処理 (「//」を<br>に変換して表示)
             const formattedPopCondition = safeHTML(mob.popCondition || 'なし').replace(/\/\//g, '<br>');
 
 
@@ -565,9 +560,8 @@
                                         <span class="text-lg font-bold text-white text-outline">${safeHTML(mobName)} ${mapIcon}</span>
                                     </div>
                                     
-                                    <!-- 2行目: エリア名 (左揃えで独立して表示) -->
-                                    <!-- スペースの幅を調整し、ランクバッジの左端に揃える -->
-                                    <span class="text-sm text-gray-300">${safeHTML(mob.area || 'エリア不明')}</span>
+                                    <!-- 2行目: エリア名 (NEW FIX: モンスター名の開始位置に正確に揃えるためにml-10を使用) -->
+                                    <span class="text-sm text-gray-300 ml-10">${safeHTML(mob.area || 'エリア不明')}</span>
                                 </div>
                                 
                                 <!-- 報告ボタン (クリックが詳細トグルに伝播しないよう event.stopPropagation() を使用) -->
