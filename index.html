@@ -54,13 +54,12 @@
         .mob-card {
             background-color: #2d3748; /* カード背景色 (濃いグレー) */
             border-radius: 0.5rem;
-            /* FIX: インライン展開に戻し、詳細パネルがカードの外に漏れないようにoverflow: hiddenを再適用 */
-            overflow: hidden; 
+            /* FIX: オーバーレイをカードの境界外に表示させるため、overflow: hiddenを削除 */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: box-shadow 0.2s, transform 0.2s;
             cursor: pointer;
             position: relative; 
-            z-index: 10; 
+            z-index: 10; /* デフォルトのz-index */
         }
 
         .mob-card:hover {
@@ -141,21 +140,33 @@
             text-align: center;
         }
 
-        /* FIX: インライン展開に戻し、正確な高さ計測で滑らかにスライド */
-        .detail-content {
-            /* スムーズなアニメーション */
-            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-                        opacity 0.4s ease-in-out, 
-                        padding-top 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-                        padding-bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        /* 詳細情報 (オーバーレイ表示部分) */
+        .detail-overlay {
+            position: absolute; /* 親要素 (.mob-card) を基準に配置 */
+            top: 0;
+            left: 0;
+            width: 100%;
+            min-height: 100%; /* カード全体を覆う */
+            background-color: #2d3748; /* カード背景色 (濃いグレー) */
+            border-radius: 0.5rem;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* 強いシャドウで浮いている感を出す */
+            
+            /* 展開アニメーション */
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; 
             
             /* 非表示状態 */
             opacity: 0;
-            max-height: 0;
-            padding-top: 0;
-            padding-bottom: 0;
-            overflow: hidden;
-            display: none; 
+            transform: scale(0.95); /* スケールアニメーションを追加 */
+            visibility: hidden; 
+            pointer-events: none; /* クリックイベントを無効にする */
+            z-index: 50; /* 常に最前面 */
+        }
+
+        .detail-overlay.is-open {
+            opacity: 1;
+            transform: scale(1);
+            visibility: visible;
+            pointer-events: auto;
         }
     </style>
 </head>
@@ -239,7 +250,7 @@
         let reporterUUID = '';
         
         // 現在開いている詳細パネルのIDを追跡するための変数
-        let openMobNameId = null; // FIX: モブIDを正しく追跡する
+        let openMobNameId = null; 
 
         // リポップ間隔（秒）をランクに応じて設定
         const DEFAULT_INTERVALS = {
@@ -490,22 +501,16 @@
 
             // 詳細表示の状態を保持 (再レンダリング時に開いていたパネルを復元)
             if (openMobNameId) {
-                const mobToRender = filteredMobs.find(m => safeId(m.mobName) === openMobNameId);
                 const detailElement = document.getElementById(`detail-${openMobNameId}`);
-                
-                if (detailElement) {
-                    // FIX: 再レンダリング時は即座にコンテンツ高さを計算して展開する
-                    detailElement.style.display = 'block';
-                    
-                    // 正しい高さを計測
-                    const scrollHeight = detailElement.scrollHeight;
+                const cardElement = detailElement ? detailElement.parentElement : null;
 
-                    detailElement.style.maxHeight = `${scrollHeight + 24}px`; // 縦パディング分を考慮して調整
-                    detailElement.style.opacity = '1';
-                    detailElement.style.paddingTop = '0.5rem'; 
-                    detailElement.style.paddingBottom = '1rem'; 
+                if (detailElement && cardElement) {
+                    // オーバーレイのクラスを即座に追加して表示を復元
+                    detailElement.classList.add('is-open');
+                    cardElement.style.zIndex = '60'; // 開いたカードのZ-indexを高くする
                     
                     // マップ再描画
+                    const mobToRender = filteredMobs.find(m => safeId(m.mobName) === openMobNameId);
                     if (mobToRender) {
                         renderMap(mobToRender.mobName, mobToRender.area);
                     }
@@ -558,15 +563,15 @@
 
 
             return `
-                <div class="${cardClasses}" onclick="toggleMobDetail('${safeMobNameId}', '${safeHTML(mob.area)}')" data-mob-name="${safeHTML(mobName)}">
+                <div class="${cardClasses}" data-mob-name="${safeHTML(mobName)}" id="card-${safeMobNameId}">
                     
                     <!-- 1行目と2行目 (ゲージ背景) -->
                     <div class="relative overflow-hidden z-10">
                         <!-- 経過時間ゲージ -->
                         <div class="progress-bar absolute top-0 left-0 h-full z-0" style="width: ${progressPercent}%; background-color: ${progressColor};"></div>
                         
-                        <!-- コンテンツレイヤー -->
-                        <div class="relative z-10 p-4">
+                        <!-- コンテンツレイヤー (クリック可能部分) -->
+                        <div class="relative z-10 p-4" onclick="toggleMobDetail('${safeMobNameId}', '${safeHTML(mob.area)}')">
                             <div class="flex justify-between items-start mb-1">
                                 
                                 <!-- モンスター名とランク、エリア名の表示エリア -->
@@ -601,24 +606,36 @@
                         </div>
                     </div>
 
-                    <!-- 詳細情報 (スライド表示部分) - インラインで展開し、コンテンツを下に押し出します -->
-                    <div id="detail-${safeMobNameId}" class="detail-content bg-gray-700 text-gray-300 px-4">
-                        <div class="text-xs border-t border-gray-600 pt-2">
-                            <!-- 前回の討伐時間 -->
-                            <p class="mb-1"><strong>前回討伐:</strong> ${formatTimeToJST(lastKillTime)}</p>
-                            
-                            <!-- POPさせる条件の説明 (formattedPopConditionを使用) -->
-                            <p class="mb-2"><strong>POP条件:</strong> ${formattedPopCondition}</p>
-                            
-                            <!-- 座標記録用のMAP -->
-                            ${hasMap ? `
-                                <div class="mt-4">
-                                    <h4 class="text-md font-semibold text-white mb-2">POP候補地 (${safeHTML(mob.area || 'エリア不明')})</h4>
-                                    <div id="map-canvas-${safeMobNameId}" class="map-container rounded-lg overflow-hidden border border-gray-600">
-                                        <!-- マップと座標点はここに描画されます -->
+                    <!-- 詳細情報 (オーバーレイ表示部分) -->
+                    <div id="detail-${safeMobNameId}" class="detail-overlay text-gray-300 p-4">
+                        
+                        <!-- オーバーレイ内の閉じるボタン -->
+                        <button 
+                            class="absolute top-3 right-3 p-1.5 rounded-full bg-red-600 hover:bg-red-500 text-white text-lg leading-none font-bold shadow-lg transition duration-150"
+                            onclick="event.stopPropagation(); toggleMobDetail('${safeMobNameId}', '${safeHTML(mob.area)}')"
+                            title="閉じる"
+                        >
+                            &times;
+                        </button>
+
+                        <div class="pt-2"> 
+                            <div class="text-xs">
+                                <!-- 前回の討伐時間 -->
+                                <p class="mb-1"><strong>前回討伐:</strong> ${formatTimeToJST(lastKillTime)}</p>
+                                
+                                <!-- POPさせる条件の説明 (formattedPopConditionを使用) -->
+                                <p class="mb-2"><strong>POP条件:</strong> ${formattedPopCondition}</p>
+                                
+                                <!-- 座標記録用のMAP -->
+                                ${hasMap ? `
+                                    <div class="mt-4">
+                                        <h4 class="text-md font-semibold text-white mb-2">POP候補地 (${safeHTML(mob.area || 'エリア不明')})</h4>
+                                        <div id="map-canvas-${safeMobNameId}" class="map-container rounded-lg overflow-hidden border border-gray-600">
+                                            <!-- マップと座標点はここに描画されます -->
+                                        </div>
                                     </div>
-                                </div>
-                            ` : `<p class="mt-4">このモブのマップ座標データはありません。</p>`}
+                                ` : `<p class="mt-4">このモブのマップ座標データはありません。</p>`}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -677,67 +694,41 @@
          */
         function toggleMobDetail(mobId, area) {
             const detailElement = document.getElementById(`detail-${mobId}`);
-            if (!detailElement) {
-                console.error(`Detail element not found for ID: ${mobId}`);
+            // 親要素は mob-card (card-${mobId})
+            const cardElement = document.getElementById(`card-${mobId}`); 
+            
+            if (!detailElement || !cardElement) {
+                console.error(`Detail element or parent card not found for ID: ${mobId}`);
                 return;
             }
 
-            const ANIMATION_DURATION_MS = 400; 
-            const OPEN_PADDING_TOP = '0.5rem';
-            const OPEN_PADDING_BOTTOM = '1rem';
-            
             // 現在開いているかどうかを、IDトラッカーを元に判定
             const isCurrentlyOpen = mobId === openMobNameId; 
 
             // 1. 他の要素が開いている場合、それを閉じる (単体表示の保証)
             if (openMobNameId && openMobNameId !== mobId) {
                 const currentlyOpenEl = document.getElementById(`detail-${openMobNameId}`);
+                const currentlyOpenCardEl = document.getElementById(`card-${openMobNameId}`);
+                
                 if (currentlyOpenEl) {
-                    currentlyOpenEl.style.maxHeight = '0';
-                    currentlyOpenEl.style.opacity = '0';
-                    currentlyOpenEl.style.paddingTop = '0';
-                    currentlyOpenEl.style.paddingBottom = '0';
-                    
-                    // 閉じるアニメーション後に display: none に戻す
-                    setTimeout(() => currentlyOpenEl.style.display = 'none', ANIMATION_DURATION_MS);
+                    currentlyOpenEl.classList.remove('is-open'); // クラスを削除して閉じるアニメーション
+                }
+                if (currentlyOpenCardEl) {
+                     currentlyOpenCardEl.style.zIndex = '10'; // 閉じたカードのZ-indexを戻す
                 }
             }
             
             // 2. 開閉処理
             if (isCurrentlyOpen) {
                 // 閉じる
-                detailElement.style.maxHeight = '0';
-                detailElement.style.opacity = '0';
-                detailElement.style.paddingTop = '0';
-                detailElement.style.paddingBottom = '0';
-                
-                // 閉じるアニメーション後に display: none に戻す
-                setTimeout(() => detailElement.style.display = 'none', ANIMATION_DURATION_MS); 
-                
+                detailElement.classList.remove('is-open');
+                cardElement.style.zIndex = '10'; // Z-indexを戻す
                 openMobNameId = null; // トラッカーをリセット
 
             } else {
                 // 開く
-                // FIX: 開く前に、一時的に高さをautoにしてscrollHeightを計測する
-                detailElement.style.display = 'block';
-                detailElement.style.maxHeight = '0';
-                detailElement.style.opacity = '0';
-                
-                // コンテンツの高さ（パディングなしの純粋な高さ）を取得
-                const contentWrapper = detailElement.querySelector('div.pt-2'); 
-                const contentHeight = contentWrapper ? contentWrapper.offsetHeight : 0; 
-
-                // 総Max Height = コンテンツ高さ + 縦パディング合計 (0.5rem + 1rem = 1.5rem = 24px)
-                const totalMaxHeight = contentHeight + 24; 
-
-                // 次の描画サイクルでアニメーションをトリガー
-                requestAnimationFrame(() => {
-                    detailElement.style.maxHeight = `${totalMaxHeight}px`; 
-                    detailElement.style.opacity = '1';
-                    detailElement.style.paddingTop = OPEN_PADDING_TOP;
-                    detailElement.style.paddingBottom = OPEN_PADDING_BOTTOM;
-                });
-                
+                detailElement.classList.add('is-open');
+                cardElement.style.zIndex = '60'; // 開いたカードのZ-indexを高くする (z-50より大きく)
                 openMobNameId = mobId; // トラッカーを更新
 
                 // マップの描画
