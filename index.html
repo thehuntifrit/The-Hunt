@@ -138,18 +138,20 @@
             text-align: center;
         }
 
-        /* スライドトランジション */
-        .slide-up-down {
-            transition: all 0.3s ease-in-out;
-            opacity: 1;
-            max-height: 1000px;
-        }
-        .slide-up-down.hidden {
+        /* FIX: スムーズなスライドトランジション */
+        .detail-content {
+            /* max-height, opacity, 垂直パディングを滑らかにトランジション */
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                        opacity 0.4s ease-in-out, 
+                        padding-top 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                        padding-bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            
             opacity: 0;
             max-height: 0;
-            padding: 0 1rem;
-            margin: 0;
+            padding-top: 0;
+            padding-bottom: 0;
             overflow: hidden;
+            display: none; /* 初期状態は非表示 */
         }
     </style>
 </head>
@@ -175,7 +177,7 @@
                 データを読み込み中です...
             </div>
 
-            <!-- タブフィルター (FIX: grid-cols-4でサイズ統一) -->
+            <!-- タブフィルター (grid-cols-4でサイズ統一) -->
             <div id="filter-tabs" class="grid grid-cols-4 gap-2 mt-4 mx-4 p-1 bg-gray-700 rounded-lg">
                 <!-- タブはJavaScriptで生成されます -->
             </div>
@@ -184,7 +186,8 @@
     <!-- FIXED HEADER END -->
 
     <!-- コンテンツ本体 (ヘッダーの高さ分、上部にパディングを確保) -->
-    <div class="container pt-[250px] lg:pt-[220px]">
+    <!-- FIX: ページ最下部に pb-40 (10rem) の余白を追加 -->
+    <div class="container pt-[250px] lg:pt-[220px] pb-40">
         <!-- モブ一覧コンテナ -->
         <div id="mob-list-container" class="mob-grid">
             <!-- モブカードはJavaScriptでここに挿入されます -->
@@ -433,6 +436,7 @@
             currentFilter = filter;
             renderMobList();
             
+            // フィルタボタンのハイライトを更新
             document.querySelectorAll('.tab-button').forEach(button => {
                 button.classList.remove('tab-active');
                 if (button.dataset.filter === filter) {
@@ -482,15 +486,18 @@
 
             // 詳細表示の状態を保持
             if (openMobNameId) {
+                const mobToRender = filteredMobs.find(m => safeId(m.mobName) === openMobNameId);
                 const detailElement = document.getElementById(`detail-${openMobNameId}`);
+                
                 if (detailElement) {
-                    // アニメーションを無効にして即座に表示
-                    detailElement.classList.remove('hidden');
+                    // 開くアニメーションを即座に完了させる
+                    detailElement.style.display = 'block';
                     detailElement.style.maxHeight = '1000px'; 
                     detailElement.style.opacity = '1';
+                    detailElement.style.paddingTop = '0.5rem'; 
+                    detailElement.style.paddingBottom = '1rem'; 
                     
                     // マップ再描画
-                    const mobToRender = filteredMobs.find(m => safeId(m.mobName) === openMobNameId);
                     if (mobToRender) {
                         renderMap(mobToRender.mobName, mobToRender.area);
                     }
@@ -567,7 +574,7 @@
                                         <span class="text-lg font-bold text-white text-outline">${safeHTML(mobName)} ${mapIcon}</span>
                                     </div>
                                     
-                                    <!-- 2行目: エリア名 (FIX: 位置を2.2remに、文字サイズをtext-xsに修正) -->
+                                    <!-- 2行目: エリア名 (位置を2.2remに、文字サイズをtext-xsに修正) -->
                                     <span class="text-xs text-gray-300" style="margin-left: 2.2rem;">${safeHTML(mob.area || 'エリア不明')}</span>
                                 </div>
                                 
@@ -587,8 +594,8 @@
                         </div>
                     </div>
 
-                    <!-- 詳細情報 (スライド表示部分) - safeMobNameIdを使用 -->
-                    <div id="detail-${safeMobNameId}" class="detail-content slide-up-down hidden bg-gray-700 text-gray-300 p-4 pt-2">
+                    <!-- 詳細情報 (スライド表示部分) - p-4 pt-2 の代わりに px-4 のみ指定し、垂直パディングはJSでアニメーションさせる -->
+                    <div id="detail-${safeMobNameId}" class="detail-content bg-gray-700 text-gray-300 px-4">
                         <div class="text-xs border-t border-gray-600 pt-2">
                             <!-- 前回の討伐時間 -->
                             <p class="mb-1"><strong>前回討伐:</strong> ${formatTimeToJST(lastKillTime)}</p>
@@ -657,7 +664,7 @@
 
 
         /**
-         * モブカードの詳細表示をトグルします。（修正2: 正しい開閉ロジック）
+         * モブカードの詳細表示をトグルします。（滑らかに開閉）
          * @param {string} mobId - モンスター名に基づく一意のID (safeId(mobName))
          * @param {string} area - エリア名
          */
@@ -665,6 +672,13 @@
             const detailElement = document.getElementById(`detail-${mobId}`);
             if (!detailElement) return;
 
+            // アニメーション時間 (CSSのtransitionに合わせる)
+            const ANIMATION_DURATION_MS = 400; 
+            
+            // 開くときの目標パディング値 (p-4 pt-2 の縦方向: pt-2=0.5rem, pb-4=1rem)
+            const OPEN_PADDING_TOP = '0.5rem';
+            const OPEN_PADDING_BOTTOM = '1rem';
+            
             // 現在開いているかどうかを、IDトラッカーを元に判定
             const isCurrentlyOpen = mobId === openMobNameId; 
 
@@ -674,26 +688,39 @@
                 if (currentlyOpenEl) {
                     currentlyOpenEl.style.maxHeight = '0';
                     currentlyOpenEl.style.opacity = '0';
-                    setTimeout(() => currentlyOpenEl.classList.add('hidden'), 300);
+                    currentlyOpenEl.style.paddingTop = '0';
+                    currentlyOpenEl.style.paddingBottom = '0';
+                    
+                    // 閉じるアニメーション後に display: none に戻す
+                    setTimeout(() => currentlyOpenEl.style.display = 'none', ANIMATION_DURATION_MS);
                 }
             }
             
             // 2. 開閉処理
             if (isCurrentlyOpen) {
-                // 既に開いているものをクリック -> 閉じる
+                // 閉じる
                 detailElement.style.maxHeight = '0';
                 detailElement.style.opacity = '0';
-                setTimeout(() => detailElement.classList.add('hidden'), 300);
+                detailElement.style.paddingTop = '0';
+                detailElement.style.paddingBottom = '0';
+                
+                // 閉じるアニメーション後に display: none に戻す
+                setTimeout(() => detailElement.style.display = 'none', ANIMATION_DURATION_MS); 
+                
                 openMobNameId = null; // トラッカーをリセット
 
             } else {
-                // 閉じていたものをクリック -> 開く
-                detailElement.classList.remove('hidden');
-                // DOMが描画されてからCSSを適用
-                setTimeout(() => {
+                // 開く
+                // まず display: block にして、高さ0, 透明度0の状態でレイアウトを確定させる
+                detailElement.style.display = 'block';
+                
+                // 次の描画サイクルで max-height と opacity を設定し、トランジションをトリガー
+                requestAnimationFrame(() => {
                     detailElement.style.maxHeight = '1000px'; 
                     detailElement.style.opacity = '1';
-                }, 10);
+                    detailElement.style.paddingTop = OPEN_PADDING_TOP;
+                    detailElement.style.paddingBottom = OPEN_PADDING_BOTTOM;
+                });
                 
                 openMobNameId = mobId; // トラッカーを更新
 
