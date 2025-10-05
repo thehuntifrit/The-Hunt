@@ -154,8 +154,7 @@
         }
 
         /* ======================================================= */
-        /* 🚨 最終修正: 詳細情報 (オーバーレイ/絶対配置) */
-        /* 🚨 背景色を明るくし、枠線を削除 */
+        /* 詳細情報 (オーバーレイ/絶対配置) */
         /* ======================================================= */
         .detail-accordion {
             position: absolute; /* 絶対配置: 下の要素を押し下げない */
@@ -164,10 +163,10 @@
             right: 0;
             z-index: 30; /* カードより前面 (オーバーレイ) */
             
-            /* 🚨 色の変更: カード背景 #2d3748 より少し明るい #364152 を使用 */
+            /* 色の変更: カード背景 #2d3748 より少し明るい #364152 を使用 */
             background-color: #364152; 
             
-            /* 🚨 枠線の削除 */
+            /* 枠線の削除 */
             border: none; 
             border-radius: 0 0 0.5rem 0.5rem; /* 下側の角丸を維持 */
 
@@ -262,10 +261,8 @@
     </div>
 
     <script>
-        // 🚨 設定項目: GAS API URL (ユーザー指定の最新URL)
+        // 🚨 設定項目: GAS API URL 
         const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxyutpOIZYI9Ce51s4vawk6S460QgM4wYcaLFJKUBi00_LKhNXT9-6N0n178KdoXkP7wg/exec'; 
-        // ⚠️ mob_data.jsonは静的ファイルパスを想定
-        const STATIC_DATA_URL = './mob_data.json'; 
 
         // グローバルなデータストア
         let globalMobConfig = {};      
@@ -370,23 +367,14 @@
 
         /**
          * 静的なモブ設定データ (mob_data.json) を取得します。
-         * ⚠️ 現在はコンテキスト内のmob_data.jsonからデータを読み込むよう変更
+         * 🚨 仮のデータは削除し、GASからのデータがない場合はリストを空にする
          */
         async function fetchStaticData() {
             try {
-                // mob_data.jsonの内容を直接使用
+                // 🚨 mob_data.jsonの内容を直接使用 (空のデータ)
                 const rawData = {
-                  "mobConfig": [
-                    { "モブ名": "ナニカ", "ランク": "S", "エリア名": "ラノシア", "リポップ間隔 (秒)": 18000, "POP条件": "特定のエモート", "時間条件": "10:00-14:00", "天候条件": "晴れ", "マップ画像 (ファイル名)": "laluna.jpg" },
-                    { "モブ名": "タソガレ", "ランク": "A", "エリア名": "クルザス", "リポップ間隔 (秒)": 3600, "POP条件": "特定のFATE達成", "時間条件": "なし", "天候条件": "吹雪", "マップ画像 (ファイル名)": "kuzasu.jpg" },
-                    { "モブ名": "デスフロッグ", "ランク": "FATE", "エリア名": "黒衣森", "リポップ間隔 (秒)": 900, "POP条件": "なし", "時間条件": "なし", "天候条件": "なし", "マップ画像 (ファイル名)": "kurokui.jpg" },
-                    { "モブ名": "ゲシュタルト", "ランク": "S", "エリア名": "アバラシア", "リポップ間隔 (秒)": 18000, "POP条件": "時間経過とFATE", "時間条件": "なし", "天候条件": "雷", "マップ画像 (ファイル名)": "abalasia.jpg" }
-                  ],
-                  "locationDef": [
-                    { "モブ名": "ナニカ", "locationId": 1, "coordX": 200, "coordY": 100 },
-                    { "モブ名": "ナニカ", "locationId": 2, "coordX": 400, "coordY": 300 },
-                    { "モブ名": "ゲシュタルト", "locationId": 1, "coordX": 150, "coordY": 450 }
-                  ]
+                  "mobConfig": [], // 意図しないモンスターが混入しないよう空にする
+                  "locationDef": [] // 意図しないロケーション情報が混入しないよう空にする
                 };
 
                 // mobConfigをオブジェクト形式に変換
@@ -405,9 +393,14 @@
                     acc[name].push({ locationId: loc.locationId, coordX: loc.coordX, coordY: loc.coordY });
                     return acc;
                 }, {});
-
-                loadingStatus.textContent = '静的データを正常に読み込みました。リアルタイムデータを取得中です...';
                 
+                // データが空の場合は警告を表示
+                if (Object.keys(globalMobConfig).length === 0) {
+                     loadingStatus.innerHTML = `<div class="text-yellow-400">⚠️ モブ設定データが空です。GASまたは設定ファイルにデータが登録されているか確認してください。</div>`;
+                } else {
+                     loadingStatus.textContent = '静的データを正常に読み込みました。リアルタイムデータを取得中です...';
+                }
+
                 generateTabs(); 
 
             } catch (error) {
@@ -429,18 +422,9 @@
         async function fetchDynamicData() {
             console.log(`[Fetch] Fetching dynamic data from: ${GAS_API_URL}?mode=getdata`);
 
-            // リアルタイムデータ取得のロジックは残しつつ、動作確認のためにダミーデータで初期化
-            const dummyHuntList = [
-                { mobName: "ナニカ", killTime: new Date(Date.now() - 17000 * 1000).toISOString() }, // 17000秒前 (94%進捗)
-                { mobName: "ゲシュタルト", killTime: new Date(Date.now() - 10000 * 1000).toISOString() }, // 10000秒前 (55%進捗)
-                { mobName: "タソガレ", killTime: new Date(Date.now() - 1500 * 1000).toISOString() }, // 1500秒前 (41%進捗)
-                { mobName: "デスフロッグ", killTime: new Date(Date.now() - 100 * 1000).toISOString() } // 100秒前
-            ];
-            
-            // ダミーのチェックイン状態
-            const dummyLocationState = [
-                { mobName: "ナニカ", checkedLocationId: 1, reporterId: "dummy1" }
-            ];
+            // 🚨 失敗時のダミーデータは使用せず、空配列で初期化
+            const emptyHuntList = [];
+            const emptyLocationState = [];
 
             try {
                 const response = await fetch(`${GAS_API_URL}?mode=getdata`, {
@@ -455,8 +439,8 @@
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    globalHuntList = result.huntList || dummyHuntList;
-                    globalLocationState = result.locationState || dummyLocationState;
+                    globalHuntList = result.huntList || emptyHuntList;
+                    globalLocationState = result.locationState || emptyLocationState;
                     
                     checkMaintenance(result.maintenance);
 
@@ -464,20 +448,21 @@
 
                     loadingStatus.classList.add('hidden'); 
                 } else {
-                    globalHuntList = dummyHuntList;
-                    globalLocationState = dummyLocationState;
+                    // 🚨 失敗時は空データで描画し、エラーメッセージを表示
+                    globalHuntList = emptyHuntList;
+                    globalLocationState = emptyLocationState;
                     renderMobList();
                     loadingStatus.classList.remove('hidden');
-                    loadingStatus.innerHTML = `<div class="text-red-400">🚨 GAS APIエラー: ${result.message} (ダミーデータ表示中)</div>`;
+                    loadingStatus.innerHTML = `<div class="text-red-400">🚨 GAS APIエラー: ${result.message} (データなしで描画)</div>`;
                 }
 
             } catch (error) {
-                // 通信エラー時もダミーデータで描画を試みる
-                globalHuntList = dummyHuntList;
-                globalLocationState = dummyLocationState;
+                // 🚨 通信エラー時も空データで描画し、エラーメッセージを表示
+                globalHuntList = emptyHuntList;
+                globalLocationState = emptyLocationState;
                 renderMobList();
                 loadingStatus.classList.remove('hidden');
-                loadingStatus.innerHTML = `<div class="text-red-400">🚨 リアルタイムデータ取得エラー: ${error.message} (ダミーデータ表示中)</div>`;
+                loadingStatus.innerHTML = `<div class="text-red-400">🚨 リアルタイムデータ取得エラー: ${error.message} (データなしで描画)</div>`;
             }
         }
 
@@ -544,6 +529,14 @@
          * モブリスト全体をレンダリングします。
          */
         function renderMobList() {
+            // モブ設定データが存在しない場合
+            if (Object.keys(globalMobConfig).length === 0) {
+                 mobListContainer.innerHTML = `<p class="text-center text-gray-400 col-span-full mt-8">
+                     モブ設定データが見つかりません。GASのデプロイとデータ連携を確認してください。
+                 </p>`;
+                 return;
+            }
+
             const allMobs = Object.keys(globalMobConfig).map(key => {
                 const mob = globalMobConfig[key];
                 return {
