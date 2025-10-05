@@ -151,74 +151,19 @@
 
         // --- データ定義 ---
         const MOCK_MOB_DATA = [
-            {
-                "No": 12121,
-                "Rank": "S",
-                "Name": "ブロンテス",
-                "Area": "中央ザナラーン",
-                "REPOP(s)": 241200, // 67時間 (Sモブの標準)
-                "MAX(s)": 277200, // 77時間
-                "Map": "Central Thanalan.webp",
-                "spawn_points": [
-                    {"id": "CT_S_01", "x": 30.5, "y": 75.2, "mob_ranks": ["S", "A", "B1"]},
-                    {"id": "CT_A_01", "x": 55.0, "y": 42.1, "mob_ranks": ["A", "B2"]},
-                    {"id": "CT_B_01", "x": 12.8, "y": 20.9, "mob_ranks": ["B1"]},
-                    {"id": "CT_B_02", "x": 80.0, "y": 50.0, "mob_ranks": ["B2"]},
-                ]
-            },
-            {
-                "No": 12122,
-                "Rank": "A",
-                "Name": "マインドフレア",
-                "Area": "ラケティカ大森林",
-                "REPOP(s)": 3000, // 50分 (Aモブの標準)
-                "MAX(s)": 4800, // 80分
-                "Map": "Rak'tika.webp",
-                "spawn_points": [
-                    {"id": "RAK_A_01", "x": 40.0, "y": 30.0, "mob_ranks": ["A", "B1"]},
-                    {"id": "RAK_B_01", "x": 70.0, "y": 60.0, "mob_ranks": ["B1"]},
-                ]
-            },
-            {
-                "No": 12123,
-                "Rank": "S",
-                "Name": "フォーミダブル",
-                "Area": "アム・アレーン",
-                "REPOP(s)": 241200,
-                "MAX(s)": 277200,
-                "Map": "Amh_Araeng.webp",
-                "spawn_points": [
-                    {"id": "AMH_S_01", "x": 10.0, "y": 90.0, "mob_ranks": ["S", "B2"]},
-                    {"id": "AMH_B_01", "x": 90.0, "y": 10.0, "mob_ranks": ["B2"]},
-                ]
-            },
-            // --- 動作確認のために追加したデータ ---
-            {
-                "No": 12124,
-                "Rank": "A",
-                "Name": "アポカリョープス",
-                "Area": "イル・メグ",
-                "REPOP(s)": 3000, 
-                "MAX(s)": 4800, 
-                "Map": "Il_Mheg.webp",
-                "spawn_points": [
-                    {"id": "IM_A_01", "x": 25.0, "y": 25.0, "mob_ranks": ["A", "B2"]},
-                    {"id": "IM_B_01", "x": 75.0, "y": 75.0, "mob_ranks": ["B2"]},
-                ]
-            },
-            {
-                "No": 12125,
-                "Rank": "S",
-                "Name": "オキナ",
-                "Area": "ヤンサ",
-                "REPOP(s)": 241200,
-                "MAX(s)": 277200,
-                "Map": "Yanxia.webp",
-                "spawn_points": [
-                    {"id": "YX_S_01", "x": 50.0, "y": 50.0, "mob_ranks": ["S", "B1"]},
-                    {"id": "YX_A_01", "x": 80.0, "y": 20.0, "mob_ranks": ["A", "B1"]},
-                ]
-            }
+// const MOCK_MOB_DATA = [ ... ] ← この配列全体を削除
+
+let mobData = []; // 外部JSONから読み込むため初期化のみ
+async function loadMobData() {
+  try {
+    const response = await fetch('mob_data.json');
+    if (!response.ok) throw new Error('mob_data.json 読み込み失敗');
+    mobData = await response.json();
+    fetchRecordsAndUpdate(); // 読み込み後に描画処理を呼び出す
+  } catch (error) {
+    console.error('mob_data.json 読み込みエラー:', error);
+  }
+}
         ];
         
         // ランクごとの色定義 (CSSクラス名)
@@ -823,26 +768,24 @@
         /**
          * サイトの初期化処理
          */
-        function initializeApp() {
-            // 報告者UUIDの生成または取得
-            userId = localStorage.getItem('user_uuid');
-            if (!userId) {
-                userId = crypto.randomUUID();
-                localStorage.setItem('user_uuid', userId);
-            }
+function initializeApp() {
+  userId = localStorage.getItem('user_uuid');
+  if (!userId) {
+    userId = crypto.randomUUID();
+    localStorage.setItem('user_uuid', userId);
+  }
 
-            // 初期表示: GASからデータを取得し、グローバルデータをセット
-            fetchRecordsAndUpdate();
+  // 修正前:
+  // fetchRecordsAndUpdate();
 
-            // GASへのデータ更新間隔は10分を維持
-            setInterval(fetchRecordsAndUpdate, 10 * 60 * 1000); 
-            
-            // リポップ時間の再計算と再描画は1分に1回
-            setInterval(filterAndRender, 60 * 1000); 
-            
-            // ウィンドウサイズ変更時にも再描画を実行し、モバイルとデスクトップのカラム振り分けを適切に行う
-            window.addEventListener('resize', filterAndRender);
-        }
+  // 修正後:
+  loadMobData(); // 外部JSON読み込み → fetchRecordsAndUpdate() を内部で呼ぶ
+
+  setInterval(fetchRecordsAndUpdate, 10 * 60 * 1000);
+  setInterval(filterAndRender, 60 * 1000);
+  window.addEventListener('resize', filterAndRender);
+}
+
 
         // ページロード時に初期化を実行
         initializeApp();
