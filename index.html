@@ -151,7 +151,21 @@
 
         // --- データ定義 ---
         const MOCK_MOB_DATA = [
-            {"No": 12121,"Rank": "S","Name": "ブロンテス","Area": "中央ザナラーン","POP Date": "POP地点で食事を食べる","REPOP(s)": 241200,"MAX(s)": 277200,"Map": "Central Thanalan.webp""spawn_points": [{  "id": "CT_01",  "x": 56.4,  "y": 92.4,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_02",  "x": 52.0,  "y": 77.4,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_03",  "x": 57.1,  "y": 81.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_04",  "x": 64.8,  "y": 72.6,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_05",  "x": 44.4,  "y": 57.8,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_06",  "x": 37.4,  "y": 55.6,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_07",  "x": 39.4,  "y": 49.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_08",  "x": 38.0,  "y": 41.6,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_09",  "x": 28.8,  "y": 47.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_10",  "x": 48.6,  "y": 37.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_11",  "x": 28.0,  "y": 32.6,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_12",  "x": 34.4,  "y": 29.6,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_13",  "x": 35.4,  "y": 25.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_14",  "x": 29.2,  "y": 20.8,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_15",  "x": 28.2,  "y": 5.6,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_16",  "x": 35.0,  "y": 10.4,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_17",  "x": 49.2,  "y": 10.2,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_18",  "x": 48.6,  "y": 18.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_19",  "x": 45.0,  "y": 20.2,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_20",  "x": 63.2,  "y": 26.6,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_21",  "x": 71.0,  "y": 27.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_22",  "x": 77.8,  "y": 38.4,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_23",  "x": 69.2,  "y": 39.8,  "mob_ranks": ["S", "A", "B1"] } ]},
+            {
+                "No": 12121,
+                "Rank": "S",
+                "Name": "ブロンテス",
+                "Area": "中央ザナラーン",
+                "REPOP(s)": 241200, // 67時間 (Sモブの標準)
+                "MAX(s)": 277200, // 77時間
+                "Map": "Central Thanalan.webp",
+                "spawn_points": [
+                    {"id": "CT_S_01", "x": 30.5, "y": 75.2, "mob_ranks": ["S", "A", "B1"]},
+                    {"id": "CT_A_01", "x": 55.0, "y": 42.1, "mob_ranks": ["A", "B2"]},
+                    {"id": "CT_B_01", "x": 12.8, "y": 20.9, "mob_ranks": ["B1"]},
+                    {"id": "CT_B_02", "x": 80.0, "y": 50.0, "mob_ranks": ["B2"]},
+                ]
+            },
             {
                 "No": 12122,
                 "Rank": "A",
