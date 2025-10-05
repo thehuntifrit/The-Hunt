@@ -98,7 +98,7 @@
 
             <!-- ランクフィルタタブ -->
             <div id="rank-tabs" class="flex justify-center space-x-2 sm:space-x-4 border-b border-gray-700 pb-2">
-                <button data-rank="ALL" class="tab-btn bg-yellow-600 active-tab px-3 py-1 rounded-full text-sm font-semibold shadow-md">ALL</button>
+                <button data-rank="ALL" class="tab-btn bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full text-sm font-semibold shadow-md">ALL</button>
                 <button data-rank="S" class="tab-btn bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full text-sm font-semibold shadow-md">Sランク</button>
                 <button data-rank="A" class="tab-btn bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full text-sm font-semibold shadow-md">Aランク</button>
                 <button data-rank="F" class="tab-btn bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full text-sm font-semibold shadow-md">FATE</button>
@@ -747,11 +747,6 @@ const detailContent = `
                     filterAndRender(); 
                 };
             });
-
-            // 初期状態でALLタブをアクティブにする
-            document.querySelector('.tab-btn[data-rank="ALL"]').classList.remove('bg-gray-700', 'hover:bg-gray-600');
-            document.querySelector('.tab-btn[data-rank="ALL"]').classList.add('bg-yellow-600', 'active-tab');
-
             
             // 報告ボタンのクリックイベント (モーダル表示)
             document.querySelectorAll('.report-btn').forEach(btn => {
