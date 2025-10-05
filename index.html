@@ -2961,7 +2961,7 @@
                             </div>
                             
                             <!-- 報告ボタン -->
-                            <button data-mob-name="${mob.Name}" data-mob-rank="${mob.Rank}" class="report-btn bg-red-600 hover:bg-red-700 px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg">報 告</button>
+                            <button data-mob-name="${mob.Name}" data-mob-rank="${mob.Rank}" class="report-btn bg-red-600 hover:bg-red-700 px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg">討 伐</button>
                         </div>
                     </div>
                 `;
@@ -2973,7 +2973,7 @@
                         <p class="text-sm mb-2"><span class="font-semibold text-gray-300">前回の討伐時間:</span> ${lastKillTimeStr}</p>
                         
                         <!-- POPさせる条件の説明 (仮) -->
-                        <p class="text-sm mb-4"><span class="font-semibold text-gray-300">POP条件:</span> ${mob["POP Date"] || '特に条件の記述なし'}</p>
+                        <p class="text-sm mb-4"><span class="font-semibold text-gray-300">条件:</span> ${mob["POP Date"] || '特に条件の記述なし'}</p>
                         
                         <!-- 座標記録用のMAP -->
                         <div class="map-container relative w-full rounded-lg overflow-hidden shadow-inner" style="padding-top: 100%;">
