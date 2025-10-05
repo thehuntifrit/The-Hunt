@@ -57,9 +57,9 @@
             border-radius: 0.5rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: box-shadow 0.2s, transform 0.2s;
-            position: relative; /* 影や角丸の基準 */
+            position: relative; /* 🚨 詳細パネルの絶対配置の基準 */
             z-index: 10; 
-            overflow: hidden; /* ヘッダーと詳細の間の角丸を制御するために追加 */
+            overflow: visible; /* 展開された詳細パネルが見えるように */
         }
 
         .mob-card-wrapper:hover {
@@ -154,19 +154,25 @@
         }
 
         /* ======================================================= */
-        /* 🚨 修正: 詳細情報 (アコーディオン/フロー内配置) */
-        /* 下の要素を押し下げます */
+        /* 🚨 修正: 詳細情報 (オーバーレイ/絶対配置に戻す) */
+        /* 🚨 背景色を明るくし、枠線を削除 */
         /* ======================================================= */
         .detail-accordion {
-            /* 🚨 position: absolute を削除し、ドキュメントフローに従う */
+            position: absolute; /* 絶対配置に戻す */
+            top: 100%; /* ヘッダーの真下から展開 */
+            left: 0;
+            right: 0;
+            z-index: 30; /* カードより前面 */
             
-            background-color: #2d3748; 
-            border: 1px solid #4a5568; 
-            border-top: none; 
-            /* 親要素が overflow: hidden のため、ここでは下側の角丸は不要 */
+            /* 🚨 色の変更: カード背景 #2d3748 より少し明るい #364152 を使用 */
+            background-color: #364152; 
             
-            /* 非表示状態 - max-heightとpaddingでスライドダウンを制御 */
-            max-height: 0; 
+            /* 🚨 枠線の削除 */
+            border: none; 
+            border-radius: 0 0 0.5rem 0.5rem; /* 下側の角丸を維持 */
+
+            /* 非表示状態 */
+            max-height: 0; /* max-heightでスライドダウンを制御 */
             overflow: hidden; 
             opacity: 0;
             padding: 0 1rem; 
@@ -176,12 +182,11 @@
         }
 
         .detail-accordion.is-open {
-            /* 表示状態: 下の要素を押し下げる */
+            /* 表示状態: 下の要素を押し下げない (オーバーレイ) */
             max-height: 2000px; /* 適切な最大高さを設定 */
             padding-top: 1rem;
             padding-bottom: 1rem;
             opacity: 1;
-            /* 🚨 ここに position: absolute; はありません */
         }
 
         /* A/FATEランクで中身が空の場合のパディング調整 */
@@ -574,7 +579,7 @@
 
 
                 if (detailElement && headerElement) {
-                    // アコーディオンのクラスを即座に追加して表示を復元
+                    // オーバーレイのクラスを即座に追加して表示を復元
                     detailElement.classList.add('is-open');
                     headerElement.classList.add('is-expanded');
                     
@@ -727,7 +732,7 @@
                         </div>
                     </div>
 
-                    <!-- 🚨 詳細情報 (アコーディオン展開部分 - ドキュメントフロー内に配置) -->
+                    <!-- 🚨 詳細情報 (オーバーレイ展開部分 - 絶対配置に戻す) -->
                     <div id="detail-${safeMobNameId}" class="detail-accordion text-gray-300 ${detailClasses}">
                         
                         <div class="text-xs"> 
@@ -787,7 +792,7 @@
 
 
         /**
-         * モブカードの詳細表示をトグルします。（アコーディオン/プッシュダウン）
+         * モブカードの詳細表示をトグルします。（オーバーレイ）
          * @param {string} mobId - モンスター名に基づく一意のID (safeId(mobName))
          * @param {string} area - エリア名
          */
