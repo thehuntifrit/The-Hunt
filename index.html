@@ -1,75 +1,51 @@
-Skip to content
-Navigation Menu
-thehuntifrit
-The-Hunt
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Hunt - モブハントトラッカー</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* カスタムスタイル */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a2e; /* ダークモード背景 */
+        }
 
-Type / to search
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Insights
-Settings
-Commit 78f4588
-thehuntifrit
-thehuntifrit
-authored
-1 hour ago
-·
-·
-Verified
-Update index.html
-main
-1 parent 
-0c3c039
- commit 
-78f4588
-File tree
-Filter files…
-index.html
-1 file changed
-+283
--100
-lines changed
-Search within code
- 
-Customizable line height
-The default line height has been increased for improved accessibility. You can choose to enable a more compact line height from the view settings menu.
+        /* テキストに藍色のアウトライン/シャドウを適用 */
+        .text-outline {
+            text-shadow: 
+                1px 1px 0 #1f2937,  /* 藍色系シャドウ */
+                -1px 1px 0 #1f2937, 
+                1px -1px 0 #1f2937, 
+                -1px -1px 0 #1f2937;
+        }
 
-‎index.html‎
-+283
--100
-Lines changed: 283 additions & 100 deletions
-Original file line number	Diff line number	Diff line change
-@@ -30,29 +30,29 @@
+        /* ランクアイコンの基本スタイル */
+        .rank-icon {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
             transition: transform 0.1s ease-in-out;
         }
 
         /* マップ描画用のスタイル */
-        /* マップ描画用のスタイル - 座標点を半分サイズに縮小 (16px -> 8px) */
         .spawn-point {
             position: absolute;
             width: 16px;
             height: 16px;
-            width: 8px; 
-            height: 8px; 
             border-radius: 50%;
             cursor: pointer;
             transition: all 0.2s ease;
             transform: translate(-50%, -50%); /* 中央配置 */
             box-shadow: 0 0 8px rgba(0, 0, 0, 0.8); /* 点に影 */
-            box-shadow: 0 0 4px rgba(0, 0, 0, 0.8); 
         }
 
         /* マウスオーバー時の強調表示 */
         .spawn-point:hover {
             transform: translate(-50%, -50%) scale(1.3);
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
-            transform: translate(-50%, -50%) scale(1.8); 
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); 
         }
 
         /* S/Aモブが出る重要地点のリング */
@@ -77,40 +53,46 @@ Original file line number	Diff line number	Diff line change
             box-shadow: 
                 0 0 0 4px #fbbf24, /* 濃い黄色/オレンジの太い外枠 */
                 0 0 8px rgba(0, 0, 0, 0.8); /* 影を維持 */
-                0 0 0 2px #fbbf24, 
-                0 0 4px rgba(0, 0, 0, 0.8); 
         }
-
+        
         /* リポップバーのCSS変数とグラデーション定義 */
-@@ -66,18 +66,20 @@
+        .repop-bar-bg {
+            /* --progress-percentはJSで動的に設定されます */
+            background: linear-gradient(to right, 
+                var(--progress-color-start) 0%, 
+                var(--progress-color-end) var(--progress-percent), 
+                #2d3748 var(--progress-percent), 
+                #2d3748 100%);
             transition: background 0.5s ease;
         }
 
         /* スライドパネルのアニメーション */
-        /* スライドパネルのアニメーション - 境界線とパディングを調整 */
         .mob-details {
             transition: max-height 0.3s ease-out, padding 0.3s ease-out;
-            /* ★修正: border-top の transition を削除 */
-            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out; 
             overflow: hidden;
             max-height: 0;
             padding-top: 0;
             padding-bottom: 0;
-            padding: 0;
-            /* 境界線は設定しない */
         }
         .mob-details.open {
             max-height: 1000px; /* 十分な高さを確保 */
             padding-top: 1rem;
             padding-bottom: 1rem;
-            max-height: 500px; 
-            /* 開いている時のパディングを設定 (p-4相当) */
-            padding: 1rem; 
-            /* ★修正: 境界線を設定しない */
         }
 
     </style>
-@@ -96,20 +98,26 @@ <h1 class="text-3xl font-bold text-center text-yellow-300">The Hunt</h1>
+</head>
+<body class="text-white">
+
+    <!-- メインコンテナ -->
+    <div id="app" class="min-h-screen">
+        
+        <!-- 固定ヘッダー: タイトルとタブ -->
+        <header class="sticky top-0 z-50 bg-gray-900 shadow-xl p-4">
+            <h1 class="text-3xl font-bold text-center text-yellow-300">The Hunt</h1>
+            <p class="text-sm text-center text-gray-400 mt-1 mb-3">
+                // 仮の説明: モブハントの討伐記録とリポップ予測、湧き潰し管理ツールです。
+            </p>
 
             <!-- ランクフィルタタブ -->
             <div id="rank-tabs" class="flex justify-center space-x-2 sm:space-x-4 border-b border-gray-700 pb-2">
@@ -118,10 +100,6 @@ Original file line number	Diff line number	Diff line change
                 <button data-rank="S" class="tab-btn bg-orange-600 px-3 py-1 rounded-full text-sm font-semibold shadow-md">Sランク</button>
                 <button data-rank="A" class="tab-btn bg-green-600 px-3 py-1 rounded-full text-sm font-semibold shadow-md">Aランク</button>
                 <button data-rank="F" class="tab-btn bg-blue-600 px-3 py-1 rounded-full text-sm font-semibold shadow-md">FATE</button>
-                <button data-rank="ALL" class="tab-btn bg-yellow-600 active-tab px-3 py-1 rounded-full text-sm font-semibold shadow-md">ALL</button>
-                <button data-rank="S" class="tab-btn bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full text-sm font-semibold shadow-md">Sランク</button>
-                <button data-rank="A" class="tab-btn bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full text-sm font-semibold shadow-md">Aランク</button>
-                <button data-rank="F" class="tab-btn bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full text-sm font-semibold shadow-md">FATE</button>
             </div>
         </header>
 
@@ -129,39 +107,33 @@ Original file line number	Diff line number	Diff line change
         <!-- PC: w-[512px] の3カラム / スマホ: 1カラム -->
         <main id="mob-list-container" 
               class="container mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-4"
-        <!-- ★修正: モブカード表示エリア - 3つの独立したカラムに分割 -->
-        <main id="mob-list-wrapper" 
-              class="container mx-auto p-4"
               style="max-width: 1600px;"> 
-
+            
             <!-- ここにJavaScriptでモブカードが挿入されます -->
-            <!-- デスクトップで3カラムを横並びにし、それぞれのカラムが独立した縦リストとして動作 -->
-            <div id="mob-list-container" class="flex flex-col lg:flex-row lg:space-x-4">
-                <!-- モバイルでは全幅、デスクトップでは3分の1幅 (flex-1) -->
-                <div id="column-1" class="flex-1 space-y-4 mb-4 lg:mb-0"></div>
-                <!-- デスクトップでのみ表示されるカラム -->
-                <div id="column-2" class="flex-1 space-y-4 mb-4 lg:mb-0 hidden lg:block"></div>
-                <div id="column-3" class="flex-1 space-y-4 hidden lg:block"></div>
-            </div>
 
         </main>
-
-@@ -118,8 +126,13 @@ <h1 class="text-3xl font-bold text-center text-yellow-300">The Hunt</h1>
+        
+        <!-- モーダル（討伐報告フォーム） -->
+        <div id="report-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50">
             <div class="bg-gray-800 p-6 rounded-lg shadow-2xl w-full max-w-sm">
                 <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
-
-                <!-- 討伐日時入力欄 (現在時刻が初期値、微調整可能) -->
-                <label for="report-datetime" class="block text-sm font-medium text-gray-300 mb-1">討伐日時 (ローカルタイム):</label>
-                <input type="datetime-local" id="report-datetime" class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:ring focus:ring-blue-500 mb-4">
                 
-                <!-- メモ欄 (rows="2") -->
                 <label for="report-memo" class="block text-sm font-medium text-gray-300 mb-1">メモ (任意):</label>
                 <textarea id="report-memo" rows="3" class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:ring focus:ring-blue-500"></textarea>
-                <textarea id="report-memo" rows="2" class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:ring focus:ring-blue-500"></textarea>
-
+                
                 <div class="flex justify-end space-x-3 mt-4">
                     <button id="cancel-report" class="px-4 py-2 bg-gray-600 rounded-md text-white hover:bg-gray-500">キャンセル</button>
-@@ -137,8 +150,6 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
+                    <button id="submit-report" class="px-4 py-2 bg-green-600 rounded-md text-white hover:bg-green-500 font-bold">報告完了</button>
+                </div>
+                <p id="report-status" class="mt-3 text-center text-sm hidden"></p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript ロジック -->
+    <script>
+        // Google Apps Script (GAS) のエンドポイントURL
         const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxyutpOIZYI9Ce51s4vawk6S460QgM4wYcaLFJKUBi00_LKhNXT9-6N0n178KdoXkP7wg/exec';
 
         // --- データ定義 ---
@@ -170,41 +142,48 @@ Original file line number	Diff line number	Diff line change
         const MOCK_MOB_DATA = [
             {
                 "No": 12121,
-@@ -180,43 +191,82 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
-                    {"id": "AMH_S_01", "x": 10.0, "y": 90.0, "mob_ranks": ["S", "B2"]},
-                    {"id": "AMH_B_01", "x": 90.0, "y": 10.0, "mob_ranks": ["B2"]},
-                ]
-            },
-            // --- 動作確認のために追加したデータ ---
-            {
-                "No": 12124,
-                "Rank": "A",
-                "Name": "アポカリョープス",
-                "Area": "イル・メグ",
-                "REPOP(s)": 3000, 
-                "MAX(s)": 4800, 
-                "Map": "Il_Mheg.webp",
-                "spawn_points": [
-                    {"id": "IM_A_01", "x": 25.0, "y": 25.0, "mob_ranks": ["A", "B2"]},
-                    {"id": "IM_B_01", "x": 75.0, "y": 75.0, "mob_ranks": ["B2"]},
-                ]
-            },
-            {
-                "No": 12125,
                 "Rank": "S",
-                "Name": "オキナ",
-                "Area": "ヤンサ",
+                "Name": "ブロンテス",
+                "Area": "中央ザナラーン",
+                "REPOP(s)": 241200, // 67時間 (Sモブの標準)
+                "MAX(s)": 277200, // 77時間
+                "Map": "Central Thanalan.webp",
+                "spawn_points": [
+                    {"id": "CT_S_01", "x": 30.5, "y": 75.2, "mob_ranks": ["S", "A", "B1"]},
+                    {"id": "CT_A_01", "x": 55.0, "y": 42.1, "mob_ranks": ["A", "B2"]},
+                    {"id": "CT_B_01", "x": 12.8, "y": 20.9, "mob_ranks": ["B1"]},
+                    {"id": "CT_B_02", "x": 80.0, "y": 50.0, "mob_ranks": ["B2"]},
+                ]
+            },
+            {
+                "No": 12122,
+                "Rank": "A",
+                "Name": "マインドフレア",
+                "Area": "ラケティカ大森林",
+                "REPOP(s)": 3000, // 50分 (Aモブの標準)
+                "MAX(s)": 4800, // 80分
+                "Map": "Rak'tika.webp",
+                "spawn_points": [
+                    {"id": "RAK_A_01", "x": 40.0, "y": 30.0, "mob_ranks": ["A", "B1"]},
+                    {"id": "RAK_B_01", "x": 70.0, "y": 60.0, "mob_ranks": ["B1"]},
+                ]
+            },
+            {
+                "No": 12123,
+                "Rank": "S",
+                "Name": "フォーミダブル",
+                "Area": "アム・アレーン",
                 "REPOP(s)": 241200,
                 "MAX(s)": 277200,
-                "Map": "Yanxia.webp",
+                "Map": "Amh_Araeng.webp",
                 "spawn_points": [
-                    {"id": "YX_S_01", "x": 50.0, "y": 50.0, "mob_ranks": ["S", "B1"]},
-                    {"id": "YX_A_01", "x": 80.0, "y": 20.0, "mob_ranks": ["A", "B1"]},
+                    {"id": "AMH_S_01", "x": 10.0, "y": 90.0, "mob_ranks": ["S", "B2"]},
+                    {"id": "AMH_B_01", "x": 90.0, "y": 10.0, "mob_ranks": ["B2"]},
                 ]
             }
             // 実際は全てのモブデータを含めます
         ];
-
+        
         // ランクごとの色定義 (CSSクラス名)
         const RANK_COLORS = {
             'S': 'bg-orange-600', // S: オレンジ
@@ -213,23 +192,15 @@ Original file line number	Diff line number	Diff line change
             // Bモブの色は地点の背景色として利用
             'B1': '#79A6FF', // 柔らかい青系統
             'B2': '#FF7979'  // 柔らかい赤系統
-            'S': 'bg-orange-600', 
-            'A': 'bg-green-600',  
-            'F': 'bg-blue-600',   
-            'B1': '#79A6FF', 
-            'B2': '#FF7979'  
         };
 
         // マップ上の消し込み状態を保存するキー
         const LOCAL_STORAGE_KEY = 'hunt_spawn_status';
         let huntRecords = []; // GASから取得した討伐記録
         let mobData = MOCK_MOB_DATA; // mob_data.jsonの内容
-        let mobListWithRepop = []; // リポップ情報を含めたモブリスト (グローバルで保持)
         let currentFilter = 'ALL';
         let userId; // 報告者UUID
 
-        // 開いているモブの詳細パネル名（mob.Name）を記憶するSet
-        let openMobDetails = new Set(); 
         // --- ユーティリティ関数 ---
 
         /**
@@ -240,20 +211,7 @@ Original file line number	Diff line number	Diff line change
         function getRankColorClass(rank) {
             return RANK_COLORS[rank] || 'bg-gray-500';
         }
-        /**
-         * 現在のローカル日時を input[type="datetime-local"] 形式で返す
-         */
-        function getCurrentDateTimeLocal() {
-            const now = new Date();
-            // タイムゾーンオフセットを考慮せずに、Y-m-dTh:i 形式に変換
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
-        }
-
+        
         /**
          * リポップ経過時間とパーセンテージを計算する
          * @param {object} mob - mobDataのモブオブジェクト
@@ -262,7 +220,21 @@ Original file line number	Diff line number	Diff line change
          */
         function calculateRepop(mob, lastKillTimestamp) {
             if (!lastKillTimestamp) {
-@@ -238,15 +288,12 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
+                return {
+                    minRepop: '情報なし',
+                    maxRepop: '情報なし',
+                    elapsedPercent: 0,
+                    timeRemaining: 'N/A'
+                };
+            }
+            
+            const now = Date.now();
+            const minRepopTime = lastKillTimestamp + (mob["REPOP(s)"] * 1000);
+            const maxRepopTime = lastKillTimestamp + (mob["MAX(s)"] * 1000);
+            
+            // 経過時間の計算 (最短リポップを基準とする)
+            const repopWindowDuration = (mob["MAX(s)"] - mob["REPOP(s)"]) * 1000;
+            const timeSinceMinRepop = now - minRepopTime;
 
             let elapsedPercent;
             if (now < minRepopTime) {
@@ -275,25 +247,37 @@ Original file line number	Diff line number	Diff line change
                 // リポップウィンドウ期間中の経過率
                 elapsedPercent = (timeSinceMinRepop / repopWindowDuration) * 100;
                 elapsedPercent = Math.min(100, elapsedPercent); // 100%を超えないように
-                elapsedPercent = Math.min(100, elapsedPercent); 
             }
 
             // 残り時間の計算（最大リポップまで）
-@@ -268,21 +315,16 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
-        }
+            const remainingMillis = Math.max(0, maxRepopTime - now);
+            const hours = Math.floor(remainingMillis / (1000 * 60 * 60));
+            const minutes = Math.floor((remainingMillis % (1000 * 60 * 60)) / (1000 * 60));
+            
+            const timeRemainingStr = remainingMillis > 0 
+                ? `${hours}h ${minutes}m` 
+                : '湧き待ち/POP済み';
 
+            return {
+                minRepop: new Date(minRepopTime),
+                maxRepop: new Date(maxRepopTime),
+                elapsedPercent: elapsedPercent,
+                timeRemaining: timeRemainingStr,
+                sortKey: elapsedPercent // ソートに使用する値
+            };
+        }
+        
         /**
          * 経過時間に応じて色を生成する (0% -> 青, 100% -> 赤)
          * @param {number} percent - 経過パーセンテージ (0-100)
          * @returns {object} {startColor, endColor}
-         * 経過時間に応じて色を生成する
          */
         function getColorForProgress(percent) {
             // HSL色空間で補間を行う
             const hStart = 200; // 青 (Hue 200)
             const hEnd = 0;   // 赤 (Hue 0)
             const hue = hStart + (hEnd - hStart) * (percent / 100);
-
+            
             // 柔らかい色になるよう彩度と明度を調整
             const s = '70%'; 
             const l = '50%';
@@ -302,131 +286,101 @@ Original file line number	Diff line number	Diff line change
             return {
                 startColor: `hsl(${200}, ${s}, ${l})`,
                 endColor: `hsl(${hue}, ${s}, ${l})`
-@@ -292,13 +334,31 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
+            };
+        }
+
         // --- データ処理とUI描画 ---
 
         /**
          * 討伐データを取得し、UIを更新する
-         * 討伐データを取得し、グローバルなモブリストを更新する
          */
         async function fetchAndRenderData() {
-        async function fetchRecordsAndUpdate() {
             // 1. データ取得
             let records = [];
             try {
                 const response = await fetch(`${GAS_ENDPOINT}?action=getRecords`);
-                // [Exponential Backoff Loop Start]
-                const maxRetries = 3;
-                let attempt = 0;
-                let response;
-                while (attempt < maxRetries) {
-                    try {
-                        response = await fetch(`${GAS_ENDPOINT}?action=getRecords`);
-                        if (response.ok) break;
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    } catch (error) {
-                        attempt++;
-                        if (attempt >= maxRetries) throw error;
-                        const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                    }
-                }
-                // [Exponential Backoff Loop End]
                 const result = await response.json();
                 if (result.status === "success") {
                     records = result.data;
-@@ -311,20 +371,20 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
-
+                }
+            } catch (error) {
+                console.error("GASからのデータ取得エラー:", error);
+                // エラー時でも続行し、過去の記録がないとして処理
+            }
+            huntRecords = records;
+            
             // 2. 最終討伐時刻の特定と結合
             const lastKills = {};
             // 最新の討伐記録を抽出 (IDが大きいものが最新)
             huntRecords.sort((a, b) => b.ID - a.ID); 
-
+            
             huntRecords.forEach(record => {
                 if (!lastKills[record["モブ名"]]) {
                     lastKills[record["モブ名"]] = { 
-                        // GASからのデータがUTCとして扱われることを前提とする
                         timestamp: new Date(record["討伐日時 (UTC)"]).getTime(),
                         area: record["エリア名"] // (GASにはまだエリア名がないため、mobDataから取得すべきだが、ここでは割愛)
-                        area: record["エリア名"] 
                     };
                 }
             });
 
             // 3. モブリストの生成とソート
             const mobListWithRepop = mobData.map(mob => {
-            // 3. モブリストの生成とグローバル変数への格納
-            mobListWithRepop = mobData.map(mob => {
                 const lastKill = lastKills[mob.Name];
                 const lastKillTimestamp = lastKill ? lastKill.timestamp : 0;
-
-@@ -337,20 +397,51 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
+                
+                const repopData = calculateRepop(mob, lastKillTimestamp);
+                
+                return {
+                    ...mob,
+                    ...repopData,
+                    lastKillTime: lastKill ? lastKill.timestamp : null
                 };
             });
-
+            
             // 4. 経過パーセンテージの降順でソート
             mobListWithRepop.sort((a, b) => b.sortKey - a.sortKey); 
-            // 4. UIの描画更新（ソートとフィルタリングを含む）
-            filterAndRender();
-        }
 
             // 5. UIの再描画
             renderMobCards(mobListWithRepop);
-        /**
-         * フィルタリング、リポップ時間の再計算、ソート、UI描画を実行する
-         * (GASへのアクセスは行わない高速な描画更新)
-         */
-        function filterAndRender() {
-            if (mobListWithRepop.length === 0) return;
-            // グローバルな mobListWithRepop を使ってリポップ時間を再計算し、ソートする
-            const mobsToRender = mobListWithRepop.map(mob => {
-                // lastKillTimeはfetchRecordsAndUpdateで設定済み
-                const repopData = calculateRepop(mob, mob.lastKillTime);
-                return { 
-                    ...mob, 
-                    ...repopData,
-                    lastKillTime: mob.lastKillTime // lastKillTimeは維持
-                };
-            });
-            // 経過パーセンテージの降順でソート
-            mobsToRender.sort((a, b) => b.sortKey - a.sortKey); 
-            // UIの再描画
-            renderMobCards(mobsToRender);
         }
 
         /**
          * フィルタリングとUI描画を実行する
          * @param {Array} mobs - モブデータの配列
-         * UI描画を実行する
-         * @param {Array} mobs - 既にソート・再計算済みのモブデータの配列
          */
         function renderMobCards(mobs) {
             const container = document.getElementById('mob-list-container');
             container.innerHTML = '';
-            // ★修正: 描画先のコンテナを3つの独立したカラムに設定
-            const columns = [
-                document.getElementById('column-1'),
-                document.getElementById('column-2'),
-                document.getElementById('column-3')
-            ];
             
-            // 全カラムをクリア
-            columns.forEach(col => col.innerHTML = '');
-            let mobCount = 0; // カラム振り分け用のカウンター
-
             mobs.forEach(mob => {
                 // フィルタリング
-@@ -371,7 +462,8 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
+                if (currentFilter !== 'ALL' && mob.Rank !== currentFilter) {
+                    return; 
+                }
+
+                // 討伐日時をローカルタイムゾーンで表示
+                const lastKillTimeStr = mob.lastKillTime 
+                    ? new Date(mob.lastKillTime).toLocaleString() 
+                    : '未報告';
+                
+                // 次回POP時間をローカルタイムゾーンで表示
+                const minPopStr = mob.minRepop instanceof Date ? mob.minRepop.toLocaleString() : mob.minRepop;
+                
+                // 進捗バーの色計算
+                const progressColor = getColorForProgress(mob.elapsedPercent);
 
                 // --- HTML要素の構築 ---
                 const mobCard = document.createElement('div');
                 mobCard.className = 'mob-card flex flex-col rounded-lg shadow-xl overflow-hidden';
-                // カードの背景色を詳細パネルと異なる色にすることで、開閉時の視認性を高める
-                mobCard.className = 'mob-card flex flex-col rounded-lg shadow-xl overflow-hidden bg-gray-800'; 
                 mobCard.dataset.mobname = mob.Name;
-
+                
                 // リポップバーのカスタムプロパティを設定
-@@ -384,30 +476,35 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
+                mobCard.style.cssText = `
+                    --progress-percent: ${mob.elapsedPercent}%;
+                    --progress-color-start: ${progressColor.startColor};
+                    --progress-color-end: ${progressColor.endColor};
+                `;
+
                 // 常時表示部分 (進捗バー背景)
                 const fixedContent = `
                     <div class="fixed-content repop-bar-bg p-3 cursor-pointer select-none">
@@ -437,13 +391,8 @@ Original file line number	Diff line number	Diff line change
                                     ${mob.Rank}
                                 </div>
                                 <span class="text-lg sm:text-xl font-bold text-white text-outline">${mob.Name}</span>
-                        <!-- 1行目: ランクとモンスター名 (フォントサイズを調整) -->
-                        <div class="flex items-center space-x-2 mb-2">
-                            <div class="rank-icon ${getRankColorClass(mob.Rank)} w-6 h-6 sm:w-8 sm:h-8 rounded-md flex items-center justify-center text-xs sm:text-sm font-bold text-white">
-                                ${mob.Rank}
                             </div>
                             <button data-mob-name="${mob.Name}" data-mob-rank="${mob.Rank}" class="report-btn bg-red-600 hover:bg-red-700 px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg">報 告</button>
-                            <span class="text-base sm:text-lg font-bold text-white text-outline">${mob.Name}</span>
                         </div>
                         
                         <!-- 2行目: エリア名 -->
@@ -452,20 +401,6 @@ Original file line number	Diff line number	Diff line change
                         <!-- 3行目: 次回POP時間 - 残り時間 (経過%) -->
                         <div class="text-xs sm:text-sm font-mono text-gray-100 text-outline">
                             ${minPopStr} - ${mob.timeRemaining} (${mob.elapsedPercent.toFixed(1)}%)
-                        <!-- 2行目: エリア名, POP時間, 報告ボタンを横並びに配置 -->
-                        <div class="flex justify-between items-end">
-                            <!-- エリア名とPOP時間情報 -->
-                            <div>
-                                <div class="text-xs sm:text-sm text-gray-200 text-outline mb-1">${mob.Area}</div>
-                                
-                                <!-- 次回POP時間 - 残り時間 (経過%) -->
-                                <div class="text-xs sm:text-sm font-mono text-gray-100 text-outline">
-                                    ${minPopStr} - ${mob.timeRemaining} (${mob.elapsedPercent.toFixed(1)}%)
-                                </div>
-                            </div>
-                            
-                            <!-- 報告ボタン -->
-                            <button data-mob-name="${mob.Name}" data-mob-rank="${mob.Rank}" class="report-btn bg-red-600 hover:bg-red-700 px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg">報 告</button>
                         </div>
                     </div>
                 `;
@@ -473,32 +408,102 @@ Original file line number	Diff line number	Diff line change
                 // 詳細スライドパネル
                 const detailContent = `
                     <div class="mob-details bg-gray-700 p-4 border-t border-gray-600">
-                    <div class="mob-details bg-gray-700"> 
                         <!-- 前回の討伐時間 -->
                         <p class="text-sm mb-2"><span class="font-semibold text-gray-300">前回の討伐時間:</span> ${lastKillTimeStr}</p>
                         
-@@ -425,7 +522,21 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
+                        <!-- POPさせる条件の説明 (仮) -->
+                        <p class="text-sm mb-4"><span class="font-semibold text-gray-300">POP条件:</span> ${mob["POP Date"] || '特に条件の記述なし'}</p>
+                        
+                        <!-- 座標記録用のMAP -->
+                        <div class="map-container relative w-full rounded-lg overflow-hidden shadow-inner" style="padding-top: 100%;">
+                            <img src="${mob.Map}" alt="${mob.Area} マップ" class="absolute inset-0 w-full h-full object-cover">
+                            <div class="spawn-points-overlay absolute inset-0" data-map-id="${mob.Map}">
+                                <!-- ここにJavaScriptで座標ドットが挿入されます -->
+                            </div>
+                        </div>
+                    </div>
                 `;
-
+                
                 mobCard.innerHTML = fixedContent + detailContent;
                 container.appendChild(mobCard);
-                // 開閉状態の復元
-                if (openMobDetails.has(mob.Name)) {
-                    const details = mobCard.querySelector('.mob-details');
-                    if (details) {
-                        details.classList.add('open');
-                    }
-                }
-                // ★修正: カラムへの振り分け
-                // モバイル (lg未満) では常に最初のカラム (column-1) に挿入
-                // デスクトップ (lg以上) では3つのカラムに順番に振り分け
-                const columnIndex = window.innerWidth < 1024 ? 0 : mobCount % 3;
-                columns[columnIndex].appendChild(mobCard);
-                mobCount++; // カウンターをインクリメント
             });
-
+            
             // マップとイベントリスナーの再設定
-@@ -507,7 +618,6 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
+            setupMapPoints();
+            setupEventListeners();
+        }
+
+        /**
+         * マップ上の地点を描画し、消し込みロジックを適用する
+         */
+        function setupMapPoints() {
+            const spawnStatus = getSpawnStatus();
+            
+            document.querySelectorAll('.spawn-points-overlay').forEach(overlay => {
+                const mapId = overlay.dataset.mapId;
+                overlay.innerHTML = ''; // クリア
+                
+                // 該当エリアのmobDataを探す
+                const mob = mobData.find(m => m.Map === mapId);
+                if (!mob || !mob.spawn_points) return;
+                
+                const importantPoints = mob.spawn_points.filter(p => p.mob_ranks.includes('S') || p.mob_ranks.includes('A'));
+                const unkilledImportantPoints = importantPoints.filter(p => spawnStatus[p.id] !== 'killed');
+                const isLastOne = unkilledImportantPoints.length === 1;
+
+                mob.spawn_points.forEach(point => {
+                    const status = spawnStatus[point.id] || 'active';
+                    const isImportant = point.mob_ranks.includes('S') || point.mob_ranks.includes('A');
+                    const isB1 = point.mob_ranks.includes('B1');
+                    const isB2 = point.mob_ranks.includes('B2');
+                    
+                    // B1/B2の色を設定 (B1が優先)
+                    let bgColor = isB1 ? RANK_COLORS.B1 : (isB2 ? RANK_COLORS.B2 : '#555');
+
+                    // --- スタイル設定 ---
+                    let dotClasses = 'spawn-point';
+                    let dotStyle = `left: ${point.x}%; top: ${point.y}%; background-color: ${bgColor};`;
+                    
+                    // 1. 消込済み判定
+                    if (status === 'killed') {
+                        dotStyle += `background-color: #AAAAAA; opacity: 0.6;`;
+                    } 
+                    
+                    // 2. 残り1点強調判定 (操作可能な地点のみ)
+                    else if (isImportant && isLastOne && point.id === unkilledImportantPoints[0].id) {
+                        dotStyle += `background-color: #66FF99; box-shadow: 0 0 10px 5px #66FF99;`;
+                    }
+                    
+                    // 3. S/A重要地点強調判定 (外枠)
+                    else if (isImportant) {
+                        dotClasses += ' important-ring'; 
+                    }
+
+                    // 4. Bモブのみの地点はクリック不可（カーソル変更なし）
+                    if (!isImportant) {
+                        dotStyle += `cursor: default;`;
+                    }
+
+                    const dot = document.createElement('div');
+                    dot.className = dotClasses;
+                    dot.style.cssText = dotStyle;
+                    dot.dataset.id = point.id;
+                    dot.dataset.important = isImportant;
+                    
+                    // クリックイベントリスナー (重要地点のみ)
+                    if (isImportant) {
+                        dot.addEventListener('click', (e) => {
+                            e.stopPropagation(); // 親要素の展開を防ぐ
+                            toggleSpawnStatus(point.id);
+                        });
+                    }
+
+                    overlay.appendChild(dot);
+                });
+            });
+        }
+
+        // --- 消し込み機能（ローカルストレージ） ---
 
         /**
          * ローカルストレージから消し込み状態を取得
@@ -506,7 +511,11 @@ Original file line number	Diff line number	Diff line change
          */
         function getSpawnStatus() {
             try {
-@@ -519,7 +629,6 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
+                return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {};
+            } catch {
+                return {};
+            }
+        }
 
         /**
          * 消し込み状態をトグルして保存し、マップを再描画する
@@ -514,7 +523,24 @@ Original file line number	Diff line number	Diff line change
          */
         function toggleSpawnStatus(id) {
             const status = getSpawnStatus();
-@@ -544,13 +653,35 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
+            
+            // active -> killed, killed -> active
+            if (status[id] === 'killed') {
+                delete status[id];
+            } else {
+                status[id] = 'killed';
+            }
+            
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(status));
+            setupMapPoints();
+        }
+
+        // --- イベントリスナー設定 ---
+
+        /**
+         * DOMイベントリスナーを設定する
+         */
+        function setupEventListeners() {
             // フィルタタブのクリックイベント
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.onclick = () => {
@@ -523,87 +549,59 @@ Original file line number	Diff line number	Diff line change
                     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('bg-opacity-100'));
                     btn.classList.add('bg-opacity-100');
                     fetchAndRenderData(); // フィルタリングを適用して再描画
-                    const selectedRank = btn.dataset.rank;
-                    // 1. アクティブスタイルの切り替え (即座に反映)
-                    document.querySelectorAll('.tab-btn').forEach(b => {
-                        // 非アクティブ化
-                        b.classList.remove('active-tab', 'bg-yellow-600', 'bg-orange-600', 'bg-green-600', 'bg-blue-600');
-                        b.classList.add('bg-gray-700', 'hover:bg-gray-600');
-                    });
-                    
-                    // アクティブ化
-                    btn.classList.add('active-tab');
-                    btn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
-                    // ランクに応じてアクティブ色を設定
-                    if (selectedRank === 'ALL') btn.classList.add('bg-yellow-600');
-                    else if (selectedRank === 'S') btn.classList.add('bg-orange-600');
-                    else if (selectedRank === 'A') btn.classList.add('bg-green-600');
-                    else if (selectedRank === 'F') btn.classList.add('bg-blue-600');
-                    
-                    currentFilter = selectedRank;
-                    // GASアクセスなしの高速描画を実行
-                    filterAndRender(); 
                 };
             });
-            // 初期状態でALLタブをアクティブにする
-            document.querySelector('.tab-btn[data-rank="ALL"]').classList.remove('bg-gray-700', 'hover:bg-gray-600');
-            document.querySelector('.tab-btn[data-rank="ALL"]').classList.add('bg-yellow-600', 'active-tab');
-
+            
             // 報告ボタンのクリックイベント (モーダル表示)
             document.querySelectorAll('.report-btn').forEach(btn => {
-@@ -562,6 +693,11 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
+                btn.onclick = (e) => {
+                    e.stopPropagation(); // 詳細パネルの展開を防ぐ
+                    const mobName = btn.dataset.mobName;
+                    const mobRank = btn.dataset.mobRank;
+                    
                     document.getElementById('modal-mob-name').textContent = `${mobRank} ${mobName} の討伐報告`;
                     document.getElementById('submit-report').dataset.mobName = mobName;
                     document.getElementById('submit-report').dataset.mobRank = mobRank;
-                    
-                    // 討伐日時に現在時刻を設定
-                    document.getElementById('report-datetime').value = getCurrentDateTimeLocal();
-                    document.getElementById('report-memo').value = ''; // メモをクリア
-                    
                     document.getElementById('report-modal').classList.remove('hidden');
                     document.getElementById('report-modal').classList.add('flex');
                 };
-@@ -574,8 +710,18 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
-                    if (e.target.closest('.report-btn')) return;
+            });
 
+            // 詳細パネルの展開/格納イベント
+            document.querySelectorAll('.fixed-content').forEach(content => {
+                content.onclick = (e) => {
+                    // 報告ボタンがクリックされた場合は処理しない（バブリングを防ぐ）
+                    if (e.target.closest('.report-btn')) return;
+                    
                     const details = content.parentElement.querySelector('.mob-details');
-                    const mobCard = content.parentElement;
-                    const mobName = mobCard.dataset.mobname;
                     if (details) {
                         details.classList.toggle('open');
-                        
-                        // 開閉状態を記憶
-                        if (details.classList.contains('open')) {
-                            openMobDetails.add(mobName);
-                        } else {
-                            openMobDetails.delete(mobName);
-                        }
                     }
                 };
             });
-@@ -593,6 +739,17 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
+
+            // モーダルキャンセルボタン
+            document.getElementById('cancel-report').onclick = () => {
+                document.getElementById('report-modal').classList.add('hidden');
+                document.getElementById('report-modal').classList.remove('flex');
+            };
+
+            // モーダル送信ボタン
+            document.getElementById('submit-report').onclick = async (e) => {
+                const button = e.target;
+                const mobName = button.dataset.mobName;
                 const mobRank = button.dataset.mobRank;
                 const memo = document.getElementById('report-memo').value;
                 const statusElement = document.getElementById('report-status');
-                // 討伐日時を取得し、UTCに変換
-                const reportDateTimeLocal = document.getElementById('report-datetime').value;
-                if (!reportDateTimeLocal) {
-                    statusElement.textContent = '討伐日時を入力してください。';
-                    statusElement.classList.add('text-red-500');
-                    statusElement.classList.remove('hidden');
-                    return;
-                }
-                // ローカル日時を元にUTC時刻文字列を生成
-                const killTimeUtc = new Date(reportDateTimeLocal).toUTCString();
-
+                
                 statusElement.classList.remove('hidden');
                 statusElement.textContent = '送信中...';
-@@ -602,29 +759,49 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
+                button.disabled = true;
+
+                const payload = {
                     action: "addRecord",
                     モブ名: mobName,
                     ランク: mobRank,
-                    // 討伐日時のキーをGASに合わせて設定
-                    "討伐日時 (UTC)": killTimeUtc, 
                     報告者UUID: userId,
                     メモ: memo
                 };
@@ -615,72 +613,57 @@ Original file line number	Diff line number	Diff line change
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-                    // [Exponential Backoff Loop Start]
-                    const maxRetries = 3;
-                    let attempt = 0;
-                    let response;
-                    while (attempt < maxRetries) {
-                        try {
-                            response = await fetch(`${GAS_ENDPOINT}?action=addRecord`, {
-                                method: 'POST',
-                                mode: 'cors',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(payload)
-                            });
-                            if (response.ok) break;
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        } catch (error) {
-                            attempt++;
-                            if (attempt >= maxRetries) throw error;
-                            const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
-                            await new Promise(resolve => setTimeout(resolve, delay));
-                        }
-                    }
-                    // [Exponential Backoff Loop End]
                     const result = await response.json();
 
                     if (result.status === "success") {
                         statusElement.textContent = '報告が完了しました！';
                         statusElement.classList.add('text-green-500');
                         statusElement.classList.remove('text-red-500');
-
+                        
                         // データを再取得して画面を更新
-                        // データを再取得して画面を更新 (報告成功時の即時更新)
                         setTimeout(() => {
                             document.getElementById('report-modal').classList.add('hidden');
                             document.getElementById('report-modal').classList.remove('flex');
                             fetchAndRenderData();
-                            fetchRecordsAndUpdate(); 
                             button.disabled = false;
                         }, 1500);
                     } else {
-@@ -654,11 +831,17 @@ <h2 class="text-xl font-bold mb-4 text-white" id="modal-mob-name"></h2>
+                        throw new Error(result.message);
+                    }
+
+                } catch (error) {
+                    console.error("報告エラー:", error);
+                    statusElement.textContent = `報告エラー: ${error.message}`;
+                    statusElement.classList.add('text-red-500');
+                    statusElement.classList.remove('text-green-500');
+                    button.disabled = false;
+                }
+            };
+        }
+
+        // --- 初期化 ---
+
+        /**
+         * サイトの初期化処理
+         */
+        function initializeApp() {
+            // 報告者UUIDの生成または取得
+            userId = localStorage.getItem('user_uuid');
+            if (!userId) {
+                userId = crypto.randomUUID();
                 localStorage.setItem('user_uuid', userId);
             }
 
             // 初期表示
             fetchAndRenderData();
-            // 初期表示: GASからデータを取得し、グローバルデータをセット
-            fetchRecordsAndUpdate();
 
             // 5分ごとにデータを更新
             setInterval(fetchAndRenderData, 5 * 60 * 1000); 
-            // GASへのデータ更新間隔は10分を維持
-            setInterval(fetchRecordsAndUpdate, 10 * 60 * 1000); 
-            
-            // リポップ時間の再計算と再描画は1分に1回
-            setInterval(filterAndRender, 60 * 1000); 
-            
-            // ウィンドウサイズ変更時にも再描画を実行し、モバイルとデスクトップのカラム振り分けを適切に行う
-            window.addEventListener('resize', filterAndRender);
         }
 
         // ページロード時に初期化を実行
-0 commit comments
-Comments
-0
- (0)
-Comment
-You're not receiving notifications from this thread.
+        initializeApp();
 
-Update index.html · thehuntifrit/The-Hunt@78f4588There are no files selected for viewing
+    </script>
+</body>
+</html>
