@@ -54,13 +54,13 @@
         .mob-card {
             background-color: #2d3748; /* カード背景色 (濃いグレー) */
             border-radius: 0.5rem;
-            /* FIX: 詳細をオーバーレイ表示するため、overflow: hiddenを削除 */
-            /* overflow: hidden; */ 
+            /* FIX: インライン展開に戻し、詳細パネルがカードの外に漏れないようにoverflow: hiddenを再適用 */
+            overflow: hidden; 
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: box-shadow 0.2s, transform 0.2s;
             cursor: pointer;
-            position: relative; /* FIX: 詳細パネルの絶対配置の基準 */
-            z-index: 10; /* クリック時に下に埋もれないようにデフォルトで高めに設定 */
+            position: relative; 
+            z-index: 10; 
         }
 
         .mob-card:hover {
@@ -141,7 +141,7 @@
             text-align: center;
         }
 
-        /* FIX: スムーズなスライドトランジションとオーバーレイ設定 */
+        /* FIX: インライン展開に戻し、正確な高さ計測で滑らかにスライド */
         .detail-content {
             /* スムーズなアニメーション */
             transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
@@ -149,17 +149,6 @@
                         padding-top 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
                         padding-bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             
-            /* オーバーレイ設定 */
-            position: absolute; 
-            top: 100%; /* カードヘッダーの直下から開始 */
-            left: 0;
-            width: 100%;
-            z-index: 20; /* 確実に下の要素の上に重なるように設定 */
-            
-            background-color: #2d3748; /* カードと同じ背景色 */
-            border-radius: 0 0 0.5rem 0.5rem; /* 下部のみ角丸 */
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.5); /* 影を付けて重なっていることを強調 */
-
             /* 非表示状態 */
             opacity: 0;
             max-height: 0;
@@ -250,7 +239,7 @@
         let reporterUUID = '';
         
         // 現在開いている詳細パネルのIDを追跡するための変数
-        let openMobNameId = null;
+        let openMobNameId = null; // FIX: モブIDを正しく追跡する
 
         // リポップ間隔（秒）をランクに応じて設定
         const DEFAULT_INTERVALS = {
@@ -499,15 +488,19 @@
             // 新しいリストをレンダリング
             mobListContainer.innerHTML = filteredMobs.map(mob => createMobCard(mob)).join('');
 
-            // 詳細表示の状態を保持
+            // 詳細表示の状態を保持 (再レンダリング時に開いていたパネルを復元)
             if (openMobNameId) {
                 const mobToRender = filteredMobs.find(m => safeId(m.mobName) === openMobNameId);
                 const detailElement = document.getElementById(`detail-${openMobNameId}`);
                 
                 if (detailElement) {
-                    // 開くアニメーションを即座に完了させる (再レンダリング時)
+                    // FIX: 再レンダリング時は即座にコンテンツ高さを計算して展開する
                     detailElement.style.display = 'block';
-                    detailElement.style.maxHeight = '1000px'; 
+                    
+                    // 正しい高さを計測
+                    const scrollHeight = detailElement.scrollHeight;
+
+                    detailElement.style.maxHeight = `${scrollHeight + 24}px`; // 縦パディング分を考慮して調整
                     detailElement.style.opacity = '1';
                     detailElement.style.paddingTop = '0.5rem'; 
                     detailElement.style.paddingBottom = '1rem'; 
@@ -565,7 +558,6 @@
 
 
             return `
-                <!-- mob-cardがposition: relative;になっているため、子要素である詳細パネルを絶対配置できます -->
                 <div class="${cardClasses}" onclick="toggleMobDetail('${safeMobNameId}', '${safeHTML(mob.area)}')" data-mob-name="${safeHTML(mobName)}">
                     
                     <!-- 1行目と2行目 (ゲージ背景) -->
@@ -609,7 +601,7 @@
                         </div>
                     </div>
 
-                    <!-- 詳細情報 (スライド表示部分) - position: absolute; で下の要素の上に重なります -->
+                    <!-- 詳細情報 (スライド表示部分) - インラインで展開し、コンテンツを下に押し出します -->
                     <div id="detail-${safeMobNameId}" class="detail-content bg-gray-700 text-gray-300 px-4">
                         <div class="text-xs border-t border-gray-600 pt-2">
                             <!-- 前回の討伐時間 -->
@@ -726,12 +718,21 @@
 
             } else {
                 // 開く
-                // まず display: block にして、高さ0, 透明度0の状態でレイアウトを確定させる
+                // FIX: 開く前に、一時的に高さをautoにしてscrollHeightを計測する
                 detailElement.style.display = 'block';
+                detailElement.style.maxHeight = '0';
+                detailElement.style.opacity = '0';
                 
-                // 次の描画サイクルで max-height と opacity を設定し、トランジションをトリガー
+                // コンテンツの高さ（パディングなしの純粋な高さ）を取得
+                const contentWrapper = detailElement.querySelector('div.pt-2'); 
+                const contentHeight = contentWrapper ? contentWrapper.offsetHeight : 0; 
+
+                // 総Max Height = コンテンツ高さ + 縦パディング合計 (0.5rem + 1rem = 1.5rem = 24px)
+                const totalMaxHeight = contentHeight + 24; 
+
+                // 次の描画サイクルでアニメーションをトリガー
                 requestAnimationFrame(() => {
-                    detailElement.style.maxHeight = '1000px'; 
+                    detailElement.style.maxHeight = `${totalMaxHeight}px`; 
                     detailElement.style.opacity = '1';
                     detailElement.style.paddingTop = OPEN_PADDING_TOP;
                     detailElement.style.paddingBottom = OPEN_PADDING_BOTTOM;
