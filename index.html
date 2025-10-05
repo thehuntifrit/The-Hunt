@@ -55,13 +55,14 @@
             opacity: 0.95; /* 若干淡くする場合は調整可能 */
         }
 
-
         /* S/Aモブが出る重要地点のリング */
+　      /* 重要ポイント用のベースクラス（外枠は JS で色付き box-shadow を直接付与） */
         .important-ring {
-        /* 外周を細くして内側と同色の濃い線で囲む */
-            box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.95); /* 細い同色の濃い輪郭 */
-        /* 軽い発光は残すが控えめに */
-            filter: drop-shadow(0 0 4px rgba(0,0,0,0.7));
+        /* 外枠は JS 側で box-shadow を inline style として付与するため最小限の設定に */
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.0);
+            border-radius: 50%;
+        /* 必要なら軽い外側の発光を残す（色は JS の drop-shadow で制御） */
+            filter: drop-shadow(0 0 4px rgba(0,0,0,0.5));
         }
        
         /* リポップバーのCSS変数とグラデーション定義 */
@@ -659,17 +660,34 @@ const detailContent = `
                         dotStyle += `background-color: #AAAAAA; opacity: 1.0;`;
                     } 
                     
-                    // 2. 残り1点強調判定 (操作可能な地点のみ)
-                    else if (isImportant && isLastOne && point.id === unkilledImportantPoints[0].id) {
-                    // 中央色を維持しつつ、外枠は細く濃い同色で囲む
-                        dotStyle += `background-color: #66FF99; box-shadow: 0 0 0 1px rgba(102,255,153,0.95); filter: drop-shadow(0 0 6px rgba(102,255,153,0.25));`;
+                    // 色マップ（内側カラー -> 濃い外枠カラー）
+                    const RING_COLOR_MAP = {
+                      '#79A6FF': '#2f67d6', // B1（淡青）向けの濃い青
+                      '#FF7979': '#d64545', // B2（淡赤）向けの濃い赤
+                      '#66FF99': '#2db06a'  // 最後の未討伐で使っている緑寄り色の濃色（該当する場合）
+                    };
+
+                    // --- 既存処理の直後に挿入する形で置換 ---
+                    if (status === 'killed') {
+                      dotStyle += `background-color: #AAAAAA; opacity: 0.9;`; // 透過を抑える（前の要望対応）
+                    } else if (isImportant && isLastOne && point.id === unkilledImportantPoints[0].id) {
+                    // 最後の1点は中央色を維持しつつ細い濃色輪郭と弱い発光
+                    const inner = '#66FF99';
+                    const ring = RING_COLOR_MAP[inner] || '#2db06a';
+       　             dotStyle += `background-color: ${inner}; box-shadow: 0 0 0 1px ${ring}; filter: drop-shadow(0 0 6px rgba(45,176,106,0.25));`;
+                    } else if (isImportant) {
+                    // 重要点は内側色（デフォルト bgColor）を維持し、外枠を細く濃色で囲む
+                    // 既に bgColor 変数が設定されているためそれをベースにリング色を選ぶ
+                    let ring = '#fbbf24'; // デフォルト（保険）
+                    // 小文字化して判定すると安全
+                    const bgLower = String(bgColor).toLowerCase();
+                    if (bgLower.includes('79a6ff')) ring = RING_COLOR_MAP['#79A6FF'];
+                    else if (bgLower.includes('ff7979')) ring = RING_COLOR_MAP['#FF7979'];
+                    // 外枠を細く濃色で描画。必要なら border も追加して視認性を高める
+                      dotStyle += `box-shadow: 0 0 0 1px ${ring}; border: 1px solid ${ring};`;
+                      dotClasses += ' important-ring';
                     }
 
-                    
-                    // 3. S/A重要地点強調判定 (外枠)
-                    else if (isImportant) {
-                        dotClasses += ' important-ring'; 
-                    }
 
                     // 4. Bモブのみの地点はクリック不可（カーソル変更なし）
                     if (!isImportant) {
