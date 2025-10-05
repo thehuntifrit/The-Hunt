@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -149,19 +150,21 @@
         // Google Apps Script (GAS) のエンドポイントURL
         const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxyutpOIZYI9Ce51s4vawk6S460QgM4wYcaLFJKUBi00_LKhNXT9-6N0n178KdoXkP7wg/exec';
 
-        // --- データ定義 ---
-
-　　　　let mobData = []; // 外部JSONから読み込むため初期化のみ
-　　　　async function loadMobData() {
-  　　　　　try {
-    　　const response = await fetch('mob_data.json');
-    if (!response.ok) throw new Error('mob_data.json 読み込み失敗');
-    mobData = await response.json();
-    fetchRecordsAndUpdate(); // 読み込み後に描画処理を呼び出す
-  } catch (error) {
-    console.error('mob_data.json 読み込みエラー:', error);
+        let mobData = []; // 外部 JSON を読み込むための初期化
+            async function loadMobData() {
+            try {
+        const response = await fetch('mob_data.json');
+            if (!response.ok) throw new Error('mob_data.json 読み込み失敗: ' + response.status);
+                mobData = await response.json();
+    // mobData を読み込んだら既存の描画更新を実行
+                fetchRecordsAndUpdate();
+                  } catch (error) {
+                console.error('mob_data.json 読み込みエラー:', error);
+    // 読み込み失敗でも既存処理を続けたい場合は fetchRecordsAndUpdate() を呼ぶ（任意）
+    // fetchRecordsAndUpdate();
   }
-}        
+}
+        
         // ランクごとの色定義 (CSSクラス名)
         const RANK_COLORS = {
             'S': 'bg-orange-600', 
@@ -764,23 +767,27 @@
         /**
          * サイトの初期化処理
          */
-function initializeApp() {
-  userId = localStorage.getItem('user_uuid');
-  if (!userId) {
-    userId = crypto.randomUUID();
-    localStorage.setItem('user_uuid', userId);
-  }
+        function initializeApp() {
+            // 報告者UUIDの生成または取得
+            userId = localStorage.getItem('user_uuid');
+            if (!userId) {
+                userId = crypto.randomUUID();
+                localStorage.setItem('user_uuid', userId);
+            }
 
-  // 修正前:
-  // fetchRecordsAndUpdate();
+            // 外部 JSON を読み込み → 読み込み後 fetchRecordsAndUpdate() が呼ばれる
+            loadMobData();
 
-  // 修正後:
-  loadMobData(); // 外部JSON読み込み → fetchRecordsAndUpdate() を内部で呼ぶ
+            // GASへのデータ更新間隔は10分を維持
+            setInterval(fetchRecordsAndUpdate, 10 * 60 * 1000); 
+            
+            // リポップ時間の再計算と再描画は1分に1回
+            setInterval(filterAndRender, 60 * 1000); 
+            
+            // ウィンドウサイズ変更時にも再描画を実行し、モバイルとデスクトップのカラム振り分けを適切に行う
+            window.addEventListener('resize', filterAndRender);
+        }
 
-  setInterval(fetchRecordsAndUpdate, 10 * 60 * 1000);
-  setInterval(filterAndRender, 60 * 1000);
-  window.addEventListener('resize', filterAndRender);
-}
         // ページロード時に初期化を実行
         initializeApp();
 
