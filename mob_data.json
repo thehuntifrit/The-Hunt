@@ -224,103 +224,103 @@
         "id": "UN_01",
         "x": 33.5,
         "y": 8.0,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_02",
         "x": 47.9,
         "y": 10.4,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_03",
         "x": 43.3,
         "y": 17.5,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_04",
         "x": 51.5,
         "y": 20.0,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_05",
         "x": 50.5,
         "y": 33.0,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_06",
         "x": 12.8,
         "y": 20.9,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_07",
         "x": 24.3,
         "y": 58.1,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_08",
         "x": 33.9,
         "y": 65.7,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_09",
         "x": 26.1,
         "y": 67.0,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_10",
         "x": 32.7,
         "y": 70.5,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_11",
         "x": 23.3,
         "y": 81.1,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_12",
         "x": 26.4,
         "y": 92.6,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_13",
         "x": 36.4,
         "y": 82.3,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_14",
         "x": 42.6,
         "y": 90.3,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_15",
         "x": 61.4,
         "y": 92.0,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_16",
         "x": 62.2,
         "y": 82.9,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "UN_17",
         "x": 74.4,
         "y": 79.9,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       }
      ]
     },
@@ -398,139 +398,139 @@
         "id": "CT_01",
         "x": 56.4,
         "y": 92.4,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_02",
         "x": 52.0,
         "y": 77.4,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_03",
         "x": 57.1,
         "y": 81.0,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_04",
         "x": 64.8,
         "y": 72.6,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_05",
         "x": 44.4,
         "y": 57.8,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_06",
         "x": 37.4,
         "y": 55.6,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_07",
         "x": 39.4,
         "y": 49.0,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_08",
         "x": 38.0,
         "y": 41.6,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_09",
         "x": 28.8,
         "y": 47.0,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_10",
         "x": 48.6,
         "y": 37.0,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_11",
         "x": 28.0,
         "y": 32.6,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_12",
         "x": 34.4,
         "y": 29.6,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_13",
         "x": 35.4,
         "y": 25.0,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_14",
         "x": 29.2,
         "y": 20.8,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_15",
         "x": 28.2,
         "y": 5.6,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_16",
         "x": 35.0,
         "y": 10.4,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_17",
         "x": 49.2,
         "y": 10.2,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_18",
         "x": 48.6,
         "y": 18.0,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_19",
         "x": 45.0,
         "y": 20.2,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_20",
         "x": 63.2,
         "y": 26.6,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_21",
         "x": 71.0,
         "y": 27.0,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_22",
         "x": 77.8,
         "y": 38.4,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       },
       {
         "id": "CT_23",
         "x": 69.2,
         "y": 39.8,
-        "b_group": ["B1"] 
+        "mob_ranks": ["S", "A", "B1"] 
       }
      ]
     },
