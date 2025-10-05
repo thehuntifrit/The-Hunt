@@ -3,967 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Hunt</title>
-    <!-- Tailwind CSS CDN -->
+    <title>GAS連携フォーム</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* 基本的なダークモード設定 */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #1a202c; /* ダークブルー */
-            color: #ffffff; /* 白文字 */
+            background-color: #f7f9fc;
+            min-height: 100vh;
         }
-        
-        /* コンテンツ幅の制御とセンタリング */
-        .container {
-            max-width: 1536px; /* 2XL相当 */
-            margin-left: auto;
-            margin-right: auto;
-            padding: 0 1rem;
+        /* カスタムスタイル */
+        .card {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
         }
-
-        /* カスタムグリッド（レスポンシブ対応） */
-        .mob-grid {
-            /* スマホ (デフォルト) */
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-        /* PC (lg以上) - 512px幅のカードを3カラムで配置 */
-        @media (min-width: 1024px) {
-            .mob-grid {
-                /* 512px (カード幅) * 3 + gap */
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-        /* タブレット (md以上) - 1カラム幅512pxを中央寄せ */
-        @media (min-width: 768px) and (max-width: 1023px) {
-            .mob-grid {
-                grid-template-columns: 1fr;
-            }
-            .mob-grid > div {
-                max-width: 512px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-        }
-
-        /* モブカードの基本スタイル */
-        .mob-card {
-            background-color: #2d3748; /* カード背景色 (濃いグレー) */
+        .form-control {
+            border: 1px solid #d1d5db;
+            padding: 0.75rem;
             border-radius: 0.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.2s, transform 0.2s;
-            cursor: pointer;
-            position: relative; 
-            z-index: 10; 
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
         }
-
-        .mob-card:hover {
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
-            transform: translateY(-2px);
-        }
-
-        /* 経過時間ゲージのベース */
-        .progress-bar {
-            height: 100%;
-            background-color: #f6e05e; /* パステルイエローグリーン */
-            transition: width 0.5s ease-out;
-        }
-
-        /* テキストのアウトライン風シャドウ (藍色 #3182ce) */
-        .text-outline {
-            text-shadow: 
-                -1px -1px 0 #3182ce,  
-                 1px -1px 0 #3182ce,
-                -1px  1px 0 #3182ce,
-                 1px  1px 0 #3182ce;
-        }
-
-        /* タブのアクティブスタイル */
-        .tab-active {
-            background-color: #68d391 !important; /* パステル黄緑 */
-            color: #1a202c !important; /* 濃い文字色 */
-            font-weight: 700;
-        }
-
-        /* マップオーバーレイ */
-        .map-container {
-            position: relative;
-            max-width: 500px; /* マップ画像の固定幅 */
-            height: 500px; /* マップ画像の固定高さ */
-            margin: 0 auto;
-        }
-        
-        .map-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            user-select: none;
-        }
-
-        /* POP地点マーカー */
-        .pop-point {
-            position: absolute;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            border: 2px solid #ffffff;
-            cursor: pointer;
-            opacity: 0.85;
-            transition: transform 0.1s;
-        }
-        .pop-point:hover {
-            transform: scale(1.3);
-            opacity: 1;
-        }
-
-        /* 状態別カラー */
-        /* POP候補地 (緑) */
-        .pop-candidate {
-            background-color: #48bb78; /* Tailwind green-500 */
-        }
-        /* チェック済み (POPしなかった、赤) */
-        .pop-checked {
-            background-color: #e53e3e; /* Tailwind red-600 */
-        }
-
-        /* メンテナンス情報 */
-        #maintenance-message {
-            color: #fc8181; /* 赤文字 */
-            font-weight: 700;
-            padding: 0.5rem;
-            margin-top: 0.5rem;
-            text-align: center;
-        }
-
-        /* 🚨 変更点: インライン展開の詳細情報スタイル */
-        .detail-content-inline {
-            /* 通常のDOMフローに従う */
-            overflow: hidden; /* max-height transitionのために重要 */
-            max-height: 0;
-            opacity: 0;
-            
-            /* スムーズなアニメーション */
-            transition: max-height 0.4s ease-out, opacity 0.3s ease-out; 
-            
-            padding: 0 1rem; /* 閉じた状態ではpadding 0 */
-            border-top: 0px solid #4a5568; /* 閉じた状態では境界線なし */
-            pointer-events: none; /* 閉じた状態ではクリック無効 */
-            
-            /* カードの角丸に合わせたスタイル */
-            border-radius: 0 0 0.5rem 0.5rem;
-        }
-
-        .detail-content-inline.is-open {
-            max-height: 1000px; /* 展開時の十分な高さ */
-            opacity: 1;
-            padding: 1rem; /* 展開時にpaddingを適用 */
-            border-top: 1px solid #4a5568; /* 展開時に区切り線を表示 */
-            pointer-events: auto; /* 展開時にクリック有効 */
+        .form-control:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25);
+            outline: none;
         }
     </style>
 </head>
-<body>
-    
-    <!-- FIXED HEADER START: タイトル、説明、タブを固定 -->
-    <div id="fixed-header" class="fixed top-0 left-0 right-0 z-20 bg-[#1a202c] shadow-2xl pb-4">
-        <div class="container">
-            <!-- サイトタイトルと説明 -->
-            <header class="text-center pt-8 mb-4">
-                <h1 class="text-5xl font-extrabold mb-2 text-yellow-400">The Hunt</h1>
-                <p id="site-description" class="text-gray-300">
-                    エオルゼアのモブハント情報をリアルタイムで追跡し、POP地点を共有するためのツールです。
-                    <br>
-                    <span class="text-sm text-yellow-400">現在、Ifritワールド専用で運用中。</span>
-                </p>
-                <!-- メンテナンス情報表示エリア -->
-                <p id="maintenance-message" class="hidden"></p>
-            </header>
-            
-            <!-- 読み込み中/エラーメッセージ -->
-            <div id="loading-status" class="text-center text-xl p-2 rounded-lg bg-yellow-900/50 mx-4">
-                データを読み込み中です...
-            </div>
+<body class="flex items-center justify-center p-4">
+    <div id="app" class="w-full max-w-lg">
+        <div class="card bg-white p-8 rounded-xl">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">GASフォーム送信テスト</h1>
+            <p id="status-message" class="text-center mb-4 text-sm font-medium h-6"></p>
 
-            <!-- タブフィルター (grid-cols-4でサイズ統一) -->
-            <div id="filter-tabs" class="grid grid-cols-4 gap-2 mt-4 mx-4 p-1 bg-gray-700 rounded-lg">
-                <!-- タブはJavaScriptで生成されます -->
-            </div>
-        </div>
-    </div>
-    <!-- FIXED HEADER END -->
-
-    <!-- コンテンツ本体 (ヘッダーの高さ分、上部にパディングを確保) -->
-    <!-- ページ最下部に pb-40 (10rem) の余白を追加 -->
-    <div class="container pt-[250px] lg:pt-[220px] pb-40">
-        <!-- モブ一覧コンテナ -->
-        <div id="mob-list-container" class="mob-grid">
-            <!-- モブカードはJavaScriptでここに挿入されます -->
-        </div>
-    </div>
-
-    <!-- 討伐報告モーダル (日時入力) -->
-    <div id="report-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="bg-gray-800 p-6 rounded-xl w-11/12 max-w-sm">
-            <h2 id="modal-title" class="text-2xl font-bold mb-4 text-white">討伐報告</h2>
-            <p class="text-gray-300 mb-4">討伐日時を正確に入力してください。デフォルトで現在のJSTが設定されています。</p>
-            
-            <input type="hidden" id="report-mob-name">
-            <input type="hidden" id="report-mob-rank">
-            <input type="hidden" id="report-mob-area">
-
-            <!-- 日時入力フィールド -->
-            <label for="kill-time-input" class="block text-sm font-medium text-gray-400 mb-1">討伐日時 (JST)</label>
-            <input type="datetime-local" id="kill-time-input" 
-                   class="w-full p-2 mb-4 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-green-500 focus:border-green-500">
-
-            <!-- 報告者UUID表示 -->
-            <div id="reporter-uuid-display" class="text-xs text-right text-gray-500 mb-4"></div>
-
-            <div id="report-status" class="text-center text-sm mb-4"></div>
-
-            <div class="flex justify-end space-x-3">
-                <button onclick="closeModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white font-semibold rounded-lg transition duration-150">キャンセル</button>
-                <button onclick="submitKillReport()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition duration-150">報告確定</button>
-            </div>
+            <form id="submissionForm" class="space-y-4">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">お名前 (Name)</label>
+                    <input type="text" id="name" name="name" required class="form-control w-full">
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">メールアドレス (Email)</label>
+                    <input type="email" id="email" name="email" required class="form-control w-full">
+                </div>
+                <div>
+                    <label for="message" class="block text-sm font-medium text-gray-700 mb-1">メッセージ (Message)</label>
+                    <textarea id="message" name="message" rows="4" required class="form-control w-full"></textarea>
+                </div>
+                
+                <button type="submit" id="submitButton" 
+                        class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
+                    送信
+                </button>
+            </form>
         </div>
     </div>
 
     <script>
-        // 🚨 設定項目: GAS API URL
-        const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxyutpOIZYI9Ce51s55555555555555555555555555555/exec'; 
-        const STATIC_DATA_URL = './mob_data.json'; 
+        // Google Apps Scriptの新しいデプロイURL
+        // ユーザーから提供された新しいURL
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxyutpOIZYI9Ce51s4vawk6S460QgM4wYcaLFJKUBi00_LKhNXT9-6N0n178KdoXkP7wg/exec';
 
-        // グローバルなデータストア
-        let globalMobConfig = {};      
-        let globalLocationDef = {};    
-        let globalHuntList = [];       
-        let globalLocationState = [];  
-        let currentFilter = 'ALL';
-        let reporterUUID = '';
-        
-        // 現在開いている詳細パネルのIDを追跡するための変数
-        let openMobNameId = null; 
-
-        // リポップ間隔（秒）をランクに応じて設定
-        const DEFAULT_INTERVALS = {
-            'S': 27000, 
-            'A': 300 
-        };
-
-        // UI要素
-        const mobListContainer = document.getElementById('mob-list-container');
-        const loadingStatus = document.getElementById('loading-status');
-        const filterTabsContainer = document.getElementById('filter-tabs');
-        const maintenanceMessage = document.getElementById('maintenance-message');
-
-
-        // ====================================================================
-        // ユーティリティ関数
-        // ====================================================================
+        const form = document.getElementById('submissionForm');
+        const statusMessage = document.getElementById('status-message');
+        const submitButton = document.getElementById('submitButton');
 
         /**
-         * 匿名レポート用UUIDを取得・生成します。
+         * フォームのデータをGoogle Apps Scriptに送信します。
+         * @param {Event} e 
          */
-        function getReporterUUID() {
-            let uuid = localStorage.getItem('reporterUUID');
-            if (!uuid) {
-                uuid = crypto.randomUUID();
-                localStorage.setItem('reporterUUID', uuid);
+        async function handleSubmit(e) {
+            e.preventDefault();
+            
+            // フォーム送信中の状態を設定
+            statusMessage.textContent = '送信中...';
+            statusMessage.className = 'text-center mb-4 text-sm font-medium text-blue-600 h-6';
+            submitButton.disabled = true;
+            submitButton.textContent = '送信中...';
+
+            const formData = new FormData(form);
+            
+            // FormDataをURLSearchParams形式に変換 (GASのdoPostは通常この形式を期待します)
+            const params = new URLSearchParams();
+            for (const [key, value] of formData.entries()) {
+                params.append(key, value);
             }
-            return uuid;
-        }
-
-        /**
-         * UNIXタイムスタンプをJSTの文字列にフォーマットします。
-         */
-        function formatTimeToJST(timestamp) {
-            if (!timestamp) return '不明';
-            const date = new Date(timestamp);
-            return date.toLocaleTimeString('ja-JP', {
-                timeZone: 'Asia/Tokyo',
-                year: 'numeric',
-                month: 'numeric',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-        }
-        
-        /**
-         * Dateオブジェクトを <input type="datetime-local"> 形式 (YYYY-MM-DDThh:mm) に変換します。（JSTとして処理）
-         */
-        function dateToDateTimeLocal(date) {
-            const offset = date.getTimezoneOffset() * 60000;
-            const jstOffset = 9 * 60 * 60000;
-            
-            const jstDate = new Date(date.getTime() + offset + jstOffset);
-
-            const pad = (num) => num.toString().padStart(2, '0');
-            
-            const year = jstDate.getFullYear();
-            const month = pad(jstDate.getMonth() + 1);
-            const day = pad(jstDate.getDate());
-            const hours = pad(jstDate.getHours());
-            const minutes = pad(jstDate.getMinutes());
-            
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
-        }
-
-
-        /**
-         * テンプレートリテラル内のXSS対策
-         */
-        function safeHTML(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-
-        /**
-         * HTML IDとして安全な文字列を生成します。
-         */
-        function safeId(str) {
-            if (!str) return 'id-' + crypto.randomUUID();
-            // モンスター名から安全なIDを生成
-            return String(str).replace(/\s/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
-        }
-
-
-        // ====================================================================
-        // データ取得 (静的/動的)
-        // ====================================================================
-
-        /**
-         * 静的なモブ設定データ (mob_data.json) を取得します。
-         */
-        async function fetchStaticData() {
-            try {
-                const response = await fetch(STATIC_DATA_URL);
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch static data: ${response.statusText}`);
-                }
-                const data = await response.json();
-                
-                globalMobConfig = data.mobConfig || {};
-                globalLocationDef = data.locationDef || {};
-                
-                loadingStatus.textContent = '静的データを正常に読み込みました。リアルタイムデータを取得中です...';
-                
-                generateTabs(); 
-
-            } catch (error) {
-                console.error("Error fetching static data:", error);
-                loadingStatus.innerHTML = `
-                    <div class="text-red-400">🚨 致命的なエラー: モブ設定データの読み込みに失敗しました。</div>
-                    <div class="text-sm mt-2 text-gray-400">
-                        mob_data.jsonファイルが存在しないか、JSONの形式が正しくありません。コンソールを確認してください。
-                    </div>
-                `;
-                throw error;
-            }
-        }
-
-        /**
-         * Google Apps Script (GAS) API から動的なデータ (ログ、状態) を取得します。
-         */
-        async function fetchDynamicData() {
-            console.log(`[Fetch] Fetching dynamic data from: ${GAS_API_URL}?mode=getdata`);
 
             try {
-                const response = await fetch(`${GAS_API_URL}?mode=getdata`, {
-                    method: 'GET',
-                    cache: 'no-cache' 
-                });
-
-                if (!response.ok) {
-                    throw new Error(`GAS API HTTP Error: ${response.status} ${response.statusText}`);
-                }
-
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    globalHuntList = result.huntList || [];
-                    globalLocationState = result.locationState || [];
-                    
-                    checkMaintenance(result.maintenance);
-
-                    renderMobList();
-
-                    loadingStatus.classList.add('hidden'); 
-                } else {
-                    throw new Error(`GAS API Error: ${result.message}`);
-                }
-
-            } catch (error) {
-                console.error("Error fetching dynamic data from GAS:", error);
-                loadingStatus.classList.remove('hidden');
-                loadingStatus.innerHTML = `<div class="text-red-400">🚨 リアルタイムデータ取得エラー: ${error.message}</div>`;
-            }
-        }
-
-        /**
-         * メンテナンス情報をチェックし、表示します。
-         */
-        function checkMaintenance(message) {
-            maintenanceMessage.textContent = '';
-            maintenanceMessage.classList.add('hidden');
-            
-            if (message && message.toLowerCase().includes('maintenance')) {
-                maintenanceMessage.textContent = '🚨 サーバーメンテナンス情報: ' + message;
-                maintenanceMessage.classList.remove('hidden');
-            }
-        }
-
-        // ====================================================================
-        // UI描画関数
-        // ====================================================================
-
-        /**
-         * タブフィルターを生成します。
-         */
-        function generateTabs() {
-            const ranks = ['ALL', 'S', 'A', 'FATE'];
-            filterTabsContainer.innerHTML = ranks.map(rank => `
-                <button 
-                    onclick="setFilter('${rank}')" 
-                    class="tab-button w-full px-4 py-2 text-sm font-semibold rounded-lg bg-gray-600 hover:bg-gray-500 text-white transition duration-150 ${rank === currentFilter ? 'tab-active' : ''}"
-                    data-filter="${rank}"
-                >
-                    ${rank}
-                </button>
-            `).join('');
-        }
-
-        /**
-         * フィルターを設定し、リストを再描画します。
-         * @param {string} filter - フィルター文字列 (ALL, S, A, FATE)
-         */
-        function setFilter(filter) {
-            currentFilter = filter;
-            renderMobList();
-            
-            // フィルタボタンのハイライトを更新
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('tab-active');
-                if (button.dataset.filter === filter) {
-                    button.classList.add('tab-active');
-                }
-            });
-        }
-
-
-        /**
-         * モブリスト全体をレンダリングします。
-         */
-        function renderMobList() {
-            const allMobs = Object.keys(globalMobConfig).map(key => {
-                const mob = globalMobConfig[key];
-                return {
-                    ...mob,
-                    mobName: mob['モンスター名'] || key || '不明なモブ',
-                    rank: mob['ランク'] || 'N/A',
-                    area: mob['エリア名'] || 'エリア不明',
-                    popCondition: mob['POP条件'] || 'なし',
-                    interval: mob['リポップ間隔 (秒)'] || DEFAULT_INTERVALS[mob['ランク']] || 1800,
-                    mapFilename: mob['マップ画像 (ファイル名)']
-                };
-            });
-
-            // FATEランクのフィルタリング ('FATE'または'F')
-            let filteredMobs = allMobs.filter(mob => {
-                const mobRank = mob.rank || 'N/A';
-                if (currentFilter === 'ALL') return true;
-                if (currentFilter === 'FATE') return mobRank === 'FATE' || mobRank === 'F'; 
-                return mobRank === currentFilter;
-            });
-            
-            // 討伐時間とリポップ率の計算、ソート
-            filteredMobs = filteredMobs
-                .map(mob => calculateMobTime(mob)) 
-                .sort((a, b) => b.progressPercent - a.progressPercent); 
-
-            if (filteredMobs.length === 0) {
-                mobListContainer.innerHTML = `<p class="text-center text-gray-400 col-span-full">選択されたランクのモンスターはいません。</p>`;
-                return;
-            }
-
-            // 新しいリストをレンダリング
-            mobListContainer.innerHTML = filteredMobs.map(mob => createMobCard(mob)).join('');
-
-            // 詳細表示の状態を保持 (再レンダリング時に開いていたパネルを復元)
-            if (openMobNameId) {
-                const detailElement = document.getElementById(`detail-${openMobNameId}`);
-
-                if (detailElement) {
-                    // インライン展開のクラスを即座に追加して表示を復元
-                    detailElement.classList.add('is-open');
-                    
-                    // マップ再描画
-                    const mobToRender = filteredMobs.find(m => safeId(m.mobName) === openMobNameId);
-                    if (mobToRender) {
-                        renderMap(mobToRender.mobName, mobToRender.area);
-                    }
-                } else {
-                    // 開いていたモブがフィルタリングで非表示になった場合、状態をリセット
-                    openMobNameId = null;
-                }
-            }
-        }
-
-        /**
-         * 個別のモブカードのHTMLを生成します。
-         */
-        function createMobCard(mob) {
-            const mobName = mob.mobName;
-            // MobNameを元にしたIDを使用
-            const safeMobNameId = safeId(mobName); 
-            
-            if (mobName === '不明なモブ') {
-                console.warn("Skipping card due to missing mob name:", mob);
-                return ''; 
-            }
-
-            const lastKillTime = mob.lastKillTime;
-            const progressPercent = mob.progressPercent;
-            const nextPopTime = mob.nextPopTime;
-
-            const rawMapImageFilename = mob.mapFilename || '';
-            const hasMap = rawMapImageFilename !== '';
-            
-            const mapIcon = hasMap ? '🗺️' : '';
-            
-            const cardClasses = `mob-card p-0 transition duration-300`;
-            const progressColor = progressPercent > 90 ? 'bg-red-500' : '#68d391'; /* 90%以上は赤 */
-
-            // ランク別カラー設定
-            let rankColor = 'bg-gray-600'; // デフォルト
-            const mobRank = mob.rank || 'N/A';
-
-            if (mobRank === 'S') {
-                rankColor = 'bg-orange-500'; // S: オレンジ
-            } else if (mobRank === 'A') {
-                rankColor = 'bg-green-600'; // A: 緑
-            } else if (mobRank === 'FATE' || mobRank === 'F') {
-                rankColor = 'bg-blue-400'; // FATE: 青
-            } 
-            
-            // POP条件の改行処理 (「//」を<br>に変換して表示)
-            const formattedPopCondition = safeHTML(mob.popCondition || 'なし').replace(/\/\//g, '<br>');
-
-
-            return `
-                <div class="${cardClasses}" data-mob-name="${safeHTML(mobName)}" id="card-${safeMobNameId}">
-                    
-                    <!-- 1行目と2行目 (ゲージ背景) -->
-                    <div class="relative overflow-hidden z-10 rounded-t-lg">
-                        <!-- 経過時間ゲージ -->
-                        <div class="progress-bar absolute top-0 left-0 h-full z-0" style="width: ${progressPercent}%; background-color: ${progressColor};"></div>
-                        
-                        <!-- コンテンツレイヤー (クリック可能部分) -->
-                        <div class="relative z-10 p-4" onclick="toggleMobDetail('${safeMobNameId}', '${safeHTML(mob.area)}')">
-                            <div class="flex justify-between items-start mb-1">
-                                
-                                <!-- モンスター名とランク、エリア名の表示エリア -->
-                                <div class="flex flex-col">
-                                    
-                                    <!-- 1行目: ランクとモンスター名 -->
-                                    <div class="flex items-baseline space-x-2 mb-0.5">
-                                        <!-- ランクバッジ: rounded-lgに変更し、paddingを調整 -->
-                                        <span class="px-2 py-0.5 text-sm font-bold rounded-lg ${rankColor} text-white flex-shrink-0">${safeHTML(mob.rank || 'N/A')}</span>
-                                        
-                                        <!-- モンスター名 (サイズをtext-lgに縮小) -->
-                                        <span class="text-lg font-bold text-white text-outline">${safeHTML(mobName)} ${mapIcon}</span>
-                                    </div>
-                                    
-                                    <!-- 2行目: エリア名 (位置を2.2remに、文字サイズをtext-xsに修正) -->
-                                    <span class="text-xs text-gray-300" style="margin-left: 2.2rem;">${safeHTML(mob.area || 'エリア不明')}</span>
-                                </div>
-                                
-                                <!-- 報告ボタン (クリックが詳細トグルに伝播しないよう event.stopPropagation() を使用) -->
-                                <button 
-                                    class="mt-1 px-2 py-1 bg-red-700 hover:bg-red-600 text-xs text-white font-bold rounded-full transition duration-150 flex-shrink-0"
-                                    onclick="event.stopPropagation(); openModal('${safeHTML(mobName)}', '${safeHTML(mob.rank || 'N/A')}', '${safeHTML(mob.area || 'エリア不明')}')"
-                                >
-                                    報告
-                                </button>
-                            </div>
-                            
-                            <!-- 次回POP時間 (経過%) -->
-                            <div class="text-sm font-semibold mt-2">
-                                <span class="text-white">次回POP: ${nextPopTime} (${progressPercent.toFixed(1)}%)</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 🚨 変更点: インライン展開の詳細パネル (通常のDOMフロー) -->
-                    <div id="detail-${safeMobNameId}" class="detail-content-inline text-gray-300">
-                        
-                        <div class="pb-4"> 
-                            <div class="text-xs">
-                                <!-- 前回の討伐時間 -->
-                                <p class="mb-1"><strong>前回討伐:</strong> ${formatTimeToJST(lastKillTime)}</p>
-                                
-                                <!-- POPさせる条件の説明 (formattedPopConditionを使用) -->
-                                <p class="mb-2"><strong>POP条件:</strong> ${formattedPopCondition}</p>
-                                
-                                <!-- 座標記録用のMAP -->
-                                ${hasMap ? `
-                                    <div class="mt-4">
-                                        <h4 class="text-md font-semibold text-white mb-2">POP候補地 (${safeHTML(mob.area || 'エリア不明')})</h4>
-                                        <div id="map-canvas-${safeMobNameId}" class="map-container rounded-lg overflow-hidden border border-gray-600">
-                                            <!-- マップと座標点はここに描画されます -->
-                                        </div>
-                                    </div>
-                                ` : `<p class="mt-4">このモブのマップ座標データはありません。</p>`}
-                            </div>
-                        </div>
-                        
-                        <!-- 閉じるボタンを詳細パネルの最下部に配置 -->
-                        <button 
-                            class="w-full mt-2 py-2 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded-lg transition duration-150"
-                            onclick="event.stopPropagation(); toggleMobDetail('${safeMobNameId}', '${safeHTML(mob.area)}')"
-                        >
-                            詳細を閉じる
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-        
-        /**
-         * モブの最新の討伐時間からリポップ時間や進捗率を計算します。
-         */
-        function calculateMobTime(mob) {
-            const mobName = mob.mobName;
-            const mobRank = mob.rank;
-            
-            const defaultInterval = DEFAULT_INTERVALS[mobRank] || 1800; 
-            const intervalSeconds = mob.interval || defaultInterval;
-
-            const latestKill = globalHuntList
-                .filter(log => log.mobName === mobName)
-                .sort((a, b) => new Date(b.killTime) - new Date(a.killTime))[0];
-
-            let lastKillTime = null;
-            let timeSinceKill = 0;
-            let progressPercent = 0;
-            let nextPopTime = "討伐報告なし";
-
-            if (latestKill) {
-                lastKillTime = new Date(latestKill.killTime).getTime();
-                const now = Date.now();
-                
-                timeSinceKill = Math.floor((now - lastKillTime) / 1000);
-                
-                progressPercent = Math.min((timeSinceKill / intervalSeconds) * 100, 100);
-
-                const nextPopTimestamp = lastKillTime + (intervalSeconds * 1000);
-                nextPopTime = formatTimeToJST(nextPopTimestamp);
-
-                if (progressPercent >= 100) {
-                    nextPopTime = "POP可能";
-                }
-            }
-
-            return {
-                ...mob,
-                lastKillTime: lastKillTime,
-                progressSeconds: timeSinceKill,
-                progressPercent: progressPercent,
-                nextPopTime: nextPopTime,
-            };
-        }
-
-
-        /**
-         * モブカードの詳細表示をトグルします。（滑らかに開閉）
-         * @param {string} mobId - モンスター名に基づく一意のID (safeId(mobName))
-         * @param {string} area - エリア名
-         */
-        function toggleMobDetail(mobId, area) {
-            const detailElement = document.getElementById(`detail-${mobId}`);
-            
-            if (!detailElement) {
-                console.error(`Detail element not found for ID: ${mobId}`);
-                return;
-            }
-
-            const isCurrentlyOpen = mobId === openMobNameId; 
-
-            // 1. 他の要素が開いている場合、それを閉じる (単体表示の保証)
-            if (openMobNameId && openMobNameId !== mobId) {
-                const currentlyOpenEl = document.getElementById(`detail-${openMobNameId}`);
-                
-                if (currentlyOpenEl) {
-                    currentlyOpenEl.classList.remove('is-open'); 
-                }
-            }
-            
-            // 2. 開閉処理
-            if (isCurrentlyOpen) {
-                // 閉じる
-                detailElement.classList.remove('is-open');
-                openMobNameId = null; // トラッカーをリセット
-
-            } else {
-                // 開く
-                detailElement.classList.add('is-open');
-                openMobNameId = mobId; // トラッカーを更新
-
-                // マップの描画
-                const mobToRender = Object.values(globalMobConfig).find(m => safeId(m['モンスター名']) === mobId);
-                if (mobToRender) {
-                    // DOMのフロー変更後、マップ描画がスムーズになるようsetTimeoutで若干遅延させる
-                    setTimeout(() => {
-                        renderMap(mobToRender.mobName, area);
-                    }, 50); 
-                }
-            }
-        }
-
-
-        // ====================================================================
-        // マップと座標トラッキング
-        // ====================================================================
-        
-        /**
-         * 指定されたモブのPOP地点をマップ上に描画します。
-         */
-        function renderMap(mobName, area) {
-            // マップコンテナは mobName を元にした ID を使用
-            const safeNameId = safeId(mobName);
-            const mapContainer = document.getElementById(`map-canvas-${safeNameId}`);
-            
-            if (!mapContainer) return;
-
-            const mobConfig = Object.values(globalMobConfig).find(m => m['モンスター名'] === mobName);
-            const rawMapImageFilename = mobConfig?.['マップ画像 (ファイル名)'] || '';
-            
-            if (!rawMapImageFilename) {
-                mapContainer.innerHTML = `<p class="text-center text-gray-500 py-4">マップ画像が設定されていません。</p>`;
-                return;
-            }
-
-            // 既に画像が設定されていれば再描画はドットのみ
-            if (!mapContainer.querySelector('img')) {
-                const mapImagePath = `./Picture/${rawMapImageFilename.replace(/\s/g, '_')}`;
-                mapContainer.innerHTML = `<img src="${mapImagePath}" onerror="this.onerror=null;this.src='https://placehold.co/500x500/1e293b/94a3b8?text=Map+Not+Found'" alt="${area} Map" class="absolute inset-0">`;
-            }
-
-            // 座標データ取得
-            const mobLocations = globalLocationDef[mobName] || [];
-            
-            // 現在チェック済みの座標IDリストを作成
-            const checkedLocations = new Set(
-                globalLocationState
-                    .filter(state => state.mobName === mobName)
-                    .map(state => state.checkedLocationId)
-            );
-
-            // 既存のドットをクリアしてから再描画
-            mapContainer.querySelectorAll('.pop-point').forEach(el => el.remove());
-
-            mobLocations.forEach(loc => {
-                const isChecked = checkedLocations.has(loc.locationId);
-                
-                const point = document.createElement('div');
-                point.className = `pop-point transition duration-100 ${isChecked ? 'pop-checked' : 'pop-candidate'}`;
-                point.title = `座標ID: ${loc.locationId} (${isChecked ? 'チェック済み' : '候補'})`;
-                
-                const xPercent = (loc.coordX / 500) * 100;
-                const yPercent = (loc.coordY / 500) * 100;
-
-                point.style.left = `calc(${xPercent}% - 7px)`;
-                point.style.top = `calc(${yPercent}% - 7px)`;
-                
-                point.dataset.mobName = mobName;
-                point.dataset.locationId = loc.locationId;
-                
-                point.onclick = (e) => {
-                    e.stopPropagation();
-                    handlePopPointClick(mobName, loc.locationId, point);
-                };
-
-                mapContainer.appendChild(point);
-            });
-        }
-        
-        /**
-         * POP地点がクリックされたときの処理（チェックイン）。
-         */
-        async function handlePopPointClick(mobName, locationId, pointElement) {
-            if (pointElement.classList.contains('pop-checked')) {
-                console.log(`Location ${locationId} already checked for ${mobName}`);
-                return;
-            }
-
-            pointElement.classList.add('pop-checked');
-            pointElement.classList.remove('pop-candidate');
-            pointElement.title = `座標ID: ${locationId} (チェック済み)`;
-
-            const payload = {
-                type: 'location',
-                mobName: mobName,
-                locationId: locationId,
-                reporterId: reporterUUID,
-            };
-
-            await sendPostRequest(payload, "POP地点のチェックインを報告中...");
-            
-            fetchDynamicData();
-        }
-
-        // ====================================================================
-        // 討伐報告モーダル
-        // ====================================================================
-
-        /**
-         * 報告モーダルを開きます。
-         */
-        function openModal(mobName, mobRank, mobArea) {
-            document.getElementById('modal-title').textContent = `${mobName} 討伐報告`;
-            document.getElementById('report-mob-name').value = mobName;
-            document.getElementById('report-mob-rank').value = mobRank;
-            document.getElementById('report-mob-area').value = mobArea;
-            document.getElementById('report-status').textContent = '';
-            
-            // 1. 現在のJST時刻を datetime-local フォーマットで取得し、デフォルト値に設定
-            const now = new Date();
-            const nowJST = dateToDateTimeLocal(now);
-            document.getElementById('kill-time-input').value = nowJST;
-
-            // 2. 報告者UUIDをマスクして表示 (最初の5桁を表示)
-            const maskedUUID = reporterUUID.substring(0, 5) + '*****';
-            document.getElementById('reporter-uuid-display').textContent = `報告者ID: ${maskedUUID}`;
-
-            document.getElementById('report-modal').classList.remove('hidden');
-        }
-
-        /**
-         * 報告モーダルを閉じます。
-         */
-        function closeModal() {
-            document.getElementById('report-modal').classList.add('hidden');
-        }
-
-        /**
-         * 討伐報告をGASに送信します。
-         */
-        async function submitKillReport() {
-            const mobName = document.getElementById('report-mob-name').value;
-            const mobRank = document.getElementById('report-mob-rank').value;
-            const mobArea = document.getElementById('report-mob-area').value;
-            const killTimeLocal = document.getElementById('kill-time-input').value; 
-            const statusElement = document.getElementById('report-status');
-
-            if (!killTimeLocal) {
-                loadingStatus.textContent = '🚨 討伐日時を選択してください。';
-                loadingStatus.classList.remove('hidden');
-                setTimeout(() => loadingStatus.classList.add('hidden'), 3000);
-                return;
-            }
-
-            const selectedDate = new Date(killTimeLocal);
-            const killTimeISO = selectedDate.toISOString(); 
-
-            const payload = {
-                type: 'kill',
-                mobName: mobName,
-                mobRank: mobRank,
-                area: mobArea,
-                world: 'Ifrit', 
-                killTime: killTimeISO, 
-                reporterId: reporterUUID,
-            };
-            
-            closeModal(); 
-
-            const result = await sendPostRequest(payload, `${mobName} の討伐を報告中...`);
-            
-            if (result && result.status === 'success') {
-                fetchDynamicData();
-                loadingStatus.textContent = `${mobName} の討伐が記録されました。`;
-                loadingStatus.classList.remove('hidden');
-                setTimeout(() => {
-                    loadingStatus.classList.add('hidden');
-                }, 3000);
-            } else {
-                loadingStatus.textContent = `🚨 討伐報告に失敗しました。詳細: ${result.message || '不明なエラー'}`;
-                loadingStatus.classList.remove('hidden');
-            }
-        }
-        
-        /**
-         * GAS APIにPOSTリクエストを送信するヘルパー関数
-         */
-        async function sendPostRequest(payload, loadingMessage) {
-            loadingStatus.textContent = loadingMessage;
-            loadingStatus.classList.remove('hidden');
-
-            try {
-                const response = await fetch(`${GAS_API_URL}?type=${payload.type}`, {
+                // Fetch APIを使用してPOSTリクエストをGASのエンドポイントに送信
+                const response = await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload),
-                    cache: 'no-cache'
+                    body: params
                 });
-                
+
+                // GASがJSONレスポンスを返すことを前提とします
                 const result = await response.json();
-                
-                loadingStatus.classList.add('hidden');
-                return result;
+
+                if (response.ok && result.result === 'success') {
+                    // 成功時の処理
+                    statusMessage.textContent = '送信が完了しました！';
+                    statusMessage.className = 'text-center mb-4 text-sm font-medium text-green-600 h-6';
+                    form.reset(); // フォームをリセット
+                } else {
+                    // 失敗時の処理 (GASからのエラーメッセージを表示)
+                    const errorMessage = result.error || '不明なエラーが発生しました。';
+                    throw new Error(errorMessage);
+                }
 
             } catch (error) {
-                console.error("POST Request Error:", error);
-                loadingStatus.textContent = `🚨 報告エラー: ネットワークまたはGASの応答に失敗しました。`;
-                return { status: 'error', message: error.message };
+                console.error('送信エラー:', error);
+                // エラーメッセージをUIに表示
+                statusMessage.textContent = `送信エラー: ${error.message}`;
+                statusMessage.className = 'text-center mb-4 text-sm font-medium text-red-600 h-6';
+
+            } finally {
+                // 完了後の状態に戻す
+                submitButton.disabled = false;
+                submitButton.textContent = '送信';
+                // メッセージをしばらく表示した後、クリアする
+                setTimeout(() => {
+                    if (statusMessage.textContent.includes('完了')) {
+                        statusMessage.textContent = '';
+                    }
+                }, 5000); 
             }
         }
 
-
-        // ====================================================================
-        // アプリケーションの初期化とメインループ
-        // ====================================================================
-
-        /**
-         * アプリケーションのメイン初期化関数
-         */
-        async function initApp(initial = true) {
-            reporterUUID = getReporterUUID();
-            console.log(`[Init] Reporter UUID: ${reporterUUID}`);
-            console.log(`[Init] GAS API URL: ${GAS_API_URL}`);
-
-            try {
-                // 1. 静的データの取得 (初回起動時のみ)
-                if (initial) {
-                    await fetchStaticData();
-                }
-
-                // 2. 動的データの取得と描画
-                await fetchDynamicData();
-
-                // 60秒 (60000ms) ごとに自動更新ループを設定
-                if (initial) {
-                    setInterval(fetchDynamicData, 60000); 
-                }
-                
-            } catch (error) {
-                console.error("Application initialization failed.");
-            }
-        }
-
-        // DOMContentLoaded後にアプリケーションを起動
-        window.onload = function() {
-            initApp();
-        };
-
+        // フォームにイベントリスナーを追加
+        form.addEventListener('submit', handleSubmit);
     </script>
 </body>
 </html>
