@@ -150,22 +150,18 @@
         const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxyutpOIZYI9Ce51s4vawk6S460QgM4wYcaLFJKUBi00_LKhNXT9-6N0n178KdoXkP7wg/exec';
 
         // --- データ定義 ---
-        const MOCK_MOB_DATA = [
-// const MOCK_MOB_DATA = [ ... ] ← この配列全体を削除
 
-let mobData = []; // 外部JSONから読み込むため初期化のみ
-async function loadMobData() {
-  try {
-    const response = await fetch('mob_data.json');
+　　　　let mobData = []; // 外部JSONから読み込むため初期化のみ
+　　　　async function loadMobData() {
+  　　　　　try {
+    　　const response = await fetch('mob_data.json');
     if (!response.ok) throw new Error('mob_data.json 読み込み失敗');
     mobData = await response.json();
     fetchRecordsAndUpdate(); // 読み込み後に描画処理を呼び出す
   } catch (error) {
     console.error('mob_data.json 読み込みエラー:', error);
   }
-}
-        ];
-        
+}        
         // ランクごとの色定義 (CSSクラス名)
         const RANK_COLORS = {
             'S': 'bg-orange-600', 
@@ -785,8 +781,6 @@ function initializeApp() {
   setInterval(filterAndRender, 60 * 1000);
   window.addEventListener('resize', filterAndRender);
 }
-
-
         // ページロード時に初期化を実行
         initializeApp();
 
