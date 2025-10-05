@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -43,10 +43,18 @@
         }
 
         /* マウスオーバー時の強調表示 */
-        .spawn-point:hover {
-            transform: translate(-50%, -50%) scale(1.8); 
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); 
+        /* 重要ポイントのみホバーで拡大・発光させる */
+        .spawn-point[data-important="true"]:hover {
+            transform: translate(-50%, -50%) scale(1.8);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
         }
+
+        /* 押せないポイントはホバーを無効にして見た目の変化を抑える */
+        .spawn-point[data-important="false"] {
+            pointer-events: none; /* ホバーやクリックを受けない */
+            opacity: 0.95; /* 若干淡くする場合は調整可能 */
+        }
+
 
         /* S/Aモブが出る重要地点のリング */
         .important-ring {
