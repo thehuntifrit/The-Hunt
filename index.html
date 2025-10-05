@@ -54,10 +54,13 @@
         .mob-card {
             background-color: #2d3748; /* カード背景色 (濃いグレー) */
             border-radius: 0.5rem;
-            overflow: hidden;
+            /* FIX: 詳細をオーバーレイ表示するため、overflow: hiddenを削除 */
+            /* overflow: hidden; */ 
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: box-shadow 0.2s, transform 0.2s;
             cursor: pointer;
+            position: relative; /* FIX: 詳細パネルの絶対配置の基準 */
+            z-index: 10; /* クリック時に下に埋もれないようにデフォルトで高めに設定 */
         }
 
         .mob-card:hover {
@@ -138,20 +141,32 @@
             text-align: center;
         }
 
-        /* FIX: スムーズなスライドトランジション */
+        /* FIX: スムーズなスライドトランジションとオーバーレイ設定 */
         .detail-content {
-            /* max-height, opacity, 垂直パディングを滑らかにトランジション */
+            /* スムーズなアニメーション */
             transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
                         opacity 0.4s ease-in-out, 
                         padding-top 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
                         padding-bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             
+            /* オーバーレイ設定 */
+            position: absolute; 
+            top: 100%; /* カードヘッダーの直下から開始 */
+            left: 0;
+            width: 100%;
+            z-index: 20; /* 確実に下の要素の上に重なるように設定 */
+            
+            background-color: #2d3748; /* カードと同じ背景色 */
+            border-radius: 0 0 0.5rem 0.5rem; /* 下部のみ角丸 */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.5); /* 影を付けて重なっていることを強調 */
+
+            /* 非表示状態 */
             opacity: 0;
             max-height: 0;
             padding-top: 0;
             padding-bottom: 0;
             overflow: hidden;
-            display: none; /* 初期状態は非表示 */
+            display: none; 
         }
     </style>
 </head>
@@ -186,7 +201,7 @@
     <!-- FIXED HEADER END -->
 
     <!-- コンテンツ本体 (ヘッダーの高さ分、上部にパディングを確保) -->
-    <!-- FIX: ページ最下部に pb-40 (10rem) の余白を追加 -->
+    <!-- ページ最下部に pb-40 (10rem) の余白を追加 -->
     <div class="container pt-[250px] lg:pt-[220px] pb-40">
         <!-- モブ一覧コンテナ -->
         <div id="mob-list-container" class="mob-grid">
@@ -490,7 +505,7 @@
                 const detailElement = document.getElementById(`detail-${openMobNameId}`);
                 
                 if (detailElement) {
-                    // 開くアニメーションを即座に完了させる
+                    // 開くアニメーションを即座に完了させる (再レンダリング時)
                     detailElement.style.display = 'block';
                     detailElement.style.maxHeight = '1000px'; 
                     detailElement.style.opacity = '1';
@@ -550,11 +565,11 @@
 
 
             return `
-                <!-- イベントバブリングを停止させないように、全体を囲むDIVには詳細トグル関数のみをバインド -->
+                <!-- mob-cardがposition: relative;になっているため、子要素である詳細パネルを絶対配置できます -->
                 <div class="${cardClasses}" onclick="toggleMobDetail('${safeMobNameId}', '${safeHTML(mob.area)}')" data-mob-name="${safeHTML(mobName)}">
                     
                     <!-- 1行目と2行目 (ゲージ背景) -->
-                    <div class="relative overflow-hidden">
+                    <div class="relative overflow-hidden z-10">
                         <!-- 経過時間ゲージ -->
                         <div class="progress-bar absolute top-0 left-0 h-full z-0" style="width: ${progressPercent}%; background-color: ${progressColor};"></div>
                         
@@ -594,7 +609,7 @@
                         </div>
                     </div>
 
-                    <!-- 詳細情報 (スライド表示部分) - p-4 pt-2 の代わりに px-4 のみ指定し、垂直パディングはJSでアニメーションさせる -->
+                    <!-- 詳細情報 (スライド表示部分) - position: absolute; で下の要素の上に重なります -->
                     <div id="detail-${safeMobNameId}" class="detail-content bg-gray-700 text-gray-300 px-4">
                         <div class="text-xs border-t border-gray-600 pt-2">
                             <!-- 前回の討伐時間 -->
@@ -670,12 +685,12 @@
          */
         function toggleMobDetail(mobId, area) {
             const detailElement = document.getElementById(`detail-${mobId}`);
-            if (!detailElement) return;
+            if (!detailElement) {
+                console.error(`Detail element not found for ID: ${mobId}`);
+                return;
+            }
 
-            // アニメーション時間 (CSSのtransitionに合わせる)
             const ANIMATION_DURATION_MS = 400; 
-            
-            // 開くときの目標パディング値 (p-4 pt-2 の縦方向: pt-2=0.5rem, pb-4=1rem)
             const OPEN_PADDING_TOP = '0.5rem';
             const OPEN_PADDING_BOTTOM = '1rem';
             
