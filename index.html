@@ -54,12 +54,11 @@
         .mob-card {
             background-color: #2d3748; /* カード背景色 (濃いグレー) */
             border-radius: 0.5rem;
-            /* FIX: オーバーレイをカードの境界外に表示させるため、overflow: hiddenを削除 */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: box-shadow 0.2s, transform 0.2s;
             cursor: pointer;
             position: relative; 
-            z-index: 10; /* デフォルトのz-index */
+            z-index: 10; 
         }
 
         .mob-card:hover {
@@ -140,33 +139,30 @@
             text-align: center;
         }
 
-        /* 詳細情報 (オーバーレイ表示部分) */
-        .detail-overlay {
-            position: absolute; /* 親要素 (.mob-card) を基準に配置 */
-            top: 0;
-            left: 0;
-            width: 100%;
-            min-height: 100%; /* カード全体を覆う */
-            background-color: #2d3748; /* カード背景色 (濃いグレー) */
-            border-radius: 0.5rem;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* 強いシャドウで浮いている感を出す */
-            
-            /* 展開アニメーション */
-            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; 
-            
-            /* 非表示状態 */
+        /* 🚨 変更点: インライン展開の詳細情報スタイル */
+        .detail-content-inline {
+            /* 通常のDOMフローに従う */
+            overflow: hidden; /* max-height transitionのために重要 */
+            max-height: 0;
             opacity: 0;
-            transform: scale(0.95); /* スケールアニメーションを追加 */
-            visibility: hidden; 
-            pointer-events: none; /* クリックイベントを無効にする */
-            z-index: 50; /* 常に最前面 */
+            
+            /* スムーズなアニメーション */
+            transition: max-height 0.4s ease-out, opacity 0.3s ease-out; 
+            
+            padding: 0 1rem; /* 閉じた状態ではpadding 0 */
+            border-top: 0px solid #4a5568; /* 閉じた状態では境界線なし */
+            pointer-events: none; /* 閉じた状態ではクリック無効 */
+            
+            /* カードの角丸に合わせたスタイル */
+            border-radius: 0 0 0.5rem 0.5rem;
         }
 
-        .detail-overlay.is-open {
+        .detail-content-inline.is-open {
+            max-height: 1000px; /* 展開時の十分な高さ */
             opacity: 1;
-            transform: scale(1);
-            visibility: visible;
-            pointer-events: auto;
+            padding: 1rem; /* 展開時にpaddingを適用 */
+            border-top: 1px solid #4a5568; /* 展開時に区切り線を表示 */
+            pointer-events: auto; /* 展開時にクリック有効 */
         }
     </style>
 </head>
@@ -238,7 +234,7 @@
 
     <script>
         // 🚨 設定項目: GAS API URL
-        const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxyutpOIZYI9Ce51s4vawk6S460QgM4wYcaLFJKUBi00_LKhNXT9-6N0n178KdoXkP7wg/exec'; 
+        const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxyutpOIZYI9Ce51s55555555555555555555555555555/exec'; 
         const STATIC_DATA_URL = './mob_data.json'; 
 
         // グローバルなデータストア
@@ -502,12 +498,10 @@
             // 詳細表示の状態を保持 (再レンダリング時に開いていたパネルを復元)
             if (openMobNameId) {
                 const detailElement = document.getElementById(`detail-${openMobNameId}`);
-                const cardElement = detailElement ? detailElement.parentElement : null;
 
-                if (detailElement && cardElement) {
-                    // オーバーレイのクラスを即座に追加して表示を復元
+                if (detailElement) {
+                    // インライン展開のクラスを即座に追加して表示を復元
                     detailElement.classList.add('is-open');
-                    cardElement.style.zIndex = '60'; // 開いたカードのZ-indexを高くする
                     
                     // マップ再描画
                     const mobToRender = filteredMobs.find(m => safeId(m.mobName) === openMobNameId);
@@ -566,7 +560,7 @@
                 <div class="${cardClasses}" data-mob-name="${safeHTML(mobName)}" id="card-${safeMobNameId}">
                     
                     <!-- 1行目と2行目 (ゲージ背景) -->
-                    <div class="relative overflow-hidden z-10">
+                    <div class="relative overflow-hidden z-10 rounded-t-lg">
                         <!-- 経過時間ゲージ -->
                         <div class="progress-bar absolute top-0 left-0 h-full z-0" style="width: ${progressPercent}%; background-color: ${progressColor};"></div>
                         
@@ -606,19 +600,10 @@
                         </div>
                     </div>
 
-                    <!-- 詳細情報 (オーバーレイ表示部分) -->
-                    <div id="detail-${safeMobNameId}" class="detail-overlay text-gray-300 p-4">
+                    <!-- 🚨 変更点: インライン展開の詳細パネル (通常のDOMフロー) -->
+                    <div id="detail-${safeMobNameId}" class="detail-content-inline text-gray-300">
                         
-                        <!-- オーバーレイ内の閉じるボタン -->
-                        <button 
-                            class="absolute top-3 right-3 p-1.5 rounded-full bg-red-600 hover:bg-red-500 text-white text-lg leading-none font-bold shadow-lg transition duration-150"
-                            onclick="event.stopPropagation(); toggleMobDetail('${safeMobNameId}', '${safeHTML(mob.area)}')"
-                            title="閉じる"
-                        >
-                            &times;
-                        </button>
-
-                        <div class="pt-2"> 
+                        <div class="pb-4"> 
                             <div class="text-xs">
                                 <!-- 前回の討伐時間 -->
                                 <p class="mb-1"><strong>前回討伐:</strong> ${formatTimeToJST(lastKillTime)}</p>
@@ -637,6 +622,14 @@
                                 ` : `<p class="mt-4">このモブのマップ座標データはありません。</p>`}
                             </div>
                         </div>
+                        
+                        <!-- 閉じるボタンを詳細パネルの最下部に配置 -->
+                        <button 
+                            class="w-full mt-2 py-2 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded-lg transition duration-150"
+                            onclick="event.stopPropagation(); toggleMobDetail('${safeMobNameId}', '${safeHTML(mob.area)}')"
+                        >
+                            詳細を閉じる
+                        </button>
                     </div>
                 </div>
             `;
@@ -694,27 +687,20 @@
          */
         function toggleMobDetail(mobId, area) {
             const detailElement = document.getElementById(`detail-${mobId}`);
-            // 親要素は mob-card (card-${mobId})
-            const cardElement = document.getElementById(`card-${mobId}`); 
             
-            if (!detailElement || !cardElement) {
-                console.error(`Detail element or parent card not found for ID: ${mobId}`);
+            if (!detailElement) {
+                console.error(`Detail element not found for ID: ${mobId}`);
                 return;
             }
 
-            // 現在開いているかどうかを、IDトラッカーを元に判定
             const isCurrentlyOpen = mobId === openMobNameId; 
 
             // 1. 他の要素が開いている場合、それを閉じる (単体表示の保証)
             if (openMobNameId && openMobNameId !== mobId) {
                 const currentlyOpenEl = document.getElementById(`detail-${openMobNameId}`);
-                const currentlyOpenCardEl = document.getElementById(`card-${openMobNameId}`);
                 
                 if (currentlyOpenEl) {
-                    currentlyOpenEl.classList.remove('is-open'); // クラスを削除して閉じるアニメーション
-                }
-                if (currentlyOpenCardEl) {
-                     currentlyOpenCardEl.style.zIndex = '10'; // 閉じたカードのZ-indexを戻す
+                    currentlyOpenEl.classList.remove('is-open'); 
                 }
             }
             
@@ -722,19 +708,20 @@
             if (isCurrentlyOpen) {
                 // 閉じる
                 detailElement.classList.remove('is-open');
-                cardElement.style.zIndex = '10'; // Z-indexを戻す
                 openMobNameId = null; // トラッカーをリセット
 
             } else {
                 // 開く
                 detailElement.classList.add('is-open');
-                cardElement.style.zIndex = '60'; // 開いたカードのZ-indexを高くする (z-50より大きく)
                 openMobNameId = mobId; // トラッカーを更新
 
                 // マップの描画
                 const mobToRender = Object.values(globalMobConfig).find(m => safeId(m['モンスター名']) === mobId);
                 if (mobToRender) {
-                    renderMap(mobToRender.mobName, area);
+                    // DOMのフロー変更後、マップ描画がスムーズになるようsetTimeoutで若干遅延させる
+                    setTimeout(() => {
+                        renderMap(mobToRender.mobName, area);
+                    }, 50); 
                 }
             }
         }
@@ -765,7 +752,7 @@
             // 既に画像が設定されていれば再描画はドットのみ
             if (!mapContainer.querySelector('img')) {
                 const mapImagePath = `./Picture/${rawMapImageFilename.replace(/\s/g, '_')}`;
-                mapContainer.innerHTML = `<img src="${mapImagePath}" alt="${area} Map" class="absolute inset-0">`;
+                mapContainer.innerHTML = `<img src="${mapImagePath}" onerror="this.onerror=null;this.src='https://placehold.co/500x500/1e293b/94a3b8?text=Map+Not+Found'" alt="${area} Map" class="absolute inset-0">`;
             }
 
             // 座標データ取得
