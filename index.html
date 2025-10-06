@@ -1,3 +1,4 @@
+
     <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -583,16 +584,14 @@
 
                 // 詳細スライドパネル
  // map 部分を mob.Map の有無で条件生成する
-// 改良版 mapHtml 生成（画像アスペクトに基づく高さ設定を行う）
-const mapHtml = mob.Map ? `
-  <div class="map-container relative w-full rounded-lg overflow-hidden shadow-inner">
-    <img src="${mob.Map}" alt="${mob.Area} マップ" class="map-image block w-full h-auto" data-map-id="${mob.Map}">
-    <div class="spawn-points-overlay absolute top-0 left-0 w-full" data-map-id="${mob.Map}" style="position: absolute;">
-      <!-- ピンは setupMapPoints() で挿入します -->
-    </div>
-  </div>
-` : '';
-
+const mapHtml = mob.Map
+  ? `<div class="map-container relative w-full rounded-lg overflow-hidden shadow-inner" style="padding-top: 100%;">
+       <img src="${mob.Map}" alt="${mob.Area} マップ" class="absolute inset-0 w-full h-full object-cover">
+       <div class="spawn-points-overlay absolute inset-0" data-map-id="${mob.Map}">
+         <!-- ここにJavaScriptで座標ドットが挿入されます -->
+       </div>
+     </div>`
+  : ''; // mob.Map が無い場合は空文字（マップ領域自体を出さない）
 
 const detailContent = `
   <div class="mob-details bg-gray-700">
@@ -629,119 +628,86 @@ const detailContent = `
         /**
          * マップ上の地点を描画し、消し込みロジックを適用する
          */
-function setupMapPoints() {
-  const spawnStatus = getSpawnStatus();
-  // すべての spawn-points-overlay 要素を処理
-  document.querySelectorAll('.spawn-points-overlay').forEach(overlay => {
-    const mapId = overlay.dataset.mapId;
-    overlay.innerHTML = '';
+        function setupMapPoints() {
+            const spawnStatus = getSpawnStatus();
+            
+            document.querySelectorAll('.spawn-points-overlay').forEach(overlay => {
+                const mapId = overlay.dataset.mapId;
+                overlay.innerHTML = ''; // クリア
+                
+                // 該当エリアのmobDataを探す
+                const mob = mobData.find(m => m.Map === mapId);
+                if (!mob || !mob.spawn_points) return;
+                
+                const importantPoints = mob.spawn_points.filter(p => p.mob_ranks.includes('S') || p.mob_ranks.includes('A'));
+                const unkilledImportantPoints = importantPoints.filter(p => spawnStatus[p.id] !== 'killed');
+                const isLastOne = unkilledImportantPoints.length === 1;
 
-    // 対応する mob データを取得
-    const mob = mobData.find(m => m.Map === mapId);
-    if (!mob || !mob.spawn_points) return;
+                mob.spawn_points.forEach(point => {
+                    const status = spawnStatus[point.id] || 'active';
+                    const isImportant = point.mob_ranks.includes('S') || point.mob_ranks.includes('A');
+                    const isB1 = point.mob_ranks.includes('B1');
+                    const isB2 = point.mob_ranks.includes('B2');
+                    
+                    // B1/B2の色を設定 (B1が優先)
+                    let bgColor = isB1 ? RANK_COLORS.B1 : (isB2 ? RANK_COLORS.B2 : '#555');
 
-    // 対重要点の判定
-    const importantPoints = mob.spawn_points.filter(p => p.mob_ranks.includes('S') || p.mob_ranks.includes('A'));
-    const unkilledImportantPoints = importantPoints.filter(p => spawnStatus[p.id] !== 'killed');
-    const isLastOne = unkilledImportantPoints.length === 1;
+                    // --- スタイル設定 ---
+                    let dotClasses = 'spawn-point';
+                    let dotStyle = `left: ${point.x}%; top: ${point.y}%; background-color: ${bgColor};`;
+                    
+                    // 1. 消込済み判定
+                    if (status === 'killed') {
+                        dotStyle += `background-color: #AAAAAA; opacity: 1.0;`;
+                    } 
+                    
+                    // 色マップ（内側カラー -> 濃い外枠カラー）
+                    const RING_COLOR_MAP = {
+                      '#79A6FF': '#2f67d6', // B1（淡青）向けの濃い青
+                      '#FF7979': '#d64545', // B2（淡赤）向けの濃い赤
+                      '#66FF99': '#2db06a'  // 最後の未討伐で使っている緑寄り色の濃色（該当する場合）
+                    };
 
-    // 表示されている画像要素を探す（data-map-id が同じ map-image）
-    const img = document.querySelector(`img.map-image[data-map-id="${mapId}"]`);
-    if (!img) return;
+                    // --- 既存処理の直後に挿入する形で置換 ---
+                    if (status === 'killed') {
+                      dotStyle += `background-color: #AAAAAA; opacity: 0.9;`; // 透過を抑える（前の要望対応）
+                    } else if (isImportant && isLastOne && point.id === unkilledImportantPoints[0].id) {
+                    // 最後の1点は中央色を維持しつつ細い濃色輪郭と弱い発光
+                    const inner = '#66FF99';
+                    const ring = RING_COLOR_MAP[inner] || '#2db06a';
+       　             dotStyle += `background-color: ${inner}; box-shadow: 0 0 0 1px ${ring}; filter: drop-shadow(0 0 6px rgba(45,176,106,0.25));`;
+                    } else if (isImportant) {
+                    // 重要点は内側色（デフォルト bgColor）を維持し、外枠を細く濃色で囲む
+                    // 既に bgColor 変数が設定されているためそれをベースにリング色を選ぶ
+                    let ring = '#fbbf24'; // デフォルト（保険）
+                    // 小文字化して判定すると安全
+                    const bgLower = String(bgColor).toLowerCase();
+                    if (bgLower.includes('79a6ff')) ring = RING_COLOR_MAP['#79A6FF'];
+                    else if (bgLower.includes('ff7979')) ring = RING_COLOR_MAP['#FF7979'];
+                    // 外枠を細く濃色で描画。必要なら border も追加して視認性を高める
+                      dotStyle += `box-shadow: 0 0 0 1px ${ring}; border: 1px solid ${ring};`;
+                      dotClasses += ' important-ring';
+                    }
 
-    // ピン配置処理（画像の表示サイズに基づく）
-    const applyOverlaySizingAndPoints = () => {
-      // 表示サイズを取得
-      const displayedWidth = img.clientWidth;
-      const displayedHeight = img.clientHeight;
 
-      // overlay を画像の表示サイズ・位置に合わせる
-      overlay.style.position = 'absolute';
-      overlay.style.width = displayedWidth + 'px';
-      overlay.style.height = displayedHeight + 'px';
-      // overlay を img の親コンテナに置く想定なら left/top の調整は親基準で不要だが安全のため合わせる
-      overlay.style.left = img.offsetLeft + 'px';
-      overlay.style.top = img.offsetTop + 'px';
-      overlay.style.pointerEvents = 'none';
+                    // 4. Bモブのみの地点はクリック不可（カーソル変更なし）
+                    if (!isImportant) {
+                        dotStyle += `cursor: default;`;
+                    }
 
-      // ピン生成
-      mob.spawn_points.forEach(point => {
-        const status = spawnStatus[point.id] || 'active';
-        const isImportant = point.mob_ranks.includes('S') || point.mob_ranks.includes('A');
-        const isB1 = point.mob_ranks.includes('B1');
-        const isB2 = point.mob_ranks.includes('B2');
-        let bgColor = isB1 ? RANK_COLORS.B1 : (isB2 ? RANK_COLORS.B2 : '#555');
-
-        // ピン要素
-        const dot = document.createElement('div');
-        dot.className = 'spawn-point';
-        // percentage -> px
-        const leftPx = (point.x / 100) * displayedWidth;
-        const topPx = (point.y / 100) * displayedHeight;
-        dot.style.position = 'absolute';
-        dot.style.left = `${leftPx}px`;
-        dot.style.top = `${topPx}px`;
-        dot.style.transform = 'translate(-50%, -50%)';
-        dot.style.width = '10px';
-        dot.style.height = '10px';
-        dot.style.borderRadius = '50%';
-        dot.style.backgroundColor = bgColor;
-        dot.style.boxShadow = '0 0 4px rgba(0,0,0,0.8)';
-        dot.dataset.id = point.id;
-        dot.dataset.important = isImportant;
-
-        // 状態に応じた見た目調整
-        if (status === 'killed') {
-          dot.style.backgroundColor = '#AAAAAA';
-          dot.style.opacity = '0.9';
-        } else if (isImportant && isLastOne && point.id === unkilledImportantPoints[0].id) {
-          const inner = '#66FF99';
-          const ring = '#2db06a';
-          dot.style.backgroundColor = inner;
-          dot.style.boxShadow = `0 0 0 1px ${ring}, 0 0 6px rgba(45,176,106,0.25)`;
-        } else if (isImportant) {
-          let ring = '#fbbf24';
-          const bgLower = String(bgColor).toLowerCase();
-          if (bgLower.includes('79a6ff')) ring = '#2f67d6';
-          else if (bgLower.includes('ff7979')) ring = '#d64545';
-          dot.style.boxShadow = `0 0 0 1px ${ring}`;
-          dot.style.border = `1px solid ${ring}`;
-        }
-
-        // 重要ピンのみクリック可能にする
-        if (isImportant) {
-          dot.style.cursor = 'pointer';
-          dot.style.pointerEvents = 'auto';
-          dot.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleSpawnStatus(point.id);
-          });
-        } else {
-          dot.style.pointerEvents = 'none';
-        }
-
-        overlay.appendChild(dot);
-      });
-    };
-
-    // 画像ロード済みなら即配置、未ロードなら load 後に配置
-    if (img.complete && img.naturalWidth) {
-      applyOverlaySizingAndPoints();
-    } else {
-      img.addEventListener('load', () => {
-        applyOverlaySizingAndPoints();
-      }, { once: true });
-    }
-
-    // 画像のリサイズを監視して再配置（レスポンシブ対応）
-    const ro = new ResizeObserver(() => {
-      overlay.innerHTML = '';
-      applyOverlaySizingAndPoints();
-    });
-    ro.observe(img);
-  });
-}
-
+                    const dot = document.createElement('div');
+                    dot.className = dotClasses;
+                    dot.style.cssText = dotStyle;
+                    dot.dataset.id = point.id;
+                    dot.dataset.important = isImportant;
+                    
+                    // クリックイベントリスナー (重要地点のみ)
+                    if (isImportant) {
+                        dot.addEventListener('click', (e) => {
+                            e.stopPropagation(); // 親要素の展開を防ぐ
+                            toggleSpawnStatus(point.id);
+                        });
+                    }
 
                     overlay.appendChild(dot);
                 });
