@@ -323,8 +323,100 @@
         // 開いているモブの詳細パネル名（mob.Name）を記憶するSet
         let openMobDetails = new Set();
         // 再入（applyDataDiff の多重実行）を防ぐフラグ
-        let __isApplyingDataDiff = false;
+let __isApplyingDataDiff = false;
+let _diffQueue = Promise.resolve();
+            
+function attachOrUpdateMapToCard(card, mob) {
+  if (!mob || !mob.Map) return;
+  const details = card.querySelector('.mob-details') || card;
+  // 既存 map 容器を検索
+  let mapContainer = details.querySelector('.map-container');
+  if (!mapContainer) {
+    mapContainer = document.createElement('div');
+    mapContainer.className = 'map-container';
+    mapContainer.style.position = 'relative';
+    mapContainer.innerHTML = `<img class="map-image" src="${mob.Map}" alt="map" style="width:100%;height:auto;display:block;"> <div class="spawn-overlay" style="position:absolute;left:0;top:0;right:0;bottom:0;"></div>`;
+    details.insertAdjacentElement('beforeend', mapContainer);
+    card.dataset.mapAttached = mob.Map;
+  } else {
+    // 既存がある場合、URL が異なれば差し替え
+    const img = mapContainer.querySelector('.map-image');
+    if (img && card.dataset.mapAttached !== mob.Map) {
+      img.src = mob.Map;
+      card.dataset.mapAttached = mob.Map;
+    }
+  }
+}
 
+function applyDataDiff(newMobList) {
+  _diffQueue = _diffQueue.then(() => internalApplyDataDiff(newMobList)).catch(err => {
+    console.error('applyDataDiff queue error', err);
+  });
+}
+
+async function internalApplyDataDiff(newMobList) {
+  if (__isApplyingDataDiff) {
+    // 既に処理中なら直ちに戻る（キューで次に回す）
+    return;
+  }
+  __isApplyingDataDiff = true;
+  try {
+    // ------- ここに既存の applyDataDiff 本体処理をそのまま移植 -------
+    const container = document.querySelector('#mob-list-container');
+    if (!container) return;
+
+    // 既存カードを map(id -> element)
+    const existingCards = {};
+    container.querySelectorAll('.mob-card').forEach(c => {
+      const id = c.dataset.mobId;
+      if (id) existingCards[id] = c;
+    });
+
+    // 新リストを走査して更新/追加
+    for (const mob of newMobList) {
+      const id = String(mob.id || mob.Name || mob['Name']);
+      let card = existingCards[id];
+      if (card) {
+        // 既存更新: 必要な箇所だけ上書き（タイトル, progress 等）
+        const titleEl = card.querySelector('.mob-title');
+        if (titleEl && titleEl.textContent !== mob.Name) titleEl.textContent = mob.Name;
+
+        const progressBar = card.querySelector('.progress-bar');
+        if (progressBar) {
+          progressBar.style.width = `${Math.round(mob.elapsedPercent || 0)}%`;
+          progressBar.setAttribute('aria-valuenow', Math.round(mob.elapsedPercent || 0));
+        }
+
+        // 更新済みマーク
+        delete existingCards[id];
+      } else {
+        // 新規カード生成（簡易テンプレート。既存の生成ロジックに合わせて差し替えてください）
+        card = document.createElement('div');
+        card.className = 'mob-card';
+        card.dataset.mobId = id;
+        card.innerHTML = `
+          <h3 class="mob-title">${mob.Name}</h3>
+          <div class="progress"><div class="progress-bar" style="width:${Math.round(mob.elapsedPercent||0)}%"></div></div>
+          <div class="mob-details"></div>
+        `;
+        container.appendChild(card);
+      }
+
+      // Map 添付処理（下の 3) のルールに合わせるためここで呼ぶ）
+      attachOrUpdateMapToCard(card, mob);
+    }
+
+    // 残った existingCards は削除対象
+    Object.values(existingCards).forEach(c => c.remove());
+
+    // 必要なイベントリスナや遅延処理があればここで呼ぶ
+    if (typeof setupMapPoints === 'function') setupMapPoints();
+    if (typeof setupEventListeners === 'function') setupEventListeners();
+    // ------- 本体終了 -------
+  } finally {
+    __isApplyingDataDiff = false;
+  }
+}
 
         // --- ユーティリティ関数 ---
 
@@ -353,51 +445,54 @@
         /**
          * リポップ経過時間とパーセンテージを計算する
          */
-        function calculateRepop(mob, lastKillTimestamp) {
-            if (!lastKillTimestamp) {
-                return {
-                    minRepop: '情報なし',
-                    maxRepop: '情報なし',
-                    elapsedPercent: 0,
-                    timeRemaining: 'N/A'
-                };
-            }
-            
-            const now = Date.now();
-            const minRepopTime = lastKillTimestamp + (mob["REPOP(s)"] * 1000);
-            const maxRepopTime = lastKillTimestamp + (mob["MAX(s)"] * 1000);
-            
-            // 経過時間の計算 (最短リポップを基準とする)
-            const repopWindowDuration = (mob["MAX(s)"] - mob["REPOP(s)"]) * 1000;
-            const timeSinceMinRepop = now - minRepopTime;
+function calculateRepop(mob, lastKillTimestamp) {
+  if (!lastKillTimestamp || !mob) {
+    return {
+      minRepop: null,
+      maxRepop: null,
+      elapsedPercent: 0,
+      timeRemaining: null,
+      sortKey: 0
+    };
+  }
 
-            let elapsedPercent;
-            if (now < minRepopTime) {
-                elapsedPercent = 0;
-            } else if (now >= maxRepopTime) {
-                elapsedPercent = 100;
-            } else {
-                elapsedPercent = (timeSinceMinRepop / repopWindowDuration) * 100;
-                elapsedPercent = Math.min(100, elapsedPercent); 
-            }
+  const now = Date.now();
+  const repopSec = Number(mob["REPOP(s)"]) || 0;
+  const maxSec = Number(mob["MAX(s)"]) || repopSec;
+  const minRepopTime = lastKillTimestamp + (repopSec * 1000);
+  const maxRepopTime = lastKillTimestamp + (maxSec * 1000);
 
-            // 残り時間の計算（最大リポップまで）
-            const remainingMillis = Math.max(0, maxRepopTime - now);
-            const hours = Math.floor(remainingMillis / (1000 * 60 * 60));
-            const minutes = Math.floor((remainingMillis % (1000 * 60 * 60)) / (1000 * 60));
-            
-            const timeRemainingStr = remainingMillis > 0 
-                ? `${hours}h ${minutes}m` 
-                : '湧き待ち/POP済み';
+  // ウィンドウ幅（ms）
+  const repopWindowDuration = Math.max(0, (maxSec - repopSec) * 1000);
+  let elapsedPercent = 0;
 
-            return {
-                minRepop: new Date(minRepopTime),
-                maxRepop: new Date(maxRepopTime),
-                elapsedPercent: elapsedPercent,
-                timeRemaining: timeRemainingStr,
-                sortKey: elapsedPercent // ソートに使用する値
-            };
-        }
+  if (now < minRepopTime) {
+    elapsedPercent = 0;
+  } else if (now >= maxRepopTime) {
+    elapsedPercent = 100;
+  } else {
+    if (repopWindowDuration === 0) {
+      // MAX == REPOP の場合：最短到達後は 100% と扱う
+      elapsedPercent = 100;
+    } else {
+      const timeSinceMin = now - minRepopTime;
+      elapsedPercent = Math.min(100, Math.max(0, (timeSinceMin / repopWindowDuration) * 100));
+    }
+  }
+
+  const remainingMillis = Math.max(0, maxRepopTime - now);
+  const hours = Math.floor(remainingMillis / 3_600_000);
+  const minutes = Math.floor((remainingMillis % 3_600_000) / 60_000);
+  const timeRemaining = remainingMillis > 0 ? `${hours}h ${minutes}m` : '済/待ち';
+
+  return {
+    minRepop: new Date(minRepopTime),
+    maxRepop: new Date(maxRepopTime),
+    elapsedPercent,
+    timeRemaining,
+    sortKey: elapsedPercent
+  };
+}
         
         /**
          * 経過時間に応じて色を生成する
