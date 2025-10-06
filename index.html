@@ -31,72 +31,40 @@
             transition: transform 0.1s ease-in-out;
         }
 
-        /* spawn point 見やすく 太めのアウトライン */
+        /* マップ描画用のスタイル - 座標点を半分サイズに縮小 (16px -> 8px) */
         .spawn-point {
-          position: absolute;
-          width: 10px;                /* 点自体を少し大きく */
-          height: 10px;
-          border-radius: 50%;
-          transform: translate(-50%, -50%);
-          cursor: pointer;
-          transition: all 0.18s ease;
-          box-shadow: 0 0 6px rgba(0,0,0,0.8); /* 内外の影を強化 */
-          background-color: rgba(255,255,255,0.95); /* ベース色（必要なら上書き） */
-          border: 2px solid rgba(0,0,0,0.7);  /* 太い輪郭線 */
-          z-index: 10;
+            position: absolute;
+            width: 8px; 
+            height: 8px; 
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            transform: translate(-50%, -50%); /* 中央配置 */
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.8); 
         }
 
-        /* 重要ポイントはさらに強調 */
-        .spawn-point[data-important="true"] {
-          width: 12px;
-          height: 12px;
-          border: 3px solid rgba(255,255,255,0.95);
-          box-shadow: 0 0 10px rgba(255,255,255,0.85), 0 0 6px rgba(0,0,0,0.6);
-          background-color: var(--important-point-color, #ffd700);
-          transition: transform 0.14s ease, box-shadow 0.14s ease;
-        }
-
-        /* ホバー時の強調（重要点含む） */
-        .spawn-point:hover,
+        /* マウスオーバー時の強調表示 */
+        /* 重要ポイントのみホバーで拡大・発光させる */
         .spawn-point[data-important="true"]:hover {
-          transform: translate(-50%, -50%) scale(1.8);
-          box-shadow: 0 0 16px rgba(255,255,255,0.95), 0 0 8px rgba(0,0,0,0.6);
+            transform: translate(-50%, -50%) scale(1.8);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
         }
 
-        /* 代替：外枠を CSS 擬似要素で描く場合（より太い輪郭を滑らかに） */
-        .spawn-point.thick-outline {
-          background-color: transparent;
-          border: none;
-        }
-        .spawn-point.thick-outline::after {
-          content: "";
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          width: 20px;
-          height: 20px;
-          transform: translate(-50%, -50%);
-          border-radius: 50%;
-          background: radial-gradient(circle at center, rgba(255,255,255,0.95) 0 55%, rgba(255,255,255,0.0) 56%);
-          box-shadow: 0 0 6px rgba(0,0,0,0.6);
-          pointer-events: none;
-        }
-
-        /* 非アクティブ spawn point の外枠や影を完全に消す */
+        /* 押せないポイントはホバーを無効にして見た目の変化を抑える */
         .spawn-point[data-important="false"] {
-          pointer-events: none;
-          opacity: 0.95;
-          box-shadow: none !important;
-          border: none !important;
-          background-color: rgba(255,255,255,0.9);
+            pointer-events: none; /* ホバーやクリックを受けない */
+            opacity: 0.95; /* 若干淡くする場合は調整可能 */
         }
 
-        /* important-ring の黒縁が残る場合の安全策 */
+        /* S/Aモブが出る重要地点のリング */
+　      /* 重要ポイント用のベースクラス（外枠は JS で色付き box-shadow を直接付与） */
         .important-ring {
-          box-shadow: 0 0 0 0 rgba(0,0,0,0) !important;
-          filter: none !important;
+        /* 外枠は JS 側で box-shadow を inline style として付与するため最小限の設定に */
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.0);
+            border-radius: 50%;
+        /* 必要なら軽い外側の発光を残す（色は JS の drop-shadow で制御） */
+            filter: drop-shadow(0 0 4px rgba(0,0,0,0.5));
         }
-
        
         /* リポップバーのCSS変数とグラデーション定義 */
         .repop-bar-bg {
@@ -123,19 +91,6 @@
             /* 開いている時のパディングを設定 (p-4相当) */
             padding: 1rem; 
             /* ★修正: 境界線を設定しない */
-        }
-        .map-container {
-            position: relative;
-            width: 100%;
-            padding-top: 56.25%; /* 16:9 にしたい場合。正方形なら100% */
-            overflow: hidden;
-        }
-        .map-container img {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;   /* contain にすると全体が見える */
         }
 
     </style>
@@ -871,25 +826,6 @@
             setupEventListeners();
 
         }
-function adjustMapHeights(maxHeightPx = 512) {
-  document.querySelectorAll('.map-container').forEach(container => {
-    const width = container.clientWidth;
-    // アスペクト比保持で高さを決める（ここでは正方形を仮定）
-    let desiredHeight = width; // 正方形なら width。別比率なら width * (h/w)
-    if (desiredHeight > maxHeightPx) desiredHeight = maxHeightPx;
-    container.style.height = desiredHeight + 'px';
-  });
-}
-
-// 初回適用
-adjustMapHeights(512);
-
-// リサイズ対応
-let __adjResizeTimer;
-window.addEventListener('resize', () => {
-  clearTimeout(__adjResizeTimer);
-  __adjResizeTimer = setTimeout(() => adjustMapHeights(512), 120);
-});
 
         /**
          * マップ上の地点を描画し、消し込みロジックを適用する
