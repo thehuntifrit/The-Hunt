@@ -31,24 +31,56 @@
             transition: transform 0.1s ease-in-out;
         }
 
-        /* マップ描画用のスタイル - 座標点を半分サイズに縮小 (16px -> 8px) */
-        .spawn-point {
-            position: absolute;
-            width: 8px; 
-            height: 8px; 
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            transform: translate(-50%, -50%); /* 中央配置 */
-            box-shadow: 0 0 4px rgba(0, 0, 0, 0.8); 
-        }
+/* spawn point 見やすく 太めのアウトライン */
+.spawn-point {
+  position: absolute;
+  width: 12px;                /* 点自体を少し大きく */
+  height: 12px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 0 6px rgba(0,0,0,0.8); /* 内外の影を強化 */
+  background-color: rgba(255,255,255,0.95); /* ベース色（必要なら上書き） */
+  border: 2px solid rgba(0,0,0,0.7);  /* 太い輪郭線 */
+  z-index: 10;
+}
 
-        /* マウスオーバー時の強調表示 */
-        /* 重要ポイントのみホバーで拡大・発光させる */
-        .spawn-point[data-important="true"]:hover {
-            transform: translate(-50%, -50%) scale(1.8);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-        }
+/* 重要ポイントはさらに強調 */
+.spawn-point[data-important="true"] {
+  width: 14px;
+  height: 14px;
+  border: 3px solid rgba(255,255,255,0.95);
+  box-shadow: 0 0 10px rgba(255,255,255,0.85), 0 0 6px rgba(0,0,0,0.6);
+  background-color: var(--important-point-color, #ffd700);
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+
+/* ホバー時の強調（重要点含む） */
+.spawn-point:hover,
+.spawn-point[data-important="true"]:hover {
+  transform: translate(-50%, -50%) scale(1.8);
+  box-shadow: 0 0 16px rgba(255,255,255,0.95), 0 0 8px rgba(0,0,0,0.6);
+}
+
+/* 代替：外枠を CSS 擬似要素で描く場合（より太い輪郭を滑らかに） */
+.spawn-point.thick-outline {
+  background-color: transparent;
+  border: none;
+}
+.spawn-point.thick-outline::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.95) 0 55%, rgba(255,255,255,0.0) 56%);
+  box-shadow: 0 0 6px rgba(0,0,0,0.6);
+  pointer-events: none;
+}
 
         /* 押せないポイントはホバーを無効にして見た目の変化を抑える */
         .spawn-point[data-important="false"] {
