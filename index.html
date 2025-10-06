@@ -82,21 +82,21 @@
           pointer-events: none;
         }
 
-        /* 押せないポイントはホバーを無効にして見た目の変化を抑える */
+        /* 非アクティブ spawn point の外枠や影を完全に消す */
         .spawn-point[data-important="false"] {
-            pointer-events: none; /* ホバーやクリックを受けない */
-            opacity: 0.95; /* 若干淡くする場合は調整可能 */
+          pointer-events: none;
+          opacity: 0.95;
+          box-shadow: none !important;
+          border: none !important;
+          background-color: rgba(255,255,255,0.9);
         }
 
-        /* S/Aモブが出る重要地点のリング */
-　      /* 重要ポイント用のベースクラス（外枠は JS で色付き box-shadow を直接付与） */
+        /* important-ring の黒縁が残る場合の安全策 */
         .important-ring {
-        /* 外枠は JS 側で box-shadow を inline style として付与するため最小限の設定に */
-            box-shadow: 0 0 0 1px rgba(0,0,0,0.0);
-            border-radius: 50%;
-        /* 必要なら軽い外側の発光を残す（色は JS の drop-shadow で制御） */
-            filter: drop-shadow(0 0 4px rgba(0,0,0,0.5));
+          box-shadow: 0 0 0 0 rgba(0,0,0,0) !important;
+          filter: none !important;
         }
+
        
         /* リポップバーのCSS変数とグラデーション定義 */
         .repop-bar-bg {
