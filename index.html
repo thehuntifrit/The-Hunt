@@ -1,4 +1,4 @@
-
+    
     <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -517,9 +517,6 @@
                 document.getElementById('column-2'),
                 document.getElementById('column-3')
             ];
-            
-            // 全カラムをクリア
-            columns.forEach(col => col.innerHTML = '');
 
             let mobCount = 0; // カラム振り分け用のカウンター
             
@@ -527,6 +524,25 @@
                 // フィルタリング
                 if (currentFilter !== 'ALL' && mob.Rank !== currentFilter) {
                     return; 
+                }
+                // 既存カードがあれば再利用して完全再生成を避ける
+                const existingCard = document.querySelector(`[data-mobname="${CSS.escape(mob.Name)}"]`);
+                if (existingCard) {
+                    existingCard.dataset.lastKill = mob.lastKillTime ? String(mob.lastKillTime) : '';
+                    existingCard.dataset.repop = String(mob["REPOP(s)"] || 0);
+                    existingCard.dataset.max = String(mob["MAX(s)"] || mob["REPOP(s)"] || 0);
+
+                const initialProgressColor = getColorForProgress(mob.elapsedPercent || 0);
+                    existingCard.style.setProperty('--progress-color-start', initialProgressColor.startColor);
+                    existingCard.style.setProperty('--progress-color-end', initialProgressColor.endColor);
+                    existingCard.style.setProperty('--progress-percent', `${mob.elapsedPercent || 0}%`);
+
+                // 軽微な表示（名前やエリア等）が変わった場合はここで上書きする（大きな構造変更は避ける）
+                const nameEl = existingCard.querySelector('.fixed-content .text-base');
+                if (nameEl) nameEl.textContent = mob.Name;
+
+                    mobCount++;
+                return; // forEach の次の要素へ
                 }
 
                 // 討伐日時をローカルタイムゾーンで表示
@@ -545,7 +561,18 @@
                 // カードの背景色を詳細パネルと異なる色にすることで、開閉時の視認性を高める
                 mobCard.className = 'mob-card flex flex-col rounded-lg shadow-xl overflow-hidden bg-gray-800'; 
                 mobCard.dataset.mobname = mob.Name;
-                
+                // --- ここから追加 ---
+                mobCard.dataset.lastKill = mob.lastKillTime ? String(mob.lastKillTime) : '';
+                mobCard.dataset.repop = String(mob["REPOP(s)"] || 0);
+                mobCard.dataset.max = String(mob["MAX(s)"] || mob["REPOP(s)"] || 0);
+
+                // 初期の色と進捗を一度だけセット（以降はCSS変数を上書きで更新予定）
+                const initialProgressColor = getColorForProgress(mob.elapsedPercent || 0);
+                mobCard.style.setProperty('--progress-color-start', initialProgressColor.startColor);
+                mobCard.style.setProperty('--progress-color-end', initialProgressColor.endColor);
+                mobCard.style.setProperty('--progress-percent', `${mob.elapsedPercent || 0}%`);
+                // --- ここまで追加 ---
+
                 // リポップバーのカスタムプロパティを設定
                 mobCard.style.cssText = `
                     --progress-percent: ${mob.elapsedPercent}%;
@@ -618,11 +645,20 @@ const detailContent = `
                 const columnIndex = window.innerWidth < 1024 ? 0 : mobCount % 3;
                 columns[columnIndex].appendChild(mobCard);
                 mobCount++; // カウンターをインクリメント
+            }); 
+
+            // フィルタ結果に含まれない既存カードを削除して UI を整理
+            const visibleNames = new Set(mobs.filter(m => (currentFilter === 'ALL' || m.Rank === currentFilter)).map(m => m.Name));
+            document.querySelectorAll('.mob-card').forEach(card => {
+                if (!visibleNames.has(card.dataset.mobname)) {
+                    card.remove();
+                }
             });
-            
+
             // マップとイベントリスナーの再設定
             setupMapPoints();
             setupEventListeners();
+
         }
 
         /**
@@ -920,6 +956,23 @@ const detailContent = `
         }
 
         // --- 初期化 ---
+        // 進捗ゲージだけをクライアント時計で更新する軽量ループ関数
+        function updateProgressBars() {
+            document.querySelectorAll('.mob-card').forEach(card => {
+        const lastKill = card.dataset.lastKill ? Number(card.dataset.lastKill) : 0;
+        const repop = Number(card.dataset.repop) || 0;
+        const max = Number(card.dataset.max) || repop;
+        const mobStub = {"REPOP(s)": repop, "MAX(s)": max};
+        const repopData = calculateRepop(mobStub, lastKill);
+        const percent = Math.max(0, Math.min(100, repopData.elapsedPercent || 0));
+            card.style.setProperty('--progress-percent', `${percent}%`);
+        const infoEl = card.querySelector('.fixed-content .font-mono');
+        if (infoEl) {
+        const minPopStr = repopData.minRepop instanceof Date ? repopData.minRepop.toLocaleString() : repopData.minRepop;
+            infoEl.textContent = `${minPopStr} - ${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
+                }
+            });
+        }
 
         /**
          * サイトの初期化処理
@@ -936,11 +989,11 @@ const detailContent = `
             fetchRecordsAndUpdate();
 
             // GASへのデータ更新間隔は10分を維持
-            setInterval(fetchRecordsAndUpdate, 10 * 60 * 1000); 
-            
-            // リポップ時間の再計算と再描画は1分に1回
-            setInterval(filterAndRender, 60 * 1000); 
-            
+            setInterval(fetchRecordsAndUpdate, 10 * 60 * 1000);
+
+            // 進捗ゲージはクライアントで軽量に更新（1秒ごと）
+            const __progressUpdaterId = setInterval(updateProgressBars, 60 * 1000);
+
             // ウィンドウサイズ変更時にも再描画を実行し、モバイルとデスクトップのカラム振り分けを適切に行う
             window.addEventListener('resize', filterAndRender);
         }
