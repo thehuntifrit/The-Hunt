@@ -771,9 +771,15 @@ const detailContent = `
                     else if (selectedRank === 'A') btn.classList.add('bg-green-600');
                     else if (selectedRank === 'F') btn.classList.add('bg-blue-600');
                     
-                    currentFilter = selectedRank;
+                   currentFilter = selectedRank;
+                    // 描画前にスクロール位置を保存
+                    const _savedScroll = window.scrollY || document.documentElement.scrollTop;
                     // GASアクセスなしの高速描画を実行
-                    filterAndRender(); 
+                    filterAndRender();
+                    // 描画によるレイアウト変化後にスクロール位置を復元
+                    window.requestAnimationFrame(() => {
+                    window.scrollTo(0, _savedScroll);
+                    });
                 };
             });
             
