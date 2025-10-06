@@ -323,30 +323,30 @@
         // 開いているモブの詳細パネル名（mob.Name）を記憶するSet
         let openMobDetails = new Set();
         // 再入（applyDataDiff の多重実行）を防ぐフラグ
-let __isApplyingDataDiff = false;
-let _diffQueue = Promise.resolve();
+        let __isApplyingDataDiff = false;
+        let _diffQueue = Promise.resolve();
             
-function attachOrUpdateMapToCard(card, mob) {
-  if (!mob || !mob.Map) return;
-  const details = card.querySelector('.mob-details') || card;
-  // 既存 map 容器を検索
-  let mapContainer = details.querySelector('.map-container');
-  if (!mapContainer) {
-    mapContainer = document.createElement('div');
-    mapContainer.className = 'map-container';
-    mapContainer.style.position = 'relative';
-    mapContainer.innerHTML = `<img class="map-image" src="${mob.Map}" alt="map" style="width:100%;height:auto;display:block;"> <div class="spawn-overlay" style="position:absolute;left:0;top:0;right:0;bottom:0;"></div>`;
-    details.insertAdjacentElement('beforeend', mapContainer);
-    card.dataset.mapAttached = mob.Map;
-  } else {
-    // 既存がある場合、URL が異なれば差し替え
-    const img = mapContainer.querySelector('.map-image');
-    if (img && card.dataset.mapAttached !== mob.Map) {
-      img.src = mob.Map;
-      card.dataset.mapAttached = mob.Map;
-    }
-  }
-}
+        function attachOrUpdateMapToCard(card, mob) {
+          if (!mob || !mob.Map) return;
+          const details = card.querySelector('.mob-details') || card;
+          // 既存 map 容器を検索
+          let mapContainer = details.querySelector('.map-container');
+          if (!mapContainer) {
+            mapContainer = document.createElement('div');
+            mapContainer.className = 'map-container';
+            mapContainer.style.position = 'relative';
+            mapContainer.innerHTML = `<img class="map-image" src="${mob.Map}" alt="map" style="width:100%;height:auto;display:block;"> <div class="spawn-overlay" style="position:absolute;left:0;top:0;right:0;bottom:0;"></div>`;
+            details.insertAdjacentElement('beforeend', mapContainer);
+            card.dataset.mapAttached = mob.Map;
+          } else {
+            // 既存がある場合、URL が異なれば差し替え
+            const img = mapContainer.querySelector('.map-image');
+            if (img && card.dataset.mapAttached !== mob.Map) {
+              img.src = mob.Map;
+              card.dataset.mapAttached = mob.Map;
+            }
+          }
+        }
 
 function applyDataDiff(newMobList) {
   _diffQueue = _diffQueue.then(() => internalApplyDataDiff(newMobList)).catch(err => {
@@ -641,133 +641,7 @@ function calculateRepop(mob, lastKillTimestamp) {
         }
 
         // --- 追加: 差分を適用して最小限の DOM 更新を行う ---
-        function applyDataDiff(newMobList) {
-        // 再入チェック（既に差分適用中なら何もしない）
-            if (__isApplyingDataDiff) return;
-                __isApplyingDataDiff = true;
-
-            const seen = new Set();
-
-                newMobList.forEach(mob => {
-                seen.add(mob.Name);
-
-            const card = document.querySelector(`.mob-card[data-mobname="${CSS.escape(mob.Name)}"]`);
-
-            const newPercent = Math.max(0, Math.min(100, Number(mob.elapsedPercent || 0)));
-            const newLastKill = mob.lastKillTime ? String(mob.lastKillTime) : '';
-            const newRepop = String(mob["REPOP(s)"] || 0);
-            const newMax = String(mob["MAX(s)"] || mob["REPOP(s)"] || 0);
-
-            if (card) {
-                 card.dataset.lastKill = newLastKill;
-                 card.dataset.repop = newRepop;
-                 card.dataset.max = newMax;
-                 card.style.setProperty('--progress-percent', `${newPercent}%`);
-
-             const color = getColorForProgress(newPercent);
-                 card.style.setProperty('--progress-color-start', color.startColor);
-                 card.style.setProperty('--progress-color-end', color.endColor);
-
-             const nameEl = card.querySelector('.fixed-content .text-base');
-             if (nameEl && nameEl.textContent !== mob.Name) nameEl.textContent = mob.Name;
-
-            const areaEl = card.querySelector('.fixed-content .text-xs');
-            if (areaEl && areaEl.textContent !== mob.Area) areaEl.textContent = mob.Area;
-
-            const infoEl = card.querySelector('.fixed-content .font-mono');
-            if (infoEl) {
-                const minPopStr = mob.minRepop instanceof Date ? mob.minRepop.toLocaleString() : mob.minRepop;
-                const newInfo = `${minPopStr} - ${mob.timeRemaining} (${newPercent.toFixed(1)}%)`;
-                if (infoEl.textContent !== newInfo) infoEl.textContent = newInfo;
-            }
-
-            if (mob.Map) {
-                const overlay = card.querySelector('.spawn-points-overlay');
-                if (!overlay) {
-                    const mapContainer = document.createElement('div');
-                    mapContainer.className = 'map-container relative w-full rounded-lg overflow-hidden shadow-inner';
-                    mapContainer.style.paddingTop = '100%';
-                    mapContainer.innerHTML = `<img src="${mob.Map}" alt="${mob.Area} マップ" class="absolute inset-0 w-full h-full object-cover">
-                        <div class="spawn-points-overlay absolute inset-0" data-map-id="${mob.Map}"></div>`;
-                    const details = card.querySelector('.mob-details');
-                    if (details) details.insertAdjacentElement('beforeend', mapContainer);
-                } else if (overlay.dataset.mapId !== mob.Map) {
-                    overlay.dataset.mapId = mob.Map;
-                    const img = card.querySelector('.map-container img');
-                    if (img) img.src = mob.Map;
-                }
-            }
-        } else {
-            const columns = [
-                document.getElementById('column-1'),
-                document.getElementById('column-2'),
-                document.getElementById('column-3')
-            ];
-            const mobCard = document.createElement('div');
-            mobCard.className = 'mob-card flex flex-col rounded-lg shadow-xl overflow-hidden bg-gray-800';
-            mobCard.dataset.mobname = mob.Name;
-            mobCard.dataset.lastKill = newLastKill;
-            mobCard.dataset.repop = newRepop;
-            mobCard.dataset.max = newMax;
-            const color = getColorForProgress(newPercent);
-            mobCard.style.setProperty('--progress-percent', `${newPercent}%`);
-            mobCard.style.setProperty('--progress-color-start', color.startColor);
-            mobCard.style.setProperty('--progress-color-end', color.endColor);
-
-            const minPopStr = mob.minRepop instanceof Date ? mob.minRepop.toLocaleString() : mob.minRepop;
-            const fixedContent = `
-                <div class="fixed-content repop-bar-bg p-3 cursor-pointer select-none">
-                    <div class="flex items-center space-x-2 mb-2">
-                        <div class="rank-icon ${getRankColorClass(mob.Rank)} w-6 h-6 sm:w-8 sm:h-8 rounded-md flex items-center justify-center text-xs sm:text-sm font-bold text-white">
-                            ${mob.Rank}
-                        </div>
-                        <span class="text-base sm:text-lg font-bold text-white text-outline">${mob.Name}</span>
-                    </div>
-                    <div class="flex justify-between items-end">
-                        <div>
-                            <div class="text-xs sm:text-sm text-gray-200 text-outline mb-1">${mob.Area}</div>
-                            <div class="text-xs sm:text-sm font-mono text-gray-100 text-outline">
-                                ${minPopStr} - ${mob.timeRemaining} (${newPercent.toFixed(1)}%)
-                            </div>
-                        </div>
-                        <button data-mob-name="${mob.Name}" data-mob-rank="${mob.Rank}" class="report-btn bg-red-600 hover:bg-red-700 px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg">報 告</button>
-                    </div>
-                </div>`;
-            const detailContent = `
-                <div class="mob-details bg-gray-700">
-                    <p class="text-sm mb-2"><span class="font-semibold text-gray-300">前回の討伐時間:</span> ${mob.lastKillTime ? new Date(mob.lastKillTime).toLocaleString() : '未報告'}</p>
-                    <p class="text-sm mb-4"><span class="font-semibold text-gray-300">POP条件:</span> ${mob["POP Date"] || '特に条件の記述なし'}</p>
-                    ${mob.Map ? `<div class="map-container relative w-full rounded-lg overflow-hidden shadow-inner" style="padding-top:100%;">
-                        <img src="${mob.Map}" alt="${mob.Area} マップ" class="absolute inset-0 w-full h-full object-cover">
-                        <div class="spawn-points-overlay absolute inset-0" data-map-id="${mob.Map}"></div>
-                    </div>` : ''}
-                </div>`;
-            mobCard.innerHTML = fixedContent + detailContent;
-
-            const columnIndex = window.innerWidth < 1024 ? 0 : (document.querySelectorAll('.mob-card').length % 3);
-            columns[columnIndex].appendChild(mobCard);
-        }
-    });
-
-    document.querySelectorAll('.mob-card').forEach(card => {
-        if (!seen.has(card.dataset.mobname)) card.remove();
-    });
-
-    // setupMapPoints / setupEventListeners は同期的に再帰を誘発する可能性があるので
-    // 呼び出しを次のイベントループに回して再帰を断ち切る
-    setTimeout(() => {
-        try {
-            setupMapPoints();
-            setupEventListeners();
-        } finally {
-            __isApplyingDataDiff = false;
-        }
-    }, 0);
-    return;
-
-}
-
-       
+          
         /**
          * UI描画を実行する
          * @param {Array} mobs - 既にソート・再計算済みのモブデータの配列
