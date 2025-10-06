@@ -488,14 +488,16 @@
             const lastKillTimestamp = lastKill ? lastKill.timestamp : 0;
             const repopData = calculateRepop(mob, lastKillTimestamp);
             return { ...mob, ...repopData, lastKillTime: lastKill ? lastKill.timestamp : null };
-        });
-        // 更新済みタイムスタンプだけ置き換えて終了（UI は触らない）
-        lastFetchedLastKills = { ...newLastKills };
-        return;
-    }
+           });
+                // 差分あり: lastFetchedLastKills を更新して UI を最小更新で反映
+                lastFetchedLastKills = { ...newLastKills };
 
-    // 差分あり: lastFetchedLastKills を更新して UI を再描画する（既存の処理を続行）
-    lastFetchedLastKills = { ...newLastKills };
+                // mobListWithRepop を既存処理で作成した直後に差分適用を呼ぶ
+                // 例: mobListWithRepop = mobData.map(...); の直後に以下を追加
+                applyDataDiff(mobListWithRepop);
+
+            return;
+            }
 
             // 3. モブリストの生成とグローバル変数への格納
             mobListWithRepop = mobData.map(mob => {
