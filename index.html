@@ -1,4 +1,4 @@
-    
+        
     <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -317,9 +317,11 @@
         let mobListWithRepop = []; // リポップ情報を含めたモブリスト (グローバルで保持)
         let currentFilter = 'ALL';
         let userId; // 報告者UUID
+        // --- 追加: 最後に取得した討伐時刻マップ（差分判定用） ---
+        let lastFetchedLastKills = {}; // { "Mob Name": timestamp }
 
         // 開いているモブの詳細パネル名（mob.Name）を記憶するSet
-        let openMobDetails = new Set(); 
+        let  = new Set(); 
 
         // --- ユーティリティ関数 ---
 
@@ -462,6 +464,38 @@
                     };
                 }
             });
+            
+            // --- 追加: 差分がある場合のみ UI 更新を行う ---
+            const newLastKills = {};
+            Object.keys(lastKills).forEach(name => {
+                newLastKills[name] = lastKills[name].timestamp || 0;
+            });
+
+            // 比較: 名前ごとにタイムスタンプ一致を確認
+            let hasChange = false;
+            const allNames = new Set([...Object.keys(lastFetchedLastKills), ...Object.keys(newLastKills)]);
+            allNames.forEach(name => {
+            const prev = lastFetchedLastKills[name] || 0;
+            const nowTs = newLastKills[name] || 0;
+            if (prev !== nowTs) hasChange = true;
+            });
+
+            if (!hasChange) {
+                // 差分無し: mobListWithRepop を更新はするが UI 再描画は行わない
+                // keep mobListWithRepop up-to-date for other logic
+                mobListWithRepop = mobData.map(mob => {
+            const lastKill = lastKills[mob.Name];
+            const lastKillTimestamp = lastKill ? lastKill.timestamp : 0;
+            const repopData = calculateRepop(mob, lastKillTimestamp);
+            return { ...mob, ...repopData, lastKillTime: lastKill ? lastKill.timestamp : null };
+        });
+        // 更新済みタイムスタンプだけ置き換えて終了（UI は触らない）
+        lastFetchedLastKills = { ...newLastKills };
+        return;
+    }
+
+    // 差分あり: lastFetchedLastKills を更新して UI を再描画する（既存の処理を続行）
+    lastFetchedLastKills = { ...newLastKills };
 
             // 3. モブリストの生成とグローバル変数への格納
             mobListWithRepop = mobData.map(mob => {
@@ -506,6 +540,136 @@
             renderMobCards(mobsToRender);
         }
 
+// --- 追加: 差分を適用して最小限の DOM 更新を行う ---
+function applyDataDiff(newMobList) {
+    // newMobList は render 用に準備された mob オブジェクト配列で
+    // 各要素に: Name, Rank, Area, elapsedPercent, minRepop, timeRemaining, lastKillTime, Map などが含まれる想定
+
+    const seen = new Set();
+
+    newMobList.forEach(mob => {
+        seen.add(mob.Name);
+
+        // 既存カードを探す
+        const card = document.querySelector(`.mob-card[data-mobname="${CSS.escape(mob.Name)}"]`);
+
+        // 更新対象の簡潔な値を決める
+        const newPercent = Math.max(0, Math.min(100, Number(mob.elapsedPercent || 0)));
+        const newLastKill = mob.lastKillTime ? String(mob.lastKillTime) : '';
+        const newRepop = String(mob["REPOP(s)"] || 0);
+        const newMax = String(mob["MAX(s)"] || mob["REPOP(s)"] || 0);
+
+        if (card) {
+            // 既存カードのデータ属性と CSS 変数を更新（レイアウトは触らない）
+            card.dataset.lastKill = newLastKill;
+            card.dataset.repop = newRepop;
+            card.dataset.max = newMax;
+            card.style.setProperty('--progress-percent', `${newPercent}%`);
+
+            const color = getColorForProgress(newPercent);
+            card.style.setProperty('--progress-color-start', color.startColor);
+            card.style.setProperty('--progress-color-end', color.endColor);
+
+            // 軽微なテキスト差分だけ更新（無駄な innerHTML 差し替えを避ける）
+            const nameEl = card.querySelector('.fixed-content .text-base');
+            if (nameEl && nameEl.textContent !== mob.Name) nameEl.textContent = mob.Name;
+
+            const areaEl = card.querySelector('.fixed-content .text-xs');
+            if (areaEl && areaEl.textContent !== mob.Area) areaEl.textContent = mob.Area;
+
+            const infoEl = card.querySelector('.fixed-content .font-mono');
+            if (infoEl) {
+                const minPopStr = mob.minRepop instanceof Date ? mob.minRepop.toLocaleString() : mob.minRepop;
+                const newInfo = `${minPopStr} - ${mob.timeRemaining} (${newPercent.toFixed(1)}%)`;
+                if (infoEl.textContent !== newInfo) infoEl.textContent = newInfo;
+            }
+
+            // マップが新しく追加された場合は map コンテナを差分で挿入
+            if (mob.Map) {
+                const overlay = card.querySelector('.spawn-points-overlay');
+                if (!overlay) {
+                    // mapHtml を同様のテンプレートで作って差し込む（最小限）
+                    const mapContainer = document.createElement('div');
+                    mapContainer.className = 'map-container relative w-full rounded-lg overflow-hidden shadow-inner';
+                    mapContainer.style.paddingTop = '100%';
+                    mapContainer.innerHTML = `<img src="${mob.Map}" alt="${mob.Area} マップ" class="absolute inset-0 w-full h-full object-cover">
+                        <div class="spawn-points-overlay absolute inset-0" data-map-id="${mob.Map}"></div>`;
+                    const details = card.querySelector('.mob-details');
+                    if (details) details.insertAdjacentElement('beforeend', mapContainer);
+                } else if (overlay.dataset.mapId !== mob.Map) {
+                    overlay.dataset.mapId = mob.Map;
+                    const img = card.querySelector('.map-container img');
+                    if (img) img.src = mob.Map;
+                }
+            }
+
+            // カードのカラム配置が変わるような完全な再配置は避ける（必要なら後述）
+        } else {
+            // 新規モブ：既存の render ロジックに任せるためフラグを立てておく
+            // ここでは最小限として新しいカードを生成してカラムに差し込む処理を行う
+            // カラム振り分けの決定は既存の renderMobCards ロジックに準拠する
+            const columns = [
+                document.getElementById('column-1'),
+                document.getElementById('column-2'),
+                document.getElementById('column-3')
+            ];
+            const mobCard = document.createElement('div');
+            mobCard.className = 'mob-card flex flex-col rounded-lg shadow-xl overflow-hidden bg-gray-800';
+            mobCard.dataset.mobname = mob.Name;
+            mobCard.dataset.lastKill = newLastKill;
+            mobCard.dataset.repop = newRepop;
+            mobCard.dataset.max = newMax;
+            const color = getColorForProgress(newPercent);
+            mobCard.style.setProperty('--progress-percent', `${newPercent}%`);
+            mobCard.style.setProperty('--progress-color-start', color.startColor);
+            mobCard.style.setProperty('--progress-color-end', color.endColor);
+
+            const minPopStr = mob.minRepop instanceof Date ? mob.minRepop.toLocaleString() : mob.minRepop;
+            const fixedContent = `
+                <div class="fixed-content repop-bar-bg p-3 cursor-pointer select-none">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <div class="rank-icon ${getRankColorClass(mob.Rank)} w-6 h-6 sm:w-8 sm:h-8 rounded-md flex items-center justify-center text-xs sm:text-sm font-bold text-white">
+                            ${mob.Rank}
+                        </div>
+                        <span class="text-base sm:text-lg font-bold text-white text-outline">${mob.Name}</span>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <div class="text-xs sm:text-sm text-gray-200 text-outline mb-1">${mob.Area}</div>
+                            <div class="text-xs sm:text-sm font-mono text-gray-100 text-outline">
+                                ${minPopStr} - ${mob.timeRemaining} (${newPercent.toFixed(1)}%)
+                            </div>
+                        </div>
+                        <button data-mob-name="${mob.Name}" data-mob-rank="${mob.Rank}" class="report-btn bg-red-600 hover:bg-red-700 px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg">報 告</button>
+                    </div>
+                </div>`;
+            const detailContent = `
+                <div class="mob-details bg-gray-700">
+                    <p class="text-sm mb-2"><span class="font-semibold text-gray-300">前回の討伐時間:</span> ${mob.lastKillTime ? new Date(mob.lastKillTime).toLocaleString() : '未報告'}</p>
+                    <p class="text-sm mb-4"><span class="font-semibold text-gray-300">POP条件:</span> ${mob["POP Date"] || '特に条件の記述なし'}</p>
+                    ${mob.Map ? `<div class="map-container relative w-full rounded-lg overflow-hidden shadow-inner" style="padding-top:100%;">
+                        <img src="${mob.Map}" alt="${mob.Area} マップ" class="absolute inset-0 w-full h-full object-cover">
+                        <div class="spawn-points-overlay absolute inset-0" data-map-id="${mob.Map}"></div>
+                    </div>` : ''}
+                </div>`;
+            mobCard.innerHTML = fixedContent + detailContent;
+
+            // 単純振り分け: 最後尾に近いカラムへ（あるいは既存の mobCount ロジックを流用してください）
+            const columnIndex = window.innerWidth < 1024 ? 0 : (document.querySelectorAll('.mob-card').length % 3);
+            columns[columnIndex].appendChild(mobCard);
+        }
+    });
+
+    // 画面上に残すべきカード以外を削除（mobs.forEach 終了後に呼ぶ想定）
+    document.querySelectorAll('.mob-card').forEach(card => {
+        if (!seen.has(card.dataset.mobname)) card.remove();
+    });
+
+    // 更新後、イベントリスナとマップ点を再設定（既存カードを壊さないよう最小化）
+    setupMapPoints();
+    setupEventListeners();
+}
+       
         /**
          * UI描画を実行する
          * @param {Array} mobs - 既にソート・再計算済みのモブデータの配列
@@ -610,26 +774,25 @@
                 `;
 
                 // 詳細スライドパネル
- // map 部分を mob.Map の有無で条件生成する
-const mapHtml = mob.Map
-  ? `<div class="map-container relative w-full rounded-lg overflow-hidden shadow-inner" style="padding-top: 100%;">
-       <img src="${mob.Map}" alt="${mob.Area} マップ" class="absolute inset-0 w-full h-full object-cover">
-       <div class="spawn-points-overlay absolute inset-0" data-map-id="${mob.Map}">
-         <!-- ここにJavaScriptで座標ドットが挿入されます -->
-       </div>
-     </div>`
-  : ''; // mob.Map が無い場合は空文字（マップ領域自体を出さない）
+                // map 部分を mob.Map の有無で条件生成する
+                const mapHtml = mob.Map
+                  ? `<div class="map-container relative w-full rounded-lg overflow-hidden shadow-inner" style="padding-top: 100%;">
+                     <img src="${mob.Map}" alt="${mob.Area} マップ" class="absolute inset-0 w-full h-full object-cover">
+                     <div class="spawn-points-overlay absolute inset-0" data-map-id="${mob.Map}">
+                     <!-- ここにJavaScriptで座標ドットが挿入されます -->
+                     </div>
+                     </div>`
+                     : ''; // mob.Map が無い場合は空文字（マップ領域自体を出さない）
 
-const detailContent = `
-  <div class="mob-details bg-gray-700">
-    <p class="text-sm mb-2"><span class="font-semibold text-gray-300">前回の討伐時間:</span> ${lastKillTimeStr}</p>
-    <p class="text-sm mb-4"><span class="font-semibold text-gray-300">POP条件:</span> ${mob["POP Date"] || '特に条件の記述なし'}</p>
-    ${mapHtml}
-  </div>
-`;
+                const detailContent = `
+                  <div class="mob-details bg-gray-700">
+                    <p class="text-sm mb-2"><span class="font-semibold text-gray-300">前回の討伐時間:</span> ${lastKillTimeStr}</p>
+                    <p class="text-sm mb-4"><span class="font-semibold text-gray-300">POP条件:</span> ${mob["POP Date"] || '特に条件の記述なし'}</p>
+                    ${mapHtml}
+                  </div>
+                    `;
 
-                
-                mobCard.innerHTML = fixedContent + detailContent;
+                    mobCard.innerHTML = fixedContent + detailContent;
 
                 // 開閉状態の復元
                 if (openMobDetails.has(mob.Name)) {
