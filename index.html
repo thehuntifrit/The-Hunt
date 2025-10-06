@@ -543,39 +543,32 @@
             renderMobCards(mobsToRender);
         }
 
-// --- 追加: 差分を適用して最小限の DOM 更新を行う ---
-function applyDataDiff(newMobList) {
-    // newMobList は render 用に準備された mob オブジェクト配列で
-    // 各要素に: Name, Rank, Area, elapsedPercent, minRepop, timeRemaining, lastKillTime, Map などが含まれる想定
+        // --- 追加: 差分を適用して最小限の DOM 更新を行う ---
+        function applyDataDiff(newMobList) {
+            const seen = new Set();
 
-    const seen = new Set();
+                newMobList.forEach(mob => {
+                seen.add(mob.Name);
 
-    newMobList.forEach(mob => {
-        seen.add(mob.Name);
+            const card = document.querySelector(`.mob-card[data-mobname="${CSS.escape(mob.Name)}"]`);
 
-        // 既存カードを探す
-        const card = document.querySelector(`.mob-card[data-mobname="${CSS.escape(mob.Name)}"]`);
+            const newPercent = Math.max(0, Math.min(100, Number(mob.elapsedPercent || 0)));
+            const newLastKill = mob.lastKillTime ? String(mob.lastKillTime) : '';
+            const newRepop = String(mob["REPOP(s)"] || 0);
+            const newMax = String(mob["MAX(s)"] || mob["REPOP(s)"] || 0);
 
-        // 更新対象の簡潔な値を決める
-        const newPercent = Math.max(0, Math.min(100, Number(mob.elapsedPercent || 0)));
-        const newLastKill = mob.lastKillTime ? String(mob.lastKillTime) : '';
-        const newRepop = String(mob["REPOP(s)"] || 0);
-        const newMax = String(mob["MAX(s)"] || mob["REPOP(s)"] || 0);
+            if (card) {
+                 card.dataset.lastKill = newLastKill;
+                 card.dataset.repop = newRepop;
+                 card.dataset.max = newMax;
+                 card.style.setProperty('--progress-percent', `${newPercent}%`);
 
-        if (card) {
-            // 既存カードのデータ属性と CSS 変数を更新（レイアウトは触らない）
-            card.dataset.lastKill = newLastKill;
-            card.dataset.repop = newRepop;
-            card.dataset.max = newMax;
-            card.style.setProperty('--progress-percent', `${newPercent}%`);
+             const color = getColorForProgress(newPercent);
+                 card.style.setProperty('--progress-color-start', color.startColor);
+                 card.style.setProperty('--progress-color-end', color.endColor);
 
-            const color = getColorForProgress(newPercent);
-            card.style.setProperty('--progress-color-start', color.startColor);
-            card.style.setProperty('--progress-color-end', color.endColor);
-
-            // 軽微なテキスト差分だけ更新（無駄な innerHTML 差し替えを避ける）
-            const nameEl = card.querySelector('.fixed-content .text-base');
-            if (nameEl && nameEl.textContent !== mob.Name) nameEl.textContent = mob.Name;
+             const nameEl = card.querySelector('.fixed-content .text-base');
+             if (nameEl && nameEl.textContent !== mob.Name) nameEl.textContent = mob.Name;
 
             const areaEl = card.querySelector('.fixed-content .text-xs');
             if (areaEl && areaEl.textContent !== mob.Area) areaEl.textContent = mob.Area;
@@ -587,11 +580,9 @@ function applyDataDiff(newMobList) {
                 if (infoEl.textContent !== newInfo) infoEl.textContent = newInfo;
             }
 
-            // マップが新しく追加された場合は map コンテナを差分で挿入
             if (mob.Map) {
                 const overlay = card.querySelector('.spawn-points-overlay');
                 if (!overlay) {
-                    // mapHtml を同様のテンプレートで作って差し込む（最小限）
                     const mapContainer = document.createElement('div');
                     mapContainer.className = 'map-container relative w-full rounded-lg overflow-hidden shadow-inner';
                     mapContainer.style.paddingTop = '100%';
@@ -605,12 +596,7 @@ function applyDataDiff(newMobList) {
                     if (img) img.src = mob.Map;
                 }
             }
-
-            // カードのカラム配置が変わるような完全な再配置は避ける（必要なら後述）
         } else {
-            // 新規モブ：既存の render ロジックに任せるためフラグを立てておく
-            // ここでは最小限として新しいカードを生成してカラムに差し込む処理を行う
-            // カラム振り分けの決定は既存の renderMobCards ロジックに準拠する
             const columns = [
                 document.getElementById('column-1'),
                 document.getElementById('column-2'),
@@ -657,21 +643,19 @@ function applyDataDiff(newMobList) {
                 </div>`;
             mobCard.innerHTML = fixedContent + detailContent;
 
-            // 単純振り分け: 最後尾に近いカラムへ（あるいは既存の mobCount ロジックを流用してください）
             const columnIndex = window.innerWidth < 1024 ? 0 : (document.querySelectorAll('.mob-card').length % 3);
             columns[columnIndex].appendChild(mobCard);
         }
     });
 
-    // 画面上に残すべきカード以外を削除（mobs.forEach 終了後に呼ぶ想定）
     document.querySelectorAll('.mob-card').forEach(card => {
         if (!seen.has(card.dataset.mobname)) card.remove();
     });
 
-    // 更新後、イベントリスナとマップ点を再設定（既存カードを壊さないよう最小化）
     setupMapPoints();
     setupEventListeners();
 }
+
        
         /**
          * UI描画を実行する
@@ -831,7 +815,10 @@ function applyDataDiff(newMobList) {
          * マップ上の地点を描画し、消し込みロジックを適用する
          */
         function setupMapPoints() {
-            const spawnStatus = getSpawnStatus();
+            // 現在の mobListWithRepop を少し書き換えて差分適用テスト
+                const testList = (mobListWithRepop && mobListWithRepop.slice(0,2).map(m=>({...m, elapsedPercent: (m.elapsedPercent||0)+5}))) || [];
+                        applyDataDiff(testList);
+                const spawnStatus = getSpawnStatus();
             
             document.querySelectorAll('.spawn-points-overlay').forEach(overlay => {
                 const mapId = overlay.dataset.mapId;
