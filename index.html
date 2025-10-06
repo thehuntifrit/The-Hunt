@@ -658,8 +658,6 @@
         if (!seen.has(card.dataset.mobname)) card.remove();
     });
 
-    setupMapPoints();
-    setupEventListeners();
     // setupMapPoints / setupEventListeners は同期的に再帰を誘発する可能性があるので
     // 呼び出しを次のイベントループに回して再帰を断ち切る
     setTimeout(() => {
@@ -833,9 +831,9 @@
          * マップ上の地点を描画し、消し込みロジックを適用する
          */
         function setupMapPoints() {
+            // 差分適用中は setupMapPoints を無視して再帰を防ぐ
+                if (typeof __isApplyingDataDiff !== 'undefined' && __isApplyingDataDiff) return;
             // 現在の mobListWithRepop を少し書き換えて差分適用テスト
-                const testList = (mobListWithRepop && mobListWithRepop.slice(0,2).map(m=>({...m, elapsedPercent: (m.elapsedPercent||0)+5}))) || [];
-                        applyDataDiff(testList);
                 const spawnStatus = getSpawnStatus();
             
             document.querySelectorAll('.spawn-points-overlay').forEach(overlay => {
