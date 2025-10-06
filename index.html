@@ -322,6 +322,8 @@
 
         // 開いているモブの詳細パネル名（mob.Name）を記憶するSet
         let openMobDetails = new Set();
+        // 再入（applyDataDiff の多重実行）を防ぐフラグ
+        let __isApplyingDataDiff = false;
 
 
         // --- ユーティリティ関数 ---
@@ -545,6 +547,10 @@
 
         // --- 追加: 差分を適用して最小限の DOM 更新を行う ---
         function applyDataDiff(newMobList) {
+        // 再入チェック（既に差分適用中なら何もしない）
+            if (__isApplyingDataDiff) return;
+                __isApplyingDataDiff = true;
+
             const seen = new Set();
 
                 newMobList.forEach(mob => {
@@ -654,6 +660,18 @@
 
     setupMapPoints();
     setupEventListeners();
+    // setupMapPoints / setupEventListeners は同期的に再帰を誘発する可能性があるので
+    // 呼び出しを次のイベントループに回して再帰を断ち切る
+    setTimeout(() => {
+        try {
+            setupMapPoints();
+            setupEventListeners();
+        } finally {
+            __isApplyingDataDiff = false;
+        }
+    }, 0);
+    return;
+
 }
 
        
