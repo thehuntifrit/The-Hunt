@@ -272,8 +272,6 @@ function createMobCard(mob) {
     }
 
     // 「残り (%)」の時間部分のフォントを「次回POP」と同じにする
-    // 修正1: POP到達時の文字色は、最大超過以外は黒 (text-gray-900) にする
-    // 修正1: 文字サイズを 'text-lg' に上げる
     const remainingTimeClass = 'font-mono text-lg'; 
 
     // ランクアイコンの背景色
@@ -307,7 +305,7 @@ function createMobCard(mob) {
         </button>
     `;
     
-    // --- 修正2: 展開パネル内の表示調整 ---
+    // --- 展開パネル内の表示調整 ---
     const labelColorClass = 'text-gray-400'; // ラベル色を統一
     // ▼ 前回討伐時刻の値もラベルと同じ色にする
     const valueColorClass = 'text-gray-400'; 
@@ -377,9 +375,9 @@ function createMobCard(mob) {
     // Min POP未到達時は 'hidden' クラスを付与して「残り (%)」の行を非表示にする
     const remainingTimeContainerClass = !isPop || isUnknown ? 'hidden' : '';
 
-
+    // ▼ 修正点: transform hover:scale-[1.01] transition duration-300 を削除
     return `
-        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden transform hover:scale-[1.01] transition duration-300 relative" 
+        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative" 
              data-rank="${mob.Rank}" 
              data-mobno="${mob['No.']}"
              data-lastkill="${mob.LastKillDate || ''}"
