@@ -1,5 +1,5 @@
 // Google Apps Script (GAS) のエンドポイントURL
-// ★新しいURLに変更しました★
+// ★新しいURLに変更済み★
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwxgb5APRPyTwEM3ZQtgG3WWdxrFqVZAgkvq4Qfh_FggBU2p21yYDkWIdp-jMfBtG92Gg/exec';
 // 静的モブデータ (mob_data.json) のURL (同階層のファイルを参照)
 const MOB_DATA_URL = './mob_data.json'; 
@@ -158,6 +158,7 @@ function createMobCard(mob) {
 
     let timeStatusClass = 'text-green-400';
     let minPopStr = '未討伐';
+    // LastKillDateはGASから文字列として受け取りそのまま表示に使用
     let lastKillStr = mob.LastKillDate || '不明'; 
 
     if (lastKillDate) {
@@ -215,32 +216,14 @@ function createMobCard(mob) {
     
     // --- 展開パネルの内容 ---
     
-    // 3. 前回討伐履歴パネルの生成 (常に展開パネル用として生成)
-    let lastKillHistoryHtml = '';
-    if (lastKillDate) {
-        // Sランクは抽選条件と同じ文字サイズ(text-sm)、その他は text-base
-        const sizeClass = mob.Rank === 'S' ? 'text-sm' : 'text-base';
-        // Sランク以外の場合は、展開パネルの最上部に来るので pt-4
-        const topPadding = mob.Rank === 'S' ? 'pt-0' : 'pt-4'; 
-
-        lastKillHistoryHtml = `
-            <div class="last-kill-history ${topPadding} pb-3 px-4">
-                <div class="flex justify-between items-baseline">
-                    <span class="text-gray-300 w-24 flex-shrink-0 ${sizeClass}">前回討伐:</span> 
-                    <span class="last-kill-date ${sizeClass} text-white">${lastKillStr}</span>
-                </div>
-            </div>
-        `;
-    }
-
     // 1. 抽選条件パネル
     let conditionHtml = '';
     if (mob.Condition) {
         const displayCondition = processText(mob.Condition);
         
-        // Sランク: 前回討伐が後に続くため pb-1 (4px) で余白を狭く
-        // Sランクは先頭に来るため pt-3 (固定コンテンツ p-3 との境界)
-        const conditionTopPadding = mob.Rank === 'S' ? 'pt-3' : (lastKillHistoryHtml ? 'pt-1' : 'pt-4'); 
+        // Sランク: 前回討伐が固定部に移動したため、条件パネルは常にpt-4から開始
+        // NOTE: 前回討伐を固定部から削除したため、Sランクの討伐時間は現在表示されません。
+        const conditionTopPadding = 'pt-4'; 
         const conditionBottomPadding = mob.Rank === 'S' ? 'pb-1' : 'pb-4';
         
         conditionHtml = `
@@ -253,9 +236,8 @@ function createMobCard(mob) {
     // 2. マップ詳細パネル
     let mapDetailsHtml = '';
     if (mob.Map) {
-        // マップの上余白は、前の要素が存在しない場合は pt-4, 存在する場合は pt-1 (狭く)
-        // Sランクは前回討伐が直前にある可能性が高いため pt-1
-        const precedingContentExists = conditionHtml || lastKillHistoryHtml;
+        // マップの上余白は、前の要素(抽選条件)が存在しない場合は pt-4, 存在する場合は pt-1 (狭く)
+        const precedingContentExists = conditionHtml;
         const mapTopPaddingClass = precedingContentExists ? 'pt-1' : 'pt-4';
         
         mapDetailsHtml = `
@@ -271,17 +253,9 @@ function createMobCard(mob) {
     }
     
     // --- 展開パネルのコンテンツの順序決定 ---
-    let panelContent = '';
+    let panelContent = conditionHtml + mapDetailsHtml;
     
-    if (mob.Rank === 'S') {
-        // Sランク: [抽選条件] -> [前回討伐] -> [マップ]
-        panelContent = conditionHtml + lastKillHistoryHtml + mapDetailsHtml;
-    } else {
-        // A, B, FATE: [前回討伐] -> [抽選条件 (通常なし)] -> [マップ]
-        panelContent = lastKillHistoryHtml + conditionHtml + mapDetailsHtml;
-    }
-    
-    // 抽選条件、マップ、または前回討伐データがある場合のみパネルを生成
+    // 抽選条件、またはマップデータがある場合のみパネルを生成
     let expandablePanel = '';
     if (panelContent.trim()) {
         expandablePanel = `
@@ -301,7 +275,7 @@ function createMobCard(mob) {
              data-minrepop="${mob['REPOP(s)']}"
              data-maxrepop="${mob['MAX(s)']}">
 
-            <!-- 固定情報ヘッダー (p-4をp-3に、mt-3をmt-2に修正し、余白を狭める) -->
+            <!-- 固定情報ヘッダー -->
             <div class="p-3 fixed-content toggle-handler cursor-pointer">
                 <div class="flex justify-between items-start mb-3">
                     <!-- ランクアイコン + モンスター名/エリア名 (Flex) -->
@@ -321,12 +295,12 @@ function createMobCard(mob) {
                     ${reportBtnHtml}
                 </div>
 
-                <!-- リポップ情報 (前回討伐を削除し、mt-3をmt-2に修正) -->
+                <!-- リポップ情報エリア (前回討伐情報を削除し、次回POP情報のみに) -->
                 <div class="mt-2 bg-gray-700 p-2 rounded-lg text-xs flex flex-col space-y-1">
                     
-                    <!-- 1. 予測POP (ラベル/結果の文字サイズを text-base に統一) -->
+                    <!-- 1. 次回POP -->
                     <div class="flex justify-between items-baseline">
-                        <span class="text-gray-300 w-24 flex-shrink-0 text-base">予測POP:</span>
+                        <span class="text-gray-300 w-24 flex-shrink-0 text-base">次回POP:</span>
                         <span class="repop-time text-base ${timeStatusClass} font-bold">${minPopStr}</span>
                     </div>
                     
@@ -629,10 +603,19 @@ async function toggleCullStatus(mobNo, pointId, newStatus) {
     const mob = getMobByNo(mobNo);
     if (!mob) return;
     
-    // 画面上に即時反映 (ユーザー体験向上)
+    // 1. 画面上に即時反映 (ユーザー体験向上)
     mob.cullStatusMap[pointId] = newStatus;
-    // 現在のフィルターで再描画
-    renderMobList(currentFilter); 
+    
+    // 2. 現在開いているカードのマップオーバーレイのみを再描画
+    const card = document.querySelector(`.mob-card[data-mobno="${mobNo}"]`);
+    if (card && card.classList.contains('open')) {
+        const mapOverlay = card.querySelector('.map-overlay');
+        if (mapOverlay) {
+            // 現在のmobデータでマップのポイントだけを更新
+            drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
+        }
+    }
+    // 注意: renderMobList(currentFilter) を削除したことで、カードが閉じなくなりました。
 
     try {
         const response = await fetch(GAS_ENDPOINT, {
@@ -654,6 +637,10 @@ async function toggleCullStatus(mobNo, pointId, newStatus) {
 
         if (result.status === 'success') {
             console.log(`湧き潰し状態更新成功: ${pointId} to ${newStatus}`);
+            
+            // サーバー成功後、他の要素（前回討伐時刻など）の更新は定期更新に任せる
+            // 即座に他のユーザーの変更を取得したい場合は、fetchRecordsAndUpdate(false)を呼ぶことも可能だが、ここではシンプルに UI の応答性を優先する
+            
         } else {
             console.error(`湧き潰し状態更新失敗: ${result.message}`);
         }
@@ -850,6 +837,7 @@ async function fetchRecordsAndUpdate(shouldFetchBase = true) {
                 
                 // 討伐記録の反映 (POP_Date_Unixは秒単位で返される)
                 if (record && record.POP_Date_Unix) {
+                    // Unix秒をDateに変換し、ローカルタイムとして表示可能な形式に変換
                     newMob.LastKillDate = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
                 } else {
                     newMob.LastKillDate = ''; 
