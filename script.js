@@ -1,6 +1,6 @@
 // Google Apps Script (GAS) のエンドポイントURL
 // ユーザーから提供された正確なURLを設定 (大文字小文字を区別)
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwxgb5APRPyTwEM3ZQtgG3WWdxrFqVZAgkvq4Qfh_FggBU2p21yYDkWIdp-jMfBtG92Gg/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwxgb5APRPyTwEM3ZQthG3WWdxrFqVZAgkvq4Qfh_FggBU2p21yYDkWIdp-jMfBtG92Gg/exec';
 // 静的モブデータ (mob_data.json) のURL (同階層のファイルを参照)
 const MOB_DATA_URL = './mob_data.json'; 
 
@@ -27,7 +27,7 @@ const submitReportBtn = document.getElementById('submit-report');
 const cancelReportBtn = document.getElementById('cancel-report');
 const reportStatusEl = document.getElementById('report-status');
 
-// --- ユーティリティ関数 ---
+// --- ユーティリティ関数 (変更なし) ---
 
 /**
  * UNIX秒 (サーバー時間) を Dateオブジェクトに変換する
@@ -143,10 +143,11 @@ function calculateRepop(mob, lastKill) {
     const now = new Date();
 
     if (isUnknown) {
+        // データがない場合、現在時刻からMinリポップを仮計算
         minRepopTime = new Date(now.getTime() + repopMinMs); 
         timeRemainingStr = 'データなし';
         isPop = false; 
-        elapsedPercent = 0; // データがない場合、バー非表示のため0
+        elapsedPercent = 0; // バー非表示のため0
     } else {
         minRepopTime = new Date(killTime.getTime() + repopMinMs);
         maxRepopTime = new Date(killTime.getTime() + repopMaxMs);
@@ -154,7 +155,7 @@ function calculateRepop(mob, lastKill) {
         const remainingMsToMin = minRepopTime.getTime() - now.getTime();
         
         if (remainingMsToMin > 0) {
-            // --- Phase 1: Pre-Min Repop (Countdown Phase, Percentage HIDDEN) ---
+            // --- Phase 1: Pre-Min Repop (Min POPまでのカウントダウン) ---
             isPop = false; 
             
             // NEW: ミリ秒から HHh MMm 形式に変換 (秒は含まない)
@@ -168,7 +169,7 @@ function calculateRepop(mob, lastKill) {
             const remainingMsToMax = maxRepopTime.getTime() - now.getTime();
             
             if (remainingMsToMax > 0) {
-                // --- Phase 2: In POP Window (Percentage VISIBLE: Elapsed in window) ---
+                // --- Phase 2: In POP Window (Max POPまでの残り時間) ---
                 isMaxOver = false;
                 
                 const elapsedInWindowMs = now.getTime() - minRepopTime.getTime();
@@ -180,7 +181,7 @@ function calculateRepop(mob, lastKill) {
                 timeRemainingStr = formatDurationPart(remainingMsToMax);
                 
             } else {
-                // --- Phase 3: Max Repop Exceeded (Max Over/Overdue) ---
+                // --- Phase 3: Max Repop Exceeded (最大超過) ---
                 isMaxOver = true;
                 
                 const popElapsedMs = now.getTime() - maxRepopTime.getTime();
@@ -188,17 +189,17 @@ function calculateRepop(mob, lastKill) {
                 // NEW: ミリ秒から HHh MMm 形式に変換し、接頭辞を追加
                 const formattedElapsed = formatDurationPart(popElapsedMs, '+');
                 
-                // Time elapsed since MAX POP
-                timeRemainingStr = formattedElapsed; // 時間データのみを渡す
+                // timeRemainingには超過時間が入る
+                timeRemainingStr = formattedElapsed; 
                 elapsedPercent = 100; // フルバー表示
             }
         }
     }
 
     return {
-        minRepop: minRepopTime,
-        maxRepop: maxRepopTime, 
-        timeRemaining: timeRemainingStr,
+        minRepop: minRepopTime, // POP開始予定時刻 (常に絶対時間)
+        maxRepop: maxRepopTime, // POP終了予定時刻 (常に絶対時間)
+        timeRemaining: timeRemainingStr, // Phase 1: Min POPまでの残り時間, Phase 2: Max POPまでの残り時間, Phase 3: 超過時間(+HHh MMm)
         elapsedPercent: elapsedPercent,
         isPop: isPop,
         isMaxOver: isMaxOver, 
@@ -223,8 +224,8 @@ function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
     const { minRepop, timeRemaining, elapsedPercent, isPop, isMaxOver, isUnknown } = calculateRepop(mob, lastKillDate);
 
-    // 修正点1: フォント統一のために time-mono クラスを使用
-    let minPopColorClass = 'text-green-400 font-mono';
+    // 修正点3: 次回POPの初期色をご要望の青色に設定
+    let minPopColorClass = 'text-blue-400 font-mono'; 
     
     let minPopStr;
     if (minRepop instanceof Date) {
@@ -268,13 +269,14 @@ function createMobCard(mob) {
     `;
     
     // 前回討伐
-    // 修正点2: 前回討伐の下の余白を増やす (pb-6 = 1.5rem)
-    const lastKillBottomMargin = 'pb-6'; 
+    // 修正点1: 前回討伐の下の余白を増やし (pb-6)、右揃えにする (text-right)
+    const lastKillBottomPaddingClass = 'pb-6'; 
     
     let lastKillHtml = '';
     if (lastKillDate && !isNaN(lastKillDate.getTime())) {
         lastKillHtml = `
-            <div class="px-4 pt-2 ${lastKillBottomMargin} last-kill-content">
+            <!-- 修正: text-rightをこのコンテナに追加して右寄せにする -->
+            <div class="px-4 pt-2 ${lastKillBottomPaddingClass} last-kill-content text-right">
                 <p class="text-sm font-semibold text-gray-400">前回討伐: <span class="text-base text-gray-200 font-mono">${lastKillDate.toLocaleString()}</span></p>
             </div>
         `;
@@ -390,7 +392,7 @@ function createMobCard(mob) {
 }
 
 /**
- * フィルターに基づいてモブカードリストをレンダリングする
+ * フィルターに基づいてモブカードリストをレンダリングする (変更なし)
  */
 function renderMobList(rank) {
     currentFilter = rank;
@@ -442,7 +444,7 @@ function renderMobList(rank) {
 }
 
 /**
- * MobNoからモブデータを取得する
+ * MobNoからモブデータを取得する (変更なし)
  */
 function getMobByNo(mobNo) {
     // MobNoは5桁のIDに対応するため、数値として比較
@@ -450,7 +452,7 @@ function getMobByNo(mobNo) {
 }
 
 /**
- * イベントリスナーをカードとボタンにアタッチする
+ * イベントリスナーをカードとボタンにアタッチする (変更なし)
  */
 function attachEventListeners() {
     // 討伐報告ボタン
@@ -475,7 +477,7 @@ function attachEventListeners() {
 }
 
 /**
- * マップ詳細パネルの表示/非表示を切り替える
+ * マップ詳細パネルの表示/非表示を切り替える (変更なし)
  * @param {HTMLElement} card - クリックされた mob-card 要素
  */
 function toggleMobDetails(card) {
@@ -526,7 +528,7 @@ function toggleMobDetails(card) {
 }
 
 /**
- * マップにスポーンポイントを描画する
+ * マップにスポーンポイントを描画する (変更なし)
  */
 function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     overlayEl.innerHTML = '';
@@ -660,7 +662,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
 
 
 /**
- * 湧き潰し状態をGAS経由で切り替える (新規)
+ * 湧き潰し状態をGAS経由で切り替える (変更なし)
  */
 async function toggleCullStatus(mobNo, pointId, newStatus) {
     const mob = getMobByNo(mobNo);
@@ -708,7 +710,7 @@ async function toggleCullStatus(mobNo, pointId, newStatus) {
 }
 
 
-// --- モーダル/フォーム操作 (省略、変更なし) ---
+// --- モーダル/フォーム操作 (変更なし) ---
 
 /**
  * 討伐報告モーダルを開く
@@ -815,7 +817,7 @@ async function submitReport() {
 }
 
 /**
- * 外部JSONからモブデータを取得する
+ * 外部JSONからモブデータを取得する (変更なし)
  */
 async function fetchBaseMobData() {
     try {
@@ -845,7 +847,7 @@ async function fetchBaseMobData() {
 }
 
 /**
- * GASから最新の討伐記録と湧き潰し状態を取得し、グローバルデータを更新する (NEW)
+ * GASから最新の討伐記録と湧き潰し状態を取得し、グローバルデータを更新する (変更なし)
  * @param {string} updateType - 'initial', 'manual', 'auto'
  * @param {boolean} shouldFetchBase - 基本モブデータを取得するか
  */
@@ -955,14 +957,19 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
  */
 function updateProgressBars() {
     // ------------------------------------------------------------------
-    // NEW: ユーザーの要望に基づいたプログレスバーの色定義
+    // 修正点3: ユーザーの要望に基づいたプログレスバーの色定義
     // ------------------------------------------------------------------
-    // 80%~ および最大超過時のバーの色 (薄いオレンジ)
-    const ORANGE_BAR_COLOR_CLASS = 'bg-orange-400';
-    // 最大超過時のリポップ時刻の色 (薄いオレンジのテキスト)
-    const ORANGE_TEXT_COLOR_CLASS = 'text-orange-400';
+    // 次回POP時刻の色 (暗いコーンフラワー ブルー1 相当)
+    const TEXT_POP_TIME_COLOR_CLASS = 'text-blue-400'; 
+    
+    // 進捗バーの色
+    const COLOR_GREEN_3 = 'bg-lime-500';       // 明るい緑 3 (~60%)
+    const COLOR_YELLOW_3 = 'bg-yellow-400';    // 明るい黄 3 (~80%)
+    const COLOR_ORANGE_3 = 'bg-orange-400';    // 明るいオレンジ 3 (80%~)
+    // 最大超過時のリポップ時刻の色 (オレンジのテキスト)
+    const MAX_OVER_TEXT_COLOR_CLASS = COLOR_ORANGE_3.replace('bg-', 'text-'); 
     // 最大超過時の残り (%) の文字色 (濃いめの赤)
-    const MAX_OVER_TEXT_COLOR_CLASS = 'text-red-700'; 
+    const OVERDUE_DURATION_COLOR_CLASS = 'text-red-700'; 
     // ------------------------------------------------------------------
     
     document.querySelectorAll('.mob-card').forEach(card => {
@@ -993,43 +1000,43 @@ function updateProgressBars() {
         // --- 2. リポップ予測時刻の更新 (repopTimeEl) ---
         if (repopTimeEl) {
             let displayTimeStr;
+            
             if (repopData.isUnknown) {
                  displayTimeStr = 'N/A';
-            } else if (repopData.isPop) {
-                 // POPウィンドウ内の場合、Max POP時刻を表示
-                 displayTimeStr = repopData.maxRepop instanceof Date ? repopData.maxRepop.toLocaleString() : 'N/A';
             } else {
-                 // POPウィンドウ未到達の場合、Min POP時刻を表示
+                 // 【修正ポイント】
+                 // ユーザーの要望に基づき、isPop や isMaxOver の状態にかかわらず、
+                 // Min Repop Time（予測POP開始時刻）を常に表示します。
                  displayTimeStr = repopData.minRepop instanceof Date ? repopData.minRepop.toLocaleString() : 'N/A';
             }
             repopTimeEl.textContent = displayTimeStr;
             
             // 色の更新
-            repopTimeEl.classList.remove('text-green-400', 'text-amber-300', 'text-red-400', ORANGE_TEXT_COLOR_CLASS, 'font-bold'); 
+            repopTimeEl.classList.remove('text-green-400', 'text-amber-300', 'text-red-400', MAX_OVER_TEXT_COLOR_CLASS, 'font-bold'); 
             
             if (repopData.isMaxOver) {
-                // 最大超過時: 薄いオレンジのテキスト
-                repopTimeEl.classList.add(ORANGE_TEXT_COLOR_CLASS, 'font-bold'); 
-            } else if (repopData.isPop) {
-                // POPウィンドウ内 (Max超過ではない): 従来の黄色 (text-amber-300) を維持
-                repopTimeEl.classList.add('text-amber-300', 'font-bold');
+                // 最大超過時: 明るいオレンジのテキスト
+                repopTimeEl.classList.add(MAX_OVER_TEXT_COLOR_CLASS, 'font-bold'); 
             } else {
-                // Min POP未到達: 従来の緑 (text-green-400) を維持
-                repopTimeEl.classList.add('text-green-400');
+                // POPウィンドウ内およびMin POP未到達: 新しい青
+                repopTimeEl.classList.add(TEXT_POP_TIME_COLOR_CLASS, 'font-bold'); 
             }
         }
         
         // --- 3. 残り時間（進捗率）の更新 (timeRemainingEl) ---
         if (repopData.isPop && timeRemainingEl) {
             
-            timeRemainingEl.classList.remove('text-gray-200', MAX_OVER_TEXT_COLOR_CLASS);
+            timeRemainingEl.classList.remove('text-gray-200', OVERDUE_DURATION_COLOR_CLASS);
             
             if (repopData.isMaxOver) {
-                // 最大超過: 濃いめの赤文字
-                timeRemainingEl.textContent = `${repopData.timeRemaining} (最大超過)`;
-                timeRemainingEl.classList.add(MAX_OVER_TEXT_COLOR_CLASS);
+                // 【修正ポイント】
+                // 最大超過: 経過時間（+HHh MMm）を「残り (%)」の欄に表示し、「最大超過」と追記
+                // repopData.timeRemainingには "+HHh MMm" の文字列が入っている
+                timeRemainingEl.textContent = `${repopData.timeRemaining} (最大超過)`; 
+                timeRemainingEl.classList.add(OVERDUE_DURATION_COLOR_CLASS);
             } else {
                 // 通常の In-Pop 表示 (HHh MMm (P.P%))
+                // repopData.timeRemainingには Max POPまでの残り時間が入っている
                 timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
                 timeRemainingEl.classList.add('text-gray-200'); // 通常は明るい灰色を維持
             }
@@ -1046,21 +1053,21 @@ function updateProgressBars() {
                 widthPercent = 0;
                 progressBarEl.classList.remove('animate-pulse');
             } else if (repopData.isMaxOver) {
-                // 最大超過: 100%幅で薄いオレンジに点滅
-                barColorClass = ORANGE_BAR_COLOR_CLASS; 
+                // 最大超過: 100%幅で明るいオレンジに点滅
+                barColorClass = COLOR_ORANGE_3; 
                 widthPercent = 100;
                 progressBarEl.classList.add('animate-pulse');
             } else if (percent >= 80) {
-                // 80% ～ 100%未満: 薄いオレンジ
-                barColorClass = ORANGE_BAR_COLOR_CLASS; 
+                // 80% ～ 100%未満: 明るいオレンジ 3
+                barColorClass = COLOR_ORANGE_3; 
                 progressBarEl.classList.remove('animate-pulse');
             } else if (percent >= 60) {
-                // 60% ～ 80%未満: レモン色 (yellow-400)
-                barColorClass = 'bg-yellow-400'; 
+                // 60% ～ 80%未満: 明るい黄 3
+                barColorClass = COLOR_YELLOW_3; 
                 progressBarEl.classList.remove('animate-pulse');
             } else {
-                // 0% ～ 60%未満: 黄緑 (lime-500)
-                barColorClass = 'bg-lime-500'; 
+                // 0% ～ 60%未満: 明るい緑 3
+                barColorClass = COLOR_GREEN_3; 
                 progressBarEl.classList.remove('animate-pulse');
             }
             
@@ -1083,7 +1090,7 @@ function updateProgressBars() {
 
 
 /**
- * サイトの初期化処理
+ * サイトの初期化処理 (変更なし)
  */
 function initializeApp() {
     userId = localStorage.getItem('user_uuid');
