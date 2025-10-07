@@ -33,6 +33,33 @@ function unixTimeToDate(unixtime) {
 }
 
 /**
+ * テキストを21文字ごとに強制的に折り返す関数 (既存の // による改行も処理)
+ * * @param {string} text 処理対象の文字列
+ * @returns {string} <br>が挿入された文字列
+ */
+const forceWrapText = (text) => {
+    // 1. 既存の // による改行を一時的なデリミタに変換
+    const tempDelimiter = '$$$TEMP_BR$$$';
+    // 注: /\/\/\s*/g は // とその後の空白をデリミタに置換
+    const segments = text.replace(/\/\/\s*/g, tempDelimiter).split(tempDelimiter);
+
+    // 2. 各セグメントを21文字で折り返し、最終的に <br> で結合する
+    const finalWrappedCondition = segments.map(segment => {
+        let segmentResult = '';
+        const limit = 21;
+        for (let i = 0; i < segment.length; i += limit) {
+            if (i > 0) {
+                segmentResult += '<br>';
+            }
+            segmentResult += segment.substring(i, i + limit);
+        }
+        return segmentResult;
+    }).join('<br>'); // セグメント間の区切りは <br> に戻す
+
+    return finalWrappedCondition;
+};
+
+/**
  * 討伐日時からリポップ情報を計算する
  */
 function calculateRepop(mob, lastKill) {
@@ -151,7 +178,7 @@ function createMobCard(mob) {
         reportBtnContent = `<span class="text-sm font-bold">討伐</span><span class="text-sm font-bold">報告</span>`;
     }
 
-    // 討伐報告ボタンの全体サイズを調整 (幅を w-14 に変更)
+    // 討伐報告ボタンの全体サイズを調整 (幅 w-14 に修正)
     const reportBtnHtml = `
         <button class="${reportBtnClass} text-xs text-white px-1 py-1 rounded-md shadow-md transition h-10 w-14 flex flex-col items-center justify-center leading-none" 
                 data-mobno="${mob['No.']}" 
@@ -160,7 +187,7 @@ function createMobCard(mob) {
         </button>
     `;
     
-    // マップ詳細表示トグルボタン (2行表示に変更、サイズを h-12 に変更)
+    // マップ詳細表示トグルボタン (2行表示、サイズを h-12 に変更)
     const toggleMapBtn = mob.Map ? `
         <button class="toggle-details-btn text-sm font-semibold py-1 px-2 rounded-full bg-gray-600 hover:bg-gray-500 flex flex-col items-center justify-center leading-tight w-auto h-12">
             <span>マップ</span>
@@ -168,16 +195,16 @@ function createMobCard(mob) {
         </button>
     ` : '';
     
-    // 抽選条件の処理: " // " を "<br>" に置換、Sモブの固定高適用
+    // 抽選条件の処理: 21文字折り返し処理を追加、Sモブの固定高適用
     let conditionHtml = '';
     if (mob.Condition) {
-        // 改行を適用
-        const rawCondition = mob.Condition.replace(/\/\/\s*/g, '<br>');
+        // 21文字で折り返し処理を適用 (forceWrapText関数を使用)
+        const wrappedCondition = forceWrapText(mob.Condition);
         
-        // Sモブの場合は固定高クラス (h-12: 約3行分, overflow-hidden) を適用
-        const conditionClass = mob.Rank === 'S' ? 'h-12 overflow-hidden' : 'h-auto';
+        // Sモブの場合は固定高クラス (h-16: 約4行分, overflow-hidden) を適用
+        const conditionClass = mob.Rank === 'S' ? 'h-16 overflow-hidden' : 'h-auto';
         
-        conditionHtml = `<p class="text-xs text-gray-400 leading-tight ${conditionClass}">${rawCondition}</p>`;
+        conditionHtml = `<p class="text-xs text-gray-400 leading-tight ${conditionClass}">${wrappedCondition}</p>`;
     }
     
     // 抽選条件がない場合、フッターコンテンツを非表示
