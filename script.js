@@ -1,85 +1,12 @@
 // Google Apps Script (GAS) のエンドポイントURL
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxyutpOIZYI9Ce51s4vawk6S460QgM4wYcaLFJKUBi00_LKhNXT9-6N0n178KdoXkP7wg/exec';
+// 静的モブデータ (mob_data.json) のURL (同階層のファイルを参照)
+const MOB_DATA_URL = './mob_data.json'; 
 
-// --- データ定義 ---
-const MOCK_MOB_DATA = [
-     {"No.": 11011,"Rank": "A","Name": "醜男のヴォガージャ","Area": "中央ラノシア","POP_Date": "","REPOP(s)": 12600,"MAX(s)": 16200,"Map": ""},
-     {"No.": 11021,"Rank": "A","Name": "ウンクテヒ","Area": "低地ラノシア","POP_Date": "","REPOP(s)": 12600,"MAX(s)": 16200,"Map": ""},
-     {"No.": 11031,"Rank": "A","Name": "魔導ヘルズクロー","Area": "東ラノシア","POP_Date": "","REPOP(s)": 12600,"MAX(s)": 16200,"Map": ""},
-     {"No.": 11041,"Rank": "A","Name": "ナン","Area": "西ラノシア","POP_Date": "","REPOP(s)": 12600,"MAX(s)": 16200,"Map": ""},
-     {"No.": 11051,"Rank": "A","Name": "マーベリー","Area": "高地ラノシア","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 18000,"Map": ""},
-     {"No.": 11061,"Rank": "A","Name": "コンヌ","Area": "外地ラノシア","POP_Date": "","REPOP(s)": 12600,"MAX(s)": 16200,"Map": ""},
-     {"No.": 11071,"Rank": "A","Name": "ファルネウス","Area": "中央森林","POP_Date": "","REPOP(s)": 12600,"MAX(s)": 16200,"Map": ""},
-     {"No.": 11081,"Rank": "A","Name": "メルティゼリー","Area": "東部森林","POP_Date": "","REPOP(s)": 10800,"MAX(s)": 14400,"Map": ""},
-     {"No.": 11091,"Rank": "A","Name": "ゲーデ","Area": "南部森林","POP_Date": "","REPOP(s)": 12600,"MAX(s)": 16200,"Map": ""},
-     {"No.": 11101,"Rank": "A","Name": "ギルタブ","Area": "北部森林","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 18000,"Map": ""},
-     {"No.": 11111,"Rank": "A","Name": "アレクトリオン","Area": "中央ザナラーン","POP_Date": "","REPOP(s)": 12600,"MAX(s)": 16200,"Map": ""},
-     {"No.": 11121,"Rank": "A","Name": "サボテンダー・バイラリーナ","Area": "西ザナラーン","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 18000,"Map": ""},
-     {"No.": 11131,"Rank": "A","Name": "マヘス","Area": "東ザナラーン","POP_Date": "","REPOP(s)": 10800,"MAX(s)": 14400,"Map": ""},
-     {"No.": 11141,"Rank": "A","Name": "ザニゴ","Area": "南ザナラーン","POP_Date": "","REPOP(s)": 12600,"MAX(s)": 16200,"Map": ""},
-     {"No.": 11151,"Rank": "A","Name": "ファイナルフレイム","Area": "北ザナラーン","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 18000,"Map": ""},
-     {"No.": 11161,"Rank": "A","Name": "マラク","Area": "クルザス中央高地","POP_Date": "","REPOP(s)": 10800,"MAX(s)": 14400,"Map": ""},
-     {"No.": 11171,"Rank": "A","Name": "クーレア","Area": "モードゥナ","POP_Date": "","REPOP(s)": 12600,"MAX(s)": 16200,"Map": ""},
-     {"No.": 12011,"Rank": "S","Name": "クロック・ミテーヌ","Area": "中央ラノシア","POP_Date": "「ラノシアンソイルG3を」採掘 (抽選)//※ET 19:00～21:59","REPOP(s)": 234000,"MAX(s)": 270000,"Map": ""},
-     {"No.": 12021,"Rank": "S","Name": "ケロゲロス","Area": "低地ラノシア","POP_Date": "満月直前のET17:00にPOP地点を踏む//※以降は満月中のET 17:00～3:00","REPOP(s)": 180000,"MAX(s)": 180000,"Map": ""},
-     {"No.": 12031,"Rank": "S","Name": "ガーロック","Area": "東ラノシア","POP_Date": "LT 3時間20分 (200分間) 雨が降らない","REPOP(s)": 151200,"MAX(s)": 172800,"Map": ""},
-     {"No.": 12041,"Rank": "S","Name": "ボナコン","Area": "西ラノシア","POP_Date": "「ラノシアリーキ」を採集 (抽選)//※ET 8:00～10:59","REPOP(s)": 234000,"MAX(s)": 270000,"Map": ""},
-     {"No.": 12051,"Rank": "S","Name": "ナンディ","Area": "高地ラノシア","POP_Date": "ミニオンを出してPOP地点を踏む","REPOP(s)": 169200,"MAX(s)": 190800,"Map": "Upper_La_Noscea.webp","spawn_points": [{  "id": "UN_01",  "x": 33.5,  "y": 8.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_02",  "x": 47.9,  "y": 10.4,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_03",  "x": 43.3,  "y": 17.5,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_04",  "x": 51.5,  "y": 20.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_05",  "x": 50.5,  "y": 33.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_06",  "x": 12.8,  "y": 20.9,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_07",  "x": 24.3,  "y": 58.1,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_08",  "x": 33.9,  "y": 65.7,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_09",  "x": 26.1,  "y": 67.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_10",  "x": 32.7,  "y": 70.5,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_11",  "x": 23.3,  "y": 81.1,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_12",  "x": 26.4,  "y": 92.6,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_13",  "x": 36.4,  "y": 82.3,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_14",  "x": 42.6,  "y": 90.3,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_15",  "x": 61.4,  "y": 92.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_16",  "x": 62.2,  "y": 82.9,  "mob_ranks": ["S", "A", "B1"] },{  "id": "UN_17",  "x": 74.4,  "y": 79.9,  "mob_ranks": ["S", "A", "B1"] } ]},
-     {"No.": 12061,"Rank": "S","Name": "チェルノボーグ","Area": "外地ラノシア","POP_Date": "プレイヤーが戦闘不能になる (抽選)","REPOP(s)": 234000,"MAX(s)": 255600,"Map": ""},
-     {"No.": 12071,"Rank": "S","Name": "レドロネット","Area": "中央森林","POP_Date": "LT 30分間、雨が降り続く","REPOP(s)": 151200,"MAX(s)": 172800,"Map": ""},
-     {"No.": 12081,"Rank": "S","Name": "ウルガル","Area": "東部森林","POP_Date": "傭兵 or 双蛇党リーヴを開始する (抽選)","REPOP(s)": 241200,"MAX(s)": 280800,"Map": ""},
-     {"No.": 12091,"Rank": "S","Name": "マインドフレア","Area": "南部森林","POP_Date": "新月のET0:00以降の夜間にPOP地点を踏む//※以降は新月中のET 17:00～2:59","REPOP(s)": 180000,"MAX(s)": 180000,"Map": ""},
-     {"No.": 12101,"Rank": "S","Name": "サウザンドキャスト・セダ","Area": "北部森林","POP_Date": "フォールゴウド秋瓜湖畔で「ジャッジレイ」を釣り上げる (抽選) //※ET 17:00～20:59 餌: フェザントフライ","REPOP(s)": 205200,"MAX(s)": 230400,"Map": ""},
-     {"No.": 12111,"Rank": "S","Name": "ゾーナ・シーカー","Area": "西ザナラーン","POP_Date": "ノフィカの井戸で銅鏡を釣り上げる(抽選)//※「晴れ or 快晴」 餌: バターワーム","REPOP(s)": 205200,"MAX(s)": 230400,"Map": ""},
-     {"No.": 12121,"Rank": "S","Name": "ブロンテス","Area": "中央ザナラーン","POP_Date": "POP地点で食事を食べる","REPOP(s)": 241200,"MAX(s)": 277200,"Map": "Central_Thanalan.webp","spawn_points": [{  "id": "CT_01",  "x": 56.4,  "y": 92.4,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_02",  "x": 52.0,  "y": 77.4,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_03",  "x": 57.1,  "y": 81.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_04",  "x": 64.8,  "y": 72.6,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_05",  "x": 44.4,  "y": 57.8,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_06",  "x": 37.4,  "y": 55.6,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_07",  "x": 39.4,  "y": 49.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_08",  "x": 38.0,  "y": 41.6,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_09",  "x": 28.8,  "y": 47.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_10",  "x": 48.6,  "y": 37.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_11",  "x": 28.0,  "y": 32.6,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_12",  "x": 34.4,  "y": 29.6,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_13",  "x": 35.4,  "y": 25.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_14",  "x": 29.2,  "y": 20.8,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_15",  "x": 28.2,  "y": 5.6,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_16",  "x": 35.0,  "y": 10.4,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_17",  "x": 49.2,  "y": 10.2,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_18",  "x": 48.6,  "y": 18.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_19",  "x": 45.0,  "y": 20.2,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_20",  "x": 63.2,  "y": 26.6,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_21",  "x": 71.0,  "y": 27.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_22",  "x": 77.8,  "y": 38.4,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CT_23",  "x": 69.2,  "y": 39.8,  "mob_ranks": ["S", "A", "B1"] } ]},
-     {"No.": 12131,"Rank": "S","Name": "バルウール","Area": "東ザナラーン","POP_Date": "傭兵 or 不滅隊リーヴを開始する (抽選)","REPOP(s)": 241200,"MAX(s)": 280800,"Map": ""},
-     {"No.": 12141,"Rank": "S","Name": "ヌニュヌウィ","Area": "南ザナラーン","POP_Date": "エリア全域のFATEを1時間失敗させない","REPOP(s)": 158400,"MAX(s)": 194400,"Map": ""},
-     {"No.": 12151,"Rank": "S","Name": "ミニョーカオン","Area": "北ザナラーン","POP_Date": "「アーススプライト」100体討伐","REPOP(s)": 205200,"MAX(s)": 226800,"Map": ""},
-     {"No.": 12161,"Rank": "S","Name": "サファト","Area": "クルザス中央高地","POP_Date": "高所から落下してHPが1になる (抽選)","REPOP(s)": 216000,"MAX(s)": 302400,"Map": ""},
-     {"No.": 12171,"Rank": "S","Name": "アグリッパ","Area": "モードゥナ","POP_Date": "モードゥナの宝の地図を開ける (抽選)//古ぼけた地図G5 / 隠された地図G1 / 謎めいた地図","REPOP(s)": 216000,"MAX(s)": 302400,"Map": ""},
-     {"No.": 13011,"Rank": "F","Name": "古の闘神「オーディン」","Area": "黒衣森全域","POP_Date": "","REPOP(s)": 86400,"MAX(s)": 259200,"Map": ""},
-     {"No.": 13021,"Rank": "F","Name": "手負いの魔獣「ベヒーモス」","Area": "クルザス中央高地","POP_Date": "","REPOP(s)": 86400,"MAX(s)": 259200,"Map": ""},
-     {"No.": 21011,"Rank": "A","Name": "ミルカ","Area": "クルザス西部高地","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 21021,"Rank": "A","Name": "リューバ","Area": "クルザス西部高地","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 21031,"Rank": "A","Name": "エンケドラス","Area": "アバラシア雲海","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 21041,"Rank": "A","Name": "シシウトゥル","Area": "アバラシア雲海","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 21051,"Rank": "A","Name": "ブネ","Area": "ドラヴァニア雲海","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 21061,"Rank": "A","Name": "アガトス","Area": "ドラヴァニア雲海","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 21071,"Rank": "A","Name": "パイルラスタ","Area": "高地ドラヴァニア","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 21081,"Rank": "A","Name": "ワイバーンロード","Area": "高地ドラヴァニア","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 21091,"Rank": "A","Name": "機兵のスリップキンクス","Area": "低地ドラヴァニア","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 21101,"Rank": "A","Name": "ストラス","Area": "低地ドラヴァニア","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 21111,"Rank": "A","Name": "キャムパクティ","Area": "アジス・ラー","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 21121,"Rank": "A","Name": "センチブロッサム","Area": "アジス・ラー","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 22011,"Rank": "S","Name": "カイザーベヒーモス","Area": "クルザス西部高地","POP Date": "ミニオン「ロイヤルベビーモス」を連れてPOP地点を踏む","REPOP(s)": 302400,"MAX(s)": 475200,"Map": "Coerthas_Western_Highlands.webp","spawn_points": [{  "id": "CW_01",  "x": 56.4,  "y": 92.4,  "mob_ranks": ["B1"] },{  "id": "CW_02",  "x": 52.0,  "y": 77.4,  "mob_ranks": ["B2"] },{  "id": "CW_03",  "x": 57.1,  "y": 81.0,  "mob_ranks": ["B2"] },{  "id": "CW_04",  "x": 64.8,  "y": 72.6,  "mob_ranks": ["S", "A", "B2"] },{  "id": "CW_05",  "x": 44.4,  "y": 57.8,  "mob_ranks": ["S", "A", "B2"] },{  "id": "CW_06",  "x": 37.4,  "y": 55.6,  "mob_ranks": ["S", "A", "B2"] },{  "id": "CW_07",  "x": 39.4,  "y": 49.0,  "mob_ranks": ["S", "A", "B2"] },{  "id": "CW_08",  "x": 38.0,  "y": 41.6,  "mob_ranks": ["S", "A", "B2"] },{  "id": "CW_09",  "x": 28.8,  "y": 47.0,  "mob_ranks": ["S", "A", "B2"] },{  "id": "CW_10",  "x": 48.6,  "y": 37.0,  "mob_ranks": ["S", "A", "B2"] },{  "id": "CW_11",  "x": 28.0,  "y": 32.6,  "mob_ranks": ["S", "A", "B2"] },{  "id": "CW_12",  "x": 34.4,  "y": 29.6,  "mob_ranks": ["S", "A", "B2"] },{  "id": "CW_13",  "x": 40.0,  "y": 29.0,  "mob_ranks": ["S", "A", "B2"] },{  "id": "CW_14",  "x": 62.8,  "y": 14.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CW_15",  "x": 80.2,  "y": 19.0,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CW_16",  "x": 82.8,  "y": 27.2,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CW_17",  "x": 66.8,  "y": 27.4,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CW_18",  "x": 58.2,  "y": 24.4,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CW_19",  "x": 61.6,  "y": 34.2,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CW_20",  "x": 73.6,  "y": 37.8,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CW_21",  "x": 77.6,  "y": 45.2,  "mob_ranks": ["S", "A", "B1"] },{  "id": "CW_22",  "x": 77.8,  "y": 50.6,  "mob_ranks": ["B1"] },{  "id": "CW_23",  "x": 63.0,  "y": 47.6,  "mob_ranks": ["B1"] },{  "id": "CW_24",  "x": 68.0,  "y": 59.0,  "mob_ranks": ["B1"] } ]},
-     {"No.": 22021,"Rank": "S","Name": "極楽鳥","Area": "アバラシア雲海","POP_Date": "Bモブ「スクオンク」の「チャープ」発動時 (抽選)","REPOP(s)": 302400,"MAX(s)": 475200,"Map": ""},
-     {"No.": 22031,"Rank": "S","Name": "ガンダルヴァ","Area": "ドラヴァニア雲海","POP_Date": "「皇金鉱 (ET 2:00～3:59 / 14:00～15:59)」//「アストラルフラワー (ET 4:00～5:59 / 16:00～17:59)」を各50回採集","REPOP(s)": 302400,"MAX(s)": 475200,"Map": ""},
-     {"No.": 22041,"Rank": "S","Name": "セーンムルウ","Area": "高地ドラヴァニア","POP_Date": "FATE「卵をめぐる竜の戦争」を5回連続でコンプリートする","REPOP(s)": 302400,"MAX(s)": 475200,"Map": ""},
-     {"No.": 22051,"Rank": "S","Name": "ペイルライダー","Area": "低地ドラヴァニア","POP_Date": "低地ドラの「宝の地図G7 (古ぼけた地図G7)」の宝箱を開ける (抽選)","REPOP(s)": 302400,"MAX(s)": 475200,"Map": ""},
-     {"No.": 22061,"Rank": "S","Name": "レウクロッタ","Area": "アジス・ラー","POP_Date": "「メラシディアン・ヴィーヴル」「レッサーハイドラ」//「アラガン・キマイラ」各50体討伐","REPOP(s)": 302400,"MAX(s)": 475200,"Map": ""},
-     {"No.": 23011,"Rank": "F","Name": "幻影の女王「クァールレギナ」","Area": "高地ドラヴァニア","POP_Date": "","REPOP(s)": 86400,"MAX(s)": 172800,"Map": ""},
-     {"No.": 23021,"Rank": "F","Name": "太古の脅威：ノクチルカ撃滅戦","Area": "アジス・ラー","POP_Date": "","REPOP(s)": 86400,"MAX(s)": 172800,"Map": ""},
-     {"No.": 31011,"Rank": "A","Name": "オルクス","Area": "ギラバニア辺境地帯","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 31021,"Rank": "A","Name": "アール","Area": "ギラバニア辺境地帯","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 31031,"Rank": "A","Name": "バックスタイン","Area": "ギラバニア山岳地帯","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 31041,"Rank": "A","Name": "アクラブアメル","Area": "ギラバニア山岳地帯","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 31051,"Rank": "A","Name": "マヒシャ","Area": "ギラバニア湖畔地帯","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 31061,"Rank": "A","Name": "ルミナーレ","Area": "ギラバニア湖畔地帯","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 31071,"Rank": "A","Name": "船幽霊","Area": "紅玉海","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 31081,"Rank": "A","Name": "オニユメミ","Area": "紅玉海","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 31091,"Rank": "A","Name": "ガジャースラ","Area": "ヤンサ","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 31101,"Rank": "A","Name": "アンガダ","Area": "ヤンサ","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 31111,"Rank": "A","Name": "ギリメカラ","Area": "アジムステップ","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 31121,"Rank": "A","Name": "ソム","Area": "アジムステップ","POP_Date": "","REPOP(s)": 14400,"MAX(s)": 21600,"Map": ""},
-     {"No.": 32011,"Rank": "S","Name": "ウドンゲ","Area": "ギラバニア辺境地帯","POP_Date": "「レーシー」「ディアッカ」各100体討伐","REPOP(s)": 302400,"MAX(s)": 475200,"Map": ""},
-     {"No.": 32021,"Rank": "S","Name": "ボーンクローラー","Area": "ギラバニア山岳地帯","POP_Date": "チョコボポーターで南北境界線を通過//※アラガーナ⇔アラギリが最適","REPOP(s)": 302400,"MAX(s)": 475200,"Map": ""},
-     {"No.": 32031,"Rank": "S","Name": "ソルト・アンド・ライト","Area": "ギラバニア湖畔地帯","POP_Date": "ギラバニア湖畔地帯でアイテムを50回捨てる","REPOP(s)": 302400,"MAX(s)": 475200,"Map": ""},
-     {"No.": 32041,"Rank": "S","Name": "オキナ","Area": "紅玉海","POP_Date": "「ユメミガイ」「カラナシユメミ」各100体討伐後、満月になる//※満月中に討伐数を満たすのも可...
-];
-// (※MOCK_MOB_DATAは元のデータと同一です)
 
 // --- グローバル変数 ---
-let globalMobData = [];
+let baseMobData = []; // mob_data.jsonから取得した元のデータ
+let globalMobData = []; // 討伐記録をマージした後の表示用データ
 let currentFilter = 'ALL';
 let currentMobNo = null;
 let userId = null;
@@ -139,9 +66,6 @@ function calculateRepop(mob, lastKill) {
     const remainingMs = minRepopTime.getTime() - now.getTime();
     
     // 進捗パーセント
-    const totalDurationMs = repopMaxMs; 
-    let elapsedPercent = (elapsedMs / totalDurationMs) * 100;
-    
     // 経過率を最小ポップ時間で正規化して表示（0% - 100%）
     let normalizedElapsedPercent = Math.max(0, Math.min(100, (elapsedMs / repopMinMs) * 100));
 
@@ -150,9 +74,9 @@ function calculateRepop(mob, lastKill) {
     let timeRemainingStr;
     if (remainingMs <= 0) {
         timeRemainingStr = 'POP中';
-        // POP中の場合は進捗を最小時間で計算した100%または、最大時間までの実際の進捗に留める
-        elapsedPercent = Math.max(100, Math.min(100, (elapsedMs / repopMaxMs) * 100));
-        normalizedElapsedPercent = 100;
+        // POP中の場合は進捗を最大時間までの実際の進捗に留める
+        const elapsedPercentFromMax = Math.max(100, Math.min(100, (elapsedMs / repopMaxMs) * 100));
+        normalizedElapsedPercent = elapsedPercentFromMax;
 
     } else {
         const totalSeconds = Math.floor(remainingMs / 1000);
@@ -307,7 +231,6 @@ function getMobByNo(mobNo) {
  */
 function renderMobList(rank) {
     currentFilter = rank;
-    // mobListContainer.innerHTML = ''; // この親要素ではなく、カラム内をクリアする
 
     // フィルタリング
     const filteredMobs = rank === 'ALL' 
@@ -417,7 +340,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
         
         if (isImportant && mob.Rank === 'S') {
             pointEl.classList.add('important-ring');
-            pointEl.style.boxShadow = '0 0 0 4px #f59e0b'; 
+            pointEl.style.boxShadow = '0 0 0 4px #f59e0b'; // amber-500 ring
             pointEl.style.filter = 'drop-shadow(0 0 8px rgba(245, 158, 11, 0.8))';
         } else if (isImportant && mob.Rank === 'A') {
             pointEl.style.backgroundColor = '#3b82f6'; // blue-500
@@ -520,7 +443,8 @@ async function submitReport() {
         if (result.status === 'success') {
             reportStatusEl.textContent = `報告成功！ (${result.message})`;
             reportStatusEl.classList.add('text-green-500');
-            await fetchRecordsAndUpdate(); 
+            // 最新データを取得しUIを更新
+            await fetchRecordsAndUpdate(false); 
             setTimeout(closeReportModal, 1500); 
 
         } else {
@@ -541,9 +465,40 @@ async function submitReport() {
 // --- データ取得/更新 ---
 
 /**
- * GASから最新の討伐記録を取得し、グローバルデータを更新する
+ * 外部JSONからモブデータを取得する
  */
-async function fetchRecordsAndUpdate() {
+async function fetchBaseMobData() {
+    try {
+        // 同階層のmob_data.jsonを相対パスで取得
+        const response = await fetch(MOB_DATA_URL); 
+        if (!response.ok) {
+            // ステータスコードが404などの場合
+            throw new Error(`HTTP error! status: ${response.status} - Check if mob_data.json is in the same directory.`);
+        }
+        baseMobData = await response.json();
+        console.log('Base mob data fetched successfully.');
+    } catch (error) {
+        console.error('Failed to fetch base mob data from JSON:', error);
+        alert('基本モブデータの取得に失敗しました。ファイルパスまたはファイル配置を確認してください。');
+        baseMobData = []; // データ取得失敗時は空配列で続行
+    }
+}
+
+/**
+ * GASから最新の討伐記録を取得し、グローバルデータを更新する
+ * @param {boolean} shouldFetchBase - 初期化時など、ベースデータも取得するかどうか
+ */
+async function fetchRecordsAndUpdate(shouldFetchBase = true) {
+    if (shouldFetchBase) {
+        await fetchBaseMobData();
+    }
+    
+    if (baseMobData.length === 0) {
+        // ベースデータがない場合は処理を中断
+        console.warn('Base mob data is empty, skipping record update.');
+        return;
+    }
+
     try {
         const response = await fetch(GAS_ENDPOINT + '?action=getRecords');
         const data = await response.json();
@@ -551,35 +506,43 @@ async function fetchRecordsAndUpdate() {
         if (data.status === 'success') {
             const records = data.records;
             
-            // MOCK_MOB_DATAをコピーして最新の討伐日時をマージ
-            globalMobData = MOCK_MOB_DATA.map(mob => {
+            // ベースデータをコピーして最新の討伐日時をマージ
+            globalMobData = baseMobData.map(mob => {
                 const record = records.find(r => r['No.'] === mob['No.']);
+                // マージ時に新しいオブジェクトを生成する（元のbaseMobDataを破壊しないため）
+                const newMob = { ...mob }; 
+                
                 if (record && record.POP_Date_Unix) {
-                    // Unix秒をDateオブジェクトに変換
-                    mob.POP_Date = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
+                    // Unix秒をDateオブジェクトに変換し、ローカルタイム形式の文字列として保存
+                    newMob.POP_Date = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
+                } else {
+                    newMob.POP_Date = '';
                 }
-                return mob;
+                return newMob;
             });
+            console.log('Kill records merged successfully.');
 
             // リストを再レンダリング
             renderMobList(currentFilter);
         } else {
             console.error('GASからのデータ取得失敗:', data.message);
-            globalMobData = MOCK_MOB_DATA;
+            // 失敗時はベースデータのみで表示（POP_Dateは空）
+            globalMobData = baseMobData;
             renderMobList(currentFilter);
         }
     } catch (error) {
         console.error('GAS通信エラー:', error);
-        globalMobData = MOCK_MOB_DATA;
+        globalMobData = baseMobData;
         renderMobList(currentFilter);
     }
 }
 
 /**
- * 各モブカードの進捗バーを更新する
+ * 各モブカードの進捗バーを更新する (60秒ごと)
  */
 function updateProgressBars() {
     document.querySelectorAll('.mob-card').forEach(card => {
+        // data属性から直接値を取得
         const lastKillStr = card.dataset.lastkill;
         const repop = parseInt(card.dataset.minrepop);
         const max = parseInt(card.dataset.maxrepop);
@@ -590,16 +553,18 @@ function updateProgressBars() {
 
         const mobStub = {"REPOP(s)": repop, "MAX(s)": max};
         const repopData = calculateRepop(mobStub, lastKill);
-        const percent = Math.max(0, Math.min(100, repopData.elapsedPercent || 0));
+        const percent = repopData.elapsedPercent || 0; // calculateRepopで既に0-100%に正規化されている
 
-        // CSS変数とテキストコンテンツを更新
-        card.style.setProperty('--progress-percent', `${percent}%`);
+        // 進捗バーのCSS変数を更新
+        card.querySelector('.repop-bar-bg').style.setProperty('--progress-percent', `${percent.toFixed(1)}%`);
         
-        const timeRemainingEl = card.querySelector('.time-remaining');
+        // 「残/経過」のテキストを正確に更新
+        const timeRemainingEl = card.querySelector('.time-remaining'); 
         if (timeRemainingEl) {
             timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
         }
         
+        // 「予測POP」のテキストを正確に更新
         const repopTimeEl = card.querySelector('.repop-time');
         if (repopTimeEl) {
             const minPopStr = repopData.minRepop instanceof Date ? repopData.minRepop.toLocaleString() : repopData.minRepop;
@@ -607,6 +572,7 @@ function updateProgressBars() {
             
             // POP中になった場合、討伐報告ボタンの状態を更新
             const reportBtn = card.querySelector('.report-btn');
+            // 'POP中'になったが、ボタンがまだ無効化されていない場合
             if (repopData.timeRemaining === 'POP中' && reportBtn && !reportBtn.disabled) {
                 reportBtn.disabled = true;
                 reportBtn.textContent = 'POP中 (報告不可)';
@@ -642,11 +608,11 @@ function initializeApp() {
         }
     });
     
-    // 初期表示: GASからデータを取得し、グローバルデータをセット
-    fetchRecordsAndUpdate();
+    // 初期表示: JSONとGASからデータを取得し、グローバルデータをセット
+    fetchRecordsAndUpdate(true);
 
     // GASへのデータ更新間隔は10分を維持
-    setInterval(fetchRecordsAndUpdate, 10 * 60 * 1000);
+    setInterval(() => fetchRecordsAndUpdate(false), 10 * 60 * 1000);
 
     // 進捗ゲージはクライアントで軽量に更新（60秒ごと）
     setInterval(updateProgressBars, 60 * 1000);
@@ -654,4 +620,3 @@ function initializeApp() {
 
 // アプリケーション起動
 document.addEventListener('DOMContentLoaded', initializeApp);
-
