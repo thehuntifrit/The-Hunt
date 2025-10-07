@@ -88,7 +88,7 @@ function calculateRepop(mob, lastKill) {
 }
 
 /**
- * モブデータに基づいてHTMLカードを生成する (見た目修正適用済み)
+ * モブデータに基づいてHTMLカードを生成する
  */
 function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
@@ -141,16 +141,17 @@ function createMobCard(mob) {
     
     const reportBtnClass = !canReport ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn';
     
-    // 討伐報告ボタンの2行表示コンテンツ
+    // 討伐報告ボタンの2行表示コンテンツ (文字サイズを大きく: text-sm font-bold)
     let reportBtnContent;
     if (!canReport) {
         // POP中の場合 (報告不可)
-        reportBtnContent = `<span class="font-bold">POP中</span><span class="text-xs">(報告不可)</span>`;
+        reportBtnContent = `<span class="text-sm font-bold">POP中</span><span class="text-xs">(報告不可)</span>`;
     } else {
         // 報告可能な場合
-        reportBtnContent = `<span class="font-bold">討伐</span><span>報告</span>`;
+        reportBtnContent = `<span class="text-sm font-bold">討伐</span><span class="text-xs">報告</span>`;
     }
 
+    // 討伐報告ボタンの全体サイズを調整
     const reportBtnHtml = `
         <button class="${reportBtnClass} text-xs text-white px-2 py-1 rounded-md shadow-md transition h-10 w-16 flex flex-col items-center justify-center leading-none" 
                 data-mobno="${mob['No.']}" 
@@ -166,8 +167,26 @@ function createMobCard(mob) {
         </button>
     ` : '';
     
-    // 抽選条件
-    const conditionText = mob.Condition || ''; 
+    // 抽選条件の処理: " // " を "<br>" に置換、Sモブの固定高適用
+    let conditionHtml = '';
+    if (mob.Condition) {
+        // 改行を適用
+        const rawCondition = mob.Condition.replace(/\/\/\s*/g, '<br>');
+        
+        // Sモブの場合は固定高クラス (h-12: 約3行分, overflow-hidden) を適用
+        const conditionClass = mob.Rank === 'S' ? 'h-12 overflow-hidden' : 'h-auto';
+        
+        conditionHtml = `<p class="text-xs text-gray-400 leading-tight ${conditionClass}">${rawCondition}</p>`;
+    }
+    
+    // 抽選条件がない場合、フッターコンテンツを非表示
+    const footerContent = conditionHtml || toggleMapBtn ? `
+        <div class="mt-3 flex justify-between items-start min-h-[1.5rem]"> 
+            ${conditionHtml}
+            ${toggleMapBtn}
+        </div>
+    ` : '';
+
 
     return `
         <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden transform hover:scale-[1.01] transition duration-300 relative" 
@@ -186,7 +205,7 @@ function createMobCard(mob) {
             <div class="p-4 fixed-content">
                 <div class="flex justify-between items-start mb-3">
                     <div class="flex items-center space-x-3">
-                        <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-sm w-10 h-6 flex items-center justify-center rounded-md shadow-lg">
+                        <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-sm w-7 h-7 flex items-center justify-center rounded-lg shadow-lg">
                             ${mob.Rank}
                         </div>
                         <div>
@@ -202,12 +221,12 @@ function createMobCard(mob) {
                     
                     <div class="flex justify-between items-baseline">
                         <span class="text-gray-300 w-24 flex-shrink-0">予測POP:</span>
-                        <span class="repop-time text-base ${timeStatusClass} font-bold">${minPopStr}</span>
+                        <span class="repop-time text-lg ${timeStatusClass} font-bold">${minPopStr}</span>
                     </div>
                     
                     <div class="flex justify-between">
                         <span class="text-gray-300 w-24 flex-shrink-0">残り時間 (%):</span> 
-                        <span class="font-mono time-remaining text-white">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
+                        <span class="font-mono time-remaining text-sm text-white">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
                     </div>
 
                     <div class="flex justify-between">
@@ -216,10 +235,7 @@ function createMobCard(mob) {
                     </div>
                 </div>
 
-                <div class="mt-3 flex justify-between items-center min-h-[1.5rem]"> 
-                    ${conditionText ? `<p class="text-xs text-gray-400">${conditionText}</p>` : ''}
-                    ${toggleMapBtn}
-                </div>
+                ${footerContent}
             </div>
 
             <div class="mob-details border-t border-gray-700 bg-gray-900" 
@@ -606,19 +622,19 @@ function updateProgressBars() {
             timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
         }
         
-        // 討伐報告ボタンの状態を更新
+        // 討伐報告ボタンの状態を更新 (文字サイズ修正を適用)
         const reportBtn = card.querySelector('.report-btn');
         if (repopData.timeRemaining === 'POP中') {
             if (reportBtn) {
                 reportBtn.disabled = true;
-                reportBtn.innerHTML = `<span class="font-bold">POP中</span><span class="text-xs">(報告不可)</span>`;
+                reportBtn.innerHTML = `<span class="text-sm font-bold">POP中</span><span class="text-xs">(報告不可)</span>`;
                 reportBtn.classList.remove('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
                 reportBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
             }
         } else {
             if (reportBtn) {
                 reportBtn.disabled = false;
-                reportBtn.innerHTML = `<span class="font-bold">討伐</span><span>報告</span>`;
+                reportBtn.innerHTML = `<span class="text-sm font-bold">討伐</span><span class="text-xs">報告</span>`;
                 reportBtn.classList.remove('bg-gray-500', 'cursor-not-allowed');
                 reportBtn.classList.add('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
             }
