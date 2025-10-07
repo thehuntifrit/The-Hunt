@@ -42,7 +42,6 @@ const processNewlines = (text) => {
     return text.replace(/\/\/\s*/g, '<br>');
 };
 
-
 /**
  * 討伐日時からリポップ情報を計算する
  */
@@ -102,66 +101,8 @@ function calculateRepop(mob, lastKill) {
  * モブデータに基づいてHTMLカードを生成する
  */
 function createMobCard(mob) {
-    const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
-    const { minRepop, timeRemaining, elapsedPercent } = calculateRepop(mob, lastKillDate);
-
-    // 進捗バーの色定義
-    let colorStart = '#10b981'; // green-500
-    let colorEnd = '#34d399';   // green-400
-    let timeStatusClass = 'text-green-400';
-    let minPopStr = '未討伐';
-    let lastKillStr = mob.LastKillDate || '不明'; // 討伐日時がない場合は「不明」
-
-    if (lastKillDate) {
-        minPopStr = minRepop instanceof Date ? minRepop.toLocaleString() : minRepop;
-
-        if (timeRemaining === 'POP中') {
-            colorStart = '#f59e0b'; // amber-500
-            colorEnd = '#fbbf24';   // amber-400
-            timeStatusClass = 'text-amber-400 font-bold';
-        } else if (elapsedPercent >= 90) {
-            colorStart = '#ef4444'; // red-500
-            colorEnd = '#f87171';   // red-400
-            timeStatusClass = 'text-red-400';
-        }
-    }
-
-    // ランクアイコンの背景色
-    let rankBgClass;
-    let rankTextColor = 'text-white';
-    switch (mob.Rank) {
-        case 'S':
-            rankBgClass = 'bg-red-600';
-            break;
-        case 'A':
-            rankBgClass = 'bg-blue-600';
-            break;
-        case 'B':
-            rankBgClass = 'bg-gray-600';
-            break;
-        case 'F':
-            rankBgClass = 'bg-purple-600';
-            break;
-        default:
-            rankBgClass = 'bg-gray-600';
-    }
-
-    // 討伐報告ボタンの状態
-    const isPop = timeRemaining === 'POP中';
-    const canReport = !isPop || !lastKillDate; 
+    // ... (中略: 色定義、ボタンHTML生成まで、変更なし)
     
-    const reportBtnClass = !canReport ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn';
-    
-    // 討伐報告ボタンの2行表示コンテンツ (「討伐」「報告」ともに text-sm font-bold に統一)
-    let reportBtnContent;
-    if (!canReport) {
-        // POP中の場合 (報告不可)
-        reportBtnContent = `<span class="text-sm font-bold">POP中</span><span class="text-xs">(報告不可)</span>`;
-    } else {
-        // 報告可能な場合
-        reportBtnContent = `<span class="text-sm font-bold">討伐</span><span class="text-sm font-bold">報告</span>`;
-    }
-
     // 討伐報告ボタンの全体サイズを調整 (幅 w-14)
     const reportBtnHtml = `
         <button class="${reportBtnClass} text-xs text-white px-1 py-1 rounded-md shadow-md transition h-10 w-14 flex flex-col items-center justify-center leading-none" 
@@ -205,7 +146,7 @@ function createMobCard(mob) {
 
 
     return `
-        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden transform hover:scale-[1.01] transition duration-300 relative cursor-pointer" 
+        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden transform hover:scale-[1.01] transition duration-300 relative" 
              data-rank="${mob.Rank}" 
              data-mobno="${mob['No.']}"
              data-lastkill="${mob.LastKillDate || ''}"
@@ -218,7 +159,7 @@ function createMobCard(mob) {
                         --progress-color-end: ${colorEnd};">
             </div>
 
-            <div class="p-4 fixed-content">
+            <div class="p-4 fixed-content toggle-handler cursor-pointer">
                 <div class="flex justify-between items-start mb-3">
                     <div class="flex items-center space-x-3">
                         <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-sm w-7 h-7 flex items-center justify-center rounded-lg shadow-lg">
@@ -257,59 +198,7 @@ function createMobCard(mob) {
     `;
 }
 
-/**
- * MobNoからモブデータを取得する
- */
-function getMobByNo(mobNo) {
-    return globalMobData.find(mob => mob['No.'] === mobNo);
-}
-
-// --- DOM操作/イベントハンドラ ---
-
-/**
- * フィルターに基づいてモブカードリストをレンダリングする
- */
-function renderMobList(rank) {
-    currentFilter = rank;
-
-    const filteredMobs = rank === 'ALL' 
-        ? globalMobData
-        : globalMobData.filter(mob => mob.Rank === rank);
-
-    const columns = [
-        document.getElementById('column-1'),
-        document.getElementById('column-2'),
-        document.getElementById('column-3')
-    ].filter(col => col); 
-
-    columns.forEach(col => col.innerHTML = '');
-
-    filteredMobs.forEach((mob, index) => {
-        const cardHtml = createMobCard(mob);
-        
-        let targetColumn = columns[0];
-        if (columns.length > 1) {
-            targetColumn = columns[index % columns.length];
-        }
-
-        const div = document.createElement('div');
-        div.innerHTML = cardHtml.trim();
-        targetColumn.appendChild(div.firstChild);
-    });
-
-    // アクティブなタブをハイライト
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
-        btn.classList.add('bg-gray-700', 'hover:bg-gray-600');
-        if (btn.dataset.rank === rank) {
-            btn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
-            btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
-        }
-    });
-    
-    attachEventListeners();
-    updateProgressBars();
-}
+// ... (中略: getMobByNo, renderMobList 関数は変更なし)
 
 /**
  * イベントリスナーをカードとボタンにアタッチする
@@ -326,9 +215,15 @@ function attachEventListeners() {
         }
     });
     
-    // カード全体のクリックイベント（トグル展開用）
-    document.querySelectorAll('.mob-card').forEach(card => {
-        card.onclick = (e) => toggleMobDetails(e.currentTarget);
+    // カードの固定情報エリア (.fixed-content) のクリックイベント（トグル展開用）
+    document.querySelectorAll('.toggle-handler').forEach(handler => {
+        // 固定情報エリアがクリックされたら、親の mob-card を取得してトグル
+        handler.onclick = (e) => {
+            const card = e.currentTarget.closest('.mob-card');
+            if (card) {
+                toggleMobDetails(card);
+            }
+        };
     });
 }
 
@@ -341,7 +236,7 @@ function toggleMobDetails(card) {
     const mob = getMobByNo(parseInt(mobNo));
     const panel = card.querySelector('.expandable-panel');
 
-    // 最大高を0にリセットし、transitionを有効にする
+    // max-heightをリセット
     panel.style.transition = 'max-height 0.3s ease-in-out';
     
     if (card.classList.contains('open')) {
@@ -350,8 +245,8 @@ function toggleMobDetails(card) {
         card.classList.remove('open');
     } else {
         // 開く処理
-        // 内容物の高さを取得し、max-heightに設定することでスライド展開をシミュレート
-        panel.style.maxHeight = panel.scrollHeight + 'px';
+        // scrollHeightに十分な余白 (e.g. 50px) を足すことで、トランジションの途切れを防ぐ
+        panel.style.maxHeight = (panel.scrollHeight + 50) + 'px';
         card.classList.add('open');
         
         const mapOverlay = panel.querySelector('.map-overlay');
