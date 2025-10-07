@@ -1,5 +1,5 @@
 // Google Apps Script (GAS) のエンドポイントURL
-// ユーザーから提供されたURLを設定
+// ユーザーから提供された正確なURLを設定 (大文字小文字を区別)
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwxgb5APRPyTwEM3ZQtgG3WWdxrFqVZAgkvq4Qfh_FggBU2p21yYDkWIdp-jMfBtG92Gg/exec';
 // 静的モブデータ (mob_data.json) のURL (同階層のファイルを参照)
 const MOB_DATA_URL = './mob_data.json'; 
@@ -268,7 +268,8 @@ function createMobCard(mob) {
     `;
     
     // 前回討伐
-    const lastKillBottomMargin = (mob.Rank === 'A' || mob.Rank === 'F') ? 'pb-4' : 'pb-1'; 
+    // 修正点2: 前回討伐の下の余白を増やす (pb-6 = 1.5rem)
+    const lastKillBottomMargin = 'pb-6'; 
     
     let lastKillHtml = '';
     if (lastKillDate && !isNaN(lastKillDate.getTime())) {
@@ -282,7 +283,8 @@ function createMobCard(mob) {
     // 抽選条件
     let conditionHtml = '';
     if (mob.Condition) {
-        const conditionBottomPadding = (mob.Rank === 'S') ? 'pb-1' : 'pb-4';
+        // Conditionがある場合は、Mapがない場合でも適切なボトムパディング (pb-4) を持つ
+        const conditionBottomPadding = mob.Map ? 'pb-1' : 'pb-4';
         
         conditionHtml = `
             <div class="px-4 pt-1 ${conditionBottomPadding} condition-content">
@@ -349,9 +351,10 @@ function createMobCard(mob) {
                             ${mob.Rank}
                         </div>
                         <!-- モンスター名とエリア名 -->
-                        <div>
-                            <h2 class="text-lg font-bold text-outline text-yellow-200 leading-tight">${mob.Name}</h2>
-                            <p class="text-xs text-gray-400 leading-tight">${mob.Area}</p>
+                        <!-- 修正点3: flexアイテムとして親divに min-w-0 を、h2に truncate を適用し、長文でも1行に収まるようにする -->
+                        <div class="min-w-0 flex-1"> 
+                            <h2 class="text-lg font-bold text-outline text-yellow-200 leading-tight truncate">${mob.Name}</h2>
+                            <p class="text-xs text-gray-400 leading-tight truncate">${mob.Area}</p>
                         </div>
                     </div>
                     
