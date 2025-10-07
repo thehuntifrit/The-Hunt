@@ -88,10 +88,9 @@ function calculateRepop(mob, lastKill) {
 }
 
 /**
- * モブデータに基づいてHTMLカードを生成する (POP_DateとConditionが分離された新しいロジック)
+ * モブデータに基づいてHTMLカードを生成する (見た目修正適用済み)
  */
 function createMobCard(mob) {
-    // 最終討伐日時が存在しない場合、討伐日時の代わりに '不明' を使用 (計算は実行されない)
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
     const { minRepop, timeRemaining, elapsedPercent } = calculateRepop(mob, lastKillDate);
 
@@ -136,13 +135,29 @@ function createMobCard(mob) {
             rankBgClass = 'bg-gray-600';
     }
 
-    // 討伐報告ボタンの初期状態
+    // 討伐報告ボタンの状態
     const isPop = timeRemaining === 'POP中';
-    // lastKillDateがない場合は常に報告可能
     const canReport = !isPop || !lastKillDate; 
     
     const reportBtnClass = !canReport ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn';
-    const reportBtnText = !canReport ? 'POP中 (報告不可)' : '討伐報告';
+    
+    // 討伐報告ボタンの2行表示コンテンツ
+    let reportBtnContent;
+    if (!canReport) {
+        // POP中の場合 (報告不可)
+        reportBtnContent = `<span class="font-bold">POP中</span><span class="text-xs">(報告不可)</span>`;
+    } else {
+        // 報告可能な場合
+        reportBtnContent = `<span class="font-bold">討伐</span><span>報告</span>`;
+    }
+
+    const reportBtnHtml = `
+        <button class="${reportBtnClass} text-xs text-white px-2 py-1 rounded-md shadow-md transition h-10 w-16 flex flex-col items-center justify-center leading-none" 
+                data-mobno="${mob['No.']}" 
+                ${!canReport ? 'disabled' : ''}>
+            ${reportBtnContent}
+        </button>
+    `;
     
     // マップ詳細表示トグルボタン
     const toggleMapBtn = mob.Map ? `
@@ -151,8 +166,8 @@ function createMobCard(mob) {
         </button>
     ` : '';
     
-    // mob.Conditionに抽選条件（文字列）が格納されている
-    const conditionText = mob.Condition || 'なし'; 
+    // 抽選条件
+    const conditionText = mob.Condition || ''; 
 
     return `
         <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden transform hover:scale-[1.01] transition duration-300 relative" 
@@ -169,38 +184,40 @@ function createMobCard(mob) {
             </div>
 
             <div class="p-4 fixed-content">
-                <div class="flex justify-between items-center mb-2">
-                    <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-xs w-8 h-8 flex items-center justify-center rounded-full shadow-lg">
-                        ${mob.Rank}
+                <div class="flex justify-between items-start mb-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-sm w-10 h-6 flex items-center justify-center rounded-md shadow-lg">
+                            ${mob.Rank}
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-outline text-yellow-200 leading-tight">${mob.Name}</h2>
+                            <p class="text-xs text-gray-400 leading-tight">${mob.Area}</p>
+                        </div>
                     </div>
                     
-                    <button class="${reportBtnClass} text-xs text-white px-3 py-1 rounded-full shadow-md transition" 
-                            data-mobno="${mob['No.']}" 
-                            ${!canReport ? 'disabled' : ''}>
-                        ${reportBtnText}
-                    </button>
+                    ${reportBtnHtml}
                 </div>
 
-                <h2 class="text-xl font-bold text-outline text-yellow-200">${mob.Name}</h2>
-                <p class="text-sm text-gray-400">${mob.Area}</p>
-
                 <div class="mt-3 bg-gray-700 p-2 rounded-lg text-xs flex flex-col space-y-1">
-                    <div class="flex justify-between">
-                        <span class="text-gray-300">最終討伐:</span> 
-                        <span class="last-kill-date text-white">${lastKillStr}</span>
-                    </div>
+                    
                     <div class="flex justify-between items-baseline">
-                        <span class="text-gray-300">予測POP:</span>
+                        <span class="text-gray-300 w-24 flex-shrink-0">予測POP:</span>
                         <span class="repop-time text-base ${timeStatusClass} font-bold">${minPopStr}</span>
                     </div>
+                    
                     <div class="flex justify-between">
-                        <span class="text-gray-300">残/経過:</span> 
+                        <span class="text-gray-300 w-24 flex-shrink-0">残り時間 (%):</span> 
                         <span class="font-mono time-remaining text-white">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-300 w-24 flex-shrink-0">前回討伐:</span> 
+                        <span class="last-kill-date text-white">${lastKillStr}</span>
                     </div>
                 </div>
 
                 <div class="mt-3 flex justify-between items-center min-h-[1.5rem]"> 
-                    <p class="text-xs text-gray-400">${conditionText}</p>
+                    ${conditionText ? `<p class="text-xs text-gray-400">${conditionText}</p>` : ''}
                     ${toggleMapBtn}
                 </div>
             </div>
@@ -485,7 +502,6 @@ async function fetchBaseMobData() {
 
 /**
  * GASから最新の討伐記録を取得し、グローバルデータを更新する 
- * (修正: POP_DateをLastKillDateに変更し、Conditionをそのまま利用)
  */
 async function fetchRecordsAndUpdate(shouldFetchBase = true) {
     if (shouldFetchBase) {
@@ -513,7 +529,6 @@ async function fetchRecordsAndUpdate(shouldFetchBase = true) {
                 if (record && record.POP_Date_Unix) {
                     newMob.LastKillDate = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
                 } else {
-                    // GASから日時が取得できなかった場合 (POP_Dateは削除済み)
                     newMob.LastKillDate = ''; 
                 }
                 
@@ -546,7 +561,7 @@ function updateProgressBars() {
         const repop = parseInt(card.dataset.minrepop);
         const max = parseInt(card.dataset.maxrepop);
         
-        // 討伐日時がない場合は更新しない (lastKillStrには日時のみ入るようになった)
+        // 討伐日時がない場合は更新しない 
         if (!lastKillStr) return; 
 
         const lastKill = new Date(lastKillStr);
@@ -596,15 +611,14 @@ function updateProgressBars() {
         if (repopData.timeRemaining === 'POP中') {
             if (reportBtn) {
                 reportBtn.disabled = true;
-                reportBtn.textContent = 'POP中 (報告不可)';
+                reportBtn.innerHTML = `<span class="font-bold">POP中</span><span class="text-xs">(報告不可)</span>`;
                 reportBtn.classList.remove('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
                 reportBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
             }
         } else {
-            // lastKillStrが空の場合は常に報告可能
             if (reportBtn) {
                 reportBtn.disabled = false;
-                reportBtn.textContent = '討伐報告';
+                reportBtn.innerHTML = `<span class="font-bold">討伐</span><span>報告</span>`;
                 reportBtn.classList.remove('bg-gray-500', 'cursor-not-allowed');
                 reportBtn.classList.add('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
             }
