@@ -12,6 +12,7 @@ let currentMobNo = null;
 let userId = null;
 
 // --- DOMエレメント ---
+// これらの要素がHTMLに存在しない場合、nullになります。
 const appEl = document.getElementById('app');
 const mobListContainer = document.getElementById('mob-list-container');
 const rankTabs = document.getElementById('rank-tabs');
@@ -151,51 +152,40 @@ function createMobCard(mob) {
     
     const reportBtnClass = !canReport ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn';
     
-    // --- 修正箇所 1: 討伐報告ボタンの文字サイズと形状 ---
     let reportBtnContent;
     if (!canReport) {
-        // POP中の場合、text-xsで2行表示
-        reportBtnContent = `<span class="text-xs font-bold">POP中</span><span class="text-xs leading-none">(報告不可)</span>`;
+        reportBtnContent = `<span class="text-sm font-bold">POP中</span><span class="text-xs">(報告不可)</span>`;
     } else {
-        // 報告可能な場合、text-xsで2行表示
-        reportBtnContent = `<span class="text-xs font-bold">討伐</span><span class="text-xs font-bold">報告</span>`;
+        reportBtnContent = `<span class="text-sm font-bold">討伐</span><span class="text-sm font-bold">報告</span>`;
     }
 
     const reportBtnHtml = `
-        <button class="${reportBtnClass} text-white px-1 py-1 rounded-md shadow-md transition h-10 w-10 flex flex-col items-center justify-center leading-none" 
+        <button class="${reportBtnClass} text-xs text-white px-1 py-1 rounded-md shadow-md transition h-10 w-14 flex flex-col items-center justify-center leading-none" 
                 data-mobno="${mob['No.']}" 
                 ${!canReport ? 'disabled' : ''}>
             ${reportBtnContent}
         </button>
     `;
-    // ----------------------------------------------------
     
     // --- 展開パネルの内容 ---
     
-    // 抽選条件の処理
+    // 抽選条件の処理: ラベル、4行固定、背景色を削除
     let conditionHtml = '';
     if (mob.Condition) {
         const displayCondition = processText(mob.Condition);
         
-        // --- 修正箇所 2: 抽選条件の文字サイズをtext-smに拡大 ---
         conditionHtml = `
-            <div class="pt-4 px-4 pb-4">
-                <p class="text-sm text-gray-400 leading-snug">${displayCondition}</p>
+            <div class="pt-4 px-4 pb-2">
+                <p class="text-xs text-gray-400 leading-snug">${displayCondition}</p>
             </div>
         `;
-        // ----------------------------------------------------
     }
     
     // マップ詳細パネル: マップデータがない場合は空文字列を返す
     let mapDetailsHtml = '';
     if (mob.Map) {
-        // --- 修正箇所 3: 区切り線 (border-t) を削除し、上余白を調整 ---
-        // 抽選条件がある場合 (mob.Conditionがtrue) は、pt-1 で条件の pb-4 の次にわずかな余白を設ける
-        // 抽選条件がない場合 (mob.Conditionがfalse) は、pt-4 でカード上部との間隔を空ける
-        const mapTopPaddingClass = mob.Condition ? 'pt-1' : 'pt-4'; 
-        
         mapDetailsHtml = `
-            <div class="mob-details ${mapTopPaddingClass} px-4 pb-4">
+            <div class="mob-details ${mob.Condition ? 'pt-3 border-t border-gray-700' : 'pt-4'} px-4 pb-4">
                 <div class="relative">
                     <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="w-full h-auto rounded-lg shadow-md map-image" data-area="${mob.Area}">
                     <div class="absolute inset-0 map-overlay" data-area="${mob.Area}">
@@ -203,13 +193,11 @@ function createMobCard(mob) {
                 </div>
             </div>
         `;
-        // ----------------------------------------------------
     }
     
     // 抽選条件とマップ詳細のいずれかがある場合のみ展開パネルを生成
     let expandablePanel = '';
     if (conditionHtml || mapDetailsHtml) {
-        // 以前行っていたfinalConditionHtmlのpb-4 to pb-0置換は不要
         expandablePanel = `
             <div class="expandable-panel overflow-hidden transition-all duration-300 ease-in-out max-h-0">
                 ${conditionHtml}
@@ -292,6 +280,7 @@ function renderMobList(rank) {
         ? globalMobData
         : globalMobData.filter(mob => mob.Rank === rank);
 
+    // 存在しない可能性があるカラムIDをフィルタリング
     const columns = [
         document.getElementById('column-1'),
         document.getElementById('column-2'),
@@ -300,8 +289,16 @@ function renderMobList(rank) {
 
     columns.forEach(col => col.innerHTML = '');
 
-    if (columns.length === 0) {
+    // カラムが存在しない場合は何もしない (クラッシュ回避)
+    if (columns.length === 0 && mobListContainer) {
+        // mobListContainerに直接挿入するフォールバック処理 (モバイルなど1カラムの場合)
+        // 今回のindex.htmlの想定では不要ですが、念のため
+        if (mobListContainer.children.length === 0) {
+            mobListContainer.innerHTML = `<p class="text-center text-gray-400 mt-10">表示するモブがいません。HTMLのカラムID(column-1, column-2など)を確認してください。</p>`;
+        }
         return; 
+    } else if (columns.length === 0) {
+        return;
     }
 
 
@@ -368,8 +365,10 @@ function toggleMobDetails(card) {
     const mob = getMobByNo(parseInt(mobNo));
     const panel = card.querySelector('.expandable-panel');
 
+    // 展開パネルがないモブはトグルしない
     if (!panel) return;
 
+    // max-heightをリセット
     panel.style.transition = 'max-height 0.3s ease-in-out';
     
     if (card.classList.contains('open')) {
@@ -378,21 +377,12 @@ function toggleMobDetails(card) {
         card.classList.remove('open');
     } else {
         // 開く処理
-        // 一度 max-height を解除して、正確な scrollHeight を取得
-        panel.style.maxHeight = 'none'; 
-        const targetHeight = panel.scrollHeight;
-        
-        // 画像などの読み込みが完了するのを待つ (少し時間を置く)
-        setTimeout(() => {
-            // 再度、現在の正確な高さを取得
-            panel.style.maxHeight = (panel.scrollHeight + 50) + 'px'; // +50pxで安全マージンを確保
-        }, 10); // わずかな遅延で再計算
-
-        // 初期クリック時は、瞬時に高さを設定し、トランジションを開始
-        panel.style.maxHeight = targetHeight + 'px';
+        // scrollHeightに十分な余白 (e.g. 50px) を足すことで、トランジションの途切れを防ぐ
+        panel.style.maxHeight = (panel.scrollHeight + 50) + 'px';
         card.classList.add('open');
         
         const mapOverlay = panel.querySelector('.map-overlay');
+        // スポーンポイントの描画
         if (mapOverlay && mapOverlay.children.length === 0 && mob.spawn_points) {
             drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
         }
@@ -432,9 +422,6 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
         pointEl.style.left = `${xPercent}%`;
         pointEl.style.top = `${yPercent}%`;
         
-        // 座標点を中心に配置
-        pointEl.style.transform = 'translate(-50%, -50%)';
-
         if (isImportant) {
             pointEl.onclick = (e) => {
                 e.stopPropagation(); 
@@ -452,6 +439,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
  * 討伐報告モーダルを開く
  */
 function openReportModal(mobNo) {
+    // DOM要素の存在チェック
     if (!reportModal || !modalMobName || !reportDatetimeInput) return;
 
     currentMobNo = parseInt(mobNo);
@@ -682,18 +670,14 @@ function updateProgressBars() {
         if (repopData.timeRemaining === 'POP中') {
             if (reportBtn) {
                 reportBtn.disabled = true;
-                // --- 修正箇所 1-b: ボタンコンテンツの更新 ---
-                reportBtn.innerHTML = `<span class="text-xs font-bold">POP中</span><span class="text-xs leading-none">(報告不可)</span>`;
-                // ----------------------------------------
+                reportBtn.innerHTML = `<span class="text-sm font-bold">POP中</span><span class="text-xs">(報告不可)</span>`;
                 reportBtn.classList.remove('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
                 reportBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
             }
         } else {
             if (reportBtn) {
                 reportBtn.disabled = false;
-                // --- 修正箇所 1-b: ボタンコンテンツの更新 ---
-                reportBtn.innerHTML = `<span class="text-xs font-bold">討伐</span><span class="text-xs font-bold">報告</span>`;
-                // ----------------------------------------
+                reportBtn.innerHTML = `<span class="text-sm font-bold">討伐</span><span class="text-sm font-bold">報告</span>`;
                 reportBtn.classList.remove('bg-gray-500', 'cursor-not-allowed');
                 reportBtn.classList.add('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
             }
