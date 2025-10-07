@@ -392,7 +392,7 @@
       "POP_Date": "POP地点で食事を食べる",
       "REPOP(s)": 241200,
       "MAX(s)": 277200,
-      "Map": "Central Thanalan.webp"
+      "Map": "Central Thanalan.webp",
       "spawn_points": [
       {
         "id": "CT_01",
@@ -732,7 +732,7 @@
       "POP Date": "ミニオン「ロイヤルベビーモス」を連れてPOP地点を踏む",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "Coerthas Western Highlands.webp"
+      "Map": "Coerthas Western Highlands.webp",
       "spawn_points": [
       {
         "id": "CW_01",
@@ -1118,7 +1118,7 @@
       "POP_Date": "ミニオン「ミニアレキサンダー」を出してPOP地点を踏む",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "Yanxia.webp"
+      "Map": "Yanxia.webp",
       "spawn_points": [
       {
         "id": "YX_01",
@@ -1214,7 +1214,7 @@
       "POP_Date": "F.A.T.E. 石人の英雄「ゲルゲイ・チョロー」をコンプリート後にPOP地点を踏む//※判定は該当F.A.T.E.が失敗するまで有効",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "The Azim Steppe.webp"
+      "Map": "The Azim Steppe.webp",
       "spawn_points": [
       {
         "id": "AS_01",
@@ -1494,7 +1494,7 @@
       "POP_Date": "青魔導士の「自爆」をPOP地点で使う//※プレイヤーが死亡時にPOP",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "Amh Araeng.webp"
+      "Map": "Amh Araeng.webp",
       "spawn_points": [
       {
         "id": "AA_01",
@@ -1614,7 +1614,7 @@
       "POP_Date": "ミニオン「朱孔雀」を出してPOP地点を踏む",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "Il Mheg.webp"
+      "Map": "Il Mheg.webp",
       "spawn_points": [
       {
         "id": "AA_01",
@@ -1888,7 +1888,7 @@
       "POP_Date": "ミニオン「リトルトロル」を出してPOP地点を踏む//※ET 9:00～16:59 中の「晴れ or 快晴」",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "Labyrinthos.webp"
+      "Map": "Labyrinthos.webp",
       "spawn_points": [
       {
         "id": "LT_01",
@@ -1956,6 +1956,7 @@
         "y": 17.6,
         "mob_ranks": ["B2"] 
       }
+     ]
     },
     {
       "No.": 52021,
@@ -1975,7 +1976,7 @@
       "POP_Date": "「リペアド・インペリアルショートローブ」//「リペアド・インペリアルポットヘルム」を装備して//POP地点で戦闘不能になる(自爆も可)",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "Garlemald.webp"
+      "Map": "Garlemald.webp",
       "spawn_points": [
       {
         "id": "GM_01",
@@ -2037,6 +2038,7 @@
         "y": 15.6,
         "mob_ranks": ["B1"] 
       }
+     ]
     },
     {
       "No.": 52041,
@@ -2066,7 +2068,7 @@
       "POP_Date": "ミニオン「プチイーア」を出して10人同時にPOP地点を踏む",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "Ultima Thule.webp"
+      "Map": "Ultima Thule.webp",
       "spawn_points": [
       {
         "id": "LM_01",
@@ -2128,6 +2130,7 @@
         "y": 77.6,
         "mob_ranks": ["B1"] 
       }
+     ]
     },
     {
       "No.": 53011,
@@ -2277,7 +2280,7 @@
       "POP_Date": "新月のET 0:00～5:59 + 天候が「霧」の条件を満たした時にPOP地点を踏む",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "Urqopacha.webp"
+      "Map": "Urqopacha.webp",
       "spawn_points": [
       {
         "id": "UP_01",
@@ -2338,7 +2341,8 @@
         "x": 46.2,
         "y": 54.8,
         "mob_ranks": ["B1"] 
-      }
+      } 
+     ]
     },
     {
       "No.": 62021,
@@ -2348,7 +2352,7 @@
       "POP_Date": "ミニオン「モルフォ」を出してPOP地点を踏む",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "Kozama'uka.webp"
+      "Map": "Kozama'uka.webp",
       "spawn_points": [
       {
         "id": "KK_01",
@@ -2410,6 +2414,7 @@
         "y": 86.0,
         "mob_ranks": ["B1"] 
       }
+     ]
     },
     {
       "No.": 62031,
@@ -2449,7 +2454,7 @@
       "POP_Date": "青魔道士の「猛吹雪」をPOP地点で使う",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "Living Memory.webp"
+      "Map": "Living Memory.webp",
       "spawn_points": [
       {
         "id": "LM_01",
@@ -2511,6 +2516,7 @@
         "y": 78.6,
         "mob_ranks": ["B1"] 
       }
+     ]
     },
     {
       "No.": 63011,
