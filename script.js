@@ -1,6 +1,6 @@
 // Google Apps Script (GAS) のエンドポイントURL
 // ★新しいURLに変更済み★
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwxgb5APRPyTwEM3ZQtgG3WWdxrFqVZAgkvq4Qfh_FggBU2p21yYDkWIdp-jMfBtG92Gg/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwxgb5APRPyTwEM3ZQtgG3WWdxrFqVZAgkvq4Qfh_FggBU2p21yYDkWIdp-jMfBtgG92Gg/exec';
 // 静的モブデータ (mob_data.json) のURL (同階層のファイルを参照)
 const MOB_DATA_URL = './mob_data.json'; 
 
@@ -33,6 +33,27 @@ const reportStatusEl = document.getElementById('report-status');
 function unixTimeToDate(unixtime) {
     return new Date(unixtime * 1000); 
 }
+
+/**
+ * ミリ秒を HHh MMm 形式に変換し、接頭辞を付けます。
+ * 例: 3661000ms -> "01h 01m"
+ * @param {number} ms - ミリ秒
+ * @param {string} prefix - 接頭辞 ('+' for Max Overdue)
+ * @returns {string} - フォーマットされた時間文字列 (秒は含まない)
+ */
+function formatDurationPart(ms, prefix = '') {
+    // 秒を切り捨てて分単位で計算
+    const totalMinutes = Math.floor(ms / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
+    const formattedHours = String(hours).padStart(2, '0');
+    const formattedMinutes = String(minutes).padStart(2, '0');
+    
+    // ご要望の「hの後の少しの余白」をここに追加: "03h 01m"
+    return `${prefix}${formattedHours}h ${formattedMinutes}m`; 
+}
+
 
 /**
  * テキストを // で改行する関数
@@ -131,13 +152,8 @@ function calculateRepop(mob, lastKill) {
             // --- Phase 1: Pre-Min Repop (Countdown Phase, Percentage HIDDEN) ---
             isPop = false; 
             
-            const totalSeconds = Math.floor(remainingMsToMin / 1000);
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-            
-            // 残り時間 to MIN POP
-            timeRemainingStr = `${hours}h ${minutes}m ${seconds}s`;
+            // NEW: ミリ秒から HHh MMm 形式に変換 (秒は含まない)
+            timeRemainingStr = formatDurationPart(remainingMsToMin);
             elapsedPercent = 0; // バー非表示のため0%
             
         } else {
@@ -155,27 +171,20 @@ function calculateRepop(mob, lastKill) {
                 // POPウィンドウ内の経過率 (0% to 100%)
                 elapsedPercent = Math.max(0, Math.min(100, (elapsedInWindowMs / popDurationMs) * 100));
 
-                const totalSeconds = Math.floor(remainingMsToMax / 1000);
-                const hours = Math.floor(totalSeconds / 3600);
-                const minutes = Math.floor((totalSeconds % 3600) / 60);
-                const seconds = totalSeconds % 60;
-                
-                // 残り時間 to MAX POP
-                timeRemainingStr = `${hours}h ${minutes}m ${seconds}s`;
+                // NEW: ミリ秒から HHh MMm 形式に変換 (Max POPまでの残り時間)
+                timeRemainingStr = formatDurationPart(remainingMsToMax);
                 
             } else {
                 // --- Phase 3: Max Repop Exceeded (Max Over/Overdue) ---
                 isMaxOver = true;
                 
                 const popElapsedMs = now.getTime() - maxRepopTime.getTime();
-                const totalSeconds = Math.floor(popElapsedMs / 1000);
                 
-                const hours = Math.floor(totalSeconds / 3600);
-                const minutes = Math.floor((totalSeconds % 3600) / 60);
-                const seconds = totalSeconds % 60;
+                // NEW: ミリ秒から HHh MMm 形式に変換し、接頭辞を追加
+                const formattedElapsed = formatDurationPart(popElapsedMs, '+');
                 
                 // Time elapsed since MAX POP
-                timeRemainingStr = `最大超過 (+${hours}h ${minutes}m ${seconds}s)`;
+                timeRemainingStr = `最大超過 (${formattedElapsed})`;
                 elapsedPercent = 100; // フルバー表示
             }
         }
@@ -197,6 +206,7 @@ function calculateRepop(mob, lastKill) {
  */
 function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
+    // calculateRepopの結果は、秒を含まない HHh MMm 形式の timeRemainingStr を持つ
     const { minRepop, timeRemaining, elapsedPercent, isPop, isMaxOver, isUnknown } = calculateRepop(mob, lastKillDate);
 
     // 修正: timeStatusClassは「次回POP」の時刻の色を決定する
@@ -263,10 +273,6 @@ function createMobCard(mob) {
         </button>
     `;
     
-    // --- 展開パネルの内容 (省略、変更なし) ---
-    // ...
-
-    // 前回討伐パネル (復活)
     let lastKillHtml = '';
     if (lastKillDate && !isNaN(lastKillDate.getTime())) {
         lastKillHtml = `
@@ -276,7 +282,6 @@ function createMobCard(mob) {
         `;
     }
 
-    // 抽選条件パネル
     let conditionHtml = '';
     if (mob.Condition) {
         const displayCondition = processText(mob.Condition);
@@ -290,7 +295,6 @@ function createMobCard(mob) {
         `;
     }
     
-    // マップ詳細パネル
     let mapDetailsHtml = '';
     if (mob.Map) {
         const precedingContentExists = lastKillHtml || conditionHtml;
@@ -308,7 +312,6 @@ function createMobCard(mob) {
         `;
     }
     
-    // 展開パネルのコンテンツの順序決定
     let panelContent = lastKillHtml + conditionHtml + mapDetailsHtml;
     
     let expandablePanel = '';
@@ -365,6 +368,7 @@ function createMobCard(mob) {
                     <!-- 2. 残り (%) - POPウィンドウ内でのみ表示 -->
                     <div class="progress-container ${remainingTimeContainerClass} flex justify-between relative z-10">
                         <span class="text-gray-300 w-24 flex-shrink-0 text-base">残り (%):</span> 
+                        <!-- timeRemainingにはHHh MMmが、percentにはP.Pが格納されている -->
                         <span class="${remainingTimeClass} time-remaining text-base">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
                     </div>
 
@@ -964,6 +968,7 @@ function updateProgressBars() {
         // --- 3. 残り時間（進捗率）の更新 (POPウィンドウ内でのみ実行) ---
         if (repopData.isPop && timeRemainingEl) {
             // 残り時間 (Max POPまでの残り時間 or Max超過からの経過時間)
+            // timeRemainingStrには既に「HHh MMm」形式の文字列が格納されている
             timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
         }
         
