@@ -88,9 +88,19 @@ function displayError(message) {
 function calculateRepop(mob, lastKill) {
     const killTime = (lastKill instanceof Date) ? lastKill : new Date(lastKill);
     
-    if (!lastKill || isNaN(killTime.getTime())) {
+    // 修正: lastKillがない場合、Repop時間は現在時刻からRepop(s)後の時刻を表示し続ける（未討伐という文言は使わない）
+    const isUnknown = !lastKill || isNaN(killTime.getTime());
+    
+    const repopMinMs = mob['REPOP(s)'] * 1000;
+    
+    let minRepopTime;
+    let timeRemainingStr;
+    let elapsedPercent = 0;
+    let isPop = false;
+
+    if (repopMinMs <= 0) {
         return {
-            minRepop: '未討伐',
+            minRepop: 'N/A', // Repop時間が無効な場合はN/A
             maxRepop: null,
             timeRemaining: 'N/A',
             elapsedPercent: 0,
@@ -99,53 +109,50 @@ function calculateRepop(mob, lastKill) {
     }
     
     const now = new Date();
-    const repopMinMs = mob['REPOP(s)'] * 1000;
-    
-    if (repopMinMs <= 0) {
-        return {
-            minRepop: 'N/A',
-            maxRepop: null,
-            timeRemaining: 'N/A',
-            elapsedPercent: 0,
-            isPop: false
-        };
-    }
 
-    const minRepopTime = new Date(killTime.getTime() + repopMinMs);
-    const elapsedMs = now.getTime() - killTime.getTime();
-    const remainingMs = minRepopTime.getTime() - now.getTime();
-    
-    let normalizedElapsedPercent = Math.max(0, Math.min(100, (elapsedMs / repopMinMs) * 100));
-
-    let timeRemainingStr;
-    let isPop = false;
-    if (remainingMs <= 0) {
-        isPop = true;
-        // POP後の経過時間を表示
-        const popElapsedMs = now.getTime() - minRepopTime.getTime();
-        const totalSeconds = Math.floor(popElapsedMs / 1000);
-        
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-        
-        timeRemainingStr = `POP中 (+${hours}h ${minutes}m ${seconds}s)`;
-        normalizedElapsedPercent = 100;
+    if (isUnknown) {
+        // 修正: 未討伐の場合、現在時刻 + Repop(s) を次回POP時刻として表示し続ける
+        minRepopTime = new Date(now.getTime() + repopMinMs); 
+        timeRemainingStr = 'データなし'; // 残り時間部分には「データなし」と表示
+        isPop = false; // POP状態ではない
+        elapsedPercent = 0; // 進捗は0%
     } else {
-        const totalSeconds = Math.floor(remainingMs / 1000);
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
+        minRepopTime = new Date(killTime.getTime() + repopMinMs);
+        const elapsedMs = now.getTime() - killTime.getTime();
+        const remainingMs = minRepopTime.getTime() - now.getTime();
         
-        timeRemainingStr = `${hours}h ${minutes}m ${seconds}s`;
+        elapsedPercent = Math.max(0, Math.min(100, (elapsedMs / repopMinMs) * 100));
+
+        if (remainingMs <= 0) {
+            isPop = true;
+            // POP後の経過時間を表示
+            const popElapsedMs = now.getTime() - minRepopTime.getTime();
+            const totalSeconds = Math.floor(popElapsedMs / 1000);
+            
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            timeRemainingStr = `POP中 (+${hours}h ${minutes}m ${seconds}s)`;
+            elapsedPercent = 100;
+        } else {
+            const totalSeconds = Math.floor(remainingMs / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            timeRemainingStr = `${hours}h ${minutes}m ${seconds}s`;
+        }
     }
 
+    // minRepopは常にDateオブジェクトか'N/A'を返す
     return {
         minRepop: minRepopTime,
         maxRepop: null,
         timeRemaining: timeRemainingStr,
-        elapsedPercent: normalizedElapsedPercent,
-        isPop: isPop
+        elapsedPercent: elapsedPercent,
+        isPop: isPop,
+        isUnknown: isUnknown
     };
 }
 
@@ -154,22 +161,27 @@ function calculateRepop(mob, lastKill) {
  */
 function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
-    const { minRepop, timeRemaining, elapsedPercent, isPop } = calculateRepop(mob, lastKillDate);
+    const { minRepop, timeRemaining, elapsedPercent, isPop, isUnknown } = calculateRepop(mob, lastKillDate);
 
-    let timeStatusClass = 'text-green-400';
-    let minPopStr = '未討伐';
-    // LastKillDateはGASから文字列として受け取りそのまま表示に使用
-    let lastKillStr = mob.LastKillDate || '不明'; 
-
-    if (lastKillDate) {
-        minPopStr = minRepop instanceof Date ? minRepop.toLocaleString() : minRepop;
-
-        if (isPop) {
-            timeStatusClass = 'text-amber-400 font-bold';
-        } else if (elapsedPercent >= 90) {
-            timeStatusClass = 'text-red-400';
-        }
+    // 修正: timeStatusClassは「次回POP」の時刻の色を決定する
+    // POP中：オレンジ, POP前：緑、90%以上：赤、データなし：緑（時刻は現在時刻+Repop）
+    let minPopColorClass = 'text-green-400';
+    
+    let minPopStr;
+    if (minRepop instanceof Date) {
+        minPopStr = minRepop.toLocaleString();
+    } else {
+        minPopStr = 'N/A';
     }
+
+    if (isPop) {
+        minPopColorClass = 'text-amber-400 font-bold';
+    } else if (elapsedPercent >= 90) {
+        minPopColorClass = 'text-red-400';
+    }
+    
+    // 修正: 「残り (%)」の時間部分のフォントを「次回POP」と同じにし、グレーにする
+    const remainingTimeClass = 'font-mono text-gray-400'; 
 
     // ランクアイコンの背景色
     let rankBgClass;
@@ -192,7 +204,8 @@ function createMobCard(mob) {
     }
 
     // 討伐報告ボタンの状態
-    const canReport = !isPop || !lastKillDate; 
+    // isUnknownの場合でも報告可能
+    const canReport = !isPop; // POP中でなければ報告可能
     
     const reportBtnClass = !canReport ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn';
     
@@ -219,16 +232,15 @@ function createMobCard(mob) {
     // 1. 抽選条件パネル
     let conditionHtml = '';
     if (mob.Condition) {
+        // 修正: 抽選条件の文字色を白 (text-white) に変更し、目立つようにする
         const displayCondition = processText(mob.Condition);
         
-        // Sランク: 前回討伐が固定部に移動したため、条件パネルは常にpt-4から開始
-        // NOTE: 前回討伐を固定部から削除したため、Sランクの討伐時間は現在表示されません。
         const conditionTopPadding = 'pt-4'; 
         const conditionBottomPadding = mob.Rank === 'S' ? 'pb-1' : 'pb-4';
         
         conditionHtml = `
             <div class="${conditionTopPadding} px-4 ${conditionBottomPadding} condition-content">
-                <p class="text-sm text-gray-400 leading-snug">${displayCondition}</p>
+                <p class="text-sm text-white leading-snug">${displayCondition}</p>
             </div>
         `;
     }
@@ -236,7 +248,6 @@ function createMobCard(mob) {
     // 2. マップ詳細パネル
     let mapDetailsHtml = '';
     if (mob.Map) {
-        // マップの上余白は、前の要素(抽選条件)が存在しない場合は pt-4, 存在する場合は pt-1 (狭く)
         const precedingContentExists = conditionHtml;
         const mapTopPaddingClass = precedingContentExists ? 'pt-1' : 'pt-4';
         
@@ -295,19 +306,20 @@ function createMobCard(mob) {
                     ${reportBtnHtml}
                 </div>
 
-                <!-- リポップ情報エリア (前回討伐情報を削除し、次回POP情報のみに) -->
+                <!-- リポップ情報エリア -->
                 <div class="mt-2 bg-gray-700 p-2 rounded-lg text-xs flex flex-col space-y-1">
                     
                     <!-- 1. 次回POP -->
                     <div class="flex justify-between items-baseline">
                         <span class="text-gray-300 w-24 flex-shrink-0 text-base">次回POP:</span>
-                        <span class="repop-time text-base ${timeStatusClass} font-bold">${minPopStr}</span>
+                        <span class="repop-time text-base ${minPopColorClass} font-bold">${minPopStr}</span>
                     </div>
                     
-                    <!-- 2. 残り (%) に短縮 -->
+                    <!-- 2. 残り (%) -->
                     <div class="flex justify-between">
                         <span class="text-gray-300 w-24 flex-shrink-0 text-base">残り (%):</span> 
-                        <span class="font-mono time-remaining text-base text-white">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
+                        <!-- 修正: remainingTimeClassを適用 -->
+                        <span class="${remainingTimeClass} time-remaining text-base">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
                     </div>
                 </div>
             </div>
@@ -878,16 +890,11 @@ function updateProgressBars() {
         const repop = parseInt(card.dataset.minrepop);
         const max = parseInt(card.dataset.maxrepop);
         
-        if (!lastKillStr) return; 
-
-        const lastKill = new Date(lastKillStr);
+        // lastKillStrが空の場合は、現在時刻を基準に RepopTime を計算し続ける
+        const lastKillDate = lastKillStr ? new Date(lastKillStr) : null;
         
-        if (isNaN(lastKill.getTime())) {
-            return;
-        }
-
         const mobStub = {"REPOP(s)": repop, "MAX(s)": max};
-        const repopData = calculateRepop(mobStub, lastKill);
+        const repopData = calculateRepop(mobStub, lastKillDate);
         const percent = repopData.elapsedPercent || 0; 
 
         // テキスト要素の更新
@@ -896,7 +903,8 @@ function updateProgressBars() {
 
         // リポップ予測時刻の更新
         if (repopTimeEl) {
-            const minPopStr = repopData.minRepop instanceof Date ? repopData.minRepop.toLocaleString() : repopData.minRepop;
+            // 修正: 常にDateオブジェクトとして得られた時刻を文字列化して表示
+            const minPopStr = repopData.minRepop instanceof Date ? repopData.minRepop.toLocaleString() : 'N/A';
             repopTimeEl.textContent = minPopStr;
             
             // 色の更新
