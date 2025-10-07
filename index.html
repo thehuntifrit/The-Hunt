@@ -11,7 +11,7 @@
 </head>
 <body class="text-white">
 
-    <div id="app" class="min-h-screen">
+    <div id="app" class="min-h-screen flex flex-col">
         
         <header class="sticky top-0 z-50 bg-gray-900 shadow-xl p-4">
             <h1 class="text-3xl font-bold text-center text-yellow-300">The Hunt</h1>
@@ -28,8 +28,8 @@
         </header>
         
         <main id="mob-list-wrapper" 
-              class="container mx-auto p-4 overflow-y-auto" 
-              style="max-width: 1600px;"> 
+              class="container mx-auto p-4 flex-grow overflow-y-auto" 
+              style="max-width: 1600px;">
             
             <div id="mob-list-container" class="flex flex-col lg:flex-row lg:space-x-4">
                 <div id="column-1" class="flex-1 space-y-4 mb-4 lg:mb-0"></div>
