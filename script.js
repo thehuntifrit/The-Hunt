@@ -1,6 +1,6 @@
 // Google Apps Script (GAS) のエンドポイントURL
-// ★新しいURLに変更済み★
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwxgb5APRPyTwEM3ZQtgG3WWdxrFqVZAgkvq4Qfh_FggBU2p21yYDkWIdp-jMfBtG92Gg/exec';
+// ユーザーから提供されたURLを設定
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwxgb5APRPyTwEM3ZQtgG3WWdxrFqVZAgkvq4Qfh_FggBU2p21yYDkWIdp-jMfBtgG92Gg/exec';
 // 静的モブデータ (mob_data.json) のURL (同階層のファイルを参照)
 const MOB_DATA_URL = './mob_data.json'; 
 
@@ -37,6 +37,7 @@ function unixTimeToDate(unixtime) {
 /**
  * ミリ秒を HHh MMm 形式に変換し、接頭辞を付けます。
  * 例: 3661000ms -> "01h 01m"
+ * (秒は含まない)
  * @param {number} ms - ミリ秒
  * @param {string} prefix - 接頭辞 ('+' for Max Overdue)
  * @returns {string} - フォーマットされた時間文字列 (秒は含まない)
@@ -200,6 +201,16 @@ function calculateRepop(mob, lastKill) {
         isUnknown: isUnknown
     };
 }
+
+/**
+ * MobNoからモブデータを取得する
+ */
+function getMobByNo(mobNo) {
+    // MobNoは5桁のIDに対応するため、数値として比較
+    return globalMobData.find(mob => mob['No.'] === parseInt(mobNo));
+}
+
+// --- DOM操作/イベントハンドラ ---
 
 /**
  * モブデータに基づいてHTMLカードを生成する
@@ -369,7 +380,7 @@ function createMobCard(mob) {
                     <div class="progress-container ${remainingTimeContainerClass} flex justify-between relative z-10">
                         <span class="text-gray-300 w-24 flex-shrink-0 text-base">残り (%):</span> 
                         <!-- timeRemainingにはHHh MMmが、percentにはP.Pが格納されている -->
-                        <span class="${remainingTimeClass} time-remaining text-base">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
+                        <span class="font-mono text-gray-200 time-remaining text-base">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
                     </div>
 
                     <!-- プログレスバー要素 (動的に幅と色が変わる) -->
@@ -382,16 +393,6 @@ function createMobCard(mob) {
         </div>
     `;
 }
-
-/**
- * MobNoからモブデータを取得する
- */
-function getMobByNo(mobNo) {
-    // MobNoは5桁のIDに対応するため、数値として比較
-    return globalMobData.find(mob => mob['No.'] === parseInt(mobNo));
-}
-
-// --- DOM操作/イベントハンドラ ---
 
 /**
  * フィルターに基づいてモブカードリストをレンダリングする
@@ -443,6 +444,14 @@ function renderMobList(rank) {
     
     attachEventListeners();
     updateProgressBars(); // 初回レンダリング時にも進捗バーを更新
+}
+
+/**
+ * MobNoからモブデータを取得する
+ */
+function getMobByNo(mobNo) {
+    // MobNoは5桁のIDに対応するため、数値として比較
+    return globalMobData.find(mob => mob['No.'] === parseInt(mobNo));
 }
 
 /**
@@ -969,6 +978,7 @@ function updateProgressBars() {
         if (repopData.isPop && timeRemainingEl) {
             // 残り時間 (Max POPまでの残り時間 or Max超過からの経過時間)
             // timeRemainingStrには既に「HHh MMm」形式の文字列が格納されている
+            // HHh MMm (P.P%) の形式で表示
             timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
         }
         
