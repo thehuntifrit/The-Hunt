@@ -141,14 +141,14 @@ function createMobCard(mob) {
     
     const reportBtnClass = !canReport ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn';
     
-    // 討伐報告ボタンの2行表示コンテンツ (文字サイズを大きく: text-sm font-bold)
+    // 討伐報告ボタンの2行表示コンテンツ (「討伐」「報告」ともに text-sm font-bold に統一)
     let reportBtnContent;
     if (!canReport) {
         // POP中の場合 (報告不可)
         reportBtnContent = `<span class="text-sm font-bold">POP中</span><span class="text-xs">(報告不可)</span>`;
     } else {
         // 報告可能な場合
-        reportBtnContent = `<span class="text-sm font-bold">討伐</span><span class="text-xs">報告</span>`;
+        reportBtnContent = `<span class="text-sm font-bold">討伐</span><span class="text-sm font-bold">報告</span>`;
     }
 
     // 討伐報告ボタンの全体サイズを調整
@@ -160,10 +160,11 @@ function createMobCard(mob) {
         </button>
     `;
     
-    // マップ詳細表示トグルボタン
+    // マップ詳細表示トグルボタン (2行表示に変更)
     const toggleMapBtn = mob.Map ? `
-        <button class="toggle-details-btn text-xs font-semibold py-1 px-2 rounded-full bg-gray-600 hover:bg-gray-500">
-            マップ詳細
+        <button class="toggle-details-btn text-xs font-semibold py-1 px-2 rounded-full bg-gray-600 hover:bg-gray-500 flex flex-col items-center leading-none h-auto w-auto">
+            <span>マップ</span>
+            <span>詳細</span>
         </button>
     ` : '';
     
@@ -220,13 +221,13 @@ function createMobCard(mob) {
                 <div class="mt-3 bg-gray-700 p-2 rounded-lg text-xs flex flex-col space-y-1">
                     
                     <div class="flex justify-between items-baseline">
-                        <span class="text-gray-300 w-24 flex-shrink-0">予測POP:</span>
-                        <span class="repop-time text-lg ${timeStatusClass} font-bold">${minPopStr}</span>
+                        <span class="text-gray-300 w-24 flex-shrink-0 text-base">予測POP:</span>
+                        <span class="repop-time text-base ${timeStatusClass} font-bold">${minPopStr}</span>
                     </div>
                     
                     <div class="flex justify-between">
-                        <span class="text-gray-300 w-24 flex-shrink-0">残り時間 (%):</span> 
-                        <span class="font-mono time-remaining text-sm text-white">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
+                        <span class="text-gray-300 w-24 flex-shrink-0 text-base">残り時間 (%):</span> 
+                        <span class="font-mono time-remaining text-base text-white">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
                     </div>
 
                     <div class="flex justify-between">
@@ -320,6 +321,11 @@ function attachEventListeners() {
     // マップ詳細トグルボタン
     document.querySelectorAll('.toggle-details-btn').forEach(button => {
         button.onclick = (e) => toggleMobDetails(e.currentTarget);
+        
+        // 初期のボタン表示を2行に設定 (DOM生成時にも行われているが念のため)
+        if (button.innerHTML.indexOf('<span>') === -1 && button.textContent === 'マップ詳細') {
+            button.innerHTML = `<span>マップ</span><span>詳細</span>`;
+        }
     });
 }
 
@@ -334,10 +340,12 @@ function toggleMobDetails(button) {
 
     if (detailsPanel.classList.contains('open')) {
         detailsPanel.classList.remove('open');
-        button.textContent = 'マップ詳細';
+        // 2行表示に戻す
+        button.innerHTML = `<span>マップ</span><span>詳細</span>`;
     } else {
         detailsPanel.classList.add('open');
-        button.textContent = '詳細を隠す';
+        // 1行表示に変更
+        button.innerHTML = '詳細を隠す';
         
         const mapOverlay = detailsPanel.querySelector('.map-overlay');
         if (mapOverlay && mapOverlay.children.length === 0 && mob.spawn_points) {
@@ -634,9 +642,21 @@ function updateProgressBars() {
         } else {
             if (reportBtn) {
                 reportBtn.disabled = false;
-                reportBtn.innerHTML = `<span class="text-sm font-bold">討伐</span><span class="text-xs">報告</span>`;
+                // 「報告」の文字サイズを「討伐」と同じ text-sm font-bold に統一
+                reportBtn.innerHTML = `<span class="text-sm font-bold">討伐</span><span class="text-sm font-bold">報告</span>`;
                 reportBtn.classList.remove('bg-gray-500', 'cursor-not-allowed');
                 reportBtn.classList.add('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
+            }
+        }
+        
+        // マップ詳細ボタンの更新 (POP中から復帰時など)
+        const toggleBtn = card.querySelector('.toggle-details-btn');
+        const detailsPanel = card.querySelector('.mob-details');
+        if (toggleBtn) {
+             if (detailsPanel && detailsPanel.classList.contains('open')) {
+                toggleBtn.innerHTML = '詳細を隠す';
+            } else {
+                toggleBtn.innerHTML = `<span>マップ</span><span>詳細</span>`;
             }
         }
     });
