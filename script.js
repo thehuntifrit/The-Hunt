@@ -164,7 +164,6 @@ function createMobCard(mob) {
     const { minRepop, timeRemaining, elapsedPercent, isPop, isUnknown } = calculateRepop(mob, lastKillDate);
 
     // 修正: timeStatusClassは「次回POP」の時刻の色を決定する
-    // POP中：オレンジ, POP前：緑、90%以上：赤、データなし：緑（時刻は現在時刻+Repop）
     let minPopColorClass = 'text-green-400';
     
     let minPopStr;
@@ -204,7 +203,6 @@ function createMobCard(mob) {
     }
 
     // 討伐報告ボタンの状態
-    // isUnknownの場合でも報告可能
     const canReport = !isPop; // POP中でなければ報告可能
     
     const reportBtnClass = !canReport ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn';
@@ -229,13 +227,25 @@ function createMobCard(mob) {
     
     // --- 展開パネルの内容 ---
     
+    // 0. 前回討伐パネル (復活)
+    let lastKillHtml = '';
+    if (lastKillDate && !isNaN(lastKillDate.getTime())) {
+        // 前回討伐は目立たないテキスト色 (text-gray-400) を使用
+        lastKillHtml = `
+            <div class="pt-4 px-4 pb-1 last-kill-content">
+                <p class="text-sm font-semibold text-gray-400">前回討伐: <span class="text-base text-gray-200">${lastKillDate.toLocaleString()}</span></p>
+            </div>
+        `;
+    }
+
     // 1. 抽選条件パネル
     let conditionHtml = '';
     if (mob.Condition) {
         // 修正: 抽選条件の文字色を白 (text-white) に変更し、目立つようにする
         const displayCondition = processText(mob.Condition);
         
-        const conditionTopPadding = 'pt-4'; 
+        // 前回討伐がない場合は上部パディングを増やす
+        const conditionTopPadding = lastKillHtml ? 'pt-1' : 'pt-4'; 
         const conditionBottomPadding = mob.Rank === 'S' ? 'pb-1' : 'pb-4';
         
         conditionHtml = `
@@ -248,7 +258,8 @@ function createMobCard(mob) {
     // 2. マップ詳細パネル
     let mapDetailsHtml = '';
     if (mob.Map) {
-        const precedingContentExists = conditionHtml;
+        // 前回討伐または抽選条件がある場合は上部パディングを減らす
+        const precedingContentExists = lastKillHtml || conditionHtml;
         const mapTopPaddingClass = precedingContentExists ? 'pt-1' : 'pt-4';
         
         mapDetailsHtml = `
@@ -264,7 +275,7 @@ function createMobCard(mob) {
     }
     
     // --- 展開パネルのコンテンツの順序決定 ---
-    let panelContent = conditionHtml + mapDetailsHtml;
+    let panelContent = lastKillHtml + conditionHtml + mapDetailsHtml;
     
     // 抽選条件、またはマップデータがある場合のみパネルを生成
     let expandablePanel = '';
@@ -324,7 +335,7 @@ function createMobCard(mob) {
                 </div>
             </div>
 
-            <!-- 展開パネル (抽選条件とマップ詳細) -->
+            <!-- 展開パネル (前回討伐、抽選条件、マップ詳細) -->
             ${expandablePanel}
         </div>
     `;
@@ -477,8 +488,9 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     if (!mob || !mob.cullStatusMap) return;
 
     // --- NEW: ポイントの基本スタイル設定 ---
-    const pointDiameter = '24px'; // 視認性向上のためサイズアップ
-    const pointBorderWidth = '2px'; // 輪郭を細く
+    // 修正: ユーザー要求に基づきサイズを半分に縮小
+    const pointDiameter = '12px'; 
+    const pointBorderWidth = '2px'; 
     
     // B1/B2のみのポイントの内色 (S/A抽選ポイントの内色と一致)
     const B1_INTERNAL_COLOR = '#60a5fa'; // Blue-400
@@ -564,7 +576,8 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
 
         // 要素作成とスタイル適用
         const pointEl = document.createElement('div');
-        pointEl.className = `spawn-point hover:scale-125 transition-transform duration-100 cursor-pointer`;
+        // ホバーサイズを微調整 (サイズが小さくなったため、スケールを上げて目立たせる)
+        pointEl.className = `spawn-point hover:scale-150 transition-transform duration-100 cursor-pointer`; 
         pointEl.setAttribute('data-id', point.id);
         pointEl.setAttribute('data-isculltarget', 'true');
 
@@ -585,13 +598,21 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
         pointEl.style.border = `${pointBorderWidth} solid ${outlineColor}`; // NEW: 細い輪郭
         pointEl.style.backgroundColor = internalColor;
         
+        // 修正: S/A抽選対象ポイントに影を追加 (湧き潰し済みでない場合のみ)
+        if (!isCulled && isCullTarget) {
+            // 明るいシャドウで目立たせる
+            pointEl.style.boxShadow = `0 0 8px 1px ${outlineColor}`; 
+        }
+
+
         // 湧き潰し済みの表示
         if (isCulled) {
             pointEl.classList.add('culled');
             pointEl.style.border = `${pointBorderWidth} solid white`; // 白枠
             pointEl.style.backgroundColor = 'rgba(100, 100, 100, 0.5)'; // グレーアウト
             pointEl.style.opacity = '0.7';
-            pointEl.classList.remove('hover:scale-125'); // 湧き潰し済みはホバー効果を弱める
+            pointEl.classList.remove('hover:scale-150'); // 湧き潰し済みはホバー効果を弱める
+            pointEl.style.boxShadow = 'none'; // 影を消す
         }
 
         // クリックイベント
