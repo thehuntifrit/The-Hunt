@@ -1,4 +1,4 @@
-/* style.css */
+/* style.css (修正後) */
 
 /* カスタムスタイル */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -6,6 +6,11 @@
 body {
     font-family: 'Inter', sans-serif;
     background-color: #1a1a2e; /* ダークモード背景 */
+}
+
+/* ヘッダーの調整: z-indexを高くし、タブコンテナがアニメーション後にボーダーを正しく表示できるように padding-bottom を調整 */
+header {
+    padding-bottom: 0.5rem !important; /* Tailwindの p-4 が上書きされるのを防ぐため */
 }
 
 /* テキストに藍色のアウトライン/シャドウを適用 */
@@ -54,4 +59,14 @@ body {
 /* カードの展開パネルのアニメーション */
 .expandable-panel {
     transition: max-height 0.3s ease-in-out;
+}
+
+/* NEW: エリアタブの初期非表示とアニメーション準備 */
+.area-panel {
+    /* overflow-hidden と max-height-0 は Tailwindで定義済み */
+}
+
+/* NEW: 初期状態で display: none を適用し、JSで hidden-init を削除してからトグルを開始 */
+.hidden-init {
+    display: none;
 }
