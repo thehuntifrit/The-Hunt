@@ -27,7 +27,7 @@ const submitReportBtn = document.getElementById('submit-report');
 const cancelReportBtn = document.getElementById('cancel-report');
 const reportStatusEl = document.getElementById('report-status');
 
-// --- ユーティリティ関数 (変更なし) ---
+// --- ユーティリティ関数 ---
 
 /**
  * UNIX秒 (サーバー時間) を Dateオブジェクトに変換する
@@ -55,6 +55,24 @@ function formatDurationPart(ms, prefix = '') {
     
     // ご要望の「hの後の少しの余白」をここに追加: "03h 01m"
     return `${prefix}${formattedHours}h ${formattedMinutes}m`; 
+}
+
+
+/**
+ * Dateオブジェクトを「MM/DD HH:MM」形式の文字列にフォーマットする
+ * @param {Date} date - フォーマットするDateオブジェクト
+ * @returns {string} - フォーマットされた日付文字列
+ */
+function formatDateTime(date) {
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+        return 'N/A';
+    }
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `${month}/${day} ${hours}:${minutes}`;
 }
 
 
@@ -229,13 +247,16 @@ function createMobCard(mob) {
     
     let minPopStr;
     if (minRepop instanceof Date) {
-        minPopStr = minRepop.toLocaleString();
+        // formatDateTime関数を使用して「MM/DD HH:MM」形式にする
+        minPopStr = formatDateTime(minRepop);
     } else {
         minPopStr = 'N/A';
     }
 
     // 「残り (%)」の時間部分のフォントを「次回POP」と同じにする
-    const remainingTimeClass = 'font-mono text-gray-200'; 
+    // 修正1: POP到達時の文字色は、最大超過以外は黒 (text-gray-900) にする
+    // 修正1: 文字サイズを 'text-lg' に上げる
+    const remainingTimeClass = 'font-mono text-lg'; 
 
     // ランクアイコンの背景色
     let rankBgClass;
@@ -268,22 +289,25 @@ function createMobCard(mob) {
         </button>
     `;
     
+    // --- 修正2: 展開パネル内の表示調整 ---
+    const labelColorClass = 'text-gray-400'; // ラベル色を統一
+    const valueColorClass = 'text-gray-200'; // 値の色を統一
+    
     // POP開始時刻表示エリア (展開パネル内)
-    // POP開始時間になったら前回討伐時間の上に「開始時間:」とし次回POP時間の時間を添えて表示
+    const popStartTimeStr = minRepop instanceof Date ? formatDateTime(minRepop) : 'N/A';
     const popStartTimeHtml = `
-        <div class="px-4 pt-2 pop-start-time-display hidden">
-            <p class="text-sm font-semibold text-green-400">開始時間: <span class="text-base text-white font-mono pop-start-time-value">--:--:--</span></p>
+        <div class="px-4 pt-2 pb-2 pop-start-time-display hidden text-right">
+            <p class="text-sm font-semibold ${labelColorClass}">開始時間: <span class="text-base ${valueColorClass} font-mono pop-start-time-value">${popStartTimeStr}</span></p>
         </div>
     `;
 
     // 前回討伐
-    const lastKillBottomPaddingClass = 'pb-6'; 
-    
     let lastKillHtml = '';
     if (lastKillDate && !isNaN(lastKillDate.getTime())) {
+        const lastKillStr = formatDateTime(lastKillDate);
         lastKillHtml = `
-            <div class="px-4 pt-2 ${lastKillBottomPaddingClass} last-kill-content text-right">
-                <p class="text-sm font-semibold text-gray-400">前回討伐: <span class="text-base text-gray-200 font-mono">${lastKillDate.toLocaleString()}</span></p>
+            <div class="px-4 pt-2 pb-4 last-kill-content text-right">
+                <p class="text-sm font-semibold ${labelColorClass}">前回討伐: <span class="text-base ${valueColorClass} font-mono">${lastKillStr}</span></p>
             </div>
         `;
     }
@@ -377,7 +401,8 @@ function createMobCard(mob) {
                     <!-- 2. 残り (%) - POPウィンドウ内でのみ表示 (この行は常にprogress-container内にある) -->
                     <div class="progress-container ${remainingTimeContainerClass} flex justify-between relative z-10">
                         <span class="text-gray-300 w-24 flex-shrink-0 text-base">残り (%):</span> 
-                        <span class="${remainingTimeClass} time-remaining text-base">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
+                        <!-- 修正1: Remaining Timeのクラスを更新 -->
+                        <span class="${remainingTimeClass} time-remaining">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
                     </div>
 
                     <!-- プログレスバー要素 (動的に幅と色が変わる) -->
@@ -528,10 +553,7 @@ function toggleMobDetails(card) {
 }
 
 /**
- * マップにスポーンポイントを描画する
- * * **修正点**: 
- * - S/A地点のポイントサイズの内円を 10px に変更。
- * - B1/B2のみの地点のポイントサイズを 12px に変更。
+ * マップにスポーンポイントを描画する (前回の修正を維持)
  */
 function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     overlayEl.innerHTML = '';
@@ -932,7 +954,7 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
                 
                 // 討伐記録の反映 (POP_Date_Unixは秒単位で返される)
                 if (record && record.POP_Date_Unix) {
-                    newMob.LastKillDate = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
+                    newMob.LastKillDate = unixTimeToDate(record.POP_Date_Unix); // Dateオブジェクトのまま保持
                 } else {
                     newMob.LastKillDate = ''; 
                 }
@@ -987,6 +1009,9 @@ function updateProgressBars() {
     const MAX_OVER_TEXT_COLOR_CLASS = COLOR_ORANGE_3.replace('bg-', 'text-'); 
     // 最大超過時の残り (%) の文字色 (濃いめの赤)
     const OVERDUE_DURATION_COLOR_CLASS = 'text-red-700'; 
+    
+    // 修正1: POP到達時の残り時間/割合の文字色
+    const IN_POP_TEXT_COLOR_CLASS = 'text-gray-900'; // 黒色
     // ------------------------------------------------------------------
     
     document.querySelectorAll('.mob-card').forEach(card => {
@@ -994,7 +1019,8 @@ function updateProgressBars() {
         const repop = parseInt(card.dataset.minrepop);
         const max = parseInt(card.dataset.maxrepop);
         
-        const lastKillDate = lastKillStr ? new Date(lastKillStr) : null;
+        // Dateオブジェクトとして取得
+        const lastKillDate = globalMobData.find(mob => mob['No.'] === parseInt(card.dataset.mobno)).LastKillDate;
         
         const mobStub = {"REPOP(s)": repop, "MAX(s)": max};
         const repopData = calculateRepop(mobStub, lastKillDate);
@@ -1010,6 +1036,7 @@ function updateProgressBars() {
         // NEW: 展開パネル内の要素
         const popStartTimeDisplayEl = card.querySelector('.pop-start-time-display');
         const popStartTimeValueEl = card.querySelector('.pop-start-time-value');
+        const lastKillContentEl = card.querySelector('.last-kill-content');
 
         // --- 1. POPウィンドウ到達/超過判定とコンテナ表示切り替え ---
         if (repopData.isPop) {
@@ -1032,12 +1059,12 @@ function updateProgressBars() {
              displayTimeStr = 'N/A';
         } else {
              // Min Repop Time（予測POP開始時刻）を常に取得
-             displayTimeStr = repopData.minRepop instanceof Date ? repopData.minRepop.toLocaleString() : 'N/A';
+             displayTimeStr = repopData.minRepop instanceof Date ? formatDateTime(repopData.minRepop) : 'N/A';
         }
 
         // a) 進捗バー内の「次回POP」を更新 (POP未達時のみ表示)
         if (repopTimeEl) {
-            // 時刻は常に Min Repop Timeの絶対時刻を表示
+            // 時刻は常に Min Repop Timeの絶対時刻を表示 (MM/DD HH:MM形式)
             repopTimeEl.textContent = displayTimeStr; 
             
             // POP未達時は青色を維持
@@ -1047,28 +1074,41 @@ function updateProgressBars() {
         
         // b) 展開パネル内の「開始時間:」を更新 (POP達時のみ表示)
         if (popStartTimeValueEl) {
-            // 時分秒のみを表示
-            const timeOnly = repopData.minRepop instanceof Date ? repopData.minRepop.toLocaleTimeString('ja-JP', { hour12: false }) : 'N/A';
+            // MM/DD HH:MM形式
+            const timeOnly = repopData.minRepop instanceof Date ? formatDateTime(repopData.minRepop) : 'N/A';
             popStartTimeValueEl.textContent = timeOnly;
+        }
+
+        // c) 展開パネル内の「前回討伐:」を更新 (LastKillDateがDateオブジェクトのため再取得)
+        if (lastKillContentEl) {
+            const lastKillMob = globalMobData.find(mob => mob['No.'] === parseInt(card.dataset.mobno));
+            if (lastKillMob && lastKillMob.LastKillDate && !isNaN(lastKillMob.LastKillDate.getTime())) {
+                 const lastKillStr = formatDateTime(lastKillMob.LastKillDate);
+                 // 既に createMobCard で設定された HTML を使っているので、ここでは再生成のみ行う
+                 const lastKillValueEl = lastKillContentEl.querySelector('span.font-mono');
+                 if(lastKillValueEl) {
+                     lastKillValueEl.textContent = lastKillStr;
+                 }
+            }
         }
         
         // --- 3. 残り時間（進捗率）の更新 (timeRemainingEl) ---
         if (repopData.isPop && timeRemainingEl) {
             
-            timeRemainingEl.classList.remove('text-gray-200', OVERDUE_DURATION_COLOR_CLASS);
+            timeRemainingEl.classList.remove(IN_POP_TEXT_COLOR_CLASS, OVERDUE_DURATION_COLOR_CLASS);
             
             if (repopData.isMaxOver) {
                 // 最大超過: 経過時間（+HHh MMm）を「残り (%)」の欄に表示し、「最大超過」と追記
                 timeRemainingEl.textContent = `${repopData.timeRemaining} (最大超過)`; 
                 timeRemainingEl.classList.add(OVERDUE_DURATION_COLOR_CLASS);
             } else {
-                // 通常の In-Pop 表示 (HHh MMm (P.P%))
+                // 修正1: 通常の In-Pop 表示 (HHh MMm (P.P%)) は黒色
                 timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
-                timeRemainingEl.classList.add('text-gray-200'); // 通常は明るい灰色を維持
+                timeRemainingEl.classList.add(IN_POP_TEXT_COLOR_CLASS); 
             }
         }
         
-        // --- 4. プログレスバーの更新ロジック ---
+        // --- 4. プログレスバーの更新ロジック (変更なし) ---
         if (progressBarEl) {
             
             let barColorClass = '';
