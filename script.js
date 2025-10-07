@@ -8,17 +8,34 @@ const MOB_DATA_URL = './mob_data.json';
 // --- グローバル変数 ---
 let baseMobData = [];
 let globalMobData = [];
-let currentFilter = 'ALL';
+// 修正: フィルタをオブジェクトに変更
+let currentFilter = {
+    rank: 'ALL',
+    area: 'ALL'
+};
 let currentMobNo = null;
 let userId = null;
 // NEW: 自動更新が成功した回数を追跡するためのカウンター
 let autoUpdateSuccessCount = 0;
+
+// --- エリアデータ定義 ---
+const EXPANSION_AREAS = [
+    { key: 'ALL', name: 'ALL', color: 'bg-gray-600' },
+    { key: '黄金', name: '黄金', color: 'bg-yellow-600' },
+    { key: '暁月', name: '暁月', color: 'bg-purple-600' },
+    { key: '漆黒', name: '漆黒', color: 'bg-indigo-600' },
+    { key: '紅蓮', name: '紅蓮', color: 'bg-red-600' },
+    { key: '蒼天', name: '蒼天', color: 'bg-blue-600' },
+    { key: '新生', name: '新生', color: 'bg-green-600' },
+];
 
 // --- DOMエレメント ---
 const appEl = document.getElementById('app');
 const errorMessageContainer = document.getElementById('error-message-container');
 const mobListContainer = document.getElementById('mob-list-container');
 const rankTabs = document.getElementById('rank-tabs');
+// NEW: エリアタブコンテナの取得
+const areaTabs = document.getElementById('area-tabs'); 
 const reportModal = document.getElementById('report-modal');
 const modalMobName = document.getElementById('modal-mob-name');
 const reportDatetimeInput = document.getElementById('report-datetime');
@@ -254,7 +271,106 @@ function formatDateTime(date) {
 // --- DOM操作/イベントハンドラ ---
 
 /**
- * モブデータに基づいてHTMLカードを生成する
+ * エリアタブをレンダリングする (NEW)
+ */
+function renderAreaTabs(selectedArea) {
+    if (!areaTabs) return;
+
+    areaTabs.innerHTML = ''; 
+    const areaButtonHtml = EXPANSION_AREAS.map(area => {
+        const isActive = area.key === selectedArea;
+        const baseClass = 'area-btn flex-1 px-1 py-1 rounded-lg text-xs font-semibold shadow-md mx-0.5 transition';
+        const activeClass = isActive 
+            ? `${area.color} text-white`
+            : `bg-gray-700 hover:bg-gray-600 text-gray-300`;
+
+        return `
+            <button data-area="${area.key}" class="${baseClass} ${activeClass}">
+                ${area.name}
+            </button>
+        `;
+    }).join('');
+
+    areaTabs.innerHTML = `
+        <div class="flex w-full max-w-lg mx-auto mb-2">
+            ${areaButtonHtml}
+        </div>
+    `;
+
+    // イベントリスナーをアタッチ
+    areaTabs.querySelectorAll('.area-btn').forEach(button => {
+        button.onclick = (e) => {
+            const newArea = e.currentTarget.dataset.area;
+            // フィルタの area のみ変更
+            currentFilter.area = newArea;
+            renderAreaTabs(newArea); // タブのアクティブ状態を更新
+            renderMobList(currentFilter.rank, currentFilter.area); // モブリストを再レンダリング
+        }
+    });
+}
+
+/**
+ * エリアタブの表示/非表示をスライドでトグルする (NEW)
+ */
+function toggleAreaTabs(rank) {
+    if (!areaTabs) return;
+    
+    // 初回実行時に hidden-init を削除し、JSで表示を制御するようにする
+    if (areaTabs.classList.contains('hidden-init')) {
+        areaTabs.classList.remove('hidden-init');
+        areaTabs.classList.add('flex', 'flex-col'); // flex-colは Tailwindの space-y-2 などに対応するため
+    }
+
+    // 'ALL', 'F' が選択された場合、エリアタブを非表示にする
+    const shouldClose = (rank === 'ALL' || rank === 'F');
+
+    if (shouldClose) {
+        // 閉じる処理
+        areaTabs.style.maxHeight = '0';
+        areaTabs.classList.remove('open');
+        areaTabs.style.paddingTop = '0';
+        areaTabs.style.paddingBottom = '0';
+        areaTabs.style.borderBottom = 'none';
+    } else {
+        // 開く処理
+        areaTabs.classList.add('open');
+        
+        // 瞬時に max-height を解除し、コンテンツの最終的な高さを取得
+        areaTabs.style.maxHeight = 'none'; 
+        const targetHeight = areaTabs.scrollHeight; 
+
+        // max-heightを 0 に設定し、アニメーションの開始点に戻す
+        areaTabs.style.maxHeight = '0';
+        
+        // アニメーションを開始
+        setTimeout(() => {
+            // 安全マージンを追加 (padding-bottom + border-bottom)
+            areaTabs.style.maxHeight = (targetHeight + 10) + 'px'; 
+            areaTabs.style.paddingTop = '0.5rem'; // pt-2
+            areaTabs.style.paddingBottom = '0.5rem'; // pb-2
+            areaTabs.style.borderBottom = '1px solid #374151'; // border-gray-700
+
+            // アニメーション終了後に max-height: none に設定
+            areaTabs.addEventListener('transitionend', function handler(e) {
+                if (e.propertyName === 'max-height' && areaTabs.classList.contains('open')) {
+                    areaTabs.style.maxHeight = 'none';
+                }
+                areaTabs.removeEventListener('transitionend', handler);
+            });
+
+        }, 0); 
+
+        // ランクが変更された場合は、エリアフィルタを 'ALL' にリセット
+        if (currentFilter.area !== 'ALL') {
+            currentFilter.area = 'ALL';
+            renderAreaTabs('ALL');
+        }
+    }
+}
+
+
+/**
+ * モブデータに基づいてHTMLカードを生成する (変更なし)
  */
 function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
@@ -378,6 +494,7 @@ function createMobCard(mob) {
     return `
         <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative" 
              data-rank="${mob.Rank}" 
+             data-area="${mob.Expansion}"
              data-mobno="${mob['No.']}"
              data-lastkill="${mob.LastKillDate || ''}"
              data-minrepop="${mob['REPOP(s)']}"
@@ -419,14 +536,18 @@ function createMobCard(mob) {
 }
 
 /**
- * フィルターに基づいてモブカードリストをレンダリングする (変更なし)
+ * フィルターに基づいてモブカードリストをレンダリングする (修正: area フィルタを追加)
  */
-function renderMobList(rank) {
-    currentFilter = rank;
+function renderMobList(rank, area) {
+    // グローバルフィルタを更新
+    currentFilter.rank = rank;
+    currentFilter.area = area;
 
-    const filteredMobs = rank === 'ALL' 
-        ? globalMobData
-        : globalMobData.filter(mob => mob.Rank === rank);
+    const filteredMobs = globalMobData.filter(mob => {
+        const rankMatch = rank === 'ALL' || mob.Rank === rank;
+        const areaMatch = area === 'ALL' || mob.Expansion === area;
+        return rankMatch && areaMatch;
+    });
 
     // 3カラムレイアウト
     const columns = [
@@ -454,7 +575,7 @@ function renderMobList(rank) {
         targetColumn.appendChild(div.firstChild);
     });
 
-    // アクティブなタブをハイライト
+    // アクティブなタブをハイライト (Rank Tabs)
     if (rankTabs) {
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
@@ -465,6 +586,9 @@ function renderMobList(rank) {
             }
         });
     }
+
+    // エリアタブのアクティブ状態を更新 (Area Tabs)
+    renderAreaTabs(area);
     
     attachEventListeners();
     updateProgressBars(); // 初回レンダリング時にも進捗バーを更新
@@ -926,7 +1050,8 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
     }
 
     globalMobData = [...baseMobData];
-    renderMobList(currentFilter);
+    // フィルタを適用して表示
+    renderMobList(currentFilter.rank, currentFilter.area);
     
     // ----------------------------------------------------
     // 2. ローディングメッセージ表示制御
@@ -993,7 +1118,8 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
                 autoUpdateSuccessCount++;
             }
             
-            renderMobList(currentFilter);
+            // フィルタを適用して表示
+            renderMobList(currentFilter.rank, currentFilter.area);
         } else {
             // Failure: Always display the error message
             const errorMessage = `エラー: 共有データの取得に失敗しました。 (${data.message})`;
@@ -1179,7 +1305,7 @@ function updateProgressBars() {
 
 
 /**
- * サイトの初期化処理 (変更なし)
+ * サイトの初期化処理
  */
 function initializeApp() {
     userId = localStorage.getItem('user_uuid');
@@ -1187,13 +1313,18 @@ function initializeApp() {
         userId = crypto.randomUUID();
         localStorage.setItem('user_uuid', userId);
     }
+    
+    // エリアタブを初期レンダリング
+    renderAreaTabs(currentFilter.area);
 
     if (rankTabs) {
         rankTabs.querySelectorAll('.tab-btn').forEach(button => {
-            // 修正: 手動操作なので 'manual' フラグを付けて更新 (手動更新ロジックの再利用)
             button.onclick = (e) => {
-                renderMobList(e.currentTarget.dataset.rank);
-                // フィルタリングはローカルで行うため、ここでは通信更新は不要
+                const newRank = e.currentTarget.dataset.rank;
+                // 1. エリアタブのトグル
+                toggleAreaTabs(newRank);
+                // 2. モブリストのレンダリング (エリアフィルタはトグル関数内でリセットされるか、現在の値が維持される)
+                renderMobList(newRank, currentFilter.area);
             }
         });
     }
