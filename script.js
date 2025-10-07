@@ -42,7 +42,9 @@ function unixTimeToDate(unixtime) {
  * @returns {object} { minRepop: Date | string, maxRepop: Date, timeRemaining: string, elapsedPercent: number }
  */
 function calculateRepop(mob, lastKill) {
-    if (!lastKill) {
+    // NaNエラー対策: lastKillが有効なDateオブジェクトでない場合は即座にリターン
+    const killTime = (lastKill instanceof Date) ? lastKill : new Date(lastKill);
+    if (!lastKill || isNaN(killTime.getTime())) {
         return {
             minRepop: '未討伐',
             maxRepop: null,
@@ -50,47 +52,49 @@ function calculateRepop(mob, lastKill) {
             elapsedPercent: 0
         };
     }
-
-    const killTime = (lastKill instanceof Date) ? lastKill : new Date(lastKill);
+    
     const now = new Date();
 
-    // 最小/最大リポップ時間（ミリ秒）
+    // 最小リポップ時間（ミリ秒）
     const repopMinMs = mob['REPOP(s)'] * 1000;
-    const repopMaxMs = mob['MAX(s)'] * 1000;
+    
+    if (repopMinMs <= 0) {
+        return {
+            minRepop: 'N/A',
+            maxRepop: null,
+            timeRemaining: 'N/A',
+            elapsedPercent: 0
+        };
+    }
 
     const minRepopTime = new Date(killTime.getTime() + repopMinMs);
-    const maxRepopTime = new Date(killTime.getTime() + repopMaxMs);
 
     // 経過時間と残りの時間（ミリ秒）
     const elapsedMs = now.getTime() - killTime.getTime();
     const remainingMs = minRepopTime.getTime() - now.getTime();
     
-    // 進捗パーセント
-    // 経過率を最小ポップ時間で正規化して表示（0% - 100%）
+    // 進捗パーセント (0% - 100%に丸める)
     let normalizedElapsedPercent = Math.max(0, Math.min(100, (elapsedMs / repopMinMs) * 100));
-
 
     // 残り時間のフォーマット
     let timeRemainingStr;
     if (remainingMs <= 0) {
         timeRemainingStr = 'POP中';
-        // POP中の場合は進捗を最大時間までの実際の進捗に留める
-        const elapsedPercentFromMax = Math.max(100, Math.min(100, (elapsedMs / repopMaxMs) * 100));
-        normalizedElapsedPercent = elapsedPercentFromMax;
-
+        normalizedElapsedPercent = 100; // POP中は100%固定
     } else {
         const totalSeconds = Math.floor(remainingMs / 1000);
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
+        
         timeRemainingStr = `${hours}h ${minutes}m ${seconds}s`;
     }
 
     return {
         minRepop: minRepopTime,
-        maxRepop: maxRepopTime,
+        maxRepop: null, 
         timeRemaining: timeRemainingStr,
-        elapsedPercent: normalizedElapsedPercent // 進捗バー表示に使う
+        elapsedPercent: normalizedElapsedPercent
     };
 }
 
@@ -272,6 +276,8 @@ function renderMobList(rank) {
     
     // イベントリスナーを再設定
     attachEventListeners();
+    // 再レンダリング後、進捗バーも即時更新する
+    updateProgressBars();
 }
 
 /**
@@ -280,7 +286,9 @@ function renderMobList(rank) {
 function attachEventListeners() {
     // 討伐報告ボタン
     document.querySelectorAll('.report-btn').forEach(button => {
-        button.onclick = (e) => openReportModal(e.currentTarget.dataset.mobno);
+        if (button.dataset.mobno) {
+            button.onclick = (e) => openReportModal(e.currentTarget.dataset.mobno);
+        }
     });
     
     // マップ詳細トグルボタン
@@ -318,9 +326,7 @@ function toggleMobDetails(button) {
 
 /**
  * マップにスポーンポイントを描画する
- * @param {HTMLElement} overlayEl - マップオーバーレイ要素
- * @param {Array<object>} spawnPoints - スポーンポイントの座標配列
- * @param {string} currentMobNo - 現在表示しているモブのNo
+ * (drawSpawnPoints関数は変更なし)
  */
 function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     overlayEl.innerHTML = '';
@@ -363,6 +369,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
 }
 
 // --- モーダル/フォーム操作 ---
+// (openReportModal, closeReportModal, submitReport関数は変更なし)
 
 /**
  * 討伐報告モーダルを開く
@@ -471,22 +478,26 @@ async function fetchBaseMobData() {
     try {
         // 同階層のmob_data.jsonを相対パスで取得
         const response = await fetch(MOB_DATA_URL); 
+        
         if (!response.ok) {
-            // ステータスコードが404などの場合
-            throw new Error(`HTTP error! status: ${response.status} - Check if mob_data.json is in the same directory.`);
+            // エラー時のデバッグ情報を強化
+            console.error(`Fetch Error: Status ${response.status} for ${MOB_DATA_URL}.`);
+            console.error('Possible Causes: 1. File not found (404). 2. CORS issue (Local run).');
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
         baseMobData = await response.json();
         console.log('Base mob data fetched successfully.');
     } catch (error) {
-        console.error('Failed to fetch base mob data from JSON:', error);
-        alert('基本モブデータの取得に失敗しました。ファイルパスまたはファイル配置を確認してください。');
+        console.error('基本モブデータの取得に失敗:', error);
+        // ユーザーへのアラートは抑制し、コンソールに詳細を出力
         baseMobData = []; // データ取得失敗時は空配列で続行
     }
 }
 
 /**
  * GASから最新の討伐記録を取得し、グローバルデータを更新する
- * @param {boolean} shouldFetchBase - 初期化時など、ベースデータも取得するかどうか
+ * (fetchRecordsAndUpdate関数は変更なし)
  */
 async function fetchRecordsAndUpdate(shouldFetchBase = true) {
     if (shouldFetchBase) {
@@ -494,7 +505,6 @@ async function fetchRecordsAndUpdate(shouldFetchBase = true) {
     }
     
     if (baseMobData.length === 0) {
-        // ベースデータがない場合は処理を中断
         console.warn('Base mob data is empty, skipping record update.');
         return;
     }
@@ -506,10 +516,8 @@ async function fetchRecordsAndUpdate(shouldFetchBase = true) {
         if (data.status === 'success') {
             const records = data.records;
             
-            // ベースデータをコピーして最新の討伐日時をマージ
             globalMobData = baseMobData.map(mob => {
                 const record = records.find(r => r['No.'] === mob['No.']);
-                // マージ時に新しいオブジェクトを生成する（元のbaseMobDataを破壊しないため）
                 const newMob = { ...mob }; 
                 
                 if (record && record.POP_Date_Unix) {
@@ -522,11 +530,9 @@ async function fetchRecordsAndUpdate(shouldFetchBase = true) {
             });
             console.log('Kill records merged successfully.');
 
-            // リストを再レンダリング
             renderMobList(currentFilter);
         } else {
             console.error('GASからのデータ取得失敗:', data.message);
-            // 失敗時はベースデータのみで表示（POP_Dateは空）
             globalMobData = baseMobData;
             renderMobList(currentFilter);
         }
@@ -547,21 +553,47 @@ function updateProgressBars() {
         const repop = parseInt(card.dataset.minrepop);
         const max = parseInt(card.dataset.maxrepop);
         
-        const lastKill = lastKillStr ? new Date(lastKillStr) : null;
+        if (!lastKillStr) return; 
+
+        const lastKill = new Date(lastKillStr);
         
-        if (!lastKill) return; 
+        // **NaN対策**: Dateオブジェクトが無効な場合は処理を中断
+        if (isNaN(lastKill.getTime())) {
+            console.error(`Invalid Date format for mobNo ${card.dataset.mobno}: ${lastKillStr}`);
+            // このモブの表示を「データエラー」にするなどの処理を追加することも可能
+            return;
+        }
 
         const mobStub = {"REPOP(s)": repop, "MAX(s)": max};
         const repopData = calculateRepop(mobStub, lastKill);
-        const percent = repopData.elapsedPercent || 0; // calculateRepopで既に0-100%に正規化されている
+        const percent = repopData.elapsedPercent || 0; 
 
         // 進捗バーのCSS変数を更新
-        card.querySelector('.repop-bar-bg').style.setProperty('--progress-percent', `${percent.toFixed(1)}%`);
+        const repopBarBg = card.querySelector('.repop-bar-bg');
+        if (repopBarBg) {
+            repopBarBg.style.setProperty('--progress-percent', `${percent.toFixed(1)}%`);
+        }
         
         // 「残/経過」のテキストを正確に更新
         const timeRemainingEl = card.querySelector('.time-remaining'); 
         if (timeRemainingEl) {
             timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
+            
+            // 残り時間のクラスを更新 (色を変えるため)
+            const repopTimeEl = card.querySelector('.repop-time');
+            if (repopTimeEl) {
+                // POP中になった場合、色を変更
+                if (repopData.timeRemaining === 'POP中') {
+                    repopTimeEl.classList.remove('text-green-400', 'text-red-400');
+                    repopTimeEl.classList.add('text-amber-400', 'font-bold');
+                } else if (percent >= 90) {
+                    repopTimeEl.classList.remove('text-green-400', 'text-amber-400', 'font-bold');
+                    repopTimeEl.classList.add('text-red-400');
+                } else {
+                    repopTimeEl.classList.remove('text-amber-400', 'text-red-400', 'font-bold');
+                    repopTimeEl.classList.add('text-green-400');
+                }
+            }
         }
         
         // 「予測POP」のテキストを正確に更新
@@ -569,15 +601,25 @@ function updateProgressBars() {
         if (repopTimeEl) {
             const minPopStr = repopData.minRepop instanceof Date ? repopData.minRepop.toLocaleString() : repopData.minRepop;
             repopTimeEl.textContent = minPopStr;
-            
-            // POP中になった場合、討伐報告ボタンの状態を更新
-            const reportBtn = card.querySelector('.report-btn');
-            // 'POP中'になったが、ボタンがまだ無効化されていない場合
-            if (repopData.timeRemaining === 'POP中' && reportBtn && !reportBtn.disabled) {
+        }
+
+        // 討伐報告ボタンの状態を更新
+        const reportBtn = card.querySelector('.report-btn');
+        // 'POP中'になったが、ボタンがまだ無効化されていない場合
+        if (repopData.timeRemaining === 'POP中') {
+            if (reportBtn && !reportBtn.disabled) {
                 reportBtn.disabled = true;
                 reportBtn.textContent = 'POP中 (報告不可)';
                 reportBtn.classList.remove('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
                 reportBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
+            }
+        } else {
+             // POP中でなくなった場合
+            if (reportBtn && reportBtn.disabled) {
+                reportBtn.disabled = false;
+                reportBtn.textContent = '討伐報告';
+                reportBtn.classList.remove('bg-gray-500', 'cursor-not-allowed');
+                reportBtn.classList.add('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
             }
         }
     });
