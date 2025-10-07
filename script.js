@@ -488,8 +488,16 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     overlayEl.innerHTML = '';
     const mob = getMobByNo(parseInt(currentMobNo));
     
-    // mob.cullStatusMap は fetchRecordsAndUpdate で初期化されている
     if (!mob || !mob.cullStatusMap) return;
+
+    // --- NEW: ポイントの基本スタイル設定 ---
+    const pointDiameter = '24px'; // 視認性向上のためサイズアップ
+    const pointBorderWidth = '2px'; // 輪郭を細く
+    
+    // B1/B2のみのポイントの内色 (S/A抽選ポイントの内色と一致)
+    const B1_INTERNAL_COLOR = '#60a5fa'; // Blue-400
+    const B2_INTERNAL_COLOR = '#f87171'; // Red-400
+    // ------------------------------------
 
     // S/A抽選に関わるポイントをフィルタリング
     const cullTargetPoints = spawnPoints.filter(point => 
@@ -518,16 +526,25 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
 
         // Bランク専用ポイントは強調表示なし
         if (!isCullTarget) {
-            // B1のみ、B2のみのポイントは湧き潰し対象外なので、薄い影をつけて終了
+            // B1、B2のみのポイントの新しいスタイリング
             if (point.mob_ranks.length === 1 && (includesB1 || includesB2)) {
                 const pointEl = document.createElement('div');
-                pointEl.className = 'spawn-point';
+                pointEl.className = 'spawn-point-b-only';
                 pointEl.style.left = `${point.x}%`;
                 pointEl.style.top = `${point.y}%`;
                 pointEl.style.transform = 'translate(-50%, -50%)';
-                pointEl.style.backgroundColor = 'rgba(156, 163, 175, 0.4)'; // Gray
+                
+                // サイズと形状を設定
+                pointEl.style.width = pointDiameter;
+                pointEl.style.height = pointDiameter;
+                pointEl.style.borderRadius = '50%';
+                pointEl.style.position = 'absolute';
+                
+                // NEW: B1/B2の内色と同じ色を使用
+                pointEl.style.backgroundColor = includesB1 ? B1_INTERNAL_COLOR : B2_INTERNAL_COLOR; 
                 pointEl.style.border = 'none';
-                pointEl.style.boxShadow = '0 0 4px rgba(0, 0, 0, 0.5)'; // 薄い影
+                pointEl.style.boxShadow = '0 0 8px rgba(0, 0, 0, 0.7)'; // NEW: 濃い影を追加
+                
                 overlayEl.appendChild(pointEl);
             }
             return;
@@ -569,15 +586,23 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
         pointEl.style.top = `${point.y}%`;
         pointEl.style.transform = 'translate(-50%, -50%)';
         pointEl.style.boxShadow = 'none';
+
+        // NEW: サイズと形状を設定
+        pointEl.style.width = pointDiameter;
+        pointEl.style.height = pointDiameter;
+        pointEl.style.borderRadius = '50%';
+        pointEl.style.position = 'absolute';
+        pointEl.style.zIndex = '10'; // 湧き潰しターゲットは上に表示
+
         
         // 輪郭と内部色を設定
-        pointEl.style.border = `3px solid ${outlineColor}`;
+        pointEl.style.border = `${pointBorderWidth} solid ${outlineColor}`; // NEW: 細い輪郭
         pointEl.style.backgroundColor = internalColor;
         
         // 湧き潰し済みの表示
         if (isCulled) {
             pointEl.classList.add('culled');
-            pointEl.style.border = '3px solid white'; // 白枠
+            pointEl.style.border = `${pointBorderWidth} solid white`; // 白枠
             pointEl.style.backgroundColor = 'rgba(100, 100, 100, 0.5)'; // グレーアウト
             pointEl.style.opacity = '0.7';
             pointEl.classList.remove('hover:scale-125'); // 湧き潰し済みはホバー効果を弱める
