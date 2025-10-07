@@ -309,12 +309,13 @@ function createMobCard(mob) {
     
     // --- 修正2: 展開パネル内の表示調整 ---
     const labelColorClass = 'text-gray-400'; // ラベル色を統一
-    const valueColorClass = 'text-gray-200'; // 値の色を統一
+    // ▼ 前回討伐時刻の値もラベルと同じ色にする
+    const valueColorClass = 'text-gray-400'; 
     
     // POP開始時刻表示エリア (展開パネル内)
     const popStartTimeStr = minRepop instanceof Date ? formatDateTime(minRepop) : 'N/A';
     const popStartTimeHtml = `
-        <div class="px-4 pt-2 pb-2 pop-start-time-display hidden text-right">
+        <div class="px-4 pt-1 pb-1 pop-start-time-display hidden text-right"> 
             <p class="text-sm font-semibold ${labelColorClass}">開始時間: <span class="text-base ${valueColorClass} font-mono pop-start-time-value">${popStartTimeStr}</span></p>
         </div>
     `;
@@ -324,7 +325,7 @@ function createMobCard(mob) {
     if (lastKillDate && !isNaN(lastKillDate.getTime())) {
         const lastKillStr = formatDateTime(lastKillDate);
         lastKillHtml = `
-            <div class="px-4 pt-2 pb-4 last-kill-content text-right">
+            <div class="px-4 pt-1 pb-1 last-kill-content text-right"> 
                 <p class="text-sm font-semibold ${labelColorClass}">前回討伐: <span class="text-base ${valueColorClass} font-mono">${lastKillStr}</span></p>
             </div>
         `;
@@ -409,7 +410,7 @@ function createMobCard(mob) {
                     
                     <div class="progress-container ${remainingTimeContainerClass} flex justify-between relative z-10">
                         <span class="text-gray-300 w-24 flex-shrink-0 text-base">残り (%):</span> 
-                        <span class="${remainingTimeClass} time-remaining">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
+                        <span class="${remainingTimeClass} font-bold time-remaining">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
                     </div>
 
                     <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl" style="width: 0%; z-index: 0;"></div>
@@ -1016,7 +1017,7 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
  */
 function updateProgressBars() {
     // ------------------------------------------------------------------
-    // 進捗バーの色定義 (変更なし)
+    // 進捗バーの色定義
     // ------------------------------------------------------------------
     // 次回POP時刻の色 (暗いコーンフラワー ブルー1 相当)
     const TEXT_POP_TIME_COLOR_CLASS = 'text-blue-400'; 
@@ -1025,13 +1026,11 @@ function updateProgressBars() {
     const COLOR_GREEN_3 = 'bg-lime-500'; 
     const COLOR_YELLOW_3 = 'bg-yellow-400'; 
     const COLOR_ORANGE_3 = 'bg-orange-400'; 
-    // 最大超過時のリポップ時刻の色 (オレンジのテキスト)
     const MAX_OVER_TEXT_COLOR_CLASS = COLOR_ORANGE_3.replace('bg-', 'text-'); 
     
-    // 修正: モバイルで視認性を上げるため、暗い背景に映える明るい赤(text-red-400)に変更します
-    const OVERDUE_DURATION_COLOR_CLASS = 'text-red-400'; 
-    
-    // 修正1: POP到達時の残り時間/割合の文字色 (黒色)
+    // ▼ 最大超過時の色をより濃い赤に変更 (text-red-700)
+    const OVERDUE_DURATION_COLOR_CLASS = 'text-red-700'; 
+    // ▼ POP到達時の残り時間/割合の文字色を黒に変更 (text-gray-900)
     const IN_POP_TEXT_COLOR_CLASS = 'text-gray-900'; 
     // ------------------------------------------------------------------
     
@@ -1041,7 +1040,8 @@ function updateProgressBars() {
         const max = parseInt(card.dataset.maxrepop);
         
         // Dateオブジェクトとして取得
-        const lastKillDate = globalMobData.find(mob => mob['No.'] === parseInt(card.dataset.mobno)).LastKillDate;
+        const lastKillMob = globalMobData.find(mob => mob['No.'] === parseInt(card.dataset.mobno));
+        const lastKillDate = lastKillMob ? lastKillMob.LastKillDate : null;
         
         const mobStub = {"REPOP(s)": repop, "MAX(s)": max};
         const repopData = calculateRepop(mobStub, lastKillDate);
@@ -1067,7 +1067,7 @@ function updateProgressBars() {
             popStartTimeDisplayEl?.classList.remove('hidden'); // NEW: 展開パネル内の開始時間を表示
             
         } else {
-            // Min POP未到達: 「残り (%)」コンテナを非表示にし、プログレスバー内の「次回POP」コンテナを表示
+            // Min POP未到達: 「残り (%)」コンテナを非表示にし、プログ्रेसバー内の「次回POP」コンテナを表示
             progressContainer?.classList.add('hidden');
             repopTimeContainerEl?.classList.remove('hidden'); 
             popStartTimeDisplayEl?.classList.add('hidden'); // NEW: 展開パネル内の開始時間を非表示
@@ -1102,10 +1102,9 @@ function updateProgressBars() {
 
         // c) 展開パネル内の「前回討伐:」を更新 (LastKillDateがDateオブジェクトのため再取得)
         if (lastKillContentEl) {
-            const lastKillMob = globalMobData.find(mob => mob['No.'] === parseInt(card.dataset.mobno));
-            if (lastKillMob && lastKillMob.LastKillDate && !isNaN(lastKillMob.LastKillDate.getTime())) {
-                const lastKillStr = formatDateTime(lastKillMob.LastKillDate);
-                // 既に createMobCard で設定された HTML を使っているので、ここでは再生成のみ行う
+            if (lastKillDate && !isNaN(lastKillDate.getTime())) {
+                const lastKillStr = formatDateTime(lastKillDate);
+                // HTML生成時に valueColorClass (text-gray-400) が適用されているため、textContentの更新のみ
                 const lastKillValueEl = lastKillContentEl.querySelector('span.font-mono');
                 if(lastKillValueEl) {
                     lastKillValueEl.textContent = lastKillStr;
@@ -1117,15 +1116,16 @@ function updateProgressBars() {
         if (repopData.isPop && timeRemainingEl) {
             
             // 既存の色クラスを削除
-            timeRemainingEl.classList.remove(IN_POP_TEXT_COLOR_CLASS, OVERDUE_DURATION_COLOR_CLASS);
+            timeRemainingEl.classList.remove(IN_POP_TEXT_COLOR_CLASS, OVERDUE_DURATION_COLOR_CLASS, 'font-bold'); 
             
             if (repopData.isMaxOver) {
                 // 最大超過: 経過時間（+HHh MMm）を「残り (%)」の欄に表示し、「最大超過」と追記
                 timeRemainingEl.textContent = `${repopData.timeRemaining} (最大超過)`; 
-                // 修正: 明るい赤色クラスを適用
-                timeRemainingEl.classList.add(OVERDUE_DURATION_COLOR_CLASS); 
+                // ▼ 濃い赤色と太字を適用
+                timeRemainingEl.classList.add(OVERDUE_DURATION_COLOR_CLASS, 'font-bold'); 
             } else {
                 // 通常の In-Pop 表示 (HHh MMm (P.P%)) は黒色
+                // ▼ 黒色を適用 (font-boldはHTMLに設定済み)
                 timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
                 timeRemainingEl.classList.add(IN_POP_TEXT_COLOR_CLASS); 
             }
