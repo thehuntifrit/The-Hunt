@@ -1,72 +1,67 @@
-/* style.css (修正後) */
-
 /* カスタムスタイル */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        
+        
 body {
-    font-family: 'Inter', sans-serif;
-    background-color: #1a1a2e; /* ダークモード背景 */
-}
-
-/* ヘッダーの調整: z-indexを高くし、タブコンテナがアニメーション後にボーダーを正しく表示できるように padding-bottom を調整 */
-header {
-    padding-bottom: 0.5rem !important; /* Tailwindの p-4 が上書きされるのを防ぐため */
+    font-family: 'Inter', sans-serif;
+    background-color: #1a1a2e; /* ダークモード背景 */
 }
 
 /* テキストに藍色のアウトライン/シャドウを適用 */
 .text-outline {
-    text-shadow: 
-        1px 1px 0 #1f2937,  /* 藍色系シャドウ */
-        -1px 1px 0 #1f2937, 
-        1px -1px 0 #1f2937, 
-        -1px -1px 0 #1f2937;
+    text-shadow: 
+        1px 1px 0 #1f2937,  /* 藍色系シャドウ */
+        -1px 1px 0 #1f2937, 
+        1px -1px 0 #1f2937, 
+        -1px -1px 0 #1f2937;
 }
 
 /* ランクアイコンの基本スタイル */
 .rank-icon {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
-    transition: transform 0.1s ease-in-out;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+    transition: transform 0.1s ease-in-out;
 }
 
 /* マップ描画用のスタイル */
 .map-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none; /* オーバーレイを通して画像を触れるように */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* オーバーレイを通して画像を触れるように */
 }
 
-/* スポーンポイントのスタイル（JavaScriptでサイズが制御されます） */
+/* スポーンポイントのスタイル */
 .spawn-point {
+    position: absolute;
+    width: 8px; /* 座標点を半分サイズに縮小 */
+    height: 8px; /* 座標点を半分サイズに縮小 */
+    border-radius: 50%;
+    background-color: #ef4444; /* red-500 */
+    z-index: 10;
+    cursor: pointer;
     pointer-events: auto; /* クリック可能にする */
-    transition: all 0.2s ease-in-out; /* ホバーアニメーションの速度を設定 */
+    transition: all 0.2s ease-in-out;
 }
 
-/* S/A抽選対象ポイントのホバーアニメーション */
 .spawn-point:hover {
-    /* JavaScript側で設定された translate(-50%, -50%) を上書きしないよう !important を維持 */
-    transform: translate(-50%, -50%) scale(1.5) !important; 
-    opacity: 1 !important;
+    transform: translate(-50%, -50%) scale(2.0) !important;
+    opacity: 1 !important;
 }
+
+.spawn-point[data-important="true"] {
+    width: 10px;
+    height: 10px;
+}
+
+/* 進捗バー関連のスタイルは削除しました */
 
 /* モーダル背景 */
 .modal-overlay {
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 /* カードの展開パネルのアニメーション */
 .expandable-panel {
-    transition: max-height 0.3s ease-in-out;
-}
-
-/* NEW: エリアタブの初期非表示とアニメーション準備 */
-.area-panel {
-    /* overflow-hidden と max-height-0 は Tailwindで定義済み */
-}
-
-/* NEW: 初期状態で display: none を適用し、JSで hidden-init を削除してからトグルを開始 */
-.hidden-init {
-    display: none;
+    transition: max-height 0.3s ease-in-out;
 }
