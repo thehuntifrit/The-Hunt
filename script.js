@@ -2,7 +2,7 @@
 // ユーザーから提供された正確なURLを設定 (大文字小文字を区別)
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwxgb5APRPyTwEM3ZQtgG3WWdxrFqVZAgkvq4Qfh_FggBU2p21yYDkWIdp-jMfBtG92Gg/exec';
 // 静的モブデータ (mob_data.json) のURL (同階層のファイルを参照)
-const MOB_DATA_URL = './mob_data.json'; 
+const MOB_DATA_URL = './mob_data.json';
 
 
 // --- グローバル変数 ---
@@ -12,7 +12,7 @@ let currentFilter = 'ALL';
 let currentMobNo = null;
 let userId = null;
 // NEW: 自動更新が成功した回数を追跡するためのカウンター
-let autoUpdateSuccessCount = 0; 
+let autoUpdateSuccessCount = 0;
 
 // --- DOMエレメント ---
 const appEl = document.getElementById('app');
@@ -33,7 +33,7 @@ const reportStatusEl = document.getElementById('report-status');
  * UNIX秒 (サーバー時間) を Dateオブジェクトに変換する
  */
 function unixTimeToDate(unixtime) {
-    return new Date(unixtime * 1000); 
+    return new Date(unixtime * 1000);
 }
 
 /**
@@ -54,7 +54,7 @@ function formatDurationPart(ms, prefix = '') {
     const formattedMinutes = String(minutes).padStart(2, '0');
     
     // ご要望の「hの後の少しの余白」をここに追加: "03h 01m"
-    return `${prefix}${formattedHours}h ${formattedMinutes}m`; 
+    return `${prefix}${formattedHours}h ${formattedMinutes}m`;
 }
 
 
@@ -89,7 +89,7 @@ const processText = (text) => {
  */
 function toJstAdjustedIsoString(localIsoString) {
     const localDate = new Date(localIsoString);
-    const jstOffsetMinutes = -540; 
+    const jstOffsetMinutes = -540;
     const localOffsetMinutes = localDate.getTimezoneOffset();
     const offsetDifference = localOffsetMinutes - jstOffsetMinutes;
     
@@ -350,8 +350,7 @@ function createMobCard(mob) {
                 <div class="relative">
                     <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="w-full h-auto rounded-lg shadow-md map-image" data-area="${mob.Area}" onerror="this.onerror=null; this.src='https://placehold.co/800x400/334155/f8fafc?text=${mob.Area}+Map+Placeholder';">
                     <div class="absolute inset-0 map-overlay" data-area="${mob.Area}">
-                        <!-- スポーンポイントはJSで動的に配置 -->
-                    </div>
+                        </div>
                 </div>
             </div>
         `;
@@ -387,48 +386,36 @@ function createMobCard(mob) {
              data-minrepop="${mob['REPOP(s)']}"
              data-maxrepop="${mob['MAX(s)']}">
 
-            <!-- 固定情報ヘッダー -->
             <div class="p-3 fixed-content toggle-handler cursor-pointer">
                 <div class="flex justify-between items-start mb-3">
-                    <!-- ランクアイコン + モンスター名/エリア名 (Flex) -->
                     <div class="flex items-center space-x-3">
-                        <!-- ランクアイコン -->
                         <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-sm w-7 h-7 flex items-center justify-center rounded-lg shadow-lg">
                             ${mob.Rank}
                         </div>
-                        <!-- モンスター名とエリア名 -->
                         <div class="min-w-0 flex-1"> 
                             <h2 class="text-lg font-bold text-outline text-yellow-200 leading-tight truncate">${mob.Name}</h2>
                             <p class="text-xs text-gray-400 leading-tight truncate">${mob.Area}</p>
                         </div>
                     </div>
                     
-                    <!-- 討伐報告ボタン (常に有効なボタンを表示) -->
                     ${reportBtnHtml}
                 </div>
 
-                <!-- リポップ情報エリア - プログレスバーの基盤 -->
                 <div class="mt-2 bg-gray-700 p-2 rounded-xl text-xs flex flex-col space-y-1 relative overflow-hidden shadow-inner">
-                    <!-- 1. 次回POP (Min POPまでの時間またはMax POP時刻) -->
-                    <!-- POP未達時のみ表示される行 -->
                     <div class="flex justify-between items-baseline relative z-10 repop-time-container">
                         <span class="text-gray-300 w-24 flex-shrink-0 text-base">次回POP:</span>
                         <span class="repop-time text-base ${minPopColorClass} font-bold font-mono">${minPopStr}</span>
                     </div>
                     
-                    <!-- 2. 残り (%) - POPウィンドウ内でのみ表示 (この行は常にprogress-container内にある) -->
                     <div class="progress-container ${remainingTimeContainerClass} flex justify-between relative z-10">
                         <span class="text-gray-300 w-24 flex-shrink-0 text-base">残り (%):</span> 
-                        <!-- 修正1: Remaining Timeのクラスを更新 -->
                         <span class="${remainingTimeClass} time-remaining">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
                     </div>
 
-                    <!-- プログレスバー要素 (動的に幅と色が変わる) -->
                     <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl" style="width: 0%; z-index: 0;"></div>
                 </div>
             </div>
 
-            <!-- 展開パネル (前回討伐、抽選条件、マップ詳細) -->
             ${expandablePanel}
         </div>
     `;
@@ -571,7 +558,7 @@ function toggleMobDetails(card) {
 }
 
 /**
- * マップにスポーンポイントを描画する (前回の修正を維持)
+ * マップにスポーンポイントを描画する (サイズとUXを修正)
  */
 function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     overlayEl.innerHTML = '';
@@ -580,10 +567,11 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     if (!mob || !mob.cullStatusMap) return;
 
     // --- NEW/UPDATED: ポイントの基本スタイル設定 ---
-    const POINT_DIAMETER_SA_INNER = '10px'; // S/A地点の内円（基準）
-    const POINT_DIAMETER_SA_OUTER = '16px'; // S/A地点の外円
-    const POINT_DIAMETER_B_ONLY = '12px';   // B1/B2のみの地点（S/A内円より少し大きい）
-    const POINT_BORDER_WIDTH = '2px'; 
+    // ▼ サイズを修正
+    const POINT_DIAMETER_SA_INNER = '8px';  // S/A地点の内円
+    const POINT_DIAMETER_SA_OUTER = '12px'; // S/A地点の外円（コンテナ）
+    const POINT_DIAMETER_B_ONLY = '10px';   // B1/B2のみの地点
+    const POINT_BORDER_WIDTH = '2px';
     
     const B1_INTERNAL_COLOR = '#60a5fa'; // Blue-400
     const B2_INTERNAL_COLOR = '#f87171'; // Red-400
@@ -610,18 +598,18 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
 
         const isCullTarget = isS_A_Point; 
 
-        // Bランク専用ポイントは強調表示なし (単一円 12px)
+        // Bランク専用ポイントは強調表示なし (単一円 10px)
         if (!isCullTarget) {
             if (point.mob_ranks.length === 1 && (includesB1 || includesB2)) {
                 
                 // --- Bランク専用ポイントの描画 ---
                 const pointEl = document.createElement('div');
-                pointEl.className = 'spawn-point-b-only';
+                pointEl.className = 'spawn-point-b-only select-none'; // select-noneを追加
                 pointEl.style.left = `${point.x}%`;
                 pointEl.style.top = `${point.y}%`;
                 pointEl.style.transform = 'translate(-50%, -50%)';
                 
-                // 修正後のサイズ: 12px
+                // 修正後のサイズ: 10px
                 pointEl.style.width = POINT_DIAMETER_B_ONLY;
                 pointEl.style.height = POINT_DIAMETER_B_ONLY;
                 pointEl.style.borderRadius = '50%';
@@ -630,8 +618,17 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
                 
                 pointEl.style.backgroundColor = includesB1 ? B1_INTERNAL_COLOR : B2_INTERNAL_COLOR; 
                 pointEl.style.border = 'none';
-                pointEl.style.boxShadow = '0 0 4px rgba(0, 0, 0, 0.5)'; 
-                
+                pointEl.style.boxShadow = '0 0 4px rgba(0, 0, 0, 0.5)';
+                // ▼ カーソルと点滅防止のスタイルを追加
+                pointEl.style.cursor = 'pointer';
+                pointEl.style.userSelect = 'none';
+
+                pointEl.onclick = (e) => {
+                    e.stopPropagation(); 
+                    // Bランク専用ポイントもクリックで湧き潰し状態をトグルする想定
+                    // (S/Aポイントではないため、通常はトグルしないが、ここではクリック防止のため関数を割り当てる)
+                };
+
                 overlayEl.appendChild(pointEl);
             }
             return;
@@ -662,9 +659,10 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
             internalColor = '#34d399'; // Emerald-400
         }
 
-        // 要素作成 (外円コンテナ: 16px)
+        // 要素作成 (外円コンテナ: 12px)
         const pointEl = document.createElement('div');
-        pointEl.className = `spawn-point hover:scale-150 transition-transform duration-100 cursor-pointer flex items-center justify-center`; 
+        // select-noneを追加
+        pointEl.className = `spawn-point hover:scale-150 transition-transform duration-100 cursor-pointer flex items-center justify-center select-none`; 
         pointEl.setAttribute('data-id', point.id);
         pointEl.setAttribute('data-isculltarget', 'true');
 
@@ -673,18 +671,22 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
         pointEl.style.transform = 'translate(-50%, -50%)';
         pointEl.style.boxShadow = 'none';
         
-        // S/A地点の外円サイズを適用: 16px
+        // S/A地点の外円サイズを適用: 12px
         pointEl.style.width = POINT_DIAMETER_SA_OUTER; 
         pointEl.style.height = POINT_DIAMETER_SA_OUTER;
         pointEl.style.borderRadius = '50%';
         pointEl.style.position = 'absolute';
         pointEl.style.zIndex = '10'; 
 
+        // ▼ カーソルと点滅防止のスタイルを追加
+        pointEl.style.cursor = 'pointer';
+        pointEl.style.userSelect = 'none';
+
         // 輪郭 (外円) の設定
         pointEl.style.border = `${POINT_BORDER_WIDTH} solid ${outlineColor}`;
         pointEl.style.backgroundColor = 'transparent'; // 外円内部は透明
 
-        // 内円の作成と追加 (内円: 10px)
+        // 内円の作成と追加 (内円: 8px)
         const innerCircle = document.createElement('div');
         innerCircle.style.width = POINT_DIAMETER_SA_INNER;
         innerCircle.style.height = POINT_DIAMETER_SA_INNER;
@@ -1020,9 +1022,9 @@ function updateProgressBars() {
     const TEXT_POP_TIME_COLOR_CLASS = 'text-blue-400'; 
     
     // 進捗バーの色
-    const COLOR_GREEN_3 = 'bg-lime-500';       
-    const COLOR_YELLOW_3 = 'bg-yellow-400';    
-    const COLOR_ORANGE_3 = 'bg-orange-400';    
+    const COLOR_GREEN_3 = 'bg-lime-500'; 
+    const COLOR_YELLOW_3 = 'bg-yellow-400'; 
+    const COLOR_ORANGE_3 = 'bg-orange-400'; 
     // 最大超過時のリポップ時刻の色 (オレンジのテキスト)
     const MAX_OVER_TEXT_COLOR_CLASS = COLOR_ORANGE_3.replace('bg-', 'text-'); 
     
@@ -1102,12 +1104,12 @@ function updateProgressBars() {
         if (lastKillContentEl) {
             const lastKillMob = globalMobData.find(mob => mob['No.'] === parseInt(card.dataset.mobno));
             if (lastKillMob && lastKillMob.LastKillDate && !isNaN(lastKillMob.LastKillDate.getTime())) {
-                 const lastKillStr = formatDateTime(lastKillMob.LastKillDate);
-                 // 既に createMobCard で設定された HTML を使っているので、ここでは再生成のみ行う
-                 const lastKillValueEl = lastKillContentEl.querySelector('span.font-mono');
-                 if(lastKillValueEl) {
-                     lastKillValueEl.textContent = lastKillStr;
-                 }
+                const lastKillStr = formatDateTime(lastKillMob.LastKillDate);
+                // 既に createMobCard で設定された HTML を使っているので、ここでは再生成のみ行う
+                const lastKillValueEl = lastKillContentEl.querySelector('span.font-mono');
+                if(lastKillValueEl) {
+                    lastKillValueEl.textContent = lastKillStr;
+                }
             }
         }
         
