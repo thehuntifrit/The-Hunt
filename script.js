@@ -37,6 +37,8 @@ function unixTimeToDate(unixtime) {
  */
 function calculateRepop(mob, lastKill) {
     const killTime = (lastKill instanceof Date) ? lastKill : new Date(lastKill);
+    
+    // lastKillが有効な日時でない場合
     if (!lastKill || isNaN(killTime.getTime())) {
         return {
             minRepop: '未討伐',
@@ -86,18 +88,21 @@ function calculateRepop(mob, lastKill) {
 }
 
 /**
- * モブデータに基づいてHTMLカードを生成する (レイアウト修正済み)
+ * モブデータに基づいてHTMLカードを生成する (POP_DateとConditionが分離された新しいロジック)
  */
 function createMobCard(mob) {
-    const { minRepop, timeRemaining, elapsedPercent } = calculateRepop(mob, mob.POP_Date);
+    // 最終討伐日時が存在しない場合、討伐日時の代わりに '不明' を使用 (計算は実行されない)
+    const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
+    const { minRepop, timeRemaining, elapsedPercent } = calculateRepop(mob, lastKillDate);
 
     // 進捗バーの色定義
     let colorStart = '#10b981'; // green-500
     let colorEnd = '#34d399';   // green-400
     let timeStatusClass = 'text-green-400';
     let minPopStr = '未討伐';
+    let lastKillStr = mob.LastKillDate || '不明'; // 討伐日時がない場合は「不明」
 
-    if (mob.POP_Date) {
+    if (lastKillDate) {
         minPopStr = minRepop instanceof Date ? minRepop.toLocaleString() : minRepop;
 
         if (timeRemaining === 'POP中') {
@@ -133,8 +138,11 @@ function createMobCard(mob) {
 
     // 討伐報告ボタンの初期状態
     const isPop = timeRemaining === 'POP中';
-    const reportBtnClass = isPop ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn';
-    const reportBtnText = isPop ? 'POP中 (報告不可)' : '討伐報告';
+    // lastKillDateがない場合は常に報告可能
+    const canReport = !isPop || !lastKillDate; 
+    
+    const reportBtnClass = !canReport ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn';
+    const reportBtnText = !canReport ? 'POP中 (報告不可)' : '討伐報告';
     
     // マップ詳細表示トグルボタン
     const toggleMapBtn = mob.Map ? `
@@ -143,19 +151,14 @@ function createMobCard(mob) {
         </button>
     ` : '';
     
-    // --- 修正箇所: 抽選条件のテキストを安全に抽出 ---
-    let conditionText = '';
-    // POP_Dateが日付形式でない、かつ空でない場合は抽選条件と見なす
-    if (mob.POP_Date && mob.POP_Date.includes(':') === false) {
-        conditionText = mob.POP_Date;
-    }
-    // --- 修正箇所 終わり ---
+    // mob.Conditionに抽選条件（文字列）が格納されている
+    const conditionText = mob.Condition || 'なし'; 
 
     return `
         <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden transform hover:scale-[1.01] transition duration-300 relative" 
              data-rank="${mob.Rank}" 
              data-mobno="${mob['No.']}"
-             data-lastkill="${mob.POP_Date && mob.POP_Date.includes(':') ? mob.POP_Date : ''}"
+             data-lastkill="${mob.LastKillDate || ''}"
              data-minrepop="${mob['REPOP(s)']}"
              data-maxrepop="${mob['MAX(s)']}">
 
@@ -173,7 +176,7 @@ function createMobCard(mob) {
                     
                     <button class="${reportBtnClass} text-xs text-white px-3 py-1 rounded-full shadow-md transition" 
                             data-mobno="${mob['No.']}" 
-                            ${isPop ? 'disabled' : ''}>
+                            ${!canReport ? 'disabled' : ''}>
                         ${reportBtnText}
                     </button>
                 </div>
@@ -184,7 +187,7 @@ function createMobCard(mob) {
                 <div class="mt-3 bg-gray-700 p-2 rounded-lg text-xs flex flex-col space-y-1">
                     <div class="flex justify-between">
                         <span class="text-gray-300">最終討伐:</span> 
-                        <span class="last-kill-date text-white">${mob.POP_Date && mob.POP_Date.includes(':') ? mob.POP_Date : 'N/A'}</span>
+                        <span class="last-kill-date text-white">${lastKillStr}</span>
                     </div>
                     <div class="flex justify-between items-baseline">
                         <span class="text-gray-300">予測POP:</span>
@@ -197,7 +200,7 @@ function createMobCard(mob) {
                 </div>
 
                 <div class="mt-3 flex justify-between items-center min-h-[1.5rem]"> 
-                    ${conditionText ? `<p class="text-xs text-gray-400">${conditionText}</p>` : '<span></span>'}
+                    <p class="text-xs text-gray-400">${conditionText}</p>
                     ${toggleMapBtn}
                 </div>
             </div>
@@ -276,7 +279,7 @@ function renderMobList(rank) {
 function attachEventListeners() {
     // 討伐報告ボタン
     document.querySelectorAll('.report-btn').forEach(button => {
-        if (button.dataset.mobno) {
+        if (button.dataset.mobno && !button.disabled) {
             button.onclick = (e) => openReportModal(e.currentTarget.dataset.mobno);
         }
     });
@@ -432,6 +435,7 @@ async function submitReport() {
         if (result.status === 'success') {
             reportStatusEl.textContent = `報告成功！ (${result.message})`;
             reportStatusEl.classList.add('text-green-500');
+            // データ取得と更新
             await fetchRecordsAndUpdate(false); 
             setTimeout(closeReportModal, 1500); 
 
@@ -480,7 +484,8 @@ async function fetchBaseMobData() {
 }
 
 /**
- * GASから最新の討伐記録を取得し、グローバルデータを更新する
+ * GASから最新の討伐記録を取得し、グローバルデータを更新する 
+ * (修正: POP_DateをLastKillDateに変更し、Conditionをそのまま利用)
  */
 async function fetchRecordsAndUpdate(shouldFetchBase = true) {
     if (shouldFetchBase) {
@@ -504,16 +509,17 @@ async function fetchRecordsAndUpdate(shouldFetchBase = true) {
                 const record = records.find(r => r['No.'] === mob['No.']);
                 const newMob = { ...mob }; 
                 
+                // 討伐日時を記録する新しいフィールド 'LastKillDate' を設定
                 if (record && record.POP_Date_Unix) {
-                    newMob.POP_Date = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
+                    newMob.LastKillDate = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
                 } else {
-                    // mob_data.jsonのPOP_Dateに抽選条件が文字列で入っている場合、それを維持
-                    if (typeof mob.POP_Date === 'string' && mob.POP_Date.includes(':') === false) {
-                        newMob.POP_Date = mob.POP_Date; 
-                    } else {
-                        newMob.POP_Date = ''; 
-                    }
+                    // GASから日時が取得できなかった場合 (POP_Dateは削除済み)
+                    newMob.LastKillDate = ''; 
                 }
+                
+                // mob_data.jsonのConditionフィールドをそのまま使用
+                newMob.Condition = mob.Condition || '';
+
                 return newMob;
             });
             console.log('Kill records merged successfully.');
@@ -540,13 +546,13 @@ function updateProgressBars() {
         const repop = parseInt(card.dataset.minrepop);
         const max = parseInt(card.dataset.maxrepop);
         
-        // 討伐日時がない、または抽選条件の文字列が入っている場合は更新しない
-        if (!lastKillStr || lastKillStr.includes(':') === false) return; 
+        // 討伐日時がない場合は更新しない (lastKillStrには日時のみ入るようになった)
+        if (!lastKillStr) return; 
 
         const lastKill = new Date(lastKillStr);
         
         if (isNaN(lastKill.getTime())) {
-            console.error(`Invalid Date format for mobNo ${card.dataset.mobno}: ${lastKillStr}`);
+            // LastKillDateが '不明' などの場合は計算をスキップ
             return;
         }
 
@@ -595,6 +601,7 @@ function updateProgressBars() {
                 reportBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
             }
         } else {
+            // lastKillStrが空の場合は常に報告可能
             if (reportBtn) {
                 reportBtn.disabled = false;
                 reportBtn.textContent = '討伐報告';
