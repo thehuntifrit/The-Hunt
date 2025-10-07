@@ -315,7 +315,7 @@ function createMobCard(mob) {
     // POP開始時刻表示エリア (展開パネル内)
     const popStartTimeStr = minRepop instanceof Date ? formatDateTime(minRepop) : 'N/A';
     const popStartTimeHtml = `
-        <div class="px-4 pt-1 pb-1 pop-start-time-display hidden text-right"> 
+        <div class="px-4 pt-1 pb-0 pop-start-time-display hidden text-right"> 
             <p class="text-sm font-semibold ${labelColorClass}">開始時間: <span class="text-base ${valueColorClass} font-mono pop-start-time-value">${popStartTimeStr}</span></p>
         </div>
     `;
@@ -325,7 +325,7 @@ function createMobCard(mob) {
     if (lastKillDate && !isNaN(lastKillDate.getTime())) {
         const lastKillStr = formatDateTime(lastKillDate);
         lastKillHtml = `
-            <div class="px-4 pt-1 pb-1 last-kill-content text-right"> 
+            <div class="px-4 pt-0 pb-4 last-kill-content text-right"> 
                 <p class="text-sm font-semibold ${labelColorClass}">前回討伐: <span class="text-base ${valueColorClass} font-mono">${lastKillStr}</span></p>
             </div>
         `;
@@ -333,11 +333,10 @@ function createMobCard(mob) {
 
     // 抽選条件
     let conditionHtml = '';
+    // 前回討伐の行に pb-4 を設定したため、ここでは上側の pt-1 のみを維持
     if (mob.Condition) {
-        const conditionBottomPadding = mob.Map ? 'pb-1' : 'pb-4';
-        
         conditionHtml = `
-            <div class="px-4 pt-1 ${conditionBottomPadding} condition-content">
+            <div class="px-4 pt-1 pb-4 condition-content">
                 <p class="text-sm text-white leading-snug">${processText(mob.Condition)}</p>
             </div>
         `;
@@ -1067,7 +1066,7 @@ function updateProgressBars() {
             popStartTimeDisplayEl?.classList.remove('hidden'); // NEW: 展開パネル内の開始時間を表示
             
         } else {
-            // Min POP未到達: 「残り (%)」コンテナを非表示にし、プログ्रेसバー内の「次回POP」コンテナを表示
+            // Min POP未到達: 「残り (%)」コンテナを非表示にし、プログレスバー内の「次回POP」コンテナを表示
             progressContainer?.classList.add('hidden');
             repopTimeContainerEl?.classList.remove('hidden'); 
             popStartTimeDisplayEl?.classList.add('hidden'); // NEW: 展開パネル内の開始時間を非表示
