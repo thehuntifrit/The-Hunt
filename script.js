@@ -224,8 +224,8 @@ function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
     const { minRepop, timeRemaining, elapsedPercent, isPop, isMaxOver, isUnknown } = calculateRepop(mob, lastKillDate);
 
-    // 修正点3: 次回POPの初期色をご要望の青色に設定
-    let minPopColorClass = 'text-blue-400 font-mono'; 
+    // 次回POPの初期色をご要望の青色に設定
+    const minPopColorClass = 'text-blue-400 font-mono'; 
     
     let minPopStr;
     if (minRepop instanceof Date) {
@@ -234,7 +234,7 @@ function createMobCard(mob) {
         minPopStr = 'N/A';
     }
 
-    // 修正点1: 「残り (%)」の時間部分のフォントを「次回POP」と同じにする
+    // 「残り (%)」の時間部分のフォントを「次回POP」と同じにする
     const remainingTimeClass = 'font-mono text-gray-200'; 
 
     // ランクアイコンの背景色
@@ -268,14 +268,20 @@ function createMobCard(mob) {
         </button>
     `;
     
+    // NEW: POP開始時刻表示エリア (展開パネル内)
+    // POP開始時間になったら前回討伐時間の上に「開始時間:」とし次回POP時間の時間を添えて表示
+    const popStartTimeHtml = `
+        <div class="px-4 pt-2 pop-start-time-display hidden">
+            <p class="text-sm font-semibold text-green-400">開始時間: <span class="text-base text-white font-mono pop-start-time-value">--:--:--</span></p>
+        </div>
+    `;
+
     // 前回討伐
-    // 修正点1: 前回討伐の下の余白を増やし (pb-6)、右揃えにする (text-right)
     const lastKillBottomPaddingClass = 'pb-6'; 
     
     let lastKillHtml = '';
     if (lastKillDate && !isNaN(lastKillDate.getTime())) {
         lastKillHtml = `
-            <!-- 修正: text-rightをこのコンテナに追加して右寄せにする -->
             <div class="px-4 pt-2 ${lastKillBottomPaddingClass} last-kill-content text-right">
                 <p class="text-sm font-semibold text-gray-400">前回討伐: <span class="text-base text-gray-200 font-mono">${lastKillDate.toLocaleString()}</span></p>
             </div>
@@ -285,7 +291,6 @@ function createMobCard(mob) {
     // 抽選条件
     let conditionHtml = '';
     if (mob.Condition) {
-        // Conditionがある場合は、Mapがない場合でも適切なボトムパディング (pb-4) を持つ
         const conditionBottomPadding = mob.Map ? 'pb-1' : 'pb-4';
         
         conditionHtml = `
@@ -310,26 +315,23 @@ function createMobCard(mob) {
         `;
     }
     
-    // 修正点: Sモブに関しては、抽選条件 -> 前回討伐 -> マップ の順序に変更
+    // Sモブに関しては、抽選条件 -> POP開始時間 -> 前回討伐 -> マップ の順序
     let panelContent = '';
     if (mob.Rank === 'S') {
-        panelContent = conditionHtml + lastKillHtml + mapDetailsHtml;
+        panelContent = conditionHtml + popStartTimeHtml + lastKillHtml + mapDetailsHtml;
     } else {
-        // A, B, FATEは前回討伐 -> 抽選条件/マップ
-        panelContent = lastKillHtml + conditionHtml + mapDetailsHtml;
+        // A, B, FATEは POP開始時間 -> 前回討伐 -> 抽選条件/マップ の順序
+        panelContent = popStartTimeHtml + lastKillHtml + conditionHtml + mapDetailsHtml;
     }
     
     let expandablePanel = '';
     if (panelContent.trim()) {
         expandablePanel = `
-            <!-- 修正点7: このパネル自体に上マージンはないため、コンテンツのpt-2で上部隙間を調整する -->
             <div class="expandable-panel overflow-hidden transition-all duration-300 ease-in-out max-h-0">
                 ${panelContent}
             </div>
         `;
     }
-
-    // --- カード全体 ---
 
     // Min POP未到達時は 'hidden' クラスを付与して「残り (%)」の行を非表示にする
     const remainingTimeContainerClass = !isPop || isUnknown ? 'hidden' : '';
@@ -353,7 +355,6 @@ function createMobCard(mob) {
                             ${mob.Rank}
                         </div>
                         <!-- モンスター名とエリア名 -->
-                        <!-- 修正点3: flexアイテムとして親divに min-w-0 を、h2に truncate を適用し、長文でも1行に収まるようにする -->
                         <div class="min-w-0 flex-1"> 
                             <h2 class="text-lg font-bold text-outline text-yellow-200 leading-tight truncate">${mob.Name}</h2>
                             <p class="text-xs text-gray-400 leading-tight truncate">${mob.Area}</p>
@@ -364,19 +365,18 @@ function createMobCard(mob) {
                     ${reportBtnHtml}
                 </div>
 
-                <!-- NEW: リポップ情報エリア - プログレスバーの基盤 -->
+                <!-- リポップ情報エリア - プログレスバーの基盤 -->
                 <div class="mt-2 bg-gray-700 p-2 rounded-xl text-xs flex flex-col space-y-1 relative overflow-hidden shadow-inner">
                     <!-- 1. 次回POP (Min POPまでの時間またはMax POP時刻) -->
-                    <div class="flex justify-between items-baseline relative z-10">
+                    <!-- NEW: POP未達時のみ表示される行 -->
+                    <div class="flex justify-between items-baseline relative z-10 repop-time-container">
                         <span class="text-gray-300 w-24 flex-shrink-0 text-base">次回POP:</span>
-                        <!-- 修正点1: font-mono クラスを最初から付与 -->
                         <span class="repop-time text-base ${minPopColorClass} font-bold font-mono">${minPopStr}</span>
                     </div>
                     
-                    <!-- 2. 残り (%) - POPウィンドウ内でのみ表示 -->
+                    <!-- 2. 残り (%) - POPウィンドウ内でのみ表示 (この行は常にprogress-container内にある) -->
                     <div class="progress-container ${remainingTimeContainerClass} flex justify-between relative z-10">
                         <span class="text-gray-300 w-24 flex-shrink-0 text-base">残り (%):</span> 
-                        <!-- 修正点1: timeRemainingにも font-mono クラスを付与 -->
                         <span class="${remainingTimeClass} time-remaining text-base">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
                     </div>
 
@@ -579,7 +579,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
                 pointEl.style.borderRadius = '50%';
                 pointEl.style.position = 'absolute';
                 
-                pointEl.style.backgroundColor = includesB1 ? B1_INTERNAL_COLOR : B2_INTERNAL_COLOR; // B2の色を適用
+                pointEl.style.backgroundColor = includesB1 ? B1_INTERNAL_COLOR : B1_INTERNAL_COLOR : B2_INTERNAL_COLOR; // B2の色を適用
                 pointEl.style.border = 'none';
                 pointEl.style.boxShadow = '0 0 8px rgba(0, 0, 0, 0.7)'; 
                 
@@ -984,43 +984,55 @@ function updateProgressBars() {
         const percent = repopData.elapsedPercent || 0; 
 
         // テキスト要素とコンテナの取得
+        const repopTimeContainerEl = card.querySelector('.repop-time-container');
         const repopTimeEl = card.querySelector('.repop-time');
         const timeRemainingEl = card.querySelector('.time-remaining'); 
         const progressContainer = card.querySelector('.progress-container');
         const progressBarEl = card.querySelector('.progress-bar');
         
+        // NEW: 展開パネル内の要素
+        const popStartTimeDisplayEl = card.querySelector('.pop-start-time-display');
+        const popStartTimeValueEl = card.querySelector('.pop-start-time-value');
+
         // --- 1. POPウィンドウ到達/超過判定とコンテナ表示切り替え ---
         if (repopData.isPop) {
+            // POP中: 「残り (%)」コンテナを表示し、プログレスバー内の「次回POP」コンテナを非表示
             progressContainer?.classList.remove('hidden');
+            repopTimeContainerEl?.classList.add('hidden'); 
+            popStartTimeDisplayEl?.classList.remove('hidden'); // NEW: 展開パネル内の開始時間を表示
+            
         } else {
+            // Min POP未到達: 「残り (%)」コンテナを非表示にし、プログレスバー内の「次回POP」コンテナを表示
             progressContainer?.classList.add('hidden');
+            repopTimeContainerEl?.classList.remove('hidden'); 
+            popStartTimeDisplayEl?.classList.add('hidden'); // NEW: 展開パネル内の開始時間を非表示
         }
 
 
-        // --- 2. リポップ予測時刻の更新 (repopTimeEl) ---
+        // --- 2. リポップ予測時刻の更新 (repopTimeEl / popStartTimeValueEl) ---
+        let displayTimeStr;
+        if (repopData.isUnknown) {
+             displayTimeStr = 'N/A';
+        } else {
+             // Min Repop Time（予測POP開始時刻）を常に取得
+             displayTimeStr = repopData.minRepop instanceof Date ? repopData.minRepop.toLocaleString() : 'N/A';
+        }
+
+        // a) 進捗バー内の「次回POP」を更新 (POP未達時のみ表示)
         if (repopTimeEl) {
-            let displayTimeStr;
+            // 時刻は常に Min Repop Timeの絶対時刻を表示
+            repopTimeEl.textContent = displayTimeStr; 
             
-            if (repopData.isUnknown) {
-                 displayTimeStr = 'N/A';
-            } else {
-                 // 【修正ポイント】
-                 // ユーザーの要望に基づき、isPop や isMaxOver の状態にかかわらず、
-                 // Min Repop Time（予測POP開始時刻）を常に表示します。
-                 displayTimeStr = repopData.minRepop instanceof Date ? repopData.minRepop.toLocaleString() : 'N/A';
-            }
-            repopTimeEl.textContent = displayTimeStr;
-            
-            // 色の更新
-            repopTimeEl.classList.remove('text-green-400', 'text-amber-300', 'text-red-400', MAX_OVER_TEXT_COLOR_CLASS, 'font-bold'); 
-            
-            if (repopData.isMaxOver) {
-                // 最大超過時: 明るいオレンジのテキスト
-                repopTimeEl.classList.add(MAX_OVER_TEXT_COLOR_CLASS, 'font-bold'); 
-            } else {
-                // POPウィンドウ内およびMin POP未到達: 新しい青
-                repopTimeEl.classList.add(TEXT_POP_TIME_COLOR_CLASS, 'font-bold'); 
-            }
+            // POP未達時は青色を維持
+            repopTimeEl.classList.remove(MAX_OVER_TEXT_COLOR_CLASS); 
+            repopTimeEl.classList.add(TEXT_POP_TIME_COLOR_CLASS, 'font-bold'); 
+        }
+        
+        // b) 展開パネル内の「開始時間:」を更新 (POP達時のみ表示)
+        if (popStartTimeValueEl) {
+            // 時分秒のみを表示
+            const timeOnly = repopData.minRepop instanceof Date ? repopData.minRepop.toLocaleTimeString('ja-JP', { hour12: false }) : 'N/A';
+            popStartTimeValueEl.textContent = timeOnly;
         }
         
         // --- 3. 残り時間（進捗率）の更新 (timeRemainingEl) ---
@@ -1029,14 +1041,11 @@ function updateProgressBars() {
             timeRemainingEl.classList.remove('text-gray-200', OVERDUE_DURATION_COLOR_CLASS);
             
             if (repopData.isMaxOver) {
-                // 【修正ポイント】
                 // 最大超過: 経過時間（+HHh MMm）を「残り (%)」の欄に表示し、「最大超過」と追記
-                // repopData.timeRemainingには "+HHh MMm" の文字列が入っている
                 timeRemainingEl.textContent = `${repopData.timeRemaining} (最大超過)`; 
                 timeRemainingEl.classList.add(OVERDUE_DURATION_COLOR_CLASS);
             } else {
                 // 通常の In-Pop 表示 (HHh MMm (P.P%))
-                // repopData.timeRemainingには Max POPまでの残り時間が入っている
                 timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
                 timeRemainingEl.classList.add('text-gray-200'); // 通常は明るい灰色を維持
             }
