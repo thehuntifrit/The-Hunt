@@ -54,22 +54,7 @@ body {
     height: 10px;
 }
 
-/* 進捗バーのスタイル */
-.repop-bar-bg {
-    background-color: #374151; /* gray-700 */
-}
-
-.repop-bar-bg::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: var(--progress-percent);
-    background: linear-gradient(to right, var(--progress-color-start), var(--progress-color-end));
-    transition: width 60s linear; /* 60秒かけて滑らかに伸びる */
-    border-radius: 0 2px 2px 0;
-}
+/* 進捗バー関連のスタイルは削除しました */
 
 /* モーダル背景 */
 .modal-overlay {
