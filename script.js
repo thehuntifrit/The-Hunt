@@ -151,7 +151,7 @@ function createMobCard(mob) {
     
     const reportBtnClass = !canReport ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn';
     
-    // --- 修正箇所 1: 討伐報告ボタンの文字サイズと形状 ---
+    // 討伐報告ボタンの文字サイズと形状
     let reportBtnContent;
     if (!canReport) {
         // POP中の場合、text-xsで2行表示
@@ -168,7 +168,6 @@ function createMobCard(mob) {
             ${reportBtnContent}
         </button>
     `;
-    // ----------------------------------------------------
     
     // --- 展開パネルの内容 ---
     
@@ -177,21 +176,18 @@ function createMobCard(mob) {
     if (mob.Condition) {
         const displayCondition = processText(mob.Condition);
         
-        // --- 修正箇所 2: 抽選条件の文字サイズをtext-smに拡大 ---
+        // 抽選条件の文字サイズをtext-smに拡大
         conditionHtml = `
             <div class="pt-4 px-4 pb-4">
                 <p class="text-sm text-gray-400 leading-snug">${displayCondition}</p>
             </div>
         `;
-        // ----------------------------------------------------
     }
     
     // マップ詳細パネル: マップデータがない場合は空文字列を返す
     let mapDetailsHtml = '';
     if (mob.Map) {
-        // --- 修正箇所 3: 区切り線 (border-t) を削除し、上余白を調整 ---
-        // 抽選条件がある場合 (mob.Conditionがtrue) は、pt-1 で条件の pb-4 の次にわずかな余白を設ける
-        // 抽選条件がない場合 (mob.Conditionがfalse) は、pt-4 でカード上部との間隔を空ける
+        // 区切り線 (border-t) を削除し、上余白を調整
         const mapTopPaddingClass = mob.Condition ? 'pt-1' : 'pt-4'; 
         
         mapDetailsHtml = `
@@ -203,7 +199,6 @@ function createMobCard(mob) {
                 </div>
             </div>
         `;
-        // ----------------------------------------------------
     }
     
     // 抽選条件とマップ詳細のいずれかがある場合のみ展開パネルを生成
@@ -379,58 +374,38 @@ function toggleMobDetails(card) {
         // 開く処理
         card.classList.add('open');
         
-        // スポーンポイントの描画 (これは画像を待たずに実行可能)
+        // 1. スポーンポイントの描画 (高さを変えずに実行)
         const mapOverlay = panel.querySelector('.map-overlay');
         if (mapOverlay && mapOverlay.children.length === 0 && mob.spawn_points) {
             drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
         }
-
-        const mapImage = panel.querySelector('.map-image');
-
-        // 1. まず、パネルを一時的に全開にしてコンテンツの高さを測る
-        // この時点では画像はロードされていない可能性が高い
+        
+        // 2. 瞬時に max-height を解除し、コンテンツの最終的な高さを取得
+        // ここで画像がまだロードされていなくても、content+mapの領域を予測
         panel.style.maxHeight = 'none'; 
-        const initialHeight = panel.scrollHeight; 
+        const targetHeight = panel.scrollHeight; 
 
-        // 2. max-heightをリセットしてアニメーションの準備
+        // 3. max-heightを 0 に設定し、アニメーションの開始点に戻す
+        // これでブラウザに再計算を強制する
         panel.style.maxHeight = '0';
         
-        // 3. 0ms遅延で、取得した高さにセットし、アニメーションを開始
-        // ここで一旦、画像ロード前の高さでアニメーションを開始させる
+        // 4. 取得した高さに安全マージンを加えてアニメーションを開始
+        // 0ms遅延で次のレンダリングフレームを待つ
         setTimeout(() => {
-            panel.style.maxHeight = (initialHeight + 50) + 'px';
-        }, 0);
+            // 安全マージン 100px を追加 (画像が切れないための保険)
+            panel.style.maxHeight = (targetHeight + 100) + 'px';
 
-        // 4. 画像があれば、ロードイベントを待ち、高さを再調整する
-        if (mapImage) {
-            
-            // 高さを再測定して設定する関数 (最終的な高さを確定させる)
-            const finalizeHeight = () => {
-                // 高さを再測定するために一時的に 'none' に解除
-                panel.style.maxHeight = 'none'; 
-                
-                // 0ms遅延で最終の高さを再設定することで、DOMの変更が反映されるのを待つ
-                setTimeout(() => {
-                     // 最終の正確な高さを設定 (安全マージン+50px)
-                     panel.style.maxHeight = (panel.scrollHeight + 50) + 'px';
-                }, 0);
-            };
+            // 5. アニメーション終了後に max-height: none に設定し、
+            //    ロードの遅れやウィンドウサイズ変更によるコンテンツ切れを完全に防ぐ
+            panel.addEventListener('transitionend', function handler(e) {
+                // 確実に max-height のアニメーションの終了のみを捕捉
+                if (e.propertyName === 'max-height' && card.classList.contains('open')) {
+                    panel.style.maxHeight = 'none';
+                }
+                panel.removeEventListener('transitionend', handler);
+            });
 
-            // 画像が既にロードされているかチェック
-            if (mapImage.complete && mapImage.naturalHeight !== 0) {
-                // ロード済みなら、即座に最終の高さを設定
-                setTimeout(finalizeHeight, 10);
-            } else {
-                // ロード待ちの場合
-                const handleImageLoad = () => {
-                    finalizeHeight();
-                    mapImage.removeEventListener('load', handleImageLoad); 
-                    mapImage.removeEventListener('error', handleImageLoad); 
-                };
-                mapImage.addEventListener('load', handleImageLoad);
-                mapImage.addEventListener('error', handleImageLoad); 
-            }
-        }
+        }, 0); 
     }
 }
 
@@ -717,18 +692,14 @@ function updateProgressBars() {
         if (repopData.timeRemaining === 'POP中') {
             if (reportBtn) {
                 reportBtn.disabled = true;
-                // --- 修正箇所 1-b: ボタンコンテンツの更新 ---
                 reportBtn.innerHTML = `<span class="text-xs font-bold">POP中</span><span class="text-xs leading-none">(報告不可)</span>`;
-                // ----------------------------------------
                 reportBtn.classList.remove('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
                 reportBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
             }
         } else {
             if (reportBtn) {
                 reportBtn.disabled = false;
-                // --- 修正箇所 1-b: ボタンコンテンツの更新 ---
                 reportBtn.innerHTML = `<span class="text-xs font-bold">討伐</span><span class="text-xs font-bold">報告</span>`;
-                // ----------------------------------------
                 reportBtn.classList.remove('bg-gray-500', 'cursor-not-allowed');
                 reportBtn.classList.add('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
             }
