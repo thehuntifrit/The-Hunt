@@ -42,26 +42,15 @@ const processText = (text) => {
 
 /**
  * ローカル日時 (ISO形式) をJSTとしてGASに渡すためのISO文字列に変換する
- * @param {string} localIsoString YYYY-MM-DDTHH:MM 形式のローカル日時
- * @returns {string} JSTとして解釈させるためのUTCベースのISO文字列
  */
 function toJstAdjustedIsoString(localIsoString) {
-    // 例: "2023-10-07T18:00"
     const localDate = new Date(localIsoString);
-
-    // Dateオブジェクトはローカルタイムとして解析される。
-    // その後、toISOString() を使うとUTCに変換されるが、
-    // ここではその変換を意図的に阻止し、この時刻がJSTであることを示すために、
-    // ローカル時刻からgetTimezoneOffset()分だけずらしてUTCとして扱う。
-    // JSTのタイムゾーンオフセットは -540分。
     const jstOffsetMinutes = -540; 
-    const localOffsetMinutes = localDate.getTimezoneOffset(); // ローカルPCのオフセット
+    const localOffsetMinutes = localDate.getTimezoneOffset();
     const offsetDifference = localOffsetMinutes - jstOffsetMinutes;
     
-    // localDateの時刻を、JST（+9時間）として扱うために調整する
     const adjustedDate = new Date(localDate.getTime() + offsetDifference * 60000);
     
-    // TとZ（UTCであることを示す）を付けて返す
     return adjustedDate.toISOString();
 }
 
@@ -105,7 +94,7 @@ function calculateRepop(mob, lastKill) {
     let isPop = false;
     if (remainingMs <= 0) {
         isPop = true;
-        // 欠けている機能: POP後の経過時間を表示する
+        // POP後の経過時間を表示
         const popElapsedMs = now.getTime() - minRepopTime.getTime();
         const totalSeconds = Math.floor(popElapsedMs / 1000);
         
@@ -140,9 +129,7 @@ function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
     const { minRepop, timeRemaining, elapsedPercent, isPop } = calculateRepop(mob, lastKillDate);
 
-    // 進捗バーの色定義
-    let colorStart = '#10b981'; 
-    let colorEnd = '#34d399';   
+    // 進捗バーの色定義 (バー自体は削除したが、色のクラスは残す)
     let timeStatusClass = 'text-green-400';
     let minPopStr = '未討伐';
     let lastKillStr = mob.LastKillDate || '不明'; 
@@ -151,12 +138,8 @@ function createMobCard(mob) {
         minPopStr = minRepop instanceof Date ? minRepop.toLocaleString() : minRepop;
 
         if (isPop) {
-            colorStart = '#f59e0b'; 
-            colorEnd = '#fbbf24';   
             timeStatusClass = 'text-amber-400 font-bold';
         } else if (elapsedPercent >= 90) {
-            colorStart = '#ef4444'; 
-            colorEnd = '#f87171';   
             timeStatusClass = 'text-red-400';
         }
     }
@@ -205,25 +188,46 @@ function createMobCard(mob) {
     
     // --- 展開パネルの内容 ---
     
-    // 抽選条件の処理
+    // 3. 前回討伐履歴パネルの生成 (常に展開パネル用として生成)
+    let lastKillHistoryHtml = '';
+    if (lastKillDate) {
+        // Sランクは抽選条件と同じ文字サイズ(text-sm)、その他は text-base
+        const sizeClass = mob.Rank === 'S' ? 'text-sm' : 'text-base';
+        // A/FATEは pt-0 (展開直下), Sランクは抽選条件後に pt-0 (抽選条件からの余白はconditionHtmlで調整)
+        // 下余白は pb-3 (12px) で「1行分」の余白を確保
+        lastKillHistoryHtml = `
+            <div class="last-kill-history pt-0 pb-3 px-4">
+                <div class="flex justify-between items-baseline">
+                    <span class="text-gray-300 w-24 flex-shrink-0 ${sizeClass}">前回討伐:</span> 
+                    <span class="last-kill-date ${sizeClass} text-white">${lastKillStr}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // 1. 抽選条件パネル
     let conditionHtml = '';
     if (mob.Condition) {
         const displayCondition = processText(mob.Condition);
         
-        // 抽選条件の文字サイズをtext-smに拡大
+        // Sランクは先頭に来るため pt-3 (固定コンテンツ p-3 との境界)
+        // Sランクは前回討伐が後に続くため pb-1 (4px) で余白を狭く
+        const conditionTopPadding = mob.Rank === 'S' ? 'pt-3' : 'pt-4'; 
+        const conditionBottomPadding = mob.Rank === 'S' ? 'pb-1' : 'pb-4';
+        
         conditionHtml = `
-            <div class="pt-4 px-4 pb-4 condition-content">
+            <div class="${conditionTopPadding} px-4 ${conditionBottomPadding} condition-content">
                 <p class="text-sm text-gray-400 leading-snug">${displayCondition}</p>
             </div>
         `;
     }
     
-    // マップ詳細パネル: マップデータがない場合は空文字列を返す
+    // 2. マップ詳細パネル
     let mapDetailsHtml = '';
     if (mob.Map) {
-        // 区切り線 (border-t) を削除し、上余白を調整
-        // 不必要なコードを削減: mapTopPaddingClass の条件分岐は pt-4 に統一し、conditionContent の pb-4 で余白を確保
-        const mapTopPaddingClass = mob.Condition ? 'pt-1' : 'pt-4'; 
+        // マップの上余白は、前の要素が存在しない場合は pt-4, 存在する場合は pt-1 (狭く)
+        const precedingContentExists = conditionHtml || lastKillHistoryHtml;
+        const mapTopPaddingClass = precedingContentExists ? 'pt-1' : 'pt-4';
         
         mapDetailsHtml = `
             <div class="mob-details ${mapTopPaddingClass} px-4 pb-4 map-content">
@@ -236,13 +240,23 @@ function createMobCard(mob) {
         `;
     }
     
-    // 抽選条件とマップ詳細のいずれかがある場合のみ展開パネルを生成
+    // --- 展開パネルのコンテンツの順序決定 ---
+    let panelContent = '';
+    
+    if (mob.Rank === 'S') {
+        // Sランク: [抽選条件] -> [前回討伐] -> [マップ]
+        panelContent = conditionHtml + lastKillHistoryHtml + mapDetailsHtml;
+    } else {
+        // A, B, FATE: [前回討伐] -> [抽選条件 (通常なし)] -> [マップ]
+        panelContent = lastKillHistoryHtml + conditionHtml + mapDetailsHtml;
+    }
+    
+    // 抽選条件、マップ、または前回討伐データがある場合のみパネルを生成
     let expandablePanel = '';
-    if (conditionHtml || mapDetailsHtml) {
+    if (panelContent.trim()) {
         expandablePanel = `
             <div class="expandable-panel overflow-hidden transition-all duration-300 ease-in-out max-h-0">
-                ${conditionHtml}
-                ${mapDetailsHtml}
+                ${panelContent}
             </div>
         `;
     }
@@ -257,13 +271,7 @@ function createMobCard(mob) {
              data-minrepop="${mob['REPOP(s)']}"
              data-maxrepop="${mob['MAX(s)']}">
 
-            <div class="repop-bar-bg absolute top-0 left-0 h-1 w-full"
-                 style="--progress-percent: ${elapsedPercent.toFixed(1)}%; 
-                        --progress-color-start: ${colorStart}; 
-                        --progress-color-end: ${colorEnd};">
-            </div>
-
-            <div class="p-4 fixed-content toggle-handler cursor-pointer">
+            <div class="p-3 fixed-content toggle-handler cursor-pointer">
                 <div class="flex justify-between items-start mb-3">
                     <div class="flex items-center space-x-3">
                         <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-sm w-7 h-7 flex items-center justify-center rounded-lg shadow-lg">
@@ -278,7 +286,7 @@ function createMobCard(mob) {
                     ${reportBtnHtml}
                 </div>
 
-                <div class="mt-3 bg-gray-700 p-2 rounded-lg text-xs flex flex-col space-y-1">
+                <div class="mt-2 bg-gray-700 p-2 rounded-lg text-xs flex flex-col space-y-1">
                     
                     <div class="flex justify-between items-baseline">
                         <span class="text-gray-300 w-24 flex-shrink-0 text-base">予測POP:</span>
@@ -289,12 +297,8 @@ function createMobCard(mob) {
                         <span class="text-gray-300 w-24 flex-shrink-0 text-base">残り (%):</span> 
                         <span class="font-mono time-remaining text-base text-white">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
                     </div>
-
-                    <div class="flex justify-between">
-                        <span class="text-gray-300 w-24 flex-shrink-0">前回討伐:</span> 
-                        <span class="last-kill-date text-white">${lastKillStr}</span>
+                    
                     </div>
-                </div>
             </div>
 
             ${expandablePanel}
@@ -321,6 +325,7 @@ function renderMobList(rank) {
         ? globalMobData
         : globalMobData.filter(mob => mob.Rank === rank);
 
+    // index.htmlでgap-4, space-y-4に変更済み
     const columns = [
         document.getElementById('column-1'),
         document.getElementById('column-2'),
@@ -416,7 +421,6 @@ function toggleMobDetails(card) {
         }
         
         // 2. 瞬時に max-height を解除し、コンテンツの最終的な高さを取得
-        // ここで画像がまだロードされていなくても、content+mapの領域を予測
         panel.style.maxHeight = 'none'; 
         const targetHeight = panel.scrollHeight; 
 
@@ -430,7 +434,6 @@ function toggleMobDetails(card) {
 
             // 5. アニメーション終了後に max-height: none に設定し、コンテンツ切れを完全に防ぐ
             panel.addEventListener('transitionend', function handler(e) {
-                // 不具合の修正: 確実に max-height のアニメーション、かつカードが開いている時のみリセット
                 if (e.propertyName === 'max-height' && card.classList.contains('open')) {
                     panel.style.maxHeight = 'none';
                 }
@@ -696,12 +699,8 @@ function updateProgressBars() {
         const repopData = calculateRepop(mobStub, lastKill);
         const percent = repopData.elapsedPercent || 0; 
 
-        // 進捗バーのCSS変数を更新
-        const repopBarBg = card.querySelector('.repop-bar-bg');
-        if (repopBarBg) {
-            repopBarBg.style.setProperty('--progress-percent', `${percent.toFixed(1)}%`);
-        }
-        
+        // 進捗バーのCSS変数の更新ロジックを削除しました
+
         // テキスト要素の更新
         const repopTimeEl = card.querySelector('.repop-time');
         const timeRemainingEl = card.querySelector('.time-remaining'); 
