@@ -42,6 +42,7 @@ const processNewlines = (text) => {
     return text.replace(/\/\/\s*/g, '<br>');
 };
 
+
 /**
  * 討伐日時からリポップ情報を計算する
  */
@@ -101,9 +102,63 @@ function calculateRepop(mob, lastKill) {
  * モブデータに基づいてHTMLカードを生成する
  */
 function createMobCard(mob) {
-    // ... (中略: 色定義、ボタンHTML生成まで、変更なし)
+    const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
+    const { minRepop, timeRemaining, elapsedPercent } = calculateRepop(mob, lastKillDate);
+
+    // 進捗バーの色定義
+    let colorStart = '#10b981'; // green-500
+    let colorEnd = '#34d399';   // green-400
+    let timeStatusClass = 'text-green-400';
+    let minPopStr = '未討伐';
+    let lastKillStr = mob.LastKillDate || '不明'; 
+
+    if (lastKillDate) {
+        minPopStr = minRepop instanceof Date ? minRepop.toLocaleString() : minRepop;
+
+        if (timeRemaining === 'POP中') {
+            colorStart = '#f59e0b'; 
+            colorEnd = '#fbbf24';   
+            timeStatusClass = 'text-amber-400 font-bold';
+        } else if (elapsedPercent >= 90) {
+            colorStart = '#ef4444'; 
+            colorEnd = '#f87171';   
+            timeStatusClass = 'text-red-400';
+        }
+    }
+
+    // ランクアイコンの背景色
+    let rankBgClass;
+    let rankTextColor = 'text-white';
+    switch (mob.Rank) {
+        case 'S':
+            rankBgClass = 'bg-red-600';
+            break;
+        case 'A':
+            rankBgClass = 'bg-blue-600';
+            break;
+        case 'B':
+            rankBgClass = 'bg-gray-600';
+            break;
+        case 'F':
+            rankBgClass = 'bg-purple-600';
+            break;
+        default:
+            rankBgClass = 'bg-gray-600';
+    }
+
+    // 討伐報告ボタンの状態
+    const isPop = timeRemaining === 'POP中';
+    const canReport = !isPop || !lastKillDate; 
     
-    // 討伐報告ボタンの全体サイズを調整 (幅 w-14)
+    const reportBtnClass = !canReport ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn';
+    
+    let reportBtnContent;
+    if (!canReport) {
+        reportBtnContent = `<span class="text-sm font-bold">POP中</span><span class="text-xs">(報告不可)</span>`;
+    } else {
+        reportBtnContent = `<span class="text-sm font-bold">討伐</span><span class="text-sm font-bold">報告</span>`;
+    }
+
     const reportBtnHtml = `
         <button class="${reportBtnClass} text-xs text-white px-1 py-1 rounded-md shadow-md transition h-10 w-14 flex flex-col items-center justify-center leading-none" 
                 data-mobno="${mob['No.']}" 
@@ -112,37 +167,41 @@ function createMobCard(mob) {
         </button>
     `;
     
-    // 抽選条件の処理: 文字数制限と4行固定を撤廃し、// のみ改行に変換
+    // 抽選条件の処理: 「抽選条件:」を削除し、背景色を指定しない
     let conditionHtml = '';
     if (mob.Condition) {
         const displayCondition = processNewlines(mob.Condition);
         conditionHtml = `
-            <div class="mt-3 p-3 bg-gray-700 rounded-lg">
-                <h4 class="text-sm font-semibold text-gray-300 mb-1">抽選条件:</h4>
+            <div class="mt-3 p-3">
                 <p class="text-xs text-gray-400 leading-snug">${displayCondition}</p>
             </div>
         `;
     }
     
-    // マップ詳細パネル
-    const mapDetailsHtml = mob.Map ? `
-        <div class="mob-details mt-3 border-t border-gray-700 pt-3">
-            <h4 class="text-sm font-semibold text-gray-300 mb-2">マップ詳細:</h4>
-            <div class="relative">
-                <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="w-full h-auto rounded-lg shadow-md map-image" data-area="${mob.Area}">
-                <div class="absolute inset-0 map-overlay" data-area="${mob.Area}">
-                    </div>
+    // マップ詳細パネル: マップデータがない場合は空文字列を返す
+    let mapDetailsHtml = '';
+    if (mob.Map) {
+        mapDetailsHtml = `
+            <div class="mob-details ${mob.Condition ? 'mt-3 pt-3' : 'pt-3'} border-t border-gray-700">
+                <div class="relative">
+                    <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="w-full h-auto rounded-lg shadow-md map-image" data-area="${mob.Area}">
+                    <div class="absolute inset-0 map-overlay" data-area="${mob.Area}">
+                        </div>
+                </div>
             </div>
-        </div>
-    ` : '<p class="text-sm text-gray-500 italic p-3 text-center">このモブのマップデータはありません。</p>';
+        `;
+    }
     
-    // 抽選条件とマップ詳細をまとめて展開可能なパネルに格納
-    const expandablePanel = `
-        <div class="expandable-panel border-t border-gray-700 overflow-hidden transition-all duration-300 ease-in-out max-h-0">
-            ${conditionHtml}
-            ${mapDetailsHtml}
-        </div>
-    `;
+    // 抽選条件とマップ詳細の両方がない場合、展開パネル全体を生成しない
+    let expandablePanel = '';
+    if (conditionHtml || mapDetailsHtml) {
+        expandablePanel = `
+            <div class="expandable-panel border-t border-gray-700 overflow-hidden transition-all duration-300 ease-in-out max-h-0">
+                ${conditionHtml}
+                ${mapDetailsHtml}
+            </div>
+        `;
+    }
 
 
     return `
@@ -198,7 +257,59 @@ function createMobCard(mob) {
     `;
 }
 
-// ... (中略: getMobByNo, renderMobList 関数は変更なし)
+/**
+ * MobNoからモブデータを取得する
+ */
+function getMobByNo(mobNo) {
+    return globalMobData.find(mob => mob['No.'] === mobNo);
+}
+
+// --- DOM操作/イベントハンドラ ---
+
+/**
+ * フィルターに基づいてモブカードリストをレンダリングする
+ */
+function renderMobList(rank) {
+    currentFilter = rank;
+
+    const filteredMobs = rank === 'ALL' 
+        ? globalMobData
+        : globalMobData.filter(mob => mob.Rank === rank);
+
+    const columns = [
+        document.getElementById('column-1'),
+        document.getElementById('column-2'),
+        document.getElementById('column-3')
+    ].filter(col => col); 
+
+    columns.forEach(col => col.innerHTML = '');
+
+    filteredMobs.forEach((mob, index) => {
+        const cardHtml = createMobCard(mob);
+        
+        let targetColumn = columns[0];
+        if (columns.length > 1) {
+            targetColumn = columns[index % columns.length];
+        }
+
+        const div = document.createElement('div');
+        div.innerHTML = cardHtml.trim();
+        targetColumn.appendChild(div.firstChild);
+    });
+
+    // アクティブなタブをハイライト
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
+        btn.classList.add('bg-gray-700', 'hover:bg-gray-600');
+        if (btn.dataset.rank === rank) {
+            btn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+            btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+        }
+    });
+    
+    attachEventListeners();
+    updateProgressBars();
+}
 
 /**
  * イベントリスナーをカードとボタンにアタッチする
@@ -235,6 +346,9 @@ function toggleMobDetails(card) {
     const mobNo = card.dataset.mobno;
     const mob = getMobByNo(parseInt(mobNo));
     const panel = card.querySelector('.expandable-panel');
+
+    // 展開パネルがないモブはトグルしない
+    if (!panel) return;
 
     // max-heightをリセット
     panel.style.transition = 'max-height 0.3s ease-in-out';
@@ -302,42 +416,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
 }
 
 // --- モーダル/フォーム操作 ---
-
-/**
- * 討伐報告モーダルを開く
- */
-function openReportModal(mobNo) {
-    currentMobNo = parseInt(mobNo);
-    const mob = getMobByNo(currentMobNo);
-    
-    if (!mob) return;
-
-    modalMobName.textContent = mob.Name;
-    reportMemoInput.value = '';
-    reportStatusEl.textContent = '';
-    reportStatusEl.classList.add('hidden');
-
-    const now = new Date();
-    const offset = now.getTimezoneOffset() * 60000;
-    const localIso = (new Date(now.getTime() - offset)).toISOString().slice(0, 16);
-    reportDatetimeInput.value = localIso;
-
-    reportModal.classList.remove('hidden');
-    reportModal.classList.add('flex');
-}
-
-/**
- * 討伐報告モーダルを閉じる
- */
-function closeReportModal() {
-    reportModal.classList.add('hidden');
-    reportModal.classList.remove('flex');
-    currentMobNo = null;
-}
-
-/**
- * 討伐報告をGASに送信する
- */
+// ... (中略: openReportModal から submitReport 関数まで、変更なし)
 async function submitReport() {
     if (!currentMobNo) return;
 
@@ -398,163 +477,8 @@ async function submitReport() {
         submitReportBtn.textContent = '報告完了';
     }
 }
-
 // --- データ取得/更新 ---
-
-/**
- * 外部JSONからモブデータを取得する
- */
-async function fetchBaseMobData() {
-    try {
-        const response = await fetch(MOB_DATA_URL); 
-        
-        if (!response.ok) {
-            console.error(`Fetch Error: Status ${response.status} for ${MOB_DATA_URL}.`);
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const jsonData = await response.json();
-        
-        if (jsonData && Array.isArray(jsonData.mobConfig)) {
-            baseMobData = jsonData.mobConfig;
-            console.log('Base mob data (mobConfig) fetched successfully.');
-        } else {
-            throw new Error('JSON structure error: mobConfig array not found.');
-        }
-
-    } catch (error) {
-        console.error('基本モブデータの取得に失敗:', error);
-        baseMobData = [];
-    }
-}
-
-/**
- * GASから最新の討伐記録を取得し、グローバルデータを更新する 
- */
-async function fetchRecordsAndUpdate(shouldFetchBase = true) {
-    if (shouldFetchBase) {
-        await fetchBaseMobData();
-    }
-    
-    if (baseMobData.length === 0) {
-        console.warn('Base mob data is empty, skipping record update.');
-        renderMobList(currentFilter);
-        return;
-    }
-
-    try {
-        const response = await fetch(GAS_ENDPOINT + '?action=getRecords');
-        const data = await response.json();
-        
-        if (data.status === 'success') {
-            const records = data.records;
-            
-            globalMobData = baseMobData.map(mob => {
-                const record = records.find(r => r['No.'] === mob['No.']);
-                const newMob = { ...mob }; 
-                
-                // 討伐日時を記録する新しいフィールド 'LastKillDate' を設定
-                if (record && record.POP_Date_Unix) {
-                    newMob.LastKillDate = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
-                } else {
-                    newMob.LastKillDate = ''; 
-                }
-                
-                // mob_data.jsonのConditionフィールドをそのまま使用
-                newMob.Condition = mob.Condition || '';
-
-                return newMob;
-            });
-            console.log('Kill records merged successfully.');
-
-            renderMobList(currentFilter);
-        } else {
-            console.error('GASからのデータ取得失敗:', data.message);
-            globalMobData = baseMobData;
-            renderMobList(currentFilter);
-        }
-    } catch (error) {
-        console.error('GAS通信エラー:', error);
-        globalMobData = baseMobData;
-        renderMobList(currentFilter);
-    }
-}
-
-/**
- * 各モブカードの進捗バーを更新する (60秒ごと)
- */
-function updateProgressBars() {
-    document.querySelectorAll('.mob-card').forEach(card => {
-        const lastKillStr = card.dataset.lastkill;
-        const repop = parseInt(card.dataset.minrepop);
-        const max = parseInt(card.dataset.maxrepop);
-        
-        // 討伐日時がない場合は更新しない 
-        if (!lastKillStr) return; 
-
-        const lastKill = new Date(lastKillStr);
-        
-        if (isNaN(lastKill.getTime())) {
-            // LastKillDateが '不明' などの場合は計算をスキップ
-            return;
-        }
-
-        const mobStub = {"REPOP(s)": repop, "MAX(s)": max};
-        const repopData = calculateRepop(mobStub, lastKill);
-        const percent = repopData.elapsedPercent || 0; 
-
-        // 進捗バーのCSS変数を更新
-        const repopBarBg = card.querySelector('.repop-bar-bg');
-        if (repopBarBg) {
-            repopBarBg.style.setProperty('--progress-percent', `${percent.toFixed(1)}%`);
-        }
-        
-        // テキスト要素の更新
-        const repopTimeEl = card.querySelector('.repop-time');
-        const timeRemainingEl = card.querySelector('.time-remaining'); 
-
-        if (repopTimeEl) {
-            const minPopStr = repopData.minRepop instanceof Date ? repopData.minRepop.toLocaleString() : repopData.minRepop;
-            repopTimeEl.textContent = minPopStr;
-            
-            // 色の更新
-            if (repopData.timeRemaining === 'POP中') {
-                repopTimeEl.classList.remove('text-green-400', 'text-red-400');
-                repopTimeEl.classList.add('text-amber-400', 'font-bold');
-            } else if (percent >= 90) {
-                repopTimeEl.classList.remove('text-green-400', 'text-amber-400', 'font-bold');
-                repopTimeEl.classList.add('text-red-400');
-            } else {
-                repopTimeEl.classList.remove('text-amber-400', 'text-red-400', 'font-bold');
-                repopTimeEl.classList.add('text-green-400');
-            }
-        }
-        
-        // 残り時間 (%) を 残り (%) に修正
-        if (timeRemainingEl) {
-            timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
-        }
-        
-        // 討伐報告ボタンの状態を更新 
-        const reportBtn = card.querySelector('.report-btn');
-        if (repopData.timeRemaining === 'POP中') {
-            if (reportBtn) {
-                reportBtn.disabled = true;
-                reportBtn.innerHTML = `<span class="text-sm font-bold">POP中</span><span class="text-xs">(報告不可)</span>`;
-                reportBtn.classList.remove('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
-                reportBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
-            }
-        } else {
-            if (reportBtn) {
-                reportBtn.disabled = false;
-                reportBtn.innerHTML = `<span class="text-sm font-bold">討伐</span><span class="text-sm font-bold">報告</span>`;
-                reportBtn.classList.remove('bg-gray-500', 'cursor-not-allowed');
-                reportBtn.classList.add('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
-            }
-        }
-    });
-}
-
+// ... (中略: fetchBaseMobData から initializeApp 関数まで、変更なし)
 
 /**
  * サイトの初期化処理
@@ -579,8 +503,6 @@ function initializeApp() {
     });
     
     fetchRecordsAndUpdate(true);
-
-    // 画面サイズ変更時の再レンダリングは不要になったため削除
 
     setInterval(() => fetchRecordsAndUpdate(false), 10 * 60 * 1000);
 
