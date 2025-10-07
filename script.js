@@ -1,6 +1,6 @@
 // Google Apps Script (GAS) のエンドポイントURL
 // ユーザーから提供されたURLを設定
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwxgb5APRPyTwEM3ZQtgG3WWdxrFqVZAgkvq4Qfh_FggBU2p21yYDkWIdp-jMfBtgG92Gg/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwxgb5APRPPtwEM3ZQtgG3WWdxrFqVZAgkvq4Qfh_FggBU2p21yYDkWIdp-jMfBtgG92Gg/exec';
 // 静的モブデータ (mob_data.json) のURL (同階層のファイルを参照)
 const MOB_DATA_URL = './mob_data.json'; 
 
@@ -14,7 +14,7 @@ let userId = null;
 
 // --- DOMエレメント ---
 const appEl = document.getElementById('app');
-const errorMessageContainer = document.getElementById('error-message-container'); // NEW
+const errorMessageContainer = document.getElementById('error-message-container');
 const mobListContainer = document.getElementById('mob-list-container');
 const rankTabs = document.getElementById('rank-tabs');
 const reportModal = document.getElementById('report-modal');
@@ -182,7 +182,6 @@ function calculateRepop(mob, lastKill) {
                 const popElapsedMs = now.getTime() - maxRepopTime.getTime();
                 
                 // NEW: ミリ秒から HHh MMm 形式に変換し、接頭辞を追加
-                // 修正点3: 「最大超過」のテキスト表示は updateProgressBarsで行うため、ここでは時間データのみを用意
                 const formattedElapsed = formatDurationPart(popElapsedMs, '+');
                 
                 // Time elapsed since MAX POP
@@ -230,8 +229,6 @@ function createMobCard(mob) {
         minPopStr = 'N/A';
     }
 
-    // 色は updateProgressBars でリアルタイムに更新されるため、ここでは初期値のみ設定
-    
     // 修正点1: 「残り (%)」の時間部分のフォントを「次回POP」と同じにする
     const remainingTimeClass = 'font-mono text-gray-200'; 
 
@@ -256,7 +253,7 @@ function createMobCard(mob) {
     }
 
     // 修正点4: 討伐報告ボタンの機能と状態の分離。常に報告可能にする。
-    const reportBtnClass = 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 report-btn';
+    const reportBtnClass = 'bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn'; // 常に有効な青緑
     const reportBtnContent = `<span class="text-xs font-bold">報告</span><span class="text-xs font-bold">する</span>`;
 
     const reportBtnHtml = `
@@ -267,6 +264,7 @@ function createMobCard(mob) {
     `;
     
     // 修正点5, 7: スライド先の「前回討伐」の余白調整、および詳細ビューの上部の隙間を減らすために pt-4 -> pt-2 に変更
+    // A/FATEは下に1行分の余白(pb-4)を追加。S/Bはpb-1
     const lastKillBottomMargin = (mob.Rank === 'A' || mob.Rank === 'F') ? 'pb-4' : 'pb-1'; 
     
     let lastKillHtml = '';
@@ -304,8 +302,14 @@ function createMobCard(mob) {
         `;
     }
     
-    // 修正点6: Sモブに関しては、抽選条件の下、画像の上になるように順序を変更 (現在のデフォルト順序と同じであるため、コードはそのまま)
-    let panelContent = lastKillHtml + conditionHtml + mapDetailsHtml;
+    // 修正点6: Sモブに関しては、抽選条件 -> 前回討伐 -> マップ の順序に変更
+    let panelContent = '';
+    if (mob.Rank === 'S') {
+        panelContent = conditionHtml + lastKillHtml + mapDetailsHtml;
+    } else {
+        // A, B, FATEは前回討伐 -> 抽選条件/マップ
+        panelContent = lastKillHtml + conditionHtml + mapDetailsHtml;
+    }
     
     let expandablePanel = '';
     if (panelContent.trim()) {
@@ -444,7 +448,6 @@ function getMobByNo(mobNo) {
 function attachEventListeners() {
     // 討伐報告ボタン
     document.querySelectorAll('.report-btn').forEach(button => {
-        // 修正点4: ボタンが常に有効なので、無効判定は不要
         if (button.dataset.mobno) {
             button.onclick = (e) => {
                 e.stopPropagation();
@@ -567,7 +570,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
                 pointEl.style.borderRadius = '50%';
                 pointEl.style.position = 'absolute';
                 
-                pointEl.style.backgroundColor = includesB1 ? B1_INTERNAL_COLOR : B1_INTERNAL_COLOR : B2_INTERNAL_COLOR; // 修正: B2の色を適用
+                pointEl.style.backgroundColor = includesB1 ? B1_INTERNAL_COLOR : B2_INTERNAL_COLOR; // 修正: B2の色を適用
                 pointEl.style.border = 'none';
                 pointEl.style.boxShadow = '0 0 8px rgba(0, 0, 0, 0.7)'; 
                 
@@ -910,6 +913,10 @@ async function fetchRecordsAndUpdate(shouldFetchBase = true) {
  * 各モブカードの進捗バーを更新する (1秒ごと)
  */
 function updateProgressBars() {
+    // 修正点2: 最大超過時の新しい赤色 (少し薄い赤) を定義
+    const MAX_OVER_COLOR_CLASS = 'text-red-400';
+    const MAX_OVER_BAR_CLASS = 'bg-red-500';
+    
     document.querySelectorAll('.mob-card').forEach(card => {
         const lastKillStr = card.dataset.lastkill;
         const repop = parseInt(card.dataset.minrepop);
@@ -948,10 +955,10 @@ function updateProgressBars() {
             repopTimeEl.textContent = displayTimeStr;
             
             // 色の更新
-            repopTimeEl.classList.remove('text-green-400', 'text-red-400', 'text-amber-300', 'text-orange-400', 'font-bold'); // 修正点2: 新しい色も削除対象に追加
+            repopTimeEl.classList.remove('text-green-400', 'text-amber-300', MAX_OVER_COLOR_CLASS, 'font-bold'); 
             if (repopData.isMaxOver) {
-                // 修正点2: 最大超過時は、柔らかいオレンジ色を使用
-                repopTimeEl.classList.add('text-orange-400', 'font-bold'); 
+                // 修正点2: 最大超過時は、少し薄い赤を使用
+                repopTimeEl.classList.add(MAX_OVER_COLOR_CLASS, 'font-bold'); 
             } else if (repopData.isPop) {
                 repopTimeEl.classList.add('text-amber-300', 'font-bold'); // POPウィンドウ内
             } else {
@@ -961,15 +968,14 @@ function updateProgressBars() {
         
         // --- 3. 残り時間（進捗率）の更新 (POPウィンドウ内でのみ実行) ---
         if (repopData.isPop && timeRemainingEl) {
-            // timeRemainingElには font-mono クラスが createMobCard で既に付与されている (修正点1)
             
-            timeRemainingEl.classList.remove('text-gray-200', 'text-orange-400');
+            timeRemainingEl.classList.remove('text-gray-200', MAX_OVER_COLOR_CLASS);
             
             if (repopData.isMaxOver) {
-                // 修正点3: 最大超過時は「最大超過」のテキストを追加
-                timeRemainingEl.textContent = `最大超過 (${repopData.timeRemaining})`;
-                // 修正点2: 最大超過時はテキスト色も柔らかいオレンジに
-                timeRemainingEl.classList.add('text-orange-400');
+                // 修正点1: 「+HHh MMm (最大超過)」の順序に変更
+                timeRemainingEl.textContent = `${repopData.timeRemaining} (最大超過)`;
+                // 修正点2: 最大超過時はテキスト色も少し薄い赤に
+                timeRemainingEl.classList.add(MAX_OVER_COLOR_CLASS);
             } else {
                 // 通常の In-Pop 表示 (HHh MMm (P.P%))
                 timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
@@ -988,8 +994,8 @@ function updateProgressBars() {
                 widthPercent = 0;
                 progressBarEl.classList.remove('animate-pulse');
             } else if (repopData.isMaxOver) {
-                // 修正点2: Max超過: 100%幅で柔らかいオレンジに点滅
-                barColorClass = 'bg-orange-600'; 
+                // 修正点2: Max超過: 100%幅で少し薄い赤に点滅
+                barColorClass = MAX_OVER_BAR_CLASS; 
                 widthPercent = 100;
                 progressBarEl.classList.add('animate-pulse');
             } else if (percent >= 80) {
@@ -1017,7 +1023,6 @@ function updateProgressBars() {
             // 常に報告可能にする
             reportBtn.disabled = false;
             reportBtn.classList.remove('bg-gray-500', 'cursor-not-allowed'); // 無効化関連クラスを削除
-            // 見た目を青系に戻す (緑系の報告ボタンはそのまま維持)
             reportBtn.classList.add('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700'); 
             reportBtn.innerHTML = `<span class="text-xs font-bold">報告</span><span class="text-xs font-bold">する</span>`;
         }
