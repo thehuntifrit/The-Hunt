@@ -1,6 +1,6 @@
 // Google Apps Script (GAS) のエンドポイントURL
 // ユーザーから提供された正確なURLを設定 (大文字小文字を区別)
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwxgb5APRPPtwEM3ZQtgG3WWdxrFqVZAgkvq4Qfh_FggBU2p21yYDkWIdp-jMfBtG92Gg/exec';
 // 静的モブデータ (mob_data.json) のURL (同階層のファイルを参照)
 const MOB_DATA_URL = './mob_data.json';
 
@@ -8,35 +8,17 @@ const MOB_DATA_URL = './mob_data.json';
 // --- グローバル変数 ---
 let baseMobData = [];
 let globalMobData = [];
-// 修正: area を選択された拡張ナンバーの配列として初期化
-let currentFilter = {
-    rank: 'ALL',
-    area: ['ALL'] 
-};
+let currentFilter = 'ALL';
 let currentMobNo = null;
 let userId = null;
 // NEW: 自動更新が成功した回数を追跡するためのカウンター
 let autoUpdateSuccessCount = 0;
-
-// --- エリアデータ定義 ---
-const EXPANSION_AREAS = [
-    { key: 'ALL', name: 'ALL', color: 'bg-gray-600' },
-    // key は IDの5桁目（拡張ナンバー）に対応
-    { key: '6', name: '黄金', color: 'bg-yellow-600' },
-    { key: '5', name: '暁月', color: 'bg-purple-600' },
-    { key: '4', name: '漆黒', color: 'bg-indigo-600' },
-    { key: '3', name: '紅蓮', color: 'bg-red-600' },
-    { key: '2', name: '蒼天', color: 'bg-blue-600' },
-    { key: '1', name: '新生', color: 'bg-green-600' },
-];
 
 // --- DOMエレメント ---
 const appEl = document.getElementById('app');
 const errorMessageContainer = document.getElementById('error-message-container');
 const mobListContainer = document.getElementById('mob-list-container');
 const rankTabs = document.getElementById('rank-tabs');
-// NEW: エリアタブコンテナの取得
-const areaTabs = document.getElementById('area-tabs'); 
 const reportModal = document.getElementById('report-modal');
 const modalMobName = document.getElementById('modal-mob-name');
 const reportDatetimeInput = document.getElementById('report-datetime');
@@ -272,91 +254,7 @@ function formatDateTime(date) {
 // --- DOM操作/イベントハンドラ ---
 
 /**
- * エリアタブをレンダリングする (NEW: 複数選択対応)
- * @param {string[]} selectedAreas - 現在選択されている拡張キーの配列
- */
-function renderAreaTabs(selectedAreas) {
-    if (!areaTabs) return;
-
-    areaTabs.innerHTML = ''; 
-    
-    // 'ALL' ボタンは、他のボタンが選択されていない場合にのみアクティブになる
-    const isAllActive = selectedAreas.includes('ALL') || selectedAreas.length === 0;
-
-    const areaButtonHtml = EXPANSION_AREAS.map(area => {
-        
-        // 'ALL' 以外のボタンのアクティブ状態判定
-        let isActive = selectedAreas.includes(area.key);
-        
-        // 'ALL' ボタンのアクティブ状態を特殊処理
-        if (area.key === 'ALL') {
-             isActive = isAllActive;
-        }
-
-        const baseClass = 'area-btn flex-1 px-1 py-1 rounded-lg text-xs font-semibold shadow-md mx-0.5 transition';
-        const activeClass = isActive 
-            // 選択されている場合は色を適用
-            ? `${area.color} text-white`
-            // 選択されていない場合は背景色を暗く
-            : `bg-gray-700 hover:bg-gray-600 text-gray-300`;
-
-        return `
-            <button data-area="${area.key}" class="${baseClass} ${activeClass}">
-                ${area.name}
-            </button>
-        `;
-    }).join('');
-
-    areaTabs.innerHTML = `
-        <div class="flex w-full max-w-lg mx-auto mb-2">
-            ${areaButtonHtml}
-        </div>
-    `;
-
-    // イベントリスナーをアタッチ
-    areaTabs.querySelectorAll('.area-btn').forEach(button => {
-        button.onclick = (e) => {
-            const newAreaKey = e.currentTarget.dataset.area;
-            let newAreas = [...currentFilter.area];
-            
-            if (newAreaKey === 'ALL') {
-                // 'ALL' がクリックされたら、フィルタを ['ALL'] のみにリセット
-                newAreas = ['ALL'];
-                
-            } else {
-                // 'ALL' 以外のボタンの処理
-                
-                // 1. まず 'ALL' を削除 (他の拡張が選択された時点で 'ALL' は無効化される)
-                newAreas = newAreas.filter(key => key !== 'ALL');
-                
-                // 2. 選択状態をトグル
-                if (newAreas.includes(newAreaKey)) {
-                    // 既に含まれていたら削除 (非選択状態に)
-                    newAreas = newAreas.filter(key => key !== newAreaKey);
-                } else {
-                    // 含まれていなかったら追加 (選択状態に)
-                    newAreas.push(newAreaKey);
-                }
-                
-                // 3. 選択が空になったら 'ALL' に戻す
-                if (newAreas.length === 0) {
-                    newAreas = ['ALL'];
-                }
-            }
-            
-            // フィルタを更新
-            currentFilter.area = newAreas;
-            
-            // タブとリストを再レンダリング
-            renderAreaTabs(currentFilter.area);
-            renderMobList(currentFilter.rank, currentFilter.area);
-        }
-    });
-}
-
-
-/**
- * モブデータに基づいてHTMLカードを生成する (変更なし)
+ * モブデータに基づいてHTMLカードを生成する
  */
 function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
@@ -480,7 +378,6 @@ function createMobCard(mob) {
     return `
         <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative" 
              data-rank="${mob.Rank}" 
-             data-area="${mob.Expansion}"
              data-mobno="${mob['No.']}"
              data-lastkill="${mob.LastKillDate || ''}"
              data-minrepop="${mob['REPOP(s)']}"
@@ -522,36 +419,14 @@ function createMobCard(mob) {
 }
 
 /**
- * フィルターに基づいてモブカードリストをレンダリングする (修正: area フィルタロジック)
- * @param {string} rank - 選択されたランク ('ALL', 'S', 'A', 'B', 'F')
- * @param {string[]} areas - 選択された拡張キーの配列 (例: ['6', '5'])
+ * フィルターに基づいてモブカードリストをレンダリングする (変更なし)
  */
-function renderMobList(rank, areas) {
-    // グローバルフィルタを更新
-    currentFilter.rank = rank;
-    currentFilter.area = areas; // area は配列として渡される
+function renderMobList(rank) {
+    currentFilter = rank;
 
-    const filteredMobs = globalMobData.filter(mob => {
-        const rankMatch = rank === 'ALL' || mob.Rank === rank;
-        
-        let areaMatch = false; // 初期値を false に設定
-
-        // 'ALL' が含まれている、または選択された拡張がない場合は全てのマッチを許可
-        if (areas.includes('ALL')) {
-            areaMatch = true;
-        } else {
-            // NEW: 複数選択エリアフィルタのロジック
-            const mobNo = mob['No.']; // モブのID (例: 52101)
-            
-            // モブIDの5桁目（万の位）を取得
-            const mobExpansionId = Math.floor(mobNo / 10000).toString(); // 文字列として比較するため変換
-            
-            // モブの拡張IDが、選択された拡張IDのいずれかに含まれていればマッチ
-            areaMatch = areas.includes(mobExpansionId);
-        }
-        
-        return rankMatch && areaMatch;
-    });
+    const filteredMobs = rank === 'ALL' 
+        ? globalMobData
+        : globalMobData.filter(mob => mob.Rank === rank);
 
     // 3カラムレイアウト
     const columns = [
@@ -579,7 +454,7 @@ function renderMobList(rank, areas) {
         targetColumn.appendChild(div.firstChild);
     });
 
-    // アクティブなタブをハイライト (Rank Tabs)
+    // アクティブなタブをハイライト
     if (rankTabs) {
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
@@ -590,9 +465,6 @@ function renderMobList(rank, areas) {
             }
         });
     }
-
-    // エリアタブのアクティブ状態を更新 (Area Tabs)
-    renderAreaTabs(areas); // 引数として配列を渡す
     
     attachEventListeners();
     updateProgressBars(); // 初回レンダリング時にも進捗バーを更新
@@ -1054,8 +926,7 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
     }
 
     globalMobData = [...baseMobData];
-    // フィルタを適用して表示
-    renderMobList(currentFilter.rank, currentFilter.area);
+    renderMobList(currentFilter);
     
     // ----------------------------------------------------
     // 2. ローディングメッセージ表示制御
@@ -1122,8 +993,7 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
                 autoUpdateSuccessCount++;
             }
             
-            // フィルタを適用して表示
-            renderMobList(currentFilter.rank, currentFilter.area);
+            renderMobList(currentFilter);
         } else {
             // Failure: Always display the error message
             const errorMessage = `エラー: 共有データの取得に失敗しました。 (${data.message})`;
@@ -1309,7 +1179,7 @@ function updateProgressBars() {
 
 
 /**
- * サイトの初期化処理
+ * サイトの初期化処理 (変更なし)
  */
 function initializeApp() {
     userId = localStorage.getItem('user_uuid');
@@ -1317,16 +1187,13 @@ function initializeApp() {
         userId = crypto.randomUUID();
         localStorage.setItem('user_uuid', userId);
     }
-    
-    // エリアタブを初期レンダリング
-    renderAreaTabs(currentFilter.area);
 
     if (rankTabs) {
         rankTabs.querySelectorAll('.tab-btn').forEach(button => {
+            // 修正: 手動操作なので 'manual' フラグを付けて更新 (手動更新ロジックの再利用)
             button.onclick = (e) => {
-                const newRank = e.currentTarget.dataset.rank;
-                // エリアフィルタは現在の値をそのまま使用し、モブリストをレンダリング
-                renderMobList(newRank, currentFilter.area);
+                renderMobList(e.currentTarget.dataset.rank);
+                // フィルタリングはローカルで行うため、ここでは通信更新は不要
             }
         });
     }
