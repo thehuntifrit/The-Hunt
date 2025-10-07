@@ -34,16 +34,16 @@ function unixTimeToDate(unixtime) {
 
 /**
  * テキストを21文字ごとに強制的に折り返す関数 (既存の // による改行も処理)
- * * @param {string} text 処理対象の文字列
+ * @param {string} text 処理対象の文字列
  * @returns {string} <br>が挿入された文字列
  */
 const forceWrapText = (text) => {
-    // 1. 既存の // による改行を一時的なデリミタに変換
-    const tempDelimiter = '$$$TEMP_BR$$$';
-    // 注: /\/\/\s*/g は // とその後の空白をデリミタに置換
-    const segments = text.replace(/\/\/\s*/g, tempDelimiter).split(tempDelimiter);
+    // 既存の // を <br> に変換
+    const initialText = text.replace(/\/\/\s*/g, '<br>');
 
-    // 2. 各セグメントを21文字で折り返し、最終的に <br> で結合する
+    // <br>で分割し、各セグメントを21文字で折り返す
+    const segments = initialText.split('<br>');
+    
     const finalWrappedCondition = segments.map(segment => {
         let segmentResult = '';
         const limit = 21;
@@ -51,10 +51,11 @@ const forceWrapText = (text) => {
             if (i > 0) {
                 segmentResult += '<br>';
             }
+            // 21文字ごとに切り出し
             segmentResult += segment.substring(i, i + limit);
         }
         return segmentResult;
-    }).join('<br>'); // セグメント間の区切りは <br> に戻す
+    }).join('<br>'); // セグメント間は <br> で結合
 
     return finalWrappedCondition;
 };
@@ -178,7 +179,7 @@ function createMobCard(mob) {
         reportBtnContent = `<span class="text-sm font-bold">討伐</span><span class="text-sm font-bold">報告</span>`;
     }
 
-    // 討伐報告ボタンの全体サイズを調整 (幅 w-14 に修正)
+    // 討伐報告ボタンの全体サイズを調整 (幅 w-14)
     const reportBtnHtml = `
         <button class="${reportBtnClass} text-xs text-white px-1 py-1 rounded-md shadow-md transition h-10 w-14 flex flex-col items-center justify-center leading-none" 
                 data-mobno="${mob['No.']}" 
@@ -198,13 +199,23 @@ function createMobCard(mob) {
     // 抽選条件の処理: 21文字折り返し処理を追加、Sモブの固定高適用
     let conditionHtml = '';
     if (mob.Condition) {
-        // 21文字で折り返し処理を適用 (forceWrapText関数を使用)
-        const wrappedCondition = forceWrapText(mob.Condition);
+        // PC (lg:サイズ以上) では折り返し処理を適用しないためのクラス分岐
+        // isLgOrGreater() は pure JavaScript ではないため、条件分岐で対応
         
+        let displayCondition = '';
+        // 現在のウィンドウ幅が Tailwind の 'lg' ブレイクポイント (1024px) 以上かチェック
+        if (window.innerWidth >= 1024) {
+            // PC版: // のみを <br> に変換し、21文字折り返しは適用しない
+            displayCondition = mob.Condition.replace(/\/\/\s*/g, '<br>');
+        } else {
+            // スマホ版: 21文字で折り返し処理を適用
+            displayCondition = forceWrapText(mob.Condition);
+        }
+
         // Sモブの場合は固定高クラス (h-16: 約4行分, overflow-hidden) を適用
         const conditionClass = mob.Rank === 'S' ? 'h-16 overflow-hidden' : 'h-auto';
         
-        conditionHtml = `<p class="text-xs text-gray-400 leading-tight ${conditionClass}">${wrappedCondition}</p>`;
+        conditionHtml = `<p class="text-xs text-gray-400 leading-tight ${conditionClass}">${displayCondition}</p>`;
     }
     
     // 抽選条件がない場合、フッターコンテンツを非表示
@@ -688,7 +699,19 @@ function updateProgressBars() {
             }
         }
     });
+    
+    // **画面サイズ変更時の再レンダリング**
+    // 画面サイズが変わったときに、抽選条件の表示（折り返しの有無）を再計算するために再レンダリングする
+    const currentWindowWidth = window.innerWidth;
+    const isLg = currentWindowWidth >= 1024; // Tailwind の lg ブレイクポイント
+
+    if (updateProgressBars.lastIsLg !== isLg) {
+        updateProgressBars.lastIsLg = isLg;
+        // 画面幅が変わった場合のみ、表示を更新
+        renderMobList(currentFilter);
+    }
 }
+updateProgressBars.lastIsLg = window.innerWidth >= 1024; // 初期値設定
 
 /**
  * サイトの初期化処理
@@ -713,6 +736,9 @@ function initializeApp() {
     });
     
     fetchRecordsAndUpdate(true);
+
+    // 画面サイズ変更時にも進捗バーを更新（折り返し対応のため）
+    window.addEventListener('resize', updateProgressBars);
 
     setInterval(() => fetchRecordsAndUpdate(false), 10 * 60 * 1000);
 
