@@ -1,6 +1,6 @@
 /* カスタムスタイル */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-
+        
 body {
     font-family: 'Inter', sans-serif;
     background-color: #1a1a2e; /* ダークモード背景 */
@@ -21,73 +21,62 @@ body {
     transition: transform 0.1s ease-in-out;
 }
 
-/* スポーンポイントの基本スタイル */
-.spawn-point {
-    position: absolute;
-    width: 8px; 
-    height: 8px;
-    border-radius: 50%;
-    transform: translate(-50%, -50%); 
-    pointer-events: auto;
-    cursor: pointer;
-    z-index: 10;
-    transition: transform 0.1s;
-}
-
+/* マップ描画用のスタイル */
 .map-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none;
+    pointer-events: none; /* オーバーレイを通して画像を触れるように */
 }
 
-.map-image {
-    width: 100%;
-    height: auto;
-    border-radius: 0.5rem; 
-}
-
-/* マウスオーバー時の強調表示 */
-.spawn-point[data-important="true"]:hover {
-    transform: translate(-50%, -50%) scale(1.8);
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-}
-
-/* 押せないポイントはホバーを無効にして見た目の変化を抑える */
-.spawn-point[data-important="false"] {
-    pointer-events: none; 
-    opacity: 0.95;
-}
-
-/* S/Aモブが出る重要地点のリング */
-.important-ring {
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.0);
+/* スポーンポイントのスタイル */
+.spawn-point {
+    position: absolute;
+    width: 8px; /* 座標点を半分サイズに縮小 */
+    height: 8px; /* 座標点を半分サイズに縮小 */
     border-radius: 50%;
-    filter: drop-shadow(0 0 4px rgba(0,0,0,0.5));
+    background-color: #ef4444; /* red-500 */
+    z-index: 10;
+    cursor: pointer;
+    pointer-events: auto; /* クリック可能にする */
+    transition: all 0.2s ease-in-out;
 }
-   
-/* リポップバーのCSS変数とグラデーション定義 */
+
+.spawn-point:hover {
+    transform: translate(-50%, -50%) scale(2.0) !important;
+    opacity: 1 !important;
+}
+
+.spawn-point[data-important="true"] {
+    width: 10px;
+    height: 10px;
+}
+
+/* 進捗バーのスタイル */
 .repop-bar-bg {
-    /* --progress-percentはJSで動的に設定されます */
-    background: linear-gradient(to right, 
-        var(--progress-color-start) 0%, 
-        var(--progress-color-end) var(--progress-percent), 
-        #2d3748 var(--progress-percent), 
-        #2d3748 100%);
-    transition: background 0.5s ease;
+    background-color: #374151; /* gray-700 */
 }
 
-/* マップ詳細パネルの開閉アニメーション */
-.mob-details {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease-out;
+.repop-bar-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: var(--progress-percent);
+    background: linear-gradient(to right, var(--progress-color-start), var(--progress-color-end));
+    transition: width 60s linear; /* 60秒かけて滑らかに伸びる */
+    border-radius: 0 2px 2px 0;
 }
 
-.mob-details.open {
-    /* 非常に大きな値を設定することで、コンテンツの高さに関わらず展開を保証 */
-    max-height: 1000px; 
-    transition: max-height 0.6s ease-in;
+/* モーダル背景 */
+.modal-overlay {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* カードの展開パネルのアニメーション */
+.expandable-panel {
+    transition: max-height 0.3s ease-in-out;
 }
