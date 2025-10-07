@@ -13,6 +13,7 @@ let userId = null;
 
 // --- DOMエレメント ---
 const appEl = document.getElementById('app');
+const errorMessageContainer = document.getElementById('error-message-container'); // NEW
 const mobListContainer = document.getElementById('mob-list-container');
 const rankTabs = document.getElementById('rank-tabs');
 const reportModal = document.getElementById('report-modal');
@@ -52,6 +53,27 @@ function toJstAdjustedIsoString(localIsoString) {
     const adjustedDate = new Date(localDate.getTime() + offsetDifference * 60000);
     
     return adjustedDate.toISOString();
+}
+
+/**
+ * エラーメッセージを指定エリアに表示/非表示にする (NEW)
+ * @param {string|null} message - 表示するエラーメッセージ、または null で非表示。
+ */
+function displayError(message) {
+    if (!errorMessageContainer) return;
+    
+    if (message) {
+        // 中央揃え、単一行、モブカードの上に表示
+        errorMessageContainer.classList.remove('hidden');
+        errorMessageContainer.innerHTML = `
+            <div class="bg-red-800 text-red-100 p-2 rounded-lg text-sm font-semibold inline-block">
+                ${message}
+            </div>
+        `;
+    } else {
+        errorMessageContainer.classList.add('hidden');
+        errorMessageContainer.innerHTML = '';
+    }
 }
 
 
@@ -193,7 +215,6 @@ function createMobCard(mob) {
     if (lastKillDate) {
         // Sランクは抽選条件と同じ文字サイズ(text-sm)、その他は text-base
         const sizeClass = mob.Rank === 'S' ? 'text-sm' : 'text-base';
-        // A/FATEは pt-0 (展開直下), Sランクは抽選条件後に pt-0 (抽選条件からの余白はconditionHtmlで調整)
         // 下余白は pb-3 (12px) で「1行分」の余白を確保
         lastKillHistoryHtml = `
             <div class="last-kill-history pt-0 pb-3 px-4">
@@ -577,6 +598,8 @@ async function submitReport() {
         if (result.status === 'success') {
             reportStatusEl.textContent = `報告成功！ (${result.message})`;
             reportStatusEl.classList.add('text-green-500');
+            // 報告成功時はエラー表示を消す
+            displayError(null); 
             await fetchRecordsAndUpdate(false); 
             setTimeout(closeReportModal, 1500); 
 
@@ -623,26 +646,39 @@ async function fetchBaseMobData() {
 }
 
 /**
- * GASから最新の討伐記録を取得し、グローバルデータを更新する 
+ * GASから最新の討伐記録を取得し、グローバルデータを更新する (修正版)
  */
 async function fetchRecordsAndUpdate(shouldFetchBase = true) {
+    // ----------------------------------------------------
+    // 1. 基本データ (Base Mob Data) のロード
+    // ----------------------------------------------------
     if (shouldFetchBase) {
-        // ロード中フィードバックの実装（簡易版）
-        mobListContainer.innerHTML = `<div class="text-center text-white py-10 text-lg">データをロード中...</div>`;
+        displayError(`設定データをロード中...`);
         await fetchBaseMobData();
     }
     
     if (baseMobData.length === 0) {
-        console.warn('Base mob data is empty, skipping record update.');
-        mobListContainer.innerHTML = `<div class="text-center text-red-400 py-10 text-lg">エラー: モブ設定データを読み込めませんでした。</div>`;
+        const fatalError = `致命的なエラー: モブ設定データを読み込めませんでした。`;
+        console.warn('Base mob data is empty, stopping record update.');
+        displayError(fatalError);
+        // mobListContainer の内容は空のままになる (これは正しい)
         return;
     }
 
+    // エラー時でもカード表示を維持するため、まず baseMobData で初期化
+    globalMobData = [...baseMobData];
+    renderMobList(currentFilter);
+    displayError(`討伐記録を更新中...`);
+
+    // ----------------------------------------------------
+    // 2. 討伐記録 (Records) の取得と更新
+    // ----------------------------------------------------
     try {
         const response = await fetch(GAS_ENDPOINT + '?action=getRecords');
         const data = await response.json();
         
         if (data.status === 'success') {
+            displayError(null); // 成功したらエラー表示をクリア
             const records = data.records;
             
             globalMobData = baseMobData.map(mob => {
@@ -663,18 +699,20 @@ async function fetchRecordsAndUpdate(shouldFetchBase = true) {
 
             renderMobList(currentFilter);
         } else {
-            console.error('GASからのデータ取得失敗:', data.message);
-            // エラー通知の表示
-            mobListContainer.innerHTML = `<div class="text-center text-red-400 py-10 text-lg">エラー: 討伐記録の取得に失敗しました。 (${data.message})</div>`;
-            globalMobData = baseMobData;
-            renderMobList(currentFilter);
+            // エラー通知を表示し、カード自体は baseMobData のまま表示 (更新しない)
+            const errorMessage = `エラー: 討伐記録の取得に失敗しました。 (${data.message})`;
+            console.error('GASからのデータ取得失敗:', errorMessage);
+            displayError(errorMessage);
+            
+            // globalMobData は baseMobData のままであり、カードは既に renderMobList(currentFilter) で表示済み
         }
     } catch (error) {
+        // 通信エラー通知を表示し、カード自体は baseMobData のまま表示
+        const errorMessage = `エラー: サーバーとの通信に失敗しました。`;
         console.error('GAS通信エラー:', error);
-        // エラー通知の表示
-        mobListContainer.innerHTML = `<div class="text-center text-red-400 py-10 text-lg">エラー: サーバーとの通信に失敗しました。</div>`;
-        globalMobData = baseMobData;
-        renderMobList(currentFilter);
+        displayError(errorMessage);
+        
+        // globalMobData は baseMobData のままであり、カードは既に renderMobList(currentFilter) で表示済み
     }
 }
 
