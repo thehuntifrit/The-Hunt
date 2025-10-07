@@ -100,6 +100,7 @@ function calculateRepop(mob, lastKill) {
 
 /**
  * モブデータに基づいてHTMLカードを生成する
+ * (変更なし)
  * @param {object} mob - モブデータオブジェクト
  * @returns {string} - HTML文字列
  */
@@ -220,6 +221,7 @@ function createMobCard(mob) {
 
 /**
  * MobNoからモブデータを取得する
+ * (変更なし)
  * @param {number} mobNo 
  * @returns {object}
  */
@@ -231,6 +233,7 @@ function getMobByNo(mobNo) {
 
 /**
  * フィルターに基づいてモブカードリストをレンダリングする
+ * (変更なし)
  * @param {string} rank - フィルターするランク ('ALL', 'S', 'A', 'F')
  */
 function renderMobList(rank) {
@@ -282,6 +285,7 @@ function renderMobList(rank) {
 
 /**
  * イベントリスナーをカードとボタンにアタッチする
+ * (変更なし)
  */
 function attachEventListeners() {
     // 討伐報告ボタン
@@ -299,6 +303,7 @@ function attachEventListeners() {
 
 /**
  * マップ詳細パネルの表示/非表示を切り替える
+ * (変更なし)
  * @param {HTMLElement} button - クリックされたボタン要素
  */
 function toggleMobDetails(button) {
@@ -326,7 +331,7 @@ function toggleMobDetails(button) {
 
 /**
  * マップにスポーンポイントを描画する
- * (drawSpawnPoints関数は変更なし)
+ * (変更なし)
  */
 function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     overlayEl.innerHTML = '';
@@ -369,10 +374,10 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
 }
 
 // --- モーダル/フォーム操作 ---
-// (openReportModal, closeReportModal, submitReport関数は変更なし)
 
 /**
  * 討伐報告モーダルを開く
+ * (変更なし)
  * @param {number} mobNo - 報告対象のモブNo
  */
 function openReportModal(mobNo) {
@@ -398,6 +403,7 @@ function openReportModal(mobNo) {
 
 /**
  * 討伐報告モーダルを閉じる
+ * (変更なし)
  */
 function closeReportModal() {
     reportModal.classList.add('hidden');
@@ -407,6 +413,7 @@ function closeReportModal() {
 
 /**
  * 討伐報告をGASに送信する
+ * (変更なし)
  */
 async function submitReport() {
     if (!currentMobNo) return;
@@ -476,28 +483,35 @@ async function submitReport() {
  */
 async function fetchBaseMobData() {
     try {
-        // 同階層のmob_data.jsonを相対パスで取得
         const response = await fetch(MOB_DATA_URL); 
         
         if (!response.ok) {
-            // エラー時のデバッグ情報を強化
             console.error(`Fetch Error: Status ${response.status} for ${MOB_DATA_URL}.`);
             console.error('Possible Causes: 1. File not found (404). 2. CORS issue (Local run).');
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        baseMobData = await response.json();
-        console.log('Base mob data fetched successfully.');
+        // --- 修正箇所: mobConfigキーから配列を抽出 ---
+        const jsonData = await response.json();
+        
+        if (jsonData && Array.isArray(jsonData.mobConfig)) {
+            baseMobData = jsonData.mobConfig;
+            console.log('Base mob data (mobConfig) fetched successfully.');
+        } else {
+            throw new Error('JSON structure error: mobConfig array not found. Ensure mob_data.json has the structure { "mobConfig": [...] }.');
+        }
+        // --- 修正箇所 終わり ---
+
     } catch (error) {
         console.error('基本モブデータの取得に失敗:', error);
-        // ユーザーへのアラートは抑制し、コンソールに詳細を出力
         baseMobData = []; // データ取得失敗時は空配列で続行
     }
 }
 
 /**
  * GASから最新の討伐記録を取得し、グローバルデータを更新する
- * (fetchRecordsAndUpdate関数は変更なし)
+ * (変更なし)
+ * @param {boolean} shouldFetchBase - 初期化時など、ベースデータも取得するかどうか
  */
 async function fetchRecordsAndUpdate(shouldFetchBase = true) {
     if (shouldFetchBase) {
@@ -545,6 +559,7 @@ async function fetchRecordsAndUpdate(shouldFetchBase = true) {
 
 /**
  * 各モブカードの進捗バーを更新する (60秒ごと)
+ * (NaN対策済みのバージョン。変更なし)
  */
 function updateProgressBars() {
     document.querySelectorAll('.mob-card').forEach(card => {
@@ -560,7 +575,6 @@ function updateProgressBars() {
         // **NaN対策**: Dateオブジェクトが無効な場合は処理を中断
         if (isNaN(lastKill.getTime())) {
             console.error(`Invalid Date format for mobNo ${card.dataset.mobno}: ${lastKillStr}`);
-            // このモブの表示を「データエラー」にするなどの処理を追加することも可能
             return;
         }
 
@@ -627,6 +641,7 @@ function updateProgressBars() {
 
 /**
  * サイトの初期化処理
+ * (変更なし)
  */
 function initializeApp() {
     // 報告者UUIDの生成または取得
