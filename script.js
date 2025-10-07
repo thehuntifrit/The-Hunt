@@ -33,14 +33,37 @@ function unixTimeToDate(unixtime) {
 }
 
 /**
- * テキストを // で改行する関数 (文字数による折り返し制限は撤廃)
- * @param {string} text 処理対象の文字列
- * @returns {string} <br>が挿入された文字列
+ * テキストを // で改行する関数
  */
 const processText = (text) => {
     // 既存の // を <br> に変換するのみ
     return text.replace(/\/\/\s*/g, '<br>');
 };
+
+/**
+ * ローカル日時 (ISO形式) をJSTとしてGASに渡すためのISO文字列に変換する
+ * @param {string} localIsoString YYYY-MM-DDTHH:MM 形式のローカル日時
+ * @returns {string} JSTとして解釈させるためのUTCベースのISO文字列
+ */
+function toJstAdjustedIsoString(localIsoString) {
+    // 例: "2023-10-07T18:00"
+    const localDate = new Date(localIsoString);
+
+    // Dateオブジェクトはローカルタイムとして解析される。
+    // その後、toISOString() を使うとUTCに変換されるが、
+    // ここではその変換を意図的に阻止し、この時刻がJSTであることを示すために、
+    // ローカル時刻からgetTimezoneOffset()分だけずらしてUTCとして扱う。
+    // JSTのタイムゾーンオフセットは -540分。
+    const jstOffsetMinutes = -540; 
+    const localOffsetMinutes = localDate.getTimezoneOffset(); // ローカルPCのオフセット
+    const offsetDifference = localOffsetMinutes - jstOffsetMinutes;
+    
+    // localDateの時刻を、JST（+9時間）として扱うために調整する
+    const adjustedDate = new Date(localDate.getTime() + offsetDifference * 60000);
+    
+    // TとZ（UTCであることを示す）を付けて返す
+    return adjustedDate.toISOString();
+}
 
 
 /**
@@ -54,7 +77,8 @@ function calculateRepop(mob, lastKill) {
             minRepop: '未討伐',
             maxRepop: null,
             timeRemaining: 'N/A',
-            elapsedPercent: 0
+            elapsedPercent: 0,
+            isPop: false
         };
     }
     
@@ -66,7 +90,8 @@ function calculateRepop(mob, lastKill) {
             minRepop: 'N/A',
             maxRepop: null,
             timeRemaining: 'N/A',
-            elapsedPercent: 0
+            elapsedPercent: 0,
+            isPop: false
         };
     }
 
@@ -77,8 +102,18 @@ function calculateRepop(mob, lastKill) {
     let normalizedElapsedPercent = Math.max(0, Math.min(100, (elapsedMs / repopMinMs) * 100));
 
     let timeRemainingStr;
+    let isPop = false;
     if (remainingMs <= 0) {
-        timeRemainingStr = 'POP中';
+        isPop = true;
+        // 欠けている機能: POP後の経過時間を表示する
+        const popElapsedMs = now.getTime() - minRepopTime.getTime();
+        const totalSeconds = Math.floor(popElapsedMs / 1000);
+        
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        
+        timeRemainingStr = `POP中 (+${hours}h ${minutes}m ${seconds}s)`;
         normalizedElapsedPercent = 100;
     } else {
         const totalSeconds = Math.floor(remainingMs / 1000);
@@ -93,7 +128,8 @@ function calculateRepop(mob, lastKill) {
         minRepop: minRepopTime,
         maxRepop: null, 
         timeRemaining: timeRemainingStr,
-        elapsedPercent: normalizedElapsedPercent
+        elapsedPercent: normalizedElapsedPercent,
+        isPop: isPop
     };
 }
 
@@ -102,7 +138,7 @@ function calculateRepop(mob, lastKill) {
  */
 function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
-    const { minRepop, timeRemaining, elapsedPercent } = calculateRepop(mob, lastKillDate);
+    const { minRepop, timeRemaining, elapsedPercent, isPop } = calculateRepop(mob, lastKillDate);
 
     // 進捗バーの色定義
     let colorStart = '#10b981'; 
@@ -114,7 +150,7 @@ function createMobCard(mob) {
     if (lastKillDate) {
         minPopStr = minRepop instanceof Date ? minRepop.toLocaleString() : minRepop;
 
-        if (timeRemaining === 'POP中') {
+        if (isPop) {
             colorStart = '#f59e0b'; 
             colorEnd = '#fbbf24';   
             timeStatusClass = 'text-amber-400 font-bold';
@@ -146,7 +182,6 @@ function createMobCard(mob) {
     }
 
     // 討伐報告ボタンの状態
-    const isPop = timeRemaining === 'POP中';
     const canReport = !isPop || !lastKillDate; 
     
     const reportBtnClass = !canReport ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn';
@@ -154,16 +189,15 @@ function createMobCard(mob) {
     // 討伐報告ボタンの文字サイズと形状
     let reportBtnContent;
     if (!canReport) {
-        // POP中の場合、text-xsで2行表示
         reportBtnContent = `<span class="text-xs font-bold">POP中</span><span class="text-xs leading-none">(報告不可)</span>`;
     } else {
-        // 報告可能な場合、text-xsで2行表示
         reportBtnContent = `<span class="text-xs font-bold">討伐</span><span class="text-xs font-bold">報告</span>`;
     }
 
     const reportBtnHtml = `
         <button class="${reportBtnClass} text-white px-1 py-1 rounded-md shadow-md transition h-10 w-10 flex flex-col items-center justify-center leading-none" 
                 data-mobno="${mob['No.']}" 
+                data-ispop="${isPop ? 'true' : 'false'}" 
                 ${!canReport ? 'disabled' : ''}>
             ${reportBtnContent}
         </button>
@@ -178,7 +212,7 @@ function createMobCard(mob) {
         
         // 抽選条件の文字サイズをtext-smに拡大
         conditionHtml = `
-            <div class="pt-4 px-4 pb-4">
+            <div class="pt-4 px-4 pb-4 condition-content">
                 <p class="text-sm text-gray-400 leading-snug">${displayCondition}</p>
             </div>
         `;
@@ -188,10 +222,11 @@ function createMobCard(mob) {
     let mapDetailsHtml = '';
     if (mob.Map) {
         // 区切り線 (border-t) を削除し、上余白を調整
+        // 不必要なコードを削減: mapTopPaddingClass の条件分岐は pt-4 に統一し、conditionContent の pb-4 で余白を確保
         const mapTopPaddingClass = mob.Condition ? 'pt-1' : 'pt-4'; 
         
         mapDetailsHtml = `
-            <div class="mob-details ${mapTopPaddingClass} px-4 pb-4">
+            <div class="mob-details ${mapTopPaddingClass} px-4 pb-4 map-content">
                 <div class="relative">
                     <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="w-full h-auto rounded-lg shadow-md map-image" data-area="${mob.Area}">
                     <div class="absolute inset-0 map-overlay" data-area="${mob.Area}">
@@ -386,19 +421,16 @@ function toggleMobDetails(card) {
         const targetHeight = panel.scrollHeight; 
 
         // 3. max-heightを 0 に設定し、アニメーションの開始点に戻す
-        // これでブラウザに再計算を強制する
         panel.style.maxHeight = '0';
         
         // 4. 取得した高さに安全マージンを加えてアニメーションを開始
-        // 0ms遅延で次のレンダリングフレームを待つ
         setTimeout(() => {
             // 安全マージン 100px を追加 (画像が切れないための保険)
             panel.style.maxHeight = (targetHeight + 100) + 'px';
 
-            // 5. アニメーション終了後に max-height: none に設定し、
-            //    ロードの遅れやウィンドウサイズ変更によるコンテンツ切れを完全に防ぐ
+            // 5. アニメーション終了後に max-height: none に設定し、コンテンツ切れを完全に防ぐ
             panel.addEventListener('transitionend', function handler(e) {
-                // 確実に max-height のアニメーションの終了のみを捕捉
+                // 不具合の修正: 確実に max-height のアニメーション、かつカードが開いている時のみリセット
                 if (e.propertyName === 'max-height' && card.classList.contains('open')) {
                     panel.style.maxHeight = 'none';
                 }
@@ -477,6 +509,7 @@ function openReportModal(mobNo) {
     }
 
     const now = new Date();
+    // ローカルタイムゾーンオフセットを考慮して、入力フィールドに現在時刻を設定
     const offset = now.getTimezoneOffset() * 60000;
     const localIso = (new Date(now.getTime() - offset)).toISOString().slice(0, 16);
     reportDatetimeInput.value = localIso;
@@ -501,14 +534,17 @@ function closeReportModal() {
 async function submitReport() {
     if (!currentMobNo || !reportDatetimeInput || !submitReportBtn || !reportStatusEl) return;
 
-    const killTime = reportDatetimeInput.value;
+    const killTimeLocal = reportDatetimeInput.value;
     const memo = reportMemoInput.value;
     const mob = getMobByNo(currentMobNo);
 
-    if (!killTime) {
+    if (!killTimeLocal) {
         alert('討伐日時を入力してください。');
         return;
     }
+
+    // タイムゾーン問題の修正: ローカルタイムとして入力された時刻をJSTとして扱うISO文字列に変換
+    const killTimeJstIso = toJstAdjustedIsoString(killTimeLocal);
 
     submitReportBtn.disabled = true;
     submitReportBtn.textContent = '送信中...';
@@ -516,8 +552,6 @@ async function submitReport() {
     reportStatusEl.classList.remove('text-green-500', 'text-red-500');
     reportStatusEl.textContent = 'サーバーに送信中...';
     
-    const killDate = new Date(killTime); 
-
     try {
         const response = await fetch(GAS_ENDPOINT, {
             method: 'POST',
@@ -529,7 +563,7 @@ async function submitReport() {
                 action: 'reportKill',
                 mobNo: currentMobNo,
                 mobName: mob.Name,
-                killTime: killDate.toISOString(), 
+                killTime: killTimeJstIso, // JST調整済みのISO文字列を送信
                 memo: memo,
                 reporterId: userId 
             })
@@ -590,12 +624,14 @@ async function fetchBaseMobData() {
  */
 async function fetchRecordsAndUpdate(shouldFetchBase = true) {
     if (shouldFetchBase) {
+        // ロード中フィードバックの実装（簡易版）
+        mobListContainer.innerHTML = `<div class="text-center text-white py-10 text-lg">データをロード中...</div>`;
         await fetchBaseMobData();
     }
     
     if (baseMobData.length === 0) {
         console.warn('Base mob data is empty, skipping record update.');
-        renderMobList(currentFilter);
+        mobListContainer.innerHTML = `<div class="text-center text-red-400 py-10 text-lg">エラー: モブ設定データを読み込めませんでした。</div>`;
         return;
     }
 
@@ -625,11 +661,15 @@ async function fetchRecordsAndUpdate(shouldFetchBase = true) {
             renderMobList(currentFilter);
         } else {
             console.error('GASからのデータ取得失敗:', data.message);
+            // エラー通知の表示
+            mobListContainer.innerHTML = `<div class="text-center text-red-400 py-10 text-lg">エラー: 討伐記録の取得に失敗しました。 (${data.message})</div>`;
             globalMobData = baseMobData;
             renderMobList(currentFilter);
         }
     } catch (error) {
         console.error('GAS通信エラー:', error);
+        // エラー通知の表示
+        mobListContainer.innerHTML = `<div class="text-center text-red-400 py-10 text-lg">エラー: サーバーとの通信に失敗しました。</div>`;
         globalMobData = baseMobData;
         renderMobList(currentFilter);
     }
@@ -666,39 +706,45 @@ function updateProgressBars() {
         const repopTimeEl = card.querySelector('.repop-time');
         const timeRemainingEl = card.querySelector('.time-remaining'); 
 
+        // リポップ予測時刻の更新
         if (repopTimeEl) {
             const minPopStr = repopData.minRepop instanceof Date ? repopData.minRepop.toLocaleString() : repopData.minRepop;
             repopTimeEl.textContent = minPopStr;
             
             // 色の更新
-            if (repopData.timeRemaining === 'POP中') {
-                repopTimeEl.classList.remove('text-green-400', 'text-red-400');
+            repopTimeEl.classList.remove('text-green-400', 'text-red-400', 'text-amber-400', 'font-bold');
+            if (repopData.isPop) {
                 repopTimeEl.classList.add('text-amber-400', 'font-bold');
             } else if (percent >= 90) {
-                repopTimeEl.classList.remove('text-green-400', 'text-amber-400', 'font-bold');
                 repopTimeEl.classList.add('text-red-400');
             } else {
-                repopTimeEl.classList.remove('text-amber-400', 'text-red-400', 'font-bold');
                 repopTimeEl.classList.add('text-green-400');
             }
         }
         
+        // 残り時間（進捗率）の更新
         if (timeRemainingEl) {
             timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
         }
         
-        // 討伐報告ボタンの状態を更新 
-        const reportBtn = card.querySelector('.report-btn');
-        if (repopData.timeRemaining === 'POP中') {
-            if (reportBtn) {
+        // 討伐報告ボタンの状態を更新 (パフォーマンス改善)
+        const reportBtn = card.querySelector('button[data-mobno]');
+        if (reportBtn) {
+            const currentIsPop = reportBtn.dataset.ispop === 'true';
+            
+            if (repopData.isPop && !currentIsPop) {
+                // POP中になった場合 (報告不可へ)
                 reportBtn.disabled = true;
+                reportBtn.dataset.ispop = 'true';
+                // DOM要素のinnerHTMLの変更は、状態変化時のみ行う
                 reportBtn.innerHTML = `<span class="text-xs font-bold">POP中</span><span class="text-xs leading-none">(報告不可)</span>`;
                 reportBtn.classList.remove('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
                 reportBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
-            }
-        } else {
-            if (reportBtn) {
+            } else if (!repopData.isPop && currentIsPop) {
+                // POP中でなくなった場合 (報告可能へ)
                 reportBtn.disabled = false;
+                reportBtn.dataset.ispop = 'false';
+                // DOM要素のinnerHTMLの変更は、状態変化時のみ行う
                 reportBtn.innerHTML = `<span class="text-xs font-bold">討伐</span><span class="text-xs font-bold">報告</span>`;
                 reportBtn.classList.remove('bg-gray-500', 'cursor-not-allowed');
                 reportBtn.classList.add('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
@@ -742,10 +788,13 @@ function initializeApp() {
     }
     // ------------------------------------------
 
+    // 初期ロードは同期的に実行
     fetchRecordsAndUpdate(true);
 
+    // 討伐記録の定期更新 (10分ごと)
     setInterval(() => fetchRecordsAndUpdate(false), 10 * 60 * 1000);
 
+    // プログレスバーの定期更新 (60秒ごと)
     setInterval(updateProgressBars, 60 * 1000);
 }
 
