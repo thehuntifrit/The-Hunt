@@ -233,6 +233,24 @@ function getMobByNo(mobNo) {
     return globalMobData.find(mob => mob['No.'] === parseInt(mobNo));
 }
 
+/**
+ * Dateオブジェクトを「MM/DD HH:MM」形式の文字列にフォーマットする
+ * @param {Date} date - フォーマットするDateオブジェクト
+ * @returns {string} - フォーマットされた日付文字列
+ */
+function formatDateTime(date) {
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+        return 'N/A';
+    }
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `${month}/${day} ${hours}:${minutes}`;
+}
+
+
 // --- DOM操作/イベントハンドラ ---
 
 /**
@@ -1007,11 +1025,12 @@ function updateProgressBars() {
     const COLOR_ORANGE_3 = 'bg-orange-400';    
     // 最大超過時のリポップ時刻の色 (オレンジのテキスト)
     const MAX_OVER_TEXT_COLOR_CLASS = COLOR_ORANGE_3.replace('bg-', 'text-'); 
-    // 最大超過時の残り (%) の文字色 (濃いめの赤)
-    const OVERDUE_DURATION_COLOR_CLASS = 'text-red-700'; 
     
-    // 修正1: POP到達時の残り時間/割合の文字色
-    const IN_POP_TEXT_COLOR_CLASS = 'text-gray-900'; // 黒色
+    // 修正: モバイルで視認性を上げるため、暗い背景に映える明るい赤(text-red-400)に変更します
+    const OVERDUE_DURATION_COLOR_CLASS = 'text-red-400'; 
+    
+    // 修正1: POP到達時の残り時間/割合の文字色 (黒色)
+    const IN_POP_TEXT_COLOR_CLASS = 'text-gray-900'; 
     // ------------------------------------------------------------------
     
     document.querySelectorAll('.mob-card').forEach(card => {
@@ -1095,14 +1114,16 @@ function updateProgressBars() {
         // --- 3. 残り時間（進捗率）の更新 (timeRemainingEl) ---
         if (repopData.isPop && timeRemainingEl) {
             
+            // 既存の色クラスを削除
             timeRemainingEl.classList.remove(IN_POP_TEXT_COLOR_CLASS, OVERDUE_DURATION_COLOR_CLASS);
             
             if (repopData.isMaxOver) {
                 // 最大超過: 経過時間（+HHh MMm）を「残り (%)」の欄に表示し、「最大超過」と追記
                 timeRemainingEl.textContent = `${repopData.timeRemaining} (最大超過)`; 
-                timeRemainingEl.classList.add(OVERDUE_DURATION_COLOR_CLASS);
+                // 修正: 明るい赤色クラスを適用
+                timeRemainingEl.classList.add(OVERDUE_DURATION_COLOR_CLASS); 
             } else {
-                // 修正1: 通常の In-Pop 表示 (HHh MMm (P.P%)) は黒色
+                // 通常の In-Pop 表示 (HHh MMm (P.P%)) は黒色
                 timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
                 timeRemainingEl.classList.add(IN_POP_TEXT_COLOR_CLASS); 
             }
@@ -1119,7 +1140,7 @@ function updateProgressBars() {
                 widthPercent = 0;
                 progressBarEl.classList.remove('animate-pulse');
             } else if (repopData.isMaxOver) {
-                // 最大超過: 100%幅で明るいオレンジに点滅
+                // 最大超過: 100%幅で明るいオレンジに点滅 (バーの色は変えない)
                 barColorClass = COLOR_ORANGE_3; 
                 widthPercent = 100;
                 progressBarEl.classList.add('animate-pulse');
