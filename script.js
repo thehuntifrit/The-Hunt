@@ -56,22 +56,28 @@ function toJstAdjustedIsoString(localIsoString) {
 }
 
 /**
- * エラーメッセージを指定エリアに表示/非表示にする (NEW)
+ * エラーメッセージを指定エリアに表示/非表示にする (修正)
  * @param {string|null} message - 表示するエラーメッセージ、または null で非表示。
  */
 function displayError(message) {
     if (!errorMessageContainer) return;
     
+    const baseClasses = ['p-2', 'text-sm', 'font-semibold', 'text-center'];
+    const errorClasses = ['bg-red-800', 'text-red-100', 'rounded-lg'];
+    
     if (message) {
-        // 中央揃え、単一行、モブカードの上に表示
         errorMessageContainer.classList.remove('hidden');
+        // エラー時のスタイルを適用
+        errorMessageContainer.classList.add(...baseClasses, ...errorClasses);
         errorMessageContainer.innerHTML = `
-            <div class="bg-red-800 text-red-100 p-2 rounded-lg text-sm font-semibold inline-block">
+            <div>
                 ${message}
             </div>
         `;
     } else {
         errorMessageContainer.classList.add('hidden');
+        // エラーがない場合はエラーに関連するクラスを除去
+        errorMessageContainer.classList.remove(...baseClasses, ...errorClasses);
         errorMessageContainer.innerHTML = '';
     }
 }
@@ -215,9 +221,11 @@ function createMobCard(mob) {
     if (lastKillDate) {
         // Sランクは抽選条件と同じ文字サイズ(text-sm)、その他は text-base
         const sizeClass = mob.Rank === 'S' ? 'text-sm' : 'text-base';
-        // 下余白は pb-3 (12px) で「1行分」の余白を確保
+        // Sランク以外の場合は、展開パネルの最上部に来るので pt-4
+        const topPadding = mob.Rank === 'S' ? 'pt-0' : 'pt-4'; 
+
         lastKillHistoryHtml = `
-            <div class="last-kill-history pt-0 pb-3 px-4">
+            <div class="last-kill-history ${topPadding} pb-3 px-4">
                 <div class="flex justify-between items-baseline">
                     <span class="text-gray-300 w-24 flex-shrink-0 ${sizeClass}">前回討伐:</span> 
                     <span class="last-kill-date ${sizeClass} text-white">${lastKillStr}</span>
@@ -231,9 +239,9 @@ function createMobCard(mob) {
     if (mob.Condition) {
         const displayCondition = processText(mob.Condition);
         
+        // Sランク: 前回討伐が後に続くため pb-1 (4px) で余白を狭く
         // Sランクは先頭に来るため pt-3 (固定コンテンツ p-3 との境界)
-        // Sランクは前回討伐が後に続くため pb-1 (4px) で余白を狭く
-        const conditionTopPadding = mob.Rank === 'S' ? 'pt-3' : 'pt-4'; 
+        const conditionTopPadding = mob.Rank === 'S' ? 'pt-3' : (lastKillHistoryHtml ? 'pt-1' : 'pt-4'); 
         const conditionBottomPadding = mob.Rank === 'S' ? 'pb-1' : 'pb-4';
         
         conditionHtml = `
@@ -247,6 +255,7 @@ function createMobCard(mob) {
     let mapDetailsHtml = '';
     if (mob.Map) {
         // マップの上余白は、前の要素が存在しない場合は pt-4, 存在する場合は pt-1 (狭く)
+        // Sランクは前回討伐が直前にある可能性が高いため pt-1
         const precedingContentExists = conditionHtml || lastKillHistoryHtml;
         const mapTopPaddingClass = precedingContentExists ? 'pt-1' : 'pt-4';
         
