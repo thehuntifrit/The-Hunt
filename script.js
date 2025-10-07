@@ -12,7 +12,6 @@ let currentMobNo = null;
 let userId = null;
 
 // --- DOMエレメント ---
-// これらの要素がHTMLに存在しない場合、nullになります。
 const appEl = document.getElementById('app');
 const mobListContainer = document.getElementById('mob-list-container');
 const rankTabs = document.getElementById('rank-tabs');
@@ -175,7 +174,7 @@ function createMobCard(mob) {
         const displayCondition = processText(mob.Condition);
         
         conditionHtml = `
-            <div class="pt-4 px-4 pb-2">
+            <div class="pt-4 px-4 pb-4">
                 <p class="text-xs text-gray-400 leading-snug">${displayCondition}</p>
             </div>
         `;
@@ -184,6 +183,7 @@ function createMobCard(mob) {
     // マップ詳細パネル: マップデータがない場合は空文字列を返す
     let mapDetailsHtml = '';
     if (mob.Map) {
+        // 抽選条件がある場合は、その下端の余白(pb-4)をキャンセルし、線と上余白(pt-3 border-t)を追加
         mapDetailsHtml = `
             <div class="mob-details ${mob.Condition ? 'pt-3 border-t border-gray-700' : 'pt-4'} px-4 pb-4">
                 <div class="relative">
@@ -198,9 +198,15 @@ function createMobCard(mob) {
     // 抽選条件とマップ詳細のいずれかがある場合のみ展開パネルを生成
     let expandablePanel = '';
     if (conditionHtml || mapDetailsHtml) {
+        // 抽選条件とマップの両方がある場合は、抽選条件から下部余白(pb-4)を削除し、マップセクションに結合する
+        let finalConditionHtml = conditionHtml;
+        if (mob.Condition && mob.Map) {
+            finalConditionHtml = finalConditionHtml.replace('pb-4', 'pb-0');
+        }
+
         expandablePanel = `
             <div class="expandable-panel overflow-hidden transition-all duration-300 ease-in-out max-h-0">
-                ${conditionHtml}
+                ${finalConditionHtml}
                 ${mapDetailsHtml}
             </div>
         `;
@@ -280,7 +286,6 @@ function renderMobList(rank) {
         ? globalMobData
         : globalMobData.filter(mob => mob.Rank === rank);
 
-    // 存在しない可能性があるカラムIDをフィルタリング
     const columns = [
         document.getElementById('column-1'),
         document.getElementById('column-2'),
@@ -289,16 +294,9 @@ function renderMobList(rank) {
 
     columns.forEach(col => col.innerHTML = '');
 
-    // カラムが存在しない場合は何もしない (クラッシュ回避)
-    if (columns.length === 0 && mobListContainer) {
-        // mobListContainerに直接挿入するフォールバック処理 (モバイルなど1カラムの場合)
-        // 今回のindex.htmlの想定では不要ですが、念のため
-        if (mobListContainer.children.length === 0) {
-            mobListContainer.innerHTML = `<p class="text-center text-gray-400 mt-10">表示するモブがいません。HTMLのカラムID(column-1, column-2など)を確認してください。</p>`;
-        }
+    if (columns.length === 0) {
+        // カラム要素がない場合は、処理を中断
         return; 
-    } else if (columns.length === 0) {
-        return;
     }
 
 
@@ -422,6 +420,9 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
         pointEl.style.left = `${xPercent}%`;
         pointEl.style.top = `${yPercent}%`;
         
+        // --- 修正箇所: 要素を座標の中心に配置 ---
+        pointEl.style.transform = 'translate(-50%, -50%)';
+
         if (isImportant) {
             pointEl.onclick = (e) => {
                 e.stopPropagation(); 
@@ -439,7 +440,6 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
  * 討伐報告モーダルを開く
  */
 function openReportModal(mobNo) {
-    // DOM要素の存在チェック
     if (!reportModal || !modalMobName || !reportDatetimeInput) return;
 
     currentMobNo = parseInt(mobNo);
