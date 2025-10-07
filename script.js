@@ -1,6 +1,6 @@
 // Google Apps Script (GAS) のエンドポイントURL
 // ユーザーから提供された正確なURLを設定 (大文字小文字を区別)
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwxgb5APRPyTwEM3ZQtgG3WWdxrFqVZAgkvq4Qfh_FggBU2p21yYDkWIdp-jMfBtG92Gg/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwxgb5APRPPtwEM3ZQtgG3WWdxrFqVZAgkvq4Qfh_FggBU2p21yYDkWIdp-jMfBtG92Gg/exec';
 // 静的モブデータ (mob_data.json) のURL (同階層のファイルを参照)
 const MOB_DATA_URL = './mob_data.json';
 
@@ -375,7 +375,6 @@ function createMobCard(mob) {
     // Min POP未到達時は 'hidden' クラスを付与して「残り (%)」の行を非表示にする
     const remainingTimeContainerClass = !isPop || isUnknown ? 'hidden' : '';
 
-    // ▼ 修正点: transform hover:scale-[1.01] transition duration-300 を削除
     return `
         <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative" 
              data-rank="${mob.Rank}" 
@@ -390,8 +389,8 @@ function createMobCard(mob) {
                         <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-sm w-7 h-7 flex items-center justify-center rounded-lg shadow-lg">
                             ${mob.Rank}
                         </div>
-                        <div class="min-w-0 flex-1"> 
-                            <h2 class="text-lg font-bold text-outline text-yellow-200 leading-tight truncate">${mob.Name}</h2>
+                        <div class="min-w-0 flex-1 max-w-full"> 
+                            <h2 class="text-base font-bold text-outline text-yellow-200 leading-tight truncate">${mob.Name}</h2>
                             <p class="text-xs text-gray-400 leading-tight truncate">${mob.Area}</p>
                         </div>
                     </div>
@@ -407,7 +406,7 @@ function createMobCard(mob) {
                     
                     <div class="progress-container ${remainingTimeContainerClass} flex justify-between relative z-10">
                         <span class="text-gray-300 w-24 flex-shrink-0 text-base">残り (%):</span> 
-                        <span class="${remainingTimeClass} font-bold time-remaining">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
+                        <span class="${remainingTimeClass} font-bold time-remaining text-gray-900">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
                     </div>
 
                     <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl" style="width: 0%; z-index: 0;"></div>
@@ -1022,12 +1021,13 @@ function updateProgressBars() {
     // 進捗バーの色
     const COLOR_GREEN_3 = 'bg-lime-500'; 
     const COLOR_YELLOW_3 = 'bg-yellow-400'; 
-    const COLOR_ORANGE_3 = 'bg-orange-400'; 
-    const MAX_OVER_TEXT_COLOR_CLASS = COLOR_ORANGE_3.replace('bg-', 'text-'); 
+    // ▼ 修正: 80%以上の背景色をパステルカラーのオレンジ (bg-orange-300) に変更
+    const COLOR_ORANGE_3_PASTEL = 'bg-orange-300'; 
+    const COLOR_ORANGE_3 = COLOR_ORANGE_3_PASTEL; // 80%~99%はこの色を使用
     
-    // ▼ 最大超過時の色をより濃い赤に変更 (text-red-700)
+    // 最大超過時の文字色（+HHh MMm）
     const OVERDUE_DURATION_COLOR_CLASS = 'text-red-700'; 
-    // ▼ POP到達時の残り時間/割合の文字色を黒に変更 (text-gray-900)
+    // ▼ 修正: POP到達時の残り時間/割合の文字色を黒に変更 (text-gray-900)
     const IN_POP_TEXT_COLOR_CLASS = 'text-gray-900'; 
     // ------------------------------------------------------------------
     
@@ -1086,7 +1086,7 @@ function updateProgressBars() {
             repopTimeEl.textContent = displayTimeStr; 
             
             // POP未達時は青色を維持
-            repopTimeEl.classList.remove(MAX_OVER_TEXT_COLOR_CLASS); 
+            // repopTimeEl.classList.remove(MAX_OVER_TEXT_COLOR_CLASS.replace('text-', '')); // 削除不要
             repopTimeEl.classList.add(TEXT_POP_TIME_COLOR_CLASS, 'font-bold'); 
         }
         
@@ -1113,7 +1113,7 @@ function updateProgressBars() {
         if (repopData.isPop && timeRemainingEl) {
             
             // 既存の色クラスを削除
-            timeRemainingEl.classList.remove(IN_POP_TEXT_COLOR_CLASS, OVERDUE_DURATION_COLOR_CLASS, 'font-bold'); 
+            timeRemainingEl.classList.remove(IN_POP_TEXT_COLOR_CLASS, OVERDUE_DURATION_COLOR_CLASS, 'text-white'); // text-white も削除対象に追加
             
             if (repopData.isMaxOver) {
                 // 最大超過: 経過時間（+HHh MMm）を「残り (%)」の欄に表示し、「最大超過」と追記
@@ -1128,24 +1128,27 @@ function updateProgressBars() {
             }
         }
         
-        // --- 4. プログレスバーの更新ロジック (変更なし) ---
+        // --- 4. プログレスバーの更新ロジック ---
         if (progressBarEl) {
             
             let barColorClass = '';
             let widthPercent = Math.min(100, percent); 
+
+            // 既存の背景色クラスをすべて削除
+            progressBarEl.classList.remove(COLOR_GREEN_3, COLOR_YELLOW_3, COLOR_ORANGE_3_PASTEL);
 
             if (!repopData.isPop || repopData.isUnknown) {
                 // Min POP未到達時やデータ不明時はバーを非表示 (幅0%)
                 widthPercent = 0;
                 progressBarEl.classList.remove('animate-pulse');
             } else if (repopData.isMaxOver) {
-                // 最大超過: 100%幅で明るいオレンジに点滅 (バーの色は変えない)
-                barColorClass = COLOR_ORANGE_3; 
+                // 最大超過: 100%幅でパステルオレンジに点滅 
+                barColorClass = COLOR_ORANGE_3_PASTEL; // パステルオレンジを維持
                 widthPercent = 100;
                 progressBarEl.classList.add('animate-pulse');
             } else if (percent >= 80) {
-                // 80% ～ 100%未満: 明るいオレンジ 3
-                barColorClass = COLOR_ORANGE_3; 
+                // 80% ～ 100%未満: パステルオレンジ 3 (bg-orange-300)
+                barColorClass = COLOR_ORANGE_3_PASTEL; 
                 progressBarEl.classList.remove('animate-pulse');
             } else if (percent >= 60) {
                 // 60% ～ 80%未満: 明るい黄 3
@@ -1158,7 +1161,7 @@ function updateProgressBars() {
             }
             
             // クラスの付け替えと幅の更新
-            progressBarEl.className = `progress-bar absolute inset-0 transition-all duration-100 ease-linear ${barColorClass} rounded-xl`;
+            progressBarEl.classList.add(barColorClass);
             progressBarEl.style.width = `${widthPercent}%`;
         }
 
