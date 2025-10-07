@@ -9,7 +9,7 @@ body {
 /* テキストに藍色のアウトライン/シャドウを適用 */
 .text-outline {
     text-shadow: 
-        1px 1px 0 #1f2937,  /* 藍色系シャドウ */
+        1px 1px 0 #1f2937,  /* 藍色系シャドウ */
         -1px 1px 0 #1f2937, 
         1px -1px 0 #1f2937, 
         -1px -1px 0 #1f2937;
@@ -34,7 +34,6 @@ body {
 }
 
 /* マウスオーバー時の強調表示 */
-/* 重要ポイントのみホバーで拡大・発光させる */
 .spawn-point[data-important="true"]:hover {
     transform: translate(-50%, -50%) scale(1.8);
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
@@ -42,20 +41,17 @@ body {
 
 /* 押せないポイントはホバーを無効にして見た目の変化を抑える */
 .spawn-point[data-important="false"] {
-    pointer-events: none; /* ホバーやクリックを受けない */
-    opacity: 0.95; /* 若干淡くする場合は調整可能 */
+    pointer-events: none; 
+    opacity: 0.95;
 }
 
 /* S/Aモブが出る重要地点のリング */
-/* 重要ポイント用のベースクラス（外枠は JS で色付き box-shadow を直接付与） */
 .important-ring {
-    /* 外枠は JS 側で box-shadow を inline style として付与するため最小限の設定に */
     box-shadow: 0 0 0 1px rgba(0,0,0,0.0);
     border-radius: 50%;
-    /* 必要なら軽い外側の発光を残す（色は JS の drop-shadow で制御） */
     filter: drop-shadow(0 0 4px rgba(0,0,0,0.5));
 }
-
+   
 /* リポップバーのCSS変数とグラデーション定義 */
 .repop-bar-bg {
     /* --progress-percentはJSで動的に設定されます */
@@ -69,16 +65,12 @@ body {
 
 /* スライドパネルのアニメーション - 境界線とパディングを調整 */
 .mob-details {
-    /* ★修正: border-top の transition を削除 */
     transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out; 
     overflow: hidden;
     max-height: 0;
     padding: 0;
-    /* 境界線は設定しない */
 }
 .mob-details.open {
     max-height: 500px; 
-    /* 開いている時のパディングを設定 (p-4相当) */
     padding: 1rem; 
-    /* ★修正: 境界線を設定しない */
 }
