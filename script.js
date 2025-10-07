@@ -76,7 +76,7 @@ const MOCK_MOB_DATA = [
      {"No.": 32031,"Rank": "S","Name": "ソルト・アンド・ライト","Area": "ギラバニア湖畔地帯","POP_Date": "ギラバニア湖畔地帯でアイテムを50回捨てる","REPOP(s)": 302400,"MAX(s)": 475200,"Map": ""},
      {"No.": 32041,"Rank": "S","Name": "オキナ","Area": "紅玉海","POP_Date": "「ユメミガイ」「カラナシユメミ」各100体討伐後、満月になる//※満月中に討伐数を満たすのも可...
 ];
-// (※MOCK_MOB_DATAは省略されていますが、元のデータが全て含まれます。)
+// (※MOCK_MOB_DATAは元のデータと同一です)
 
 // --- グローバル変数 ---
 let globalMobData = [];
@@ -143,7 +143,6 @@ function calculateRepop(mob, lastKill) {
     let elapsedPercent = (elapsedMs / totalDurationMs) * 100;
     
     // 経過率を最小ポップ時間で正規化して表示（0% - 100%）
-    // 最小ポップ時間を超えたら100%になるように調整
     let normalizedElapsedPercent = Math.max(0, Math.min(100, (elapsedMs / repopMinMs) * 100));
 
 
@@ -308,7 +307,7 @@ function getMobByNo(mobNo) {
  */
 function renderMobList(rank) {
     currentFilter = rank;
-    mobListContainer.innerHTML = ''; 
+    // mobListContainer.innerHTML = ''; // この親要素ではなく、カラム内をクリアする
 
     // フィルタリング
     const filteredMobs = rank === 'ALL' 
@@ -320,14 +319,14 @@ function renderMobList(rank) {
         document.getElementById('column-1'),
         document.getElementById('column-2'),
         document.getElementById('column-3')
-    ].filter(col => col); // null除外（モバイル時）
+    ].filter(col => col); 
 
     columns.forEach(col => col.innerHTML = ''); // カラムをクリア
 
     filteredMobs.forEach((mob, index) => {
         const cardHtml = createMobCard(mob);
         
-        // 振り分けロジック: デスクトップ(3カラム)またはモバイル(1カラム)
+        // 振り分けロジック: カラムが複数あれば、均等に分配
         let targetColumn = columns[0];
         if (columns.length > 1) {
             targetColumn = columns[index % columns.length];
@@ -403,15 +402,11 @@ function toggleMobDetails(button) {
 function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     overlayEl.innerHTML = '';
     
-    // 湧き潰し対象のモブランクを取得 (Sモブの湧き潰しはAモブの場合がある)
     const mob = getMobByNo(parseInt(currentMobNo));
     
     spawnPoints.forEach(point => {
-        // 現在のモブが出現する可能性のあるポイントのみを重要とマーク
-        // (例: 南ディのSランクと、湧き潰し対象のAランク/Bランクの場所)
         const isImportant = point.mob_ranks.includes(mob.Rank); 
         
-        // 座標計算 (0-100%スケール)
         const xPercent = point.x;
         const yPercent = point.y;
         
@@ -420,18 +415,13 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
         pointEl.setAttribute('data-id', point.id);
         pointEl.setAttribute('data-important', isImportant ? 'true' : 'false');
         
-        // Sランクモブの湧き潰しポイントは特別なリングを表示（湧き潰し中かどうかを示すために使用可能）
         if (isImportant && mob.Rank === 'S') {
-            // Sランクポイントはリングを表示
             pointEl.classList.add('important-ring');
-            // JSでインラインスタイルとしてSモブの色付きシャドウを付与
-            pointEl.style.boxShadow = '0 0 0 4px #f59e0b'; // 例: アンバーのリング
+            pointEl.style.boxShadow = '0 0 0 4px #f59e0b'; 
             pointEl.style.filter = 'drop-shadow(0 0 8px rgba(245, 158, 11, 0.8))';
         } else if (isImportant && mob.Rank === 'A') {
-            // Aランクモブはシンプルな青い点
             pointEl.style.backgroundColor = '#3b82f6'; // blue-500
         } else {
-            // 通常のBモブ湧き潰し地点など、非重要な点
             pointEl.style.backgroundColor = '#9ca3af'; // gray-400
             pointEl.style.opacity = '0.4';
         }
@@ -439,11 +429,9 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
         pointEl.style.left = `${xPercent}%`;
         pointEl.style.top = `${yPercent}%`;
         
-        // 湧き潰しポイントクリックイベント (例: 湧き潰し完了を記録)
         if (isImportant) {
             pointEl.onclick = () => {
                 alert(`ポイント [${point.id}] をクリックしました。湧き潰し機能は未実装です。`);
-                // 実際のアプリケーションでは、ここでサーバーに湧き潰し完了を報告するAPIを叩く
             };
         }
         
@@ -470,7 +458,6 @@ function openReportModal(mobNo) {
 
     // 現在時刻をローカルタイムでセット
     const now = new Date();
-    // UTCからタイムゾーンオフセットを考慮した文字列を生成
     const offset = now.getTimezoneOffset() * 60000;
     const localIso = (new Date(now.getTime() - offset)).toISOString().slice(0, 16);
     reportDatetimeInput.value = localIso;
@@ -509,24 +496,22 @@ async function submitReport() {
     reportStatusEl.classList.remove('text-green-500', 'text-red-500');
     reportStatusEl.textContent = 'サーバーに送信中...';
     
-    // ISO 8601形式の文字列をDateオブジェクトに変換（この段階でローカルタイムとして解釈される）
     const killDate = new Date(killTime); 
 
     try {
         const response = await fetch(GAS_ENDPOINT, {
             method: 'POST',
-            mode: 'cors', // CORSを許可
+            mode: 'cors',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            // GASウェブアプリのパラメータとしてデータを送信
             body: new URLSearchParams({
                 action: 'reportKill',
                 mobNo: currentMobNo,
                 mobName: mob.Name,
                 killTime: killDate.toISOString(), // UTCで送信
                 memo: memo,
-                reporterId: userId // 報告者UUID
+                reporterId: userId 
             })
         });
 
@@ -535,9 +520,7 @@ async function submitReport() {
         if (result.status === 'success') {
             reportStatusEl.textContent = `報告成功！ (${result.message})`;
             reportStatusEl.classList.add('text-green-500');
-            // 最新のデータでリストを更新
             await fetchRecordsAndUpdate(); 
-            // 成功したらモーダルを閉じる
             setTimeout(closeReportModal, 1500); 
 
         } else {
@@ -582,13 +565,11 @@ async function fetchRecordsAndUpdate() {
             renderMobList(currentFilter);
         } else {
             console.error('GASからのデータ取得失敗:', data.message);
-            // エラー時もモックデータで表示
             globalMobData = MOCK_MOB_DATA;
             renderMobList(currentFilter);
         }
     } catch (error) {
         console.error('GAS通信エラー:', error);
-        // エラー時もモックデータで表示
         globalMobData = MOCK_MOB_DATA;
         renderMobList(currentFilter);
     }
@@ -605,30 +586,20 @@ function updateProgressBars() {
         
         const lastKill = lastKillStr ? new Date(lastKillStr) : null;
         
-        // POP_Dateがない、またはPOP中のモブは更新不要
-        if (!lastKill || card.querySelector('.time-remaining').textContent === 'POP中') {
-            // POP中のモブでも、最大ポップ時間を過ぎていないかチェックして更新が必要
-            // ここでは簡易的に、再計算が必要なロジックを呼ぶ
-        }
-
-        // POP_Dateが未設定の場合はスキップ
         if (!lastKill) return; 
 
-        // calculateRepopを使って新しい進捗を計算
         const mobStub = {"REPOP(s)": repop, "MAX(s)": max};
         const repopData = calculateRepop(mobStub, lastKill);
         const percent = Math.max(0, Math.min(100, repopData.elapsedPercent || 0));
 
         // CSS変数とテキストコンテンツを更新
         card.style.setProperty('--progress-percent', `${percent}%`);
-        const infoEl = card.querySelector('.fixed-content .font-mono');
         
-        if (infoEl) {
-            const minPopStr = repopData.minRepop instanceof Date ? repopData.minRepop.toLocaleString() : repopData.minRepop;
-            infoEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
+        const timeRemainingEl = card.querySelector('.time-remaining');
+        if (timeRemainingEl) {
+            timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
         }
-
-        // 予測POP時刻の更新（時刻が変わる可能性があるため）
+        
         const repopTimeEl = card.querySelector('.repop-time');
         if (repopTimeEl) {
             const minPopStr = repopData.minRepop instanceof Date ? repopData.minRepop.toLocaleString() : repopData.minRepop;
@@ -637,14 +608,10 @@ function updateProgressBars() {
             // POP中になった場合、討伐報告ボタンの状態を更新
             const reportBtn = card.querySelector('.report-btn');
             if (repopData.timeRemaining === 'POP中' && reportBtn && !reportBtn.disabled) {
-                // POP中になった場合、ボタンを無効化
                 reportBtn.disabled = true;
                 reportBtn.textContent = 'POP中 (報告不可)';
                 reportBtn.classList.remove('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
                 reportBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
-                
-                // POP中になったモブをリストの先頭に移動させるなどのソート処理をここで行うことも可能ですが、
-                // リストレンダリング全体を再実行（renderMobList）するのが最も確実です。
             }
         }
     });
@@ -682,10 +649,9 @@ function initializeApp() {
     setInterval(fetchRecordsAndUpdate, 10 * 60 * 1000);
 
     // 進捗ゲージはクライアントで軽量に更新（60秒ごと）
-    const __progressUpdaterId = setInterval(updateProgressBars, 60 * 1000);
-
-    // ウィンドウサイズ変更時にもレンダリングを調整する処理を検討...
+    setInterval(updateProgressBars, 60 * 1000);
 }
 
 // アプリケーション起動
 document.addEventListener('DOMContentLoaded', initializeApp);
+
