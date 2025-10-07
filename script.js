@@ -151,18 +151,18 @@ function createMobCard(mob) {
         reportBtnContent = `<span class="text-sm font-bold">討伐</span><span class="text-sm font-bold">報告</span>`;
     }
 
-    // 討伐報告ボタンの全体サイズを調整
+    // 討伐報告ボタンの全体サイズを調整 (幅を w-14 に変更)
     const reportBtnHtml = `
-        <button class="${reportBtnClass} text-xs text-white px-2 py-1 rounded-md shadow-md transition h-10 w-16 flex flex-col items-center justify-center leading-none" 
+        <button class="${reportBtnClass} text-xs text-white px-1 py-1 rounded-md shadow-md transition h-10 w-14 flex flex-col items-center justify-center leading-none" 
                 data-mobno="${mob['No.']}" 
                 ${!canReport ? 'disabled' : ''}>
             ${reportBtnContent}
         </button>
     `;
     
-    // マップ詳細表示トグルボタン (2行表示に変更)
+    // マップ詳細表示トグルボタン (2行表示に変更、サイズを h-12 に変更)
     const toggleMapBtn = mob.Map ? `
-        <button class="toggle-details-btn text-xs font-semibold py-1 px-2 rounded-full bg-gray-600 hover:bg-gray-500 flex flex-col items-center leading-none h-auto w-auto">
+        <button class="toggle-details-btn text-sm font-semibold py-1 px-2 rounded-full bg-gray-600 hover:bg-gray-500 flex flex-col items-center justify-center leading-tight w-auto h-12">
             <span>マップ</span>
             <span>詳細</span>
         </button>
@@ -226,7 +226,7 @@ function createMobCard(mob) {
                     </div>
                     
                     <div class="flex justify-between">
-                        <span class="text-gray-300 w-24 flex-shrink-0 text-base">残り時間 (%):</span> 
+                        <span class="text-gray-300 w-24 flex-shrink-0 text-base">残り (%):</span> 
                         <span class="font-mono time-remaining text-base text-white">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
                     </div>
 
@@ -323,7 +323,7 @@ function attachEventListeners() {
         button.onclick = (e) => toggleMobDetails(e.currentTarget);
         
         // 初期のボタン表示を2行に設定 (DOM生成時にも行われているが念のため)
-        if (button.innerHTML.indexOf('<span>') === -1 && button.textContent === 'マップ詳細') {
+        if (button.textContent === 'マップ詳細') {
             button.innerHTML = `<span>マップ</span><span>詳細</span>`;
         }
     });
@@ -626,6 +626,7 @@ function updateProgressBars() {
             }
         }
         
+        // 残り時間 (%) を 残り (%) に修正
         if (timeRemainingEl) {
             timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
         }
