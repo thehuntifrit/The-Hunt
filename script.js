@@ -33,32 +33,15 @@ function unixTimeToDate(unixtime) {
 }
 
 /**
- * テキストを21文字ごとに強制的に折り返す関数 (既存の // による改行も処理)
+ * テキストを // で改行する関数
  * @param {string} text 処理対象の文字列
  * @returns {string} <br>が挿入された文字列
  */
-const forceWrapText = (text) => {
+const processNewlines = (text) => {
     // 既存の // を <br> に変換
-    const initialText = text.replace(/\/\/\s*/g, '<br>');
-
-    // <br>で分割し、各セグメントを21文字で折り返す
-    const segments = initialText.split('<br>');
-    
-    const finalWrappedCondition = segments.map(segment => {
-        let segmentResult = '';
-        const limit = 21;
-        for (let i = 0; i < segment.length; i += limit) {
-            if (i > 0) {
-                segmentResult += '<br>';
-            }
-            // 21文字ごとに切り出し
-            segmentResult += segment.substring(i, i + limit);
-        }
-        return segmentResult;
-    }).join('<br>'); // セグメント間は <br> で結合
-
-    return finalWrappedCondition;
+    return text.replace(/\/\/\s*/g, '<br>');
 };
+
 
 /**
  * 討伐日時からリポップ情報を計算する
@@ -188,47 +171,41 @@ function createMobCard(mob) {
         </button>
     `;
     
-    // マップ詳細表示トグルボタン (2行表示、サイズを h-12 に変更)
-    const toggleMapBtn = mob.Map ? `
-        <button class="toggle-details-btn text-sm font-semibold py-1 px-2 rounded-full bg-gray-600 hover:bg-gray-500 flex flex-col items-center justify-center leading-tight w-auto h-12">
-            <span>マップ</span>
-            <span>詳細</span>
-        </button>
-    ` : '';
-    
-    // 抽選条件の処理: 21文字折り返し処理を追加、Sモブの固定高適用
+    // 抽選条件の処理: 文字数制限と4行固定を撤廃し、// のみ改行に変換
     let conditionHtml = '';
     if (mob.Condition) {
-        // PC (lg:サイズ以上) では折り返し処理を適用しないためのクラス分岐
-        // isLgOrGreater() は pure JavaScript ではないため、条件分岐で対応
-        
-        let displayCondition = '';
-        // 現在のウィンドウ幅が Tailwind の 'lg' ブレイクポイント (1024px) 以上かチェック
-        if (window.innerWidth >= 1024) {
-            // PC版: // のみを <br> に変換し、21文字折り返しは適用しない
-            displayCondition = mob.Condition.replace(/\/\/\s*/g, '<br>');
-        } else {
-            // スマホ版: 21文字で折り返し処理を適用
-            displayCondition = forceWrapText(mob.Condition);
-        }
-
-        // Sモブの場合は固定高クラス (h-16: 約4行分, overflow-hidden) を適用
-        const conditionClass = mob.Rank === 'S' ? 'h-16 overflow-hidden' : 'h-auto';
-        
-        conditionHtml = `<p class="text-xs text-gray-400 leading-tight ${conditionClass}">${displayCondition}</p>`;
+        const displayCondition = processNewlines(mob.Condition);
+        conditionHtml = `
+            <div class="mt-3 p-3 bg-gray-700 rounded-lg">
+                <h4 class="text-sm font-semibold text-gray-300 mb-1">抽選条件:</h4>
+                <p class="text-xs text-gray-400 leading-snug">${displayCondition}</p>
+            </div>
+        `;
     }
     
-    // 抽選条件がない場合、フッターコンテンツを非表示
-    const footerContent = conditionHtml || toggleMapBtn ? `
-        <div class="mt-3 flex justify-between items-start min-h-[1.5rem]"> 
-            ${conditionHtml}
-            ${toggleMapBtn}
+    // マップ詳細パネル
+    const mapDetailsHtml = mob.Map ? `
+        <div class="mob-details mt-3 border-t border-gray-700 pt-3">
+            <h4 class="text-sm font-semibold text-gray-300 mb-2">マップ詳細:</h4>
+            <div class="relative">
+                <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="w-full h-auto rounded-lg shadow-md map-image" data-area="${mob.Area}">
+                <div class="absolute inset-0 map-overlay" data-area="${mob.Area}">
+                    </div>
+            </div>
         </div>
-    ` : '';
+    ` : '<p class="text-sm text-gray-500 italic p-3 text-center">このモブのマップデータはありません。</p>';
+    
+    // 抽選条件とマップ詳細をまとめて展開可能なパネルに格納
+    const expandablePanel = `
+        <div class="expandable-panel border-t border-gray-700 overflow-hidden transition-all duration-300 ease-in-out max-h-0">
+            ${conditionHtml}
+            ${mapDetailsHtml}
+        </div>
+    `;
 
 
     return `
-        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden transform hover:scale-[1.01] transition duration-300 relative" 
+        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden transform hover:scale-[1.01] transition duration-300 relative cursor-pointer" 
              data-rank="${mob.Rank}" 
              data-mobno="${mob['No.']}"
              data-lastkill="${mob.LastKillDate || ''}"
@@ -273,20 +250,9 @@ function createMobCard(mob) {
                         <span class="last-kill-date text-white">${lastKillStr}</span>
                     </div>
                 </div>
-
-                ${footerContent}
             </div>
 
-            <div class="mob-details border-t border-gray-700 bg-gray-900" 
-                 id="details-${mob['No.']}">
-                ${mob.Map ? `
-                    <div class="relative mt-2 p-2">
-                        <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="w-full h-auto rounded-lg shadow-md map-image" data-area="${mob.Area}">
-                        <div class="absolute inset-0 map-overlay" data-area="${mob.Area}">
-                            </div>
-                    </div>
-                ` : '<p class="text-sm text-gray-500 italic p-4">このモブのマップデータはありません。</p>'}
-            </div>
+            ${expandablePanel}
         </div>
     `;
 }
@@ -352,41 +318,45 @@ function attachEventListeners() {
     // 討伐報告ボタン
     document.querySelectorAll('.report-btn').forEach(button => {
         if (button.dataset.mobno && !button.disabled) {
-            button.onclick = (e) => openReportModal(e.currentTarget.dataset.mobno);
+            // イベントをバブリングから保護するため、報告ボタンは e.stopPropagation() を使用してカードのトグル処理を停止させる
+            button.onclick = (e) => {
+                e.stopPropagation();
+                openReportModal(e.currentTarget.dataset.mobno);
+            }
         }
     });
     
-    // マップ詳細トグルボタン
-    document.querySelectorAll('.toggle-details-btn').forEach(button => {
-        button.onclick = (e) => toggleMobDetails(e.currentTarget);
-        
-        // 初期のボタン表示を2行に設定 (DOM生成時にも行われているが念のため)
-        if (button.textContent === 'マップ詳細') {
-            button.innerHTML = `<span>マップ</span><span>詳細</span>`;
-        }
+    // カード全体のクリックイベント（トグル展開用）
+    document.querySelectorAll('.mob-card').forEach(card => {
+        card.onclick = (e) => toggleMobDetails(e.currentTarget);
     });
 }
 
 /**
  * マップ詳細パネルの表示/非表示を切り替える
+ * @param {HTMLElement} card - クリックされた mob-card 要素
  */
-function toggleMobDetails(button) {
-    const card = button.closest('.mob-card');
+function toggleMobDetails(card) {
     const mobNo = card.dataset.mobno;
-    const detailsPanel = document.getElementById(`details-${mobNo}`);
     const mob = getMobByNo(parseInt(mobNo));
+    const panel = card.querySelector('.expandable-panel');
 
-    if (detailsPanel.classList.contains('open')) {
-        detailsPanel.classList.remove('open');
-        // 2行表示に戻す
-        button.innerHTML = `<span>マップ</span><span>詳細</span>`;
+    // 最大高を0にリセットし、transitionを有効にする
+    panel.style.transition = 'max-height 0.3s ease-in-out';
+    
+    if (card.classList.contains('open')) {
+        // 閉じる処理
+        panel.style.maxHeight = '0';
+        card.classList.remove('open');
     } else {
-        detailsPanel.classList.add('open');
-        // 1行表示に変更
-        button.innerHTML = '詳細を隠す';
+        // 開く処理
+        // 内容物の高さを取得し、max-heightに設定することでスライド展開をシミュレート
+        panel.style.maxHeight = panel.scrollHeight + 'px';
+        card.classList.add('open');
         
-        const mapOverlay = detailsPanel.querySelector('.map-overlay');
+        const mapOverlay = panel.querySelector('.map-overlay');
         if (mapOverlay && mapOverlay.children.length === 0 && mob.spawn_points) {
+            // スポーンポイントの描画は開くときに行う
             drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
         }
     }
@@ -426,7 +396,8 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
         pointEl.style.top = `${yPercent}%`;
         
         if (isImportant) {
-            pointEl.onclick = () => {
+            pointEl.onclick = (e) => {
+                e.stopPropagation(); // スポーンポイントクリックでカードが閉じないように
                 alert(`ポイント [${point.id}] をクリックしました。湧き潰し機能は未実装です。`);
             };
         }
@@ -669,7 +640,7 @@ function updateProgressBars() {
             timeRemainingEl.textContent = `${repopData.timeRemaining} (${percent.toFixed(1)}%)`;
         }
         
-        // 討伐報告ボタンの状態を更新 (文字サイズ修正を適用)
+        // 討伐報告ボタンの状態を更新 
         const reportBtn = card.querySelector('.report-btn');
         if (repopData.timeRemaining === 'POP中') {
             if (reportBtn) {
@@ -681,37 +652,14 @@ function updateProgressBars() {
         } else {
             if (reportBtn) {
                 reportBtn.disabled = false;
-                // 「報告」の文字サイズを「討伐」と同じ text-sm font-bold に統一
                 reportBtn.innerHTML = `<span class="text-sm font-bold">討伐</span><span class="text-sm font-bold">報告</span>`;
                 reportBtn.classList.remove('bg-gray-500', 'cursor-not-allowed');
                 reportBtn.classList.add('bg-green-600', 'hover:bg-green-500', 'active:bg-green-700');
             }
         }
-        
-        // マップ詳細ボタンの更新 (POP中から復帰時など)
-        const toggleBtn = card.querySelector('.toggle-details-btn');
-        const detailsPanel = card.querySelector('.mob-details');
-        if (toggleBtn) {
-             if (detailsPanel && detailsPanel.classList.contains('open')) {
-                toggleBtn.innerHTML = '詳細を隠す';
-            } else {
-                toggleBtn.innerHTML = `<span>マップ</span><span>詳細</span>`;
-            }
-        }
     });
-    
-    // **画面サイズ変更時の再レンダリング**
-    // 画面サイズが変わったときに、抽選条件の表示（折り返しの有無）を再計算するために再レンダリングする
-    const currentWindowWidth = window.innerWidth;
-    const isLg = currentWindowWidth >= 1024; // Tailwind の lg ブレイクポイント
-
-    if (updateProgressBars.lastIsLg !== isLg) {
-        updateProgressBars.lastIsLg = isLg;
-        // 画面幅が変わった場合のみ、表示を更新
-        renderMobList(currentFilter);
-    }
 }
-updateProgressBars.lastIsLg = window.innerWidth >= 1024; // 初期値設定
+
 
 /**
  * サイトの初期化処理
@@ -737,8 +685,7 @@ function initializeApp() {
     
     fetchRecordsAndUpdate(true);
 
-    // 画面サイズ変更時にも進捗バーを更新（折り返し対応のため）
-    window.addEventListener('resize', updateProgressBars);
+    // 画面サイズ変更時の再レンダリングは不要になったため削除
 
     setInterval(() => fetchRecordsAndUpdate(false), 10 * 60 * 1000);
 
