@@ -268,7 +268,7 @@ function createMobCard(mob) {
         </button>
     `;
     
-    // NEW: POP開始時刻表示エリア (展開パネル内)
+    // POP開始時刻表示エリア (展開パネル内)
     // POP開始時間になったら前回討伐時間の上に「開始時間:」とし次回POP時間の時間を添えて表示
     const popStartTimeHtml = `
         <div class="px-4 pt-2 pop-start-time-display hidden">
@@ -306,7 +306,7 @@ function createMobCard(mob) {
         mapDetailsHtml = `
             <div class="mob-details pt-1 px-4 pb-4 map-content">
                 <div class="relative">
-                    <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="w-full h-auto rounded-lg shadow-md map-image" data-area="${mob.Area}">
+                    <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="w-full h-auto rounded-lg shadow-md map-image" data-area="${mob.Area}" onerror="this.onerror=null; this.src='https://placehold.co/800x400/334155/f8fafc?text=${mob.Area}+Map+Placeholder';">
                     <div class="absolute inset-0 map-overlay" data-area="${mob.Area}">
                         <!-- スポーンポイントはJSで動的に配置 -->
                     </div>
@@ -368,7 +368,7 @@ function createMobCard(mob) {
                 <!-- リポップ情報エリア - プログレスバーの基盤 -->
                 <div class="mt-2 bg-gray-700 p-2 rounded-xl text-xs flex flex-col space-y-1 relative overflow-hidden shadow-inner">
                     <!-- 1. 次回POP (Min POPまでの時間またはMax POP時刻) -->
-                    <!-- NEW: POP未達時のみ表示される行 -->
+                    <!-- POP未達時のみ表示される行 -->
                     <div class="flex justify-between items-baseline relative z-10 repop-time-container">
                         <span class="text-gray-300 w-24 flex-shrink-0 text-base">次回POP:</span>
                         <span class="repop-time text-base ${minPopColorClass} font-bold font-mono">${minPopStr}</span>
@@ -528,7 +528,10 @@ function toggleMobDetails(card) {
 }
 
 /**
- * マップにスポーンポイントを描画する (変更なし)
+ * マップにスポーンポイントを描画する
+ * * **修正点**: 
+ * - S/A地点のポイントサイズの内円を 10px に変更。
+ * - B1/B2のみの地点のポイントサイズを 12px に変更。
  */
 function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     overlayEl.innerHTML = '';
@@ -536,9 +539,11 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     
     if (!mob || !mob.cullStatusMap) return;
 
-    // --- NEW: ポイントの基本スタイル設定 ---
-    const pointDiameter = '12px'; 
-    const pointBorderWidth = '2px'; 
+    // --- NEW/UPDATED: ポイントの基本スタイル設定 ---
+    const POINT_DIAMETER_SA_INNER = '10px'; // S/A地点の内円（基準）
+    const POINT_DIAMETER_SA_OUTER = '16px'; // S/A地点の外円
+    const POINT_DIAMETER_B_ONLY = '12px';   // B1/B2のみの地点（S/A内円より少し大きい）
+    const POINT_BORDER_WIDTH = '2px'; 
     
     const B1_INTERNAL_COLOR = '#60a5fa'; // Blue-400
     const B2_INTERNAL_COLOR = '#f87171'; // Red-400
@@ -565,37 +570,41 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
 
         const isCullTarget = isS_A_Point; 
 
-        // Bランク専用ポイントは強調表示なし
+        // Bランク専用ポイントは強調表示なし (単一円 12px)
         if (!isCullTarget) {
             if (point.mob_ranks.length === 1 && (includesB1 || includesB2)) {
+                
+                // --- Bランク専用ポイントの描画 ---
                 const pointEl = document.createElement('div');
                 pointEl.className = 'spawn-point-b-only';
                 pointEl.style.left = `${point.x}%`;
                 pointEl.style.top = `${point.y}%`;
                 pointEl.style.transform = 'translate(-50%, -50%)';
                 
-                pointEl.style.width = pointDiameter;
-                pointEl.style.height = pointDiameter;
+                // 修正後のサイズ: 12px
+                pointEl.style.width = POINT_DIAMETER_B_ONLY;
+                pointEl.style.height = POINT_DIAMETER_B_ONLY;
                 pointEl.style.borderRadius = '50%';
                 pointEl.style.position = 'absolute';
+                pointEl.style.zIndex = '1';
                 
-                pointEl.style.backgroundColor = includesB1 ? B1_INTERNAL_COLOR : B1_INTERNAL_COLOR : B2_INTERNAL_COLOR; // B2の色を適用
+                pointEl.style.backgroundColor = includesB1 ? B1_INTERNAL_COLOR : B2_INTERNAL_COLOR; 
                 pointEl.style.border = 'none';
-                pointEl.style.boxShadow = '0 0 8px rgba(0, 0, 0, 0.7)'; 
+                pointEl.style.boxShadow = '0 0 4px rgba(0, 0, 0, 0.5)'; 
                 
                 overlayEl.appendChild(pointEl);
             }
             return;
         }
 
-        // --- 湧き潰し対象ポイントの描画ロジック ---
+        // --- S/A抽選対象ポイントの描画ロジック (二重円) ---
         
         const isCulled = mob.cullStatusMap[point.id] || false;
         
-        let outlineColor = '#9ca3af'; 
-        let internalColor = '#d1d5db'; 
+        let outlineColor = '#9ca3af'; // Gray-400 (外円/輪郭)
+        let internalColor = '#d1d5db'; // Gray-300 (内円)
 
-        // B1/B2の色分け
+        // B1/B2の色分け (抽選対象として)
         if (includesB1) {
             outlineColor = '#3b82f6'; // Blue-500
             internalColor = '#60a5fa'; // Blue-400
@@ -613,9 +622,9 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
             internalColor = '#34d399'; // Emerald-400
         }
 
-        // 要素作成とスタイル適用
+        // 要素作成 (外円コンテナ: 16px)
         const pointEl = document.createElement('div');
-        pointEl.className = `spawn-point hover:scale-150 transition-transform duration-100 cursor-pointer`; 
+        pointEl.className = `spawn-point hover:scale-150 transition-transform duration-100 cursor-pointer flex items-center justify-center`; 
         pointEl.setAttribute('data-id', point.id);
         pointEl.setAttribute('data-isculltarget', 'true');
 
@@ -623,17 +632,25 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
         pointEl.style.top = `${point.y}%`;
         pointEl.style.transform = 'translate(-50%, -50%)';
         pointEl.style.boxShadow = 'none';
-
-        pointEl.style.width = pointDiameter;
-        pointEl.style.height = pointDiameter;
+        
+        // S/A地点の外円サイズを適用: 16px
+        pointEl.style.width = POINT_DIAMETER_SA_OUTER; 
+        pointEl.style.height = POINT_DIAMETER_SA_OUTER;
         pointEl.style.borderRadius = '50%';
         pointEl.style.position = 'absolute';
         pointEl.style.zIndex = '10'; 
 
-        
-        // 輪郭と内部色を設定
-        pointEl.style.border = `${pointBorderWidth} solid ${outlineColor}`;
-        pointEl.style.backgroundColor = internalColor;
+        // 輪郭 (外円) の設定
+        pointEl.style.border = `${POINT_BORDER_WIDTH} solid ${outlineColor}`;
+        pointEl.style.backgroundColor = 'transparent'; // 外円内部は透明
+
+        // 内円の作成と追加 (内円: 10px)
+        const innerCircle = document.createElement('div');
+        innerCircle.style.width = POINT_DIAMETER_SA_INNER;
+        innerCircle.style.height = POINT_DIAMETER_SA_INNER;
+        innerCircle.style.borderRadius = '50%';
+        innerCircle.style.backgroundColor = internalColor;
+        pointEl.appendChild(innerCircle);
         
         // S/A抽選対象ポイントに影を追加 (湧き潰し済みでない場合のみ)
         if (!isCulled && isCullTarget) {
@@ -643,8 +660,8 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
         // 湧き潰し済みの表示
         if (isCulled) {
             pointEl.classList.add('culled');
-            pointEl.style.border = `${pointBorderWidth} solid white`; 
-            pointEl.style.backgroundColor = 'rgba(100, 100, 100, 0.5)'; // グレーアウト
+            pointEl.style.border = `${POINT_BORDER_WIDTH} solid white`; 
+            innerCircle.style.backgroundColor = 'rgba(100, 100, 100, 0.5)'; // グレーアウト
             pointEl.style.opacity = '0.7';
             pointEl.classList.remove('hover:scale-150'); 
             pointEl.style.boxShadow = 'none'; 
@@ -957,15 +974,15 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
  */
 function updateProgressBars() {
     // ------------------------------------------------------------------
-    // 修正点3: ユーザーの要望に基づいたプログレスバーの色定義
+    // 進捗バーの色定義 (変更なし)
     // ------------------------------------------------------------------
     // 次回POP時刻の色 (暗いコーンフラワー ブルー1 相当)
     const TEXT_POP_TIME_COLOR_CLASS = 'text-blue-400'; 
     
     // 進捗バーの色
-    const COLOR_GREEN_3 = 'bg-lime-500';       // 明るい緑 3 (~60%)
-    const COLOR_YELLOW_3 = 'bg-yellow-400';    // 明るい黄 3 (~80%)
-    const COLOR_ORANGE_3 = 'bg-orange-400';    // 明るいオレンジ 3 (80%~)
+    const COLOR_GREEN_3 = 'bg-lime-500';       
+    const COLOR_YELLOW_3 = 'bg-yellow-400';    
+    const COLOR_ORANGE_3 = 'bg-orange-400';    
     // 最大超過時のリポップ時刻の色 (オレンジのテキスト)
     const MAX_OVER_TEXT_COLOR_CLASS = COLOR_ORANGE_3.replace('bg-', 'text-'); 
     // 最大超過時の残り (%) の文字色 (濃いめの赤)
