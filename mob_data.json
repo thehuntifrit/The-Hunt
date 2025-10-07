@@ -218,7 +218,7 @@
       "POP_Date": "ミニオンを出してPOP地点を踏む",
       "REPOP(s)": 169200,
       "MAX(s)": 190800,
-      "Map": "Upper La Noscea.webp",
+      "Map": "Upper_La_Noscea.webp",
       "spawn_points": [
       {
         "id": "UN_01",
@@ -392,7 +392,7 @@
       "POP_Date": "POP地点で食事を食べる",
       "REPOP(s)": 241200,
       "MAX(s)": 277200,
-      "Map": "Central Thanalan.webp",
+      "Map": "Central_Thanalan.webp",
       "spawn_points": [
       {
         "id": "CT_01",
@@ -732,7 +732,7 @@
       "POP Date": "ミニオン「ロイヤルベビーモス」を連れてPOP地点を踏む",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "Coerthas Western Highlands.webp",
+      "Map": "Coerthas_Western_Highlands.webp",
       "spawn_points": [
       {
         "id": "CW_01",
@@ -1214,7 +1214,7 @@
       "POP_Date": "F.A.T.E. 石人の英雄「ゲルゲイ・チョロー」をコンプリート後にPOP地点を踏む//※判定は該当F.A.T.E.が失敗するまで有効",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "The Azim Steppe.webp",
+      "Map": "The_Azim_Steppe.webp",
       "spawn_points": [
       {
         "id": "AS_01",
@@ -1494,7 +1494,7 @@
       "POP_Date": "青魔導士の「自爆」をPOP地点で使う//※プレイヤーが死亡時にPOP",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "Amh Araeng.webp",
+      "Map": "Amh_Araeng.webp",
       "spawn_points": [
       {
         "id": "AA_01",
@@ -1614,7 +1614,7 @@
       "POP_Date": "ミニオン「朱孔雀」を出してPOP地点を踏む",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "Il Mheg.webp",
+      "Map": "Il_Mheg.webp",
       "spawn_points": [
       {
         "id": "AA_01",
@@ -2068,7 +2068,7 @@
       "POP_Date": "ミニオン「プチイーア」を出して10人同時にPOP地点を踏む",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "Ultima Thule.webp",
+      "Map": "Ultima_Thule.webp",
       "spawn_points": [
       {
         "id": "LM_01",
@@ -2454,7 +2454,7 @@
       "POP_Date": "青魔道士の「猛吹雪」をPOP地点で使う",
       "REPOP(s)": 302400,
       "MAX(s)": 475200,
-      "Map": "Living Memory.webp",
+      "Map": "Living_Memory.webp",
       "spawn_points": [
       {
         "id": "LM_01",
