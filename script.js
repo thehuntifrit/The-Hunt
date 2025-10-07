@@ -12,6 +12,7 @@ let currentMobNo = null;
 let userId = null;
 
 // --- DOMエレメント ---
+// これらの要素がHTMLに存在しない場合、nullになります。
 const appEl = document.getElementById('app');
 const mobListContainer = document.getElementById('mob-list-container');
 const rankTabs = document.getElementById('rank-tabs');
@@ -279,6 +280,7 @@ function renderMobList(rank) {
         ? globalMobData
         : globalMobData.filter(mob => mob.Rank === rank);
 
+    // 存在しない可能性があるカラムIDをフィルタリング
     const columns = [
         document.getElementById('column-1'),
         document.getElementById('column-2'),
@@ -286,6 +288,19 @@ function renderMobList(rank) {
     ].filter(col => col); 
 
     columns.forEach(col => col.innerHTML = '');
+
+    // カラムが存在しない場合は何もしない (クラッシュ回避)
+    if (columns.length === 0 && mobListContainer) {
+        // mobListContainerに直接挿入するフォールバック処理 (モバイルなど1カラムの場合)
+        // 今回のindex.htmlの想定では不要ですが、念のため
+        if (mobListContainer.children.length === 0) {
+            mobListContainer.innerHTML = `<p class="text-center text-gray-400 mt-10">表示するモブがいません。HTMLのカラムID(column-1, column-2など)を確認してください。</p>`;
+        }
+        return; 
+    } else if (columns.length === 0) {
+        return;
+    }
+
 
     filteredMobs.forEach((mob, index) => {
         const cardHtml = createMobCard(mob);
@@ -301,14 +316,16 @@ function renderMobList(rank) {
     });
 
     // アクティブなタブをハイライト
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
-        btn.classList.add('bg-gray-700', 'hover:bg-gray-600');
-        if (btn.dataset.rank === rank) {
-            btn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
-            btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
-        }
-    });
+    if (rankTabs) {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
+            btn.classList.add('bg-gray-700', 'hover:bg-gray-600');
+            if (btn.dataset.rank === rank) {
+                btn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+                btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+            }
+        });
+    }
     
     attachEventListeners();
     updateProgressBars();
@@ -321,7 +338,6 @@ function attachEventListeners() {
     // 討伐報告ボタン
     document.querySelectorAll('.report-btn').forEach(button => {
         if (button.dataset.mobno && !button.disabled) {
-            // イベントをバブリングから保護するため、報告ボタンは e.stopPropagation() を使用してカードのトグル処理を停止させる
             button.onclick = (e) => {
                 e.stopPropagation();
                 openReportModal(e.currentTarget.dataset.mobno);
@@ -331,7 +347,6 @@ function attachEventListeners() {
     
     // カードの固定情報エリア (.fixed-content) のクリックイベント（トグル展開用）
     document.querySelectorAll('.toggle-handler').forEach(handler => {
-        // 固定情報エリアがクリックされたら、親の mob-card を取得してトグル
         handler.onclick = (e) => {
             const card = e.currentTarget.closest('.mob-card');
             if (card) {
@@ -363,13 +378,12 @@ function toggleMobDetails(card) {
     } else {
         // 開く処理
         // scrollHeightに十分な余白 (e.g. 50px) を足すことで、トランジションの途切れを防ぐ
-        // +50pxは、borderやpadding, marginがmax-height計算に含まれないことがあるため
         panel.style.maxHeight = (panel.scrollHeight + 50) + 'px';
         card.classList.add('open');
         
         const mapOverlay = panel.querySelector('.map-overlay');
+        // スポーンポイントの描画
         if (mapOverlay && mapOverlay.children.length === 0 && mob.spawn_points) {
-            // スポーンポイントの描画は開くときに行う
             drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
         }
     }
@@ -410,7 +424,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
         
         if (isImportant) {
             pointEl.onclick = (e) => {
-                e.stopPropagation(); // スポーンポイントクリックでカードが閉じないように
+                e.stopPropagation(); 
                 alert(`ポイント [${point.id}] をクリックしました。湧き潰し機能は未実装です。`);
             };
         }
@@ -425,15 +439,20 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
  * 討伐報告モーダルを開く
  */
 function openReportModal(mobNo) {
+    // DOM要素の存在チェック
+    if (!reportModal || !modalMobName || !reportDatetimeInput) return;
+
     currentMobNo = parseInt(mobNo);
     const mob = getMobByNo(currentMobNo);
     
     if (!mob) return;
 
     modalMobName.textContent = mob.Name;
-    reportMemoInput.value = '';
-    reportStatusEl.textContent = '';
-    reportStatusEl.classList.add('hidden');
+    if (reportMemoInput) reportMemoInput.value = '';
+    if (reportStatusEl) {
+        reportStatusEl.textContent = '';
+        reportStatusEl.classList.add('hidden');
+    }
 
     const now = new Date();
     const offset = now.getTimezoneOffset() * 60000;
@@ -448,6 +467,7 @@ function openReportModal(mobNo) {
  * 討伐報告モーダルを閉じる
  */
 function closeReportModal() {
+    if (!reportModal) return;
     reportModal.classList.add('hidden');
     reportModal.classList.remove('flex');
     currentMobNo = null;
@@ -457,7 +477,7 @@ function closeReportModal() {
  * 討伐報告をGASに送信する
  */
 async function submitReport() {
-    if (!currentMobNo) return;
+    if (!currentMobNo || !reportDatetimeInput || !submitReportBtn || !reportStatusEl) return;
 
     const killTime = reportDatetimeInput.value;
     const memo = reportMemoInput.value;
@@ -498,7 +518,6 @@ async function submitReport() {
         if (result.status === 'success') {
             reportStatusEl.textContent = `報告成功！ (${result.message})`;
             reportStatusEl.classList.add('text-green-500');
-            // データ取得と更新
             await fetchRecordsAndUpdate(false); 
             setTimeout(closeReportModal, 1500); 
 
@@ -569,14 +588,12 @@ async function fetchRecordsAndUpdate(shouldFetchBase = true) {
                 const record = records.find(r => r['No.'] === mob['No.']);
                 const newMob = { ...mob }; 
                 
-                // 討伐日時を記録する新しいフィールド 'LastKillDate' を設定
                 if (record && record.POP_Date_Unix) {
                     newMob.LastKillDate = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
                 } else {
                     newMob.LastKillDate = ''; 
                 }
                 
-                // mob_data.jsonのConditionフィールドをそのまま使用
                 newMob.Condition = mob.Condition || '';
 
                 return newMob;
@@ -679,21 +696,31 @@ function initializeApp() {
         localStorage.setItem('user_uuid', userId);
     }
 
-    rankTabs.querySelectorAll('.tab-btn').forEach(button => {
-        button.onclick = (e) => renderMobList(e.currentTarget.dataset.rank);
-    });
-    cancelReportBtn.onclick = closeReportModal;
-    submitReportBtn.onclick = submitReport;
+    // --- 防御的チェックとイベントリスナーの設定 ---
+    if (rankTabs) {
+        rankTabs.querySelectorAll('.tab-btn').forEach(button => {
+            button.onclick = (e) => renderMobList(e.currentTarget.dataset.rank);
+        });
+    }
 
-    reportModal.addEventListener('click', (e) => {
-        if (e.target.id === 'report-modal') {
-            closeReportModal();
-        }
-    });
+    if (cancelReportBtn) {
+        cancelReportBtn.onclick = closeReportModal;
+    }
     
-    fetchRecordsAndUpdate(true);
+    if (submitReportBtn) {
+        submitReportBtn.onclick = submitReport;
+    }
 
-    // ウィンドウサイズ変更時の再レンダリングは、不要なテキスト折り返し処理を削除したため撤廃しました
+    if (reportModal) {
+        reportModal.addEventListener('click', (e) => {
+            if (e.target.id === 'report-modal') {
+                closeReportModal();
+            }
+        });
+    }
+    // ------------------------------------------
+
+    fetchRecordsAndUpdate(true);
 
     setInterval(() => fetchRecordsAndUpdate(false), 10 * 60 * 1000);
 
