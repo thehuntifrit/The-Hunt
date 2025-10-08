@@ -1,7 +1,7 @@
-/* script.js (最終修正版 - エリアフィルタ高さ修正/モブカード隙間設定) */
+/* script.js (最終修正版 - エリアフィルタ高さ修正/モブカード隙間設定/プログレスバー改善/60秒更新) */
 
 // Google Apps Script (GAS) のエンドポイントURL
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPG1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
 // 静的モブデータ (mob_data.json) のURL (同階層のファイルを参照)
 const MOB_DATA_URL = './mob_data.json';
 
@@ -308,7 +308,7 @@ function loadFilterState() {
 }
 
 
-// --- 固定ヘッダーの高さ調整 ---
+// --- 固定ヘッダーの高さ調整 (維持した関数) ---
 
 /**
  * 固定ヘッダーの高さを取得し、スペーサーに適用してスクロールの重なりを防ぐ
@@ -335,13 +335,16 @@ function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
     const { minRepop, maxRepop, timeDisplay, elapsedPercent, isPop, isMaxOver, isUnknown } = calculateRepop(mob, lastKillDate);
 
-    // Min POP 未到達時は緑、到達時は黄色系のテキスト
-    let repopTimeColorClass = isPop ? 'text-amber-300 font-bold' : 'text-green-400';
-    if (isMaxOver) {
-        repopTimeColorClass = 'text-orange-400 font-bold';
-    } else if (isUnknown) {
+    // 修正: POP時間以降は、テキスト色を黒に統一してプログレスバーの上で強調する
+    let repopTimeColorClass = 'text-gray-900 font-extrabold'; // NEW: デフォルトを黒/極太にする
+    
+    if (isUnknown) {
         repopTimeColorClass = 'text-gray-400';
+    } else if (!isPop) {
+        // Min POP 未到達時は緑 (背景はバーなし)
+        repopTimeColorClass = 'text-green-400'; 
     }
+    // isPop (POPウィンドウ内) または isMaxOver (最大超過) の場合は、text-gray-900 (黒) で固定
 
     // ランクアイコンの背景色
     let rankBgClass;
@@ -438,11 +441,12 @@ function createMobCard(mob) {
 
 
     // --- 進捗バーエリアのHTML ---
-
+    // 修正: h-12 で高さを確保。bg-gray-700 を維持。
+    // 修正: repop-info-display に text-lg と font-extrabold を追加。
     const repopInfoHtml = `
-        <div class="mt-1 bg-gray-700 p-2 rounded-xl text-xs flex flex-col space-y-1 relative overflow-hidden shadow-inner h-10">
+        <div class="mt-1 bg-gray-700 p-2 rounded-xl text-xs flex flex-col space-y-1 relative overflow-hidden shadow-inner h-12">
             <div class="flex items-center relative z-10 h-full">
-                <span class="repop-info-display text-base ${repopTimeColorClass} font-mono w-full text-center">
+                <span class="repop-info-display text-lg font-extrabold ${repopTimeColorClass} font-mono w-full text-center">
                     ${timeDisplay}
                 </span>
             </div>
@@ -453,8 +457,9 @@ function createMobCard(mob) {
 
 
     // --- モブカードの最終構造 ---
+    // 修正: mob-card に py-2 を追加
     return `
-        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative"
+        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-2"
              data-rank="${mob.Rank}"
              data-mobno="${mob['No.']}"
              data-lastkill="${mob.LastKillDate || ''}"
@@ -469,7 +474,7 @@ function createMobCard(mob) {
                             ${mob.Rank}
                         </div>
                         
-                        <div class="${mobNameContainerClass}">
+                        <div class="px-1 ${mobNameContainerClass}">
                             <h2 class="text-base font-bold text-outline text-yellow-200 leading-tight truncate overflow-hidden whitespace-nowrap" style="max-width: 100%;">${mob.Name}</h2>
                             <p class="text-xs text-gray-400 leading-tight truncate overflow-hidden whitespace-nowrap" style="max-width: 100%;">${mob.Area} (${mob.Expansion || '?'})</p>
                         </div>
@@ -783,7 +788,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
             internalColor = '#60a5fa'; // Blue-400
         } else if (includesB2) {
             outlineColor = '#ef4444'; // Red-500
-            internalColor = '#f87171'; // Red-400
+            internalColor = '#f87171'; // Red-4400
         }
 
         // 最後の1点判定 (従来のロジックを維持)
@@ -848,7 +853,6 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
         overlayEl.appendChild(pointEl);
     });
 }
-
 
 /**
  * 湧き潰し状態をGAS経由で切り替える
@@ -1172,18 +1176,20 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
 }
 
 /**
- * 各モブカードの進捗バーを更新する (1秒ごと)
+ * 各モブカードの進捗バーを更新する (60秒ごと)
  */
 function updateProgressBars() {
 
     // 80%~ および最大超過時のバーの色 (薄いオレンジ)
     const ORANGE_BAR_COLOR_CLASS = 'bg-orange-400';
     // 最大超過時のリポップ時刻の色 (薄いオレンジのテキスト)
-    const ORANGE_TEXT_COLOR_CLASS = 'text-orange-400';
+    // const ORANGE_TEXT_COLOR_CLASS = 'text-orange-400'; // 60秒更新では使用しない
     // Min POP 到達時のテキストの色 (黄色)
-    const POP_TEXT_COLOR_CLASS = 'text-amber-300';
+    // const POP_TEXT_COLOR_CLASS = 'text-amber-300'; // 60秒更新では使用しない
     // Min POP 未到達時のテキストの色 (緑)
     const NEXT_TEXT_COLOR_CLASS = 'text-green-400';
+    // POP時間以降のテキストの色 (黒)
+    const POP_TEXT_COLOR_BLACK = 'text-gray-900';
 
 
     document.querySelectorAll('.mob-card').forEach(card => {
@@ -1208,19 +1214,16 @@ function updateProgressBars() {
             repopInfoDisplayEl.textContent = repopData.timeDisplay;
 
             // 1.2 色の更新
-            repopInfoDisplayEl.classList.remove('text-gray-400', NEXT_TEXT_COLOR_CLASS, POP_TEXT_COLOR_CLASS, ORANGE_TEXT_COLOR_CLASS, 'font-bold');
+            repopInfoDisplayEl.classList.remove('text-gray-400', NEXT_TEXT_COLOR_CLASS, POP_TEXT_COLOR_BLACK, 'font-extrabold'); // 既存の色クラスを削除
 
             if (repopData.isUnknown) {
                 repopInfoDisplayEl.classList.add('text-gray-400');
-            } else if (repopData.isMaxOver) {
-                // 最大超過時: 薄いオレンジのテキスト
-                repopInfoDisplayEl.classList.add(ORANGE_TEXT_COLOR_CLASS, 'font-bold');
-            } else if (repopData.isPop) {
-                // POPウィンドウ内: 黄色 (font-bold を追加)
-                repopInfoDisplayEl.classList.add(POP_TEXT_COLOR_CLASS, 'font-bold');
-            } else {
+            } else if (!repopData.isPop) {
                 // Min POP未到達: 緑
                 repopInfoDisplayEl.classList.add(NEXT_TEXT_COLOR_CLASS);
+            } else {
+                // POPウィンドウ内 または 最大超過時: 黒 + 極太 (プログレスバーの上で目立たせる)
+                repopInfoDisplayEl.classList.add(POP_TEXT_COLOR_BLACK, 'font-extrabold');
             }
         }
 
@@ -1242,7 +1245,7 @@ function updateProgressBars() {
                 animateClass = 'animate-pulse';
             } else if (percent >= 80) {
                 // 80% ～ 100%未満: 薄いオレンジ
-                barColorClass = ORANGE_BAR_BAR_COLOR_CLASS;
+                barColorClass = ORANGE_BAR_COLOR_CLASS;
             } else if (percent >= 60) {
                 // 60% ～ 80%未満: レモン色 (yellow-400)
                 barColorClass = 'bg-yellow-400';
@@ -1253,7 +1256,10 @@ function updateProgressBars() {
 
             // 安定版のロジック: すべてのクラスを上書きして再設定
             progressBarEl.className = `progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl ${barColorClass} ${animateClass}`;
-
+            
+            // 修正: バーの高さと位置を修正 (h-12のラッパーに対して)
+            // inset-0 でラッパー要素の高さ h-12 (48px) 全体に広がる
+            progressBarEl.style.height = '100%';
             progressBarEl.style.width = `${widthPercent}%`;
         }
 
@@ -1296,14 +1302,15 @@ function toggleAreaFilterPanel(forceOpen) {
         // 1. max-heightを一時的にnoneにして、内部コンテンツの実際の高さを取得
         areaFilterWrapper.style.maxHeight = 'none';
         
-        // 内部コンテンツの高さ + CSSで設定した padding-bottom の 8px を取得
-        const targetHeight = areaFilterContainer.offsetHeight + 8; 
-
-        // 2. max-heightを 0 に設定し直し、アニメーションの開始点に戻す
+        // 内部コンテンツの高さ + CSSで設定した padding-bottom の 8px を取得 (areaFilterContainerはパディング込みの高さ)
+        const targetHeight = areaFilterContainer.offsetHeight; // areaFilterContainer には既に p-2 があると想定
+        // 安定版のロジックを維持: areaFilterContainer.offsetHeight + 8 の計算を参考に、offsetHeightを使う
+        
         areaFilterWrapper.style.maxHeight = '0px';
 
-        // 3. 取得した高さに設定してアニメーションを開始
+        // 2. 0ms後に max-height を 0 に設定し直し、アニメーションの開始点に戻す
         setTimeout(() => {
+            // 3. 取得した高さに設定してアニメーションを開始
             areaFilterWrapper.style.maxHeight = `${targetHeight}px`;
             
             // 4. アニメーション終了後に max-height: none に設定（安全のため）
@@ -1332,7 +1339,7 @@ function toggleAreaFilterPanel(forceOpen) {
             // 3. アニメーション終了後にイベントを有効化
             areaFilterWrapper.addEventListener('transitionend', function handler(e) {
                 if (e.propertyName === 'max-height' && !areaFilterWrapper.classList.contains('open')) {
-                     areaFilterWrapper.style.pointerEvents = 'none'; // 終了後にイベントを無効化
+                     areaFilterWrapper.style.pointerEvents = 'all'; // 終了後にイベントを有効化
                      // 格納完了後にスペーサーを再調整
                      adjustContentPadding();
                 }
@@ -1504,8 +1511,8 @@ function initializeApp() {
     // 討伐記録の定期更新 (10分ごと)
     setInterval(() => fetchRecordsAndUpdate('auto', false), 10 * 60 * 1000);
 
-    // プログレスバーの定期更新を 1秒ごと に変更
-    setInterval(updateProgressBars, 1000);
+    // 修正: プログレスバーの定期更新を 60秒ごと に変更
+    setInterval(updateProgressBars, 60 * 1000);
 }
 
 document.addEventListener('DOMContentLoaded', initializeApp);
