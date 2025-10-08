@@ -83,10 +83,56 @@
             }
         }
         
-        /* NEW: 展開パネル内のカスタム余白 */
+        /* 展開パネル内のカスタム余白 */
         .panel-padding-bottom {
-             /* 0.5行分を表現 (text-xs/text-smのline-heightが約1.2rem程度と仮定して0.6remを設定) */
             padding-bottom: 0.6rem; 
+        }
+
+        /* --- NEW: 固定ヘッダーのスタイル --- */
+        #fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50; /* Tailwind z-50 */
+            background-color: #1f2937; /* bodyの背景色と同じ */
+            padding-bottom: 1rem; /* ヘッダー下の余白 */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* コンテンツエリアのパディング (ヘッダーの高さ分を確保) */
+        /* ヘッダーの高さに合わせ、適切なパディングを設定 */
+        #mob-list-container {
+            padding-top: 13.5rem; /* スマホ・PC共通で余裕を持たせる */
+        }
+
+        /* エリアフィルタのカスタム段組み (スマホのみ) */
+        #area-selection-menu {
+            max-width: 100%; /* 親要素の幅に合わせて最大化 */
+        }
+        
+        @media (max-width: 639px) {
+            /* スマホ(sm)未満の場合、紅蓮以下を2段目にするためのFlexboxの調整 */
+            .area-filter-btn {
+                /* ボタンの幅を調整して、漆黒までが上段に来るようにする */
+                /* 黄金, 暁月, 漆黒の3つで上段に配置する */
+                width: calc((100% - 0.5rem * 2) / 3); /* 3列配置 */
+            }
+            /* 紅蓮, 蒼天, 新生を次の行に配置するための調整 */
+            .area-filter-btn[data-area="紅蓮"], 
+            .area-filter-btn[data-area="蒼天"], 
+            .area-filter-btn[data-area="新生"] {
+                 /* 2段目は3列配置を維持 */
+                 width: calc((100% - 0.5rem * 2) / 3); 
+            }
+            /* ALLボタン削除に伴い、残りの6ボタンが対象。 */
+        }
+        /* 中画面以上では横並びで表示する */
+        @media (min-width: 640px) {
+             #area-selection-menu {
+                flex-wrap: nowrap;
+                max-width: 600px; /* PCでの最大幅を調整 */
+            }
         }
 
     </style>
@@ -94,30 +140,32 @@
 <body>
     <div id="app" class="p-4 md:p-6 min-h-screen">
         
-        <div class="flex flex-col sm:flex-row sm:justify-center sm:items-center mb-2 relative">
-            <div id="uuid-display" class="text-xs text-gray-400 text-right mb-1 sm:mb-0 sm:absolute sm:top-0 sm:right-0 sm:mt-2 sm:mr-4 hidden"></div>
-
-            <h1 class="text-3xl font-extrabold text-emerald-400 text-center sm:text-left mx-auto">The Hunt</h1>
-        </div>
-
-        <div class="text-center mb-3">
-            <p class="text-sm font-medium text-gray-300 leading-tight">モブハントの討伐記録とリポップ予測</p>
-            <p class="text-sm font-medium text-gray-300 leading-tight">湧き潰し管理ツールです</p>
-        </div>
-
-        <div id="error-message-container" class="hidden my-4"></div>
-
-        <div class="mb-5">
-            <div id="rank-tabs" class="flex justify-center space-x-1 sm:space-x-2 mb-1">
-                <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-blue-600 hover:bg-blue-500" data-rank="ALL">ALL</button>
-                <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="S">Sランク</button>
-                <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="A">Aランク</button>
-                <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="F">FATE</button>
+        <div id="fixed-header" class="p-4 md:p-6">
+            
+            <div class="flex justify-between items-center mb-2">
+                <h1 class="text-3xl font-extrabold text-emerald-400">The Hunt</h1>
+                
+                <div id="uuid-display" class="text-xs text-gray-400 text-right sm:text-sm hidden"></div>
             </div>
 
-            <div id="area-filter-container" class="flex justify-center mt-1 hidden">
-                <div id="area-selection-menu" class="flex flex-wrap justify-center gap-1 p-1 bg-gray-700 rounded-lg max-w-lg">
-                    <button class="area-filter-btn px-3 py-1 text-xs font-medium rounded-full text-white bg-blue-600 hover:bg-blue-500 transition" data-area="ALL">ALL</button>
+            <div class="text-center mb-3">
+                <p class="text-sm font-medium text-gray-300 leading-tight">モブハントの討伐記録とリポップ予測</p>
+                <p class="text-sm font-medium text-gray-300 leading-tight">湧き潰し管理ツールです</p>
+            </div>
+
+            <div id="error-message-container" class="hidden my-2"></div>
+
+            <div class="mb-5 flex justify-center w-full"> 
+                <div id="rank-tabs" class="flex justify-center space-x-1 sm:space-x-2 w-full max-w-lg mb-1">
+                    <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-blue-600 hover:bg-blue-500" data-rank="ALL">ALL</button>
+                    <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="S">Sランク</button>
+                    <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="A">Aランク</button>
+                    <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="F">FATE</button>
+                </div>
+            </div>
+
+            <div id="area-filter-container" class="flex justify-center mt-1 hidden w-full">
+                <div id="area-selection-menu" class="flex flex-wrap justify-center gap-1 p-1 bg-gray-700 rounded-lg w-full max-w-lg">
                     <button class="area-filter-btn px-3 py-1 text-xs font-medium rounded-full text-white bg-gray-600 hover:bg-gray-500 transition" data-area="黄金">黄金</button>
                     <button class="area-filter-btn px-3 py-1 text-xs font-medium rounded-full text-white bg-gray-600 hover:bg-gray-500 transition" data-area="暁月">暁月</button>
                     <button class="area-filter-btn px-3 py-1 text-xs font-medium rounded-full text-white bg-gray-600 hover:bg-gray-500 transition" data-area="漆黒">漆黒</button>
@@ -127,7 +175,7 @@
                 </div>
             </div>
         </div>
-
+        
         <div id="mob-list-container" class="space-y-3 md:space-y-0">
             <div id="column-1" class="space-y-3"></div>
             <div id="column-2" class="space-y-3"></div>
