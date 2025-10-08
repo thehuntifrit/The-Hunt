@@ -10,7 +10,7 @@ let baseMobData = [];
 let globalMobData = [];
 // rank と area のフィルタリング状態を保持
 let currentFilter = {
-    rank: 'S', // 初期表示はSランク
+    rank: 'ALL', // 初期表示はALLランク
     area: 'ALL' // 初期エリアはALL
 };
 let currentMobNo = null;
@@ -34,9 +34,8 @@ const reportStatusEl = document.getElementById('report-status');
 const uuidDisplayEl = document.getElementById('uuid-display'); 
 
 // NEW: エリアフィルタ関連のDOM要素
-const areaDropdownToggle = document.getElementById('area-dropdown-toggle');
-const areaDropdownMenu = document.getElementById('area-dropdown-menu');
-const currentAreaLabel = document.getElementById('current-area-label');
+const areaFilterContainer = document.getElementById('area-filter-container');
+
 
 // --- ユーティリティ関数 ---
 
@@ -380,11 +379,10 @@ function renderMobList() {
     
     const { rank, area } = currentFilter;
 
-    // 1. ランクでフィルタリング (Bランクはカード生成時にRankが指定されるため、フィルタリング対象外)
+    // 1. ランクでフィルタリング
     let filteredByRank = globalMobData;
-    // Bランクを排除する: ユーザーがS, A, FATEを選択した場合のみ
-    // Bランクのカードも必要に応じて表示するため、rank === 'B' のフィルタリングは行いません
     if (rank !== 'ALL') {
+        // 'ALL' 以外のタブが選択されている場合、そのランクに限定
         filteredByRank = globalMobData.filter(mob => mob.Rank === rank);
     }
     
@@ -408,7 +406,8 @@ function renderMobList() {
     }
 
     filteredByArea.forEach((mob, index) => {
-        const cardHtml = createMobCard(mob);
+        // Bランクは mob_data.json のデータで自動的に調整される
+        const cardHtml = createMobCard(mob); 
         
         let targetColumn = columns[0];
         if (columns.length > 1) {
@@ -432,11 +431,29 @@ function renderMobList() {
         });
     }
     
-    // 5. エリアラベルの更新
-    if (currentAreaLabel) {
-        currentAreaLabel.textContent = area;
+    // 5. エリアフィルタボタンのハイライトと**コンテナの表示制御**
+    
+    // エリアフィルタコンテナの表示制御
+    if (areaFilterContainer) {
+        if (rank === 'S' || rank === 'A' || rank === 'F') {
+            // S, A, FATE が選択されたら表示
+            areaFilterContainer.classList.remove('hidden');
+        } else {
+            // ALL が選択されたら非表示
+            areaFilterContainer.classList.add('hidden');
+        }
     }
-
+    
+    // エリアフィルタボタンのハイライト
+    document.querySelectorAll('.area-filter-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
+        btn.classList.add('bg-gray-600', 'hover:bg-gray-500');
+        
+        if (btn.dataset.area === area) {
+            btn.classList.remove('bg-gray-600', 'hover:bg-gray-500');
+            btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+        }
+    });
 
     attachEventListeners();
     updateProgressBars();
@@ -1101,28 +1118,31 @@ function initializeApp() {
     if (rankTabs) {
         document.querySelectorAll('.tab-btn').forEach(button => {
             button.onclick = (e) => {
-                currentFilter.rank = e.currentTarget.dataset.rank;
-                // ランクが変わったら、エリアは「ALL」にリセットする (操作性の都合)
-                currentFilter.area = 'ALL'; 
-                renderMobList(); 
+                const newRank = e.currentTarget.dataset.rank;
+                
+                // ランクが変わる場合のみ処理
+                if (currentFilter.rank !== newRank) {
+                    currentFilter.rank = newRank;
+                    
+                    // ALLタブ以外に切り替えた際はエリアフィルタをALLにリセット
+                    if (newRank !== 'ALL') {
+                        currentFilter.area = 'ALL'; 
+                    } else {
+                        // ALLタブに切り替えた際はエリアフィルタもALLにリセット
+                        currentFilter.area = 'ALL'; 
+                    }
+                    renderMobList(); 
+                }
             }
         });
     }
 
-    // エリアドロップダウントグルのリスナー
-    if (areaDropdownToggle && areaDropdownMenu) {
-        areaDropdownToggle.onclick = () => {
-            areaDropdownMenu.classList.toggle('hidden');
-        };
-    }
-    
     // エリアフィルタボタンのリスナー
     document.querySelectorAll('.area-filter-btn').forEach(button => {
         button.onclick = (e) => {
             const newArea = e.currentTarget.dataset.area;
             currentFilter.area = newArea;
             renderMobList(); 
-            areaDropdownMenu?.classList.add('hidden');
         }
     });
 
