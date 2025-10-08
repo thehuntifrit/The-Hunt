@@ -25,9 +25,7 @@ let autoUpdateSuccessCount = 0;
 
 
 // --- DOMエレメント ---
-const appEl = document.getElementById('app');
 const errorMessageContainer = document.getElementById('error-message-container');
-const mobListContainer = document.getElementById('mob-list-container');
 const rankTabs = document.getElementById('rank-tabs');
 const reportModal = document.getElementById('report-modal');
 const modalMobName = document.getElementById('modal-mob-name');
@@ -465,7 +463,8 @@ function renderMobList() {
     }
 
     // 5. エリアフィルタボタンのハイライト
-    const currentAreasToHighlight = (rank === 'ALL') ? new Set(['ALL']) : currentFilter.areaSets[rank];
+    const currentAreasToHighlight = (rank === 'ALL' || !currentFilter.areaSets[rank]) ? new Set(['ALL']) : currentFilter.areaSets[rank];
+    // ALLランクの場合は ALL のみハイライト
 
     document.querySelectorAll('.area-filter-btn').forEach(btn => {
         btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
