@@ -1,7 +1,7 @@
-/* script.js (最終修正版 - エリアフィルタ高さ修正/モブカード隙間設定) */
+/* script.js (最終修正版 - モブカード上下余白/プログレスバー調整/更新頻度変更) */
 
 // Google Apps Script (GAS) のエンドポイントURL
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLc-UpfH4g1N0wQmz57KhBWFnAvcSQYlbNcUelT3g/exec';
 // 静的モブデータ (mob_data.json) のURL (同階層のファイルを参照)
 const MOB_DATA_URL = './mob_data.json';
 
@@ -30,7 +30,7 @@ const errorMessageContainer = document.getElementById('error-message-container')
 const rankTabs = document.getElementById('rank-tabs');
 const reportModal = document.getElementById('report-modal');
 const modalMobName = document.getElementById('modal-mob-name');
-const reportDatetimeInput = document.getElementById('report-datetime');
+const reportDatetimeInput = document.getElementById('modal-mob-name');
 const reportMemoInput = document.getElementById('report-memo');
 const submitReportBtn = document.getElementById('submit-report');
 const cancelReportBtn = document.getElementById('cancel-report');
@@ -335,13 +335,12 @@ function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
     const { minRepop, maxRepop, timeDisplay, elapsedPercent, isPop, isMaxOver, isUnknown } = calculateRepop(mob, lastKillDate);
 
-    // Min POP 未到達時は緑、到達時は黄色系のテキスト
-    let repopTimeColorClass = isPop ? 'text-amber-300 font-bold' : 'text-green-400';
-    if (isMaxOver) {
-        repopTimeColorClass = 'text-orange-400 font-bold';
-    } else if (isUnknown) {
+    // NEW: 初期表示の色クラスは、POP前(緑)かPOP後(黒)かに分ける
+    let repopTimeColorClass = isPop ? 'text-gray-900' : 'text-green-400'; 
+    if (isUnknown) {
         repopTimeColorClass = 'text-gray-400';
     }
+
 
     // ランクアイコンの背景色
     let rankBgClass;
@@ -437,24 +436,25 @@ function createMobCard(mob) {
     }
 
 
-    // --- 進捗バーエリアのHTML ---
+    // --- 進捗バーエリアのHTML (NEW: サイズと構造を調整) ---
 
+    // h-10 はそのまま維持
     const repopInfoHtml = `
         <div class="mt-1 bg-gray-700 p-2 rounded-xl text-xs flex flex-col space-y-1 relative overflow-hidden shadow-inner h-10">
-            <div class="flex items-center relative z-10 h-full">
-                <span class="repop-info-display text-base ${repopTimeColorClass} font-mono w-full text-center">
+            <div class="flex items-center justify-center relative z-10 h-full">
+                <span class="repop-info-display text-lg font-extrabold ${repopTimeColorClass} font-mono w-full text-center">
                     ${timeDisplay}
                 </span>
             </div>
 
-            <div class="progress-bar" style="z-index: 0;"></div>
+            <div class="progress-bar absolute inset-0 rounded-xl" style="z-index: 0; transform-origin: left; width: 0%;"></div>
         </div>
     `;
 
 
     // --- モブカードの最終構造 ---
     return `
-        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative"
+        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-2"
              data-rank="${mob.Rank}"
              data-mobno="${mob['No.']}"
              data-lastkill="${mob.LastKillDate || ''}"
@@ -462,7 +462,7 @@ function createMobCard(mob) {
              data-maxrepop="${mob['MAX(s)']}"
              data-expansion="${mob.Expansion || '?'}">
 
-            <div class="p-2 fixed-content toggle-handler cursor-pointer">
+            <div class="px-2 fixed-content toggle-handler cursor-pointer">
                 <div class="flex justify-between items-start mb-1">
                     <div class="flex items-center space-x-2">
                         <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-sm w-7 h-7 flex items-center justify-center rounded-lg shadow-lg flex-shrink-0">
@@ -1172,16 +1172,17 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
 }
 
 /**
- * 各モブカードの進捗バーを更新する (1秒ごと)
+ * 各モブカードの進捗バーを更新する (60秒ごと)
  */
 function updateProgressBars() {
 
-    // 80%~ および最大超過時のバーの色 (薄いオレンジ)
+    // POP時間以降のバーの色 (薄いオレンジ)
     const ORANGE_BAR_COLOR_CLASS = 'bg-orange-400';
-    // 最大超過時のリポップ時刻の色 (薄いオレンジのテキスト)
-    const ORANGE_TEXT_COLOR_CLASS = 'text-orange-400';
-    // Min POP 到達時のテキストの色 (黄色)
-    const POP_TEXT_COLOR_CLASS = 'text-amber-300';
+    // Min POP 未到達時のバーの色 (青緑)
+    const NEXT_BAR_COLOR_CLASS = 'bg-teal-500'; 
+
+    // POP時間以降のテキストの色 (黒)
+    const POP_TEXT_COLOR_CLASS = 'text-gray-900';
     // Min POP 未到達時のテキストの色 (緑)
     const NEXT_TEXT_COLOR_CLASS = 'text-green-400';
 
@@ -1201,23 +1202,20 @@ function updateProgressBars() {
         const repopInfoDisplayEl = card.querySelector('.repop-info-display');
         const progressBarEl = card.querySelector('.progress-bar');
 
-        // --- 1. 表示テキストと色の更新 ---
+        // --- 1. 表示テキストと色の更新 (NEW: POP後は黒に統一) ---
         if (repopInfoDisplayEl) {
 
             // 1.1 テキストの更新
             repopInfoDisplayEl.textContent = repopData.timeDisplay;
 
-            // 1.2 色の更新
-            repopInfoDisplayEl.classList.remove('text-gray-400', NEXT_TEXT_COLOR_CLASS, POP_TEXT_COLOR_CLASS, ORANGE_TEXT_COLOR_CLASS, 'font-bold');
+            // 1.2 色の更新 (font-extrabold は既にHTMLに設定済み)
+            repopInfoDisplayEl.classList.remove('text-gray-400', NEXT_TEXT_COLOR_CLASS, POP_TEXT_COLOR_CLASS);
 
             if (repopData.isUnknown) {
                 repopInfoDisplayEl.classList.add('text-gray-400');
-            } else if (repopData.isMaxOver) {
-                // 最大超過時: 薄いオレンジのテキスト
-                repopInfoDisplayEl.classList.add(ORANGE_TEXT_COLOR_CLASS, 'font-bold');
             } else if (repopData.isPop) {
-                // POPウィンドウ内: 黄色 (font-bold を追加)
-                repopInfoDisplayEl.classList.add(POP_TEXT_COLOR_CLASS, 'font-bold');
+                // POPウィンドウ内および最大超過時: 黒
+                repopInfoDisplayEl.classList.add(POP_TEXT_COLOR_CLASS);
             } else {
                 // Min POP未到達: 緑
                 repopInfoDisplayEl.classList.add(NEXT_TEXT_COLOR_CLASS);
@@ -1225,16 +1223,21 @@ function updateProgressBars() {
         }
 
 
-        // --- 2. プログレスバーの更新ロジック ---
+        // --- 2. プログレスバーの更新ロジック (NEW: Min POP前はバー非表示) ---
         if (progressBarEl) {
 
             let barColorClass = '';
             let widthPercent = Math.min(100, percent);
             let animateClass = '';
+            
+            // Bar style reset
+            progressBarEl.classList.remove('bg-orange-400', 'bg-yellow-400', 'bg-lime-500', NEXT_BAR_COLOR_CLASS, 'animate-pulse');
+
 
             if (!repopData.isPop || repopData.isUnknown) {
                 // Min POP未到達時やデータ不明時はバーを非表示 (幅0%)
                 widthPercent = 0;
+                barColorClass = ''; 
             } else if (repopData.isMaxOver) {
                 // 最大超過: 100%幅で薄いオレンジに点滅
                 barColorClass = ORANGE_BAR_COLOR_CLASS;
@@ -1242,7 +1245,7 @@ function updateProgressBars() {
                 animateClass = 'animate-pulse';
             } else if (percent >= 80) {
                 // 80% ～ 100%未満: 薄いオレンジ
-                barColorClass = ORANGE_BAR_BAR_COLOR_CLASS;
+                barColorClass = ORANGE_BAR_COLOR_CLASS;
             } else if (percent >= 60) {
                 // 60% ～ 80%未満: レモン色 (yellow-400)
                 barColorClass = 'bg-yellow-400';
@@ -1251,9 +1254,10 @@ function updateProgressBars() {
                 barColorClass = 'bg-lime-500';
             }
 
-            // 安定版のロジック: すべてのクラスを上書きして再設定
-            progressBarEl.className = `progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl ${barColorClass} ${animateClass}`;
+            // クラスの再設定
+            progressBarEl.classList.add(barColorClass, animateClass);
 
+            // NEW: transition-all duration-100 ease-linear はCSSに移動し、ここではwidthのみ設定
             progressBarEl.style.width = `${widthPercent}%`;
         }
 
@@ -1504,8 +1508,8 @@ function initializeApp() {
     // 討伐記録の定期更新 (10分ごと)
     setInterval(() => fetchRecordsAndUpdate('auto', false), 10 * 60 * 1000);
 
-    // プログレスバーの定期更新を 1秒ごと に変更
-    setInterval(updateProgressBars, 1000);
+    // 修正: プログレスバーの定期更新を 1秒ごと から 60秒ごと に変更
+    setInterval(updateProgressBars, 60 * 1000); 
 }
 
 document.addEventListener('DOMContentLoaded', initializeApp);
