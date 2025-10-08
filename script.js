@@ -1,7 +1,7 @@
-/* script.js (最終修正版 - モブカード隙間調整/ヘッダー表示修正) */
+/* script.js (最終修正版 - エリアフィルタ展開修正/モブカード隙間調整) */
 
 // Google Apps Script (GAS) のエンドポイントURL
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLc-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
 // 静的モブデータ (mob_data.json) のURL (同階層のファイルを参照)
 const MOB_DATA_URL = './mob_data.json';
 
@@ -1273,7 +1273,7 @@ function updateProgressBars() {
  * @param {boolean} forceOpen 強制的に開く場合はtrue
  */
 function toggleAreaFilterPanel(forceOpen) {
-    if (!areaFilterWrapper) return;
+    if (!areaFilterWrapper || !areaFilterContainer) return;
 
     const isOpen = areaFilterWrapper.classList.contains('open');
 
@@ -1284,15 +1284,56 @@ function toggleAreaFilterPanel(forceOpen) {
     } else {
         shouldOpen = !isOpen; // トグル
     }
+    
+    // トランジション中にクリックイベントをブロックするためにポインターイベントを調整
+    areaFilterWrapper.style.pointerEvents = 'none';
 
     if (shouldOpen) {
-        // 開く処理
+        // --- 開く処理 ---
         areaFilterWrapper.classList.add('open');
-        areaFilterWrapper.style.pointerEvents = 'all'; // NEW: 開いている時のみイベントを有効化
+        
+        // 1. max-heightを一時的にnoneにして、内部コンテンツの実際の高さを取得
+        areaFilterWrapper.style.maxHeight = 'none';
+        
+        // 内部コンテンツの高さ + CSSで設定した padding-bottom の 8px を取得
+        const targetHeight = areaFilterContainer.offsetHeight + 8; 
+
+        // 2. max-heightを 0 に設定し直し、アニメーションの開始点に戻す
+        areaFilterWrapper.style.maxHeight = '0px';
+
+        // 3. 取得した高さに設定してアニメーションを開始
+        setTimeout(() => {
+            areaFilterWrapper.style.maxHeight = `${targetHeight}px`;
+            
+            // 4. アニメーション終了後に max-height: none に設定（安全のため）
+            areaFilterWrapper.addEventListener('transitionend', function handler(e) {
+                if (e.propertyName === 'max-height' && areaFilterWrapper.classList.contains('open')) {
+                    areaFilterWrapper.style.maxHeight = 'none';
+                    areaFilterWrapper.style.pointerEvents = 'all'; // 終了後にイベントを有効化
+                }
+                areaFilterWrapper.removeEventListener('transitionend', handler);
+            });
+        }, 0); 
+        
     } else {
-        // 閉じる処理
+        // --- 閉じる処理 ---
+
+        // 1. 現在の計算された高さを設定 (max-height: none から切り替えるため)
+        areaFilterWrapper.style.maxHeight = `${areaFilterWrapper.scrollHeight}px`;
         areaFilterWrapper.classList.remove('open');
-        areaFilterWrapper.style.pointerEvents = 'none'; // NEW: 閉じている時はイベントを無効化
+
+        // 2. 0ms後に max-height を 0 にしてアニメーションを開始
+        setTimeout(() => {
+            areaFilterWrapper.style.maxHeight = '0px';
+            
+            // 3. アニメーション終了後にイベントを有効化
+            areaFilterWrapper.addEventListener('transitionend', function handler(e) {
+                if (e.propertyName === 'max-height' && !areaFilterWrapper.classList.contains('open')) {
+                     areaFilterWrapper.style.pointerEvents = 'none'; // 終了後にイベントを無効化
+                }
+                areaFilterWrapper.removeEventListener('transitionend', handler);
+            });
+        }, 0);
     }
     
     // NEW: エリアフィルタの表示/非表示が変わったらスペーサーを再調整
@@ -1329,7 +1370,8 @@ function initializeApp() {
     const isTargetRank = (initialRank === 'S' || initialRank === 'A' || initialRank === 'F');
     if (isTargetRank) {
          // 修正: 初期化時に強制的に開く (ALLタブの場合を除く)
-         toggleAreaFilterPanel(true);
+         // ロード直後はまだコンテンツの高さが確定していない可能性があるため、少し遅延させる
+         setTimeout(() => toggleAreaFilterPanel(true), 100);
     } else {
          // 修正: ALLタブの場合は閉じる
          toggleAreaFilterPanel(false);
