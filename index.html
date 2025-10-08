@@ -80,9 +80,10 @@
 <body>
     <div id="app" class="p-4 md:p-6 min-h-screen">
         
-        <div class="flex justify-between items-start mb-2">
-            <h1 class="text-3xl font-extrabold text-emerald-400">The Hunt</h1>
-            <div id="uuid-display" class="text-xs text-gray-400 text-right pt-2 hidden"></div>
+        <div class="flex flex-col sm:flex-row sm:justify-center sm:items-center mb-2 relative">
+            <div id="uuid-display" class="text-xs text-gray-400 text-right mb-2 sm:mb-0 sm:absolute sm:top-0 sm:right-0 sm:mt-2 sm:mr-4 hidden"></div>
+
+            <h1 class="text-3xl font-extrabold text-emerald-400 text-center sm:text-left mx-auto">The Hunt</h1>
         </div>
 
         <div class="text-center mb-4">
@@ -97,7 +98,7 @@
                 <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-blue-600 hover:bg-blue-500" data-rank="S">Sランク</button>
                 <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="A">Aランク</button>
                 <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="F">FATE</button>
-                </div>
+            </div>
 
             <div id="area-filter-container" class="flex justify-center mt-2">
                 <div class="relative w-full max-w-sm">
