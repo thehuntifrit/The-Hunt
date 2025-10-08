@@ -3,128 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Hunt</title>
+    <title>The Hunt - Eorzea</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* カスタムスタイル */
         body {
-            background-color: #1f2937; /* Gray-800 */
+            background-color: #0d1117; /* GitHub Dark Modeに近い背景 */
+            color: #c9d1d9; /* 薄いグレーのテキスト */
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
         }
+
+        /* カスタムアウトラインテキストスタイル */
         .text-outline {
-            text-shadow: 1px 1px 2px #000;
+            text-shadow: 
+                -1px -1px 0 #000,  
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                1px 1px 0 #000;
         }
-        /* モブカードの展開パネルの高さアニメーション用 */
+
+        /* 展開パネルの初期状態 */
         .expandable-panel {
             max-height: 0;
-            transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
             overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+            padding-bottom: 0 !important; /* 初期状態ではパディングを無効化 */
         }
-        /* openクラスが付いたときに max-height: none になるのはJSで制御 */
+        
         .mob-card.open .expandable-panel {
-            /* JSで動的な max-height が設定されます */
-            padding-bottom: 8px; /* パネル下部のパディング */
+            /* JSで動的にmax-heightを設定するため、ここは空に保つか、安全な値を入れておく */
         }
-        /* 湧き潰しポイントのホバー強調 */
+
+        /* 進捗バーのスタイル調整 */
+        .progress-bar {
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            border-radius: 0.75rem; /* rounded-xl */
+        }
+        
+        /* マップスポーンポイントの基本スタイル */
+        .spawn-point {
+            /* ホバー時にわずかに拡大 */
+            cursor: pointer;
+        }
+
         .spawn-point:hover {
             transform: translate(-50%, -50%) scale(1.5) !important;
-            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8) !important;
+            box-shadow: 0 0 12px 2px rgba(255, 255, 255, 0.5) !important;
         }
-        /* 湧き潰し済みポイントのホバー強調 */
-        .spawn-point.culled:hover {
-             transform: translate(-50%, -50%) scale(1.5) !important;
-             /* 潰し済みは影を弱く */
-             box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.5) !important;
+
+        /* 湧き潰し済みポイントのスタイル */
+        .spawn-point.culled {
+            /* 湧き潰し済みの場合は内側を不透明なグレーにし、外側を白で表現 */
+            border: 2px solid white !important;
+            background-color: rgba(100, 100, 100, 1.0) !important;
+            opacity: 0.8 !important;
+            box-shadow: none !important;
         }
-        /* プログレスバーの脈動アニメーション */
-        .animate-pulse {
-            animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+        /* 地図画像の親要素 (relativeを適用) */
+        .map-content {
+            position: relative;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .7; }
+
+        /* 地図オーバーレイ (スポーンポイントの描画エリア) */
+        .map-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 20; /* ポイントが地図の上に表示されるように */
         }
+
+        /* ロード/エラーメッセージのテキストを中央揃え */
+        #error-message-container > div {
+            padding: 8px 12px;
+        }
+        
+        /* 報告モーダルのスタイル */
+        #report-modal {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        /* モーダルコンテンツ */
+        #report-modal > div {
+            max-height: 90vh;
+        }
+        
+        /* --- 固定ヘッダーの調整 --- */
+        #fixed-header-content {
+            /* Tailwind: fixed top-0 left-0 right-0 z-50 bg-gray-950 p-3 pb-2 shadow-2xl border-b border-gray-800 */
+            /* 既にクラスで設定済み */
+            box-sizing: border-box;
+            width: 100%;
+        }
+
     </style>
 </head>
-<body class="text-white min-h-screen">
+<body>
 
-    <div class="container mx-auto p-4 max-w-4xl">
-    <header class="text-center mb-6">
-        <h1 class="text-3xl font-extrabold text-yellow-300 text-outline">The Hunt</h1>
-        <p id="uuid-display" class="text-xs text-gray-400 mt-1 hidden">ID: ************</p>
-    </header>
+    <div id="fixed-header-content" class="fixed top-0 left-0 right-0 z-50 bg-gray-950 p-3 pb-2 shadow-2xl border-b border-gray-800">
 
-    <div id="error-message-container" class="mb-4 hidden">
+        <header class="text-center mb-2">
+            <h1 class="text-3xl font-extrabold text-yellow-300 text-outline">The Hunt</h1>
+            <p id="uuid-display" class="text-xs text-gray-400 mt-1 hidden">ID: ************</p>
+        </header>
+        
+        <div id="error-message-container" class="mb-2 hidden">
+            </div>
+        
+        <div id="rank-tabs" class="flex justify-center space-x-2 p-2 bg-gray-900 rounded-xl shadow-lg">
+            <button data-rank="ALL" class="tab-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition">ALL</button>
+            <button data-rank="S" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">S</button>
+            <button data-rank="A" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">A</button>
+            <button data-rank="F" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">FATE</button>
         </div>
+        
+        <div id="area-filter-container" class="mt-2 p-2 bg-gray-900 rounded-xl shadow-lg hidden transition-all duration-300">
+            <div class="flex flex-wrap gap-2 justify-center">
+                <button data-area="ALL" class="area-filter-btn bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1 px-3 rounded-md text-sm transition">
+                    ALL
+                </button>
+                <button data-area="黄金" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                    黄金
+                </button>
+                <button data-area="暁月" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                    暁月
+                </button>
+                <button data-area="漆黒" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                    漆黒
+                </button>
+                <button data-area="紅蓮" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                    紅蓮
+                </button>
+                <button data-area="蒼天" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                    蒼天
+                </button>
+                <button data-area="新生" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                    新生
+                </button>
+            </div>
+        </div>
+        
+    </div>
     
-    <div id="rank-tabs" class="flex justify-center space-x-2 p-2 bg-gray-900 rounded-xl shadow-lg">
-        <button data-rank="ALL" class="tab-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition">ALL</button>
-        <button data-rank="S" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">S</button>
-        <button data-rank="A" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">A</button>
-        <button data-rank="F" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">FATE</button>
-    </div>
-
-    <div id="area-filter-container" class="mt-2 p-2 bg-gray-900 rounded-xl shadow-lg hidden transition-all duration-300">
-        <div class="flex flex-wrap gap-2 justify-center">
-            <button data-area="ALL" class="area-filter-btn bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1 px-3 rounded-md text-sm transition">
-                ALL
-            </button>
-            <button data-area="黄金" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                黄金
-            </button>
-            <button data-area="暁月" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                暁月
-            </button>
-            <button data-area="漆黒" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                漆黒
-            </button>
-            <button data-area="紅蓮" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                紅蓮
-            </button>
-            <button data-area="蒼天" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                蒼天
-            </button>
-            <button data-area="新生" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                新生
-            </button>
-        </div>
-    </div>
-
-
-        <div id="mob-list-container" class="mt-4 p-2">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div id="content-spacer">
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            <div id="content-columns" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 <div id="column-1"></div>
                 <div id="column-2" class="hidden md:block"></div>
-                <div id="column-3" class="hidden lg:block"></div>
+                <div id="column-3" class="hidden xl:block"></div>
             </div>
         </div>
-
+        
     </div>
 
-
-    <div id="report-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50">
-        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-sm">
-            <h3 class="text-xl font-bold mb-4 text-yellow-300">討伐報告</h3>
-            <p class="text-lg font-semibold mb-3">討伐モブ: <span id="modal-mob-name" class="text-white"></span></p>
+    <div id="report-modal" class="fixed inset-0 hidden items-center justify-center z-50 transition-opacity duration-300">
+        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-sm border border-gray-700">
+            <h2 class="text-xl font-bold mb-4 text-yellow-300">討伐報告</h2>
+            <p class="mb-3 text-lg">モブ名: <span id="modal-mob-name" class="font-semibold text-white"></span></p>
 
             <div class="mb-4">
-                <label for="report-datetime" class="block text-sm font-medium text-gray-300 mb-1">討伐日時 (ローカル時刻)</label>
-                <input type="datetime-local" id="report-datetime" class="w-full p-2 rounded-md bg-gray-700 border border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500">
+                <label for="report-datetime" class="block text-sm font-medium text-gray-400 mb-1">討伐日時 (JST):</label>
+                <input type="datetime-local" id="report-datetime" required class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-blue-500 focus:border-blue-500">
             </div>
 
             <div class="mb-4">
-                <label for="report-memo" class="block text-sm font-medium text-gray-300 mb-1">メモ (任意)</label>
-                <textarea id="report-memo" rows="2" class="w-full p-2 rounded-md bg-gray-700 border border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="討伐状況など"></textarea>
+                <label for="report-memo" class="block text-sm font-medium text-gray-400 mb-1">メモ (任意):</label>
+                <textarea id="report-memo" rows="2" class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-blue-500 focus:border-blue-500"></textarea>
             </div>
-            
-            <div id="report-status" class="text-center font-bold mb-3 hidden"></div>
+
+            <div id="report-status" class="text-center font-semibold mb-3 hidden"></div>
 
             <div class="flex justify-end space-x-3">
-                <button id="cancel-report" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition">
-                    キャンセル
-                </button>
-                <button id="submit-report" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg transition">
-                    報告する
-                </button>
+                <button id="cancel-report" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition">キャンセル</button>
+                <button id="submit-report" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg transition">報告する</button>
             </div>
         </div>
     </div>
