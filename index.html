@@ -3,58 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>討伐予報</title>
+    <title>The Hunt</title> 
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* グローバルスタイル */
+        /* グローバルスタイル (変更なし) */
         body {
             background-color: #1f2937; /* Dark Gray (Tailwind gray-800) */
             color: #f3f4f6; /* Light Gray (Tailwind gray-100) */
             font-family: 'Noto Sans JP', sans-serif; /* 日本語フォント指定 */
         }
         
-        /* カスタムフォント: 時間表示用 (等幅) */
+        /* カスタムフォント: 時間表示用 (等幅) (変更なし) */
         .font-mono {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         }
 
-        /* モーダル背景 */
+        /* モーダル背景 (変更なし) */
         .modal-overlay {
             background-color: rgba(0, 0, 0, 0.75);
         }
 
-        /* ランクアイコンの文字強調 */
+        /* ランクアイコンの文字強調 (変更なし) */
         .text-outline {
             text-shadow: 1px 1px 2px #000000;
         }
-
-        /* マップのスポーンポイント用カスタムCSS */
+        
+        /* マップのスポーンポイント用カスタムCSS (変更なし) */
         .map-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none; /* デフォルトではクリック無効 */
+            pointer-events: none;
         }
 
-        /* スポーンポイントの基本スタイル */
+        /* スポーンポイントの基本スタイル (変更なし) */
         .spawn-point {
             position: absolute;
-            /* サイズと形状はJSで動的に設定されます */
             cursor: pointer;
-            pointer-events: all; /* クリック有効化 */
+            pointer-events: all; 
             transition: transform 0.1s ease-out, opacity 0.2s ease-out;
             z-index: 10;
         }
 
-        /* 展開パネルの初期非表示状態 */
+        /* 展開パネルの初期非表示状態 (変更なし) */
         .expandable-panel {
             max-height: 0;
             transition: max-height 0.3s ease-in-out;
         }
 
-        /* モブカードの列配置 */
+        /* モブカードの列配置 (変更なし) */
         @media (min-width: 768px) {
             #mob-list-container {
                 display: grid;
@@ -69,22 +68,54 @@
                 gap: 1rem;
             }
         }
+
+        /* NEW: タブボタンの横幅を固定 (3列配置) */
+        #rank-tabs .tab-btn {
+            width: calc((100% - 2rem * 2) / 3); /* (全幅 - ギャップ) / 3 */
+            min-width: 80px; /* 最小幅を確保 */
+            max-width: 120px;
+        }
     </style>
 </head>
 <body>
     <div id="app" class="p-4 md:p-6 min-h-screen">
-        <h1 class="text-3xl font-extrabold text-white text-center mb-6">討伐予報システム</h1>
+        
+        <div class="flex justify-between items-start mb-2">
+            <h1 class="text-3xl font-extrabold text-emerald-400">The Hunt</h1>
+            <div id="uuid-display" class="text-xs text-gray-400 text-right pt-2 hidden"></div>
+        </div>
+
+        <div class="text-center mb-4">
+            <p class="text-sm font-medium text-gray-300">モブハントの討伐記録とリポップ予測</p>
+            <p class="text-sm font-medium text-gray-300">湧き潰し管理ツールです</p>
+        </div>
 
         <div id="error-message-container" class="hidden my-4"></div>
 
-        <div id="uuid-display" class="text-xs text-gray-400 text-center mb-4 hidden"></div>
+        <div class="mb-8">
+            <div id="rank-tabs" class="flex justify-center space-x-4 mb-2">
+                <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-blue-600 hover:bg-blue-500" data-rank="S">Sランク</button>
+                <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="A">Aランク</button>
+                <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="F">FATE</button>
+                </div>
 
-        <div id="rank-tabs" class="flex justify-center space-x-2 md:space-x-4 mb-8">
-            <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-blue-600 hover:bg-blue-500" data-rank="ALL">ALL</button>
-            <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="S">S</button>
-            <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="A">A</button>
-            <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="B">B</button>
-            <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="F">FATE</button>
+            <div id="area-filter-container" class="flex justify-center mt-2">
+                <div class="relative w-full max-w-sm">
+                    <button id="area-dropdown-toggle" class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-600 flex justify-between items-center transition">
+                        <span id="current-area-label">ALL</span>
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="area-dropdown-menu" class="absolute z-20 w-full mt-2 bg-gray-800 rounded-lg shadow-xl border border-gray-700 hidden">
+                        <button class="area-filter-btn block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition" data-area="ALL">ALL</button>
+                        <button class="area-filter-btn block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition" data-area="黄金">黄金</button>
+                        <button class="area-filter-btn block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition" data-area="暁月">暁月</button>
+                        <button class="area-filter-btn block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition" data-area="漆黒">漆黒</button>
+                        <button class="area-filter-btn block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition" data-area="紅蓮">紅蓮</button>
+                        <button class="area-filter-btn block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition" data-area="蒼天">蒼天</button>
+                        <button class="area-filter-btn block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition" data-area="新生">新生</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div id="mob-list-container" class="space-y-6 md:space-y-0">
