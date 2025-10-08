@@ -619,7 +619,6 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     const B_SHADOW = '0 0 4px rgba(0, 0, 0, 0.7)'; // 薄い影
 
     // S/A抽選対象ポイント (内円 8px, 外円 12px)
-    const SA_INNER_DIAMETER = '8px';
     const SA_OUTER_DIAMETER = '12px';
     const SA_BORDER_WIDTH = '2px'; // (12px - 8px) / 2 = 2px
     const SA_SHADOW = '0 0 8px 1px'; // 影の色はロジックで決定
