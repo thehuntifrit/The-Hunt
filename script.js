@@ -1,7 +1,7 @@
-/* script.js (最終修正版 - フィルタ状態の記憶、コンテンツ幅調整、ヘッダー固定、メッセージ変更、カードレイアウト修正、エリアフィルタのアニメーション追加) */
+/* script.js (最終修正版 - モブカード拡大アニメーション削除) */
 
 // Google Apps Script (GAS) のエンドポイントURL
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLc-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
 // 静的モブデータ (mob_data.json) のURL (同階層のファイルを参照)
 const MOB_DATA_URL = './mob_data.json';
 
@@ -454,7 +454,7 @@ function createMobCard(mob) {
 
     // --- モブカードの最終構造 ---
     return `
-        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden transform hover:scale-[1.01] transition duration-300 relative"
+        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative"
              data-rank="${mob.Rank}"
              data-mobno="${mob['No.']}"
              data-lastkill="${mob.LastKillDate || ''}"
