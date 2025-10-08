@@ -33,13 +33,15 @@
             /* JSで動的にmax-heightを設定するため、ここは空に保つか、安全な値を入れておく */
         }
 
-        /* 進捗バーのスタイル調整 */
+        /* NEW: プログレスバーのトランジションを CSS で定義 */
         .progress-bar {
             height: 100%;
             top: 0;
             left: 0;
             z-index: 0;
             border-radius: 0.75rem; /* rounded-xl */
+            /* プログレスバーの動きを滑らかにする */
+            transition: width 0.1s ease-linear;
         }
         
         /* マップスポーンポイントの基本スタイル */
