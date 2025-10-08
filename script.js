@@ -1,4 +1,4 @@
-/* script.js (最終修正版 - モブカード拡大アニメーション削除) */
+/* script.js (最終修正版 - モブカード隙間調整/ヘッダー表示修正) */
 
 // Google Apps Script (GAS) のエンドポイントURL
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLc-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
@@ -86,7 +86,6 @@ function formatDateForDisplay(dateInput) {
 
     return `${month}/${day} ${hours}:${minutes}`;
 }
-
 
 /**
  * ミリ秒を HHh MMm 形式に変換し、接頭辞を付けます。
@@ -1289,9 +1288,11 @@ function toggleAreaFilterPanel(forceOpen) {
     if (shouldOpen) {
         // 開く処理
         areaFilterWrapper.classList.add('open');
+        areaFilterWrapper.style.pointerEvents = 'all'; // NEW: 開いている時のみイベントを有効化
     } else {
         // 閉じる処理
         areaFilterWrapper.classList.remove('open');
+        areaFilterWrapper.style.pointerEvents = 'none'; // NEW: 閉じている時はイベントを無効化
     }
     
     // NEW: エリアフィルタの表示/非表示が変わったらスペーサーを再調整
@@ -1321,12 +1322,16 @@ function initializeApp() {
     // NEW: フィルタ状態のロード
     loadFilterState();
     
+    // 既存の currentFilter.rank に基づいて初期表示を決定
+    const initialRank = currentFilter.rank;
+
     // エリアフィルタコンテナの初期表示制御
-    // 初期状態はCSSのmax-height: 0; に任せる。選択ランクがS/A/FATEなら開く
-    const isTargetRank = (currentFilter.rank === 'S' || currentFilter.rank === 'A' || currentFilter.rank === 'F');
+    const isTargetRank = (initialRank === 'S' || initialRank === 'A' || initialRank === 'F');
     if (isTargetRank) {
+         // 修正: 初期化時に強制的に開く (ALLタブの場合を除く)
          toggleAreaFilterPanel(true);
     } else {
+         // 修正: ALLタブの場合は閉じる
          toggleAreaFilterPanel(false);
     }
     
