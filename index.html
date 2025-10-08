@@ -48,46 +48,46 @@
 <body class="text-white min-h-screen">
 
     <div class="container mx-auto p-4 max-w-4xl">
-        <header class="text-center mb-6">
-            <h1 class="text-3xl font-extrabold text-yellow-300 text-outline">The Hunt</h1>
-            <p id="uuid-display" class="text-xs text-gray-400 mt-1 hidden">ID: ************</p>
-        </header>
+<header class="text-center mb-6">
+    <h1 class="text-3xl font-extrabold text-yellow-300 text-outline">The Hunt</h1>
+    <p id="uuid-display" class="text-xs text-gray-400 mt-1 hidden">ID: ************</p>
+</header>
 
-        <div id="error-message-container" class="mb-4 hidden">
-            </div>
+<div id="error-message-container" class="mb-4 hidden">
+    </div>
 
-        <div id="rank-tabs" class="flex justify-center space-x-2 p-2 bg-gray-900 rounded-xl shadow-lg">
-            <button data-rank="ALL" class="tab-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition">ALL</button>
-            <button data-rank="S" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">S</button>
-            <button data-rank="A" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">A</button>
-            <button data-rank="F" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">FATE</button>
-        </div>
-        
-        <div id="area-filter-container" class="mt-2 p-2 bg-gray-900 rounded-xl shadow-lg hidden transition-all duration-300">
-            <div class="flex flex-wrap gap-2 justify-center">
-                <button data-area="ALL" class="area-filter-btn bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1 px-3 rounded-md text-sm transition">
-                    ALL
-                </button>
-                <button data-area="黄金" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                    黄金
-                </button>
-                <button data-area="暁月" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                    暁月
-                </button>
-                <button data-area="漆黒" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                    漆黒
-                </button>
-                <button data-area="紅蓮" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                    紅蓮
-                </button>
-                <button data-area="蒼天" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                    蒼天
-                </button>
-                <button data-area="新生" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                    新生
-                </button>
-                </div>
-        </div>
+<div id="rank-tabs" class="flex justify-center space-x-2 p-2 bg-gray-900 rounded-xl shadow-lg">
+    <button data-rank="ALL" class="tab-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition flex-1">ALL</button>
+    <button data-rank="S" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition flex-1">S</button>
+    <button data-rank="A" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition flex-1">A</button>
+    <button data-rank="F" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition flex-1">FATE</button>
+</div>
+
+<div id="area-filter-container" class="mt-2 p-2 bg-gray-900 rounded-xl shadow-lg hidden transition-all duration-300">
+    <div class="flex flex-wrap gap-2 justify-center">
+        <button data-area="ALL" class="area-filter-btn bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1 px-3 rounded-md text-sm transition flex-1 min-w-0">
+            ALL
+        </button>
+        <button data-area="黄金" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition flex-1 min-w-0">
+            黄金
+        </button>
+        <button data-area="暁月" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition flex-1 min-w-0">
+            暁月
+        </button>
+        <button data-area="漆黒" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition flex-1 min-w-0">
+            漆黒
+        </button>
+        <button data-area="紅蓮" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition flex-1 min-w-0">
+            紅蓮
+        </button>
+        <button data-area="蒼天" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition flex-1 min-w-0">
+            蒼天
+        </button>
+        <button data-area="新生" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition flex-1 min-w-0">
+            新生
+        </button>
+    </div>
+</div>
 
 
         <div id="mob-list-container" class="mt-4 p-2">
