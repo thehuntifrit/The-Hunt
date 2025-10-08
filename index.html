@@ -69,7 +69,7 @@
             }
         }
 
-        /* NEW: タブボタンの横幅を固定 (4列配置) */
+        /* タブボタンの横幅を固定 (4列配置) */
         #rank-tabs .tab-btn {
             width: calc((100% - 0.5rem * 3) / 4); /* (全幅 - ギャップ) / 4 */
             min-width: 60px; /* 最小幅を確保 */
@@ -82,34 +82,41 @@
                 max-width: 120px;
             }
         }
+        
+        /* NEW: 展開パネル内のカスタム余白 */
+        .panel-padding-bottom {
+             /* 0.5行分を表現 (text-xs/text-smのline-heightが約1.2rem程度と仮定して0.6remを設定) */
+            padding-bottom: 0.6rem; 
+        }
+
     </style>
 </head>
 <body>
     <div id="app" class="p-4 md:p-6 min-h-screen">
         
         <div class="flex flex-col sm:flex-row sm:justify-center sm:items-center mb-2 relative">
-            <div id="uuid-display" class="text-xs text-gray-400 text-right mb-2 sm:mb-0 sm:absolute sm:top-0 sm:right-0 sm:mt-2 sm:mr-4 hidden"></div>
+            <div id="uuid-display" class="text-xs text-gray-400 text-right mb-1 sm:mb-0 sm:absolute sm:top-0 sm:right-0 sm:mt-2 sm:mr-4 hidden"></div>
 
             <h1 class="text-3xl font-extrabold text-emerald-400 text-center sm:text-left mx-auto">The Hunt</h1>
         </div>
 
-        <div class="text-center mb-4">
-            <p class="text-sm font-medium text-gray-300">モブハントの討伐記録とリポップ予測</p>
-            <p class="text-sm font-medium text-gray-300">湧き潰し管理ツールです</p>
+        <div class="text-center mb-3">
+            <p class="text-sm font-medium text-gray-300 leading-tight">モブハントの討伐記録とリポップ予測</p>
+            <p class="text-sm font-medium text-gray-300 leading-tight">湧き潰し管理ツールです</p>
         </div>
 
         <div id="error-message-container" class="hidden my-4"></div>
 
-        <div class="mb-8">
-            <div id="rank-tabs" class="flex justify-center space-x-2 sm:space-x-4 mb-2">
+        <div class="mb-5">
+            <div id="rank-tabs" class="flex justify-center space-x-1 sm:space-x-2 mb-1">
                 <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-blue-600 hover:bg-blue-500" data-rank="ALL">ALL</button>
                 <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="S">Sランク</button>
                 <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="A">Aランク</button>
                 <button class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition bg-gray-700 hover:bg-gray-600" data-rank="F">FATE</button>
             </div>
 
-            <div id="area-filter-container" class="flex justify-center mt-2 hidden">
-                <div id="area-selection-menu" class="flex flex-wrap justify-center gap-2 p-2 bg-gray-700 rounded-lg max-w-lg">
+            <div id="area-filter-container" class="flex justify-center mt-1 hidden">
+                <div id="area-selection-menu" class="flex flex-wrap justify-center gap-1 p-1 bg-gray-700 rounded-lg max-w-lg">
                     <button class="area-filter-btn px-3 py-1 text-xs font-medium rounded-full text-white bg-blue-600 hover:bg-blue-500 transition" data-area="ALL">ALL</button>
                     <button class="area-filter-btn px-3 py-1 text-xs font-medium rounded-full text-white bg-gray-600 hover:bg-gray-500 transition" data-area="黄金">黄金</button>
                     <button class="area-filter-btn px-3 py-1 text-xs font-medium rounded-full text-white bg-gray-600 hover:bg-gray-500 transition" data-area="暁月">暁月</button>
@@ -121,10 +128,10 @@
             </div>
         </div>
 
-        <div id="mob-list-container" class="space-y-6 md:space-y-0">
-            <div id="column-1" class="space-y-6"></div>
-            <div id="column-2" class="space-y-6"></div>
-            <div id="column-3" class="space-y-6"></div>
+        <div id="mob-list-container" class="space-y-3 md:space-y-0">
+            <div id="column-1" class="space-y-3"></div>
+            <div id="column-2" class="space-y-3"></div>
+            <div id="column-3" class="space-y-3"></div>
         </div>
     </div>
 
