@@ -1,4 +1,4 @@
-/* script.js (最終修正版) */
+/* script.js (最終修正版 - フィルタ状態の記憶と均等幅対応) */
 
 // Google Apps Script (GAS) のエンドポイントURL
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
@@ -12,7 +12,7 @@ let globalMobData = [];
 // 修正: ランクごとにエリアの選択状態を保持するように変更
 let currentFilter = {
     rank: 'ALL', // 初期表示はALLランク
-    // NEW: S/A/FATE ランクごとに独立したエリア選択状態を保持
+    // S/A/FATE ランクごとに独立したエリア選択状態を保持
     // 初期値は ALL 選択
     areaSets: {
         'S': new Set(['ALL']),
@@ -37,12 +37,11 @@ const cancelReportBtn = document.getElementById('cancel-report');
 const reportStatusEl = document.getElementById('report-status');
 const uuidDisplayEl = document.getElementById('uuid-display');
 
-// NEW: エリアフィルタ関連のDOM要素
+// エリアフィルタ関連のDOM要素
 const areaFilterContainer = document.getElementById('area-filter-container');
 
 
 // --- 定数: 拡張パック名定義 ---
-// 修正: 拡張パック名に「その他」を削除
 const EXPANSION_MAP = {
     1: '新生',
     2: '蒼天',
@@ -52,8 +51,8 @@ const EXPANSION_MAP = {
     6: '黄金'
 };
 
-// NEW: 拡張パック名のリスト (ALLランクのフィルタリングで使用)
-const ALL_EXPANSION_NAMES = Object.values(EXPANSION_MAP).filter(name => name !== 'その他');
+// 拡張パック名のリスト
+const ALL_EXPANSION_NAMES = Object.values(EXPANSION_MAP);
 
 
 // --- ユーティリティ関数 ---
@@ -248,6 +247,62 @@ function getMobByNo(mobNo) {
     return globalMobData.find(mob => mob['No.'] === parseInt(mobNo));
 }
 
+
+// --- フィルタ状態の保存/ロード ---
+
+/**
+ * 現在のフィルタ状態をlocalStorageに保存する
+ */
+function saveFilterState() {
+    try {
+        const stateToSave = {
+            rank: currentFilter.rank,
+            areaSets: {}
+        };
+        // SetをArrayに変換して保存
+        for (const rank in currentFilter.areaSets) {
+            stateToSave.areaSets[rank] = Array.from(currentFilter.areaSets[rank]);
+        }
+        localStorage.setItem('huntFilterState', JSON.stringify(stateToSave));
+    } catch (e) {
+        console.error('Failed to save filter state to localStorage:', e);
+    }
+}
+
+/**
+ * localStorageからフィルタ状態をロードする
+ */
+function loadFilterState() {
+    try {
+        const savedState = localStorage.getItem('huntFilterState');
+        if (savedState) {
+            const parsedState = JSON.parse(savedState);
+            
+            // ランクのロード
+            if (parsedState.rank) {
+                currentFilter.rank = parsedState.rank;
+            }
+            
+            // エリア選択状態のロード (ArrayをSetに戻す)
+            if (parsedState.areaSets) {
+                for (const rank in parsedState.areaSets) {
+                    if (Array.isArray(parsedState.areaSets[rank])) {
+                        currentFilter.areaSets[rank] = new Set(parsedState.areaSets[rank]);
+                    }
+                }
+            }
+            
+            console.log('Filter state loaded successfully.');
+
+        } else {
+            console.log('No saved filter state found.');
+        }
+    } catch (e) {
+        console.error('Failed to load filter state from localStorage:', e);
+    }
+}
+
+
 // --- DOM操作/イベントハンドラ ---
 
 /**
@@ -257,7 +312,7 @@ function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
     const { minRepop, maxRepop, timeDisplay, elapsedPercent, isPop, isMaxOver, isUnknown } = calculateRepop(mob, lastKillDate);
 
-    // NEW: Min POP 未到達時は緑、到達時は黄色系のテキスト
+    // Min POP 未到達時は緑、到達時は黄色系のテキスト
     let repopTimeColorClass = isPop ? 'text-amber-300 font-bold' : 'text-green-400';
     if (isMaxOver) {
         repopTimeColorClass = 'text-orange-400 font-bold';
@@ -378,7 +433,7 @@ function createMobCard(mob) {
              data-lastkill="${mob.LastKillDate || ''}"
              data-minrepop="${mob['REPOP(s)']}"
              data-maxrepop="${mob['MAX(s)']}"
-             data-expansion="${mob.Expansion || 'その他'}">
+             data-expansion="${mob.Expansion || '?'}">
 
             <div class="p-2 fixed-content toggle-handler cursor-pointer">
                 <div class="flex justify-between items-start mb-1">
@@ -428,6 +483,9 @@ function renderMobList() {
             } else if (currentAreaSet.has('ALL') && currentAreaSet.size === 1) {
                 // ALLを選択している場合は、そのランクの全ての拡張エリアを表示
                 filteredByArea = rankMobs.filter(mob => ALL_EXPANSION_NAMES.includes(mob.Expansion));
+            } else if (currentAreaSet.size > 1 && currentAreaSet.has('ALL')) {
+                // すべてのエリアが選択されている状態（ALLもセットに入っている場合）
+                filteredByArea = rankMobs.filter(mob => currentAreaSet.has(mob.Expansion));
             }
 
             mobsByRank[r] = filteredByArea;
@@ -455,6 +513,9 @@ function renderMobList() {
         } else if (currentAreaSet.has('ALL') && currentAreaSet.size === 1) {
             // ALLを選択している場合は、そのランクの全ての拡張エリアを表示
              filteredMobs = filteredMobs.filter(mob => ALL_EXPANSION_NAMES.includes(mob.Expansion));
+        } else if (currentAreaSet.size > 1 && currentAreaSet.has('ALL')) {
+            // すべてのエリアが選択されている状態（ALLもセットに入っている場合）
+             filteredMobs = filteredMobs.filter(mob => currentAreaSet.has(mob.Expansion));
         }
     }
 
@@ -485,7 +546,7 @@ function renderMobList() {
         targetColumn.appendChild(div.firstChild);
     });
 
-    // 4. アクティブなタブをハイライト
+    // 4. アクティブなランクタブをハイライト
     if (rankTabs) {
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
@@ -498,22 +559,40 @@ function renderMobList() {
     }
 
     // 5. エリアフィルタボタンのハイライト
-    // ALLランクの場合はエリアフィルタは表示されないが、念のため Sランクのフィルタ状態を参照する
-    const targetRank = (rank === 'ALL') ? 'S' : rank; 
-    const currentAreasToHighlight = currentFilter.areaSets[targetRank] || new Set(['ALL']);
+    const currentRankForAreaFilter = (rank === 'ALL') ? 'S' : rank; 
+    const currentAreasToHighlight = currentFilter.areaSets[currentRankForAreaFilter] || new Set(['ALL']);
 
     document.querySelectorAll('.area-filter-btn').forEach(btn => {
         btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
         btn.classList.add('bg-gray-600', 'hover:bg-gray-500');
 
-        if (currentAreasToHighlight.has(btn.dataset.area)) {
-            btn.classList.remove('bg-gray-600', 'hover:bg-gray-500');
-            btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+        // エリアフィルタが表示されている（S, A, FATEタブ選択中）場合
+        if (rank !== 'ALL') {
+            if (currentAreasToHighlight.has(btn.dataset.area)) {
+                 btn.classList.remove('bg-gray-600', 'hover:bg-gray-500');
+                 btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+            }
+        } 
+        
+        // 'ALL'タブ選択時は、Sランクのフィルタ状態に基づいてエリアボタンのハイライトを更新する
+        else {
+             // ALLボタンのハイライト制御 (ALLタブ選択時)
+             if (btn.dataset.area === 'ALL') {
+                if (currentFilter.areaSets['S'].has('ALL')) {
+                   btn.classList.remove('bg-gray-600', 'hover:bg-gray-500');
+                   btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+                }
+             } else {
+                 // ALLタブ選択時はエリアボタンはハイライトしない（非表示なので意味はないが念のため）
+             }
         }
     });
 
     attachEventListeners();
     updateProgressBars();
+
+    // NEW: フィルタ状態を保存
+    saveFilterState();
 }
 
 /**
@@ -925,9 +1004,9 @@ async function fetchBaseMobData() {
             baseMobData = jsonData.mobConfig.map(mob => {
                 const mobNo = parseInt(mob['No.']);
 
-                // NEW: No.の1万の位から拡張パック名を決定
+                // No.の1万の位から拡張パック名を決定
                 const expansionKey = Math.floor(mobNo / 10000);
-                // 修正: 存在しない場合は「その他」ではなく空文字列にする
+                // 存在しない場合は空文字列にする
                 const expansionName = EXPANSION_MAP[expansionKey] || ''; 
 
                 // 拡張パック名がない、またはExpantionMapに含まれないランクモブ (Bランクなど) は除外
@@ -1171,6 +1250,20 @@ function initializeApp() {
         uuidDisplayEl.classList.remove('hidden');
     }
 
+    // NEW: フィルタ状態のロード
+    loadFilterState();
+    
+    // エリアフィルタコンテナの初期表示制御
+    if (areaFilterContainer) {
+        const isTargetRank = (currentFilter.rank === 'S' || currentFilter.rank === 'A' || currentFilter.rank === 'F');
+        if (isTargetRank) {
+             areaFilterContainer.classList.remove('hidden');
+        } else {
+             areaFilterContainer.classList.add('hidden');
+        }
+    }
+
+
     // 2. イベントリスナーの設定
 
     // ランクタブのリスナー (修正: ALLランクの動作変更に対応)
@@ -1198,10 +1291,6 @@ function initializeApp() {
 
                 if (currentRank !== newRank) {
                     currentFilter.rank = newRank;
-
-                    // ALLタブに切り替えた場合、エリアフィルタは非表示になるが、
-                    // ALLランクのレンダリングロジックが、S/A/FATEの現在のエリアフィルタを結合して表示する
-
                     renderMobList();
                 }
             }
@@ -1220,38 +1309,44 @@ function initializeApp() {
             }
 
             const currentAreaSet = currentFilter.areaSets[currentRank];
+            const allExpansions = ALL_EXPANSION_NAMES;
 
             if (newArea === 'ALL') {
-                // 修正: 'ALL'が押されたら、そのランクの全ての拡張エリアを選択状態にする
-                const allExpansions = ALL_EXPANSION_NAMES; // ALL_EXPANSION_NAMESを使用
                 
-                // 現在のセットと ALL_EXPANSION_NAMES の内容が一致するかチェック
-                const areAllSelected = allExpansions.every(area => currentAreaSet.has(area));
-
-                if (areAllSelected) {
-                    // 全選択状態なら、ALLに切り替える（全解除と同義）
+                // 現在のセットにすべての拡張エリアが含まれているかチェック
+                const isAllAreasSelected = allExpansions.every(area => currentAreaSet.has(area));
+                
+                if (isAllAreasSelected && currentAreaSet.has('ALL')) {
+                    // 全選択状態なら、ALLのみに切り替える（全解除と同義）
                     currentFilter.areaSets[currentRank] = new Set(['ALL']);
                 } else {
-                    // 全選択状態ではないなら、すべての拡張エリアを選択状態にする
+                    // 全選択状態ではないなら、すべての拡張エリアを選択状態にする（ALLフラグも持たせる）
                     currentFilter.areaSets[currentRank] = new Set([...allExpansions, 'ALL']);
                 }
 
             } else {
-                // 'ALL'以外のボタンが押されたら、まず'ALL'フラグを削除
-                if (currentAreaSet.has('ALL')) {
-                    currentAreaSet.delete('ALL');
-                }
-
+                // 'ALL'以外のボタンが押されたら
+                
                 // 選択状態をトグル
                 if (currentAreaSet.has(newArea)) {
                     currentAreaSet.delete(newArea);
                 } else {
                     currentAreaSet.add(newArea);
                 }
-
-                // 選択肢が空になったら、ALLフラグを再度追加
+                
+                // フィルタのセット内容を評価し、'ALL'フラグを調整
+                
+                // 選択肢が空になったら、ALLフラグを再度追加 (全て非表示)
                 if (currentAreaSet.size === 0) {
                     currentAreaSet.add('ALL');
+                } else {
+                    // 選択肢が一つでもある場合、ALLフラグを削除
+                    currentAreaSet.delete('ALL');
+                }
+
+                // すべての拡張エリアが選択されたら、'ALL'フラグを追加
+                if (allExpansions.every(area => currentAreaSet.has(area))) {
+                     currentAreaSet.add('ALL');
                 }
             }
 
