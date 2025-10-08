@@ -107,11 +107,15 @@
             transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
             overflow: hidden;
             pointer-events: none; /* 初期状態でクリックイベントを無効化 */
+            /* padding-bottom も max-height に含まれるように */
+            padding-bottom: 0px; 
         }
         
         #area-filter-wrapper.open {
-            max-height: 500px; /* 十分な高さを設定 */
+            /* max-height は JS で動的に設定されます */
             opacity: 1;
+            /* 展開時にパディングを適用 (mt-2 の分も考慮して 0.5rem (8px) を設定) */
+            padding-bottom: 8px; 
         }
 
     </style>
