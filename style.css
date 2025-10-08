@@ -33,47 +33,27 @@ body {
 }
 
 /* スポーンポイントの基本スタイル */
+/* **お客様の最適解のスタイルを維持するため、湧き潰し関連のカスタムクラスは削除** */
 .spawn-point {
     position: absolute;
-    width: 12px; /* 湧き潰し対象の基本サイズ */
+    width: 12px;
     height: 12px;
     border-radius: 50%;
     z-index: 10;
-    pointer-events: auto; /* クリック可能にする */
-    
-    /* 座標の中心を基準にするための設定をカスタムCSSに追加 */
+    pointer-events: auto; 
     transform: translate(-50%, -50%); 
     transition: all 0.2s ease-in-out; 
 }
 
-/* 湧き潰し対象ポイントのホバーアニメーション */
+/* スポーンポイントのホバーアニメーション */
+/* ホバー時の見た目を元のスケールに戻し、湧き潰しによる !important を削除 */
 .spawn-point:hover {
-    transform: translate(-50%, -50%) scale(2.0); /* scale(2.0) !important を削除し、CSS/JSでの優先度を調整 */
+    transform: translate(-50%, -50%) scale(2.0);
     opacity: 1 !important;
 }
 
-/* NEW: Bランク専用ポイントの基本スタイル（JSで .spawn-point-b-only を付与）*/
-/* Bランク専用ポイントはサイズを小さくし、ホバー効果を無効化します */
-.spawn-point-b-only {
-    width: 6px;
-    height: 6px;
-    pointer-events: none; /* 湧き潰し対象ではないためクリック不可 */
-    transition: none;
-    box-shadow: none;
-}
-/* Bランク専用ポイントにはホバー効果を適用しない */
-.spawn-point-b-only:hover {
-    transform: translate(-50%, -50%) scale(1.0) !important;
-}
+/* **湧き潰し済みのスタイル (.culled, .spawn-point-b-only) は削除** */
 
-
-/* 湧き潰し済みのスタイル */
-.spawn-point.culled {
-    opacity: 0.7;
-    pointer-events: auto; /* クリック可能にする */
-    cursor: pointer;
-    transform: translate(-50%, -50%) scale(1.0) !important; /* ホバーで拡大させない */
-}
 
 .spawn-point[data-important="true"] {
     width: 10px;
