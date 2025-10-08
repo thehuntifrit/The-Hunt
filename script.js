@@ -11,7 +11,8 @@ let globalMobData = [];
 // rank と area のフィルタリング状態を保持
 let currentFilter = {
     rank: 'ALL', // 初期表示はALLランク
-    area: 'ALL' // 初期エリアはALL
+    // NEW: 選択された拡張パック名を保持するSet (複数選択可能)
+    areas: new Set(['ALL']) 
 };
 let currentMobNo = null;
 let userId = null;
@@ -35,6 +36,17 @@ const uuidDisplayEl = document.getElementById('uuid-display');
 
 // NEW: エリアフィルタ関連のDOM要素
 const areaFilterContainer = document.getElementById('area-filter-container');
+
+
+// --- 定数: 拡張パック名定義 ---
+const EXPANSION_MAP = {
+    1: '新生',
+    2: '蒼天',
+    3: '紅蓮',
+    4: '漆黒',
+    5: '暁月',
+    6: '黄金'
+};
 
 
 // --- ユーティリティ関数 ---
@@ -330,6 +342,7 @@ function createMobCard(mob) {
     const remainingTimeContainerClass = !isPop || isUnknown ? 'hidden' : '';
 
 
+    // Expansionプロパティは `fetchBaseMobData` で付与される
     return `
         <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden transform hover:scale-[1.01] transition duration-300 relative" 
              data-rank="${mob.Rank}" 
@@ -337,7 +350,9 @@ function createMobCard(mob) {
              data-lastkill="${mob.LastKillDate || ''}"
              data-minrepop="${mob['REPOP(s)']}"
              data-maxrepop="${mob['MAX(s)']}"
-             data-expansion="${mob.Expansion || 'その他'}"> <div class="p-3 fixed-content toggle-handler cursor-pointer">
+             data-expansion="${mob.Expansion || 'その他'}"> 
+
+            <div class="p-3 fixed-content toggle-handler cursor-pointer">
                 <div class="flex justify-between items-start mb-3">
                     <div class="flex items-center space-x-3">
                         <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-sm w-7 h-7 flex items-center justify-center rounded-lg shadow-lg">
@@ -345,7 +360,7 @@ function createMobCard(mob) {
                         </div>
                         <div class="min-w-0 flex-1"> 
                             <h2 class="text-lg font-bold text-outline text-yellow-200 leading-tight truncate">${mob.Name}</h2>
-                            <p class="text-xs text-gray-400 leading-tight truncate">${mob.Area}</p>
+                            <p class="text-xs text-gray-400 leading-tight truncate">${mob.Area} (${mob.Expansion || '?'})</p>
                         </div>
                     </div>
                     
@@ -377,7 +392,7 @@ function createMobCard(mob) {
  */
 function renderMobList() {
     
-    const { rank, area } = currentFilter;
+    const { rank, areas } = currentFilter;
 
     // 1. ランクでフィルタリング
     let filteredByRank = globalMobData;
@@ -386,10 +401,13 @@ function renderMobList() {
         filteredByRank = globalMobData.filter(mob => mob.Rank === rank);
     }
     
-    // 2. エリアでフィルタリング
-    const filteredByArea = area === 'ALL'
-        ? filteredByRank
-        : filteredByRank.filter(mob => mob.Expansion === area); 
+    // 2. エリア (拡張パック) でフィルタリング
+    let filteredByArea = filteredByRank;
+    
+    // NEW: areas Set に 'ALL' 以外の要素がある場合のみフィルタリング
+    if (!areas.has('ALL') && areas.size > 0) {
+        filteredByArea = filteredByRank.filter(mob => areas.has(mob.Expansion));
+    }
 
 
     // 3. レンダリング処理
@@ -431,7 +449,7 @@ function renderMobList() {
         });
     }
     
-    // 5. エリアフィルタボタンのハイライトと**コンテナの表示制御**
+    // 5. エリアフィルタボタンのハイライトとコンテナの表示制御
     
     // エリアフィルタコンテナの表示制御
     if (areaFilterContainer) {
@@ -449,7 +467,8 @@ function renderMobList() {
         btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
         btn.classList.add('bg-gray-600', 'hover:bg-gray-500');
         
-        if (btn.dataset.area === area) {
+        // NEW: areas Setに含まれているボタンをハイライト
+        if (currentFilter.areas.has(btn.dataset.area)) {
             btn.classList.remove('bg-gray-600', 'hover:bg-gray-500');
             btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
         }
@@ -834,8 +853,10 @@ async function submitReport() {
 }
 
 
+// --- データ取得/更新 ---
+
 /**
- * 外部JSONからモブデータを取得する
+ * 外部JSONからモブデータを取得し、`No.`から`Expansion`を決定する
  */
 async function fetchBaseMobData() {
     try {
@@ -849,12 +870,20 @@ async function fetchBaseMobData() {
         const jsonData = await response.json();
         
         if (jsonData && Array.isArray(jsonData.mobConfig)) {
-            // mob_data.jsonに Expansion プロパティがあることを前提
-            baseMobData = jsonData.mobConfig.map(mob => ({
-                ...mob,
-                'No.': parseInt(mob['No.']) 
-            }));
-            console.log('Base mob data (mobConfig) fetched successfully.');
+            baseMobData = jsonData.mobConfig.map(mob => {
+                const mobNo = parseInt(mob['No.']);
+                
+                // NEW: No.の1万の位から拡張パック名を決定
+                const expansionKey = Math.floor(mobNo / 10000); 
+                const expansionName = EXPANSION_MAP[expansionKey] || 'その他';
+                
+                return {
+                    ...mob,
+                    'No.': mobNo, 
+                    Expansion: expansionName // Expansionプロパティを追加
+                };
+            });
+            console.log('Base mob data (mobConfig) fetched and expanded successfully.');
         } else {
             throw new Error('JSON structure error: mobConfig array not found.');
         }
@@ -867,7 +896,6 @@ async function fetchBaseMobData() {
 
 /**
  * GASから最新の討伐記録と湧き潰し状態を取得し、グローバルデータを更新する
- * 【修正点】: メッセージ表示条件の制御
  */
 async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = true) {
     
@@ -888,7 +916,7 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
     globalMobData = [...baseMobData];
     renderMobList(); 
     
-    // 2. メッセージ表示制御 (初回/手動時のみ表示)
+    // 2. メッセージ表示制御
     let shouldDisplayLoading = false;
     
     if (updateType === 'initial' || updateType === 'manual') {
@@ -914,7 +942,7 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
         
         if (data.status === 'success') {
             
-            // Success: Clear the error/loading display (ただし、shouldDisplayLoadingがfalseの場合は元々非表示)
+            // Success: Clear the error/loading display 
             if (shouldDisplayLoading) {
                 displayError(null); 
             }
@@ -1081,7 +1109,7 @@ function updateProgressBars() {
             progressBarEl.style.width = `${widthPercent}%`;
         }
 
-        // --- 5. 討伐報告ボタンの状態を更新 (機能を削除し、常に有効) ---
+        // --- 5. 討伐報告ボタンの状態を更新 (常に有効) ---
         const reportBtn = card.querySelector('button[data-mobno]');
         if (reportBtn) {
             // 常に報告可能にする
@@ -1098,7 +1126,7 @@ function updateProgressBars() {
  * サイトの初期化処理
  */
 function initializeApp() {
-    // 1. UUIDの取得/生成
+    // 1. UUIDの取得/生成 (省略)
     userId = localStorage.getItem('user_uuid');
     if (!userId) {
         userId = crypto.randomUUID();
@@ -1120,33 +1148,53 @@ function initializeApp() {
             button.onclick = (e) => {
                 const newRank = e.currentTarget.dataset.rank;
                 
-                // ランクが変わる場合のみ処理
                 if (currentFilter.rank !== newRank) {
                     currentFilter.rank = newRank;
                     
-                    // ALLタブ以外に切り替えた際はエリアフィルタをALLにリセット
-                    if (newRank !== 'ALL') {
-                        currentFilter.area = 'ALL'; 
-                    } else {
-                        // ALLタブに切り替えた際はエリアフィルタもALLにリセット
-                        currentFilter.area = 'ALL'; 
+                    // ALLタブに切り替えた際はエリアフィルタもALLにリセット
+                    if (newRank === 'ALL') {
+                        currentFilter.areas = new Set(['ALL']); 
                     }
+                    
                     renderMobList(); 
                 }
             }
         });
     }
 
-    // エリアフィルタボタンのリスナー
+    // NEW: エリアフィルタボタンのリスナー (複数選択対応)
     document.querySelectorAll('.area-filter-btn').forEach(button => {
         button.onclick = (e) => {
             const newArea = e.currentTarget.dataset.area;
-            currentFilter.area = newArea;
+
+            if (newArea === 'ALL') {
+                // 'ALL'が押されたら、Setを['ALL']で上書き
+                currentFilter.areas = new Set(['ALL']);
+            } else {
+                // 'ALL'以外のボタンが押されたら、まず'ALL'を削除
+                if (currentFilter.areas.has('ALL')) {
+                    currentFilter.areas.delete('ALL');
+                }
+
+                // 選択状態をトグル
+                if (currentFilter.areas.has(newArea)) {
+                    currentFilter.areas.delete(newArea);
+                } else {
+                    currentFilter.areas.add(newArea);
+                }
+                
+                // 選択肢が空になったら、自動的に'ALL'に戻す
+                if (currentFilter.areas.size === 0) {
+                    currentFilter.areas.add('ALL');
+                }
+            }
+            
             renderMobList(); 
         }
     });
 
 
+    // モーダル関連のリスナー
     if (cancelReportBtn) {
         cancelReportBtn.onclick = closeReportModal;
     }
@@ -1168,7 +1216,6 @@ function initializeApp() {
     fetchRecordsAndUpdate('initial', true);
 
     // 討伐記録の定期更新 (10分ごと)
-    // 'auto' タイプで実行 (2回目以降は通信帯を非表示)
     setInterval(() => fetchRecordsAndUpdate('auto', false), 10 * 60 * 1000);
 
     // プログレスバーの定期更新を 1秒ごと に変更
