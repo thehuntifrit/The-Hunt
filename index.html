@@ -3,74 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Hunt</title>
+    <title>FF14 Mob Hunter Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Tailwindのカスタム設定をここに配置する場合もありますが、今回はstyle.cssにカスタムフォント定義などを分離しています */
+    </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
-
     <div id="app" class="max-w-7xl mx-auto">
-
-        <header class="sticky top-0 z-50 bg-gray-900 shadow-xl p-4">
-            <h1 class="text-3xl font-bold text-center text-yellow-300">The Hunt</h1>
-            <p class="text-base text-center text-gray-400 mt-1 mb-3">
-                モブハントの討伐記録とリポップ予測<br>湧き潰し管理ツールです
-            </p>
-
-            <div id="rank-tabs" class="flex w-full max-w-lg mx-auto border-b border-gray-700 pb-2">
-                <button data-rank="ALL" class="tab-btn flex-1 bg-gray-700 hover:bg-gray-600 px-2 py-2 rounded-lg text-sm font-semibold shadow-md mx-1">ALL</button>
-                <button data-rank="S" class="tab-btn flex-1 bg-gray-700 hover:bg-gray-600 px-2 py-2 rounded-lg text-sm font-semibold shadow-md mx-1">Sランク</button>
-                <button data-rank="A" class="tab-btn flex-1 bg-gray-700 hover:bg-gray-600 px-2 py-2 rounded-lg text-sm font-semibold shadow-md mx-1">Aランク</button>
-                <button data-rank="F" class="tab-btn flex-1 bg-gray-700 hover:bg-gray-600 px-2 py-2 rounded-lg text-sm font-semibold shadow-md mx-1">FATE</button>
+        
+        <header class="sticky top-0 z-50 bg-gray-900 bg-opacity-95 p-4 border-b border-gray-700">
+            <h1 class="text-3xl font-extrabold text-yellow-300 text-outline tracking-wider text-center">
+                Mob Hunter Tracker
+            </h1>
+            
+            <div id="rank-tabs" class="flex justify-center space-x-2 mt-4">
+                <button class="tab-btn bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg transition duration-150" data-rank="ALL">全モブ</button>
+                <button class="tab-btn bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-full shadow-lg transition duration-150" data-rank="S">Sランク</button>
+                <button class="tab-btn bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-full shadow-lg transition duration-150" data-rank="A">Aランク</button>
+                <button class="tab-btn bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-full shadow-lg transition duration-150" data-rank="F">FATE</button>
             </div>
         </header>
 
-        <div id="error-message-container" class="text-center p-4 hidden">
+        <div id="error-message-container" class="sticky top-[11rem] z-40 m-4 hidden">
             </div>
 
-        <main id="mob-list-container" class="p-4 pt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div id="column-1" class="space-y-4"></div>
-            <div id="column-2" class="space-y-4"></div>
-            <div id="column-3" class="space-y-4 hidden lg:block"></div>
-            
-            </main>
-        
-        <div id="report-modal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-[100]">
-            <div class="bg-gray-800 rounded-xl shadow-2xl p-6 w-11/12 max-w-md">
-                <h3 class="text-xl font-bold mb-4 border-b border-gray-700 pb-2">討伐報告</h3>
+        <div id="mob-list-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-4 pt-8">
+            <div id="column-1" class="space-y-6"></div>
+            <div id="column-2" class="space-y-6"></div>
+            <div id="column-3" class="space-y-6"></div>
+        </div>
+
+        <div id="report-modal" class="modal-overlay hidden fixed inset-0 z-[100] items-center justify-center p-4">
+            <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md p-6 border-2 border-gray-700">
+                <h3 class="text-2xl font-bold text-yellow-300 mb-4 border-b pb-2">討伐報告</h3>
                 
-                <p class="text-lg text-yellow-300 font-semibold mb-3">
-                    <span id="modal-mob-name">モブ名</span>
-                </p>
+                <p class="text-lg text-white mb-4">モブ: <span id="modal-mob-name" class="font-semibold text-red-400"></span></p>
 
                 <div class="mb-4">
-                    <label for="report-datetime" class="block text-sm font-medium text-gray-400 mb-1">討伐日時 (ローカル時刻)</label>
-                    <input type="datetime-local" id="report-datetime" required
-                           class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-blue-500 focus:border-blue-500">
-                </div>
-
-                <div class="mb-6">
-                    <label for="report-memo" class="block text-sm font-medium text-gray-400 mb-1">メモ (任意)</label>
-                    <textarea id="report-memo" rows="3"
-                              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    <label for="report-datetime" class="block text-sm font-medium text-gray-300 mb-1">討伐日時 (ローカル時刻):</label>
+                    <input type="datetime-local" id="report-datetime" class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 
-                <p id="report-status" class="text-center text-sm font-medium mb-4 hidden"></p>
+                <div class="mb-4">
+                    <label for="report-memo" class="block text-sm font-medium text-gray-300 mb-1">メモ (任意):</label>
+                    <textarea id="report-memo" rows="2" class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-blue-500 focus:border-blue-500" placeholder="場所や湧き情報など"></textarea>
+                </div>
 
-                <div class="flex justify-end space-x-3">
-                    <button id="cancel-report" type="button" 
-                            class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition duration-150">
-                        キャンセル
-                    </button>
-                    <button id="submit-report" type="submit" 
-                            class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150">
-                        報告完了
-                    </button>
+                <div id="report-status" class="text-sm font-semibold mt-2 hidden"></div>
+
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button id="cancel-report" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition">キャンセル</button>
+                    <button id="submit-report" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg transition shadow-md">報告する</button>
                 </div>
             </div>
         </div>
+
     </div>
 
-    <script src="./script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
