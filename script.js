@@ -356,7 +356,7 @@ function createMobCard(mob) {
                                         ${reportBtnHtml}
                 </div>
 
-                                <div class="mt-2 bg-gray-700 p-2 rounded-xl text-xs flex flex-col space-y-1 relative overflow-hidden shadow-inner">
+                                                <div class="mt-2 bg-gray-700 p-2 rounded-xl text-xs flex flex-col space-y-1 relative overflow-hidden shadow-inner">
                                         <div class="flex justify-between items-baseline relative z-10">
                         <span class="text-gray-300 w-24 flex-shrink-0 text-base">次回POP:</span>
                                                 <span class="repop-time text-base ${minPopColorClass} font-bold font-mono">${minPopStr}</span>
@@ -367,7 +367,7 @@ function createMobCard(mob) {
                                                 <span class="${remainingTimeClass} time-remaining text-base">${timeRemaining} (${elapsedPercent.toFixed(1)}%)</span>
                     </div>
 
-                                        <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl" style="width: 0%; z-index: 0;"></div>
+                                                            <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl" style="width: 0%; z-index: 0;"></div>
                 </div>
             </div>
 
@@ -1043,6 +1043,8 @@ function updateProgressBars() {
         
         // --- 4. プログレスバーの更新ロジック ---
         if (progressBarEl) {
+            // 変更点: 既存の背景色クラスをすべて削除
+            progressBarEl.classList.remove('bg-orange-400', 'bg-yellow-400', 'bg-lime-500'); 
             
             let barColorClass = '';
             let widthPercent = Math.min(100, percent); 
@@ -1070,8 +1072,11 @@ function updateProgressBars() {
                 progressBarEl.classList.remove('animate-pulse');
             }
             
-            // クラスの付け替えと幅の更新
-            progressBarEl.className = `progress-bar absolute inset-0 transition-all duration-100 ease-linear ${barColorClass} rounded-xl`;
+            // 変更点: 基本クラス (absolute inset-0 transition... rounded-xl) を再設定する代わりに、
+            // 色クラスのみを追加し直す
+            if (barColorClass) {
+                progressBarEl.classList.add(barColorClass);
+            }
             progressBarEl.style.width = `${widthPercent}%`;
         }
 
