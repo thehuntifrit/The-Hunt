@@ -1,4 +1,4 @@
-/* script.js (最終修正版 - エリアフィルタ展開修正/モブカード隙間調整) */
+/* script.js (最終修正版 - エリアフィルタ高さ修正/モブカード隙間設定) */
 
 // Google Apps Script (GAS) のエンドポイントURL
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLc-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
@@ -315,8 +315,9 @@ function loadFilterState() {
  */
 function adjustContentPadding() {
     if (fixedHeaderContent && contentSpacer) {
-        // 固定ヘッダーの実際の高さを取得
+        // fixedHeaderContent の実際の高さを取得
         const headerHeight = fixedHeaderContent.offsetHeight;
+        
         // スペーサーの上部パディングとして適用
         contentSpacer.style.paddingTop = `${headerHeight}px`;
         
@@ -1241,7 +1242,7 @@ function updateProgressBars() {
                 animateClass = 'animate-pulse';
             } else if (percent >= 80) {
                 // 80% ～ 100%未満: 薄いオレンジ
-                barColorClass = ORANGE_BAR_COLOR_CLASS;
+                barColorClass = ORANGE_BAR_BAR_COLOR_CLASS;
             } else if (percent >= 60) {
                 // 60% ～ 80%未満: レモン色 (yellow-400)
                 barColorClass = 'bg-yellow-400';
@@ -1310,6 +1311,8 @@ function toggleAreaFilterPanel(forceOpen) {
                 if (e.propertyName === 'max-height' && areaFilterWrapper.classList.contains('open')) {
                     areaFilterWrapper.style.maxHeight = 'none';
                     areaFilterWrapper.style.pointerEvents = 'all'; // 終了後にイベントを有効化
+                    // 展開完了後にスペーサーを再調整
+                    adjustContentPadding(); 
                 }
                 areaFilterWrapper.removeEventListener('transitionend', handler);
             });
@@ -1330,15 +1333,21 @@ function toggleAreaFilterPanel(forceOpen) {
             areaFilterWrapper.addEventListener('transitionend', function handler(e) {
                 if (e.propertyName === 'max-height' && !areaFilterWrapper.classList.contains('open')) {
                      areaFilterWrapper.style.pointerEvents = 'none'; // 終了後にイベントを無効化
+                     // 格納完了後にスペーサーを再調整
+                     adjustContentPadding();
                 }
                 areaFilterWrapper.removeEventListener('transitionend', handler);
             });
+            
+             // 展開中だが閉じようとしている場合は、300ms後に再調整
+             // (アニメーションがキャンセルされる場合に備えて、transitionendが発火しない可能性があるため)
+             setTimeout(adjustContentPadding, 350); 
+             
         }, 0);
+        
+        // 即座にスペーサーを調整する試み (見た目の改善)
+        adjustContentPadding();
     }
-    
-    // NEW: エリアフィルタの表示/非表示が変わったらスペーサーを再調整
-    // トランジション（300ms）完了を待って実行
-    setTimeout(adjustContentPadding, 350); 
 }
 
 
