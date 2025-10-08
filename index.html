@@ -100,6 +100,19 @@
             width: 100%;
         }
 
+        /* NEW: エリアフィルタの開閉アニメーションのためのスタイル */
+        #area-filter-wrapper {
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            overflow: hidden;
+        }
+        
+        #area-filter-wrapper.open {
+            max-height: 500px; /* 十分な高さを設定 */
+            opacity: 1;
+        }
+
     </style>
 </head>
 <body>
@@ -114,37 +127,43 @@
         <div id="error-message-container" class="mb-2 hidden">
             </div>
         
-        <div id="rank-tabs" class="flex justify-center space-x-2 p-2 bg-gray-900 rounded-xl shadow-lg">
-            <button data-rank="ALL" class="tab-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition">ALL</button>
-            <button data-rank="S" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">S</button>
-            <button data-rank="A" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">A</button>
-            <button data-rank="F" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">FATE</button>
-        </div>
-        
-        <div id="area-filter-container" class="mt-2 p-2 bg-gray-900 rounded-xl shadow-lg hidden transition-all duration-300">
-            <div class="flex flex-wrap gap-2 justify-center">
-                <button data-area="ALL" class="area-filter-btn bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1 px-3 rounded-md text-sm transition">
-                    ALL
-                </button>
-                <button data-area="黄金" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                    黄金
-                </button>
-                <button data-area="暁月" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                    暁月
-                </button>
-                <button data-area="漆黒" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                    漆黒
-                </button>
-                <button data-area="紅蓮" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                    紅蓮
-                </button>
-                <button data-area="蒼天" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                    蒼天
-                </button>
-                <button data-area="新生" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                    新生
-                </button>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div id="rank-tabs" class="flex justify-center space-x-2 p-2 bg-gray-900 rounded-xl shadow-lg">
+                <button data-rank="ALL" class="tab-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition">ALL</button>
+                <button data-rank="S" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">S</button>
+                <button data-rank="A" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">A</button>
+                <button data-rank="F" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">FATE</button>
             </div>
+            
+            <div id="area-filter-wrapper" class="mt-2" style="max-height: 0;">
+                <div id="area-filter-container" class="p-2 bg-gray-900 rounded-xl shadow-lg">
+                    <div class="flex flex-wrap gap-2 justify-center">
+                        <button data-area="ALL" class="area-filter-btn bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1 px-3 rounded-md text-sm transition">
+                            ALL
+                        </button>
+                        <button data-area="黄金" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                            黄金
+                        </button>
+                        <button data-area="暁月" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                            暁月
+                        </button>
+                        <button data-area="漆黒" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                            漆黒
+                        </button>
+                        <button data-area="紅蓮" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                            紅蓮
+                        </button>
+                        <button data-area="蒼天" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                            蒼天
+                        </button>
+                        <button data-area="新生" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                            新生
+                        </button>
+                    </div>
+                </div>
+            </div>
+        
         </div>
         
     </div>
