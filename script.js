@@ -13,6 +13,7 @@ let globalMobData = [];
 let currentFilter = {
     rank: 'ALL', // 初期表示はALLランク
     // NEW: S/A/FATE ランクごとに独立したエリア選択状態を保持
+    // 初期値は ALL 選択
     areaSets: {
         'S': new Set(['ALL']),
         'A': new Set(['ALL']),
@@ -41,6 +42,7 @@ const areaFilterContainer = document.getElementById('area-filter-container');
 
 
 // --- 定数: 拡張パック名定義 ---
+// 修正: 拡張パック名に「その他」を削除
 const EXPANSION_MAP = {
     1: '新生',
     2: '蒼天',
@@ -49,6 +51,9 @@ const EXPANSION_MAP = {
     5: '暁月',
     6: '黄金'
 };
+
+// NEW: 拡張パック名のリスト (ALLランクのフィルタリングで使用)
+const ALL_EXPANSION_NAMES = Object.values(EXPANSION_MAP).filter(name => name !== 'その他');
 
 
 // --- ユーティリティ関数 ---
@@ -404,23 +409,53 @@ function createMobCard(mob) {
 function renderMobList() {
 
     const { rank } = currentFilter;
-    let currentAreaSet; // 現在のランクに紐づくエリアセット
+    let filteredMobs = globalMobData;
 
-    // 1. ランクでフィルタリング
-    let filteredByRank = globalMobData;
-    if (rank !== 'ALL') {
-        filteredByRank = globalMobData.filter(mob => mob.Rank === rank);
-        currentAreaSet = currentFilter.areaSets[rank]; // S, A, FATEの場合は該当Setを取得
+    if (rank === 'ALL') {
+        // ランクがALLの場合: S, A, FATEのモブをすべて取得し、それぞれのランクのエリアフィルタを適用する
+        const allRanks = ['S', 'A', 'F'];
+        const mobsByRank = {};
+
+        // 各ランクのモブとフィルタリング
+        allRanks.forEach(r => {
+            const rankMobs = globalMobData.filter(mob => mob.Rank === r);
+            const currentAreaSet = currentFilter.areaSets[r];
+            let filteredByArea = rankMobs;
+
+            // 'ALL'以外の要素がある場合、または 'ALL' がない場合のみフィルタリング
+            if (!currentAreaSet.has('ALL') && currentAreaSet.size > 0) {
+                 filteredByArea = rankMobs.filter(mob => currentAreaSet.has(mob.Expansion));
+            } else if (currentAreaSet.has('ALL') && currentAreaSet.size === 1) {
+                // ALLを選択している場合は、そのランクの全ての拡張エリアを表示
+                filteredByArea = rankMobs.filter(mob => ALL_EXPANSION_NAMES.includes(mob.Expansion));
+            }
+
+            mobsByRank[r] = filteredByArea;
+        });
+
+        // フィルタリングされたモブを結合
+        filteredMobs = [
+            ...mobsByRank['S'],
+            ...mobsByRank['A'],
+            ...mobsByRank['F']
+        ];
+        
+        // No.順にソート（結合順ではなく）
+        filteredMobs.sort((a, b) => a['No.'] - b['No.']);
+
+
     } else {
-        currentAreaSet = new Set(['ALL']); // ALLランクの場合はフィルタリングを行わない (areas.size > 0 のチェック回避用)
-    }
+        // ランクが S, A, F のいずれかの場合: 通常の単一ランクフィルタリング
+        filteredMobs = globalMobData.filter(mob => mob.Rank === rank);
+        const currentAreaSet = currentFilter.areaSets[rank];
 
-    // 2. エリア (拡張パック) でフィルタリング
-    let filteredByArea = filteredByRank;
-
-    // 修正: 'ALL'以外の要素がある場合のみフィルタリング
-    if (!currentAreaSet.has('ALL') && currentAreaSet.size > 0) {
-        filteredByArea = filteredByRank.filter(mob => currentAreaSet.has(mob.Expansion));
+        // エリアフィルタ適用
+        if (!currentAreaSet.has('ALL') && currentAreaSet.size > 0) {
+            filteredMobs = filteredMobs.filter(mob => currentAreaSet.has(mob.Expansion));
+        } else if (currentAreaSet.has('ALL') && currentAreaSet.size === 1) {
+            // ALLを選択している場合は、そのランクの全ての拡張エリアを表示
+             filteredMobs = filteredMobs.filter(mob => ALL_EXPANSION_NAMES.includes(mob.Expansion));
+        }
     }
 
 
@@ -437,7 +472,7 @@ function renderMobList() {
         return;
     }
 
-    filteredByArea.forEach((mob, index) => {
+    filteredMobs.forEach((mob, index) => {
         const cardHtml = createMobCard(mob);
 
         let targetColumn = columns[0];
@@ -463,8 +498,9 @@ function renderMobList() {
     }
 
     // 5. エリアフィルタボタンのハイライト
-    const currentAreasToHighlight = (rank === 'ALL' || !currentFilter.areaSets[rank]) ? new Set(['ALL']) : currentFilter.areaSets[rank];
-    // ALLランクの場合は ALL のみハイライト
+    // ALLランクの場合はエリアフィルタは表示されないが、念のため Sランクのフィルタ状態を参照する
+    const targetRank = (rank === 'ALL') ? 'S' : rank; 
+    const currentAreasToHighlight = currentFilter.areaSets[targetRank] || new Set(['ALL']);
 
     document.querySelectorAll('.area-filter-btn').forEach(btn => {
         btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
@@ -891,14 +927,21 @@ async function fetchBaseMobData() {
 
                 // NEW: No.の1万の位から拡張パック名を決定
                 const expansionKey = Math.floor(mobNo / 10000);
-                const expansionName = EXPANSION_MAP[expansionKey] || 'その他';
+                // 修正: 存在しない場合は「その他」ではなく空文字列にする
+                const expansionName = EXPANSION_MAP[expansionKey] || ''; 
+
+                // 拡張パック名がない、またはExpantionMapに含まれないランクモブ (Bランクなど) は除外
+                if (!expansionName && mob.Rank !== 'B') {
+                    return null;
+                }
 
                 return {
                     ...mob,
                     'No.': mobNo,
                     Expansion: expansionName // Expansionプロパティを追加
                 };
-            });
+            }).filter(mob => mob !== null); // null を除外
+            
             console.log('Base mob data (mobConfig) fetched and expanded successfully.');
         } else {
             throw new Error('JSON structure error: mobConfig array not found.');
@@ -1130,7 +1173,7 @@ function initializeApp() {
 
     // 2. イベントリスナーの設定
 
-    // ランクタブのリスナー (修正: エリアフィルタのトグル処理を追加)
+    // ランクタブのリスナー (修正: ALLランクの動作変更に対応)
     if (rankTabs) {
         document.querySelectorAll('.tab-btn').forEach(button => {
             button.onclick = (e) => {
@@ -1156,33 +1199,45 @@ function initializeApp() {
                 if (currentRank !== newRank) {
                     currentFilter.rank = newRank;
 
-                    // ALLタブに切り替えた際はエリアフィルタの状態はそのまま保持するが、
-                    // 表示ロジック側で ALL フィルタが適用される。
-                    
+                    // ALLタブに切り替えた場合、エリアフィルタは非表示になるが、
+                    // ALLランクのレンダリングロジックが、S/A/FATEの現在のエリアフィルタを結合して表示する
+
                     renderMobList();
                 }
             }
         });
     }
 
-    // NEW: エリアフィルタボタンのリスナー (複数選択/ランクごとの保持に対応)
+    // NEW: エリアフィルタボタンのリスナー (ALLボタンの動作変更に対応)
     document.querySelectorAll('.area-filter-btn').forEach(button => {
         button.onclick = (e) => {
             const newArea = e.currentTarget.dataset.area;
             const currentRank = currentFilter.rank;
             
-            if (currentRank === 'ALL' || !currentFilter.areaSets[currentRank]) {
-                // ALLタブ選択中、または不正な状態の場合は何もしない
+            // S/A/FATE のいずれかを選択している場合のみ動作
+            if (!currentFilter.areaSets[currentRank]) {
                 return;
             }
 
             const currentAreaSet = currentFilter.areaSets[currentRank];
 
             if (newArea === 'ALL') {
-                // 'ALL'が押されたら、Setを['ALL']で上書き
-                currentFilter.areaSets[currentRank] = new Set(['ALL']);
+                // 修正: 'ALL'が押されたら、そのランクの全ての拡張エリアを選択状態にする
+                const allExpansions = ALL_EXPANSION_NAMES; // ALL_EXPANSION_NAMESを使用
+                
+                // 現在のセットと ALL_EXPANSION_NAMES の内容が一致するかチェック
+                const areAllSelected = allExpansions.every(area => currentAreaSet.has(area));
+
+                if (areAllSelected) {
+                    // 全選択状態なら、ALLに切り替える（全解除と同義）
+                    currentFilter.areaSets[currentRank] = new Set(['ALL']);
+                } else {
+                    // 全選択状態ではないなら、すべての拡張エリアを選択状態にする
+                    currentFilter.areaSets[currentRank] = new Set([...allExpansions, 'ALL']);
+                }
+
             } else {
-                // 'ALL'以外のボタンが押されたら、まず'ALL'を削除
+                // 'ALL'以外のボタンが押されたら、まず'ALL'フラグを削除
                 if (currentAreaSet.has('ALL')) {
                     currentAreaSet.delete('ALL');
                 }
@@ -1194,7 +1249,7 @@ function initializeApp() {
                     currentAreaSet.add(newArea);
                 }
 
-                // 選択肢が空になったら、自動的に'ALL'に戻す
+                // 選択肢が空になったら、ALLフラグを再度追加
                 if (currentAreaSet.size === 0) {
                     currentAreaSet.add('ALL');
                 }
