@@ -1,4 +1,4 @@
-/* script.js (最終修正版 - フィルタ状態の記憶、コンテンツ幅調整、ヘッダー固定、メッセージ変更、カードレイアウト修正) */
+/* script.js (最終修正版 - フィルタ状態の記憶、コンテンツ幅調整、ヘッダー固定、メッセージ変更、カードレイアウト修正、エリアフィルタのアニメーション追加) */
 
 // Google Apps Script (GAS) のエンドポイントURL
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
@@ -39,6 +39,8 @@ const uuidDisplayEl = document.getElementById('uuid-display');
 
 // エリアフィルタ関連のDOM要素
 const areaFilterContainer = document.getElementById('area-filter-container');
+// NEW: エリアフィルタの開閉用ラッパー
+const areaFilterWrapper = document.getElementById('area-filter-wrapper'); 
 
 // NEW: 固定ヘッダーのDOM要素を追加
 const fixedHeaderContent = document.getElementById('fixed-header-content');
@@ -541,7 +543,7 @@ function renderMobList() {
              filteredMobs = filteredMobs.filter(mob => ALL_EXPANSION_NAMES.includes(mob.Expansion));
         } else if (currentAreaSet.size > 1 && currentAreaSet.has('ALL')) {
             // すべてのエリアが選択されている状態（ALLもセットに入っている場合）
-             filteredMobs = filteredMobs.filter(mob => currentAreaSet.has(mob.Expansion));
+             filteredMobs = filteredMobs.filter(mob => ALL_EXPANSION_NAMES.includes(mob.Expansion));
         }
     }
 
@@ -919,6 +921,9 @@ function openReportModal(mobNo) {
     submitReportBtn.classList.remove('bg-gray-500', 'bg-red-600', 'hover:bg-red-500');
     submitReportBtn.classList.add('bg-green-600', 'hover:bg-green-500');
 
+    reportStatusEl.classList.remove('hidden', 'text-green-500', 'text-red-500');
+    reportStatusEl.textContent = 'サーバーに送信中...';
+
     reportModal.classList.remove('hidden');
     reportModal.classList.add('flex');
 }
@@ -1264,6 +1269,36 @@ function updateProgressBars() {
     });
 }
 
+/**
+ * エリアフィルタパネルの開閉をトグルする (アニメーション付き)
+ * @param {boolean} forceOpen 強制的に開く場合はtrue
+ */
+function toggleAreaFilterPanel(forceOpen) {
+    if (!areaFilterWrapper) return;
+
+    const isOpen = areaFilterWrapper.classList.contains('open');
+
+    // 開閉ロジックの決定
+    let shouldOpen;
+    if (typeof forceOpen === 'boolean') {
+        shouldOpen = forceOpen;
+    } else {
+        shouldOpen = !isOpen; // トグル
+    }
+
+    if (shouldOpen) {
+        // 開く処理
+        areaFilterWrapper.classList.add('open');
+    } else {
+        // 閉じる処理
+        areaFilterWrapper.classList.remove('open');
+    }
+    
+    // NEW: エリアフィルタの表示/非表示が変わったらスペーサーを再調整
+    // トランジション（300ms）完了を待って実行
+    setTimeout(adjustContentPadding, 350); 
+}
+
 
 /**
  * サイトの初期化処理
@@ -1287,13 +1322,12 @@ function initializeApp() {
     loadFilterState();
     
     // エリアフィルタコンテナの初期表示制御
-    if (areaFilterContainer) {
-        const isTargetRank = (currentFilter.rank === 'S' || currentFilter.rank === 'A' || currentFilter.rank === 'F');
-        if (isTargetRank) {
-             areaFilterContainer.classList.remove('hidden');
-        } else {
-             areaFilterContainer.classList.add('hidden');
-        }
+    // 初期状態はCSSのmax-height: 0; に任せる。選択ランクがS/A/FATEなら開く
+    const isTargetRank = (currentFilter.rank === 'S' || currentFilter.rank === 'A' || currentFilter.rank === 'F');
+    if (isTargetRank) {
+         toggleAreaFilterPanel(true);
+    } else {
+         toggleAreaFilterPanel(false);
     }
     
     // NEW: 初期化時とウィンドウリサイズ時にスペーサーを調整
@@ -1311,22 +1345,17 @@ function initializeApp() {
                 const currentRank = currentFilter.rank;
 
                 // エリアフィルタコンテナの表示制御
-                if (areaFilterContainer) {
-                    const isTargetRank = (newRank === 'S' || newRank === 'A' || newRank === 'F');
+                const isTargetRank = (newRank === 'S' || newRank === 'A' || newRank === 'F');
 
-                    if (newRank === currentRank && isTargetRank) {
-                        // 同じランクタブを再クリック: トグルで閉じる
-                        areaFilterContainer.classList.toggle('hidden');
-                    } else if (isTargetRank) {
-                        // S, A, FATE に切り替え: 表示する
-                        areaFilterContainer.classList.remove('hidden');
-                    } else {
-                        // ALL に切り替え: 閉じる
-                        areaFilterContainer.classList.add('hidden');
-                    }
-                    
-                    // NEW: エリアフィルタの表示/非表示が変わったらスペーサーを再調整
-                    setTimeout(adjustContentPadding, 350); // トランジション（300ms）後に実行
+                if (newRank === currentRank && isTargetRank) {
+                    // 同じランクタブを再クリック: トグルで開閉
+                    toggleAreaFilterPanel();
+                } else if (isTargetRank) {
+                    // S, A, FATE に切り替え: 表示する
+                    toggleAreaFilterPanel(true);
+                } else {
+                    // ALL に切り替え: 閉じる
+                    toggleAreaFilterPanel(false);
                 }
 
                 if (currentRank !== newRank) {
