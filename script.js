@@ -8,11 +8,15 @@ const MOB_DATA_URL = './mob_data.json';
 // --- グローバル変数 ---
 let baseMobData = [];
 let globalMobData = [];
-// rank と area のフィルタリング状態を保持
+// NEW: 独立記憶保持のため、areasをオブジェクトに変更。
 let currentFilter = {
     rank: 'ALL', // 初期表示はALLランク
-    // NEW: 選択された拡張パック名を保持するSet (複数選択可能)
-    areas: new Set(['ALL']) 
+    // S, A, FATEそれぞれに選択された拡張パック名を保持するSetを持つ
+    areas: { 
+        'S': new Set(),
+        'A': new Set(),
+        'F': new Set()
+    }
 };
 let currentMobNo = null;
 let userId = null;
@@ -46,6 +50,16 @@ const EXPANSION_MAP = {
     4: '漆黒',
     5: '暁月',
     6: '黄金'
+};
+
+// NEW: 拡張パック名と色クラスの対応表 (選択済みタブの色に使用)
+const AREA_COLOR_MAP = {
+    '黄金': 'bg-yellow-600 hover:bg-yellow-500', 
+    '暁月': 'bg-indigo-600 hover:bg-indigo-500', 
+    '漆黒': 'bg-purple-600 hover:bg-purple-500', 
+    '紅蓮': 'bg-red-600 hover:bg-red-500', 
+    '蒼天': 'bg-sky-600 hover:bg-sky-500', 
+    '新生': 'bg-green-600 hover:bg-green-500', 
 };
 
 
@@ -422,6 +436,9 @@ function createMobCard(mob) {
 function renderMobList() {
     
     const { rank, areas } = currentFilter;
+    
+    // NEW: 現在選択されているランクに対応するエリアSetを取得 (ALLやBの場合は空のSetを使用)
+    const activeAreasSet = areas[rank] || new Set(); 
 
     // 1. ランクでフィルタリング
     let filteredByRank = globalMobData;
@@ -433,9 +450,9 @@ function renderMobList() {
     // 2. エリア (拡張パック) でフィルタリング
     let filteredByArea = filteredByRank;
     
-    // NEW: areas Set に 'ALL' 以外の要素がある場合のみフィルタリング
-    if (!areas.has('ALL') && areas.size > 0) {
-        filteredByArea = filteredByRank.filter(mob => areas.has(mob.Expansion));
+    // NEW: activeAreasSetが空の場合（何も選択されていない場合）、フィルタリングを行わない
+    if (activeAreasSet.size > 0) {
+        filteredByArea = filteredByRank.filter(mob => activeAreasSet.has(mob.Expansion));
     }
 
 
@@ -466,7 +483,7 @@ function renderMobList() {
         targetColumn.appendChild(div.firstChild);
     });
 
-    // 4. アクティブなタブをハイライト
+    // 4. アクティブなタブをハイライト (ランクタブ)
     if (rankTabs) {
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
@@ -493,13 +510,17 @@ function renderMobList() {
     
     // エリアフィルタボタンのハイライト
     document.querySelectorAll('.area-filter-btn').forEach(btn => {
-        btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
-        btn.classList.add('bg-gray-600', 'hover:bg-gray-500');
+        const areaName = btn.dataset.area;
+        // リセット
+        btn.classList.remove(AREA_COLOR_MAP[areaName], 'bg-gray-600', 'hover:bg-gray-500');
         
-        // NEW: areas Setに含まれているボタンをハイライト
-        if (currentFilter.areas.has(btn.dataset.area)) {
-            btn.classList.remove('bg-gray-600', 'hover:bg-gray-500');
-            btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+        // NEW: activeAreasSetでチェック
+        if (activeAreasSet.has(areaName)) {
+            // 選択されている場合: 漢字に対応する色を適用
+            btn.classList.add(AREA_COLOR_MAP[areaName]);
+        } else {
+            // 選択されていない場合: グレーに戻す
+            btn.classList.add('bg-gray-600', 'hover:bg-gray-500');
         }
     });
 
@@ -1153,7 +1174,7 @@ function updateProgressBars() {
  * サイトの初期化処理
  */
 function initializeApp() {
-    // 1. UUIDの取得/生成 (省略)
+    // 1. UUIDの取得/生成
     userId = localStorage.getItem('user_uuid');
     if (!userId) {
         userId = crypto.randomUUID();
@@ -1177,45 +1198,37 @@ function initializeApp() {
                 
                 if (currentFilter.rank !== newRank) {
                     currentFilter.rank = newRank;
-                    
-                    // ALLタブに切り替えた際はエリアフィルタもALLにリセット
-                    if (newRank === 'ALL') {
-                        currentFilter.areas = new Set(['ALL']); 
-                    }
-                    
+                    // NEW: ALLタブに切り替えても、S/A/FATEのareas Setはリセットしない
+                    // 記憶された状態を維持したまま renderMobList を呼び出す
                     renderMobList(); 
                 }
             }
         });
     }
 
-    // NEW: エリアフィルタボタンのリスナー (複数選択対応)
+    // NEW: エリアフィルタボタンのリスナー (独立記憶保持ロジック)
     document.querySelectorAll('.area-filter-btn').forEach(button => {
         button.onclick = (e) => {
-            const newArea = e.currentTarget.dataset.area;
-
-            if (newArea === 'ALL') {
-                // 'ALL'が押されたら、Setを['ALL']で上書き
-                currentFilter.areas = new Set(['ALL']);
-            } else {
-                // 'ALL'以外のボタンが押されたら、まず'ALL'を削除
-                if (currentFilter.areas.has('ALL')) {
-                    currentFilter.areas.delete('ALL');
-                }
-
-                // 選択状態をトグル
-                if (currentFilter.areas.has(newArea)) {
-                    currentFilter.areas.delete(newArea);
-                } else {
-                    currentFilter.areas.add(newArea);
-                }
-                
-                // 選択肢が空になったら、自動的に'ALL'に戻す
-                if (currentFilter.areas.size === 0) {
-                    currentFilter.areas.add('ALL');
-                }
+            
+            // S, A, FATE 以外のタブが選択されている場合は処理をスキップ
+            if (currentFilter.rank !== 'S' && currentFilter.rank !== 'A' && currentFilter.rank !== 'F') {
+                return; 
             }
             
+            const newArea = e.currentTarget.dataset.area;
+            
+            // NEW: 現在選択されているランクのSetを取得
+            const activeAreasSet = currentFilter.areas[currentFilter.rank];
+
+            // 選択状態をトグル
+            if (activeAreasSet.has(newArea)) {
+                activeAreasSet.delete(newArea);
+            } else {
+                activeAreasSet.add(newArea);
+            }
+            
+            // Setが空の場合（何も選択されていない状態）は、renderMobListで全エリアが対象となる
+
             renderMobList(); 
         }
     });
