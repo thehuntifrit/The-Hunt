@@ -1,5 +1,6 @@
 /* カスタムスタイル */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap');
+/* モノスペースフォントとして Roboto Mono をインポート */
         
 body {
     font-family: 'Inter', sans-serif;
@@ -31,30 +32,53 @@ body {
     pointer-events: none; /* オーバーレイを通して画像を触れるように */
 }
 
-/* スポーンポイントのスタイル */
+/* スポーンポイントの基本スタイル */
 .spawn-point {
     position: absolute;
-    width: 8px; /* 座標点を半分サイズに縮小 */
-    height: 8px; /* 座標点を半分サイズに縮小 */
+    width: 12px; /* 湧き潰し対象の基本サイズ */
+    height: 12px;
     border-radius: 50%;
-    background-color: #ef4444; /* red-500 */
     z-index: 10;
-    cursor: pointer;
     pointer-events: auto; /* クリック可能にする */
-    transition: all 0.2s ease-in-out;
+    
+    /* 座標の中心を基準にするための設定をカスタムCSSに追加 */
+    transform: translate(-50%, -50%); 
+    transition: all 0.2s ease-in-out; 
 }
 
+/* 湧き潰し対象ポイントのホバーアニメーション */
 .spawn-point:hover {
-    transform: translate(-50%, -50%) scale(2.0) !important;
+    transform: translate(-50%, -50%) scale(2.0); /* scale(2.0) !important を削除し、CSS/JSでの優先度を調整 */
     opacity: 1 !important;
+}
+
+/* NEW: Bランク専用ポイントの基本スタイル（JSで .spawn-point-b-only を付与）*/
+/* Bランク専用ポイントはサイズを小さくし、ホバー効果を無効化します */
+.spawn-point-b-only {
+    width: 6px;
+    height: 6px;
+    pointer-events: none; /* 湧き潰し対象ではないためクリック不可 */
+    transition: none;
+    box-shadow: none;
+}
+/* Bランク専用ポイントにはホバー効果を適用しない */
+.spawn-point-b-only:hover {
+    transform: translate(-50%, -50%) scale(1.0) !important;
+}
+
+
+/* 湧き潰し済みのスタイル */
+.spawn-point.culled {
+    opacity: 0.7;
+    pointer-events: auto; /* クリック可能にする */
+    cursor: pointer;
+    transform: translate(-50%, -50%) scale(1.0) !important; /* ホバーで拡大させない */
 }
 
 .spawn-point[data-important="true"] {
     width: 10px;
     height: 10px;
 }
-
-/* 進捗バー関連のスタイルは削除しました */
 
 /* モーダル背景 */
 .modal-overlay {
@@ -64,4 +88,9 @@ body {
 /* カードの展開パネルのアニメーション */
 .expandable-panel {
     transition: max-height 0.3s ease-in-out;
+}
+
+/* モノスペースフォントの定義 */
+.font-mono {
+    font-family: 'Roboto Mono', monospace;
 }
