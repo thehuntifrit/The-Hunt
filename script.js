@@ -1,4 +1,4 @@
-/* script.js (最終修正版 - フィルタ状態の記憶と均等幅対応) */
+/* script.js (最終修正版 - フィルタ状態の記憶、コンテンツ幅調整、ヘッダー固定、メッセージ変更、カードレイアウト修正) */
 
 // Google Apps Script (GAS) のエンドポイントURL
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
@@ -39,6 +39,10 @@ const uuidDisplayEl = document.getElementById('uuid-display');
 
 // エリアフィルタ関連のDOM要素
 const areaFilterContainer = document.getElementById('area-filter-container');
+
+// NEW: 固定ヘッダーのDOM要素を追加
+const fixedHeaderContent = document.getElementById('fixed-header-content');
+const contentSpacer = document.getElementById('content-spacer');
 
 
 // --- 定数: 拡張パック名定義 ---
@@ -303,6 +307,23 @@ function loadFilterState() {
 }
 
 
+// --- 固定ヘッダーの高さ調整 ---
+
+/**
+ * 固定ヘッダーの高さを取得し、スペーサーに適用してスクロールの重なりを防ぐ
+ */
+function adjustContentPadding() {
+    if (fixedHeaderContent && contentSpacer) {
+        // 固定ヘッダーの実際の高さを取得
+        const headerHeight = fixedHeaderContent.offsetHeight;
+        // スペーサーの上部パディングとして適用
+        contentSpacer.style.paddingTop = `${headerHeight}px`;
+        
+        console.log(`Adjusted content padding to: ${headerHeight}px`);
+    }
+}
+
+
 // --- DOM操作/イベントハンドラ ---
 
 /**
@@ -340,11 +361,15 @@ function createMobCard(mob) {
             rankBgClass = 'bg-gray-600';
     }
 
+    // モブ名表示エリア (flex-1とmin-w-0で残り幅を占有)
+    const mobNameContainerClass = 'min-w-0 flex-1'; 
+    
+    // 報告ボタンの固定サイズを確保
     const reportBtnClass = 'bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn';
     const reportBtnContent = `<span class="text-xs font-bold">報告</span><span class="text-xs font-bold">する</span>`;
 
     const reportBtnHtml = `
-        <button class="${reportBtnClass} text-white px-1 py-1 rounded-md shadow-md transition h-10 w-10 flex flex-col items-center justify-center leading-none"
+        <button class="${reportBtnClass} text-white px-1 py-1 rounded-md shadow-md transition h-10 w-10 flex flex-col items-center justify-center leading-none flex-shrink-0"
                 data-mobno="${mob['No.']}">
             ${reportBtnContent}
         </button>
@@ -438,12 +463,13 @@ function createMobCard(mob) {
             <div class="p-2 fixed-content toggle-handler cursor-pointer">
                 <div class="flex justify-between items-start mb-1">
                     <div class="flex items-center space-x-2">
-                        <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-sm w-7 h-7 flex items-center justify-center rounded-lg shadow-lg">
+                        <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-sm w-7 h-7 flex items-center justify-center rounded-lg shadow-lg flex-shrink-0">
                             ${mob.Rank}
                         </div>
-                        <div class="min-w-0 flex-1">
-                            <h2 class="text-base font-bold text-outline text-yellow-200 leading-tight truncate">${mob.Name}</h2>
-                            <p class="text-xs text-gray-400 leading-tight truncate">${mob.Area} (${mob.Expansion || '?'})</p>
+                        
+                        <div class="${mobNameContainerClass}">
+                            <h2 class="text-base font-bold text-outline text-yellow-200 leading-tight truncate overflow-hidden whitespace-nowrap" style="max-width: 100%;">${mob.Name}</h2>
+                            <p class="text-xs text-gray-400 leading-tight truncate overflow-hidden whitespace-nowrap" style="max-width: 100%;">${mob.Area} (${mob.Expansion || '?'})</p>
                         </div>
                     </div>
 
@@ -1042,6 +1068,9 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
         displayError(`設定データをロード中...`);
         await fetchBaseMobData();
     }
+    
+    // NEW: ヘッダー固定エリアのスペーサーを調整
+    adjustContentPadding(); 
 
     if (baseMobData.length === 0) {
         const fatalError = `致命的なエラー: モブ設定データを読み込めませんでした。`;
@@ -1067,7 +1096,8 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
     }
 
     if (shouldDisplayLoading) {
-        displayError(`討伐記録と湧き潰し状態を更新中...`);
+        // 修正: ロードメッセージを「データを更新中...」に変更
+        displayError(`データを更新中…`);
     } else {
         // 自動更新でメッセージ非表示の場合
         displayError(null);
@@ -1117,6 +1147,9 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
             if (updateType === 'auto') {
                 autoUpdateSuccessCount++;
             }
+            
+            // NEW: データ更新後に再度スペーサーを調整 (エリアフィルタ表示/非表示の変更に対応するため)
+            adjustContentPadding(); 
 
             renderMobList();
         } else {
@@ -1262,6 +1295,10 @@ function initializeApp() {
              areaFilterContainer.classList.add('hidden');
         }
     }
+    
+    // NEW: 初期化時とウィンドウリサイズ時にスペーサーを調整
+    adjustContentPadding();
+    window.addEventListener('resize', adjustContentPadding);
 
 
     // 2. イベントリスナーの設定
@@ -1287,6 +1324,9 @@ function initializeApp() {
                         // ALL に切り替え: 閉じる
                         areaFilterContainer.classList.add('hidden');
                     }
+                    
+                    // NEW: エリアフィルタの表示/非表示が変わったらスペーサーを再調整
+                    setTimeout(adjustContentPadding, 350); // トランジション（300ms）後に実行
                 }
 
                 if (currentRank !== newRank) {
