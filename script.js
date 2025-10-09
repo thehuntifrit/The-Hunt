@@ -1,6 +1,7 @@
-/* script.js (排他的開閉、メモ表示、余白削減 適用版) */
+/* script.js (排他的開閉、メモ表示、余白削減 適用 & GAS URL更新版) */
 
 // Google Apps Script (GAS) のエンドポイントURL
+// ★★★ 修正箇所: GAS URLを新しいものに更新 ★★★
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
 // 静的モブデータ (mob_data.json) のURL
 const MOB_DATA_URL = './mob_data.json';
