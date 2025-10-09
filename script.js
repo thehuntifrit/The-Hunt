@@ -1,4 +1,6 @@
-/* script.js (最終修正: Repopソート、相対時間調整、Aモブ即時報告、マップ画像表示/ポイント表示修正) */
+
+
+/* script.js (最終修正・最適化版) */
 
 // Google Apps Script (GAS) のエンドポイントURL
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
@@ -9,21 +11,17 @@ const MOB_DATA_URL = './mob_data.json';
 let baseMobData = [];
 let globalMobData = [];
 let currentFilter = {
-    rank: 'ALL', 
+    rank: 'ALL', // 初期表示はALLランク
+    // S/A/FATE ランクごとに独立したエリア選択状態を保持
     areaSets: {
-        'S': new Set(['ALL']),
+        'S': new Set(['ALL']), // 'ALL'は「全て表示」または「すべてが選択状態」を意味するフラグ
         'A': new Set(['ALL']),
         'F': new Set(['ALL'])
     }
 };
-let currentSort = 'No.'; // 'No.' (デフォルト) または 'Repop'
 let currentMobNo = null;
 let userId = null;
 let autoUpdateSuccessCount = 0;
-
-// ランクタブの排他的トグル制御用変数 (エリアフィルタ開閉のみに使用)
-let lastClickedRank = null; 
-let rankClickCount = 0;
 
 // --- DOMエレメント ---
 const DOMElements = {
@@ -41,23 +39,26 @@ const DOMElements = {
     areaFilterWrapper: document.getElementById('area-filter-wrapper'),
     fixedHeaderContent: document.getElementById('fixed-header-content'),
     contentSpacer: document.getElementById('content-spacer'),
-    column1: document.getElementById('column-1'),
-    column2: document.getElementById('column-2'),
-    column3: document.getElementById('column-3'),
-    sortToggleBtn: document.getElementById('sort-toggle-btn') 
+    columns: [
+        document.getElementById('column-1'),
+        document.getElementById('column-2'),
+        document.getElementById('column-3')
+    ].filter(col => col)
 };
-const { errorMessageContainer, rankTabs, reportModal, modalMobName, reportDatetimeInput, reportMemoInput, submitReportBtn, cancelReportBtn, reportStatusEl, uuidDisplayEl, areaFilterWrapper, areaFilterContainer, fixedHeaderContent, contentSpacer, column1, column2, column3, sortToggleBtn } = DOMElements;
+const { errorMessageContainer, rankTabs, reportModal, modalMobName, reportDatetimeInput, reportMemoInput, submitReportBtn, cancelReportBtn, reportStatusEl, uuidDisplayEl, areaFilterWrapper, areaFilterContainer, fixedHeaderContent, contentSpacer, columns } = DOMElements;
 
 
 // --- 定数: 拡張パック名定義 ---
 const EXPANSION_MAP = {
-    1: '新生', 2: '蒼天', 3: '紅蓮', 4: '漆黒', 5: '暁月', 6: '黄金'
+    1: '新生',
+    2: '蒼天',
+    3: '紅蓮',
+    4: '漆黒',
+    5: '暁月',
+    6: '黄金'
 };
 const ALL_EXPANSION_NAMES = Object.values(EXPANSION_MAP);
 const TARGET_RANKS = ['S', 'A', 'F'];
-const ACTIVE_COLOR_CLASS = 'bg-blue-600'; // ALLタブの色に合わせる
-const INACTIVE_COLOR_CLASS = 'bg-gray-700';
-
 
 // --- ユーティリティ関数 ---
 
@@ -69,7 +70,7 @@ function unixTimeToDate(unixtime) {
 }
 
 /**
- * 日付オブジェクトを MM/DD HH:MM 形式にフォーマットする (絶対時刻)
+ * 日付オブジェクトを MM/DD HH:MM 形式にフォーマットする
  */
 function formatDateForDisplay(dateInput) {
     const date = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
@@ -83,28 +84,6 @@ function formatDateForDisplay(dateInput) {
     const minutes = String(date.getMinutes()).padStart(2, '0');
 
     return `${month}/${day} ${hours}:${minutes}`;
-}
-
-/**
- * 前回討伐日時を相対表示する関数 (1時間以内は「X分前」)
- */
-function formatLastKillDisplay(dateInput) {
-    const date = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
-    if (!date || isNaN(date.getTime())) {
-        return 'N/A';
-    }
-
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-
-    // 1時間 (60分) = 3,600,000 ミリ秒
-    if (diffMs > 0 && diffMs < 3600000) {
-        const minutesAgo = Math.floor(diffMs / 60000);
-        return `${minutesAgo}分前`;
-    }
-
-    // 1時間以上の場合は絶対時刻
-    return formatDateForDisplay(date);
 }
 
 /**
@@ -167,7 +146,7 @@ function displayError(message) {
         errorMessageContainer.innerHTML = `<div>${message}</div>`;
     } else {
         errorMessageContainer.classList.add('hidden');
-        errorMessageContainer.className = ''; 
+        errorMessageContainer.className = ''; // クラスをリセット
         errorMessageContainer.innerHTML = '';
     }
 }
@@ -189,22 +168,15 @@ function calculateRepop(mob, lastKill) {
     let isPop = false;
     let isMaxOver = false;
     const now = new Date();
-    let repopScore = 0; // ソート用スコア
 
     if (repopMinMs <= 0 || repopMaxMs <= repopMinMs) {
-        return { 
-            minRepop: 'N/A', maxRepop: 'N/A', timeDisplay: 'N/A', 
-            isPop: false, isMaxOver: false, isUnknown: true, 
-            elapsedPercent: 0, memo: '',
-            repopScore: 9999999999999 // ソート用: 最も低い優先度（記録なし）
-        };
+        return { minRepop: 'N/A', maxRepop: 'N/A', timeDisplay: 'N/A', isPop: false, isMaxOver: false, isUnknown: true, elapsedPercent: 0 };
     }
 
     if (isUnknown) {
         minRepopTime = new Date(now.getTime() + repopMinMs);
         timeRemainingStr = `Next: ${formatDateForDisplay(minRepopTime)}`;
         elapsedPercent = 0;
-        repopScore = 9999999999998; // ソート用: 記録なしは最後に近い
     } else {
         minRepopTime = new Date(killTime.getTime() + repopMinMs);
         maxRepopTime = new Date(killTime.getTime() + repopMaxMs);
@@ -212,56 +184,37 @@ function calculateRepop(mob, lastKill) {
         const remainingMsToMin = minRepopTime.getTime() - now.getTime();
 
         if (remainingMsToMin > 0) {
-            // Phase 1: Pre-Min Repop (POP時間前)
+            // Phase 1: Pre-Min Repop
             isPop = false;
-            // POP時間が近いものから並べるため、remainingMsToMinが小さいほどスコアを高くする
-            repopScore = -remainingMsToMin; 
             timeRemainingStr = `Next: ${formatDateForDisplay(minRepopTime)}`;
             elapsedPercent = 0;
 
         } else {
-            // Phase 2 & 3: In or After POP Window (抽選期間内または超過)
+            // Phase 2 & 3: In or After POP Window
             isPop = true;
             const remainingMsToMax = maxRepopTime.getTime() - now.getTime();
 
             if (remainingMsToMax > 0) {
-                // Phase 2: In POP Window (抽選期間内)
+                // Phase 2: In POP Window
                 isMaxOver = false;
                 const elapsedInWindowMs = now.getTime() - minRepopTime.getTime();
                 elapsedPercent = Math.max(0, Math.min(100, (elapsedInWindowMs / popDurationMs) * 100));
-                
-                // 経過率が高い順に並べるため、elapsedInWindowMsが大きいほどスコアを高くする
-                repopScore = elapsedInWindowMs; 
 
-                // 進捗率をメイン情報として強調 (修正点3)
                 const duration = formatDurationPart(remainingMsToMax);
-                timeRemainingStr = `${elapsedPercent.toFixed(1)}% (残り: ${duration})`;
+                timeRemainingStr = `残り (%): ${duration} (${elapsedPercent.toFixed(1)}%)`;
 
             } else {
-                // Phase 3: Max Repop Exceeded (最大リポップ時間超過)
+                // Phase 3: Max Repop Exceeded
                 isMaxOver = true;
                 const popElapsedMs = now.getTime() - maxRepopTime.getTime();
-                
-                // 超過している場合は最も優先度が高い
-                repopScore = popDurationMs + popElapsedMs; 
-                elapsedPercent = 100;
-
                 const formattedElapsed = formatDurationPart(popElapsedMs, '+');
-                timeRemainingStr = `100.0% (超過: ${formattedElapsed})`;
+                timeRemainingStr = `残り (%): ${formattedElapsed} (100.0%)`;
+                elapsedPercent = 100;
             }
         }
     }
 
-    return { 
-        minRepop: minRepopTime, 
-        maxRepop: maxRepopTime, 
-        timeDisplay: timeRemainingStr, 
-        elapsedPercent: elapsedPercent, 
-        isPop: isPop, 
-        isMaxOver: isMaxOver, 
-        isUnknown: isUnknown,
-        repopScore: repopScore // ソート用のスコアを返却
-    };
+    return { minRepop: minRepopTime, maxRepop: maxRepopTime, timeDisplay: timeRemainingStr, elapsedPercent: elapsedPercent, isPop: isPop, isMaxOver: isMaxOver, isUnknown: isUnknown };
 }
 
 /**
@@ -272,17 +225,16 @@ function getMobByNo(mobNo) {
 }
 
 
-// --- フィルタ/ソート状態の保存/ロード ---
+// --- フィルタ状態の保存/ロード ---
 
 /**
- * 現在のフィルタとソート状態をlocalStorageに保存する
+ * 現在のフィルタ状態をlocalStorageに保存する
  */
 function saveFilterState() {
     try {
         const stateToSave = {
             rank: currentFilter.rank,
-            areaSets: {},
-            sort: currentSort 
+            areaSets: {}
         };
         for (const rank in currentFilter.areaSets) {
             stateToSave.areaSets[rank] = Array.from(currentFilter.areaSets[rank]);
@@ -294,7 +246,7 @@ function saveFilterState() {
 }
 
 /**
- * localStorageからフィルタとソート状態をロードする
+ * localStorageからフィルタ状態をロードする
  */
 function loadFilterState() {
     try {
@@ -313,72 +265,10 @@ function loadFilterState() {
                     }
                 }
             }
-
-            // ソート状態をロード
-            if (parsedState.sort && (parsedState.sort === 'No.' || parsedState.sort === 'Repop')) {
-                currentSort = parsedState.sort;
-            }
         }
     } catch (e) {
         console.error('Failed to load filter state from localStorage:', e);
     }
-}
-
-/**
- * ソート状態を切り替える (修正点1)
- */
-function toggleSortState() {
-    currentSort = (currentSort === 'No.') ? 'Repop' : 'No.';
-    updateSortButtonDisplay();
-    renderMobList();
-}
-
-/**
- * ソートボタンの表示を更新する
- */
-function updateSortButtonDisplay() {
-    if (sortToggleBtn) {
-        sortToggleBtn.textContent = currentSort === 'No.' ? 'ソート: No.順' : 'ソート: Repop優先度順';
-        sortToggleBtn.classList.toggle(ACTIVE_COLOR_CLASS, currentSort === 'Repop');
-        sortToggleBtn.classList.toggle(INACTIVE_COLOR_CLASS, currentSort === 'No.');
-    }
-}
-
-// --- 地図ポイント描画ヘルパー (新規追加) ---
-
-/**
- * マップ画像の上にモブの座標を示すポイントをレンダリングする
- * mob.Coords は JSON文字列または配列の形式を想定: [{"X": 15.0, "Y": 20.0}, ...]
- */
-function renderMapPoints(coordsData) {
-    if (!coordsData) return '';
-
-    let coords;
-    try {
-        // CoordsがJSON文字列として格納されている可能性があるためパースを試みる
-        coords = Array.isArray(coordsData) ? coordsData : JSON.parse(coordsData);
-    } catch (e) {
-        // console.warn("Failed to parse coordinates (This might be expected if Coords is not always a JSON string):", coordsData);
-        return '';
-    }
-
-    if (!Array.isArray(coords) || coords.length === 0) return '';
-
-    return coords.map((coord, index) => {
-        // X, Y がパーセンテージ値 (0-100) であると仮定
-        // ピンのサイズ (w-5, h-5) を考慮し、中心に配置するために -2.5% の補正を入れる (ピンサイズが親要素の5%と仮定)
-        const xPercent = (parseFloat(coord.X) || 0) - 2.5; 
-        const yPercent = (parseFloat(coord.Y) || 0) - 2.5;
-
-        // モブピンのHTML構造 (赤丸、アニメーション)
-        // z-index: 20 で画像より手前に配置
-        return `
-            <div class="absolute mob-point bg-red-500 rounded-full h-5 w-5 border-2 border-white shadow-xl animate-pulse" 
-                 style="left: ${xPercent}%; top: ${yPercent}%; z-index: 20;"
-                 title="Pop Point ${index + 1}">
-            </div>
-        `;
-    }).join('');
 }
 
 
@@ -395,35 +285,6 @@ function adjustContentPadding() {
 }
 
 
-// --- 開閉ロジックの再実装 ---
-
-/**
- * モブカードの詳細情報の開閉をトグルする
- */
-function toggleMobDetails(event) {
-    // 報告ボタンのクリックイベントは除外する
-    if (event.target.closest('.report-btn')) {
-        return;
-    }
-
-    const card = event.currentTarget.closest('.mob-card');
-    if (!card) return;
-
-    const details = card.querySelector('.detailed-content');
-    if (!details) return;
-
-    // hidden クラスをシンプルにトグル
-    details.classList.toggle('hidden');
-
-    // 状態属性も更新（CSSの調整などに使える）
-    const isOpen = !details.classList.contains('hidden');
-    card.dataset.isOpen = isOpen;
-    
-    // 開閉後、ヘッダーの高さ調整を再実行 (DOM高さが変わるため)
-    adjustContentPadding();
-}
-
-
 // --- DOM操作/イベントハンドラ ---
 
 /**
@@ -431,14 +292,12 @@ function toggleMobDetails(event) {
  */
 function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
-    const repopData = calculateRepop(mob, lastKillDate);
-    const { minRepop, timeDisplay, elapsedPercent, isPop, isMaxOver, isUnknown } = repopData;
+    const { minRepop, timeDisplay, elapsedPercent, isPop, isMaxOver, isUnknown } = calculateRepop(mob, lastKillDate);
 
     let repopTimeColorClass = 'text-white font-extrabold';
     if (isUnknown) {
         repopTimeColorClass = 'text-gray-400';
     } else if (!isPop) {
-        // POP前のタイマー表示
         repopTimeColorClass = 'text-green-400';
     }
 
@@ -453,83 +312,78 @@ function createMobCard(mob) {
     }
 
     const mobNameContainerClass = 'min-w-0 flex-1';
-    
-    // 報告ボタンの縦幅/横幅を修正して正方形 (h-8 w-8) にする
     const reportBtnHtml = `
-        <button class="bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn text-white px-1 py-1 rounded-md shadow-md transition h-8 w-8 flex flex-col items-center justify-center leading-none flex-shrink-0"
-                data-mobno="${mob['No.']}"
-                data-rank="${mob.Rank}">
-            <span class="text-xs font-bold">${mob.Rank === 'A' ? '即時' : '報告'}</span><span class="text-xs font-bold">${mob.Rank === 'A' ? '報告' : 'する'}</span>
+        <button class="bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn text-white px-1 py-1 rounded-md shadow-md transition h-10 w-10 flex flex-col items-center justify-center leading-none flex-shrink-0"
+                data-mobno="${mob['No.']}">
+            <span class="text-xs font-bold">報告</span><span class="text-xs font-bold">する</span>
         </button>
     `;
 
-    // --- 詳細コンテンツ (トグルで表示されるエリア) ---
+    // --- 展開パネル内のコンテンツ生成 ---
     const conditionHtml = mob.Condition ? `
-        <div class="pt-1 pb-0 condition-content text-left text-xs">
-            <p class="px-2 font-medium text-gray-400">抽選条件:</p>
-            <p class="px-2 text-white leading-snug">${processText(mob.Condition)}</p>
-        </div>
-    ` : '';
-
-    const memoHtml = mob.Memo ? `
-        <div class="pt-1 pb-0 memo-content text-left text-xs">
-            <p class="px-2 font-medium text-gray-400">Memo:</p>
-            <p class="px-2 text-yellow-300 leading-snug">${processText(mob.Memo)}</p>
+        <div class="px-4 pt-1 pb-1 condition-content text-left">
+            <p class="text-xs font-medium text-gray-300">抽選条件:</p>
+            <p class="text-sm text-white leading-snug">${processText(mob.Condition)}</p>
         </div>
     ` : '';
 
     const minRepopStr = formatDateForDisplay(minRepop);
     const minRepopHtml = `
-        <div class="px-2 pt-1 pb-0 repop-start-content flex justify-between text-xs">
-            <p class="font-semibold text-gray-400">開始時間:</p>
-            <p class="text-gray-200 font-mono">${minRepopStr}</p>
+        <div class="px-4 pt-1 pb-1 repop-start-content flex justify-end">
+            <p class="text-sm font-semibold text-gray-400">開始時間: <span class="text-base text-gray-200 font-mono">${minRepopStr}</span></p>
         </div>
     `;
 
-    const lastKillStr = formatLastKillDisplay(lastKillDate); // 修正点2
+    const lastKillStr = formatDateForDisplay(lastKillDate);
     const lastKillHtml = `
-        <div class="px-2 pt-1 pb-1 last-kill-content flex justify-between text-xs">
-            <p class="font-semibold text-gray-400">前回時間:</p>
-            <p class="text-gray-200 font-mono">${lastKillStr}</p>
+        <div class="px-4 pt-1 pb-1 last-kill-content flex justify-end">
+            <p class="text-sm font-semibold text-gray-400">前回時間: <span class="text-base text-gray-200 font-mono">${lastKillStr}</span></p>
         </div>
     `;
 
-    // マップ画像表示とポイント描画の修正 (地点ポイント表示をここに追加)
-    const mapImageHtml = mob.Map ? `
-        <div class="mob-details pt-1 px-2 map-content relative"> 
-            <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="w-full h-auto rounded-lg shadow-md map-image">
-            ${renderMapPoints(mob.Coords)}
+    const mapDetailsHtml = mob.Map ? `
+        <div class="mob-details pt-1 px-4 text-center map-content">
+            <div class="relative inline-block w-full max-w-sm">
+                <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="w-full h-auto rounded-lg shadow-md map-image" data-area="${mob.Area}">
+                <div class="absolute inset-0 map-overlay" data-area="${mob.Area}"></div>
+            </div>
         </div>
     ` : '';
-    
-    // --- 進捗バーエリアのHTML (py-1 -> py-0 に修正) ---
+
+    let panelContent = conditionHtml + minRepopHtml + lastKillHtml + mapDetailsHtml;
+    if (panelContent.trim()) {
+        panelContent = `<div class="panel-padding-bottom">${panelContent}</div>`;
+    }
+
+    const expandablePanel = panelContent.trim() ? `
+        <div class="expandable-panel overflow-hidden transition-all duration-300 ease-in-out max-height-0 pt-0 px-0">
+            ${panelContent}
+        </div>
+    ` : '';
+
+    // --- 進捗バーエリアのHTML ---
     const repopInfoHtml = `
-        <div class="mt-1 bg-gray-700 py-0 px-2 rounded-xl text-xs relative overflow-hidden shadow-inner h-10">
-            <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl" style="width: ${elapsedPercent}%; z-index: 0;"></div>
+        <div class="mt-1 bg-gray-700 p-2 rounded-xl text-xs relative overflow-hidden shadow-inner h-12">
+            <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear" style="width: ${elapsedPercent}%; z-index: 0;"></div>
             <div class="absolute inset-0 flex items-center justify-center z-10">
-                <span class="repop-info-display text-lg ${repopTimeColorClass} font-mono w-full text-center">
+                <span class="repop-info-display text-lg font-extrabold ${repopTimeColorClass} font-mono w-full text-center">
                     ${timeDisplay}
                 </span>
             </div>
         </div>
     `;
-    
+
     // --- モブカードの最終構造 ---
-    // py-0: 上下パディングを削除 (カード内部の余白を削減)
-    // px-1: 左右パディングを追加 (カラム間の隙間がなくなったため、カードとカードの左右に隙間を確保)
-    // mb-1: 下マージンを維持 (カード間の最小限の縦の隙間を確保)
     return `
-        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-0 px-1 mb-1" 
+        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-2 mb-3"
              data-rank="${mob.Rank}"
              data-mobno="${mob['No.']}"
              data-lastkill="${mob.LastKillDate || ''}"
              data-minrepop="${mob['REPOP(s)']}"
              data-maxrepop="${mob['MAX(s)']}"
-             data-expansion="${mob.Expansion || '?'}"
-             data-repopscore="${repopData.repopScore}"
-             data-is-open="false"> 
-             
-            <div class="p-2 fixed-content toggle-handler">
+             data-expansion="${mob.Expansion || '?'}">
+
+            <div class="p-2 fixed-content toggle-handler cursor-pointer">
                 <div class="flex justify-between items-start mb-1">
                     <div class="flex items-center space-x-2">
                         <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-sm w-7 h-7 flex items-center justify-center rounded-lg shadow-lg flex-shrink-0">
@@ -548,13 +402,7 @@ function createMobCard(mob) {
                 ${repopInfoHtml}
             </div>
 
-            <div class="detailed-content pb-2 hidden"> 
-                ${conditionHtml}
-                ${memoHtml}
-                ${minRepopHtml}
-                ${lastKillHtml}
-                ${mapImageHtml}
-            </div>
+            ${expandablePanel}
         </div>
     `;
 }
@@ -563,13 +411,6 @@ function createMobCard(mob) {
  * フィルターに基づいてモブカードリストをレンダリングする
  */
 function renderMobList() {
-    const columns = [column1, column2, column3].filter(el => el);
-    if (columns.length === 0) {
-        console.error("Column DOM elements (column-1, column-2, column-3) not found.");
-        displayError("エラー: カラム表示に必要なHTML要素が見つかりません。");
-        return; 
-    }
-    
     const { rank } = currentFilter;
     let filteredMobs = [];
     const activeRanks = rank === 'ALL' ? TARGET_RANKS : [rank];
@@ -578,57 +419,62 @@ function renderMobList() {
         const rankMobs = globalMobData.filter(mob => mob.Rank === r);
         const currentAreaSet = currentFilter.areaSets[r];
 
-        if (currentAreaSet.has('ALL') && currentAreaSet.size <= 1) {
+        if (currentAreaSet.has('ALL') && currentAreaSet.size === 1) {
+            // ALLを選択している場合 (初期状態や全て解除された場合) は、そのランクの全ての拡張エリアを表示
             filteredMobs.push(...rankMobs.filter(mob => ALL_EXPANSION_NAMES.includes(mob.Expansion)));
         } else if (!currentAreaSet.has('ALL') && currentAreaSet.size > 0) {
+            // 特定のエリアを選択している場合
             filteredMobs.push(...rankMobs.filter(mob => currentAreaSet.has(mob.Expansion)));
         } else if (currentAreaSet.has('ALL') && currentAreaSet.size > 1) {
+             // 'ALL' と特定のエリアが選択されている場合 (全選択状態と同じ)
              filteredMobs.push(...rankMobs.filter(mob => currentAreaSet.has(mob.Expansion)));
+        } else if (currentAreaSet.size === 0) {
+             // 選択エリアが0個の場合 ('ALL'も含まれない) -> モブは表示しない
         }
     }
     
-    // ソートロジック (修正点1)
-    if (currentSort === 'Repop') {
-        filteredMobs.sort((a, b) => {
-            const aData = calculateRepop(a, a.LastKillDate);
-            const bData = calculateRepop(b, b.LastKillDate);
-            
-            // repopScoreが大きい方が優先度が高い
-            if (aData.repopScore > bData.repopScore) return -1;
-            if (aData.repopScore < bData.repopScore) return 1;
-            
-            // スコアが同じ場合はNo.順で安定させる
-            return a['No.'] - b['No.'];
-        });
-
-    } else { 
-        // No.順ソート
+    // ALLタブ選択時は、元のNo.順でソートを維持
+    if (rank === 'ALL') {
         filteredMobs.sort((a, b) => a['No.'] - b['No.']);
     }
 
-    // 1. カラムのクリア
+
+    // 3. レンダリング処理
     columns.forEach(col => col.innerHTML = '');
 
-    // 2. モブカードの均等分配ロジック
-    let allCardsHtml = Array(columns.length).fill(''); 
+    if (columns.length > 0) {
+        filteredMobs.forEach((mob, index) => {
+            const cardHtml = createMobCard(mob);
+            const targetColumn = columns[index % columns.length];
+            const div = document.createElement('div');
+            div.innerHTML = cardHtml.trim();
+            targetColumn.appendChild(div.firstChild);
+        });
+    }
 
-    filteredMobs.forEach((mob, index) => {
-        const mobCardHtml = createMobCard(mob);
-        const columnIndex = index % columns.length; 
-        allCardsHtml[columnIndex] += mobCardHtml;
+    // 4. アクティブなランクタブをハイライト
+    if (rankTabs) {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            const isActive = btn.dataset.rank === rank;
+            btn.classList.toggle('bg-blue-600', isActive);
+            btn.classList.toggle('hover:bg-blue-500', isActive);
+            btn.classList.toggle('bg-gray-700', !isActive);
+            btn.classList.toggle('hover:bg-gray-600', !isActive);
+        });
+    }
+
+    // 5. エリアフィルタボタンのハイライト (表示中のランクに依存)
+    const currentRankForAreaFilter = TARGET_RANKS.includes(rank) ? rank : 'S';
+    const currentAreasToHighlight = currentFilter.areaSets[currentRankForAreaFilter] || new Set(['ALL']);
+
+    document.querySelectorAll('.area-filter-btn').forEach(btn => {
+        const isSelected = currentAreasToHighlight.has(btn.dataset.area);
+        btn.classList.toggle('bg-blue-600', isSelected);
+        btn.classList.toggle('hover:bg-blue-500', isSelected);
+        btn.classList.toggle('bg-gray-600', !isSelected);
+        btn.classList.toggle('hover:bg-gray-500', !isSelected);
     });
 
-    // 3. DOMへの挿入
-    allCardsHtml.forEach((html, index) => {
-        columns[index].innerHTML = html;
-    });
-
-    // UIの更新
-    updateRankTabDisplay(rank);
-    updateAreaFilterButtonDisplay(rank);
-    updateSortButtonDisplay();
-
-    // DOM更新後に必ずイベントリスナーを再アタッチする
     attachEventListeners();
     updateProgressBars();
     saveFilterState();
@@ -638,80 +484,212 @@ function renderMobList() {
  * イベントリスナーをカードとボタンにアタッチする
  */
 function attachEventListeners() {
-    // Report Button Listeners (修正点4)
     document.querySelectorAll('.report-btn').forEach(button => {
         if (button.dataset.mobno) {
-            // 既存のイベントリスナーを削除 (renderMobListで再アタッチされるため)
-            button.onclick = null; 
-            
-            button.onclick = async (e) => {
+            button.onclick = (e) => {
                 e.stopPropagation();
-                const mobNo = e.currentTarget.dataset.mobno;
-                const rank = e.currentTarget.dataset.rank;
-                
-                // Aランクモブはワンクリックで即時報告
-                if (rank === 'A') {
-                    await submitReport(mobNo, 'A', true); // 即時報告フラグをtrueに
-                } else {
-                    openReportModal(mobNo);
-                }
+                openReportModal(e.currentTarget.dataset.mobno);
             }
         }
     });
 
-    // トグルイベントリスナーの再追加
     document.querySelectorAll('.toggle-handler').forEach(handler => {
-        // 既存のイベントリスナーがあれば削除してから再登録 (二重登録防止)
-        handler.onclick = null; 
-        handler.onclick = toggleMobDetails;
-    });
-}
-
-
-// --- フィルタボタンの表示更新 ---
-
-/**
- * ランクタブの表示を更新する (選択中のタブに色を適用)
- * @param {string} currentRank - 現在選択中のランク ('ALL', 'S', 'A', 'F')
- */
-function updateRankTabDisplay(currentRank) {
-    document.querySelectorAll('.tab-btn').forEach(button => {
-        const rank = button.dataset.rank;
-        const isActive = rank === currentRank;
-
-        button.classList.remove(ACTIVE_COLOR_CLASS, INACTIVE_COLOR_CLASS);
-        button.classList.add(isActive ? ACTIVE_COLOR_CLASS : INACTIVE_COLOR_CLASS);
-    });
-}
-
-/**
- * エリアフィルタボタンの表示を更新する (選択中のボタンに色を適用)
- * @param {string} rank - 現在選択中のランク ('S', 'A', 'F' のいずれか)
- */
-function updateAreaFilterButtonDisplay(rank) {
-    // ターゲットとなるランクを決定 (ALLタブ選択時もエリアフィルタは非表示なので 'S' をデフォルトでチェック)
-    const targetRank = TARGET_RANKS.includes(rank) ? rank : 'S'; 
-    const currentAreaSet = currentFilter.areaSets[targetRank];
-    
-    document.querySelectorAll('.area-filter-btn').forEach(button => {
-        const area = button.dataset.area;
-        const isActive = currentAreaSet.has(area);
-        
-        button.classList.remove(ACTIVE_COLOR_CLASS, INACTIVE_COLOR_CLASS);
-        button.classList.add(isActive ? ACTIVE_COLOR_CLASS : INACTIVE_COLOR_CLASS);
-        
-        // ALLボタンのテキストを調整
-        if (area === 'ALL' && button.textContent) {
-            const hasSpecificArea = Array.from(currentAreaSet).some(a => a !== 'ALL');
-            if (hasSpecificArea && isActive) {
-                 button.textContent = 'ALL (全て表示中)';
-            } else if (hasSpecificArea && !isActive) {
-                 button.textContent = 'ALL';
-            } else if (!hasSpecificArea && isActive) {
-                 button.textContent = 'ALL';
+        handler.onclick = (e) => {
+            const card = e.currentTarget.closest('.mob-card');
+            if (card) {
+                toggleMobDetails(card);
             }
-        }
+        };
     });
+}
+
+/**
+ * マップ詳細パネルの表示/非表示を切り替える
+ */
+function toggleMobDetails(card) {
+    const mobNo = card.dataset.mobno;
+    const mob = getMobByNo(parseInt(mobNo));
+    const panel = card.querySelector('.expandable-panel');
+
+    if (!panel) return;
+
+    panel.style.transition = 'max-height 0.3s ease-in-out';
+
+    if (card.classList.contains('open')) {
+        // 閉じる処理
+        panel.style.maxHeight = '0';
+        card.classList.remove('open');
+    } else {
+        // 開く処理
+        card.classList.add('open');
+        
+        // 1. スポーンポイントの描画
+        const mapOverlay = panel.querySelector('.map-overlay');
+        if (mapOverlay && mob.spawn_points) {
+            drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
+        }
+
+        // 2. 瞬時に max-height を解除し、コンテンツの最終的な高さを取得
+        panel.style.maxHeight = 'none';
+        const targetHeight = panel.scrollHeight;
+
+        // 3. max-heightを 0 に設定し、アニメーションの開始点に戻す
+        panel.style.maxHeight = '0';
+
+        // 4. 取得した高さに安全マージンを加えてアニメーションを開始
+        setTimeout(() => {
+            panel.style.maxHeight = (targetHeight + 5) + 'px';
+
+            // 5. アニメーション終了後に max-height: none に設定
+            panel.addEventListener('transitionend', function handler(e) {
+                if (e.propertyName === 'max-height' && card.classList.contains('open')) {
+                    panel.style.maxHeight = 'none';
+                }
+                panel.removeEventListener('transitionend', handler);
+            });
+        }, 0);
+    }
+}
+
+/**
+ * マップにスポーンポイントを描画する
+ */
+function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
+    overlayEl.innerHTML = '';
+    const mob = getMobByNo(parseInt(currentMobNo));
+
+    if (!mob || !mob.cullStatusMap) return;
+
+    // 定数
+    const SA_OUTER_DIAMETER = '12px';
+    const SA_BORDER_WIDTH = '2px';
+    const SA_SHADOW = '0 0 8px 1px';
+
+    const B1_INTERNAL_COLOR = '#60a5fa'; // Blue-400
+    const B2_INTERNAL_COLOR = '#f87171'; // Red-400
+
+    // S/A抽選に関わるポイントをフィルタリング
+    const cullTargetPoints = spawnPoints.filter(point =>
+        point.mob_ranks.includes('S') || point.mob_ranks.includes('A')
+    );
+
+    // 未処理のS/A抽選ポイントの数をカウント
+    let remainingCullCount = cullTargetPoints.filter(point => !mob.cullStatusMap[point.id]).length;
+
+    spawnPoints.forEach(point => {
+        const isS_A_Point = point.mob_ranks.includes('S') || point.mob_ranks.includes('A');
+        const includesB1 = point.mob_ranks.includes('B1');
+        const includesB2 = point.mob_ranks.includes('B2');
+        const isCullTarget = isS_A_Point;
+
+        if (!isCullTarget) {
+            // Bランクのみのポイント (湧き潰し対象外)
+            if (point.mob_ranks.length === 1 && (includesB1 || includesB2)) {
+                const pointEl = document.createElement('div');
+                pointEl.className = 'spawn-point-b-only';
+                pointEl.style.cssText = `
+                    position: absolute; left: ${point.x}%; top: ${point.y}%; transform: translate(-50%, -50%);
+                    width: 10px; height: 10px; border-radius: 50%; z-index: 5; pointer-events: none;
+                    background-color: ${includesB1 ? B1_INTERNAL_COLOR : B2_INTERNAL_COLOR};
+                    box-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
+                `;
+                overlayEl.appendChild(pointEl);
+            }
+            return;
+        }
+
+        // 湧き潰し対象ポイント (S/A/B1 or B2 を含む)
+        const isCulled = mob.cullStatusMap[point.id] || false;
+        let outlineColor = '#9ca3af';
+        let internalColor = '#d1d5db';
+
+        if (includesB1) {
+            outlineColor = '#3b82f6';
+            internalColor = '#60a5fa';
+        } else if (includesB2) {
+            outlineColor = '#ef4444';
+            internalColor = '#f87171';
+        }
+
+        const isLastPoint = !isCulled && remainingCullCount === 1;
+
+        if (isLastPoint) {
+            outlineColor = '#10b981';
+            internalColor = '#34d399';
+        }
+
+        const pointEl = document.createElement('div');
+        pointEl.className = `spawn-point cursor-pointer`;
+        pointEl.setAttribute('data-id', point.id);
+        pointEl.setAttribute('data-isculltarget', 'true');
+
+        pointEl.style.cssText = `
+            position: absolute; left: ${point.x}%; top: ${point.y}%; transform: translate(-50%, -50%);
+            width: ${SA_OUTER_DIAMETER}; height: ${SA_OUTER_DIAMETER}; border-radius: 50%; z-index: 10;
+            pointer-events: all; transition: transform 0.1s ease-out, box-shadow 0.2s ease-out, border 0.2s ease-out, background-color 0.2s ease-out;
+        `;
+
+
+        if (isCulled) {
+            pointEl.classList.add('culled');
+            pointEl.style.border = `${SA_BORDER_WIDTH} solid white`;
+            pointEl.style.backgroundColor = 'rgba(100, 100, 100, 1.0)';
+            pointEl.style.boxShadow = 'none';
+        } else {
+            pointEl.style.border = `${SA_BORDER_WIDTH} solid ${outlineColor}`;
+            pointEl.style.backgroundColor = internalColor;
+            pointEl.style.boxShadow = `${SA_SHADOW} ${outlineColor}`;
+
+            pointEl.onmouseenter = () => { pointEl.style.zIndex = '11'; };
+            pointEl.onmouseleave = () => { pointEl.style.zIndex = '10'; };
+        }
+
+        pointEl.onclick = (e) => {
+            e.stopPropagation();
+            toggleCullStatus(mob['No.'], point.id, !isCulled);
+        };
+
+        overlayEl.appendChild(pointEl);
+    });
+}
+
+/**
+ * 湧き潰し状態をGAS経由で切り替える
+ */
+async function toggleCullStatus(mobNo, pointId, newStatus) {
+    const mob = getMobByNo(mobNo);
+    if (!mob) return;
+
+    // 1. 画面上に即時反映 (ユーザー体験向上)
+    mob.cullStatusMap[pointId] = newStatus;
+
+    // 2. 現在開いているカードのマップオーバーレイのみを再描画
+    const card = document.querySelector(`.mob-card[data-mobno="${mobNo}"]`);
+    if (card && card.classList.contains('open')) {
+        const mapOverlay = card.querySelector('.map-overlay');
+        if (mapOverlay) {
+            drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
+        }
+    }
+
+    try {
+        await fetch(GAS_ENDPOINT, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                action: 'updateCullStatus',
+                mobNo: mobNo,
+                pointId: pointId,
+                isCulled: newStatus ? 'TRUE' : 'FALSE',
+                reporterId: userId
+            })
+        });
+    } catch (error) {
+        console.error('湧き潰し通信エラー:', error);
+    }
 }
 
 
@@ -752,45 +730,24 @@ function closeReportModal() {
     currentMobNo = null;
 }
 
-/**
- * 討伐報告の実行
- */
-async function submitReport(mobNo, rank, isInstant = false, killTimeLocal = null, memo = '') {
-    const mob = getMobByNo(parseInt(mobNo));
-    if (!mob) return;
+async function submitReport() {
+    if (!currentMobNo || !reportDatetimeInput || !submitReportBtn || !reportStatusEl) return;
 
-    let targetKillTimeLocal = killTimeLocal;
-    let targetMemo = memo;
-    let statusEl = isInstant ? errorMessageContainer : reportStatusEl;
-    let buttonEl = isInstant ? document.querySelector(`.report-btn[data-mobno="${mobNo}"]`) : submitReportBtn;
+    const killTimeLocal = reportDatetimeInput.value;
+    const memo = reportMemoInput.value;
+    const mob = getMobByNo(currentMobNo);
 
-    // Aモブの即時報告の場合、現在時刻を使用
-    if (isInstant) {
-        const now = new Date();
-        const offset = now.getTimezoneOffset() * 60000;
-        targetKillTimeLocal = (new Date(now.getTime() - offset)).toISOString().slice(0, 16);
-        targetMemo = ''; 
-        
-        if (buttonEl) {
-            buttonEl.disabled = true;
-            buttonEl.innerHTML = '<span class="text-xs font-bold">送信</span><span class="text-xs font-bold">中...</span>';
-            buttonEl.classList.remove('bg-green-600', 'hover:bg-green-500');
-            buttonEl.classList.add('bg-gray-500');
-        }
-    } else {
-        if (!targetKillTimeLocal || !statusEl || !buttonEl) return;
-        targetKillTimeLocal = killTimeLocal;
-        targetMemo = memo;
+    if (!mob || !killTimeLocal) return;
 
-        buttonEl.disabled = true;
-        buttonEl.textContent = '送信中...';
-        buttonEl.className = 'w-full px-4 py-2 bg-gray-500 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
+    const killTimeJstIso = toJstAdjustedIsoString(killTimeLocal);
 
-        statusEl.classList.remove('hidden', 'text-green-500', 'text-red-500');
-        statusEl.textContent = 'サーバーに送信中...';
-    }
+    // 送信開始時にボタンとステータスを更新
+    submitReportBtn.disabled = true;
+    submitReportBtn.textContent = '送信中...';
+    submitReportBtn.className = 'w-full px-4 py-2 bg-gray-500 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
 
-    const killTimeJstIso = toJstAdjustedIsoString(targetKillTimeLocal);
+    reportStatusEl.classList.remove('hidden', 'text-green-500', 'text-red-500');
+    reportStatusEl.textContent = 'サーバーに送信中...';
 
     try {
         const response = await fetch(GAS_ENDPOINT, {
@@ -799,11 +756,11 @@ async function submitReport(mobNo, rank, isInstant = false, killTimeLocal = null
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
                 action: 'reportKill',
-                mobNo: mobNo,
+                mobNo: currentMobNo,
                 mobName: mob.Name,
-                rank: rank,
+                rank: mob.Rank,
                 killTime: killTimeJstIso,
-                memo: targetMemo,
+                memo: memo,
                 reporterId: userId
             })
         });
@@ -811,87 +768,33 @@ async function submitReport(mobNo, rank, isInstant = false, killTimeLocal = null
         const result = await response.json();
 
         if (result.status === 'success') {
-            displayError(null); // 上部のエラーを消す
+            reportStatusEl.textContent = `報告成功！ (${result.message})`;
+            reportStatusEl.classList.add('text-green-500');
+            displayError(null);
+
+            submitReportBtn.textContent = '報告完了';
+            submitReportBtn.className = 'w-full px-4 py-2 bg-green-600 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
+            submitReportBtn.disabled = false;
             
-            if (isInstant) {
-                // Aモブ即時報告の場合: 成功アニメーションを適用
-                if (buttonEl) {
-                    buttonEl.innerHTML = '<span class="text-xs font-bold">成功</span><span class="text-xs font-bold">!</span>';
-                    buttonEl.classList.remove('bg-gray-500');
-                    buttonEl.classList.add('bg-green-600');
-                }
-                
-                // データ更新
-                await fetchRecordsAndUpdate('manual', false);
-
-                // アニメーション後にボタンを元に戻す
-                setTimeout(() => {
-                    if (buttonEl) {
-                        buttonEl.innerHTML = '<span class="text-xs font-bold">即時</span><span class="text-xs font-bold">報告</span>';
-                        buttonEl.disabled = false;
-                        buttonEl.classList.add('hover:bg-green-500');
-                    }
-                }, 1500);
-
-            } else {
-                // S/FATE モーダル報告の場合
-                statusEl.textContent = `報告成功！ (${result.message})`;
-                statusEl.classList.add('text-green-500');
-
-                buttonEl.textContent = '報告完了';
-                buttonEl.className = 'w-full px-4 py-2 bg-green-600 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
-                buttonEl.disabled = false;
-
-                await fetchRecordsAndUpdate('manual', false);
-                setTimeout(closeReportModal, 1500);
-            }
+            // 手動更新としてデータを更新し、メッセージを表示
+            await fetchRecordsAndUpdate('manual', false);
+            setTimeout(closeReportModal, 1500);
 
         } else {
-            const failMessage = `報告失敗: ${result.message}`;
-            console.error(failMessage);
-            
-            if (isInstant) {
-                // Aモブ即時報告の場合: エラーメッセージを表示
-                displayError(failMessage);
-                if (buttonEl) {
-                    buttonEl.innerHTML = '<span class="text-xs font-bold">失敗</span><span class="text-xs font-bold">...</span>';
-                    buttonEl.classList.remove('bg-gray-500');
-                    buttonEl.classList.add('bg-red-600');
-                    setTimeout(() => {
-                        if (buttonEl) {
-                            buttonEl.innerHTML = '<span class="text-xs font-bold">即時</span><span class="text-xs font-bold">報告</span>';
-                            buttonEl.disabled = false;
-                            buttonEl.classList.remove('bg-red-600');
-                            buttonEl.classList.add('bg-green-600', 'hover:bg-green-500');
-                        }
-                    }, 3000);
-                }
-            } else {
-                // S/FATE モーダル報告の場合
-                statusEl.textContent = failMessage;
-                statusEl.classList.add('text-red-500');
-                buttonEl.textContent = '送信失敗';
-                buttonEl.className = 'w-full px-4 py-2 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
-                buttonEl.disabled = false;
-            }
+            reportStatusEl.textContent = `報告失敗: ${result.message}`;
+            reportStatusEl.classList.add('text-red-500');
+            submitReportBtn.textContent = '送信失敗';
+            submitReportBtn.className = 'w-full px-4 py-2 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
+            submitReportBtn.disabled = false;
         }
 
     } catch (error) {
-        const networkError = '通信エラーが発生しました。';
         console.error('報告エラー:', error);
-        
-        if (isInstant) {
-            displayError(networkError);
-        } else {
-            reportStatusEl.textContent = networkError;
-            reportStatusEl.classList.add('text-red-500');
-        }
-
-        if (buttonEl) {
-            buttonEl.textContent = isInstant ? '失敗...' : '送信失敗';
-            buttonEl.className = (isInstant ? 'bg-red-600' : 'bg-red-600 hover:bg-red-500 active:bg-red-700') + ' w-full px-4 py-2 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
-            buttonEl.disabled = false;
-        }
+        reportStatusEl.textContent = '通信エラーが発生しました。';
+        reportStatusEl.classList.add('text-red-500');
+        submitReportBtn.textContent = '送信失敗';
+        submitReportBtn.className = 'w-full px-4 py-2 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
+        submitReportBtn.disabled = false;
     }
 }
 
@@ -965,7 +868,7 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
 
         if (data.status === 'success') {
             const records = data.records;
-            const cullStatuses = data.cullStatuses || []; 
+            const cullStatuses = data.cullStatuses || [];
 
             // データをマージして globalMobData を再構築
             globalMobData = baseMobData.map(mob => {
@@ -976,13 +879,11 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
                 // 討伐記録の反映
                 if (record && record.POP_Date_Unix) {
                     newMob.LastKillDate = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
-                    newMob.Memo = record.Memo || ''; 
                 } else {
                     newMob.LastKillDate = '';
-                    newMob.Memo = '';
                 }
 
-                // 湧き潰し関連データはもうカード表示に使われないが、構造は維持
+                // 湧き潰し状態の反映
                 newMob.cullStatusMap = {};
                 cullStatuses
                     .filter(status => status.Mob_No === mobNo)
@@ -1030,12 +931,12 @@ function updateProgressBars() {
 
         const lastKillDate = lastKillStr ? new Date(lastKillStr) : null;
         
+        // mobStub を廃止し、直接引数を渡す
         const repopData = calculateRepop({"REPOP(s)": repop, "MAX(s)": max}, lastKillDate);
         const percent = repopData.elapsedPercent || 0;
 
         const repopInfoDisplayEl = card.querySelector('.repop-info-display');
         const progressBarEl = card.querySelector('.progress-bar');
-        const lastKillEl = card.querySelector('.last-kill-content p:last-child'); // 前回時間の値の要素
 
         // --- 1. 表示テキストと色の更新 ---
         if (repopInfoDisplayEl) {
@@ -1049,11 +950,6 @@ function updateProgressBars() {
             } else {
                 repopInfoDisplayEl.classList.add('text-white', 'font-extrabold');
             }
-        }
-        
-        // LastKill表示も更新 (X分前)
-        if (lastKillEl) {
-             lastKillEl.textContent = formatLastKillDisplay(lastKillDate);
         }
 
         // --- 2. プログレスバーの更新ロジック ---
@@ -1076,7 +972,6 @@ function updateProgressBars() {
                 barColorClass = LIME_BAR_COLOR;
             }
 
-            // transition-all duration-100 は tailwind.config.js で定義が必要
             progressBarEl.className = `progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl ${barColorClass} ${animateClass}`;
             progressBarEl.style.height = '100%';
             progressBarEl.style.width = `${widthPercent}%`;
@@ -1086,6 +981,7 @@ function updateProgressBars() {
 
 /**
  * エリアフィルタパネルの開閉をトグルする (アニメーション付き)
+ * @param {boolean} forceOpen 強制的に開く場合はtrue, 閉じる場合はfalse, トグルする場合は未指定
  */
 function toggleAreaFilterPanel(forceOpen) {
     if (!areaFilterWrapper || !areaFilterContainer) return;
@@ -1093,9 +989,11 @@ function toggleAreaFilterPanel(forceOpen) {
     const isOpen = areaFilterWrapper.classList.contains('open');
     let shouldOpen = (typeof forceOpen === 'boolean') ? forceOpen : !isOpen;
 
+    // トランジション中にクリックイベントをブロック
     areaFilterWrapper.style.pointerEvents = 'none';
 
     if (shouldOpen) {
+        // --- 開く処理 ---
         areaFilterWrapper.classList.add('open');
         adjustContentPadding();
 
@@ -1114,10 +1012,12 @@ function toggleAreaFilterPanel(forceOpen) {
                 }
                 areaFilterWrapper.removeEventListener('transitionend', handler);
             });
+            // transitionend が発火しない場合に備える
             setTimeout(() => { areaFilterWrapper.style.pointerEvents = 'all'; adjustContentPadding(); }, 350);
         }, 0);
 
     } else {
+        // --- 閉じる処理 ---
         areaFilterWrapper.style.maxHeight = `${areaFilterWrapper.scrollHeight}px`;
         areaFilterWrapper.classList.remove('open');
 
@@ -1132,6 +1032,7 @@ function toggleAreaFilterPanel(forceOpen) {
                 areaFilterWrapper.removeEventListener('transitionend', handler);
             });
 
+            // transitionend が発火しない場合に備える
             setTimeout(() => { areaFilterWrapper.style.pointerEvents = 'all'; adjustContentPadding(); }, 350);
         }, 0);
     }
@@ -1155,11 +1056,17 @@ function initializeApp() {
         uuidDisplayEl.classList.remove('hidden');
     }
 
-    // フィルタとソート状態のロード
+    // フィルタ状態のロードと初期表示の制御
     loadFilterState();
-    updateSortButtonDisplay();
+    const initialRank = currentFilter.rank;
+    const isTargetRank = TARGET_RANKS.includes(initialRank);
     
-    toggleAreaFilterPanel(false); 
+    // 初期ロード時は、ターゲットランク（S/A/F）なら開く
+    if (isTargetRank) {
+        setTimeout(() => toggleAreaFilterPanel(true), 100);
+    } else {
+        toggleAreaFilterPanel(false);
+    }
 
     adjustContentPadding();
     window.addEventListener('resize', adjustContentPadding);
@@ -1167,12 +1074,7 @@ function initializeApp() {
 
     // 2. イベントリスナーの設定
 
-    // ソートボタンのリスナー
-    if (sortToggleBtn) {
-        sortToggleBtn.onclick = toggleSortState;
-    }
-
-    // ランクタブの排他的トグル動作
+    // ランクタブのリスナー (2クリックで開閉ロジック)
     if (rankTabs) {
         document.querySelectorAll('.tab-btn').forEach(button => {
             button.onclick = (e) => {
@@ -1180,72 +1082,65 @@ function initializeApp() {
                 const currentRank = currentFilter.rank;
                 const newRankIsTarget = TARGET_RANKS.includes(newRank);
 
-                if (newRankIsTarget) {
-                    if (newRank !== lastClickedRank) {
-                        // ランクが切り替わった場合
-                        rankClickCount = 1;
-                        toggleAreaFilterPanel(false); // ランク切り替え時は一度閉じる
-                        lastClickedRank = newRank;
-                    } else {
-                        // 同じランクを連続クリック
-                        rankClickCount = (rankClickCount % 3) + 1;
-                    }
-
-                    if (rankClickCount === 2) {
-                        toggleAreaFilterPanel(true); // 2回目で開く
-                    } else if (rankClickCount === 3) {
-                        toggleAreaFilterPanel(false); // 3回目で閉じる
-                        rankClickCount = 0; // 閉じた後、次のクリックで1に戻す
-                    }
+                if (newRank === currentRank && newRankIsTarget) {
+                    // 同じランクタブを再クリック: トグルで開閉
+                    toggleAreaFilterPanel();
+                } else if (newRankIsTarget) {
+                    // S, A, FATE に切り替え: 表示する
+                    toggleAreaFilterPanel(true);
                 } else {
-                    // ALLタブの場合、閉じる
-                    rankClickCount = 0;
-                    lastClickedRank = null;
+                    // ALL に切り替え: 閉じる
                     toggleAreaFilterPanel(false);
                 }
 
                 if (currentRank !== newRank) {
                     currentFilter.rank = newRank;
                     renderMobList();
-                } else if (newRankIsTarget) {
-                    // ランクが変わらない場合でも、エリアフィルタの開閉後に再レンダリング
-                    renderMobList();
                 }
             }
         });
     }
+
     // エリアフィルタボタンのリスナー
     document.querySelectorAll('.area-filter-btn').forEach(button => {
         button.onclick = (e) => {
             const newArea = e.currentTarget.dataset.area;
             const currentRank = currentFilter.rank;
+            
+            // ALLタブ選択時は、Sランクのフィルタ状態を操作する
             const targetRank = TARGET_RANKS.includes(currentRank) ? currentRank : 'S';
             const currentAreaSet = currentFilter.areaSets[targetRank];
             
             if (!currentAreaSet) return;
 
             if (newArea === 'ALL') {
+                // ALLボタンのトグル
                 const isAllSelected = ALL_EXPANSION_NAMES.every(area => currentAreaSet.has(area));
                 
                 if (isAllSelected) {
+                    // 全選択状態なら、ALLのみに切り替える（全解除と同義で、ALLフラグを残す）
                     currentFilter.areaSets[targetRank] = new Set(['ALL']);
                 } else {
+                    // 全選択状態ではないなら、すべての拡張エリアを選択状態にする（ALLフラグも持たせる）
                     currentFilter.areaSets[targetRank] = new Set([...ALL_EXPANSION_NAMES, 'ALL']);
                 }
 
             } else {
+                // 個別エリアボタンのトグル
                 if (currentAreaSet.has(newArea)) {
                     currentAreaSet.delete(newArea);
                 } else {
                     currentAreaSet.add(newArea);
                 }
                 
+                // 選択肢が空になったら、ALLフラグを再度追加 (全て非表示)
                 if (Array.from(currentAreaSet).filter(a => a !== 'ALL').length === 0) {
                     currentAreaSet.add('ALL');
                 } else {
                     currentAreaSet.delete('ALL');
                 }
                 
+                // すべての拡張エリアが選択されたら、'ALL'フラグを追加
                 const isAllSelectedAfterToggle = ALL_EXPANSION_NAMES.every(area => currentAreaSet.has(area));
                 if (isAllSelectedAfterToggle) {
                     currentAreaSet.add('ALL');
@@ -1259,10 +1154,7 @@ function initializeApp() {
 
     // モーダル関連のリスナー
     if (cancelReportBtn) cancelReportBtn.onclick = closeReportModal;
-    if (submitReportBtn) submitReportBtn.onclick = () => {
-        // S/FATEモーダルの送信処理
-        submitReport(currentMobNo, getMobByNo(currentMobNo).Rank, false, reportDatetimeInput.value, reportMemoInput.value);
-    };
+    if (submitReportBtn) submitReportBtn.onclick = submitReport;
 
     if (reportModal) {
         reportModal.addEventListener('click', (e) => {
