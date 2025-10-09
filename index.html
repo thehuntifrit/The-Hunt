@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -5,7 +7,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Hunt - Eorzea</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css"> 
+    <style>
+        body {
+            background-color: #0d1117; /* GitHub Dark Modeに近い背景 */
+            color: #c9d1d9; /* 薄いグレーのテキスト */
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
+        }
+
+        /* カスタムアウトラインテキストスタイル */
+        .text-outline {
+            text-shadow: 
+                -1px -1px 0 #000,  
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                1px 1px 0 #000;
+        }
+
+        /* 展開パネルの初期状態 */
+        .expandable-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+            padding-bottom: 0 !important; /* 初期状態ではパディングを無効化 */
+        }
+        
+        .mob-card.open .expandable-panel {
+            /* JSで動的にmax-heightを設定するため、ここは空に保つか、安全な値を入れておく */
+        }
+
+        /* NEW: プログレスバーのトランジションを CSS で定義 */
+        .progress-bar {
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            border-radius: 0.75rem; /* rounded-xl */
+            /* プログレスバーの動きを滑らかにする */
+            transition: width 0.1s ease-linear;
+        }
+        
+        /* マップスポーンポイントの基本スタイル */
+        .spawn-point {
+            /* ホバー時にわずかに拡大 */
+            cursor: pointer;
+        }
+
+        .spawn-point:hover {
+            transform: translate(-50%, -50%) scale(1.5) !important;
+            box-shadow: 0 0 12px 2px rgba(255, 255, 255, 0.5) !important;
+        }
+
+        /* 湧き潰し済みポイントのスタイル */
+        .spawn-point.culled {
+            /* 湧き潰し済みの場合は内側を不透明なグレーにし、外側を白で表現 */
+            border: 2px solid white !important;
+            background-color: rgba(100, 100, 100, 1.0) !important;
+            opacity: 0.8 !important;
+            box-shadow: none !important;
+        }
+
+        /* 地図画像の親要素 (relativeを適用) */
+        .map-content {
+            position: relative;
+        }
+
+        /* 地図オーバーレイ (スポーンポイントの描画エリア) */
+        .map-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 20; /* ポイントが地図の上に表示されるように */
+        }
+
+        /* ロード/エラーメッセージのテキストを中央揃え */
+        #error-message-container > div {
+            padding: 8px 12px;
+        }
+        
+        /* 報告モーダルのスタイル */
+        #report-modal {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        /* モーダルコンテンツ */
+        #report-modal > div {
+            max-height: 90vh;
+        }
+        
+        /* --- 固定ヘッダーの調整 --- */
+        #fixed-header-content {
+            /* Tailwind: fixed top-0 left-0 right-0 z-50 bg-gray-950 p-3 pb-2 shadow-2xl border-b border-gray-800 */
+            /* 既にクラスで設定済み */
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        /* NEW: エリアフィルタの開閉アニメーションのためのスタイル */
+        #area-filter-wrapper {
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            overflow: hidden;
+            pointer-events: none; /* 初期状態でクリックイベントを無効化 */
+            /* padding-bottom も max-height に含まれるように */
+            padding-bottom: 0px; 
+        }
+        
+        #area-filter-wrapper.open {
+            /* max-height は JS で動的に設定されます */
+            opacity: 1;
+            /* 展開時にパディングを適用 (mt-2 の分も考慮して 0.5rem (8px) を設定) */
+            padding-bottom: 8px; 
+        }
+
+    </style>
 </head>
 <body>
 
@@ -28,7 +145,7 @@
                 <button data-rank="F" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">FATE</button>
             </div>
             
-            <div id="area-filter-wrapper" class="mt-2">
+            <div id="area-filter-wrapper" class="mt-2" style="max-height: 0;">
                 <div id="area-filter-container" class="p-2 bg-gray-900 rounded-xl shadow-lg">
                     <div class="flex flex-wrap gap-2 justify-center">
                         <button data-area="ALL" class="area-filter-btn bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1 px-3 rounded-md text-sm transition">
@@ -55,7 +172,7 @@
                     </div>
                 </div>
             </div>
-            
+        
         </div>
         
     </div>
