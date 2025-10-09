@@ -327,9 +327,9 @@ function createMobCard(mob) {
     `;
 
     // --- 展開パネル内のコンテンツ生成 ---
+    // 修正: 「抽選条件:」の文言を削除し、条件テキストのみを残す
     const conditionHtml = mob.Condition ? `
         <div class="px-4 pt-1 pb-1 condition-content text-left">
-            <p class="text-xs font-medium text-gray-300">抽選条件:</p>
             <p class="text-sm text-white leading-snug">${processText(mob.Condition)}</p>
         </div>
     ` : '';
@@ -391,8 +391,9 @@ function createMobCard(mob) {
     `;
 
     // --- モブカードの最終構造 ---
+    // 修正: 上下の余白を半分に削減 (py-2 -> py-1)
     return `
-        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-2 mb-3"
+        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-1 mb-3"
              data-rank="${mob.Rank}"
              data-mobno="${mob['No.']}"
              data-lastkill="${mob.LastKillDate || ''}"
@@ -1211,15 +1212,3 @@ function initializeApp() {
 }
 
 document.addEventListener('DOMContentLoaded', initializeApp);
-
-
-このコードで、以下の修正がすべて適用されています。
-
-* **B1/B2スポーンポイント**: ラストワン時の反転表示、およびサイズ$8\text{px}$に縮小。
-* **POP前フォント**: POP後のフォント/サイズに合わせて**太字を解除**。
-* **モブカード開閉**: **排他的開閉**（他の開いているカードを自動で閉じる）。
-* **モブカード詳細**: 「**Memo: **」欄を追加し、GASからのデータ（`record.Memo`）を表示。
-* **プログレスバー**: 上下余白を削減し、高さを調整。
-* **POP後テキスト**: 「`P% (HHh MMm)`」または「`100.0% ( + HHh MMm)`」形式に変更。
-
-ご確認をお願いいたします。
