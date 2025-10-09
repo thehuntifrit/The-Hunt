@@ -1,4 +1,3 @@
-
 /* script.js (最終修正・最適化版) */
 
 // Google Apps Script (GAS) のエンドポイントURL
@@ -340,6 +339,7 @@ function createMobCard(mob) {
         </div>
     `;
 
+    // ★★★ マップ画像パスの修正がここに反映済みです ★★★
     const mapDetailsHtml = mob.Map ? `
         <div class="mob-details pt-1 px-4 text-center map-content">
             <div class="relative inline-block w-full max-w-sm">
@@ -549,6 +549,7 @@ function toggleMobDetails(card) {
         }, 0);
     }
 }
+
 
 /**
  * マップにスポーンポイントを描画する
