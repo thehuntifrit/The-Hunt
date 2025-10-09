@@ -1,7 +1,7 @@
-/* script.js (カラム分割・開閉機能復活版) */
+/* script.js (最終修正: 開閉機能、カラム分配、余白調整、Aモブ即時報告、フィルタ色復活) */
 
 // Google Apps Script (GAS) のエンドポイントURL
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcEelT3g/exec';
 // 静的モブデータ (mob_data.json) のURL
 const MOB_DATA_URL = './mob_data.json';
 
@@ -55,6 +55,9 @@ const EXPANSION_MAP = {
 };
 const ALL_EXPANSION_NAMES = Object.values(EXPANSION_MAP);
 const TARGET_RANKS = ['S', 'A', 'F'];
+const ACTIVE_COLOR_CLASS = 'bg-blue-600'; // ALLタブの色に合わせる
+const INACTIVE_COLOR_CLASS = 'bg-gray-700';
+
 
 // --- ユーティリティ関数 ---
 
@@ -336,8 +339,8 @@ function toggleSortState() {
 function updateSortButtonDisplay() {
     if (sortToggleBtn) {
         sortToggleBtn.textContent = currentSort === 'No.' ? 'ソート: No.順' : 'ソート: Repop優先度順';
-        sortToggleBtn.classList.toggle('bg-blue-700', currentSort === 'Repop');
-        sortToggleBtn.classList.toggle('bg-gray-700', currentSort === 'No.');
+        sortToggleBtn.classList.toggle(ACTIVE_COLOR_CLASS, currentSort === 'Repop');
+        sortToggleBtn.classList.toggle(INACTIVE_COLOR_CLASS, currentSort === 'No.');
     }
 }
 
@@ -473,8 +476,11 @@ function createMobCard(mob) {
     `;
     
     // --- モブカードの最終構造 ---
+    // py-0: 上下パディングを削除 (カード内部の余白を削減)
+    // px-1: 左右パディングを追加 (カラム間の隙間がなくなったため、カードとカードの左右に隙間を確保)
+    // mb-1: 下マージンを維持 (カード間の最小限の縦の隙間を確保)
     return `
-        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-1 mb-1"
+        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-0 px-1 mb-1" 
              data-rank="${mob.Rank}"
              data-mobno="${mob['No.']}"
              data-lastkill="${mob.LastKillDate || ''}"
@@ -579,6 +585,7 @@ function renderMobList() {
     updateAreaFilterButtonDisplay(rank);
     updateSortButtonDisplay();
 
+    // DOM更新後に必ずイベントリスナーを再アタッチする
     attachEventListeners();
     updateProgressBars();
     saveFilterState();
@@ -606,9 +613,58 @@ function attachEventListeners() {
         }
     });
 
-    // ★★★ 修正箇所: トグルイベントリスナーの追加 ★★★
+    // トグルイベントリスナーの再追加
     document.querySelectorAll('.toggle-handler').forEach(handler => {
+        // 既存のイベントリスナーがあれば削除してから再登録 (二重登録防止)
+        handler.onclick = null; 
         handler.onclick = toggleMobDetails;
+    });
+}
+
+
+// --- フィルタボタンの表示更新 ---
+
+/**
+ * ランクタブの表示を更新する (選択中のタブに色を適用)
+ * @param {string} currentRank - 現在選択中のランク ('ALL', 'S', 'A', 'F')
+ */
+function updateRankTabDisplay(currentRank) {
+    document.querySelectorAll('.tab-btn').forEach(button => {
+        const rank = button.dataset.rank;
+        const isActive = rank === currentRank;
+
+        button.classList.remove(ACTIVE_COLOR_CLASS, INACTIVE_COLOR_CLASS);
+        button.classList.add(isActive ? ACTIVE_COLOR_CLASS : INACTIVE_COLOR_CLASS);
+    });
+}
+
+/**
+ * エリアフィルタボタンの表示を更新する (選択中のボタンに色を適用)
+ * @param {string} rank - 現在選択中のランク ('S', 'A', 'F' のいずれか)
+ */
+function updateAreaFilterButtonDisplay(rank) {
+    // ターゲットとなるランクを決定 (ALLタブ選択時もエリアフィルタは非表示なので 'S' をデフォルトでチェック)
+    const targetRank = TARGET_RANKS.includes(rank) ? rank : 'S'; 
+    const currentAreaSet = currentFilter.areaSets[targetRank];
+    
+    document.querySelectorAll('.area-filter-btn').forEach(button => {
+        const area = button.dataset.area;
+        const isActive = currentAreaSet.has(area);
+        
+        button.classList.remove(ACTIVE_COLOR_CLASS, INACTIVE_COLOR_CLASS);
+        button.classList.add(isActive ? ACTIVE_COLOR_CLASS : INACTIVE_COLOR_CLASS);
+        
+        // ALLボタンのテキストを調整
+        if (area === 'ALL' && button.textContent) {
+            const hasSpecificArea = Array.from(currentAreaSet).some(a => a !== 'ALL');
+            if (hasSpecificArea && isActive) {
+                 button.textContent = 'ALL (全て表示中)';
+            } else if (hasSpecificArea && !isActive) {
+                 button.textContent = 'ALL';
+            } else if (!hasSpecificArea && isActive) {
+                 button.textContent = 'ALL';
+            }
+        }
     });
 }
 
