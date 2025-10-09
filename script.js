@@ -1,4 +1,4 @@
-/* script.js (再修正 - 機能の維持と最新要件の追加) */
+/* script.js (最終修正・最適化版) */
 
 // Google Apps Script (GAS) のエンドポイントURL
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
@@ -12,15 +12,9 @@ let currentFilter = {
     rank: 'ALL', // 初期表示はALLランク
     // S/A/FATE ランクごとに独立したエリア選択状態を保持
     areaSets: {
-        'S': new Set(['ALL']),
+        'S': new Set(['ALL']), // 'ALL'は「全て表示」または「すべてが選択状態」を意味するフラグ
         'A': new Set(['ALL']),
         'F': new Set(['ALL'])
-    },
-    // NEW: ランクごとのクリック回数を保持 (1回目: 更新, 2回目: 開く, 3回目: 閉じる)
-    clickCount: {
-        'S': 0,
-        'A': 0,
-        'F': 0
     }
 };
 let currentMobNo = null;
@@ -66,10 +60,16 @@ const TARGET_RANKS = ['S', 'A', 'F'];
 
 // --- ユーティリティ関数 ---
 
+/**
+ * UNIX秒 (サーバー時間) を Dateオブジェクトに変換する
+ */
 function unixTimeToDate(unixtime) {
     return new Date(unixtime * 1000);
 }
 
+/**
+ * 日付オブジェクトを MM/DD HH:MM 形式にフォーマットする
+ */
 function formatDateForDisplay(dateInput) {
     const date = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
     if (!date || isNaN(date.getTime())) {
@@ -84,34 +84,44 @@ function formatDateForDisplay(dateInput) {
     return `${month}/${day} ${hours}:${minutes}`;
 }
 
+/**
+ * ミリ秒を HHh MMm 形式に変換し、接頭辞を付けます。
+ */
+function formatDurationPart(ms, prefix = '') {
+    const totalMinutes = Math.floor(ms / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    const formattedHours = String(hours).padStart(2, '0');
+    const formattedMinutes = String(minutes).padStart(2, '0');
+
+    return `${prefix}${formattedHours}h ${formattedMinutes}m`;
+}
+
+/**
+ * テキストを // で改行する関数
+ */
 const processText = (text) => {
-    return text ? text.replace(/\/\/\s*/g, '<br>') : '';
+    return text.replace(/\/\/\s*/g, '<br>');
 };
 
+/**
+ * ローカル日時 (ISO形式) をJSTとしてGASに渡すためのISO文字列に変換する
+ */
 function toJstAdjustedIsoString(localIsoString) {
     const localDate = new Date(localIsoString);
-    const jstOffsetMinutes = -540;
-    const localOffsetMinutes = localDate.getTimezoneOffset();
-    const offsetDifference = localOffsetMinutes - jstOffsetMinutes;
+    const jstOffsetMinutes = -540; // JST (UTC+9) のオフセット (-540分)
+    const localOffsetMinutes = localDate.getTimezoneOffset(); // ローカルタイムゾーンのオフセット
+    const offsetDifference = localOffsetMinutes - jstOffsetMinutes; // 差分を求める
 
     const adjustedDate = new Date(localDate.getTime() + offsetDifference * 60000);
+
     return adjustedDate.toISOString();
 }
 
-function formatDurationPart(milliseconds, prefix = '') {
-    const absMs = Math.abs(milliseconds);
-    const hours = Math.floor(absMs / (1000 * 60 * 60));
-    const minutes = Math.floor((absMs % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((absMs % (1000 * 60)) / 1000);
-
-    let parts = [];
-    if (hours > 0) parts.push(`${hours}h`);
-    if (minutes > 0 || hours > 0) parts.push(`${minutes}m`);
-    parts.push(`${seconds}s`);
-
-    return prefix + parts.join(' ');
-}
-
+/**
+ * エラーメッセージを指定エリアに表示/非表示にする
+ */
 function displayError(message) {
     if (!errorMessageContainer) return;
 
@@ -124,7 +134,7 @@ function displayError(message) {
 
         const isError = !message.includes('更新中') && !message.includes('ロード中');
 
-        errorMessageContainer.className = '';
+        errorMessageContainer.className = ''; // クラスをリセット
         if (isError) {
             errorMessageContainer.classList.add(...baseClasses, ...errorClasses);
         } else {
@@ -134,11 +144,15 @@ function displayError(message) {
         errorMessageContainer.innerHTML = `<div>${message}</div>`;
     } else {
         errorMessageContainer.classList.add('hidden');
-        errorMessageContainer.className = '';
+        errorMessageContainer.className = ''; // クラスをリセット
         errorMessageContainer.innerHTML = '';
     }
 }
 
+
+/**
+ * 討伐日時からリポップ情報を計算する
+ */
 function calculateRepop(mob, lastKill) {
     const killTime = (lastKill instanceof Date) ? lastKill : new Date(lastKill);
     const isUnknown = !lastKill || isNaN(killTime.getTime());
@@ -158,11 +172,8 @@ function calculateRepop(mob, lastKill) {
     }
 
     if (isUnknown) {
-        // 討伐時間が不明な場合、最も早いポップ時間からカウントダウンを表示
         minRepopTime = new Date(now.getTime() + repopMinMs);
-        const remainingMsToMin = minRepopTime.getTime() - now.getTime();
-        const duration = formatDurationPart(remainingMsToMin);
-        timeRemainingStr = `Unknown Kill Time. Next: ${duration}`;
+        timeRemainingStr = `Next: ${formatDateForDisplay(minRepopTime)}`;
         elapsedPercent = 0;
     } else {
         minRepopTime = new Date(killTime.getTime() + repopMinMs);
@@ -171,32 +182,31 @@ function calculateRepop(mob, lastKill) {
         const remainingMsToMin = minRepopTime.getTime() - now.getTime();
 
         if (remainingMsToMin > 0) {
-            // ポップウィンドウ前
+            // Phase 1: Pre-Min Repop
             isPop = false;
-            const duration = formatDurationPart(remainingMsToMin);
-            timeRemainingStr = `Next Pop: ${duration}`;
+            timeRemainingStr = `Next: ${formatDateForDisplay(minRepopTime)}`;
             elapsedPercent = 0;
 
         } else {
-            // ポップウィンドウ内
+            // Phase 2 & 3: In or After POP Window
             isPop = true;
             const remainingMsToMax = maxRepopTime.getTime() - now.getTime();
 
             if (remainingMsToMax > 0) {
-                // ポップウィンドウ内（まだ最大時間内）
+                // Phase 2: In POP Window
                 isMaxOver = false;
                 const elapsedInWindowMs = now.getTime() - minRepopTime.getTime();
                 elapsedPercent = Math.max(0, Math.min(100, (elapsedInWindowMs / popDurationMs) * 100));
 
                 const duration = formatDurationPart(remainingMsToMax);
-                timeRemainingStr = `Remaining (${elapsedPercent.toFixed(1)}%): ${duration}`;
+                timeRemainingStr = `残り (%): ${duration} (${elapsedPercent.toFixed(1)}%)`;
 
             } else {
-                // 最大ポップ時間を超過
+                // Phase 3: Max Repop Exceeded
                 isMaxOver = true;
                 const popElapsedMs = now.getTime() - maxRepopTime.getTime();
                 const formattedElapsed = formatDurationPart(popElapsedMs, '+');
-                timeRemainingStr = `MAX Over (100.0%): ${formattedElapsed}`;
+                timeRemainingStr = `残り (%): ${formattedElapsed} (100.0%)`;
                 elapsedPercent = 100;
             }
         }
@@ -205,16 +215,24 @@ function calculateRepop(mob, lastKill) {
     return { minRepop: minRepopTime, maxRepop: maxRepopTime, timeDisplay: timeRemainingStr, elapsedPercent: elapsedPercent, isPop: isPop, isMaxOver: isMaxOver, isUnknown: isUnknown };
 }
 
+/**
+ * MobNoからモブデータを取得する
+ */
 function getMobByNo(mobNo) {
     return globalMobData.find(mob => mob['No.'] === parseInt(mobNo));
 }
 
+
+// --- フィルタ状態の保存/ロード ---
+
+/**
+ * 現在のフィルタ状態をlocalStorageに保存する
+ */
 function saveFilterState() {
     try {
         const stateToSave = {
             rank: currentFilter.rank,
-            areaSets: {},
-            clickCount: currentFilter.clickCount 
+            areaSets: {}
         };
         for (const rank in currentFilter.areaSets) {
             stateToSave.areaSets[rank] = Array.from(currentFilter.areaSets[rank]);
@@ -225,6 +243,9 @@ function saveFilterState() {
     }
 }
 
+/**
+ * localStorageからフィルタ状態をロードする
+ */
 function loadFilterState() {
     try {
         const savedState = localStorage.getItem('huntFilterState');
@@ -242,76 +263,31 @@ function loadFilterState() {
                     }
                 }
             }
-            
-            // NEW: クリックカウントをロード
-            if (parsedState.clickCount) {
-                currentFilter.clickCount = parsedState.clickCount;
-            }
         }
     } catch (e) {
         console.error('Failed to load filter state from localStorage:', e);
     }
 }
 
+
+// --- 固定ヘッダーの高さ調整 ---
+
 /**
- * NEW: requestAnimationFrame を利用してレイアウト崩れを防ぎながら調整
+ * 固定ヘッダーの高さを取得し、スペーサーに適用してスクロールの重なりを防ぐ
  */
 function adjustContentPadding() {
     if (fixedHeaderContent && contentSpacer) {
-        requestAnimationFrame(() => {
-            const headerHeight = fixedHeaderContent.offsetHeight;
-            contentSpacer.style.paddingTop = `${headerHeight}px`;
-        });
+        const headerHeight = fixedHeaderContent.offsetHeight;
+        contentSpacer.style.paddingTop = `${headerHeight}px`;
     }
-}
-
-function updateProgressBars() {
-    // 描画されている全てのモブカードを取得
-    const mobCards = document.querySelectorAll('.mob-card');
-
-    mobCards.forEach(card => {
-        const mobNo = parseInt(card.dataset.mobno);
-        const mob = getMobByNo(mobNo);
-        if (!mob) return;
-
-        const lastKillDate = card.dataset.lastkill ? new Date(card.dataset.lastkill) : null;
-        const { minRepop, timeDisplay, elapsedPercent, isPop, isMaxOver, isUnknown } = calculateRepop(mob, lastKillDate);
-
-        const progressBar = card.querySelector('.progress-bar');
-        const infoDisplay = card.querySelector('.repop-info-display');
-
-        if (progressBar) {
-            progressBar.style.width = `${elapsedPercent}%`;
-            
-            let barBgClass = 'bg-gray-600';
-            if (isPop) {
-                barBgClass = isMaxOver ? 'bg-red-900' : 'bg-yellow-800';
-            }
-            progressBar.className = `progress-bar absolute inset-0 transition-all duration-100 ease-linear ${barBgClass}`;
-        }
-
-        if (infoDisplay) {
-            infoDisplay.textContent = timeDisplay;
-
-            let textColorClass = 'text-white font-extrabold';
-            if (isUnknown) {
-                textColorClass = 'text-gray-400';
-            } else if (!isPop) {
-                textColorClass = 'text-green-400';
-            } else if (isMaxOver) {
-                textColorClass = 'text-white'; // 赤い背景上の白
-            } else {
-                textColorClass = 'text-yellow-200'; // 黄色い背景上の黄色
-            }
-            infoDisplay.classList.remove('text-white', 'text-gray-400', 'text-green-400', 'text-yellow-200');
-            infoDisplay.classList.add(...textColorClass.split(' '));
-        }
-    });
 }
 
 
 // --- DOM操作/イベントハンドラ ---
 
+/**
+ * モブデータに基づいてHTMLカードを生成する
+ */
 function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
     const { minRepop, timeDisplay, elapsedPercent, isPop, isMaxOver, isUnknown } = calculateRepop(mob, lastKillDate);
@@ -325,11 +301,9 @@ function createMobCard(mob) {
 
     let rankBgClass;
     let rankTextColor = 'text-white';
-    let rankDisplay = mob.Rank; // NEW: 表示名称を変更
-
     switch (mob.Rank) {
-        case 'S': rankBgClass = 'bg-red-600'; rankDisplay = 'Rank S'; break;
-        case 'A': rankBgClass = 'bg-blue-600'; rankDisplay = 'Rank A'; break;
+        case 'S': rankBgClass = 'bg-red-600'; break;
+        case 'A': rankBgClass = 'bg-blue-600'; break;
         case 'B': rankBgClass = 'bg-gray-600'; break;
         case 'F': rankBgClass = 'bg-purple-600'; break;
         default: rankBgClass = 'bg-gray-600';
@@ -350,15 +324,6 @@ function createMobCard(mob) {
             <p class="text-sm text-white leading-snug">${processText(mob.Condition)}</p>
         </div>
     ` : '';
-    
-    // NEW: メモ表示ロジック
-    const memoHtml = mob.Memo ? `
-        <div class="px-4 pt-1 pb-1 memo-content text-left">
-            <p class="text-xs font-medium text-gray-300">Memo:</p>
-            <p class="text-sm text-white leading-snug">${processText(mob.Memo)}</p>
-        </div>
-    ` : '';
-
 
     const minRepopStr = formatDateForDisplay(minRepop);
     const minRepopHtml = `
@@ -383,7 +348,7 @@ function createMobCard(mob) {
         </div>
     ` : '';
 
-    let panelContent = conditionHtml + memoHtml + minRepopHtml + lastKillHtml + mapDetailsHtml; // NEW: memoHtmlを追加
+    let panelContent = conditionHtml + minRepopHtml + lastKillHtml + mapDetailsHtml;
     if (panelContent.trim()) {
         panelContent = `<div class="panel-padding-bottom">${panelContent}</div>`;
     }
@@ -395,13 +360,11 @@ function createMobCard(mob) {
     ` : '';
 
     // --- 進捗バーエリアのHTML ---
-    // NEW: プログレスバーの余白削減の調整 (p-2 -> p-1 に変更する想定)
-    // 既存の p-2 を p-1 に変更
-    const repopInfoHtml = ` 
-        <div class="mt-1 bg-gray-700 p-1 rounded-xl text-xs relative overflow-hidden shadow-inner h-10">
-            <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear bg-gray-600" style="width: ${elapsedPercent}%; z-index: 0;"></div>
+    const repopInfoHtml = `
+        <div class="mt-1 bg-gray-700 p-2 rounded-xl text-xs relative overflow-hidden shadow-inner h-12">
+            <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear" style="width: ${elapsedPercent}%; z-index: 0;"></div>
             <div class="absolute inset-0 flex items-center justify-center z-10">
-                <span class="repop-info-display text-base font-extrabold ${repopTimeColorClass} font-mono w-full text-center">
+                <span class="repop-info-display text-lg font-extrabold ${repopTimeColorClass} font-mono w-full text-center">
                     ${timeDisplay}
                 </span>
             </div>
@@ -455,23 +418,26 @@ function renderMobList() {
         const currentAreaSet = currentFilter.areaSets[r];
 
         if (currentAreaSet.has('ALL') && currentAreaSet.size === 1) {
+            // ALLを選択している場合 (初期状態や全て解除された場合) は、そのランクの全ての拡張エリアを表示
             filteredMobs.push(...rankMobs.filter(mob => ALL_EXPANSION_NAMES.includes(mob.Expansion)));
         } else if (!currentAreaSet.has('ALL') && currentAreaSet.size > 0) {
+            // 特定のエリアを選択している場合
             filteredMobs.push(...rankMobs.filter(mob => currentAreaSet.has(mob.Expansion)));
         } else if (currentAreaSet.has('ALL') && currentAreaSet.size > 1) {
-             // ALLと特定の拡張が選択されている場合
+             // 'ALL' と特定のエリアが選択されている場合 (全選択状態と同じ)
              filteredMobs.push(...rankMobs.filter(mob => currentAreaSet.has(mob.Expansion)));
-        } 
+        } else if (currentAreaSet.size === 0) {
+             // 選択エリアが0個の場合 ('ALL'も含まれない) -> モブは表示しない
+        }
     }
     
-    // ALLタブが選択されている場合はNo.順にソート
+    // ALLタブ選択時は、元のNo.順でソートを維持
     if (rank === 'ALL') {
         filteredMobs.sort((a, b) => a['No.'] - b['No.']);
-    } else {
-        // ランクが指定されている場合は、ポップ時間に基づいてソート（オプション、現在のコードはNo.順を維持する傾向にある）
     }
 
 
+    // 3. レンダリング処理
     columns.forEach(col => col.innerHTML = '');
 
     if (columns.length > 0) {
@@ -484,15 +450,9 @@ function renderMobList() {
         });
     }
 
-    // アクティブなランクタブをハイライト
+    // 4. アクティブなランクタブをハイライト
     if (rankTabs) {
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            let rankText = btn.dataset.rank;
-            let displayRank = rankText;
-            if (rankText === 'S') displayRank = 'Rank S'; // NEW: 名称変更
-            if (rankText === 'A') displayRank = 'Rank A'; // NEW: 名称変更
-            btn.textContent = displayRank; // NEW: 表示名称の更新
-
             const isActive = btn.dataset.rank === rank;
             btn.classList.toggle('bg-blue-600', isActive);
             btn.classList.toggle('hover:bg-blue-500', isActive);
@@ -501,7 +461,7 @@ function renderMobList() {
         });
     }
 
-    // エリアフィルタボタンのハイライト
+    // 5. エリアフィルタボタンのハイライト (表示中のランクに依存)
     const currentRankForAreaFilter = TARGET_RANKS.includes(rank) ? rank : 'S';
     const currentAreasToHighlight = currentFilter.areaSets[currentRankForAreaFilter] || new Set(['ALL']);
 
@@ -519,7 +479,30 @@ function renderMobList() {
 }
 
 /**
- * モブカードの排他的開閉を実装
+ * イベントリスナーをカードとボタンにアタッチする
+ */
+function attachEventListeners() {
+    document.querySelectorAll('.report-btn').forEach(button => {
+        if (button.dataset.mobno) {
+            button.onclick = (e) => {
+                e.stopPropagation();
+                openReportModal(e.currentTarget.dataset.mobno);
+            }
+        }
+    });
+
+    document.querySelectorAll('.toggle-handler').forEach(handler => {
+        handler.onclick = (e) => {
+            const card = e.currentTarget.closest('.mob-card');
+            if (card) {
+                toggleMobDetails(card);
+            }
+        };
+    });
+}
+
+/**
+ * マップ詳細パネルの表示/非表示を切り替える
  */
 function toggleMobDetails(card) {
     const mobNo = card.dataset.mobno;
@@ -528,17 +511,6 @@ function toggleMobDetails(card) {
 
     if (!panel) return;
 
-    // NEW: 他の開いているカードを全て閉じる (排他的開閉)
-    document.querySelectorAll('.mob-card.open').forEach(openCard => {
-        if (openCard !== card) {
-            openCard.classList.remove('open');
-            const openPanel = openCard.querySelector('.expandable-panel');
-            if (openPanel) {
-                openPanel.style.maxHeight = '0';
-            }
-        }
-    });
-    
     panel.style.transition = 'max-height 0.3s ease-in-out';
 
     if (card.classList.contains('open')) {
@@ -549,21 +521,24 @@ function toggleMobDetails(card) {
         // 開く処理
         card.classList.add('open');
         
+        // 1. スポーンポイントの描画
         const mapOverlay = panel.querySelector('.map-overlay');
         if (mapOverlay && mob.spawn_points) {
             drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
         }
 
-        // max-height をいったん none にしてから scrollHeight を取得
+        // 2. 瞬時に max-height を解除し、コンテンツの最終的な高さを取得
         panel.style.maxHeight = 'none';
         const targetHeight = panel.scrollHeight;
 
-        // アニメーションのために 0 に戻してからターゲット高さを設定
+        // 3. max-heightを 0 に設定し、アニメーションの開始点に戻す
         panel.style.maxHeight = '0';
 
+        // 4. 取得した高さに安全マージンを加えてアニメーションを開始
         setTimeout(() => {
             panel.style.maxHeight = (targetHeight + 5) + 'px';
 
+            // 5. アニメーション終了後に max-height: none に設定
             panel.addEventListener('transitionend', function handler(e) {
                 if (e.propertyName === 'max-height' && card.classList.contains('open')) {
                     panel.style.maxHeight = 'none';
@@ -574,243 +549,437 @@ function toggleMobDetails(card) {
     }
 }
 
-function toggleCullStatus(event) {
-    event.stopPropagation();
-    const pointEl = event.currentTarget;
-    const isCulled = pointEl.classList.toggle('culled');
-    
-    // スポーンポイントの湧き潰し状態をローカルストレージに保存（機能維持のため）
-    const mobNo = pointEl.dataset.mobno;
-    const pointId = pointEl.dataset.pointid;
-    const storageKey = `cull_status_${mobNo}`;
-    let cullStatus = JSON.parse(localStorage.getItem(storageKey) || '{}');
-    
-    if (isCulled) {
-        cullStatus[pointId] = true;
-    } else {
-        delete cullStatus[pointId];
-    }
-    
-    localStorage.setItem(storageKey, JSON.stringify(cullStatus));
-}
+/**
+ * マップにスポーンポイントを描画する
+ */
+function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
+    overlayEl.innerHTML = '';
+    const mob = getMobByNo(parseInt(currentMobNo));
 
-function drawSpawnPoints(mapOverlay, spawnPoints, mobNo) {
-    mapOverlay.innerHTML = '';
-    const mapWidth = mapOverlay.offsetWidth;
-    const mapHeight = mapOverlay.offsetHeight;
-    
-    // ローカルストレージから湧き潰し状態をロード
-    const storageKey = `cull_status_${mobNo}`;
-    const cullStatus = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    if (!mob || !mob.cullStatusMap) return;
 
-    spawnPoints.forEach((point, index) => {
-        const x = point[0];
-        const y = point[1];
-        
-        // 座標をパーセンテージからピクセルに変換
-        const pxX = (x / 100) * mapWidth;
-        const pxY = (y / 100) * mapHeight;
+    // 定数
+    const SA_OUTER_DIAMETER = '12px';
+    const SA_BORDER_WIDTH = '2px';
+    const SA_SHADOW = '0 0 8px 1px';
 
-        const pointId = `${mobNo}-${index}`;
-        const isCulled = cullStatus[pointId];
+    const B1_INTERNAL_COLOR = '#60a5fa'; // Blue-400
+    const B2_INTERNAL_COLOR = '#f87171'; // Red-400
+
+    // S/A抽選に関わるポイントをフィルタリング
+    const cullTargetPoints = spawnPoints.filter(point =>
+        point.mob_ranks.includes('S') || point.mob_ranks.includes('A')
+    );
+
+    // 未処理のS/A抽選ポイントの数をカウント
+    let remainingCullCount = cullTargetPoints.filter(point => !mob.cullStatusMap[point.id]).length;
+
+    spawnPoints.forEach(point => {
+        const isS_A_Point = point.mob_ranks.includes('S') || point.mob_ranks.includes('A');
+        const includesB1 = point.mob_ranks.includes('B1');
+        const includesB2 = point.mob_ranks.includes('B2');
+        const isCullTarget = isS_A_Point;
+
+        if (!isCullTarget) {
+            // Bランクのみのポイント (湧き潰し対象外)
+            if (point.mob_ranks.length === 1 && (includesB1 || includesB2)) {
+                const pointEl = document.createElement('div');
+                pointEl.className = 'spawn-point-b-only';
+                pointEl.style.cssText = `
+                    position: absolute; left: ${point.x}%; top: ${point.y}%; transform: translate(-50%, -50%);
+                    width: 10px; height: 10px; border-radius: 50%; z-index: 5; pointer-events: none;
+                    background-color: ${includesB1 ? B1_INTERNAL_COLOR : B2_INTERNAL_COLOR};
+                    box-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
+                `;
+                overlayEl.appendChild(pointEl);
+            }
+            return;
+        }
+
+        // 湧き潰し対象ポイント (S/A/B1 or B2 を含む)
+        const isCulled = mob.cullStatusMap[point.id] || false;
+        let outlineColor = '#9ca3af';
+        let internalColor = '#d1d5db';
+
+        if (includesB1) {
+            outlineColor = '#3b82f6';
+            internalColor = '#60a5fa';
+        } else if (includesB2) {
+            outlineColor = '#ef4444';
+            internalColor = '#f87171';
+        }
+
+        const isLastPoint = !isCulled && remainingCullCount === 1;
+
+        if (isLastPoint) {
+            outlineColor = '#10b981';
+            internalColor = '#34d399';
+        }
 
         const pointEl = document.createElement('div');
-        pointEl.className = `spawn-point absolute w-4 h-4 rounded-full bg-yellow-400 border-2 border-black shadow-lg transition-all duration-100 ${isCulled ? 'culled' : ''}`;
-        pointEl.style.left = `${pxX}px`;
-        pointEl.style.top = `${pxY}px`;
-        pointEl.style.transform = 'translate(-50%, -50%)'; // 中心を座標に合わせる
+        pointEl.className = `spawn-point cursor-pointer`;
+        pointEl.setAttribute('data-id', point.id);
+        pointEl.setAttribute('data-isculltarget', 'true');
 
-        pointEl.dataset.mobno = mobNo;
-        pointEl.dataset.pointid = pointId;
+        pointEl.style.cssText = `
+            position: absolute; left: ${point.x}%; top: ${point.y}%; transform: translate(-50%, -50%);
+            width: ${SA_OUTER_DIAMETER}; height: ${SA_OUTER_DIAMETER}; border-radius: 50%; z-index: 10;
+            pointer-events: all; transition: transform 0.1s ease-out, box-shadow 0.2s ease-out, border 0.2s ease-out, background-color 0.2s ease-out;
+        `;
 
-        pointEl.addEventListener('click', toggleCullStatus);
-        
-        mapOverlay.appendChild(pointEl);
+
+        if (isCulled) {
+            pointEl.classList.add('culled');
+            pointEl.style.border = `${SA_BORDER_WIDTH} solid white`;
+            pointEl.style.backgroundColor = 'rgba(100, 100, 100, 1.0)';
+            pointEl.style.boxShadow = 'none';
+        } else {
+            pointEl.style.border = `${SA_BORDER_WIDTH} solid ${outlineColor}`;
+            pointEl.style.backgroundColor = internalColor;
+            pointEl.style.boxShadow = `${SA_SHADOW} ${outlineColor}`;
+
+            pointEl.onmouseenter = () => { pointEl.style.zIndex = '11'; };
+            pointEl.onmouseleave = () => { pointEl.style.zIndex = '10'; };
+        }
+
+        pointEl.onclick = (e) => {
+            e.stopPropagation();
+            toggleCullStatus(mob['No.'], point.id, !isCulled);
+        };
+
+        overlayEl.appendChild(pointEl);
     });
 }
 
-function attachEventListeners() {
-    // モブカード開閉リスナー
-    document.querySelectorAll('.toggle-handler').forEach(handler => {
-        handler.onclick = (e) => {
-            // report-btn をクリックした場合は詳細を開かない
-            if (e.target.closest('.report-btn')) return;
-            const card = e.currentTarget.closest('.mob-card');
-            toggleMobDetails(card);
-        };
-    });
-
-    // 報告ボタンリスナー
-    document.querySelectorAll('.report-btn').forEach(btn => {
-        btn.onclick = (e) => {
-            e.stopPropagation(); // 親要素（カード）へのイベント伝播を停止
-            const mobNo = e.currentTarget.dataset.mobno;
-            openReportModal(mobNo);
-        };
-    });
-}
-
-function openReportModal(mobNo) {
-    currentMobNo = mobNo;
+/**
+ * 湧き潰し状態をGAS経由で切り替える
+ */
+async function toggleCullStatus(mobNo, pointId, newStatus) {
     const mob = getMobByNo(mobNo);
+    if (!mob) return;
 
-    if (!mob) {
-        displayError('モブデータが見つかりません。');
-        return;
+    // 1. 画面上に即時反映 (ユーザー体験向上)
+    mob.cullStatusMap[pointId] = newStatus;
+
+    // 2. 現在開いているカードのマップオーバーレイのみを再描画
+    const card = document.querySelector(`.mob-card[data-mobno="${mobNo}"]`);
+    if (card && card.classList.contains('open')) {
+        const mapOverlay = card.querySelector('.map-overlay');
+        if (mapOverlay) {
+            drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
+        }
     }
 
-    modalMobName.textContent = mob.Name;
-    reportStatusEl.textContent = '';
-    reportStatusEl.classList.add('hidden');
-    submitReportBtn.disabled = false;
-    submitReportBtn.textContent = '報告する';
+    try {
+        await fetch(GAS_ENDPOINT, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                action: 'updateCullStatus',
+                mobNo: mobNo,
+                pointId: pointId,
+                isCulled: newStatus ? 'TRUE' : 'FALSE',
+                reporterId: userId
+            })
+        });
+    } catch (error) {
+        console.error('湧き潰し通信エラー:', error);
+    }
+}
 
-    // JSTの現在時刻を設定
+
+// --- モーダル/フォーム操作 ---
+
+function openReportModal(mobNo) {
+    if (!reportModal || !modalMobName || !reportDatetimeInput || !submitReportBtn) return;
+
+    currentMobNo = parseInt(mobNo);
+    const mob = getMobByNo(currentMobNo);
+    if (!mob) return;
+
+    modalMobName.textContent = mob.Name;
+    if (reportMemoInput) reportMemoInput.value = '';
+    if (reportStatusEl) {
+        reportStatusEl.textContent = '';
+        reportStatusEl.classList.add('hidden');
+    }
+
     const now = new Date();
-    // タイムゾーンオフセットを調整して、YYYY-MM-DDTHH:MM 形式にする
-    const offset = now.getTimezoneOffset() * 60000; 
-    const localIso = new Date(now.getTime() - offset).toISOString().slice(0, 16);
+    const offset = now.getTimezoneOffset() * 60000;
+    const localIso = (new Date(now.getTime() - offset)).toISOString().slice(0, 16);
     reportDatetimeInput.value = localIso;
-    reportMemoInput.value = '';
+
+    submitReportBtn.textContent = '報告する';
+    submitReportBtn.disabled = false;
+    submitReportBtn.classList.remove('bg-gray-500', 'bg-red-600', 'hover:bg-red-500');
+    submitReportBtn.classList.add('bg-green-600', 'hover:bg-green-500');
 
     reportModal.classList.remove('hidden');
     reportModal.classList.add('flex');
 }
 
 function closeReportModal() {
+    if (!reportModal) return;
     reportModal.classList.add('hidden');
     reportModal.classList.remove('flex');
     currentMobNo = null;
 }
 
 async function submitReport() {
-    if (!currentMobNo || !userId) return;
+    if (!currentMobNo || !reportDatetimeInput || !submitReportBtn || !reportStatusEl) return;
 
-    const reportTime = reportDatetimeInput.value;
+    const killTimeLocal = reportDatetimeInput.value;
     const memo = reportMemoInput.value;
+    const mob = getMobByNo(currentMobNo);
 
-    if (!reportTime) {
-        reportStatusEl.textContent = '討伐日時を入力してください。';
-        reportStatusEl.classList.remove('hidden');
-        return;
-    }
+    if (!mob || !killTimeLocal) return;
 
+    const killTimeJstIso = toJstAdjustedIsoString(killTimeLocal);
+
+    // 送信開始時にボタンとステータスを更新
     submitReportBtn.disabled = true;
     submitReportBtn.textContent = '送信中...';
-    reportStatusEl.textContent = 'データを送信しています...';
-    reportStatusEl.classList.remove('hidden');
+    submitReportBtn.className = 'w-full px-4 py-2 bg-gray-500 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
+
+    reportStatusEl.classList.remove('hidden', 'text-green-500', 'text-red-500');
+    reportStatusEl.textContent = 'サーバーに送信中...';
 
     try {
-        const jstIsoString = toJstAdjustedIsoString(reportTime);
-
         const response = await fetch(GAS_ENDPOINT, {
             method: 'POST',
             mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                action: 'reportKill',
                 mobNo: currentMobNo,
-                killTime: jstIsoString,
+                mobName: mob.Name,
+                rank: mob.Rank,
+                killTime: killTimeJstIso,
                 memo: memo,
-                userId: userId
+                reporterId: userId
             })
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
 
         const result = await response.json();
 
         if (result.status === 'success') {
-            reportStatusEl.textContent = '報告が完了しました！リストを更新します。';
-            reportStatusEl.style.color = 'lightgreen';
-            await fetchRecordsAndUpdate('report'); 
+            reportStatusEl.textContent = `報告成功！ (${result.message})`;
+            reportStatusEl.classList.add('text-green-500');
+            displayError(null);
+
+            submitReportBtn.textContent = '報告完了';
+            submitReportBtn.className = 'w-full px-4 py-2 bg-green-600 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
+            submitReportBtn.disabled = false;
+            
+            // 手動更新としてデータを更新し、メッセージを表示
+            await fetchRecordsAndUpdate('manual', false);
             setTimeout(closeReportModal, 1500);
 
         } else {
-            throw new Error(result.message || '報告に失敗しました。');
+            reportStatusEl.textContent = `報告失敗: ${result.message}`;
+            reportStatusEl.classList.add('text-red-500');
+            submitReportBtn.textContent = '送信失敗';
+            submitReportBtn.className = 'w-full px-4 py-2 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
+            submitReportBtn.disabled = false;
         }
+
     } catch (error) {
-        console.error('Report submission failed:', error);
-        reportStatusEl.textContent = `報告エラー: ${error.message}`;
-        reportStatusEl.style.color = 'red';
+        console.error('報告エラー:', error);
+        reportStatusEl.textContent = '通信エラーが発生しました。';
+        reportStatusEl.classList.add('text-red-500');
+        submitReportBtn.textContent = '送信失敗';
+        submitReportBtn.className = 'w-full px-4 py-2 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
         submitReportBtn.disabled = false;
-        submitReportBtn.textContent = '報告する';
     }
 }
 
-async function fetchRecordsAndUpdate(source = 'auto', initial = false) {
-    if (source !== 'report' && autoUpdateSuccessCount > 0) {
-        displayError('更新中...');
-    } else if (initial) {
-        displayError('データロード中...');
-    }
 
+// --- データ取得/更新 ---
+
+/**
+ * 外部JSONからモブデータを取得し、`No.`から`Expansion`を決定する
+ */
+async function fetchBaseMobData() {
     try {
-        // 1. 静的モブデータ (mob_data.json) をロード
-        if (baseMobData.length === 0) {
-            const staticResponse = await fetch(MOB_DATA_URL);
-            if (!staticResponse.ok) throw new Error(`Failed to load static mob data. Status: ${staticResponse.status}`);
-            baseMobData = await staticResponse.json();
+        const response = await fetch(MOB_DATA_URL);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const jsonData = await response.json();
+
+        if (jsonData && Array.isArray(jsonData.mobConfig)) {
+            baseMobData = jsonData.mobConfig
+                .map(mob => {
+                    const mobNo = parseInt(mob['No.']);
+                    const expansionKey = Math.floor(mobNo / 10000);
+                    const expansionName = EXPANSION_MAP[expansionKey] || '';
+
+                    if (!expansionName && mob.Rank !== 'B') return null;
+
+                    return { ...mob, 'No.': mobNo, Expansion: expansionName };
+                })
+                .filter(mob => mob !== null);
+        } else {
+            throw new Error('JSON structure error: mobConfig array not found.');
         }
 
-        // 2. GASから最新の討伐履歴をロード
-        const gasResponse = await fetch(`${GAS_ENDPOINT}?action=get_records`);
-        if (!gasResponse.ok) throw new Error(`Failed to load hunt records. Status: ${gasResponse.status}`);
-        const records = await gasResponse.json();
-
-        // 3. モブデータを結合して globalMobData を作成
-        globalMobData = baseMobData.map(mob => {
-            const record = records.find(r => r['No.'] === mob['No.']);
-            
-            // 討伐時間とメモを結合
-            if (record && record.LastKillUnixTime) {
-                mob.LastKillDate = unixTimeToDate(record.LastKillUnixTime);
-                mob.LastKillUnixTime = record.LastKillUnixTime;
-                mob.Memo = record.Memo; // NEW: メモの追加
-            } else {
-                mob.LastKillDate = null;
-                mob.LastKillUnixTime = null;
-                mob.Memo = '';
-            }
-
-            // 拡張パック名を付与
-            const expansionNumber = mob.Expansion || 1; 
-            mob.Expansion = EXPANSION_MAP[expansionNumber];
-
-            // スポーンポイントの解析 (JSON文字列をパース)
-            if (typeof mob['Spawn Points'] === 'string') {
-                try {
-                    mob.spawn_points = JSON.parse(mob['Spawn Points']);
-                } catch (e) {
-                    mob.spawn_points = [];
-                    console.warn(`Error parsing spawn points for mob ${mob['No.']}:`, e);
-                }
-            } else {
-                mob.spawn_points = mob['Spawn Points'] || [];
-            }
-            delete mob['Spawn Points'];
-
-            return mob;
-        });
-        
-        // 4. リストをレンダリング
-        renderMobList();
-        
-        displayError(''); // エラーメッセージをクリア
-        if (source === 'auto') autoUpdateSuccessCount++;
-
     } catch (error) {
-        console.error('Fetch and update failed:', error);
-        displayError(`データの取得または更新に失敗しました: ${error.message}`);
+        console.error('基本モブデータの取得に失敗:', error);
+        baseMobData = [];
     }
 }
 
+/**
+ * GASから最新の討伐記録と湧き潰し状態を取得し、グローバルデータを更新する
+ */
+async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = true) {
+
+    // 1. 基本データ (Base Mob Data) のロードと初期レンダリング
+    if (shouldFetchBase) {
+        displayError(`設定データをロード中...`);
+        await fetchBaseMobData();
+        adjustContentPadding();
+        if (baseMobData.length === 0) {
+            displayError(`致命的なエラー: モブ設定データを読み込めませんでした。`);
+            return;
+        }
+    }
+
+    // 2. ローディングメッセージの表示
+    const shouldDisplayLoading = (updateType === 'initial' || updateType === 'manual' || autoUpdateSuccessCount === 0);
+    if (shouldDisplayLoading) {
+        displayError(`データを更新中…`);
+    }
+
+    // 3. データ取得前の暫定表示 (ロード中もカードを見せるため)
+    globalMobData = [...baseMobData];
+    renderMobList();
+
+
+    // 4. 討伐記録と湧き潰し状態の取得と更新
+    try {
+        const response = await fetch(GAS_ENDPOINT + '?action=getRecords');
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            const records = data.records;
+            const cullStatuses = data.cullStatuses || [];
+
+            // データをマージして globalMobData を再構築
+            globalMobData = baseMobData.map(mob => {
+                const mobNo = mob['No.'];
+                const record = records.find(r => r['No.'] === mobNo);
+                const newMob = { ...mob };
+
+                // 討伐記録の反映
+                if (record && record.POP_Date_Unix) {
+                    newMob.LastKillDate = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
+                } else {
+                    newMob.LastKillDate = '';
+                }
+
+                // 湧き潰し状態の反映
+                newMob.cullStatusMap = {};
+                cullStatuses
+                    .filter(status => status.Mob_No === mobNo)
+                    .forEach(status => {
+                        newMob.cullStatusMap[status.Point_ID] = status.Is_Culled === 'TRUE';
+                    });
+
+                return newMob;
+            });
+
+            if (updateType === 'auto') {
+                autoUpdateSuccessCount++;
+            }
+            
+            displayError(null); // 成功したらメッセージを消す
+            adjustContentPadding(); // データ更新後の最終調整
+            renderMobList();
+
+        } else {
+            const errorMessage = `エラー: 共有データの取得に失敗しました。 (${data.message})`;
+            console.error('GASからのデータ取得失敗:', errorMessage);
+            displayError(errorMessage);
+        }
+    } catch (error) {
+        const errorMessage = `エラー: サーバーとの通信に失敗しました。`;
+        console.error('GAS通信エラー:', error);
+        displayError(errorMessage);
+    }
+}
+
+/**
+ * 各モブカードの進捗バーを更新する (60秒ごと)
+ */
+function updateProgressBars() {
+
+    const ORANGE_BAR_COLOR = 'bg-orange-400/70';
+    const YELLOW_BAR_COLOR = 'bg-yellow-400/70';
+    const LIME_BAR_COLOR = 'bg-lime-500/70';
+    const NEXT_TEXT_COLOR = 'text-green-400';
+
+    document.querySelectorAll('.mob-card').forEach(card => {
+        const lastKillStr = card.dataset.lastkill;
+        const repop = parseInt(card.dataset.minrepop);
+        const max = parseInt(card.dataset.maxrepop);
+
+        const lastKillDate = lastKillStr ? new Date(lastKillStr) : null;
+        
+        // mobStub を廃止し、直接引数を渡す
+        const repopData = calculateRepop({"REPOP(s)": repop, "MAX(s)": max}, lastKillDate);
+        const percent = repopData.elapsedPercent || 0;
+
+        const repopInfoDisplayEl = card.querySelector('.repop-info-display');
+        const progressBarEl = card.querySelector('.progress-bar');
+
+        // --- 1. 表示テキストと色の更新 ---
+        if (repopInfoDisplayEl) {
+            repopInfoDisplayEl.textContent = repopData.timeDisplay;
+            repopInfoDisplayEl.classList.remove('text-gray-400', NEXT_TEXT_COLOR, 'text-white', 'font-extrabold');
+
+            if (repopData.isUnknown) {
+                repopInfoDisplayEl.classList.add('text-gray-400');
+            } else if (!repopData.isPop) {
+                repopInfoDisplayEl.classList.add(NEXT_TEXT_COLOR);
+            } else {
+                repopInfoDisplayEl.classList.add('text-white', 'font-extrabold');
+            }
+        }
+
+        // --- 2. プログレスバーの更新ロジック ---
+        if (progressBarEl) {
+            let barColorClass = '';
+            let widthPercent = Math.min(100, percent);
+            let animateClass = '';
+
+            if (!repopData.isPop || repopData.isUnknown) {
+                widthPercent = 0;
+            } else if (repopData.isMaxOver) {
+                barColorClass = ORANGE_BAR_COLOR;
+                widthPercent = 100;
+                animateClass = 'animate-pulse';
+            } else if (percent >= 80) {
+                barColorClass = ORANGE_BAR_COLOR;
+            } else if (percent >= 60) {
+                barColorClass = YELLOW_BAR_COLOR;
+            } else {
+                barColorClass = LIME_BAR_COLOR;
+            }
+
+            progressBarEl.className = `progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl ${barColorClass} ${animateClass}`;
+            progressBarEl.style.height = '100%';
+            progressBarEl.style.width = `${widthPercent}%`;
+        }
+    });
+}
 
 /**
  * エリアフィルタパネルの開閉をトグルする (アニメーション付き)
+ * @param {boolean} forceOpen 強制的に開く場合はtrue, 閉じる場合はfalse, トグルする場合は未指定
  */
 function toggleAreaFilterPanel(forceOpen) {
     if (!areaFilterWrapper || !areaFilterContainer) return;
@@ -818,31 +987,31 @@ function toggleAreaFilterPanel(forceOpen) {
     const isOpen = areaFilterWrapper.classList.contains('open');
     let shouldOpen = (typeof forceOpen === 'boolean') ? forceOpen : !isOpen;
 
+    // トランジション中にクリックイベントをブロック
     areaFilterWrapper.style.pointerEvents = 'none';
 
     if (shouldOpen) {
         // --- 開く処理 ---
         areaFilterWrapper.classList.add('open');
-        
-        // NEW: requestAnimationFrame を使用してレイアウト崩れを防ぐ
-        requestAnimationFrame(adjustContentPadding);
+        adjustContentPadding();
 
         areaFilterWrapper.style.maxHeight = 'none';
         const targetHeight = areaFilterContainer.offsetHeight;
         areaFilterWrapper.style.maxHeight = '0px';
 
         setTimeout(() => {
-            areaFilterWrapper.style.maxHeight = `${targetHeight + 8}px`; // padding-bottomの8px分を確保
+            areaFilterWrapper.style.maxHeight = `${targetHeight}px`;
 
             areaFilterWrapper.addEventListener('transitionend', function handler(e) {
                 if (e.propertyName === 'max-height' && areaFilterWrapper.classList.contains('open')) {
                     areaFilterWrapper.style.maxHeight = 'none';
                     areaFilterWrapper.style.pointerEvents = 'all';
-                    requestAnimationFrame(adjustContentPadding); // NEW: requestAnimationFrame を使用
+                    adjustContentPadding();
                 }
                 areaFilterWrapper.removeEventListener('transitionend', handler);
             });
-            setTimeout(() => { areaFilterWrapper.style.pointerEvents = 'all'; requestAnimationFrame(adjustContentPadding); }, 350);
+            // transitionend が発火しない場合に備える
+            setTimeout(() => { areaFilterWrapper.style.pointerEvents = 'all'; adjustContentPadding(); }, 350);
         }, 0);
 
     } else {
@@ -856,12 +1025,13 @@ function toggleAreaFilterPanel(forceOpen) {
             areaFilterWrapper.addEventListener('transitionend', function handler(e) {
                 if (e.propertyName === 'max-height' && !areaFilterWrapper.classList.contains('open')) {
                     areaFilterWrapper.style.pointerEvents = 'all';
-                    requestAnimationFrame(adjustContentPadding); // NEW: requestAnimationFrame を使用
+                    adjustContentPadding();
                 }
                 areaFilterWrapper.removeEventListener('transitionend', handler);
             });
 
-            setTimeout(() => { areaFilterWrapper.style.pointerEvents = 'all'; requestAnimationFrame(adjustContentPadding); }, 350); 
+            // transitionend が発火しない場合に備える
+            setTimeout(() => { areaFilterWrapper.style.pointerEvents = 'all'; adjustContentPadding(); }, 350);
         }, 0);
     }
 }
@@ -887,13 +1057,10 @@ function initializeApp() {
     // フィルタ状態のロードと初期表示の制御
     loadFilterState();
     const initialRank = currentFilter.rank;
-    
-    // NEW: 初期表示は、保存されたランクのクリック回数に基づきパネル状態を決定
-    const initialClickCount = currentFilter.clickCount[initialRank] || 0;
     const isTargetRank = TARGET_RANKS.includes(initialRank);
-    const shouldOpenInitially = isTargetRank && (initialClickCount % 3 === 2); 
-
-    if (shouldOpenInitially) {
+    
+    // 初期ロード時は、ターゲットランク（S/A/F）なら開く
+    if (isTargetRank) {
         setTimeout(() => toggleAreaFilterPanel(true), 100);
     } else {
         toggleAreaFilterPanel(false);
@@ -905,7 +1072,7 @@ function initializeApp() {
 
     // 2. イベントリスナーの設定
 
-    // NEW: ランクタブのリスナー (クリックカウントに基づく排他的トグル)
+    // ランクタブのリスナー (2クリックで開閉ロジック)
     if (rankTabs) {
         document.querySelectorAll('.tab-btn').forEach(button => {
             button.onclick = (e) => {
@@ -913,33 +1080,21 @@ function initializeApp() {
                 const currentRank = currentFilter.rank;
                 const newRankIsTarget = TARGET_RANKS.includes(newRank);
 
-                if (currentRank !== newRank) {
-                    // ランク切り替え時: 新しいランクのクリックカウントを1にする
-                    currentFilter.rank = newRank;
-                    if (newRankIsTarget) {
-                        currentFilter.clickCount[newRank] = 1;
-                    } else {
-                        // ALL選択時はクリックカウントをリセット/無視
-                        TARGET_RANKS.forEach(r => currentFilter.clickCount[r] = 0);
-                    }
-                    // 1回目クリック (ランク更新) はパネルを閉じる
-                    toggleAreaFilterPanel(false);
+                if (newRank === currentRank && newRankIsTarget) {
+                    // 同じランクタブを再クリック: トグルで開閉
+                    toggleAreaFilterPanel();
                 } else if (newRankIsTarget) {
-                    // 同じランクの再クリック
-                    currentFilter.clickCount[newRank] = (currentFilter.clickCount[newRank] || 0) + 1;
-                    const count = currentFilter.clickCount[newRank];
-
-                    if (count % 3 === 2) { // 2回目クリック: 開く
-                        toggleAreaFilterPanel(true);
-                    } else if (count % 3 === 0) { // 3回目クリック: 閉じる
-                        toggleAreaFilterPanel(false);
-                    }
+                    // S, A, FATE に切り替え: 表示する
+                    toggleAreaFilterPanel(true);
                 } else {
-                    // ALLの再クリック: 何もしない (パネルは閉じている)
+                    // ALL に切り替え: 閉じる
                     toggleAreaFilterPanel(false);
                 }
 
-                renderMobList();
+                if (currentRank !== newRank) {
+                    currentFilter.rank = newRank;
+                    renderMobList();
+                }
             }
         });
     }
@@ -950,35 +1105,40 @@ function initializeApp() {
             const newArea = e.currentTarget.dataset.area;
             const currentRank = currentFilter.rank;
             
+            // ALLタブ選択時は、Sランクのフィルタ状態を操作する
             const targetRank = TARGET_RANKS.includes(currentRank) ? currentRank : 'S';
             const currentAreaSet = currentFilter.areaSets[targetRank];
             
             if (!currentAreaSet) return;
 
             if (newArea === 'ALL') {
+                // ALLボタンのトグル
                 const isAllSelected = ALL_EXPANSION_NAMES.every(area => currentAreaSet.has(area));
                 
                 if (isAllSelected) {
+                    // 全選択状態なら、ALLのみに切り替える（全解除と同義で、ALLフラグを残す）
                     currentFilter.areaSets[targetRank] = new Set(['ALL']);
                 } else {
+                    // 全選択状態ではないなら、すべての拡張エリアを選択状態にする（ALLフラグも持たせる）
                     currentFilter.areaSets[targetRank] = new Set([...ALL_EXPANSION_NAMES, 'ALL']);
                 }
 
             } else {
+                // 個別エリアボタンのトグル
                 if (currentAreaSet.has(newArea)) {
                     currentAreaSet.delete(newArea);
                 } else {
                     currentAreaSet.add(newArea);
                 }
                 
-                // ALL以外の選択がなくなったらALLに戻す
+                // 選択肢が空になったら、ALLフラグを再度追加 (全て非表示)
                 if (Array.from(currentAreaSet).filter(a => a !== 'ALL').length === 0) {
                     currentAreaSet.add('ALL');
                 } else {
                     currentAreaSet.delete('ALL');
                 }
                 
-                // 全ての拡張が選択されたらALLを追加する
+                // すべての拡張エリアが選択されたら、'ALL'フラグを追加
                 const isAllSelectedAfterToggle = ALL_EXPANSION_NAMES.every(area => currentAreaSet.has(area));
                 if (isAllSelectedAfterToggle) {
                     currentAreaSet.add('ALL');
@@ -1004,8 +1164,8 @@ function initializeApp() {
 
     // 3. 初回データロードと定期更新
     fetchRecordsAndUpdate('initial', true);
-    setInterval(() => fetchRecordsAndUpdate('auto', false), 10 * 60 * 1000); // 10分ごと
-    setInterval(updateProgressBars, 60 * 1000); // 1分ごと
+    setInterval(() => fetchRecordsAndUpdate('auto', false), 10 * 60 * 1000); // 討伐記録の定期更新 (10分ごと)
+    setInterval(updateProgressBars, 60 * 1000); // プログレスバーの定期更新 (60秒ごと)
 }
 
 document.addEventListener('DOMContentLoaded', initializeApp);
