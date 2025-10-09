@@ -335,8 +335,8 @@ function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
     const { minRepop, maxRepop, timeDisplay, elapsedPercent, isPop, isMaxOver, isUnknown } = calculateRepop(mob, lastKillDate);
 
-    // 修正: POP時間以降は、テキスト色を黒に統一してプログレスバーの上で強調する
-    let repopTimeColorClass = 'text-gray-900 font-extrabold'; // NEW: デフォルトを黒/極太にする
+    // 修正4: POP時間以降は、テキスト色を黒ではなく白に統一
+    let repopTimeColorClass = 'text-white font-extrabold'; 
     
     if (isUnknown) {
         repopTimeColorClass = 'text-gray-400';
@@ -344,7 +344,7 @@ function createMobCard(mob) {
         // Min POP 未到達時は緑 (背景はバーなし)
         repopTimeColorClass = 'text-green-400'; 
     }
-    // isPop (POPウィンドウ内) または isMaxOver (最大超過) の場合は、text-gray-900 (黒) で固定
+    // isPop (POPウィンドウ内) または isMaxOver (最大超過) の場合は、text-white (白) で固定
 
     // ランクアイコンの背景色
     let rankBgClass;
@@ -440,26 +440,25 @@ function createMobCard(mob) {
     }
 
 
-    // --- 進捗バーエリアのHTML ---
-    // 修正: h-12 で高さを確保。bg-gray-700 を維持。
-    // 修正: repop-info-display に text-lg と font-extrabold を追加。
+    // --- 進捗バーエリアのHTML (修正5: 配置と構造を変更) ---
     const repopInfoHtml = `
-        <div class="mt-1 bg-gray-700 p-2 rounded-xl text-xs flex flex-col space-y-1 relative overflow-hidden shadow-inner h-12">
-            <div class="flex items-center relative z-10 h-full">
+        <div class="mt-1 bg-gray-700 p-2 rounded-xl text-xs relative overflow-hidden shadow-inner h-12">
+            
+            <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear" style="width: ${elapsedPercent}%; z-index: 0;"></div>
+
+            <div class="absolute inset-0 flex items-center justify-center z-10">
                 <span class="repop-info-display text-lg font-extrabold ${repopTimeColorClass} font-mono w-full text-center">
                     ${timeDisplay}
                 </span>
             </div>
-
-            <div class="progress-bar" style="z-index: 0;"></div>
         </div>
     `;
 
 
     // --- モブカードの最終構造 ---
-    // 修正: mob-card に py-2 を追加
+    // 修正1: mob-card に mb-3 を追加
     return `
-        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-2"
+        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-2 mb-3"
              data-rank="${mob.Rank}"
              data-mobno="${mob['No.']}"
              data-lastkill="${mob.LastKillDate || ''}"
@@ -611,10 +610,10 @@ function renderMobList() {
         else {
              // ALLボタンのハイライト制御 (ALLタブ選択時)
              if (btn.dataset.area === 'ALL') {
-                if (currentFilter.areaSets['S'].has('ALL')) {
-                   btn.classList.remove('bg-gray-600', 'hover:bg-gray-500');
-                   btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
-                }
+                 if (currentFilter.areaSets['S'].has('ALL')) {
+                    btn.classList.remove('bg-gray-600', 'hover:bg-gray-500');
+                    btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+                 }
              } else {
                  // ALLタブ選択時はエリアボタンはハイライトしない（非表示なので意味はないが念のため）
              }
@@ -1078,7 +1077,7 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
         await fetchBaseMobData();
     }
     
-    // NEW: ヘッダー固定エリアのスペーサーを調整
+    // 修正3: ヘッダー固定エリアのスペーサーを調整（最初に調整することで、ローディングメッセージなどによる高さのズレを防ぐ）
     adjustContentPadding(); 
 
     if (baseMobData.length === 0) {
@@ -1157,7 +1156,7 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
                 autoUpdateSuccessCount++;
             }
             
-            // NEW: データ更新後に再度スペーサーを調整 (エリアフィルタ表示/非表示の変更に対応するため)
+            // 修正3: データ更新後に再度スペーサーを調整 (エリアフィルタ表示/非表示の変更に対応するため)
             adjustContentPadding(); 
 
             renderMobList();
@@ -1181,16 +1180,16 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
 function updateProgressBars() {
 
     // 80%~ および最大超過時のバーの色 (薄いオレンジ)
-    const ORANGE_BAR_COLOR_CLASS = 'bg-orange-400';
-    // 最大超過時のリポップ時刻の色 (薄いオレンジのテキスト)
-    // const ORANGE_TEXT_COLOR_CLASS = 'text-orange-400'; // 60秒更新では使用しない
-    // Min POP 到達時のテキストの色 (黄色)
-    // const POP_TEXT_COLOR_CLASS = 'text-amber-300'; // 60秒更新では使用しない
+    const ORANGE_BAR_COLOR_CLASS = 'bg-orange-400/70'; // 透明度を少し加える
+    // 60% ～ 80%未満: レモン色 (yellow-400)
+    const YELLOW_BAR_COLOR_CLASS = 'bg-yellow-400/70';
+    // 0% ～ 60%未満: 黄緑 (lime-500)
+    const LIME_BAR_COLOR_CLASS = 'bg-lime-500/70';
+
     // Min POP 未到達時のテキストの色 (緑)
     const NEXT_TEXT_COLOR_CLASS = 'text-green-400';
     // POP時間以降のテキストの色 (黒)
-    const POP_TEXT_COLOR_BLACK = 'text-gray-900';
-
+    // const POP_TEXT_COLOR_BLACK = 'text-gray-900'; // 修正4により text-white に変わったためコメントアウト
 
     document.querySelectorAll('.mob-card').forEach(card => {
         const lastKillStr = card.dataset.lastkill;
@@ -1205,6 +1204,7 @@ function updateProgressBars() {
 
         // テキスト要素とバーの取得
         const repopInfoDisplayEl = card.querySelector('.repop-info-display');
+        // progress-bar クラスは、新しい構造で進捗バーの色付き部分（div）に割り当てられています
         const progressBarEl = card.querySelector('.progress-bar');
 
         // --- 1. 表示テキストと色の更新 ---
@@ -1214,7 +1214,8 @@ function updateProgressBars() {
             repopInfoDisplayEl.textContent = repopData.timeDisplay;
 
             // 1.2 色の更新
-            repopInfoDisplayEl.classList.remove('text-gray-400', NEXT_TEXT_COLOR_CLASS, POP_TEXT_COLOR_BLACK, 'font-extrabold'); // 既存の色クラスを削除
+            // 修正4でデフォルトは text-white になっている。isUnknownとisPopの時のみ上書き
+            repopInfoDisplayEl.classList.remove('text-gray-400', NEXT_TEXT_COLOR_CLASS, 'text-white', 'font-extrabold'); 
 
             if (repopData.isUnknown) {
                 repopInfoDisplayEl.classList.add('text-gray-400');
@@ -1222,8 +1223,8 @@ function updateProgressBars() {
                 // Min POP未到達: 緑
                 repopInfoDisplayEl.classList.add(NEXT_TEXT_COLOR_CLASS);
             } else {
-                // POPウィンドウ内 または 最大超過時: 黒 + 極太 (プログレスバーの上で目立たせる)
-                repopInfoDisplayEl.classList.add(POP_TEXT_COLOR_BLACK, 'font-extrabold');
+                // POPウィンドウ内 または 最大超過時: 白 + 極太 (プログレスバーの上で目立たせる)
+                repopInfoDisplayEl.classList.add('text-white', 'font-extrabold');
             }
         }
 
@@ -1248,17 +1249,15 @@ function updateProgressBars() {
                 barColorClass = ORANGE_BAR_COLOR_CLASS;
             } else if (percent >= 60) {
                 // 60% ～ 80%未満: レモン色 (yellow-400)
-                barColorClass = 'bg-yellow-400';
+                barColorClass = YELLOW_BAR_COLOR_CLASS;
             } else {
                 // 0% ～ 60%未満: 黄緑 (lime-500)
-                barColorClass = 'bg-lime-500';
+                barColorClass = LIME_BAR_COLOR_CLASS;
             }
 
-            // 安定版のロジック: すべてのクラスを上書きして再設定
+            // 安定版のロジック: すべてのクラスを上書きして再設定 (progress-bar の既存クラスは progress-bar absolute inset-0 transition-all duration-100 ease-linear のはず)
             progressBarEl.className = `progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl ${barColorClass} ${animateClass}`;
             
-            // 修正: バーの高さと位置を修正 (h-12のラッパーに対して)
-            // inset-0 でラッパー要素の高さ h-12 (48px) 全体に広がる
             progressBarEl.style.height = '100%';
             progressBarEl.style.width = `${widthPercent}%`;
         }
@@ -1292,19 +1291,21 @@ function toggleAreaFilterPanel(forceOpen) {
         shouldOpen = !isOpen; // トグル
     }
     
-    // トランジション中にクリックイベントをブロックするためにポインターイベントを調整
+    // 修正2: トランジション中にクリックイベントをブロックするためにポインターイベントを調整
     areaFilterWrapper.style.pointerEvents = 'none';
 
     if (shouldOpen) {
         // --- 開く処理 ---
         areaFilterWrapper.classList.add('open');
         
+        // 修正3: 開く処理の冒頭でスペーサーを調整 (固定ヘッダーの高さが確定するため)
+        adjustContentPadding(); 
+        
         // 1. max-heightを一時的にnoneにして、内部コンテンツの実際の高さを取得
         areaFilterWrapper.style.maxHeight = 'none';
         
-        // 内部コンテンツの高さ + CSSで設定した padding-bottom の 8px を取得 (areaFilterContainerはパディング込みの高さ)
-        const targetHeight = areaFilterContainer.offsetHeight; // areaFilterContainer には既に p-2 があると想定
-        // 安定版のロジックを維持: areaFilterContainer.offsetHeight + 8 の計算を参考に、offsetHeightを使う
+        // 内部コンテンツの高さ
+        const targetHeight = areaFilterContainer.offsetHeight; 
         
         areaFilterWrapper.style.maxHeight = '0px';
 
@@ -1317,12 +1318,18 @@ function toggleAreaFilterPanel(forceOpen) {
             areaFilterWrapper.addEventListener('transitionend', function handler(e) {
                 if (e.propertyName === 'max-height' && areaFilterWrapper.classList.contains('open')) {
                     areaFilterWrapper.style.maxHeight = 'none';
-                    areaFilterWrapper.style.pointerEvents = 'all'; // 終了後にイベントを有効化
-                    // 展開完了後にスペーサーを再調整
+                    // 修正2: 終了後にイベントを有効化
+                    areaFilterWrapper.style.pointerEvents = 'all'; 
+                    // 修正3: 展開完了後にスペーサーを再調整
                     adjustContentPadding(); 
                 }
                 areaFilterWrapper.removeEventListener('transitionend', handler);
             });
+            // 修正2: 遅延後にポインターイベントを有効化 (transitionendが発火しない場合に備える)
+            setTimeout(() => {
+                areaFilterWrapper.style.pointerEvents = 'all'; 
+            }, 350); // 0.3s transition + 50ms safety margin
+
         }, 0); 
         
     } else {
@@ -1339,21 +1346,22 @@ function toggleAreaFilterPanel(forceOpen) {
             // 3. アニメーション終了後にイベントを有効化
             areaFilterWrapper.addEventListener('transitionend', function handler(e) {
                 if (e.propertyName === 'max-height' && !areaFilterWrapper.classList.contains('open')) {
-                     areaFilterWrapper.style.pointerEvents = 'all'; // 終了後にイベントを有効化
-                     // 格納完了後にスペーサーを再調整
+                     // 修正2: 終了後にイベントを有効化
+                     areaFilterWrapper.style.pointerEvents = 'all'; 
+                     // 修正3: 格納完了後にスペーサーを再調整
                      adjustContentPadding();
                 }
                 areaFilterWrapper.removeEventListener('transitionend', handler);
             });
             
-             // 展開中だが閉じようとしている場合は、300ms後に再調整
-             // (アニメーションがキャンセルされる場合に備えて、transitionendが発火しない可能性があるため)
-             setTimeout(adjustContentPadding, 350); 
-             
+            // 修正2: 遅延後にポインターイベントを有効化 (transitionendが発火しない場合に備える)
+            // 修正3: 展開中だが閉じようとしている場合は、300ms後に再調整
+            setTimeout(() => {
+                areaFilterWrapper.style.pointerEvents = 'all';
+                adjustContentPadding();
+            }, 350); 
+            
         }, 0);
-        
-        // 即座にスペーサーを調整する試み (見た目の改善)
-        adjustContentPadding();
     }
 }
 
@@ -1385,12 +1393,12 @@ function initializeApp() {
     // エリアフィルタコンテナの初期表示制御
     const isTargetRank = (initialRank === 'S' || initialRank === 'A' || initialRank === 'F');
     if (isTargetRank) {
-         // 修正: 初期化時に強制的に開く (ALLタブの場合を除く)
-         // ロード直後はまだコンテンツの高さが確定していない可能性があるため、少し遅延させる
-         setTimeout(() => toggleAreaFilterPanel(true), 100);
+           // 修正: 初期化時に強制的に開く (ALLタブの場合を除く)
+           // ロード直後はまだコンテンツの高さが確定していない可能性があるため、少し遅延させる
+           setTimeout(() => toggleAreaFilterPanel(true), 100);
     } else {
-         // 修正: ALLタブの場合は閉じる
-         toggleAreaFilterPanel(false);
+           // 修正: ALLタブの場合は閉じる
+           toggleAreaFilterPanel(false);
     }
     
     // NEW: 初期化時とウィンドウリサイズ時にスペーサーを調整
