@@ -1,7 +1,7 @@
-/* script.js (全機能改善適用版) */
+/* script.js (カラム分割・開閉機能復活版) */
 
 // Google Apps Script (GAS) のエンドポイントURL
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcEelT3g/exec';
 // 静的モブデータ (mob_data.json) のURL
 const MOB_DATA_URL = './mob_data.json';
 
@@ -21,7 +21,7 @@ let currentMobNo = null;
 let userId = null;
 let autoUpdateSuccessCount = 0;
 
-// ★★★ 修正箇所: ランクタブの排他的トグル制御用変数 ★★★
+// ランクタブの排他的トグル制御用変数 (エリアフィルタ開閉のみに使用)
 let lastClickedRank = null; 
 let rankClickCount = 0;
 
@@ -41,10 +41,12 @@ const DOMElements = {
     areaFilterWrapper: document.getElementById('area-filter-wrapper'),
     fixedHeaderContent: document.getElementById('fixed-header-content'),
     contentSpacer: document.getElementById('content-spacer'),
-    mobListContainer: document.getElementById('mob-list-container'),
+    column1: document.getElementById('column-1'),
+    column2: document.getElementById('column-2'),
+    column3: document.getElementById('column-3'),
     sortToggleBtn: document.getElementById('sort-toggle-btn') 
 };
-const { errorMessageContainer, rankTabs, reportModal, modalMobName, reportDatetimeInput, reportMemoInput, submitReportBtn, cancelReportBtn, reportStatusEl, uuidDisplayEl, areaFilterWrapper, areaFilterContainer, fixedHeaderContent, contentSpacer, mobListContainer, sortToggleBtn } = DOMElements;
+const { errorMessageContainer, rankTabs, reportModal, modalMobName, reportDatetimeInput, reportMemoInput, submitReportBtn, cancelReportBtn, reportStatusEl, uuidDisplayEl, areaFilterWrapper, areaFilterContainer, fixedHeaderContent, contentSpacer, column1, column2, column3, sortToggleBtn } = DOMElements;
 
 
 // --- 定数: 拡張パック名定義 ---
@@ -81,7 +83,7 @@ function formatDateForDisplay(dateInput) {
 }
 
 /**
- * ★★★ 修正箇所: 前回討伐日時を相対表示する関数 (1時間以内は「X分前」) ★★★
+ * 前回討伐日時を相対表示する関数 (1時間以内は「X分前」)
  */
 function formatLastKillDisplay(dateInput) {
     const date = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
@@ -184,7 +186,7 @@ function calculateRepop(mob, lastKill) {
     let isPop = false;
     let isMaxOver = false;
     const now = new Date();
-    let repopScore = 0; // ★★★ ソート用スコア ★★★
+    let repopScore = 0; // ソート用スコア
 
     if (repopMinMs <= 0 || repopMaxMs <= repopMinMs) {
         return { 
@@ -228,7 +230,7 @@ function calculateRepop(mob, lastKill) {
                 // 経過率が高い順に並べるため、elapsedInWindowMsが大きいほどスコアを高くする
                 repopScore = elapsedInWindowMs; 
 
-                // ★★★ 修正箇所: 進捗率をメイン情報として強調 ★★★
+                // 進捗率をメイン情報として強調
                 const duration = formatDurationPart(remainingMsToMax);
                 timeRemainingStr = `${elapsedPercent.toFixed(1)}% (残り: ${duration})`;
 
@@ -277,7 +279,7 @@ function saveFilterState() {
         const stateToSave = {
             rank: currentFilter.rank,
             areaSets: {},
-            sort: currentSort // ★★★ 修正箇所: ソート状態も保存 ★★★
+            sort: currentSort 
         };
         for (const rank in currentFilter.areaSets) {
             stateToSave.areaSets[rank] = Array.from(currentFilter.areaSets[rank]);
@@ -309,7 +311,7 @@ function loadFilterState() {
                 }
             }
 
-            // ★★★ 修正箇所: ソート状態をロード ★★★
+            // ソート状態をロード
             if (parsedState.sort && (parsedState.sort === 'No.' || parsedState.sort === 'Repop')) {
                 currentSort = parsedState.sort;
             }
@@ -352,6 +354,35 @@ function adjustContentPadding() {
 }
 
 
+// --- 開閉ロジックの再実装 ---
+
+/**
+ * モブカードの詳細情報の開閉をトグルする
+ */
+function toggleMobDetails(event) {
+    // 報告ボタンのクリックイベントは除外する
+    if (event.target.closest('.report-btn')) {
+        return;
+    }
+
+    const card = event.currentTarget.closest('.mob-card');
+    if (!card) return;
+
+    const details = card.querySelector('.detailed-content');
+    if (!details) return;
+
+    // hidden クラスをシンプルにトグル
+    details.classList.toggle('hidden');
+
+    // 状態属性も更新（CSSの調整などに使える）
+    const isOpen = !details.classList.contains('hidden');
+    card.dataset.isOpen = isOpen;
+    
+    // 開閉後、ヘッダーの高さ調整を再実行 (DOM高さが変わるため)
+    adjustContentPadding();
+}
+
+
 // --- DOM操作/イベントハンドラ ---
 
 /**
@@ -382,7 +413,7 @@ function createMobCard(mob) {
 
     const mobNameContainerClass = 'min-w-0 flex-1';
     
-    // 報告ボタンの縦幅を削減 (h-10 -> h-8) 
+    // 報告ボタンの縦幅を削減
     const reportBtnHtml = `
         <button class="bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn text-white px-1 py-1 rounded-md shadow-md transition h-8 w-10 flex flex-col items-center justify-center leading-none flex-shrink-0"
                 data-mobno="${mob['No.']}"
@@ -391,61 +422,44 @@ function createMobCard(mob) {
         </button>
     `;
 
-    // --- 展開パネル内のコンテンツ生成 ---
+    // --- 詳細コンテンツ (トグルで表示されるエリア) ---
+    // Note: これらの要素はすべて px-2 パディングを持っています。
     const conditionHtml = mob.Condition ? `
-        <div class="px-4 pt-1 pb-1 condition-content text-left">
-            <p class="text-xs font-medium text-gray-300">抽選条件:</p>
-            <p class="text-sm text-white leading-snug">${processText(mob.Condition)}</p>
+        <div class="pt-1 pb-0 condition-content text-left text-xs">
+            <p class="px-2 font-medium text-gray-400">抽選条件:</p>
+            <p class="px-2 text-white leading-snug">${processText(mob.Condition)}</p>
         </div>
     ` : '';
 
     const memoHtml = mob.Memo ? `
-        <div class="px-4 pt-1 pb-1 memo-content text-left">
-            <p class="text-xs font-medium text-gray-300">Memo:</p>
-            <p class="text-sm text-yellow-300 leading-snug">${processText(mob.Memo)}</p>
+        <div class="pt-1 pb-0 memo-content text-left text-xs">
+            <p class="px-2 font-medium text-gray-400">Memo:</p>
+            <p class="px-2 text-yellow-300 leading-snug">${processText(mob.Memo)}</p>
         </div>
     ` : '';
 
     const minRepopStr = formatDateForDisplay(minRepop);
     const minRepopHtml = `
-        <div class="px-4 pt-1 pb-1 repop-start-content flex justify-end">
-            <p class="text-sm font-semibold text-gray-400">開始時間: <span class="text-base text-gray-200 font-mono">${minRepopStr}</span></p>
+        <div class="px-2 pt-1 pb-0 repop-start-content flex justify-between text-xs">
+            <p class="font-semibold text-gray-400">開始時間:</p>
+            <p class="text-gray-200 font-mono">${minRepopStr}</p>
         </div>
     `;
 
-    // ★★★ 修正箇所: LastKillDateは相対表示関数を使用 ★★★
     const lastKillStr = formatLastKillDisplay(lastKillDate); 
     const lastKillHtml = `
-        <div class="px-4 pt-1 pb-1 last-kill-content flex justify-end">
-            <p class="text-sm font-semibold text-gray-400">前回時間: <span class="text-base text-gray-200 font-mono">${lastKillStr}</span></p>
+        <div class="px-2 pt-1 pb-1 last-kill-content flex justify-between text-xs">
+            <p class="font-semibold text-gray-400">前回時間:</p>
+            <p class="text-gray-200 font-mono">${lastKillStr}</p>
         </div>
     `;
 
-    const mapDetailsHtml = mob.Map ? `
-        <div class="mob-details pt-1 px-4 text-center map-content">
-            <div class="relative inline-block w-full max-w-sm">
-                <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="w-full h-auto rounded-lg shadow-md map-image" data-area="${mob.Area}">
-                <div class="absolute inset-0 map-overlay" data-area="${mob.Area}"></div>
-            </div>
+    const mapImageHtml = mob.Map ? `
+        <div class="mob-details pt-1 px-2 text-center map-content">
+            <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="w-full h-auto rounded-lg shadow-md map-image">
         </div>
     ` : '';
-
-    let panelContent = conditionHtml + memoHtml + minRepopHtml + lastKillHtml + mapDetailsHtml;
-    if (panelContent.trim()) {
-        panelContent = `<div class="panel-padding-bottom">${panelContent}</div>`;
-    }
     
-    // 展開パネルは絶対配置でカラム干渉を回避
-    const expandablePanel = panelContent.trim() ? `
-        <div class="expandable-panel 
-                     absolute top-full left-0 right-0 
-                     bg-gray-800 border-t border-gray-700 
-                     overflow-hidden transition-all duration-300 ease-in-out max-height-0 pt-0 px-0
-                     z-20">
-            ${panelContent}
-        </div>
-    ` : '';
-
     // --- 進捗バーエリアのHTML ---
     const repopInfoHtml = `
         <div class="mt-1 bg-gray-700 py-1 px-2 rounded-xl text-xs relative overflow-hidden shadow-inner h-10">
@@ -457,7 +471,7 @@ function createMobCard(mob) {
             </div>
         </div>
     `;
-
+    
     // --- モブカードの最終構造 ---
     return `
         <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-1 mb-1"
@@ -467,9 +481,10 @@ function createMobCard(mob) {
              data-minrepop="${mob['REPOP(s)']}"
              data-maxrepop="${mob['MAX(s)']}"
              data-expansion="${mob.Expansion || '?'}"
-             data-repopscore="${repopData.repopScore}">
+             data-repopscore="${repopData.repopScore}"
+             data-is-open="false"> 
              
-            <div class="p-2 fixed-content toggle-handler cursor-pointer">
+            <div class="p-2 fixed-content toggle-handler">
                 <div class="flex justify-between items-start mb-1">
                     <div class="flex items-center space-x-2">
                         <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-sm w-7 h-7 flex items-center justify-center rounded-lg shadow-lg flex-shrink-0">
@@ -488,7 +503,13 @@ function createMobCard(mob) {
                 ${repopInfoHtml}
             </div>
 
-            ${expandablePanel}
+            <div class="detailed-content pb-2 hidden"> 
+                ${conditionHtml}
+                ${memoHtml}
+                ${minRepopHtml}
+                ${lastKillHtml}
+                ${mapImageHtml}
+            </div>
         </div>
     `;
 }
@@ -497,8 +518,13 @@ function createMobCard(mob) {
  * フィルターに基づいてモブカードリストをレンダリングする
  */
 function renderMobList() {
-    if (!mobListContainer) return;
-
+    const columns = [column1, column2, column3].filter(el => el);
+    if (columns.length === 0) {
+        console.error("Column DOM elements (column-1, column-2, column-3) not found.");
+        displayError("エラー: カラム表示に必要なHTML要素が見つかりません。");
+        return; 
+    }
+    
     const { rank } = currentFilter;
     let filteredMobs = [];
     const activeRanks = rank === 'ALL' ? TARGET_RANKS : [rank];
@@ -516,35 +542,37 @@ function renderMobList() {
         }
     }
     
-    // ★★★ 修正箇所: ソートロジックの実装 ★★★
     if (currentSort === 'Repop') {
         filteredMobs.sort((a, b) => {
             const aData = calculateRepop(a, a.LastKillDate);
             const bData = calculateRepop(b, b.LastKillDate);
             
-            // Repopスコアは、POP時間経過率、POP残り時間、記録なしの優先度を単一の数値で表現
-            // スコアが大きいほど優先度が高い
             if (aData.repopScore > bData.repopScore) return -1;
             if (aData.repopScore < bData.repopScore) return 1;
             
-            // スコアが同じ場合はNo.順で安定させる
             return a['No.'] - b['No.'];
         });
 
-    } else { // currentSort === 'No.' の場合
-        // ALLタブ選択時やNo.順ソート時は、元のNo.順でソートを維持
+    } else { 
         filteredMobs.sort((a, b) => a['No.'] - b['No.']);
     }
 
-    mobListContainer.innerHTML = '';
-    let allCardsHtml = '';
+    // 1. カラムのクリア
+    columns.forEach(col => col.innerHTML = '');
 
-    filteredMobs.forEach((mob) => {
-        allCardsHtml += createMobCard(mob);
+    // 2. モブカードの均等分配ロジック
+    let allCardsHtml = Array(columns.length).fill(''); 
+
+    filteredMobs.forEach((mob, index) => {
+        const mobCardHtml = createMobCard(mob);
+        const columnIndex = index % columns.length; 
+        allCardsHtml[columnIndex] += mobCardHtml;
     });
 
-    // すべてのカードを単一のコンテナに挿入
-    mobListContainer.innerHTML = allCardsHtml;
+    // 3. DOMへの挿入
+    allCardsHtml.forEach((html, index) => {
+        columns[index].innerHTML = html;
+    });
 
     // UIの更新
     updateRankTabDisplay(rank);
@@ -557,40 +585,10 @@ function renderMobList() {
 }
 
 /**
- * ランクタブの表示を更新する
- */
-function updateRankTabDisplay(activeRank) {
-    if (rankTabs) {
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            const isActive = btn.dataset.rank === activeRank;
-            btn.classList.toggle('bg-blue-600', isActive);
-            btn.classList.toggle('hover:bg-blue-500', isActive);
-            btn.classList.toggle('bg-gray-700', !isActive);
-            btn.classList.toggle('hover:bg-gray-600', !isActive);
-        });
-    }
-}
-
-/**
- * エリアフィルタボタンの表示を更新する
- */
-function updateAreaFilterButtonDisplay(activeRank) {
-    const currentRankForAreaFilter = TARGET_RANKS.includes(activeRank) ? activeRank : 'S';
-    const currentAreasToHighlight = currentFilter.areaSets[currentRankForAreaFilter] || new Set(['ALL']);
-
-    document.querySelectorAll('.area-filter-btn').forEach(btn => {
-        const isSelected = currentAreasToHighlight.has(btn.dataset.area);
-        btn.classList.toggle('bg-blue-600', isSelected);
-        btn.classList.toggle('hover:bg-blue-500', isSelected);
-        btn.classList.toggle('bg-gray-600', !isSelected);
-        btn.classList.toggle('hover:bg-gray-500', !isSelected);
-    });
-}
-
-/**
  * イベントリスナーをカードとボタンにアタッチする
  */
 function attachEventListeners() {
+    // Report Button Listeners (変更なし)
     document.querySelectorAll('.report-btn').forEach(button => {
         if (button.dataset.mobno) {
             button.onclick = async (e) => {
@@ -598,7 +596,7 @@ function attachEventListeners() {
                 const mobNo = e.currentTarget.dataset.mobno;
                 const rank = e.currentTarget.dataset.rank;
                 
-                // ★★★ 修正箇所: Aランクモブはワンクリックで即時報告 ★★★
+                // Aランクモブはワンクリックで即時報告
                 if (rank === 'A') {
                     await submitReport(mobNo, 'A', true); // 即時報告フラグをtrueに
                 } else {
@@ -608,214 +606,10 @@ function attachEventListeners() {
         }
     });
 
+    // ★★★ 修正箇所: トグルイベントリスナーの追加 ★★★
     document.querySelectorAll('.toggle-handler').forEach(handler => {
-        handler.onclick = (e) => {
-            const card = e.currentTarget.closest('.mob-card');
-            if (card) {
-                toggleMobDetails(card);
-            }
-        };
+        handler.onclick = toggleMobDetails;
     });
-}
-
-/**
- * 開いている全てのモブカードを閉じる
- */
-function closeAllMobDetails() {
-    document.querySelectorAll('.mob-card.open').forEach(card => {
-        const panel = card.querySelector('.expandable-panel');
-        if (panel) {
-            panel.style.maxHeight = '0';
-        }
-        card.classList.remove('open');
-    });
-}
-
-/**
- * マップ詳細パネルの表示/非表示を切り替える
- */
-function toggleMobDetails(card) {
-    const mobNo = card.dataset.mobno;
-    const mob = getMobByNo(parseInt(mobNo));
-    const panel = card.querySelector('.expandable-panel');
-
-    if (!panel) return;
-
-    panel.style.transition = 'max-height 0.3s ease-in-out';
-
-    if (card.classList.contains('open')) {
-        // 閉じる処理
-        panel.style.maxHeight = '0';
-        card.classList.remove('open');
-    } else {
-        // 他のカードを閉じる (排他的開閉)
-        closeAllMobDetails();
-        
-        // 開く処理
-        card.classList.add('open');
-        
-        // 1. スポーンポイントの描画
-        const mapOverlay = panel.querySelector('.map-overlay');
-        if (mapOverlay && mob.spawn_points) {
-            drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
-        }
-
-        // 2. 瞬時に max-height を解除し、コンテンツの最終的な高さを取得
-        panel.style.maxHeight = 'none';
-        const targetHeight = panel.scrollHeight;
-
-        // 3. max-heightを 0 に設定し、アニメーションの開始点に戻す
-        panel.style.maxHeight = '0';
-
-        // 4. 取得した高さに安全マージンを加えてアニメーションを開始
-        setTimeout(() => {
-            panel.style.maxHeight = (targetHeight + 5) + 'px';
-
-            // 5. アニメーション終了後に max-height: none に設定
-            panel.addEventListener('transitionend', function handler(e) {
-                if (e.propertyName === 'max-height' && card.classList.contains('open')) {
-                    // panel.style.maxHeight = 'none'; // 絶対配置のため省略
-                }
-                panel.removeEventListener('transitionend', handler);
-            });
-        }, 0);
-    }
-}
-
-
-/**
- * マップにスポーンポイントを描画する
- */
-function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
-    overlayEl.innerHTML = '';
-    const mob = getMobByNo(parseInt(currentMobNo));
-
-    if (!mob || !mob.cullStatusMap) return;
-
-    // 定数
-    const SA_OUTER_DIAMETER = '12px';
-    const SA_BORDER_WIDTH = '2px';
-    const SA_SHADOW = '0 0 8px 1px';
-    const B1_INTERNAL_COLOR = '#60a5fa'; // Blue-400
-    const B2_INTERNAL_COLOR = '#f87171'; // Red-400
-
-    const cullTargetPoints = spawnPoints.filter(point =>
-        point.mob_ranks.includes('S') || point.mob_ranks.includes('A')
-    );
-    let remainingCullCount = cullTargetPoints.filter(point => !mob.cullStatusMap[point.id]).length;
-
-    spawnPoints.forEach(point => {
-        const isS_A_Point = point.mob_ranks.includes('S') || point.mob_ranks.includes('A');
-        const includesB1 = point.mob_ranks.includes('B1');
-        const includesB2 = point.mob_ranks.includes('B2');
-        const isCullTarget = isS_A_Point;
-
-        if (!isCullTarget) {
-            if (point.mob_ranks.length === 1 && (includesB1 || includesB2)) {
-                const pointEl = document.createElement('div');
-                pointEl.className = 'spawn-point-b-only';
-                pointEl.style.cssText = `
-                    position: absolute; left: ${point.x}%; top: ${point.y}%; transform: translate(-50%, -50%);
-                    width: 10px; height: 10px; border-radius: 50%; z-index: 5; pointer-events: none;
-                    background-color: ${includesB1 ? B1_INTERNAL_COLOR : B2_INTERNAL_COLOR};
-                    box-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
-                `;
-                overlayEl.appendChild(pointEl);
-            }
-            return;
-        }
-
-        const isCulled = mob.cullStatusMap[point.id] || false;
-        let outlineColor = '#9ca3af';
-        let internalColor = '#d1d5db';
-
-        if (includesB1) {
-            outlineColor = '#3b82f6';
-            internalColor = '#60a5fa';
-        } else if (includesB2) {
-            outlineColor = '#ef4444';
-            internalColor = '#f87171';
-        }
-
-        const isLastPoint = !isCulled && remainingCullCount === 1;
-
-        if (isLastPoint) {
-            outlineColor = '#10b981';
-            internalColor = '#34d399';
-        }
-
-        const pointEl = document.createElement('div');
-        pointEl.className = `spawn-point cursor-pointer`;
-        pointEl.setAttribute('data-id', point.id);
-        pointEl.setAttribute('data-isculltarget', 'true');
-
-        pointEl.style.cssText = `
-            position: absolute; left: ${point.x}%; top: ${point.y}%; transform: translate(-50%, -50%);
-            width: ${SA_OUTER_DIAMETER}; height: ${SA_OUTER_DIAMETER}; border-radius: 50%; z-index: 10;
-            pointer-events: all; transition: transform 0.1s ease-out, box-shadow 0.2s ease-out, border 0.2s ease-out, background-color 0.2s ease-out;
-        `;
-
-
-        if (isCulled) {
-            pointEl.classList.add('culled');
-            pointEl.style.border = `${SA_BORDER_WIDTH} solid white`;
-            pointEl.style.backgroundColor = 'rgba(100, 100, 100, 1.0)';
-            pointEl.style.boxShadow = 'none';
-        } else {
-            pointEl.style.border = `${SA_BORDER_WIDTH} solid ${outlineColor}`;
-            pointEl.style.backgroundColor = internalColor;
-            pointEl.style.boxShadow = `${SA_SHADOW} ${outlineColor}`;
-
-            pointEl.onmouseenter = () => { pointEl.style.zIndex = '11'; };
-            pointEl.onmouseleave = () => { pointEl.style.zIndex = '10'; };
-        }
-
-        pointEl.onclick = (e) => {
-            e.stopPropagation();
-            toggleCullStatus(mob['No.'], point.id, !isCulled);
-        };
-
-        overlayEl.appendChild(pointEl);
-    });
-}
-
-/**
- * 湧き潰し状態をGAS経由で切り替える
- */
-async function toggleCullStatus(mobNo, pointId, newStatus) {
-    const mob = getMobByNo(mobNo);
-    if (!mob) return;
-
-    // 1. 画面上に即時反映 (ユーザー体験向上)
-    mob.cullStatusMap[pointId] = newStatus;
-
-    // 2. 現在開いているカードのマップオーバーレイのみを再描画
-    const card = document.querySelector(`.mob-card[data-mobno="${mobNo}"]`);
-    if (card && card.classList.contains('open')) {
-        const mapOverlay = card.querySelector('.map-overlay');
-        if (mapOverlay) {
-            drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
-        }
-    }
-
-    try {
-        await fetch(GAS_ENDPOINT, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-                action: 'updateCullStatus',
-                mobNo: mobNo,
-                pointId: pointId,
-                isCulled: newStatus ? 'TRUE' : 'FALSE',
-                reporterId: userId
-            })
-        });
-    } catch (error) {
-        console.error('湧き潰し通信エラー:', error);
-    }
 }
 
 
@@ -858,11 +652,6 @@ function closeReportModal() {
 
 /**
  * 討伐報告の実行
- * @param {string} mobNo - モブのNo.
- * @param {string} rank - モブのランク
- * @param {boolean} isInstant - 即時報告かどうか (Aモブ用)
- * @param {string} killTimeLocal - 報告日時 (ISO 8601 local format)
- * @param {string} memo - メモ
  */
 async function submitReport(mobNo, rank, isInstant = false, killTimeLocal = null, memo = '') {
     const mob = getMobByNo(parseInt(mobNo));
@@ -1074,7 +863,7 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
 
         if (data.status === 'success') {
             const records = data.records;
-            const cullStatuses = data.cullStatuses || [];
+            const cullStatuses = data.cullStatuses || []; 
 
             // データをマージして globalMobData を再構築
             globalMobData = baseMobData.map(mob => {
@@ -1091,7 +880,7 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
                     newMob.Memo = '';
                 }
 
-                // 湧き潰し状態の反映
+                // 湧き潰し関連データはもうカード表示に使われないが、構造は維持
                 newMob.cullStatusMap = {};
                 cullStatuses
                     .filter(status => status.Mob_No === mobNo)
@@ -1144,7 +933,7 @@ function updateProgressBars() {
 
         const repopInfoDisplayEl = card.querySelector('.repop-info-display');
         const progressBarEl = card.querySelector('.progress-bar');
-        const lastKillEl = card.querySelector('.last-kill-content span');
+        const lastKillEl = card.querySelector('.last-kill-content p:last-child'); // 前回時間の値の要素
 
         // --- 1. 表示テキストと色の更新 ---
         if (repopInfoDisplayEl) {
@@ -1160,7 +949,7 @@ function updateProgressBars() {
             }
         }
         
-        // ★★★ 修正箇所: LastKill表示も更新 (X分前) ★★★
+        // LastKill表示も更新 (X分前)
         if (lastKillEl) {
              lastKillEl.textContent = formatLastKillDisplay(lastKillDate);
         }
@@ -1185,6 +974,7 @@ function updateProgressBars() {
                 barColorClass = LIME_BAR_COLOR;
             }
 
+            // transition-all duration-100 は tailwind.config.js で定義が必要
             progressBarEl.className = `progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl ${barColorClass} ${animateClass}`;
             progressBarEl.style.height = '100%';
             progressBarEl.style.width = `${widthPercent}%`;
@@ -1194,7 +984,6 @@ function updateProgressBars() {
 
 /**
  * エリアフィルタパネルの開閉をトグルする (アニメーション付き)
- * @param {boolean} forceOpen 強制的に開く場合はtrue, 閉じる場合はfalse, トグルする場合は未指定
  */
 function toggleAreaFilterPanel(forceOpen) {
     if (!areaFilterWrapper || !areaFilterContainer) return;
@@ -1281,7 +1070,7 @@ function initializeApp() {
         sortToggleBtn.onclick = toggleSortState;
     }
 
-    // ★★★ 修正箇所: ランクタブの排他的トグル動作 ★★★
+    // ランクタブの排他的トグル動作
     if (rankTabs) {
         document.querySelectorAll('.tab-btn').forEach(button => {
             button.onclick = (e) => {
@@ -1323,7 +1112,7 @@ function initializeApp() {
             }
         });
     }
-    // エリアフィルタボタンのリスナー (変更なし)
+    // エリアフィルタボタンのリスナー
     document.querySelectorAll('.area-filter-btn').forEach(button => {
         button.onclick = (e) => {
             const newArea = e.currentTarget.dataset.area;
@@ -1366,7 +1155,7 @@ function initializeApp() {
     });
 
 
-    // モーダル関連のリスナー (submitReportを修正済み)
+    // モーダル関連のリスナー
     if (cancelReportBtn) cancelReportBtn.onclick = closeReportModal;
     if (submitReportBtn) submitReportBtn.onclick = () => {
         // S/FATEモーダルの送信処理
