@@ -1,7 +1,7 @@
-/* script.js (最終修正: 開閉機能、カラム分配、余白調整、Aモブ即時報告、フィルタ色復活) */
+/* script.js (最終修正: Repopソート、相対時間調整、Aモブ即時報告、マップ画像表示/ポイント表示修正) */
 
 // Google Apps Script (GAS) のエンドポイントURL
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcEelT3g/exec';
 // 静的モブデータ (mob_data.json) のURL
 const MOB_DATA_URL = './mob_data.json';
 
@@ -233,7 +233,7 @@ function calculateRepop(mob, lastKill) {
                 // 経過率が高い順に並べるため、elapsedInWindowMsが大きいほどスコアを高くする
                 repopScore = elapsedInWindowMs; 
 
-                // 進捗率をメイン情報として強調
+                // 進捗率をメイン情報として強調 (修正点3)
                 const duration = formatDurationPart(remainingMsToMax);
                 timeRemainingStr = `${elapsedPercent.toFixed(1)}% (残り: ${duration})`;
 
@@ -325,7 +325,7 @@ function loadFilterState() {
 }
 
 /**
- * ソート状態を切り替える
+ * ソート状態を切り替える (修正点1)
  */
 function toggleSortState() {
     currentSort = (currentSort === 'No.') ? 'Repop' : 'No.';
@@ -343,6 +343,44 @@ function updateSortButtonDisplay() {
         sortToggleBtn.classList.toggle(INACTIVE_COLOR_CLASS, currentSort === 'No.');
     }
 }
+
+// --- 地図ポイント描画ヘルパー (新規追加) ---
+
+/**
+ * マップ画像の上にモブの座標を示すポイントをレンダリングする
+ * mob.Coords は JSON文字列または配列の形式を想定: [{"X": 15.0, "Y": 20.0}, ...]
+ */
+function renderMapPoints(coordsData) {
+    if (!coordsData) return '';
+
+    let coords;
+    try {
+        // CoordsがJSON文字列として格納されている可能性があるためパースを試みる
+        coords = Array.isArray(coordsData) ? coordsData : JSON.parse(coordsData);
+    } catch (e) {
+        // console.warn("Failed to parse coordinates (This might be expected if Coords is not always a JSON string):", coordsData);
+        return '';
+    }
+
+    if (!Array.isArray(coords) || coords.length === 0) return '';
+
+    return coords.map((coord, index) => {
+        // X, Y がパーセンテージ値 (0-100) であると仮定
+        // ピンのサイズ (w-5, h-5) を考慮し、中心に配置するために -2.5% の補正を入れる (ピンサイズが親要素の5%と仮定)
+        const xPercent = (parseFloat(coord.X) || 0) - 2.5; 
+        const yPercent = (parseFloat(coord.Y) || 0) - 2.5;
+
+        // モブピンのHTML構造 (赤丸、アニメーション)
+        // z-index: 20 で画像より手前に配置
+        return `
+            <div class="absolute mob-point bg-red-500 rounded-full h-5 w-5 border-2 border-white shadow-xl animate-pulse" 
+                 style="left: ${xPercent}%; top: ${yPercent}%; z-index: 20;"
+                 title="Pop Point ${index + 1}">
+            </div>
+        `;
+    }).join('');
+}
+
 
 // --- 固定ヘッダーの高さ調整 ---
 
@@ -416,9 +454,9 @@ function createMobCard(mob) {
 
     const mobNameContainerClass = 'min-w-0 flex-1';
     
-    // 報告ボタンの縦幅を削減
+    // 報告ボタンの縦幅/横幅を修正して正方形 (h-8 w-8) にする
     const reportBtnHtml = `
-        <button class="bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn text-white px-1 py-1 rounded-md shadow-md transition h-8 w-10 flex flex-col items-center justify-center leading-none flex-shrink-0"
+        <button class="bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn text-white px-1 py-1 rounded-md shadow-md transition h-8 w-8 flex flex-col items-center justify-center leading-none flex-shrink-0"
                 data-mobno="${mob['No.']}"
                 data-rank="${mob.Rank}">
             <span class="text-xs font-bold">${mob.Rank === 'A' ? '即時' : '報告'}</span><span class="text-xs font-bold">${mob.Rank === 'A' ? '報告' : 'する'}</span>
@@ -426,7 +464,6 @@ function createMobCard(mob) {
     `;
 
     // --- 詳細コンテンツ (トグルで表示されるエリア) ---
-    // Note: これらの要素はすべて px-2 パディングを持っています。
     const conditionHtml = mob.Condition ? `
         <div class="pt-1 pb-0 condition-content text-left text-xs">
             <p class="px-2 font-medium text-gray-400">抽選条件:</p>
@@ -449,7 +486,7 @@ function createMobCard(mob) {
         </div>
     `;
 
-    const lastKillStr = formatLastKillDisplay(lastKillDate); 
+    const lastKillStr = formatLastKillDisplay(lastKillDate); // 修正点2
     const lastKillHtml = `
         <div class="px-2 pt-1 pb-1 last-kill-content flex justify-between text-xs">
             <p class="font-semibold text-gray-400">前回時間:</p>
@@ -457,15 +494,17 @@ function createMobCard(mob) {
         </div>
     `;
 
+    // マップ画像表示とポイント描画の修正 (地点ポイント表示をここに追加)
     const mapImageHtml = mob.Map ? `
-        <div class="mob-details pt-1 px-2 text-center map-content">
+        <div class="mob-details pt-1 px-2 map-content relative"> 
             <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="w-full h-auto rounded-lg shadow-md map-image">
+            ${renderMapPoints(mob.Coords)}
         </div>
     ` : '';
     
-    // --- 進捗バーエリアのHTML ---
+    // --- 進捗バーエリアのHTML (py-1 -> py-0 に修正) ---
     const repopInfoHtml = `
-        <div class="mt-1 bg-gray-700 py-1 px-2 rounded-xl text-xs relative overflow-hidden shadow-inner h-10">
+        <div class="mt-1 bg-gray-700 py-0 px-2 rounded-xl text-xs relative overflow-hidden shadow-inner h-10">
             <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl" style="width: ${elapsedPercent}%; z-index: 0;"></div>
             <div class="absolute inset-0 flex items-center justify-center z-10">
                 <span class="repop-info-display text-lg ${repopTimeColorClass} font-mono w-full text-center">
@@ -548,18 +587,22 @@ function renderMobList() {
         }
     }
     
+    // ソートロジック (修正点1)
     if (currentSort === 'Repop') {
         filteredMobs.sort((a, b) => {
             const aData = calculateRepop(a, a.LastKillDate);
             const bData = calculateRepop(b, b.LastKillDate);
             
+            // repopScoreが大きい方が優先度が高い
             if (aData.repopScore > bData.repopScore) return -1;
             if (aData.repopScore < bData.repopScore) return 1;
             
+            // スコアが同じ場合はNo.順で安定させる
             return a['No.'] - b['No.'];
         });
 
     } else { 
+        // No.順ソート
         filteredMobs.sort((a, b) => a['No.'] - b['No.']);
     }
 
@@ -595,9 +638,12 @@ function renderMobList() {
  * イベントリスナーをカードとボタンにアタッチする
  */
 function attachEventListeners() {
-    // Report Button Listeners (変更なし)
+    // Report Button Listeners (修正点4)
     document.querySelectorAll('.report-btn').forEach(button => {
         if (button.dataset.mobno) {
+            // 既存のイベントリスナーを削除 (renderMobListで再アタッチされるため)
+            button.onclick = null; 
+            
             button.onclick = async (e) => {
                 e.stopPropagation();
                 const mobNo = e.currentTarget.dataset.mobno;
