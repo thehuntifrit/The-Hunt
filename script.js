@@ -1,7 +1,6 @@
-/* script.js (排他的開閉、メモ表示、余白削減 適用 & GAS URL更新版) */
+/* script.js (初期フィルタ非表示、余白最大削減 適用版) */
 
 // Google Apps Script (GAS) のエンドポイントURL
-// ★★★ 修正箇所: GAS URLを新しいものに更新 ★★★
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
 // 静的モブデータ (mob_data.json) のURL
 const MOB_DATA_URL = './mob_data.json';
@@ -309,8 +308,10 @@ function createMobCard(mob) {
     }
 
     const mobNameContainerClass = 'min-w-0 flex-1';
+    
+    // ★★★ 修正箇所: 報告ボタンの縦幅を削減 (h-10 -> h-8) ★★★
     const reportBtnHtml = `
-        <button class="bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn text-white px-1 py-1 rounded-md shadow-md transition h-10 w-10 flex flex-col items-center justify-center leading-none flex-shrink-0"
+        <button class="bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn text-white px-1 py-1 rounded-md shadow-md transition h-8 w-10 flex flex-col items-center justify-center leading-none flex-shrink-0"
                 data-mobno="${mob['No.']}">
             <span class="text-xs font-bold">報告</span><span class="text-xs font-bold">する</span>
         </button>
@@ -324,7 +325,6 @@ function createMobCard(mob) {
         </div>
     ` : '';
 
-    // ★★★ 修正箇所: メモ情報の表示を追加 ★★★
     const memoHtml = mob.Memo ? `
         <div class="px-4 pt-1 pb-1 memo-content text-left">
             <p class="text-xs font-medium text-gray-300">Memo:</p>
@@ -355,7 +355,6 @@ function createMobCard(mob) {
         </div>
     ` : '';
 
-    // ★★★ 修正箇所: メモHTMLを条件・マップの間に挿入 ★★★
     let panelContent = conditionHtml + memoHtml + minRepopHtml + lastKillHtml + mapDetailsHtml;
     if (panelContent.trim()) {
         panelContent = `<div class="panel-padding-bottom">${panelContent}</div>`;
@@ -368,7 +367,6 @@ function createMobCard(mob) {
     ` : '';
 
     // --- 進捗バーエリアのHTML ---
-    // ★★★ 修正箇所: プログレスバーの余白を削減 (p-2 -> p-1.5相当、h-12 -> h-10) ★★★
     const repopInfoHtml = `
         <div class="mt-1 bg-gray-700 py-1 px-2 rounded-xl text-xs relative overflow-hidden shadow-inner h-10">
             <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl" style="width: ${elapsedPercent}%; z-index: 0;"></div>
@@ -381,9 +379,9 @@ function createMobCard(mob) {
     `;
 
     // --- モブカードの最終構造 ---
-    // ★★★ 修正箇所: モブカード間の上下余白を削減 (mb-3 -> mb-2) ★★★
+    // ★★★ 修正箇所: カード間の上下余白 (mb-2 -> mb-1) とカード内の上下余白 (py-2 -> py-1) を削減 ★★★
     return `
-        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-2 mb-2"
+        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-1 mb-1"
              data-rank="${mob.Rank}"
              data-mobno="${mob['No.']}"
              data-lastkill="${mob.LastKillDate || ''}"
@@ -541,7 +539,7 @@ function toggleMobDetails(card) {
         panel.style.maxHeight = '0';
         card.classList.remove('open');
     } else {
-        // ★★★ 修正箇所: 他のカードを閉じる (排他的開閉) ★★★
+        // 他のカードを閉じる (排他的開閉)
         closeAllMobDetails();
         
         // 開く処理
@@ -904,7 +902,6 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
                 // 討伐記録の反映
                 if (record && record.POP_Date_Unix) {
                     newMob.LastKillDate = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
-                    // ★★★ 修正箇所: メモ情報の反映 ★★★
                     newMob.Memo = record.Memo || ''; 
                 } else {
                     newMob.LastKillDate = '';
@@ -999,7 +996,6 @@ function updateProgressBars() {
                 barColorClass = LIME_BAR_COLOR;
             }
 
-            // ★★★ 修正箇所: プログレスバーの微細化に伴い、クラスを調整 ★★★
             progressBarEl.className = `progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl ${barColorClass} ${animateClass}`;
             progressBarEl.style.height = '100%';
             progressBarEl.style.width = `${widthPercent}%`;
@@ -1086,15 +1082,9 @@ function initializeApp() {
 
     // フィルタ状態のロードと初期表示の制御
     loadFilterState();
-    const initialRank = currentFilter.rank;
-    const isTargetRank = TARGET_RANKS.includes(initialRank);
     
-    // 初期ロード時は、ターゲットランク（S/A/F）なら開く
-    if (isTargetRank) {
-        setTimeout(() => toggleAreaFilterPanel(true), 100);
-    } else {
-        toggleAreaFilterPanel(false);
-    }
+    // ★★★ 修正箇所: 初期ロード時にエリアフィルタパネルを強制的に閉じる ★★★
+    toggleAreaFilterPanel(false); 
 
     adjustContentPadding();
     window.addEventListener('resize', adjustContentPadding);
