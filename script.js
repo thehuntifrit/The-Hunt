@@ -1,4 +1,4 @@
-/* script.js (初期フィルタ非表示、余白最大削減 適用版) */
+/* script.js (絶対配置によるカラム干渉回避、初期フィルタ非表示、余白最大削減 適用版) */
 
 // Google Apps Script (GAS) のエンドポイントURL
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
@@ -309,7 +309,7 @@ function createMobCard(mob) {
 
     const mobNameContainerClass = 'min-w-0 flex-1';
     
-    // ★★★ 修正箇所: 報告ボタンの縦幅を削減 (h-10 -> h-8) ★★★
+    // 報告ボタンの縦幅を削減 (h-10 -> h-8) 
     const reportBtnHtml = `
         <button class="bg-green-600 hover:bg-green-500 active:bg-green-700 report-btn text-white px-1 py-1 rounded-md shadow-md transition h-8 w-10 flex flex-col items-center justify-center leading-none flex-shrink-0"
                 data-mobno="${mob['No.']}">
@@ -359,9 +359,14 @@ function createMobCard(mob) {
     if (panelContent.trim()) {
         panelContent = `<div class="panel-padding-bottom">${panelContent}</div>`;
     }
-
+    
+    // ★★★ 修正箇所: 展開パネルを絶対配置にし、カラムのフローから切り離す ★★★
     const expandablePanel = panelContent.trim() ? `
-        <div class="expandable-panel overflow-hidden transition-all duration-300 ease-in-out max-height-0 pt-0 px-0">
+        <div class="expandable-panel 
+                     absolute top-full left-0 right-0 
+                     bg-gray-800 border-t border-gray-700 
+                     overflow-hidden transition-all duration-300 ease-in-out max-height-0 pt-0 px-0
+                     z-20">
             ${panelContent}
         </div>
     ` : '';
@@ -379,7 +384,8 @@ function createMobCard(mob) {
     `;
 
     // --- モブカードの最終構造 ---
-    // ★★★ 修正箇所: カード間の上下余白 (mb-2 -> mb-1) とカード内の上下余白 (py-2 -> py-1) を削減 ★★★
+    // ★★★ HTML修正箇所: `.mob-card`には `relative` クラスが必須です ★★★
+    // カード間の上下余白 (mb-1) とカード内の上下余白 (py-1) を削減済み
     return `
         <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-1 mb-1"
              data-rank="${mob.Rank}"
@@ -565,7 +571,8 @@ function toggleMobDetails(card) {
             // 5. アニメーション終了後に max-height: none に設定
             panel.addEventListener('transitionend', function handler(e) {
                 if (e.propertyName === 'max-height' && card.classList.contains('open')) {
-                    panel.style.maxHeight = 'none';
+                    // 絶対配置のため max-height: none は必須ではないが、一応残す
+                    // panel.style.maxHeight = 'none';
                 }
                 panel.removeEventListener('transitionend', handler);
             });
