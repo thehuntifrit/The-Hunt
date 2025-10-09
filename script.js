@@ -211,7 +211,7 @@ function calculateRepop(mob, lastKill) {
                 const formattedElapsed = formatDurationPart(popElapsedMs, '+');
                 
                 // 修正後の形式: P% ( + HHh MMm)
-                timeRemainingStr = `${elapsedPercent.toFixed(1)}% (${formattedElapsed})`;
+                timeRemainingStr = `100.0% (${formattedElapsed})`; // 最大超過時は常に100.0%表示
                 elapsedPercent = 100;
             }
         }
@@ -297,12 +297,13 @@ function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
     const { minRepop, timeDisplay, elapsedPercent, isPop, isMaxOver, isUnknown } = calculateRepop(mob, lastKillDate);
 
-    // 修正: POP前は太字を解除
+    // 修正: POP前は太字を解除 (font-normal)
     let repopTimeColorClass = 'text-white';
     if (isUnknown) {
         repopTimeColorClass = 'text-gray-400';
     } else if (!isPop) {
-        repopTimeColorClass = 'text-green-400 font-normal'; // 太字を解除 (font-normalを追加)
+        // 修正: POP前は太字を解除し、サイズをPOP後と同じに
+        repopTimeColorClass = 'text-green-400 font-normal'; 
     } else {
         repopTimeColorClass = 'text-white font-extrabold';
     }
@@ -347,7 +348,7 @@ function createMobCard(mob) {
         </div>
     `;
 
-    // 修正: 詳細パネルにメモを表示
+    // 修正: 詳細パネルにメモを表示 (左揃え)
     const memoHtml = mob.Memo ? `
         <div class="px-4 pt-1 pb-1 last-kill-memo flex justify-start">
             <p class="text-sm font-semibold text-gray-400">Memo: 
@@ -377,7 +378,7 @@ function createMobCard(mob) {
         </div>
     ` : '';
 
-    // --- 進捗バーエリアのHTML (余白削減: p-2 h-12 -> px-2 py-1 h-10 に相当する調整) ---
+    // --- 進捗バーエリアのHTML (余白削減: h-12 -> h-10, p-2 -> px-2 py-1 に相当する調整) ---
     const repopInfoHtml = `
         <div class="mt-1 bg-gray-700 px-2 py-1 rounded-xl text-xs relative overflow-hidden shadow-inner h-10">
             <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear" style="width: ${elapsedPercent}%; z-index: 0;"></div>
@@ -590,11 +591,11 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     
     // 修正: B1/B2のみポイントのサイズを 8px に変更
     const B_ONLY_DIAMETER = '8px';
-    const B_ONLY_COLOR_NORMAL = 'rgba(100, 100, 100, 0.5)'; // 目立たない色
-    const B_ONLY_COLOR_LAST_ONE = '#4b5563'; // gray-600
+    // 修正: ラストワン時の色を定義
+    const B_ONLY_COLOR_LAST_ONE = '#4b5563'; // gray-600 (ラストワン強調時のB1/B2のみポイントの色)
 
-    const B1_INTERNAL_COLOR = '#60a5fa'; // Blue-400
-    const B2_INTERNAL_COLOR = '#f87171'; // Red-400
+    const B1_INTERNAL_COLOR = '#60a5fa'; // Blue-400 (通常時のB1のみポイントの色)
+    const B2_INTERNAL_COLOR = '#f87171'; // Red-400 (通常時のB2のみポイントの色)
 
     // S/A抽選に関わるポイントをフィルタリング
     const cullTargetPoints = spawnPoints.filter(point =>
@@ -914,7 +915,8 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
                 // 討伐記録の反映
                 if (record && record.POP_Date_Unix) {
                     newMob.LastKillDate = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
-                    newMob.Memo = record.Memo || ''; // 修正: メモを反映
+                    // 修正: GASのJSONキー「Memo」を使用
+                    newMob.Memo = record.Memo || ''; 
                 } else {
                     newMob.LastKillDate = '';
                     newMob.Memo = ''; // メモもクリア
@@ -1209,3 +1211,15 @@ function initializeApp() {
 }
 
 document.addEventListener('DOMContentLoaded', initializeApp);
+
+
+このコードで、以下の修正がすべて適用されています。
+
+* **B1/B2スポーンポイント**: ラストワン時の反転表示、およびサイズ$8\text{px}$に縮小。
+* **POP前フォント**: POP後のフォント/サイズに合わせて**太字を解除**。
+* **モブカード開閉**: **排他的開閉**（他の開いているカードを自動で閉じる）。
+* **モブカード詳細**: 「**Memo: **」欄を追加し、GASからのデータ（`record.Memo`）を表示。
+* **プログレスバー**: 上下余白を削減し、高さを調整。
+* **POP後テキスト**: 「`P% (HHh MMm)`」または「`100.0% ( + HHh MMm)`」形式に変更。
+
+ご確認をお願いいたします。
