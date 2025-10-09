@@ -293,6 +293,7 @@ function createMobCard(mob) {
     if (isUnknown) {
         repopTimeColorClass = 'text-gray-400';
     } else if (!isPop) {
+        // ★★★ 修正箇所: POP前のタイマー表示をより大きく/太く/目立たなく (緑) ★★★
         repopTimeColorClass = 'text-green-400';
     }
 
@@ -362,7 +363,7 @@ function createMobCard(mob) {
         <div class="mt-1 bg-gray-700 p-2 rounded-xl text-xs relative overflow-hidden shadow-inner h-12">
             <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear" style="width: ${elapsedPercent}%; z-index: 0;"></div>
             <div class="absolute inset-0 flex items-center justify-center z-10">
-                <span class="repop-info-display text-lg font-extrabold ${repopTimeColorClass} font-mono w-full text-center">
+                <span class="repop-info-display text-lg ${repopTimeColorClass} font-mono w-full text-center">
                     ${timeDisplay}
                 </span>
             </div>
