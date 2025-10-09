@@ -13,7 +13,9 @@ const EXPANSION_MAP = {
 const TARGET_RANKS = ['S', 'A', 'F'];
 const ALL_EXPANSION_NAMES = Object.values(EXPANSION_MAP);
 const MOB_DATA_URL = 'mob_data.json';
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec'; // 適切なGASエンドポイントに置き換える
+// --- 修正箇所 ---
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec'; 
+// ----------------
 
 let userId = null;
 let baseMobData = []; // mob_data.jsonからの基本データ
