@@ -1,7 +1,7 @@
-/* script.js (最終修正・最適化版) */
+/* script.js (排他的開閉、メモ表示、余白削減 適用版) */
 
 // Google Apps Script (GAS) のエンドポイントURL
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvsSQYlbNcUelT3g/exec';
 // 静的モブデータ (mob_data.json) のURL
 const MOB_DATA_URL = './mob_data.json';
 
@@ -37,7 +37,6 @@ const DOMElements = {
     areaFilterWrapper: document.getElementById('area-filter-wrapper'),
     fixedHeaderContent: document.getElementById('fixed-header-content'),
     contentSpacer: document.getElementById('content-spacer'),
-    // ★★★ 変更: カラムの配列を削除し、単一のコンテナIDに変更 ★★★
     mobListContainer: document.getElementById('mob-list-container')
 };
 const { errorMessageContainer, rankTabs, reportModal, modalMobName, reportDatetimeInput, reportMemoInput, submitReportBtn, cancelReportBtn, reportStatusEl, uuidDisplayEl, areaFilterWrapper, areaFilterContainer, fixedHeaderContent, contentSpacer, mobListContainer } = DOMElements;
@@ -165,7 +164,7 @@ function calculateRepop(mob, lastKill) {
     const now = new Date();
 
     if (repopMinMs <= 0 || repopMaxMs <= repopMinMs) {
-        return { minRepop: 'N/A', maxRepop: 'N/A', timeDisplay: 'N/A', isPop: false, isMaxOver: false, isUnknown: true, elapsedPercent: 0 };
+        return { minRepop: 'N/A', maxRepop: 'N/A', timeDisplay: 'N/A', isPop: false, isMaxOver: false, isUnknown: true, elapsedPercent: 0, memo: '' };
     }
 
     if (isUnknown) {
@@ -209,6 +208,7 @@ function calculateRepop(mob, lastKill) {
         }
     }
 
+    // メモ情報は、mobオブジェクトに既に含まれている
     return { minRepop: minRepopTime, maxRepop: maxRepopTime, timeDisplay: timeRemainingStr, elapsedPercent: elapsedPercent, isPop: isPop, isMaxOver: isMaxOver, isUnknown: isUnknown };
 }
 
@@ -293,7 +293,7 @@ function createMobCard(mob) {
     if (isUnknown) {
         repopTimeColorClass = 'text-gray-400';
     } else if (!isPop) {
-        // ★★★ 修正箇所: POP前のタイマー表示をより大きく/太く/目立たなく (緑) ★★★
+        // POP前のタイマー表示
         repopTimeColorClass = 'text-green-400';
     }
 
@@ -323,6 +323,14 @@ function createMobCard(mob) {
         </div>
     ` : '';
 
+    // ★★★ 修正箇所: メモ情報の表示を追加 ★★★
+    const memoHtml = mob.Memo ? `
+        <div class="px-4 pt-1 pb-1 memo-content text-left">
+            <p class="text-xs font-medium text-gray-300">Memo:</p>
+            <p class="text-sm text-yellow-300 leading-snug">${processText(mob.Memo)}</p>
+        </div>
+    ` : '';
+
     const minRepopStr = formatDateForDisplay(minRepop);
     const minRepopHtml = `
         <div class="px-4 pt-1 pb-1 repop-start-content flex justify-end">
@@ -337,7 +345,6 @@ function createMobCard(mob) {
         </div>
     `;
 
-    // マップ画像パスの修正がここに反映済みです
     const mapDetailsHtml = mob.Map ? `
         <div class="mob-details pt-1 px-4 text-center map-content">
             <div class="relative inline-block w-full max-w-sm">
@@ -347,7 +354,8 @@ function createMobCard(mob) {
         </div>
     ` : '';
 
-    let panelContent = conditionHtml + minRepopHtml + lastKillHtml + mapDetailsHtml;
+    // ★★★ 修正箇所: メモHTMLを条件・マップの間に挿入 ★★★
+    let panelContent = conditionHtml + memoHtml + minRepopHtml + lastKillHtml + mapDetailsHtml;
     if (panelContent.trim()) {
         panelContent = `<div class="panel-padding-bottom">${panelContent}</div>`;
     }
@@ -359,9 +367,10 @@ function createMobCard(mob) {
     ` : '';
 
     // --- 進捗バーエリアのHTML ---
+    // ★★★ 修正箇所: プログレスバーの余白を削減 (p-2 -> p-1.5相当、h-12 -> h-10) ★★★
     const repopInfoHtml = `
-        <div class="mt-1 bg-gray-700 p-2 rounded-xl text-xs relative overflow-hidden shadow-inner h-12">
-            <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear" style="width: ${elapsedPercent}%; z-index: 0;"></div>
+        <div class="mt-1 bg-gray-700 py-1 px-2 rounded-xl text-xs relative overflow-hidden shadow-inner h-10">
+            <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl" style="width: ${elapsedPercent}%; z-index: 0;"></div>
             <div class="absolute inset-0 flex items-center justify-center z-10">
                 <span class="repop-info-display text-lg ${repopTimeColorClass} font-mono w-full text-center">
                     ${timeDisplay}
@@ -371,8 +380,9 @@ function createMobCard(mob) {
     `;
 
     // --- モブカードの最終構造 ---
+    // ★★★ 修正箇所: モブカード間の上下余白を削減 (mb-3 -> mb-2) ★★★
     return `
-        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-2 mb-3"
+        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-2 mb-2"
              data-rank="${mob.Rank}"
              data-mobno="${mob['No.']}"
              data-lastkill="${mob.LastKillDate || ''}"
@@ -438,8 +448,6 @@ function renderMobList() {
         filteredMobs.sort((a, b) => a['No.'] - b['No.']);
     }
 
-
-    // ★★★ 変更: 3カラムへの振り分けロジックを削除し、単一コンテナに挿入 ★★★
     mobListContainer.innerHTML = '';
     let allCardsHtml = '';
 
@@ -503,6 +511,19 @@ function attachEventListeners() {
 }
 
 /**
+ * 開いている全てのモブカードを閉じる
+ */
+function closeAllMobDetails() {
+    document.querySelectorAll('.mob-card.open').forEach(card => {
+        const panel = card.querySelector('.expandable-panel');
+        if (panel) {
+            panel.style.maxHeight = '0';
+        }
+        card.classList.remove('open');
+    });
+}
+
+/**
  * マップ詳細パネルの表示/非表示を切り替える
  */
 function toggleMobDetails(card) {
@@ -519,6 +540,9 @@ function toggleMobDetails(card) {
         panel.style.maxHeight = '0';
         card.classList.remove('open');
     } else {
+        // ★★★ 修正箇所: 他のカードを閉じる (排他的開閉) ★★★
+        closeAllMobDetails();
+        
         // 開く処理
         card.classList.add('open');
         
@@ -879,8 +903,11 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
                 // 討伐記録の反映
                 if (record && record.POP_Date_Unix) {
                     newMob.LastKillDate = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
+                    // ★★★ 修正箇所: メモ情報の反映 ★★★
+                    newMob.Memo = record.Memo || ''; 
                 } else {
                     newMob.LastKillDate = '';
+                    newMob.Memo = '';
                 }
 
                 // 湧き潰し状態の反映
@@ -931,7 +958,6 @@ function updateProgressBars() {
 
         const lastKillDate = lastKillStr ? new Date(lastKillStr) : null;
         
-        // mobStub を廃止し、直接引数を渡す
         const repopData = calculateRepop({"REPOP(s)": repop, "MAX(s)": max}, lastKillDate);
         const percent = repopData.elapsedPercent || 0;
 
@@ -972,6 +998,7 @@ function updateProgressBars() {
                 barColorClass = LIME_BAR_COLOR;
             }
 
+            // ★★★ 修正箇所: プログレスバーの微細化に伴い、クラスを調整 ★★★
             progressBarEl.className = `progress-bar absolute inset-0 transition-all duration-100 ease-linear rounded-xl ${barColorClass} ${animateClass}`;
             progressBarEl.style.height = '100%';
             progressBarEl.style.width = `${widthPercent}%`;
