@@ -1,7 +1,7 @@
 /* script.js (最終修正: Repopソート、相対時間調整、Aモブ即時報告、マップ画像表示/ポイント表示修正) */
 
 // Google Apps Script (GAS) のエンドポイントURL
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcEelT3g/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
 // 静的モブデータ (mob_data.json) のURL
 const MOB_DATA_URL = './mob_data.json';
 
