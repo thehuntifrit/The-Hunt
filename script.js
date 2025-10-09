@@ -1,5 +1,3 @@
-
-
 /* script.js (最終修正・最適化版) */
 
 // Google Apps Script (GAS) のエンドポイントURL
@@ -194,21 +192,26 @@ function calculateRepop(mob, lastKill) {
             isPop = true;
             const remainingMsToMax = maxRepopTime.getTime() - now.getTime();
 
+            // 経過率を計算
+            const elapsedInWindowMs = now.getTime() - minRepopTime.getTime();
+            elapsedPercent = Math.max(0, Math.min(100, (elapsedInWindowMs / popDurationMs) * 100));
+
             if (remainingMsToMax > 0) {
                 // Phase 2: In POP Window
                 isMaxOver = false;
-                const elapsedInWindowMs = now.getTime() - minRepopTime.getTime();
-                elapsedPercent = Math.max(0, Math.min(100, (elapsedInWindowMs / popDurationMs) * 100));
-
+                
                 const duration = formatDurationPart(remainingMsToMax);
-                timeRemainingStr = `残り (%): ${duration} (${elapsedPercent.toFixed(1)}%)`;
+                // 修正後の形式: P% (HHh MMm)
+                timeRemainingStr = `${elapsedPercent.toFixed(1)}% (${duration})`;
 
             } else {
                 // Phase 3: Max Repop Exceeded
                 isMaxOver = true;
                 const popElapsedMs = now.getTime() - maxRepopTime.getTime();
                 const formattedElapsed = formatDurationPart(popElapsedMs, '+');
-                timeRemainingStr = `残り (%): ${formattedElapsed} (100.0%)`;
+                
+                // 修正後の形式: P% ( + HHh MMm)
+                timeRemainingStr = `${elapsedPercent.toFixed(1)}% (${formattedElapsed})`;
                 elapsedPercent = 100;
             }
         }
@@ -294,11 +297,14 @@ function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
     const { minRepop, timeDisplay, elapsedPercent, isPop, isMaxOver, isUnknown } = calculateRepop(mob, lastKillDate);
 
-    let repopTimeColorClass = 'text-white font-extrabold';
+    // 修正: POP前は太字を解除
+    let repopTimeColorClass = 'text-white';
     if (isUnknown) {
         repopTimeColorClass = 'text-gray-400';
     } else if (!isPop) {
-        repopTimeColorClass = 'text-green-400';
+        repopTimeColorClass = 'text-green-400 font-normal'; // 太字を解除 (font-normalを追加)
+    } else {
+        repopTimeColorClass = 'text-white font-extrabold';
     }
 
     let rankBgClass;
@@ -341,6 +347,16 @@ function createMobCard(mob) {
         </div>
     `;
 
+    // 修正: 詳細パネルにメモを表示
+    const memoHtml = mob.Memo ? `
+        <div class="px-4 pt-1 pb-1 last-kill-memo flex justify-start">
+            <p class="text-sm font-semibold text-gray-400">Memo: 
+                <span class="text-base text-gray-200 font-mono">${mob.Memo}</span>
+            </p>
+        </div>
+    ` : '';
+
+
     const mapDetailsHtml = mob.Map ? `
         <div class="mob-details pt-1 px-4 text-center map-content">
             <div class="relative inline-block w-full max-w-sm">
@@ -350,7 +366,7 @@ function createMobCard(mob) {
         </div>
     ` : '';
 
-    let panelContent = conditionHtml + minRepopHtml + lastKillHtml + mapDetailsHtml;
+    let panelContent = conditionHtml + minRepopHtml + lastKillHtml + memoHtml + mapDetailsHtml;
     if (panelContent.trim()) {
         panelContent = `<div class="panel-padding-bottom">${panelContent}</div>`;
     }
@@ -361,12 +377,12 @@ function createMobCard(mob) {
         </div>
     ` : '';
 
-    // --- 進捗バーエリアのHTML ---
+    // --- 進捗バーエリアのHTML (余白削減: p-2 h-12 -> px-2 py-1 h-10 に相当する調整) ---
     const repopInfoHtml = `
-        <div class="mt-1 bg-gray-700 p-2 rounded-xl text-xs relative overflow-hidden shadow-inner h-12">
+        <div class="mt-1 bg-gray-700 px-2 py-1 rounded-xl text-xs relative overflow-hidden shadow-inner h-10">
             <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear" style="width: ${elapsedPercent}%; z-index: 0;"></div>
             <div class="absolute inset-0 flex items-center justify-center z-10">
-                <span class="repop-info-display text-lg font-extrabold ${repopTimeColorClass} font-mono w-full text-center">
+                <span class="repop-info-display text-lg font-mono w-full text-center ${repopTimeColorClass}">
                     ${timeDisplay}
                 </span>
             </div>
@@ -504,13 +520,10 @@ function attachEventListeners() {
 }
 
 /**
- * マップ詳細パネルの表示/非表示を切り替える
+ * マップ詳細パネルの表示/非表示を切り替える (排他的開閉を実装)
  */
 function toggleMobDetails(card) {
-    const mobNo = card.dataset.mobno;
-    const mob = getMobByNo(parseInt(mobNo));
     const panel = card.querySelector('.expandable-panel');
-
     if (!panel) return;
 
     panel.style.transition = 'max-height 0.3s ease-in-out';
@@ -520,10 +533,20 @@ function toggleMobDetails(card) {
         panel.style.maxHeight = '0';
         card.classList.remove('open');
     } else {
+        // 修正: 他の開いているカードを全て閉じる (排他的開閉)
+        document.querySelectorAll('.mob-card.open').forEach(openCard => {
+            if (openCard !== card) {
+                openCard.querySelector('.expandable-panel').style.maxHeight = '0';
+                openCard.classList.remove('open');
+            }
+        });
+
         // 開く処理
         card.classList.add('open');
         
         // 1. スポーンポイントの描画
+        const mobNo = card.dataset.mobno;
+        const mob = getMobByNo(parseInt(mobNo));
         const mapOverlay = panel.querySelector('.map-overlay');
         if (mapOverlay && mob.spawn_points) {
             drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
@@ -552,7 +575,7 @@ function toggleMobDetails(card) {
 }
 
 /**
- * マップにスポーンポイントを描画する
+ * マップにスポーンポイントを描画する (B1/B2サイズとラストワン時の表示を修正)
  */
 function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     overlayEl.innerHTML = '';
@@ -564,6 +587,11 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     const SA_OUTER_DIAMETER = '12px';
     const SA_BORDER_WIDTH = '2px';
     const SA_SHADOW = '0 0 8px 1px';
+    
+    // 修正: B1/B2のみポイントのサイズを 8px に変更
+    const B_ONLY_DIAMETER = '8px';
+    const B_ONLY_COLOR_NORMAL = 'rgba(100, 100, 100, 0.5)'; // 目立たない色
+    const B_ONLY_COLOR_LAST_ONE = '#4b5563'; // gray-600
 
     const B1_INTERNAL_COLOR = '#60a5fa'; // Blue-400
     const B2_INTERNAL_COLOR = '#f87171'; // Red-400
@@ -575,6 +603,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
 
     // 未処理のS/A抽選ポイントの数をカウント
     let remainingCullCount = cullTargetPoints.filter(point => !mob.cullStatusMap[point.id]).length;
+    const isS_A_LastOne = remainingCullCount === 1;
 
     spawnPoints.forEach(point => {
         const isS_A_Point = point.mob_ranks.includes('S') || point.mob_ranks.includes('A');
@@ -587,11 +616,16 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
             if (point.mob_ranks.length === 1 && (includesB1 || includesB2)) {
                 const pointEl = document.createElement('div');
                 pointEl.className = 'spawn-point-b-only';
+                
+                // 修正: ラストワン時に反転表示
+                const bOnlyColor = isS_A_LastOne ? B_ONLY_COLOR_LAST_ONE : (includesB1 ? B1_INTERNAL_COLOR : B2_INTERNAL_COLOR);
+                const bOnlyShadow = isS_A_LastOne ? 'none' : '0 0 4px rgba(0, 0, 0, 0.7)';
+                
                 pointEl.style.cssText = `
                     position: absolute; left: ${point.x}%; top: ${point.y}%; transform: translate(-50%, -50%);
-                    width: 10px; height: 10px; border-radius: 50%; z-index: 5; pointer-events: none;
-                    background-color: ${includesB1 ? B1_INTERNAL_COLOR : B2_INTERNAL_COLOR};
-                    box-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
+                    width: ${B_ONLY_DIAMETER}; height: ${B_ONLY_DIAMETER}; border-radius: 50%; z-index: 5; pointer-events: none;
+                    background-color: ${bOnlyColor};
+                    box-shadow: ${bOnlyShadow};
                 `;
                 overlayEl.appendChild(pointEl);
             }
@@ -821,7 +855,8 @@ async function fetchBaseMobData() {
 
                     if (!expansionName && mob.Rank !== 'B') return null;
 
-                    return { ...mob, 'No.': mobNo, Expansion: expansionName };
+                    // Memoフィールドを初期化 (GASから取得したデータで上書きされる可能性あり)
+                    return { ...mob, 'No.': mobNo, Expansion: expansionName, Memo: '' };
                 })
                 .filter(mob => mob !== null);
         } else {
@@ -879,8 +914,10 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
                 // 討伐記録の反映
                 if (record && record.POP_Date_Unix) {
                     newMob.LastKillDate = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
+                    newMob.Memo = record.Memo || ''; // 修正: メモを反映
                 } else {
                     newMob.LastKillDate = '';
+                    newMob.Memo = ''; // メモもクリア
                 }
 
                 // 湧き潰し状態の反映
@@ -922,7 +959,7 @@ function updateProgressBars() {
     const ORANGE_BAR_COLOR = 'bg-orange-400/70';
     const YELLOW_BAR_COLOR = 'bg-yellow-400/70';
     const LIME_BAR_COLOR = 'bg-lime-500/70';
-    const NEXT_TEXT_COLOR = 'text-green-400';
+    const NEXT_TEXT_COLOR = 'text-green-400 font-normal'; // font-normalも追加
 
     document.querySelectorAll('.mob-card').forEach(card => {
         const lastKillStr = card.dataset.lastkill;
@@ -941,11 +978,12 @@ function updateProgressBars() {
         // --- 1. 表示テキストと色の更新 ---
         if (repopInfoDisplayEl) {
             repopInfoDisplayEl.textContent = repopData.timeDisplay;
-            repopInfoDisplayEl.classList.remove('text-gray-400', NEXT_TEXT_COLOR, 'text-white', 'font-extrabold');
+            repopInfoDisplayEl.classList.remove('text-gray-400', NEXT_TEXT_COLOR, 'text-white', 'font-extrabold', 'font-normal');
 
             if (repopData.isUnknown) {
                 repopInfoDisplayEl.classList.add('text-gray-400');
             } else if (!repopData.isPop) {
+                // 修正: POP前は太字を解除
                 repopInfoDisplayEl.classList.add(NEXT_TEXT_COLOR);
             } else {
                 repopInfoDisplayEl.classList.add('text-white', 'font-extrabold');
