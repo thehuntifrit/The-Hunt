@@ -1,96 +1,73 @@
-/* style.css (統合版) */
+
+/* style.css (修正後) */
 
 /* カスタムスタイル */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        
+        
 body {
-    font-family: 'Inter', sans-serif;
-    background-color: #1a1a2e; /* ダークモード背景 */
+    font-family: 'Inter', sans-serif;
+    background-color: #1a1a2e; /* ダークモード背景 */
 }
 
 /* ヘッダーの調整: z-indexを高くし、タブコンテナがアニメーション後にボーダーを正しく表示できるように padding-bottom を調整 */
 header {
-    padding-bottom: 0.5rem !important; /* Tailwindの p-4 が上書きされるのを防ぐため */
+    padding-bottom: 0.5rem !important; /* Tailwindの p-4 が上書きされるのを防ぐため */
 }
 
 /* テキストに藍色のアウトライン/シャドウを適用 */
 .text-outline {
-    text-shadow: 
-        1px 1px 0 #1f2937,  /* 藍色系シャドウ */
-        -1px 1px 0 #1f2937, 
-        1px -1px 0 #1f2937, 
-        -1px -1px 0 #1f2937;
+    text-shadow: 
+        1px 1px 0 #1f2937,  /* 藍色系シャドウ */
+        -1px 1px 0 #1f2937, 
+        1px -1px 0 #1f2937, 
+        -1px -1px 0 #1f2937;
 }
 
 /* ランクアイコンの基本スタイル */
 .rank-icon {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
-    transition: transform 0.1s ease-in-out;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+    transition: transform 0.1s ease-in-out;
 }
 
 /* マップ描画用のスタイル */
 .map-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none; /* オーバーレイを通して画像を触れるように */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* オーバーレイを通して画像を触れるように */
 }
 
 /* スポーンポイントのスタイル（JavaScriptでサイズが制御されます） */
 .spawn-point {
-    pointer-events: auto; /* クリック可能にする */
-    transition: all 0.2s ease-in-out; /* ホバーアニメーションの速度を設定 */
+    pointer-events: auto; /* クリック可能にする */
+    transition: all 0.2s ease-in-out; /* ホバーアニメーションの速度を設定 */
 }
 
 /* S/A抽選対象ポイントのホバーアニメーション */
 .spawn-point:hover {
-    /* JavaScript側で設定された translate(-50%, -50%) を上書きしないよう !important を維持 */
-    transform: translate(-50%, -50%) scale(1.5) !important; 
-    opacity: 1 !important;
+    /* JavaScript側で設定された translate(-50%, -50%) を上書きしないよう !important を維持 */
+    transform: translate(-50%, -50%) scale(1.5) !important; 
+    opacity: 1 !important;
 }
 
 /* モーダル背景 */
 .modal-overlay {
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 /* カードの展開パネルのアニメーション */
 .expandable-panel {
-    transition: max-height 0.3s ease-in-out;
+    transition: max-height 0.3s ease-in-out;
 }
 
 /* NEW: エリアタブの初期非表示とアニメーション準備 */
 .area-panel {
-    /* overflow-hidden と max-height-0 は Tailwindで定義済み */
+    /* overflow-hidden と max-height-0 は Tailwindで定義済み */
 }
 
 /* NEW: 初期状態で display: none を適用し、JSで hidden-init を削除してからトグルを開始 */
 .hidden-init {
-    display: none;
-}
-
-/* =================================== */
-/* index.html から抽出したスタイル */
-/* =================================== */
-
-/* プログレスバーの背景色とアニメーション */
-.progress-bar {
-    /* JavaScriptで bg-color が動的に設定される */
-    /* ここに共通のスタイルがあれば定義 */
-}
-
-/* Progress Bar のアニメーション */
-/* Tailwindの utility class を使用するため、ここでは定義しない */
-
-/* マップ関連のスタイル */
-.map-image {
-    max-width: 100%;
-    height: auto;
-}
-
-/* カード内のpadding調整 */
-.panel-padding-bottom {
-    padding-bottom: 0.75rem; /* p-3 の代わり */
+    display: none;
 }
