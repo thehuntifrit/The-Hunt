@@ -37,13 +37,10 @@ const DOMElements = {
     areaFilterWrapper: document.getElementById('area-filter-wrapper'),
     fixedHeaderContent: document.getElementById('fixed-header-content'),
     contentSpacer: document.getElementById('content-spacer'),
-    columns: [
-        document.getElementById('column-1'),
-        document.getElementById('column-2'),
-        document.getElementById('column-3')
-    ].filter(col => col)
+    // ★★★ 変更: カラムの配列を削除し、単一のコンテナIDに変更 ★★★
+    mobListContainer: document.getElementById('mob-list-container')
 };
-const { errorMessageContainer, rankTabs, reportModal, modalMobName, reportDatetimeInput, reportMemoInput, submitReportBtn, cancelReportBtn, reportStatusEl, uuidDisplayEl, areaFilterWrapper, areaFilterContainer, fixedHeaderContent, contentSpacer, columns } = DOMElements;
+const { errorMessageContainer, rankTabs, reportModal, modalMobName, reportDatetimeInput, reportMemoInput, submitReportBtn, cancelReportBtn, reportStatusEl, uuidDisplayEl, areaFilterWrapper, areaFilterContainer, fixedHeaderContent, contentSpacer, mobListContainer } = DOMElements;
 
 
 // --- 定数: 拡張パック名定義 ---
@@ -339,7 +336,7 @@ function createMobCard(mob) {
         </div>
     `;
 
-    // ★★★ マップ画像パスの修正がここに反映済みです ★★★
+    // マップ画像パスの修正がここに反映済みです
     const mapDetailsHtml = mob.Map ? `
         <div class="mob-details pt-1 px-4 text-center map-content">
             <div class="relative inline-block w-full max-w-sm">
@@ -410,6 +407,9 @@ function createMobCard(mob) {
  * フィルターに基づいてモブカードリストをレンダリングする
  */
 function renderMobList() {
+    // mobListContainerが存在しない場合は処理を中断
+    if (!mobListContainer) return;
+
     const { rank } = currentFilter;
     let filteredMobs = [];
     const activeRanks = rank === 'ALL' ? TARGET_RANKS : [rank];
@@ -438,18 +438,17 @@ function renderMobList() {
     }
 
 
-    // 3. レンダリング処理
-    columns.forEach(col => col.innerHTML = '');
+    // ★★★ 変更: 3カラムへの振り分けロジックを削除し、単一コンテナに挿入 ★★★
+    mobListContainer.innerHTML = '';
+    let allCardsHtml = '';
 
-    if (columns.length > 0) {
-        filteredMobs.forEach((mob, index) => {
-            const cardHtml = createMobCard(mob);
-            const targetColumn = columns[index % columns.length];
-            const div = document.createElement('div');
-            div.innerHTML = cardHtml.trim();
-            targetColumn.appendChild(div.firstChild);
-        });
-    }
+    filteredMobs.forEach((mob) => {
+        allCardsHtml += createMobCard(mob);
+    });
+
+    // すべてのカードを単一のコンテナに挿入
+    mobListContainer.innerHTML = allCardsHtml;
+
 
     // 4. アクティブなランクタブをハイライト
     if (rankTabs) {
