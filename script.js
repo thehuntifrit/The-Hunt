@@ -334,8 +334,8 @@ function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
     const { minRepop, timeDisplay, elapsedPercent, isPop, isMaxOver, isUnknown } = calculateRepop(mob, lastKillDate);
 
-    // 【前回の修正を維持: POP前の文字スタイル調整 - 太字を削除し、font-monoを適用】
-    let repopTimeColorClass = 'text-white font-mono'; // font-monoを追加
+    // POP前の文字スタイル調整
+    let repopTimeColorClass = 'text-white font-mono';
     if (isUnknown) {
         repopTimeColorClass = 'text-gray-400 font-mono';
     } else if (!isPop) {
@@ -354,7 +354,7 @@ function createMobCard(mob) {
 
     const mobNameContainerClass = 'min-w-0 flex-1';
     
-    // 【前回の修正を維持: Aランクの報告ボタンに専用クラスを追加】
+    // Aランクの報告ボタン
     const isARank = mob.Rank === 'A';
     const reportBtnClass = isARank ? 'instant-report-btn' : 'report-btn';
     const reportBtnHtml = `
@@ -379,7 +379,7 @@ function createMobCard(mob) {
         </div>
     `;
 
-    // 【前回討伐日時の相対表示を適用】
+    // 前回討伐日時の相対表示を適用
     const lastKillDisplay = formatLastKillTime(lastKillDate);
     const lastKillHtml = `
         <div class="px-4 pt-1 pb-1 last-kill-content flex justify-end">
@@ -387,7 +387,7 @@ function createMobCard(mob) {
         </div>
     `;
     
-    // 【新規実装: モブカード詳細にメモを表示】
+    // モブカード詳細にメモを表示
     const lastKillMemo = mob.LastKillMemo || '';
     const lastKillMemoHtml = lastKillMemo ? `
         <div class="px-4 pt-1 pb-1 last-kill-memo-content text-left">
@@ -407,7 +407,7 @@ function createMobCard(mob) {
         </div>
     ` : '';
 
-    let panelContent = conditionHtml + minRepopHtml + lastKillHtml + lastKillMemoHtml + mapDetailsHtml; // 👈 メモHTMLを追加
+    let panelContent = conditionHtml + minRepopHtml + lastKillHtml + lastKillMemoHtml + mapDetailsHtml;
     if (panelContent.trim()) {
         panelContent = `<div class="panel-padding-bottom">${panelContent}</div>`;
     }
@@ -432,8 +432,9 @@ function createMobCard(mob) {
 
     // --- モブカードの最終構造 ---
     const isOpenClass = (mob['No.'] === openMobCardNo) ? 'open' : '';
+    // 【変更点: モブカード内部の上下パディングを py-1 に、外側のマージンを mb-1 に変更】
     return `
-        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-2 mb-3 ${isOpenClass}"
+        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-1 mb-1 ${isOpenClass}" 
              data-rank="${mob.Rank}"
              data-mobno="${mob['No.']}"
              data-lastkill="${mob.LastKillDate || ''}"
@@ -542,7 +543,7 @@ function renderMobList() {
  * イベントリスナーをカードとボタンにアタッチする
  */
 function attachEventListeners() {
-    // 【前回の修正を維持: Aモブのワンクリック報告リスナーを追加】
+    // Aモブのワンクリック報告リスナーを追加
     document.querySelectorAll('.instant-report-btn').forEach(button => {
         if (button.dataset.mobno) {
             button.onclick = async (e) => {
@@ -574,7 +575,7 @@ function attachEventListeners() {
     });
 }
 
-// 【前回の修正を維持: Aランクモブの即時報告機能】
+// Aランクモブの即時報告機能
 async function instantARankReport(mobNo) {
     const mob = getMobByNo(parseInt(mobNo));
     if (!mob) return;
@@ -1058,7 +1059,7 @@ function updateProgressBars() {
         if (repopInfoDisplayEl) {
             repopInfoDisplayEl.textContent = repopData.timeDisplay;
             
-            // 【前回の修正を維持: POP前の文字スタイル調整】
+            // POP前の文字スタイル調整
             repopInfoDisplayEl.classList.remove('text-gray-400', NEXT_TEXT_COLOR, 'text-white', 'font-extrabold');
             repopInfoDisplayEl.classList.add('font-mono'); // font-monoは常に追加
 
@@ -1187,7 +1188,7 @@ function initializeApp() {
 
     // 2. イベントリスナーの設定
 
-    // ランクタブのリスナー (【修正点 1. 動作再定義】)
+    // ランクタブのリスナー
     if (rankTabs) {
         document.querySelectorAll('.tab-btn').forEach(button => {
             button.onclick = (e) => {
