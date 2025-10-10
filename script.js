@@ -105,7 +105,7 @@ function formatLastKillTime(dateInput) {
 }
 
 /**
- * 【修正】ミリ秒を HH:MM 形式に変換し、接頭辞を付けます。
+ * ミリ秒を HH:MM 形式に変換し、接頭辞を付けます。
  * @param {number} ms - ミリ秒
  * @param {string} prefix - 接頭辞 ('+' または '')
  * @returns {string} HH:MM 形式の文字列
@@ -332,7 +332,7 @@ function adjustContentPadding() {
 }
 
 
-// --- DOM操作/イベントハンドラ (変更なし) ---
+// --- DOM操作/イベントハンドラ ---
 
 /**
  * モブデータに基づいてHTMLカードを生成する
@@ -472,15 +472,11 @@ function createMobCard(mob) {
 }
 
 /**
- * フィルターに基づいてモブカードリストをレンダリングする (変更なし)
- * 【変更1/2】初回のみカードを生成し、以降はスキップします。
+ * フィルターに基づいてモブカードリストをレンダリングする (初回のみ実行)
  */
 function renderMobList() {
-    const { rank } = currentFilter;
-
-    // 初回描画後にカードが既に存在する場合、再描画せずにDOMを維持
+    // 【修正】既にカードDOMが存在する場合は、再構築せずに終了する（描画中断防止）
     if (document.querySelector('.mob-card') && globalMobData.length > 0) {
-        // カードの表示/非表示とフィルタのハイライトのみを更新
         updateFilterVisibility();
         updateFilterHighlights();
         updateProgressBars();
@@ -491,7 +487,7 @@ function renderMobList() {
     // --- 初回描画処理 ---
 
     let filteredMobs = [];
-    const activeRanks = rank === 'ALL' ? TARGET_RANKS : [rank];
+    const activeRanks = currentFilter.rank === 'ALL' ? TARGET_RANKS : [currentFilter.rank];
 
     for (const r of activeRanks) {
         const rankMobs = globalMobData.filter(mob => mob.Rank === r);
@@ -506,13 +502,13 @@ function renderMobList() {
         }
     }
 
-    if (rank === 'ALL') {
+    if (currentFilter.rank === 'ALL') {
         filteredMobs.sort((a, b) => a['No.'] - b['No.']);
     }
 
-
     // 3. レンダリング処理
-    columns.forEach(col => col.innerHTML = '';
+    // 初回のみカラムをクリアし、カードを生成・配置
+    columns.forEach(col => col.innerHTML = '');
 
     if (columns.length > 0) {
         filteredMobs.forEach((mob, index) => {
@@ -532,7 +528,7 @@ function renderMobList() {
 }
 
 /**
- * 【新規実装】データ更新時、既存のカードのデータ部分のみを更新する (変更なし)
+ * 【修正】データ更新時、既存のカードのデータ部分のみを更新する
  */
 function updateMobCardData() {
     const cards = document.querySelectorAll('.mob-card');
@@ -549,11 +545,10 @@ function updateMobCardData() {
         const repopData = calculateRepop(mob, lastKillDate);
 
         // 2. リポップ情報（時間表示、プログレスバー）の更新
-        card.dataset.minrepop = mob['REPOP(s)']; // プログレスバー更新ロジックのために更新
+        card.dataset.minrepop = mob['REPOP(s)'];
         card.dataset.maxrepop = mob['MAX(s)'];
 
-        // `updateProgressBars` 関数にDOM操作を任せる
-        updateProgressBars(card);
+        updateProgressBars(card); // 進捗バーと表示テキストの更新
 
         // 3. 詳細パネル内の前回討伐時刻とリポップ開始時刻を更新
         const lastKillDisplayEl = card.querySelector('.last-kill-display');
@@ -587,6 +582,7 @@ function updateMobCardData() {
         if (card.classList.contains('open') && openMobCardNo === mobNo) {
             const mapOverlay = card.querySelector('.map-overlay');
             if (mapOverlay && mob.spawn_points) {
+                // サーバーから最新のcullStatusMapが来ていれば、それに従って再描画
                 drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
             }
         }
@@ -599,7 +595,8 @@ function updateMobCardData() {
 }
 
 /**
- * モブカードの表示/非表示をフィルター設定に基づいて切り替える (変更なし)
+ * 【修正】モブカードの表示/非表示をフィルター設定に基づいて切り替える
+ * DOMの再配置を行わず、表示/非表示の切り替えのみを行うことで描画の中断を防ぐ。
  */
 function updateFilterVisibility() {
     const { rank } = currentFilter;
@@ -617,10 +614,8 @@ function updateFilterVisibility() {
 
             // 2. エリアフィルタのチェック
             if (currentAreaSet.has('ALL') && currentAreaSet.size === 1) {
-                // ALLのみ選択されている（全て表示）
                 isVisible = true;
             } else if (currentAreaSet.has(mobExpansion)) {
-                // 特定の拡張エリアが選択されている
                 isVisible = true;
             }
         }
@@ -633,18 +628,7 @@ function updateFilterVisibility() {
         card.style.display = isVisible ? 'block' : 'none';
     });
 
-    // 3. カラム内のカードの並び替え (表示状態のモブカードのみを再配置)
-    const visibleCards = Array.from(document.querySelectorAll('.mob-card')).filter(card => card.style.display !== 'none');
-
-    // 一度カラムをクリアせずに、カードの親要素を移動させる
-    columns.forEach(col => col.innerHTML = ''); // 一旦DOMから切り離す
-
-    if (columns.length > 0) {
-        visibleCards.forEach((card, index) => {
-            const targetColumn = columns[index % columns.length];
-            targetColumn.appendChild(card);
-        });
-    }
+    // 【削除】DOMの再配置ロジックを削除。CSSのFlexbox/Gridで自動的にレイアウトされることを期待する。
 }
 
 /**
@@ -745,7 +729,7 @@ async function instantARankReport(mobNo) {
 
         if (result.status === 'success') {
             displayError(`${mob.Name} (A) の報告成功！`);
-            await fetchRecordsAndUpdate('manual', false);
+            await fetchRecordsAndUpdate(false); // 更新後にDOMを再構築しない
             setTimeout(() => displayError(null), 1500);
         } else {
             displayError(`${mob.Name} (A) の報告失敗: ${result.message}`);
@@ -823,7 +807,7 @@ function toggleMobDetails(card) {
 }
 
 /**
- * 【修正・追加】マップにスポーンポイントを描画する
+ * 【修正】マップにスポーンポイントを描画する
  */
 function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     overlayEl.innerHTML = '';
@@ -863,7 +847,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
                 const pointEl = document.createElement('div');
                 pointEl.className = 'spawn-point-b-only';
 
-                // 【B1/B2のみのポイントを2px小さくする】
+                // B1/B2のみのポイントを2px小さくする
                 const baseSize = 10;
                 const newSize = baseSize - 2;
 
@@ -874,7 +858,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
                     box-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
                 `;
 
-                // 【ラストワン判定時のB1/B2のみのポイントの表示反転】
+                // ラストワン判定時のB1/B2のみのポイントの表示反転
                 if (shouldInvertBOnlyPoints) {
                     pointEl.style.backgroundColor = 'rgba(100, 100, 100, 1.0)'; // グレーに反転
                     pointEl.style.boxShadow = 'none'; // 影をなくす
@@ -949,18 +933,20 @@ async function toggleCullStatus(mobNo, pointId, isCulled) {
     const mob = getMobByNo(mobNo);
     if (!mob) return;
 
-    // 1. クライアント側状態の即時更新
+    const mobName = mob.Name;
+    const actionName = isCulled ? '湧き潰し報告' : '湧き潰し解除報告';
+
+    // 1. クライアント側状態の即時更新とマップ表示の即時再描画
+    // これにより、クリック後すぐに視覚的なフィードバックが得られる
+    const originalCulledState = mob.cullStatusMap[pointId] || false;
     mob.cullStatusMap[pointId] = isCulled;
 
-    // 2. マップ表示の即時再描画
     const card = document.querySelector(`.mob-card[data-mobno="${mobNo}"]`);
     const mapOverlay = card.querySelector('.map-overlay');
     if (mapOverlay && mob.spawn_points) {
         drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
     }
 
-    const mobName = mob.Name;
-    const actionName = isCulled ? '湧き潰し報告' : '湧き潰し解除報告';
     displayError(`${mobName}の${pointId}を${actionName}中...`);
 
     try {
@@ -972,7 +958,7 @@ async function toggleCullStatus(mobNo, pointId, isCulled) {
                 action: 'reportCull',
                 Mob_No: mobNo,
                 Point_ID: pointId,
-                Is_Culled: isCulled ? 'TRUE' : 'FALSE',
+                Is_Culled: isCulled ? 'TRUE' : 'FALSE', // GAS側で受け取るスキーマ
                 Reporter_ID: userId
             })
         });
@@ -983,15 +969,19 @@ async function toggleCullStatus(mobNo, pointId, isCulled) {
             displayError(`${mobName}の${pointId}を${actionName}成功！`);
             setTimeout(() => displayError(null), 1500);
         } else {
-            // サーバー側で失敗した場合、クライアント側の状態を元に戻す (復元ロジックは簡略化)
-            mob.cullStatusMap[pointId] = !isCulled;
-            drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo); // 再描画して元に戻す
+            // サーバー側で失敗した場合、クライアント側の状態を元に戻す
+            mob.cullStatusMap[pointId] = originalCulledState;
+            if (mapOverlay && mob.spawn_points) {
+                drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo); // 再描画して元に戻す
+            }
             displayError(`${mobName}の${actionName}失敗: ${result.message}`);
         }
     } catch (error) {
         // 通信失敗の場合、クライアント側の状態を元に戻す
-        mob.cullStatusMap[pointId] = !isCulled;
-        drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo); // 再描画して元に戻す
+        mob.cullStatusMap[pointId] = originalCulledState;
+        if (mapOverlay && mob.spawn_points) {
+            drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo); // 再描画して元に戻す
+        }
         console.error('湧き潰し報告エラー:', error);
         displayError(`${mobName}の${actionName}エラー: サーバー通信に失敗。`);
     }
@@ -1081,8 +1071,8 @@ async function submitReport() {
             submitReportBtn.className = 'w-full px-4 py-2 bg-green-600 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
             submitReportBtn.disabled = false;
 
-            // 手動更新としてデータを更新
-            await fetchRecordsAndUpdate('manual', false);
+            // 手動更新としてデータを更新 (DOM再構築なし)
+            await fetchRecordsAndUpdate(false);
             setTimeout(closeReportModal, 1500);
 
         } else {
@@ -1104,7 +1094,7 @@ async function submitReport() {
 }
 
 
-// --- データ取得/更新 (変更なし) ---
+// --- データ取得/更新 ---
 
 /**
  * 外部JSONからモブデータを取得し、`No.`から`Expansion`を決定する
@@ -1140,12 +1130,13 @@ async function fetchBaseMobData() {
 }
 
 /**
- * GASから最新の討伐記録と湧き潰し状態を取得し、グローバルデータを更新する
+ * 【修正】GASから最新の討伐記録と湧き潰し状態を取得し、グローバルデータを更新する
+ * @param {boolean} isInitialLoad 初回ロード時は true。2回目以降は false。
  */
-async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = true) {
+async function fetchRecordsAndUpdate(isInitialLoad = false) {
 
     // 1. 基本データ (Base Mob Data) のロードと初期レンダリング
-    if (shouldFetchBase) {
+    if (isInitialLoad) {
         displayError(`設定データをロード中...`);
         await fetchBaseMobData();
         adjustContentPadding();
@@ -1156,15 +1147,12 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
     }
 
     // 2. ローディングメッセージの表示
-    const shouldDisplayLoading = (updateType === 'initial' || updateType === 'manual' || autoUpdateSuccessCount === 0);
+    const shouldDisplayLoading = (isInitialLoad || autoUpdateSuccessCount === 0);
     if (shouldDisplayLoading) {
         displayError(`データを更新中…`);
     }
 
-    // 3. データ取得前の暫定表示
-    // 初回は全描画、2回目以降はDOMを維持するためにここでは何もしない
-
-    // 4. 討伐記録と湧き潰し状態の取得と更新
+    // 3. 討伐記録と湧き潰し状態の取得と更新
     try {
         const response = await fetch(GAS_ENDPOINT + '?action=getRecords');
         const data = await response.json();
@@ -1173,7 +1161,7 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
             const records = data.records;
             const cullStatuses = data.cullStatuses || [];
 
-            // データをマージして globalMobData を再構築
+            // データをマージして globalMobData を再構築（これは常に必要）
             globalMobData = baseMobData.map(mob => {
                 const mobNo = mob['No.'];
                 const record = records.find(r => r['No.'] === mobNo);
@@ -1199,18 +1187,18 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
                 return newMob;
             });
 
-            if (updateType === 'auto') {
-                autoUpdateSuccessCount++;
+            if (!isInitialLoad) {
+                autoUpdateSuccessCount++; // 初回ロードが完了してから成功回数をカウント
             }
 
             displayError(null);
             adjustContentPadding();
 
-            // 初回かどうかで処理を分岐
-            if (shouldFetchBase) {
-                renderMobList(); // 初回: 全描画
+            // 4. 初回描画かデータ更新かの分岐
+            if (isInitialLoad) {
+                renderMobList(); // 初回: 全カードDOM構築
             } else {
-                updateMobCardData(); // 2回目以降: データのみ更新
+                updateMobCardData(); // 2回目以降: 既存DOMのデータのみ更新 (描画中断なし)
             }
 
 
@@ -1395,8 +1383,7 @@ function initializeApp() {
 
                 if (currentRank !== newRank) {
                     currentFilter.rank = newRank;
-                    // 【変更2/2】DOMは再描画せず、表示/非表示のみ更新
-                    updateFilterVisibility();
+                    updateFilterVisibility(); // DOM再構築なし
                     updateFilterHighlights();
                     toggleAreaFilterPanel(false);
 
@@ -1452,8 +1439,7 @@ function initializeApp() {
                 }
             }
 
-            // 【変更3/3】DOMは再描画せず、表示/非表示のみ更新
-            updateFilterVisibility();
+            updateFilterVisibility(); // DOM再構築なし
             updateFilterHighlights();
             saveFilterState();
         }
@@ -1473,10 +1459,10 @@ function initializeApp() {
     }
 
     // 3. 初回データロードと定期更新
-    // 初回は shouldFetchBase=trueで実行し、renderMobList（全描画）に繋がる
-    fetchRecordsAndUpdate('initial', true);
-    // 定期更新は shouldFetchBase=false で実行し、updateMobCardData（差分更新）に繋がる
-    setInterval(() => fetchRecordsAndUpdate('auto', false), 10 * 60 * 1000);
+    // 初回は isInitialLoad=true で実行し、renderMobList（全描画）に繋がる
+    fetchRecordsAndUpdate(true);
+    // 定期更新は isInitialLoad=false で実行し、updateMobCardData（差分更新）に繋がる
+    setInterval(() => fetchRecordsAndUpdate(false), 10 * 60 * 1000);
     setInterval(() => updateProgressBars(), 60 * 1000); // プログレスバーの定期更新 (60秒ごと)
 }
 
