@@ -105,7 +105,7 @@ function formatLastKillTime(dateInput) {
 }
 
 /**
- * ミリ秒を HH:MM 形式に変換し、接頭辞を付けます。
+ * 【修正】ミリ秒を HH:MM 形式に変換し、接頭辞を付けます。
  * @param {number} ms - ミリ秒
  * @param {string} prefix - 接頭辞 ('+' または '')
  * @returns {string} HH:MM 形式の文字列
@@ -332,7 +332,7 @@ function adjustContentPadding() {
 }
 
 
-// --- DOM操作/イベントハンドラ ---
+// --- DOM操作/イベントハンドラ (変更なし) ---
 
 /**
  * モブデータに基づいてHTMLカードを生成する
@@ -472,12 +472,15 @@ function createMobCard(mob) {
 }
 
 /**
- * フィルターに基づいてモブカードリストをレンダリングする (初回のみ実行)
+ * フィルターに基づいてモブカードリストをレンダリングする (変更なし)
+ * 【変更1/2】初回のみカードを生成し、以降はスキップします。
  */
 function renderMobList() {
-    // 【修正】既にカードDOMが存在する場合は、再構築せずに終了する（描画中断防止）
+    const { rank } = currentFilter;
+
+    // 初回描画後にカードが既に存在する場合、再描画せずにDOMを維持
     if (document.querySelector('.mob-card') && globalMobData.length > 0) {
-        // 初回ロード後に、現在のフィルタ設定を適用し、進捗バーを更新
+        // カードの表示/非表示とフィルタのハイライトのみを更新
         updateFilterVisibility();
         updateFilterHighlights();
         updateProgressBars();
@@ -488,14 +491,28 @@ function renderMobList() {
     // --- 初回描画処理 ---
 
     let filteredMobs = [];
-    // 初回は全てのモブを対象とする
-    filteredMobs = globalMobData;
+    const activeRanks = rank === 'ALL' ? TARGET_RANKS : [rank];
 
-    filteredMobs.sort((a, b) => a['No.'] - b['No.']);
+    for (const r of activeRanks) {
+        const rankMobs = globalMobData.filter(mob => mob.Rank === r);
+        const currentAreaSet = currentFilter.areaSets[r];
+
+        if (currentAreaSet.has('ALL') && currentAreaSet.size === 1) {
+            filteredMobs.push(...rankMobs.filter(mob => ALL_EXPANSION_NAMES.includes(mob.Expansion)));
+        } else if (!currentAreaSet.has('ALL') && currentAreaSet.size > 0) {
+            filteredMobs.push(...rankMobs.filter(mob => currentAreaSet.has(mob.Expansion)));
+        } else if (currentAreaSet.has('ALL') && currentAreaSet.size > 1) {
+             filteredMobs.push(...rankMobs.filter(mob => currentAreaSet.has(mob.Expansion)));
+        }
+    }
+
+    if (rank === 'ALL') {
+        filteredMobs.sort((a, b) => a['No.'] - b['No.']);
+    }
+
 
     // 3. レンダリング処理
-    // 初回のみカラムをクリアし、カードを生成・配置
-    columns.forEach(col => col.innerHTML = '');
+    columns.forEach(col => col.innerHTML = '';
 
     if (columns.length > 0) {
         filteredMobs.forEach((mob, index) => {
@@ -509,17 +526,15 @@ function renderMobList() {
 
     // 初回のみイベントリスナーをアタッチ
     attachEventListeners();
-    updateFilterVisibility(); // 初期のフィルター状態を適用
     updateFilterHighlights();
     updateProgressBars();
     saveFilterState();
 }
 
 /**
- * 【修正】データ更新時、既存のカードのデータ部分のみを更新する
+ * 【新規実装】データ更新時、既存のカードのデータ部分のみを更新する (変更なし)
  */
 function updateMobCardData() {
-    // DOM上にある全てのカードを取得
     const cards = document.querySelectorAll('.mob-card');
 
     cards.forEach(card => {
@@ -534,10 +549,11 @@ function updateMobCardData() {
         const repopData = calculateRepop(mob, lastKillDate);
 
         // 2. リポップ情報（時間表示、プログレスバー）の更新
-        card.dataset.minrepop = mob['REPOP(s)'];
+        card.dataset.minrepop = mob['REPOP(s)']; // プログレスバー更新ロジックのために更新
         card.dataset.maxrepop = mob['MAX(s)'];
 
-        updateProgressBars(card); // 進捗バーと表示テキストの更新
+        // `updateProgressBars` 関数にDOM操作を任せる
+        updateProgressBars(card);
 
         // 3. 詳細パネル内の前回討伐時刻とリポップ開始時刻を更新
         const lastKillDisplayEl = card.querySelector('.last-kill-display');
@@ -571,7 +587,6 @@ function updateMobCardData() {
         if (card.classList.contains('open') && openMobCardNo === mobNo) {
             const mapOverlay = card.querySelector('.map-overlay');
             if (mapOverlay && mob.spawn_points) {
-                // サーバーから最新のcullStatusMapが来ていれば、それに従って再描画
                 drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
             }
         }
@@ -584,8 +599,7 @@ function updateMobCardData() {
 }
 
 /**
- * 【修正】モブカードの表示/非表示をフィルター設定に基づいて切り替える
- * DOMの再配置を行わず、表示/非表示の切り替えのみを行うことで描画の中断を防ぐ。
+ * モブカードの表示/非表示をフィルター設定に基づいて切り替える (変更なし)
  */
 function updateFilterVisibility() {
     const { rank } = currentFilter;
@@ -603,8 +617,10 @@ function updateFilterVisibility() {
 
             // 2. エリアフィルタのチェック
             if (currentAreaSet.has('ALL') && currentAreaSet.size === 1) {
+                // ALLのみ選択されている（全て表示）
                 isVisible = true;
             } else if (currentAreaSet.has(mobExpansion)) {
+                // 特定の拡張エリアが選択されている
                 isVisible = true;
             }
         }
@@ -616,6 +632,19 @@ function updateFilterVisibility() {
 
         card.style.display = isVisible ? 'block' : 'none';
     });
+
+    // 3. カラム内のカードの並び替え (表示状態のモブカードのみを再配置)
+    const visibleCards = Array.from(document.querySelectorAll('.mob-card')).filter(card => card.style.display !== 'none');
+
+    // 一度カラムをクリアせずに、カードの親要素を移動させる
+    columns.forEach(col => col.innerHTML = ''); // 一旦DOMから切り離す
+
+    if (columns.length > 0) {
+        visibleCards.forEach((card, index) => {
+            const targetColumn = columns[index % columns.length];
+            targetColumn.appendChild(card);
+        });
+    }
 }
 
 /**
@@ -716,7 +745,7 @@ async function instantARankReport(mobNo) {
 
         if (result.status === 'success') {
             displayError(`${mob.Name} (A) の報告成功！`);
-            await fetchRecordsAndUpdate(false); // 更新後にDOMを再構築しない
+            await fetchRecordsAndUpdate('manual', false);
             setTimeout(() => displayError(null), 1500);
         } else {
             displayError(`${mob.Name} (A) の報告失敗: ${result.message}`);
@@ -794,7 +823,7 @@ function toggleMobDetails(card) {
 }
 
 /**
- * 【修正】マップにスポーンポイントを描画する
+ * 【修正・追加】マップにスポーンポイントを描画する
  */
 function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     overlayEl.innerHTML = '';
@@ -834,7 +863,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
                 const pointEl = document.createElement('div');
                 pointEl.className = 'spawn-point-b-only';
 
-                // B1/B2のみのポイントを2px小さくする
+                // 【B1/B2のみのポイントを2px小さくする】
                 const baseSize = 10;
                 const newSize = baseSize - 2;
 
@@ -845,7 +874,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
                     box-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
                 `;
 
-                // ラストワン判定時のB1/B2のみのポイントの表示反転
+                // 【ラストワン判定時のB1/B2のみのポイントの表示反転】
                 if (shouldInvertBOnlyPoints) {
                     pointEl.style.backgroundColor = 'rgba(100, 100, 100, 1.0)'; // グレーに反転
                     pointEl.style.boxShadow = 'none'; // 影をなくす
@@ -906,46 +935,44 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
         pointEl.onclick = (e) => {
             e.stopPropagation();
             // isCulled は現在の状態なので、新しい状態は !isCulled
-            /**
- * 湧き潰し状態をGAS経由で切り替える
- * @param {number} mobNo - モブ番号
- * @param {string} pointId - スポーンポイントID
- * @param {boolean} newStatus - 新しい湧き潰し状態 (true=潰し, false=解除)
+            toggleCullStatus(mob['No.'], point.id, !isCulled);
+        };
+
+        overlayEl.appendChild(pointEl);
+    });
+}
+
+/**
+ * 【新規追加】湧き潰し状態を切り替え、GASに報告する
  */
-async function toggleCullStatus(mobNo, pointId, newStatus) {
+async function toggleCullStatus(mobNo, pointId, isCulled) {
     const mob = getMobByNo(mobNo);
     if (!mob) return;
 
-    // 1. 画面上に即時反映 (ユーザー体験向上)
-    // 成功・失敗に関わらず、即時反映されているため、ここではロールバック処理を省略
-    mob.cullStatusMap[pointId] = newStatus;
+    // 1. クライアント側状態の即時更新
+    mob.cullStatusMap[pointId] = isCulled;
 
-    // 2. 現在開いているカードのマップオーバーレイのみを再描画
+    // 2. マップ表示の即時再描画
     const card = document.querySelector(`.mob-card[data-mobno="${mobNo}"]`);
-    if (card && card.classList.contains('open')) {
-        const mapOverlay = card.querySelector('.map-overlay');
-        if (mapOverlay) {
-            drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
-        }
+    const mapOverlay = card.querySelector('.map-overlay');
+    if (mapOverlay && mob.spawn_points) {
+        drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
     }
 
-    const actionName = newStatus ? '湧き潰し報告' : '湧き潰し解除報告';
     const mobName = mob.Name;
+    const actionName = isCulled ? '湧き潰し報告' : '湧き潰し解除報告';
+    displayError(`${mobName}の${pointId}を${actionName}中...`);
 
-    // サーバー通信の処理
     try {
-        // 【★修正ポイント★】キー名をGAS側が期待する形式に合わせる (大文字+アンダースコア)
         const response = await fetch(GAS_ENDPOINT, {
             method: 'POST',
             mode: 'cors',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
-                action: 'updateCullStatus', 
-                Mob_No: mobNo,       // ★修正: mobNo -> Mob_No
-                Point_ID: pointId,   // ★修正: pointId -> Point_ID
-                Is_Culled: newStatus ? 'TRUE' : 'FALSE', // ★修正: isCulled -> Is_Culled
+                action: 'reportCull',
+                Mob_No: mobNo,
+                Point_ID: pointId,
+                Is_Culled: isCulled ? 'TRUE' : 'FALSE',
                 Reporter_ID: userId
             })
         });
@@ -953,20 +980,19 @@ async function toggleCullStatus(mobNo, pointId, newStatus) {
         const result = await response.json();
 
         if (result.status === 'success') {
-            displayError(`${mobName}の湧き潰し報告成功！`);
+            displayError(`${mobName}の${pointId}を${actionName}成功！`);
             setTimeout(() => displayError(null), 1500);
         } else {
-            // サーバー側で失敗した場合、状態をロールバックし、再描画
-            mob.cullStatusMap[pointId] = !newStatus; // 状態を元に戻す
-            if (mapOverlay) drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
+            // サーバー側で失敗した場合、クライアント側の状態を元に戻す (復元ロジックは簡略化)
+            mob.cullStatusMap[pointId] = !isCulled;
+            drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo); // 再描画して元に戻す
             displayError(`${mobName}の${actionName}失敗: ${result.message}`);
         }
-
     } catch (error) {
-        console.error('湧き潰し通信エラー:', error);
-        // 通信失敗の場合、状態をロールバックし、再描画
-        mob.cullStatusMap[pointId] = !newStatus; // 状態を元に戻す
-        if (mapOverlay) drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
+        // 通信失敗の場合、クライアント側の状態を元に戻す
+        mob.cullStatusMap[pointId] = !isCulled;
+        drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo); // 再描画して元に戻す
+        console.error('湧き潰し報告エラー:', error);
         displayError(`${mobName}の${actionName}エラー: サーバー通信に失敗。`);
     }
 }
@@ -1055,8 +1081,8 @@ async function submitReport() {
             submitReportBtn.className = 'w-full px-4 py-2 bg-green-600 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
             submitReportBtn.disabled = false;
 
-            // 手動更新としてデータを更新 (DOM再構築なし)
-            await fetchRecordsAndUpdate(false);
+            // 手動更新としてデータを更新
+            await fetchRecordsAndUpdate('manual', false);
             setTimeout(closeReportModal, 1500);
 
         } else {
@@ -1078,7 +1104,7 @@ async function submitReport() {
 }
 
 
-// --- データ取得/更新 ---
+// --- データ取得/更新 (変更なし) ---
 
 /**
  * 外部JSONからモブデータを取得し、`No.`から`Expansion`を決定する
@@ -1114,13 +1140,12 @@ async function fetchBaseMobData() {
 }
 
 /**
- * 【修正】GASから最新の討伐記録と湧き潰し状態を取得し、グローバルデータを更新する
- * @param {boolean} isInitialLoad 初回ロード時は true。2回目以降は false。
+ * GASから最新の討伐記録と湧き潰し状態を取得し、グローバルデータを更新する
  */
-async function fetchRecordsAndUpdate(isInitialLoad = false) {
+async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = true) {
 
     // 1. 基本データ (Base Mob Data) のロードと初期レンダリング
-    if (isInitialLoad) {
+    if (shouldFetchBase) {
         displayError(`設定データをロード中...`);
         await fetchBaseMobData();
         adjustContentPadding();
@@ -1131,12 +1156,15 @@ async function fetchRecordsAndUpdate(isInitialLoad = false) {
     }
 
     // 2. ローディングメッセージの表示
-    const shouldDisplayLoading = (isInitialLoad || autoUpdateSuccessCount === 0);
+    const shouldDisplayLoading = (updateType === 'initial' || updateType === 'manual' || autoUpdateSuccessCount === 0);
     if (shouldDisplayLoading) {
         displayError(`データを更新中…`);
     }
 
-    // 3. 討伐記録と湧き潰し状態の取得と更新
+    // 3. データ取得前の暫定表示
+    // 初回は全描画、2回目以降はDOMを維持するためにここでは何もしない
+
+    // 4. 討伐記録と湧き潰し状態の取得と更新
     try {
         const response = await fetch(GAS_ENDPOINT + '?action=getRecords');
         const data = await response.json();
@@ -1145,7 +1173,7 @@ async function fetchRecordsAndUpdate(isInitialLoad = false) {
             const records = data.records;
             const cullStatuses = data.cullStatuses || [];
 
-            // データをマージして globalMobData を再構築（これは常に必要）
+            // データをマージして globalMobData を再構築
             globalMobData = baseMobData.map(mob => {
                 const mobNo = mob['No.'];
                 const record = records.find(r => r['No.'] === mobNo);
@@ -1171,18 +1199,18 @@ async function fetchRecordsAndUpdate(isInitialLoad = false) {
                 return newMob;
             });
 
-            if (!isInitialLoad) {
-                autoUpdateSuccessCount++; // 初回ロードが完了してから成功回数をカウント
+            if (updateType === 'auto') {
+                autoUpdateSuccessCount++;
             }
 
             displayError(null);
             adjustContentPadding();
 
-            // 4. 初回描画かデータ更新かの分岐
-            if (isInitialLoad) {
-                renderMobList(); // 初回: 全カードDOM構築
+            // 初回かどうかで処理を分岐
+            if (shouldFetchBase) {
+                renderMobList(); // 初回: 全描画
             } else {
-                updateMobCardData(); // 2回目以降: 既存DOMのデータのみ更新 (描画中断なし)
+                updateMobCardData(); // 2回目以降: データのみ更新
             }
 
 
@@ -1330,7 +1358,7 @@ function toggleAreaFilterPanel(forceOpen) {
 
 
 /**
- * サイトの初期化処理
+ * サイトの初期化処理 (変更なし)
  */
 function initializeApp() {
     // 1. UUIDの取得/生成
@@ -1367,11 +1395,8 @@ function initializeApp() {
 
                 if (currentRank !== newRank) {
                     currentFilter.rank = newRank;
-                    
-                    // 【★修正箇所 A★】タブ切り替え時にDOM上の全カードのデータをリフレッシュ
-                    updateMobCardData(); 
-
-                    updateFilterVisibility(); // DOMの表示/非表示を切り替える
+                    // 【変更2/2】DOMは再描画せず、表示/非表示のみ更新
+                    updateFilterVisibility();
                     updateFilterHighlights();
                     toggleAreaFilterPanel(false);
 
@@ -1427,10 +1452,8 @@ function initializeApp() {
                 }
             }
 
-            // 【★修正箇所 B★】エリアフィルタ変更後、DOM上の全カードのデータをリフレッシュ
-            updateMobCardData(); 
-            
-            updateFilterVisibility(); // DOMの表示/非表示を切り替える
+            // 【変更3/3】DOMは再描画せず、表示/非表示のみ更新
+            updateFilterVisibility();
             updateFilterHighlights();
             saveFilterState();
         }
@@ -1450,10 +1473,10 @@ function initializeApp() {
     }
 
     // 3. 初回データロードと定期更新
-    // 初回は isInitialLoad=true で実行し, renderMobList（全描画）に繋がる
-    fetchRecordsAndUpdate(true);
-    // 定期更新は isInitialLoad=false で実行し, updateMobCardData（差分更新）に繋がる
-    setInterval(() => fetchRecordsAndUpdate(false), 10 * 60 * 1000);
+    // 初回は shouldFetchBase=trueで実行し、renderMobList（全描画）に繋がる
+    fetchRecordsAndUpdate('initial', true);
+    // 定期更新は shouldFetchBase=false で実行し、updateMobCardData（差分更新）に繋がる
+    setInterval(() => fetchRecordsAndUpdate('auto', false), 10 * 60 * 1000);
     setInterval(() => updateProgressBars(), 60 * 1000); // プログレスバーの定期更新 (60秒ごと)
 }
 
