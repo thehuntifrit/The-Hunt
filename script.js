@@ -1,4 +1,3 @@
-
 // Google Apps Script (GAS) のエンドポイントURL
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
 // 静的モブデータ (mob_data.json) のURL
@@ -242,7 +241,6 @@ function calculateRepop(mob, lastKill) {
                 elapsedPercent = Math.max(0, Math.min(100, (elapsedInWindowMs / popDurationMs) * 100));
 
                 const duration = formatDurationPart(remainingMsToMax);
-                // 【前回の修正を維持: 進捗率を強調する形式】
                 timeRemainingStr = `${elapsedPercent.toFixed(1)}% (残り ${duration})`;
 
             } else {
@@ -250,7 +248,6 @@ function calculateRepop(mob, lastKill) {
                 isMaxOver = true;
                 const popElapsedMs = now.getTime() - maxRepopTime.getTime();
                 const formattedElapsed = formatDurationPart(popElapsedMs, '+');
-                // 【前回の修正を維持: 進捗率を強調する形式】
                 timeRemainingStr = `100.0% (${formattedElapsed})`;
                 elapsedPercent = 100;
             }
@@ -382,13 +379,24 @@ function createMobCard(mob) {
         </div>
     `;
 
-    // 【前回の修正を維持: 前回討伐日時の相対表示を適用】
+    // 【前回討伐日時の相対表示を適用】
     const lastKillDisplay = formatLastKillTime(lastKillDate);
     const lastKillHtml = `
         <div class="px-4 pt-1 pb-1 last-kill-content flex justify-end">
             <p class="text-sm font-semibold text-gray-400">前回時間: <span class="text-base text-gray-200 font-mono">${lastKillDisplay}</span></p>
         </div>
     `;
+    
+    // 【新規実装: モブカード詳細にメモを表示】
+    const lastKillMemo = mob.LastKillMemo || '';
+    const lastKillMemoHtml = lastKillMemo ? `
+        <div class="px-4 pt-1 pb-1 last-kill-memo-content text-left">
+            <p class="text-sm font-semibold text-gray-400">Memo: 
+                <span class="text-sm text-gray-200 font-sans font-normal">${processText(lastKillMemo)}</span>
+            </p>
+        </div>
+    ` : '';
+
 
     const mapDetailsHtml = mob.Map ? `
         <div class="mob-details pt-1 px-4 text-center map-content">
@@ -399,7 +407,7 @@ function createMobCard(mob) {
         </div>
     ` : '';
 
-    let panelContent = conditionHtml + minRepopHtml + lastKillHtml + mapDetailsHtml;
+    let panelContent = conditionHtml + minRepopHtml + lastKillHtml + lastKillMemoHtml + mapDetailsHtml; // 👈 メモHTMLを追加
     if (panelContent.trim()) {
         panelContent = `<div class="panel-padding-bottom">${panelContent}</div>`;
     }
@@ -411,7 +419,6 @@ function createMobCard(mob) {
     ` : '';
 
     // --- 進捗バーエリアのHTML ---
-    // 【前回の修正を維持: プログレスバー周囲のクラス調整】
     const repopInfoHtml = `
         <div class="mt-1 bg-gray-700 p-1.5 rounded-xl text-xs relative overflow-hidden shadow-inner h-10">
             <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear" style="z-index: 0;"></div>
@@ -623,7 +630,7 @@ function toggleMobDetails(card) {
 
     if (!panel) return;
 
-    // 【前回の修正を維持: 排他的開閉ロジックの追加】
+    // 排他的開閉ロジック
     const isCurrentlyOpen = card.classList.contains('open');
 
     // 既に開いているカードがあれば閉じる
@@ -697,7 +704,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     const B1_INTERNAL_COLOR = '#60a5fa'; // Blue-400
     const B2_INTERNAL_COLOR = '#f87171'; // Red-400
 
-    // S/A抽選に関わるポイントをフィルタリング
+    // S/A抽選に関わるポイントをフィルタリング (Bランクのみのポイントは含まない)
     const cullTargetPoints = spawnPoints.filter(point =>
         point.mob_ranks.includes('S') || point.mob_ranks.includes('A')
     );
@@ -705,23 +712,39 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     // 未処理のS/A抽選ポイントの数をカウント
     let remainingCullCount = cullTargetPoints.filter(point => !mob.cullStatusMap[point.id]).length;
 
+    // B1/B2のみのポイントが反転表示されるかどうかのフラグ
+    const shouldInvertBOnlyPoints = remainingCullCount === 1; // 👈 ラストワン判定
+
+
     spawnPoints.forEach(point => {
         const isS_A_Point = point.mob_ranks.includes('S') || point.mob_ranks.includes('A');
         const includesB1 = point.mob_ranks.includes('B1');
         const includesB2 = point.mob_ranks.includes('B2');
-        const isCullTarget = isS_A_Point;
+        const isCullTarget = isS_A_Point; // S/A抽選に関わるポイントのみ湧き潰し対象
 
         if (!isCullTarget) {
             // Bランクのみのポイント (湧き潰し対象外)
             if (point.mob_ranks.length === 1 && (includesB1 || includesB2)) {
                 const pointEl = document.createElement('div');
                 pointEl.className = 'spawn-point-b-only';
+                
+                // 【B1/B2のみのポイントを2px小さくする】
+                const baseSize = 10;
+                const newSize = baseSize - 2;
+                
                 pointEl.style.cssText = `
                     position: absolute; left: ${point.x}%; top: ${point.y}%; transform: translate(-50%, -50%);
-                    width: 10px; height: 10px; border-radius: 50%; z-index: 5; pointer-events: none;
+                    width: ${newSize}px; height: ${newSize}px; border-radius: 50%; z-index: 5; pointer-events: none;
                     background-color: ${includesB1 ? B1_INTERNAL_COLOR : B2_INTERNAL_COLOR};
                     box-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
                 `;
+
+                // 【ラストワン判定時のB1/B2のみのポイントの表示反転】
+                if (shouldInvertBOnlyPoints) {
+                    pointEl.style.backgroundColor = 'rgba(100, 100, 100, 1.0)'; // グレーに反転
+                    pointEl.style.boxShadow = 'none'; // 影をなくす
+                }
+                
                 overlayEl.appendChild(pointEl);
             }
             return;
@@ -740,7 +763,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
             internalColor = '#f87171';
         }
 
-        const isLastPoint = !isCulled && remainingCullCount === 1;
+        const isLastPoint = !isCulled && remainingCullCount === 1; // S/A抽選対象としてのラストワン
 
         if (isLastPoint) {
             outlineColor = '#10b981';
@@ -780,45 +803,6 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
 
         overlayEl.appendChild(pointEl);
     });
-}
-
-/**
- * 湧き潰し状態をGAS経由で切り替える
- */
-async function toggleCullStatus(mobNo, pointId, newStatus) {
-    const mob = getMobByNo(mobNo);
-    if (!mob) return;
-
-    // 1. 画面上に即時反映 (ユーザー体験向上)
-    mob.cullStatusMap[pointId] = newStatus;
-
-    // 2. 現在開いているカードのマップオーバーレイのみを再描画
-    const card = document.querySelector(`.mob-card[data-mobno="${mobNo}"]`);
-    if (card && card.classList.contains('open')) {
-        const mapOverlay = card.querySelector('.map-overlay');
-        if (mapOverlay) {
-            drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
-        }
-    }
-
-    try {
-        await fetch(GAS_ENDPOINT, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-                action: 'updateCullStatus',
-                mobNo: mobNo,
-                pointId: pointId,
-                isCulled: newStatus ? 'TRUE' : 'FALSE',
-                reporterId: userId
-            })
-        });
-    } catch (error) {
-        console.error('湧き潰し通信エラー:', error);
-    }
 }
 
 
@@ -1008,8 +992,11 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
                 // 討伐記録の反映
                 if (record && record.POP_Date_Unix) {
                     newMob.LastKillDate = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
+                    // 【メモ情報の取得】
+                    newMob.LastKillMemo = record.Memo || ''; 
                 } else {
                     newMob.LastKillDate = '';
+                    newMob.LastKillMemo = ''; // メモがない場合は空文字列
                 }
 
                 // 湧き潰し状態の反映
