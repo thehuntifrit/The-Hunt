@@ -326,185 +326,6 @@ function adjustContentPadding() {
 
 
 // --- DOM操作/イベントハンドラ ---
-// ----- Portal: global state -----
-let portalPanel = null;
-let portalOpenMobNo = null;
-let portalRepositionRaf = null;
-let portalScrollHandler = null;
-let portalDocPointerHandler = null;
-let portalResizeHandler = null;
-
-// ----- Ensure portal element exists -----
-function ensurePortal() {
-  if (portalPanel && document.body.contains(portalPanel)) return portalPanel;
-  portalPanel = document.createElement('div');
-  portalPanel.id = 'mob-detail-portal';
-  portalPanel.className = 'mob-detail-portal hidden-init';
-  portalPanel.style.position = 'fixed';
-  portalPanel.style.zIndex = '2000';
-  portalPanel.style.pointerEvents = 'auto';
-  // prevent interfering with other global layout, add minimal base styles here if needed
-  document.body.appendChild(portalPanel);
-  return portalPanel;
-}
-
-// ----- Build panel inner HTML from mob (extract or reuse existing panel HTML generator) -----
-function createPanelInnerHtml(mob) {
-  // Minimal example: replicate the expandable-panel contents you currently render inside card
-  // Replace or expand this with the actual HTML your createMobCard created inside .expandable-panel
-  const memo = mob.Memo ? `<div class="panel-memo">${escapeHtml(mob.Memo)}</div>` : '';
-  const mapHtml = `<div class="map-content"><div class="map-overlay" data-mobno="${mob['No.']}"></div></div>`;
-  return `
-    <div class="panel-inner" data-mobno="${mob['No.']}">
-      <div class="panel-header">
-        <div class="mob-name">${escapeHtml(mob.Name)}</div>
-        <div class="mob-meta">${escapeHtml(mob.Expansion || '')} ${escapeHtml(mob.Area || '')}</div>
-      </div>
-      <div class="panel-body">
-        ${memo}
-        ${mapHtml}
-      </div>
-    </div>
-  `;
-}
-
-// small helper to avoid XSS when injecting strings
-function escapeHtml(s) {
-  if (s == null) return '';
-  return String(s).replace(/[&<>"']/g, function (m) {
-    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];
-  });
-}
-
-// ----- Open portal for given card element -----
-function openDetailPortalForCard(cardEl) {
-  if (!cardEl) return;
-  const mobNo = parseInt(cardEl.dataset.mobno, 10);
-  if (isNaN(mobNo)) return;
-  const mob = getMobByNo(mobNo);
-  if (!mob) return;
-
-  const portal = ensurePortal();
-  // Put content
-  portal.innerHTML = createPanelInnerHtml(mob);
-  portal.classList.remove('hidden-init');
-
-  // Apply base classes for styling
-  portal.classList.add('opened');
-
-  // Render any interactive content inside portal (e.g., map overlay points)
-  const overlay = portal.querySelector('.map-overlay');
-  if (overlay && mob.spawn_points) {
-    // drawSpawnPoints must accept container element as first arg in your code; adapt if needed
-    drawSpawnPoints(overlay, mob.spawn_points, mobNo);
-  }
-
-  portalOpenMobNo = mobNo;
-
-  // position and setup handlers
-  positionPortalRelativeToCard(cardEl, portal);
-  attachPortalEventHandlers(cardEl);
-}
-
-// ----- Positioning logic: place portal under the card, flip above if necessary -----
-function positionPortalRelativeToCard(cardEl, portalEl) {
-  if (!cardEl || !portalEl) return;
-  // measure card rect
-  const rect = cardEl.getBoundingClientRect();
-
-  // first set width to match card (clamped to viewport)
-  const margin = 8;
-  const width = Math.min(rect.width, window.innerWidth - margin * 2);
-  portalEl.style.width = width + 'px';
-
-  // temporarily set left to compute height after content rendered
-  const left = Math.max(margin, rect.left);
-  portalEl.style.left = left + 'px';
-  portalEl.style.top = '0px';
-
-  // ensure offsetHeight available (may be 0 if fonts async); allow a short delay
-  requestAnimationFrame(() => {
-    const ph = portalEl.offsetHeight || 0;
-    // default try below card
-    let top = rect.bottom + margin;
-    // if overflow bottom, show above card
-    if (top + ph > window.innerHeight - margin) {
-      top = rect.top - margin - ph;
-      // if still out, clamp inside viewport
-      if (top < margin) top = margin;
-    }
-    portalEl.style.top = Math.max(margin, top) + 'px';
-    // if portal would overflow right edge, shift left
-    const rightOverflow = (left + width) - (window.innerWidth - margin);
-    if (rightOverflow > 0) {
-      portalEl.style.left = Math.max(margin, left - rightOverflow) + 'px';
-    }
-  });
-}
-
-// ----- Attach global handlers while portal open -----
-function attachPortalEventHandlers(cardEl) {
-  detachPortalEventHandlers(); // ensure idempotent
-  // close on outside click
-  portalDocPointerHandler = (e) => {
-    const portal = portalPanel;
-    if (!portal) return;
-    if (portal.contains(e.target)) return;
-    if (cardEl.contains(e.target)) return;
-    closeDetailPortal();
-  };
-  document.addEventListener('pointerdown', portalDocPointerHandler);
-
-  // reposition on scroll/resize (throttled via rAF)
-  portalScrollHandler = () => {
-    if (portalRepositionRaf) return;
-    portalRepositionRaf = requestAnimationFrame(() => {
-      const card = document.querySelector(`.mob-card[data-mobno="${portalOpenMobNo}"]`);
-      if (card && portalPanel) positionPortalRelativeToCard(card, portalPanel);
-      portalRepositionRaf = null;
-    });
-  };
-  window.addEventListener('scroll', portalScrollHandler, { passive: true });
-  portalResizeHandler = () => portalScrollHandler();
-  window.addEventListener('resize', portalResizeHandler);
-  window.addEventListener('orientationchange', portalResizeHandler);
-  // close on ESC
-  document.addEventListener('keydown', onPortalKeyDown);
-}
-
-// ----- Detach handlers -----
-function detachPortalEventHandlers() {
-  if (portalDocPointerHandler) { document.removeEventListener('pointerdown', portalDocPointerHandler); portalDocPointerHandler = null; }
-  if (portalScrollHandler) { window.removeEventListener('scroll', portalScrollHandler); portalScrollHandler = null; }
-  if (portalResizeHandler) { window.removeEventListener('resize', portalResizeHandler); window.removeEventListener('orientationchange', portalResizeHandler); portalResizeHandler = null; }
-  document.removeEventListener('keydown', onPortalKeyDown);
-  if (portalRepositionRaf) { cancelAnimationFrame(portalRepositionRaf); portalRepositionRaf = null; }
-}
-
-// ----- Close portal -----
-function closeDetailPortal() {
-  if (!portalPanel) return;
-  portalPanel.classList.add('hidden-init');
-  portalPanel.innerHTML = '';
-  portalOpenMobNo = null;
-  detachPortalEventHandlers();
-}
-
-// ----- Keydown handler for ESC -----
-function onPortalKeyDown(e) {
-  if (e.key === 'Escape' || e.key === 'Esc') closeDetailPortal();
-}
-
-// ----- Public toggle helper to replace old toggleMobDetails(card) behavior -----
-// This function will open portal if closed; if the same card is open, it closes
-function toggleDetailForCard(cardEl) {
-  const mobNo = parseInt(cardEl.dataset.mobno, 10);
-  if (portalOpenMobNo === mobNo) {
-    closeDetailPortal();
-    return;
-  }
-  openDetailPortalForCard(cardEl);
-}
 
 /**
  * モブデータに基づいてHTMLカードを生成する
@@ -802,10 +623,70 @@ async function instantARankReport(mobNo) {
 /**
  * マップ詳細パネルの表示/非表示を切り替える
  */
-// 既存の toggleMobDetails(card) を下記に置換
 function toggleMobDetails(card) {
-  toggleDetailForCard(card);
+    const mobNo = parseInt(card.dataset.mobno);
+    const mob = getMobByNo(mobNo);
+    const panel = card.querySelector('.expandable-panel');
+
+    if (!panel) return;
+
+    // 排他的開閉ロジック
+    const isCurrentlyOpen = card.classList.contains('open');
+
+    // 既に開いているカードがあれば閉じる
+    if (openMobCardNo !== null && openMobCardNo !== mobNo) {
+        const currentlyOpenCard = document.querySelector(`.mob-card[data-mobno="${openMobCardNo}"]`);
+        if (currentlyOpenCard) {
+            currentlyOpenCard.classList.remove('open');
+            const openPanel = currentlyOpenCard.querySelector('.expandable-panel');
+            if (openPanel) {
+                openPanel.style.maxHeight = '0';
+            }
+        }
+    }
+    
+    // 開閉フラグを更新
+    openMobCardNo = isCurrentlyOpen ? null : mobNo;
+
+
+    panel.style.transition = 'max-height 0.3s ease-in-out';
+
+    if (isCurrentlyOpen) {
+        // 閉じる処理
+        panel.style.maxHeight = '0';
+        card.classList.remove('open');
+    } else {
+        // 開く処理
+        card.classList.add('open');
+        
+        // 1. スポーンポイントの描画
+        const mapOverlay = panel.querySelector('.map-overlay');
+        if (mapOverlay && mob.spawn_points) {
+            drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
+        }
+
+        // 2. 瞬時に max-height を解除し、コンテンツの最終的な高さを取得
+        panel.style.maxHeight = 'none';
+        const targetHeight = panel.scrollHeight;
+
+        // 3. max-heightを 0 に設定し、アニメーションの開始点に戻す
+        panel.style.maxHeight = '0';
+
+        // 4. 取得した高さに安全マージンを加えてアニメーションを開始
+        setTimeout(() => {
+            panel.style.maxHeight = (targetHeight + 5) + 'px';
+
+            // 5. アニメーション終了後に max-height: none に設定
+            panel.addEventListener('transitionend', function handler(e) {
+                if (e.propertyName === 'max-height' && card.classList.contains('open')) {
+                    panel.style.maxHeight = 'none';
+                }
+                panel.removeEventListener('transitionend', handler);
+            });
+        }, 0);
+    }
 }
+
 /**
  * マップにスポーンポイントを描画する
  */
