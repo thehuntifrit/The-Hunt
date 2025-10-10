@@ -955,7 +955,7 @@ async function toggleCullStatus(mobNo, pointId, isCulled) {
             mode: 'cors',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
-                action: 'reportCull',
+                action: 'updateCullStatus', 
                 Mob_No: mobNo,
                 Point_ID: pointId,
                 Is_Culled: isCulled ? 'TRUE' : 'FALSE', // GAS側で受け取るスキーマ
