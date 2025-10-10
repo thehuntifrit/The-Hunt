@@ -119,3 +119,37 @@ header {
 .panel-padding-bottom { 
     padding-bottom: 0.5rem; 
 }
+
+/* Portal panel base */
+.mob-detail-portal {
+  position: fixed;
+  z-index: 2000;
+  background: rgba(17,17,19,0.98);
+  color: #c9d1d9;
+  border-radius: 8px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  padding: 12px;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hidden initial state */
+.mob-detail-portal.hidden-init {
+  display: none;
+}
+
+/* When opened we use display:block */
+.mob-detail-portal.opened {
+  display: block;
+}
+
+/* Ensure portal inner content styles are pleasant */
+.mob-detail-portal .panel-inner { width: 100%; }
+.mob-detail-portal .panel-header { display:flex; justify-content:space-between; gap:8px; align-items:center; margin-bottom:8px; }
+.mob-detail-portal .panel-body { display:block; gap:8px; }
+
+/* Ensure grid container won't clip children (important if you tried absolute inside card) */
+.mob-list { overflow: visible; }
+.mob-card { position: relative; overflow: visible; z-index: 1; }
