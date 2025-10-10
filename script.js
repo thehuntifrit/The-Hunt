@@ -477,6 +477,7 @@ function createMobCard(mob) {
 function renderMobList() {
     // 【修正】既にカードDOMが存在する場合は、再構築せずに終了する（描画中断防止）
     if (document.querySelector('.mob-card') && globalMobData.length > 0) {
+        // 初回ロード後に、現在のフィルタ設定を適用し、進捗バーを更新
         updateFilterVisibility();
         updateFilterHighlights();
         updateProgressBars();
@@ -487,24 +488,10 @@ function renderMobList() {
     // --- 初回描画処理 ---
 
     let filteredMobs = [];
-    const activeRanks = currentFilter.rank === 'ALL' ? TARGET_RANKS : [currentFilter.rank];
+    // 初回は全てのモブを対象とする
+    filteredMobs = globalMobData;
 
-    for (const r of activeRanks) {
-        const rankMobs = globalMobData.filter(mob => mob.Rank === r);
-        const currentAreaSet = currentFilter.areaSets[r];
-
-        if (currentAreaSet.has('ALL') && currentAreaSet.size === 1) {
-            filteredMobs.push(...rankMobs.filter(mob => ALL_EXPANSION_NAMES.includes(mob.Expansion)));
-        } else if (!currentAreaSet.has('ALL') && currentAreaSet.size > 0) {
-            filteredMobs.push(...rankMobs.filter(mob => currentAreaSet.has(mob.Expansion)));
-        } else if (currentAreaSet.has('ALL') && currentAreaSet.size > 1) {
-             filteredMobs.push(...rankMobs.filter(mob => currentAreaSet.has(mob.Expansion)));
-        }
-    }
-
-    if (currentFilter.rank === 'ALL') {
-        filteredMobs.sort((a, b) => a['No.'] - b['No.']);
-    }
+    filteredMobs.sort((a, b) => a['No.'] - b['No.']);
 
     // 3. レンダリング処理
     // 初回のみカラムをクリアし、カードを生成・配置
@@ -522,6 +509,7 @@ function renderMobList() {
 
     // 初回のみイベントリスナーをアタッチ
     attachEventListeners();
+    updateFilterVisibility(); // 初期のフィルター状態を適用
     updateFilterHighlights();
     updateProgressBars();
     saveFilterState();
@@ -531,6 +519,7 @@ function renderMobList() {
  * 【修正】データ更新時、既存のカードのデータ部分のみを更新する
  */
 function updateMobCardData() {
+    // DOM上にある全てのカードを取得
     const cards = document.querySelectorAll('.mob-card');
 
     cards.forEach(card => {
@@ -627,8 +616,6 @@ function updateFilterVisibility() {
 
         card.style.display = isVisible ? 'block' : 'none';
     });
-
-    // 【削除】DOMの再配置ロジックを削除。CSSのFlexbox/Gridで自動的にレイアウトされることを期待する。
 }
 
 /**
@@ -1346,7 +1333,7 @@ function toggleAreaFilterPanel(forceOpen) {
 
 
 /**
- * サイトの初期化処理 (変更なし)
+ * サイトの初期化処理
  */
 function initializeApp() {
     // 1. UUIDの取得/生成
@@ -1383,7 +1370,11 @@ function initializeApp() {
 
                 if (currentRank !== newRank) {
                     currentFilter.rank = newRank;
-                    updateFilterVisibility(); // DOM再構築なし
+                    
+                    // 【★修正箇所 A★】タブ切り替え時にDOM上の全カードのデータをリフレッシュ
+                    updateMobCardData(); 
+
+                    updateFilterVisibility(); // DOMの表示/非表示を切り替える
                     updateFilterHighlights();
                     toggleAreaFilterPanel(false);
 
@@ -1439,7 +1430,10 @@ function initializeApp() {
                 }
             }
 
-            updateFilterVisibility(); // DOM再構築なし
+            // 【★修正箇所 B★】エリアフィルタ変更後、DOM上の全カードのデータをリフレッシュ
+            updateMobCardData(); 
+            
+            updateFilterVisibility(); // DOMの表示/非表示を切り替える
             updateFilterHighlights();
             saveFilterState();
         }
@@ -1459,9 +1453,9 @@ function initializeApp() {
     }
 
     // 3. 初回データロードと定期更新
-    // 初回は isInitialLoad=true で実行し、renderMobList（全描画）に繋がる
+    // 初回は isInitialLoad=true で実行し, renderMobList（全描画）に繋がる
     fetchRecordsAndUpdate(true);
-    // 定期更新は isInitialLoad=false で実行し、updateMobCardData（差分更新）に繋がる
+    // 定期更新は isInitialLoad=false で実行し, updateMobCardData（差分更新）に繋がる
     setInterval(() => fetchRecordsAndUpdate(false), 10 * 60 * 1000);
     setInterval(() => updateProgressBars(), 60 * 1000); // プログレスバーの定期更新 (60秒ごと)
 }
