@@ -1,5 +1,5 @@
 // Google Apps Script (GAS) のエンドポイントURL
-const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGp1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
 // 静的モブデータ (mob_data.json) のURL
 const MOB_DATA_URL = './mob_data.json';
 
@@ -18,7 +18,7 @@ let currentFilter = {
 let currentMobNo = null;
 let userId = null;
 let autoUpdateSuccessCount = 0;
-// 【新設】排他的開閉のための変数
+// 排他的開閉のための変数
 let openMobCardNo = null; 
 
 // --- DOMエレメント ---
@@ -84,7 +84,6 @@ function formatDateForDisplay(dateInput) {
     return `${month}/${day} ${hours}:${minutes}`;
 }
 
-// 【修正: 前回討伐日時の相対表示ロジック追加】
 /**
  * 前回討伐日時を相対/絶対形式でフォーマットする
  */
@@ -194,8 +193,20 @@ function calculateRepop(mob, lastKill) {
 
     if (isUnknown) {
         minRepopTime = new Date(now.getTime() + repopMinMs);
-        timeRemainingStr = `Next: ${formatDateForDisplay(minRepopTime)}`;
+        
+        // 【修正点 2. POP時間（リポップ予想開始時間）の相対表示調整】
+        const remainingMsToMin = minRepopTime.getTime() - now.getTime();
+        const remainingMinutes = Math.ceil(remainingMsToMin / 60000); 
+
+        if (remainingMinutes < 60 && remainingMinutes >= 0) {
+            timeRemainingStr = `Next: ${remainingMinutes}分後`; 
+        } else {
+            // 1時間以上の場合は絶対時刻
+            timeRemainingStr = `Next: ${formatDateForDisplay(minRepopTime)}`;
+        }
+        
         elapsedPercent = 0;
+        
     } else {
         minRepopTime = new Date(killTime.getTime() + repopMinMs);
         maxRepopTime = new Date(killTime.getTime() + repopMaxMs);
@@ -206,10 +217,16 @@ function calculateRepop(mob, lastKill) {
             // Phase 1: Pre-Min Repop
             isPop = false;
             
-            // 【修正: POP前の表示をPOP後と同じサイズ・フォントに調整】
-            // 以前: `Next: ${formatDateForDisplay(minRepopTime)}`
-            // 変更: `Next: MM/DD HH:MM` (太字なし、POP後のサイズに合わせる)
-            timeRemainingStr = `Next: ${formatDateForDisplay(minRepopTime)}`;
+            // 【修正点 2. POP時間（リポップ予想開始時間）の相対表示調整】
+            const remainingMinutes = Math.ceil(remainingMsToMin / 60000); 
+
+            if (remainingMinutes < 60 && remainingMinutes >= 0) {
+                timeRemainingStr = `Next: ${remainingMinutes}分後`; 
+            } else {
+                // 1時間以上の場合は絶対時刻
+                timeRemainingStr = `Next: ${formatDateForDisplay(minRepopTime)}`;
+            }
+            
             elapsedPercent = 0;
 
         } else {
@@ -224,7 +241,7 @@ function calculateRepop(mob, lastKill) {
                 elapsedPercent = Math.max(0, Math.min(100, (elapsedInWindowMs / popDurationMs) * 100));
 
                 const duration = formatDurationPart(remainingMsToMax);
-                // 【修正: 進捗率を強調する形式に変更】
+                // 【前回の修正を維持: 進捗率を強調する形式】
                 timeRemainingStr = `${elapsedPercent.toFixed(1)}% (残り ${duration})`;
 
             } else {
@@ -232,7 +249,7 @@ function calculateRepop(mob, lastKill) {
                 isMaxOver = true;
                 const popElapsedMs = now.getTime() - maxRepopTime.getTime();
                 const formattedElapsed = formatDurationPart(popElapsedMs, '+');
-                // 【修正: 進捗率を強調する形式に変更】
+                // 【前回の修正を維持: 進捗率を強調する形式】
                 timeRemainingStr = `100.0% (${formattedElapsed})`;
                 elapsedPercent = 100;
             }
@@ -319,14 +336,12 @@ function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
     const { minRepop, timeDisplay, elapsedPercent, isPop, isMaxOver, isUnknown } = calculateRepop(mob, lastKillDate);
 
-    // 【修正: POP前の文字スタイル調整 - 太字を削除】
-    // 以前: repopTimeColorClass = 'text-white font-extrabold';
-    let repopTimeColorClass = 'text-white';
+    // 【前回の修正を維持: POP前の文字スタイル調整 - 太字を削除し、font-monoを適用】
+    let repopTimeColorClass = 'text-white font-mono'; // font-monoを追加
     if (isUnknown) {
-        repopTimeColorClass = 'text-gray-400';
+        repopTimeColorClass = 'text-gray-400 font-mono';
     } else if (!isPop) {
-        // 【修正: POP前の文字サイズとフォントをPOP後に合わせる】
-        repopTimeColorClass = 'text-green-400 font-mono'; // font-monoを追加し、下に合わせる
+        repopTimeColorClass = 'text-green-400 font-mono'; 
     }
 
     let rankBgClass;
@@ -341,7 +356,7 @@ function createMobCard(mob) {
 
     const mobNameContainerClass = 'min-w-0 flex-1';
     
-    // 【修正: Aランクの報告ボタンに専用クラスを追加】
+    // 【前回の修正を維持: Aランクの報告ボタンに専用クラスを追加】
     const isARank = mob.Rank === 'A';
     const reportBtnClass = isARank ? 'instant-report-btn' : 'report-btn';
     const reportBtnHtml = `
@@ -366,7 +381,7 @@ function createMobCard(mob) {
         </div>
     `;
 
-    // 【修正: 前回討伐日時の相対表示を適用】
+    // 【前回の修正を維持: 前回討伐日時の相対表示を適用】
     const lastKillDisplay = formatLastKillTime(lastKillDate);
     const lastKillHtml = `
         <div class="px-4 pt-1 pb-1 last-kill-content flex justify-end">
@@ -395,7 +410,7 @@ function createMobCard(mob) {
     ` : '';
 
     // --- 進捗バーエリアのHTML ---
-    // 【修正: プログレスバー周囲のクラス調整 (p-2 -> p-1.5, h-12 -> h-10)】
+    // 【前回の修正を維持: プログレスバー周囲のクラス調整】
     const repopInfoHtml = `
         <div class="mt-1 bg-gray-700 p-1.5 rounded-xl text-xs relative overflow-hidden shadow-inner h-10">
             <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear" style="z-index: 0;"></div>
@@ -519,7 +534,7 @@ function renderMobList() {
  * イベントリスナーをカードとボタンにアタッチする
  */
 function attachEventListeners() {
-    // 【修正: Aモブのワンクリック報告リスナーを追加】
+    // 【前回の修正を維持: Aモブのワンクリック報告リスナーを追加】
     document.querySelectorAll('.instant-report-btn').forEach(button => {
         if (button.dataset.mobno) {
             button.onclick = async (e) => {
@@ -551,7 +566,7 @@ function attachEventListeners() {
     });
 }
 
-// 【新設: Aランクモブの即時報告機能】
+// 【前回の修正を維持: Aランクモブの即時報告機能】
 async function instantARankReport(mobNo) {
     const mob = getMobByNo(parseInt(mobNo));
     if (!mob) return;
@@ -607,7 +622,7 @@ function toggleMobDetails(card) {
 
     if (!panel) return;
 
-    // 【修正: 排他的開閉ロジックの追加】
+    // 【前回の修正を維持: 排他的開閉ロジックの追加】
     const isCurrentlyOpen = card.classList.contains('open');
 
     // 既に開いているカードがあれば閉じる
@@ -1054,16 +1069,15 @@ function updateProgressBars() {
         // --- 1. 表示テキストと色の更新 ---
         if (repopInfoDisplayEl) {
             repopInfoDisplayEl.textContent = repopData.timeDisplay;
-            // 【修正: POP前の文字スタイル調整 - 太字を削除】
-            // 以前: repopInfoDisplayEl.classList.remove('text-gray-400', NEXT_TEXT_COLOR, 'text-white', 'font-extrabold');
-            repopInfoDisplayEl.classList.remove('text-gray-400', NEXT_TEXT_COLOR, 'text-white', 'font-extrabold', 'font-mono');
+            
+            // 【前回の修正を維持: POP前の文字スタイル調整】
+            repopInfoDisplayEl.classList.remove('text-gray-400', NEXT_TEXT_COLOR, 'text-white', 'font-extrabold');
             repopInfoDisplayEl.classList.add('font-mono'); // font-monoは常に追加
 
             if (repopData.isUnknown) {
                 repopInfoDisplayEl.classList.add('text-gray-400');
             } else if (!repopData.isPop) {
-                // 【修正: POP前の文字サイズとフォントをPOP後に合わせる】
-                repopInfoDisplayEl.classList.add(NEXT_TEXT_COLOR); // font-monoは上段で追加済み
+                repopInfoDisplayEl.classList.add(NEXT_TEXT_COLOR); 
             } else {
                 repopInfoDisplayEl.classList.add('text-white');
             }
@@ -1175,15 +1189,9 @@ function initializeApp() {
 
     // フィルタ状態のロードと初期表示の制御
     loadFilterState();
-    const initialRank = currentFilter.rank;
-    const isTargetRank = TARGET_RANKS.includes(initialRank);
     
-    // 初期ロード時は、ターゲットランク（S/A/F）なら開く
-    if (isTargetRank) {
-        setTimeout(() => toggleAreaFilterPanel(true), 100);
-    } else {
-        toggleAreaFilterPanel(false);
-    }
+    // 初期ロード時は、パネルは常に閉じます
+    toggleAreaFilterPanel(false); 
 
     adjustContentPadding();
     window.addEventListener('resize', adjustContentPadding);
@@ -1191,7 +1199,7 @@ function initializeApp() {
 
     // 2. イベントリスナーの設定
 
-    // ランクタブのリスナー (2クリックで開閉ロジックを修正)
+    // ランクタブのリスナー (【修正点 1. 動作再定義】)
     if (rankTabs) {
         document.querySelectorAll('.tab-btn').forEach(button => {
             button.onclick = (e) => {
@@ -1199,20 +1207,24 @@ function initializeApp() {
                 const currentRank = currentFilter.rank;
                 const newRankIsTarget = TARGET_RANKS.includes(newRank);
                 
-                // 【修正: ランクタブの排他的トグル動作】
                 if (currentRank !== newRank) {
-                    // ランク切り替え: モブリストを更新し、ターゲットランクならパネルを開く
+                    // 1回目クリック or 別のランクへの切り替え
                     currentFilter.rank = newRank;
                     renderMobList();
-                    if (newRankIsTarget) {
-                        toggleAreaFilterPanel(true); // 1回目クリック: 開く
-                    } else {
-                        toggleAreaFilterPanel(false); // ALL切り替え: 閉じる
-                    }
+                    // 別のランクへの切り替え時は、パネルは開かない（閉じている状態を維持）
+                    toggleAreaFilterPanel(false); 
+                    
                 } else if (newRankIsTarget) {
-                    // 同じランクを再クリック: パネルの開閉をトグルする (2回目: 閉じる, 3回目: 開く)
+                    // 同じターゲットランクを再クリック
                     const isOpen = areaFilterWrapper.classList.contains('open');
-                    toggleAreaFilterPanel(!isOpen);
+                    
+                    if (!isOpen) {
+                        // 2回目クリック: パネルを開く
+                        toggleAreaFilterPanel(true); 
+                    } else {
+                        // 3回目クリック: パネルを閉じる
+                        toggleAreaFilterPanel(false); 
+                    }
                 }
                 // ALLタブをクリックした場合、パネルは必ず閉じる（トグルしない）
             }
