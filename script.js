@@ -906,46 +906,46 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
         pointEl.onclick = (e) => {
             e.stopPropagation();
             // isCulled は現在の状態なので、新しい状態は !isCulled
-            toggleCullStatus(mob['No.'], point.id, !isCulled);
-        };
-
-        overlayEl.appendChild(pointEl);
-    });
-}
-
-/**
- * 【新規追加】湧き潰し状態を切り替え、GASに報告する
+            /**
+ * 湧き潰し状態をGAS経由で切り替える
+ * @param {number} mobNo - モブ番号
+ * @param {string} pointId - スポーンポイントID
+ * @param {boolean} newStatus - 新しい湧き潰し状態 (true=潰し, false=解除)
  */
-async function toggleCullStatus(mobNo, pointId, isCulled) {
+async function toggleCullStatus(mobNo, pointId, newStatus) {
     const mob = getMobByNo(mobNo);
     if (!mob) return;
 
-    const mobName = mob.Name;
-    const actionName = isCulled ? '湧き潰し報告' : '湧き潰し解除報告';
+    // 1. 画面上に即時反映 (ユーザー体験向上)
+    // 成功・失敗に関わらず、即時反映されているため、ここではロールバック処理を省略
+    mob.cullStatusMap[pointId] = newStatus;
 
-    // 1. クライアント側状態の即時更新とマップ表示の即時再描画
-    // これにより、クリック後すぐに視覚的なフィードバックが得られる
-    const originalCulledState = mob.cullStatusMap[pointId] || false;
-    mob.cullStatusMap[pointId] = isCulled;
-
+    // 2. 現在開いているカードのマップオーバーレイのみを再描画
     const card = document.querySelector(`.mob-card[data-mobno="${mobNo}"]`);
-    const mapOverlay = card.querySelector('.map-overlay');
-    if (mapOverlay && mob.spawn_points) {
-        drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
+    if (card && card.classList.contains('open')) {
+        const mapOverlay = card.querySelector('.map-overlay');
+        if (mapOverlay) {
+            drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
+        }
     }
 
-    displayError(`${mobName}の${pointId}を${actionName}中...`);
+    const actionName = newStatus ? '湧き潰し報告' : '湧き潰し解除報告';
+    const mobName = mob.Name;
 
+    // サーバー通信の処理
     try {
+        // 【★修正ポイント★】キー名をGAS側が期待する形式に合わせる (大文字+アンダースコア)
         const response = await fetch(GAS_ENDPOINT, {
             method: 'POST',
             mode: 'cors',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
             body: new URLSearchParams({
                 action: 'updateCullStatus', 
-                Mob_No: mobNo,
-                Point_ID: pointId,
-                Is_Culled: isCulled ? 'TRUE' : 'FALSE', // GAS側で受け取るスキーマ
+                Mob_No: mobNo,       // ★修正: mobNo -> Mob_No
+                Point_ID: pointId,   // ★修正: pointId -> Point_ID
+                Is_Culled: newStatus ? 'TRUE' : 'FALSE', // ★修正: isCulled -> Is_Culled
                 Reporter_ID: userId
             })
         });
@@ -953,23 +953,20 @@ async function toggleCullStatus(mobNo, pointId, isCulled) {
         const result = await response.json();
 
         if (result.status === 'success') {
-            displayError(`${mobName}の${pointId}を${actionName}成功！`);
+            displayError(`${mobName}の湧き潰し報告成功！`);
             setTimeout(() => displayError(null), 1500);
         } else {
-            // サーバー側で失敗した場合、クライアント側の状態を元に戻す
-            mob.cullStatusMap[pointId] = originalCulledState;
-            if (mapOverlay && mob.spawn_points) {
-                drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo); // 再描画して元に戻す
-            }
+            // サーバー側で失敗した場合、状態をロールバックし、再描画
+            mob.cullStatusMap[pointId] = !newStatus; // 状態を元に戻す
+            if (mapOverlay) drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
             displayError(`${mobName}の${actionName}失敗: ${result.message}`);
         }
+
     } catch (error) {
-        // 通信失敗の場合、クライアント側の状態を元に戻す
-        mob.cullStatusMap[pointId] = originalCulledState;
-        if (mapOverlay && mob.spawn_points) {
-            drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo); // 再描画して元に戻す
-        }
-        console.error('湧き潰し報告エラー:', error);
+        console.error('湧き潰し通信エラー:', error);
+        // 通信失敗の場合、状態をロールバックし、再描画
+        mob.cullStatusMap[pointId] = !newStatus; // 状態を元に戻す
+        if (mapOverlay) drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
         displayError(`${mobName}の${actionName}エラー: サーバー通信に失敗。`);
     }
 }
