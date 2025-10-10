@@ -1,4 +1,3 @@
-
 // Google Apps Script (GAS) のエンドポイントURL
 const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyuTg_uO7ZnxPGz1eun3kUKjni5oLj-UpfH4g1N0wQmzB57KhBWFnAvcSQYlbNcUelT3g/exec';
 // 静的モブデータ (mob_data.json) のURL
@@ -361,7 +360,7 @@ function createMobCard(mob) {
     // --- 進捗バーエリアのHTML ---
     const repopInfoHtml = `
         <div class="mt-1 bg-gray-700 p-2 rounded-xl text-xs relative overflow-hidden shadow-inner h-12">
-            <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear" style="width: ${elapsedPercent}%; z-index: 0;"></div>
+            <div class="progress-bar absolute inset-0 transition-all duration-100 ease-linear" style="z-index: 0;"></div>
             <div class="absolute inset-0 flex items-center justify-center z-10">
                 <span class="repop-info-display text-lg font-extrabold ${repopTimeColorClass} font-mono w-full text-center">
                     ${timeDisplay}
@@ -388,8 +387,8 @@ function createMobCard(mob) {
                         </div>
                         
                         <div class="px-1 ${mobNameContainerClass}">
-                            <h2 class="text-base font-bold text-outline text-yellow-200 leading-tight truncate overflow-hidden whitespace-nowrap" style="max-width: 100%;">${mob.Name}</h2>
-                            <p class="text-xs text-gray-400 leading-tight truncate overflow-hidden whitespace-nowrap" style="max-width: 100%;">${mob.Area} (${mob.Expansion || '?'})</p>
+                        <h2 class="text-base font-bold text-outline text-yellow-200 leading-tight truncate overflow-hidden whitespace-nowrap mob-name">${mob.Name}</h2>
+                        <p class="text-xs text-gray-400 leading-tight truncate overflow-hidden whitespace-nowrap mob-area">${mob.Area} (${mob.Expansion || '?'})</p>
                         </div>
                     </div>
 
