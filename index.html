@@ -1,176 +1,104 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Hunt - Eorzea</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 埋め込みCSSを削除し、外部ファイルstyle.cssを読み込みます -->
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Hunt - Eorzea</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 埋め込みCSSを削除し、外部ファイルstyle.cssを読み込みます -->
+    <link rel="stylesheet" href="style.css">
 
 </head>
 <body>
 
-    <div id="fixed-header-content" class="fixed top-0 left-0 right-0 z-50 bg-gray-950 p-3 pb-2 shadow-2xl border-b border-gray-800">
+    <div id="fixed-header-content" class="fixed top-0 left-0 right-0 z-50 bg-gray-950 p-3 pb-2 shadow-2xl border-b border-gray-800">
 
-        <header class="text-center mb-2">
-            <h1 class="text-3xl font-extrabold text-yellow-300 text-outline">The Hunt</h1>
-            <p id="uuid-display" class="text-xs text-gray-400 mt-1 hidden">ID: ************</p>
-        </header>
-        
-        <div id="error-message-container" class="mb-2 hidden">
-        </div>
-        
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            
-            <div id="rank-tabs" class="flex justify-center space-x-2 p-2 bg-gray-900 rounded-xl shadow-lg">
-                <button data-rank="ALL" class="tab-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition">ALL</button>
-                <button data-rank="S" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">Rank S</button>
-                <button data-rank="A" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">Rank A</button>
-                <button data-rank="F" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">FATE</button>
-            </div>
-            
-            <div id="area-filter-wrapper" class="mt-2" style="max-height: 0;">
-                <div id="area-filter-container" class="p-2 bg-gray-900 rounded-xl shadow-lg">
-                    <div class="flex flex-wrap gap-2 justify-center">
-                        <button data-area="ALL" class="area-filter-btn bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1 px-3 rounded-md text-sm transition">
-                            ALL
-                        </button>
-                        <button data-area="黄金" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                            黄金
-                        </button>
-                        <button data-area="暁月" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                            暁月
-                        </button>
-                        <button data-area="漆黒" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                            漆黒
-                        </button>
-                        <button data-area="紅蓮" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                            紅蓮
-                        </button>
-                        <button data-area="蒼天" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                            蒼天
-                        </button>
-                        <button data-area="新生" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
-                            新生
-                        </button>
-                    </div>
-                </div>
-            </div>
-        
-        </div>
-        
-    </div>
-    
-    <div id="content-spacer" class="bg-gray-950">
-        
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-            <div id="content-columns" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                <div id="column-1"></div>
-                <div id="column-2"></div>
-                <div id="column-3"></div>
-            </div>
-        </div>
-        
-    </div>
-
-    <div id="report-modal" class="fixed inset-0 hidden items-center justify-center z-50 transition-opacity duration-300">
-        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-sm border border-gray-700">
-            <h2 class="text-xl font-bold mb-4 text-yellow-300">討伐報告 </h2>
-            <p class="mb-3 text-lg">モブ名: <span id="modal-mob-name" class="font-semibold text-white"></span></p>
-
-            <div class="mb-4">
-                <label for="report-datetime" class="block text-sm font-medium text-gray-400 mb-1">討伐日時 (JST):</label>
-                <input type="datetime-local" id="report-datetime" required class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-blue-500 focus:border-blue-500">
-            </div>
-
-            <div class="mb-4">
-                <label for="report-memo" class="block text-sm font-medium text-gray-400 mb-1">メモ (任意):</label>
-                <textarea id="report-memo" rows="2" class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-blue-500 focus:border-blue-500"></textarea>
-            </div>
-
-            <div id="report-status" class="text-center font-semibold mb-3 hidden"></div>
-
-            <div class="flex justify-end space-x-3">
-                <button id="cancel-report" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition">キャンセル</button>
-                <button id="submit-report" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg transition">報告する</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Firebase SDKのインポートと初期化 (script.jsの前に配置) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        <header class="text-center mb-2">
+            <h1 class="text-3xl font-extrabold text-yellow-300 text-outline">The Hunt</h1>
+            <p id="uuid-display" class="text-xs text-gray-400 mt-1 hidden">ID: ************</p>
+        </header>
         
-        // 開発環境から提供されるグローバル変数 (Canvas環境から注入)
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-
-        // Firebaseサービスの初期化
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        // Firestoreのログレベルを設定 (デバッグ用)
-        setLogLevel('debug');
-
-        // 認証処理
-        async function initializeAuth() {
-            try {
-                // 認証トークンがあればカスタムサインイン、なければ匿名サインイン
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                
-                // 認証完了後、ユーザーIDを決定
-                const userId = auth.currentUser?.uid || crypto.randomUUID();
-                
-                // グローバルスコープに公開する (script.jsからアクセスできるように)
-                // script.jsの現在の実装がモジュールではないため、windowオブジェクトにアタッチ
-                window.firebase = {
-                    db: db,
-                    auth: auth,
-                    appId: appId,
-                    userId: userId, // 認証後のユーザーID
-                    onAuthStateChanged: onAuthStateChanged,
-                    doc: doc, 
-                    getDoc: getDoc, 
-                    addDoc: addDoc, 
-                    setDoc: setDoc, 
-                    updateDoc: updateDoc, 
-                    deleteDoc: deleteDoc, 
-                    onSnapshot: onSnapshot, 
-                    collection: collection, 
-                    query: query, 
-                    where: where, 
-                    getDocs: getDocs,
-                };
-
-                // ユーザーID表示を更新
-                const uuidDisplay = document.getElementById('uuid-display');
-                if (uuidDisplay) {
-                    uuidDisplay.textContent = `ID: ${userId}`;
-                    uuidDisplay.classList.remove('hidden');
-                }
-                
-                console.log("Firebase initialized. User ID:", userId);
-
-            } catch (error) {
-                console.error("Firebase Auth initialization failed:", error);
-            }
-        }
+        <div id="error-message-container" class="mb-2 hidden">
+        </div>
         
-        // 認証初期化をグローバルスコープで実行し、他のスクリプトが参照できるようにする
-        // script.jsはこのPromiseをawaitすることでFirebaseの準備が整うのを待てます
-        window.authPromise = initializeAuth();
-
-    </script>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div id="rank-tabs" class="flex justify-center space-x-2 p-2 bg-gray-900 rounded-xl shadow-lg">
+                <button data-rank="ALL" class="tab-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition">ALL</button>
+                <button data-rank="S" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">Rank S</button>
+                <button data-rank="A" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">Rank A</button>
+                <button data-rank="F" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">FATE</button>
+            </div>
+            
+            <div id="area-filter-wrapper" class="mt-2" style="max-height: 0;">
+                <div id="area-filter-container" class="p-2 bg-gray-900 rounded-xl shadow-lg">
+                    <div class="flex flex-wrap gap-2 justify-center">
+                        <button data-area="ALL" class="area-filter-btn bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1 px-3 rounded-md text-sm transition">
+                            ALL
+                        </button>
+                        <button data-area="黄金" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                            黄金
+                        </button>
+                        <button data-area="暁月" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                            暁月
+                        </button>
+                        <button data-area="漆黒" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                            漆黒
+                        </button>
+                        <button data-area="紅蓮" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                            紅蓮
+                        </button>
+                        <button data-area="蒼天" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                            蒼天
+                        </button>
+                        <button data-area="新生" class="area-filter-btn bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded-md text-sm transition">
+                            新生
+                        </button>
+                    </div>
+                </div>
+            </div>
+        
+        </div>
+        
+    </div>
     
-    <script src="script.js"></script>
+    <div id="content-spacer" class="bg-gray-950">
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            <div id="content-columns" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div id="column-1"></div>
+                <div id="column-2"></div>
+                <div id="column-3"></div>
+            </div>
+        </div>
+        
+    </div>
+
+    <div id="report-modal" class="fixed inset-0 hidden items-center justify-center z-50 transition-opacity duration-300">
+        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-sm border border-gray-700">
+            <h2 class="text-xl font-bold mb-4 text-yellow-300">討伐報告 </h2>
+            <p class="mb-3 text-lg">モブ名: <span id="modal-mob-name" class="font-semibold text-white"></span></p>
+
+            <div class="mb-4">
+                <label for="report-datetime" class="block text-sm font-medium text-gray-400 mb-1">討伐日時 (JST):</label>
+                <input type="datetime-local" id="report-datetime" required class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div class="mb-4">
+                <label for="report-memo" class="block text-sm font-medium text-gray-400 mb-1">メモ (任意):</label>
+                <textarea id="report-memo" rows="2" class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+
+            <div id="report-status" class="text-center font-semibold mb-3 hidden"></div>
+
+            <div class="flex justify-end space-x-3">
+                <button id="cancel-report" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition">キャンセル</button>
+                <button id="submit-report" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg transition">報告する</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
