@@ -15,16 +15,11 @@ let currentFilter = {
         'F': new Set(['ALL'])
     }
 };
-// 【新規】ソート状態を保持
-let currentSort = {
-    key: 'No.', // デフォルトは No. 順
-    direction: 'asc' // 昇順
-};
 let currentMobNo = null;
 let userId = null;
 let autoUpdateSuccessCount = 0;
 // 排他的開閉のための変数
-let openMobCardNo = null;
+let openMobCardNo = null; 
 
 // --- DOMエレメント ---
 const DOMElements = {
@@ -42,15 +37,13 @@ const DOMElements = {
     areaFilterWrapper: document.getElementById('area-filter-wrapper'),
     fixedHeaderContent: document.getElementById('fixed-header-content'),
     contentSpacer: document.getElementById('content-spacer'),
-    mobContainer: document.getElementById('mob-container'), // 【新規】全てのカードを格納するマスターコンテナ (非表示推奨)
-    sortDropdown: document.getElementById('sort-dropdown'), // 【新規】ソートUI要素
     columns: [
         document.getElementById('column-1'),
         document.getElementById('column-2'),
         document.getElementById('column-3')
     ].filter(col => col)
 };
-const { errorMessageContainer, rankTabs, reportModal, modalMobName, reportDatetimeInput, reportMemoInput, submitReportBtn, cancelReportBtn, reportStatusEl, uuidDisplayEl, areaFilterWrapper, areaFilterContainer, fixedHeaderContent, contentSpacer, columns, mobContainer, sortDropdown } = DOMElements;
+const { errorMessageContainer, rankTabs, reportModal, modalMobName, reportDatetimeInput, reportMemoInput, submitReportBtn, cancelReportBtn, reportStatusEl, uuidDisplayEl, areaFilterWrapper, areaFilterContainer, fixedHeaderContent, contentSpacer, columns } = DOMElements;
 
 
 // --- 定数: 拡張パック名定義 ---
@@ -66,23 +59,6 @@ const ALL_EXPANSION_NAMES = Object.values(EXPANSION_MAP);
 const TARGET_RANKS = ['S', 'A', 'F'];
 
 // --- ユーティリティ関数 ---
-
-/**
- * デバウンス関数
- */
-function debounce(func, wait) {
-    let timeout;
-    return function executed(...args) {
-        const context = this;
-        const later = function() {
-            timeout = null;
-            func.apply(context, args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
 
 /**
  * UNIX秒 (サーバー時間) を Dateオブジェクトに変換する
@@ -196,7 +172,6 @@ function displayError(message) {
 
 /**
  * 討伐日時からリポップ情報を計算する
- * @returns {object} minRepop, timeDisplay, elapsedPercent, isPop, isMaxOver, isUnknown, repopSortTime(Date.getTime() or Infinity)
  */
 function calculateRepop(mob, lastKill) {
     const killTime = (lastKill instanceof Date) ? lastKill : new Date(lastKill);
@@ -211,27 +186,26 @@ function calculateRepop(mob, lastKill) {
     let isPop = false;
     let isMaxOver = false;
     const now = new Date();
-    // 【新規】ソートキー: リポップ開始時刻 (Date.getTime())。不明な場合はInfinityで最後にソート
-    let repopSortTime = Infinity; 
 
     if (repopMinMs <= 0 || repopMaxMs <= repopMinMs) {
-        return { minRepop: 'N/A', maxRepop: 'N/A', timeDisplay: 'N/A', isPop: false, isMaxOver: false, isUnknown: true, elapsedPercent: 0, repopSortTime: Infinity };
+        return { minRepop: 'N/A', maxRepop: 'N/A', timeDisplay: 'N/A', isPop: false, isMaxOver: false, isUnknown: true, elapsedPercent: 0 };
     }
 
     if (isUnknown) {
         minRepopTime = new Date(now.getTime() + repopMinMs);
         
+        // 【修正点 2. POP時間（リポップ予想開始時間）の相対表示調整】
         const remainingMsToMin = minRepopTime.getTime() - now.getTime();
-        const remainingMinutes = Math.ceil(remainingMsToMin / 60000);
+        const remainingMinutes = Math.ceil(remainingMsToMin / 60000); 
 
         if (remainingMinutes < 60 && remainingMinutes >= 0) {
-            timeRemainingStr = `Next: ${remainingMinutes}分後`;
+            timeRemainingStr = `Next: ${remainingMinutes}分後`; 
         } else {
+            // 1時間以上の場合は絶対時刻
             timeRemainingStr = `Next: ${formatDateForDisplay(minRepopTime)}`;
         }
         
         elapsedPercent = 0;
-        repopSortTime = minRepopTime.getTime(); // 不明時は「最速湧き開始時間」でソート
         
     } else {
         minRepopTime = new Date(killTime.getTime() + repopMinMs);
@@ -243,22 +217,21 @@ function calculateRepop(mob, lastKill) {
             // Phase 1: Pre-Min Repop
             isPop = false;
             
-            const remainingMinutes = Math.ceil(remainingMsToMin / 60000);
+            // 【修正点 2. POP時間（リポップ予想開始時間）の相対表示調整】
+            const remainingMinutes = Math.ceil(remainingMsToMin / 60000); 
 
             if (remainingMinutes < 60 && remainingMinutes >= 0) {
-                timeRemainingStr = `Next: ${remainingMinutes}分後`;
+                timeRemainingStr = `Next: ${remainingMinutes}分後`; 
             } else {
+                // 1時間以上の場合は絶対時刻
                 timeRemainingStr = `Next: ${formatDateForDisplay(minRepopTime)}`;
             }
             
             elapsedPercent = 0;
-            repopSortTime = minRepopTime.getTime();
 
         } else {
             // Phase 2 & 3: In or After POP Window
             isPop = true;
-            repopSortTime = minRepopTime.getTime(); // 湧き始め時間をソートキーに
-
             const remainingMsToMax = maxRepopTime.getTime() - now.getTime();
 
             if (remainingMsToMax > 0) {
@@ -277,14 +250,11 @@ function calculateRepop(mob, lastKill) {
                 const formattedElapsed = formatDurationPart(popElapsedMs, '+');
                 timeRemainingStr = `100.0% (${formattedElapsed})`;
                 elapsedPercent = 100;
-                // Max Over の場合、minRepopTime をそのままソートキーにすると古いものが上位に来るため、
-                // 最新の討伐時刻をソートキーとする（ただしソートキーが'Repop'の場合のみ）
-                repopSortTime = maxRepopTime.getTime(); 
             }
         }
     }
 
-    return { minRepop: minRepopTime, maxRepop: maxRepopTime, timeDisplay: timeRemainingStr, elapsedPercent: elapsedPercent, isPop: isPop, isMaxOver: isMaxOver, isUnknown: isUnknown, repopSortTime: repopSortTime };
+    return { minRepop: minRepopTime, maxRepop: maxRepopTime, timeDisplay: timeRemainingStr, elapsedPercent: elapsedPercent, isPop: isPop, isMaxOver: isMaxOver, isUnknown: isUnknown };
 }
 
 /**
@@ -304,8 +274,7 @@ function saveFilterState() {
     try {
         const stateToSave = {
             rank: currentFilter.rank,
-            areaSets: {},
-            sort: currentSort // 【新規】ソート状態を保存
+            areaSets: {}
         };
         for (const rank in currentFilter.areaSets) {
             stateToSave.areaSets[rank] = Array.from(currentFilter.areaSets[rank]);
@@ -325,7 +294,7 @@ function loadFilterState() {
         if (savedState) {
             const parsedState = JSON.parse(savedState);
 
-            if (parsedState.rank && (TARGET_RANKS.includes(parsedState.rank) || parsedState.rank === 'ALL')) {
+            if (parsedState.rank && TARGET_RANKS.includes(parsedState.rank) || parsedState.rank === 'ALL') {
                 currentFilter.rank = parsedState.rank;
             }
 
@@ -335,12 +304,6 @@ function loadFilterState() {
                         currentFilter.areaSets[rank] = new Set(parsedState.areaSets[rank]);
                     }
                 }
-            }
-
-            // 【新規】ソート状態のロード
-            if (parsedState.sort && parsedState.sort.key) {
-                currentSort.key = parsedState.sort.key;
-                currentSort.direction = parsedState.sort.direction || 'asc';
             }
         }
     } catch (e) {
@@ -369,18 +332,14 @@ function adjustContentPadding() {
  */
 function createMobCard(mob) {
     const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
-    const { minRepop, timeDisplay, elapsedPercent, isPop, isMaxOver, isUnknown, repopSortTime } = calculateRepop(mob, lastKillDate);
+    const { minRepop, timeDisplay, elapsedPercent, isPop, isMaxOver, isUnknown } = calculateRepop(mob, lastKillDate);
 
-    // 【新規】ソート用データ属性
-    const sortTime = repopSortTime || Infinity;
-    const killTimeMs = lastKillDate ? lastKillDate.getTime() : 0;
-    const mobNameSort = mob.Name.toLowerCase();
-
-    let repopTimeColorClass = 'text-white font-mono'; 
+    // 【前回の修正を維持: POP前の文字スタイル調整 - 太字を削除し、font-monoを適用】
+    let repopTimeColorClass = 'text-white font-mono'; // font-monoを追加
     if (isUnknown) {
         repopTimeColorClass = 'text-gray-400 font-mono';
     } else if (!isPop) {
-        repopTimeColorClass = 'text-green-400 font-mono';
+        repopTimeColorClass = 'text-green-400 font-mono'; 
     }
 
     let rankBgClass;
@@ -395,6 +354,7 @@ function createMobCard(mob) {
 
     const mobNameContainerClass = 'min-w-0 flex-1';
     
+    // 【前回の修正を維持: Aランクの報告ボタンに専用クラスを追加】
     const isARank = mob.Rank === 'A';
     const reportBtnClass = isARank ? 'instant-report-btn' : 'report-btn';
     const reportBtnHtml = `
@@ -419,6 +379,7 @@ function createMobCard(mob) {
         </div>
     `;
 
+    // 【前回討伐日時の相対表示を適用】
     const lastKillDisplay = formatLastKillTime(lastKillDate);
     const lastKillHtml = `
         <div class="px-4 pt-1 pb-1 last-kill-content flex justify-end">
@@ -426,6 +387,7 @@ function createMobCard(mob) {
         </div>
     `;
     
+    // 【新規実装: モブカード詳細にメモを表示】
     const lastKillMemo = mob.LastKillMemo || '';
     const lastKillMemoHtml = lastKillMemo ? `
         <div class="px-4 pt-1 pb-1 last-kill-memo-content text-left">
@@ -445,7 +407,7 @@ function createMobCard(mob) {
         </div>
     ` : '';
 
-    let panelContent = conditionHtml + minRepopHtml + lastKillHtml + lastKillMemoHtml + mapDetailsHtml;
+    let panelContent = conditionHtml + minRepopHtml + lastKillHtml + lastKillMemoHtml + mapDetailsHtml; // 👈 メモHTMLを追加
     if (panelContent.trim()) {
         panelContent = `<div class="panel-padding-bottom">${panelContent}</div>`;
     }
@@ -470,106 +432,85 @@ function createMobCard(mob) {
 
     // --- モブカードの最終構造 ---
     const isOpenClass = (mob['No.'] === openMobCardNo) ? 'open' : '';
-    const cardHtml = document.createElement('div');
-    cardHtml.className = `mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-2 mb-3 ${isOpenClass}`;
-    // 【新規】ソート用/フィルタリング用データ属性を全て持つ
-    cardHtml.setAttribute('data-rank', mob.Rank);
-    cardHtml.setAttribute('data-mobno', mob['No.']);
-    cardHtml.setAttribute('data-lastkill', mob.LastKillDate || '');
-    cardHtml.setAttribute('data-minrepop', mob['REPOP(s)']);
-    cardHtml.setAttribute('data-maxrepop', mob['MAX(s)']);
-    cardHtml.setAttribute('data-expansion', mob.Expansion || '?');
-    cardHtml.setAttribute('data-sort-no', mob['No.']);
-    cardHtml.setAttribute('data-sort-repop-time', sortTime);
-    cardHtml.setAttribute('data-sort-kill-time', killTimeMs);
-    cardHtml.setAttribute('data-sort-name', mobNameSort);
+    return `
+        <div class="mob-card bg-gray-800 rounded-xl shadow-2xl overflow-hidden relative py-2 mb-3 ${isOpenClass}"
+             data-rank="${mob.Rank}"
+             data-mobno="${mob['No.']}"
+             data-lastkill="${mob.LastKillDate || ''}"
+             data-minrepop="${mob['REPOP(s)']}"
+             data-maxrepop="${mob['MAX(s)']}"
+             data-expansion="${mob.Expansion || '?'}">
 
-    cardHtml.innerHTML = `
-        <div class="p-2 fixed-content toggle-handler cursor-pointer">
-            <div class="flex justify-between items-start mb-1">
-                <div class="flex items-center space-x-2">
-                    <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-sm w-7 h-7 flex items-center justify-center rounded-lg shadow-lg flex-shrink-0">
-                        ${mob.Rank}
+            <div class="p-2 fixed-content toggle-handler cursor-pointer">
+                <div class="flex justify-between items-start mb-1">
+                    <div class="flex items-center space-x-2">
+                        <div class="rank-icon ${rankBgClass} ${rankTextColor} font-bold text-sm w-7 h-7 flex items-center justify-center rounded-lg shadow-lg flex-shrink-0">
+                            ${mob.Rank}
+                        </div>
+                        
+                        <div class="px-1 ${mobNameContainerClass}">
+                        <h2 class="text-base font-bold text-outline text-yellow-200 leading-tight truncate overflow-hidden whitespace-nowrap mob-name">${mob.Name}</h2>
+                        <p class="text-xs text-gray-400 leading-tight truncate overflow-hidden whitespace-nowrap mob-area">${mob.Area} (${mob.Expansion || '?'})</p>
+                        </div>
                     </div>
-                    
-                    <div class="px-1 ${mobNameContainerClass}">
-                    <h2 class="text-base font-bold text-outline text-yellow-200 leading-tight truncate overflow-hidden whitespace-nowrap mob-name">${mob.Name}</h2>
-                    <p class="text-xs text-gray-400 leading-tight truncate overflow-hidden whitespace-nowrap mob-area">${mob.Area} (${mob.Expansion || '?'})</p>
-                    </div>
+
+                    ${reportBtnHtml}
                 </div>
 
-                ${reportBtnHtml}
+                ${repopInfoHtml}
             </div>
 
-            ${repopInfoHtml}
+            ${expandablePanel}
         </div>
-
-        ${expandablePanel}
     `;
-
-    return cardHtml;
 }
-
 
 /**
  * フィルターに基づいてモブカードリストをレンダリングする
- * 【v2.0 変更点】DOMの生成/初期配置のみ行い、ソートとカラム振り分けは別関数に分離。
  */
 function renderMobList() {
     const { rank } = currentFilter;
     let filteredMobs = [];
     const activeRanks = rank === 'ALL' ? TARGET_RANKS : [rank];
 
-    // 1. フィルタリング
     for (const r of activeRanks) {
         const rankMobs = globalMobData.filter(mob => mob.Rank === r);
         const currentAreaSet = currentFilter.areaSets[r];
 
         if (currentAreaSet.has('ALL') && currentAreaSet.size === 1) {
+            // ALLを選択している場合 (初期状態や全て解除された場合) は、そのランクの全ての拡張エリアを表示
             filteredMobs.push(...rankMobs.filter(mob => ALL_EXPANSION_NAMES.includes(mob.Expansion)));
         } else if (!currentAreaSet.has('ALL') && currentAreaSet.size > 0) {
+            // 特定のエリアを選択している場合
             filteredMobs.push(...rankMobs.filter(mob => currentAreaSet.has(mob.Expansion)));
         } else if (currentAreaSet.has('ALL') && currentAreaSet.size > 1) {
-            filteredMobs.push(...rankMobs.filter(mob => currentAreaSet.has(mob.Expansion)));
+             // 'ALL' と特定のエリアが選択されている場合 (全選択状態と同じ)
+             filteredMobs.push(...rankMobs.filter(mob => currentAreaSet.has(mob.Expansion)));
+        } else if (currentAreaSet.size === 0) {
+             // 選択エリアが0個の場合 ('ALL'も含まれない) -> モブは表示しない
         }
     }
     
-    // 2. マスターコンテナのカードを更新/生成
-    const existingCards = Array.from(mobContainer.querySelectorAll('.mob-card'));
-    const existingMobNos = new Set(existingCards.map(c => parseInt(c.dataset.mobno)));
-
-    // 2.1. 不要なカードを削除 (フィルタで非表示にするのではなくDOMから削除)
-    existingCards.forEach(card => {
-        const mobNo = parseInt(card.dataset.mobno);
-        const existsInFiltered = filteredMobs.some(mob => mob['No.'] === mobNo);
-        if (!existsInFiltered) {
-            mobContainer.removeChild(card);
-        }
-    });
-
-    // 2.2. 必要なカードを生成または移動
-    filteredMobs.forEach(mob => {
-        const mobNo = mob['No.'];
-        let card = mobContainer.querySelector(`.mob-card[data-mobno="${mobNo}"]`);
-
-        if (!card) {
-            // 新規カード生成
-            card = createMobCard(mob);
-            mobContainer.appendChild(card);
-        } else {
-            // 既存カードのデータを更新（必要であれば、ただしデータはglobalMobDataにあるため主にソートキー）
-            const lastKillDate = mob.LastKillDate ? new Date(mob.LastKillDate) : null;
-            const { repopSortTime } = calculateRepop(mob, lastKillDate);
-            card.setAttribute('data-sort-repop-time', repopSortTime || Infinity);
-            card.setAttribute('data-sort-kill-time', lastKillDate ? lastKillDate.getTime() : 0);
-        }
-    });
+    // ALLタブ選択時は、元のNo.順でソートを維持
+    if (rank === 'ALL') {
+        filteredMobs.sort((a, b) => a['No.'] - b['No.']);
+    }
 
 
-    // 3. ソートとカラム振り分けを実行
-    sortAndRedistribute();
+    // 3. レンダリング処理
+    columns.forEach(col => col.innerHTML = '');
 
-    // 4. UIのハイライト更新
+    if (columns.length > 0) {
+        filteredMobs.forEach((mob, index) => {
+            const cardHtml = createMobCard(mob);
+            const targetColumn = columns[index % columns.length];
+            const div = document.createElement('div');
+            div.innerHTML = cardHtml.trim();
+            targetColumn.appendChild(div.firstChild);
+        });
+    }
+
+    // 4. アクティブなランクタブをハイライト
     if (rankTabs) {
         document.querySelectorAll('.tab-btn').forEach(btn => {
             const isActive = btn.dataset.rank === rank;
@@ -580,6 +521,7 @@ function renderMobList() {
         });
     }
 
+    // 5. エリアフィルタボタンのハイライト (表示中のランクに依存)
     const currentRankForAreaFilter = TARGET_RANKS.includes(rank) ? rank : 'S';
     const currentAreasToHighlight = currentFilter.areaSets[currentRankForAreaFilter] || new Set(['ALL']);
 
@@ -591,142 +533,48 @@ function renderMobList() {
         btn.classList.toggle('hover:bg-gray-500', !isSelected);
     });
 
-    // イベントリスナーの再アタッチは不要（Event Delegationのため）
+    attachEventListeners();
     updateProgressBars();
     saveFilterState();
 }
 
 /**
- * 【新規】DOM内のカードを現在のソート状態に従って並び替える
+ * イベントリスナーをカードとボタンにアタッチする
  */
-function sortDOMCards() {
-    const cards = Array.from(mobContainer.querySelectorAll('.mob-card'));
-    const { key, direction } = currentSort;
-    const isAsc = direction === 'asc';
-
-    cards.sort((a, b) => {
-        let valA, valB;
-
-        switch (key) {
-            case 'RepopTime':
-                // リポップ予想時刻 (number)
-                valA = parseFloat(a.dataset.sortRepopTime);
-                valB = parseFloat(b.dataset.sortRepopTime);
-                break;
-            case 'KillTime':
-                // 前回討伐日時 (number)
-                valA = parseFloat(a.dataset.sortKillTime);
-                valB = parseFloat(b.dataset.sortKillTime);
-                break;
-            case 'Name':
-                // モブ名 (string)
-                valA = a.dataset.sortName;
-                valB = b.dataset.sortName;
-                break;
-            case 'No.':
-            default:
-                // No. (number)
-                valA = parseInt(a.dataset.sortNo);
-                valB = parseInt(b.dataset.sortNo);
-                break;
-        }
-
-        if (typeof valA === 'number') {
-            return isAsc ? valA - valB : valB - valA;
-        } else {
-            // 文字列比較
-            if (valA < valB) return isAsc ? -1 : 1;
-            if (valA > valB) return isAsc ? 1 : -1;
-            return 0;
+function attachEventListeners() {
+    // 【前回の修正を維持: Aモブのワンクリック報告リスナーを追加】
+    document.querySelectorAll('.instant-report-btn').forEach(button => {
+        if (button.dataset.mobno) {
+            button.onclick = async (e) => {
+                e.stopPropagation();
+                const mobNo = e.currentTarget.dataset.mobno;
+                // 現在時刻で即時報告を実行
+                await instantARankReport(mobNo); 
+            }
         }
     });
 
-    // 既存のカードをソートされた順序でDOMに再配置
-    cards.forEach(card => mobContainer.appendChild(card));
-}
-
-/**
- * 【新規】現在のウィンドウ幅に基づいてカラム数を決定する
- */
-function determineColumnCount() {
-    // 【CSSのブレークポイントと同期させる】
-    // このロジックは、CSSのメディアクエリに合わせる必要があります
-    const width = window.innerWidth;
-
-    if (width >= 1280) { // 例: xl: 3 columns
-        return 3;
-    } else if (width >= 768) { // 例: md: 2 columns
-        return 2;
-    } else { // 1 column
-        return 1;
-    }
-}
-
-/**
- * 【新規】ソートされたカードをレスポンシブなカラムに振り分ける
- */
-function distributeCards() {
-    const columnCount = determineColumnCount();
-    const sortedCards = Array.from(mobContainer.querySelectorAll('.mob-card'));
-
-    // 既存のカラムをクリア (innerHTML = '' ではなく、DOM要素を移動させるため空にする)
-    columns.forEach(col => col.innerHTML = '');
-
-    sortedCards.forEach((card, index) => {
-        // カラムが十分にあるか確認
-        if (index % columnCount < columns.length) {
-            const targetColumn = columns[index % columnCount];
-            // appendChildは要素を元の場所から移動させる
-            targetColumn.appendChild(card);
+    // S/FATE の通常報告ボタン
+    document.querySelectorAll('.report-btn').forEach(button => {
+        if (button.dataset.mobno) {
+            button.onclick = (e) => {
+                e.stopPropagation();
+                openReportModal(e.currentTarget.dataset.mobno);
+            }
         }
     });
 
-    // 余ったカードをマスターコンテナに戻す（このケースでは通常発生しないが安全策）
-    // mobContainerには残りのカードが残っているため、ここで一括で移動させている。
-    // 今回の実装では、mobContainerから直接sortedCardsを取得し、カラムに振り分けているため、
-    // mobContainerは振り分け後に空になります。（appendChildによる移動のため）
-    
-    // カラムヘッダーの高さを再調整
-    adjustContentPadding();
+    document.querySelectorAll('.toggle-handler').forEach(handler => {
+        handler.onclick = (e) => {
+            const card = e.currentTarget.closest('.mob-card');
+            if (card) {
+                toggleMobDetails(card);
+            }
+        };
+    });
 }
 
-
-/**
- * 【新規】ソートとカラム振り分けを同時に実行するデバウンスされた関数
- */
-const sortAndRedistribute = debounce(() => {
-    sortDOMCards();
-    distributeCards();
-}, 200); // 200ms のデバウンス
-
-
-// 【イベント委譲のためのメインイベントハンドラ】
-function handleMobCardClick(e) {
-    const card = e.target.closest('.mob-card');
-    if (!card) return;
-
-    // 報告ボタンの処理
-    const reportBtn = e.target.closest('.report-btn, .instant-report-btn');
-    if (reportBtn) {
-        e.stopPropagation();
-        const mobNo = reportBtn.dataset.mobno;
-        if (reportBtn.classList.contains('instant-report-btn')) {
-            instantARankReport(mobNo);
-        } else {
-            openReportModal(mobNo);
-        }
-        return;
-    }
-
-    // トグルエリアの処理 (固定ヘッダー部分)
-    const toggleHandler = e.target.closest('.toggle-handler');
-    if (toggleHandler) {
-        toggleMobDetails(card);
-        return;
-    }
-}
-
-
+// 【前回の修正を維持: Aランクモブの即時報告機能】
 async function instantARankReport(mobNo) {
     const mob = getMobByNo(parseInt(mobNo));
     if (!mob) return;
@@ -736,6 +584,7 @@ async function instantARankReport(mobNo) {
     const killTimeLocal = (new Date(now.getTime() - offset)).toISOString().slice(0, 16);
     const killTimeJstIso = toJstAdjustedIsoString(killTimeLocal);
 
+    // 報告状態を一時的に表示
     displayError(`${mob.Name} (A) を即時報告中...`);
 
     try {
@@ -749,7 +598,7 @@ async function instantARankReport(mobNo) {
                 mobName: mob.Name,
                 rank: mob.Rank,
                 killTime: killTimeJstIso,
-                memo: `[AUTO REPORT: ${formatDateForDisplay(now)}]`,
+                memo: `[AUTO REPORT: ${formatDateForDisplay(now)}]`, // 即時報告の目印
                 reporterId: userId
             })
         });
@@ -758,6 +607,7 @@ async function instantARankReport(mobNo) {
 
         if (result.status === 'success') {
             displayError(`${mob.Name} (A) の報告成功！`);
+            // データ更新
             await fetchRecordsAndUpdate('manual', false);
             setTimeout(() => displayError(null), 1500);
         } else {
@@ -838,7 +688,7 @@ function toggleMobDetails(card) {
 }
 
 /**
- * マップにスポーンポイントを描画する (ロジック変更なし)
+ * マップにスポーンポイントを描画する
  */
 function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     overlayEl.innerHTML = '';
@@ -846,6 +696,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
 
     if (!mob || !mob.cullStatusMap) return;
 
+    // 定数
     const SA_OUTER_DIAMETER = '12px';
     const SA_BORDER_WIDTH = '2px';
     const SA_SHADOW = '0 0 8px 1px';
@@ -853,25 +704,31 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     const B1_INTERNAL_COLOR = '#60a5fa'; // Blue-400
     const B2_INTERNAL_COLOR = '#f87171'; // Red-400
 
+    // S/A抽選に関わるポイントをフィルタリング (Bランクのみのポイントは含まない)
     const cullTargetPoints = spawnPoints.filter(point =>
         point.mob_ranks.includes('S') || point.mob_ranks.includes('A')
     );
 
+    // 未処理のS/A抽選ポイントの数をカウント
     let remainingCullCount = cullTargetPoints.filter(point => !mob.cullStatusMap[point.id]).length;
 
-    const shouldInvertBOnlyPoints = remainingCullCount === 1;
+    // B1/B2のみのポイントが反転表示されるかどうかのフラグ
+    const shouldInvertBOnlyPoints = remainingCullCount === 1; // 👈 ラストワン判定
+
 
     spawnPoints.forEach(point => {
         const isS_A_Point = point.mob_ranks.includes('S') || point.mob_ranks.includes('A');
         const includesB1 = point.mob_ranks.includes('B1');
         const includesB2 = point.mob_ranks.includes('B2');
-        const isCullTarget = isS_A_Point;
+        const isCullTarget = isS_A_Point; // S/A抽選に関わるポイントのみ湧き潰し対象
 
         if (!isCullTarget) {
+            // Bランクのみのポイント (湧き潰し対象外)
             if (point.mob_ranks.length === 1 && (includesB1 || includesB2)) {
                 const pointEl = document.createElement('div');
                 pointEl.className = 'spawn-point-b-only';
                 
+                // 【B1/B2のみのポイントを2px小さくする】
                 const baseSize = 10;
                 const newSize = baseSize - 2;
                 
@@ -882,9 +739,10 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
                     box-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
                 `;
 
+                // 【ラストワン判定時のB1/B2のみのポイントの表示反転】
                 if (shouldInvertBOnlyPoints) {
-                    pointEl.style.backgroundColor = 'rgba(100, 100, 100, 1.0)';
-                    pointEl.style.boxShadow = 'none';
+                    pointEl.style.backgroundColor = 'rgba(100, 100, 100, 1.0)'; // グレーに反転
+                    pointEl.style.boxShadow = 'none'; // 影をなくす
                 }
                 
                 overlayEl.appendChild(pointEl);
@@ -892,6 +750,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
             return;
         }
 
+        // 湧き潰し対象ポイント (S/A/B1 or B2 を含む)
         const isCulled = mob.cullStatusMap[point.id] || false;
         let outlineColor = '#9ca3af';
         let internalColor = '#d1d5db';
@@ -904,7 +763,7 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
             internalColor = '#f87171';
         }
 
-        const isLastPoint = !isCulled && remainingCullCount === 1;
+        const isLastPoint = !isCulled && remainingCullCount === 1; // S/A抽選対象としてのラストワン
 
         if (isLastPoint) {
             outlineColor = '#10b981';
@@ -946,59 +805,10 @@ function drawSpawnPoints(overlayEl, spawnPoints, currentMobNo) {
     });
 }
 
-/**
- * 湧き潰し状態のトグル
- */
-async function toggleCullStatus(mobNo, pointId, isCulled) {
-    const mob = getMobByNo(parseInt(mobNo));
-    if (!mob) return;
-
-    // ローカルデータを即時更新してUIをフィードバック
-    mob.cullStatusMap[pointId] = isCulled;
-    
-    // UIを再描画（主にマップ上の点を更新）
-    const card = document.querySelector(`.mob-card[data-mobno="${mobNo}"]`);
-    const mapOverlay = card ? card.querySelector('.map-overlay') : null;
-    if (mapOverlay) {
-        drawSpawnPoints(mapOverlay, mob.spawn_points, mobNo);
-    }
-    
-    // サーバーに状態を送信
-    try {
-        const response = await fetch(GAS_ENDPOINT, {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-                action: 'setCullStatus',
-                mobNo: mobNo,
-                pointId: pointId,
-                isCulled: isCulled ? 'TRUE' : 'FALSE',
-                reporterId: userId
-            })
-        });
-
-        const result = await response.json();
-        if (result.status !== 'success') {
-            console.error('湧き潰し状態の更新失敗:', result.message);
-            displayError('湧き潰し状態の更新に失敗しました。');
-            setTimeout(() => displayError(null), 3000);
-            // 失敗時はUIを元に戻すかどうかは今回は考慮しない
-        } else {
-            // サーバー更新成功
-        }
-    } catch (error) {
-        console.error('湧き潰し状態の通信エラー:', error);
-        displayError('湧き潰し状態の通信エラー。');
-        setTimeout(() => displayError(null), 3000);
-    }
-}
-
 
 // --- モーダル/フォーム操作 ---
 
 function openReportModal(mobNo) {
-    // ... (関数の中身は変更なし)
     if (!reportModal || !modalMobName || !reportDatetimeInput || !submitReportBtn) return;
 
     currentMobNo = parseInt(mobNo);
@@ -1027,7 +837,6 @@ function openReportModal(mobNo) {
 }
 
 function closeReportModal() {
-    // ... (関数の中身は変更なし)
     if (!reportModal) return;
     reportModal.classList.add('hidden');
     reportModal.classList.remove('flex');
@@ -1035,7 +844,6 @@ function closeReportModal() {
 }
 
 async function submitReport() {
-    // ... (関数の中身は変更なし)
     if (!currentMobNo || !reportDatetimeInput || !submitReportBtn || !reportStatusEl) return;
 
     const killTimeLocal = reportDatetimeInput.value;
@@ -1046,6 +854,7 @@ async function submitReport() {
 
     const killTimeJstIso = toJstAdjustedIsoString(killTimeLocal);
 
+    // 送信開始時にボタンとステータスを更新
     submitReportBtn.disabled = true;
     submitReportBtn.textContent = '送信中...';
     submitReportBtn.className = 'w-full px-4 py-2 bg-gray-500 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
@@ -1080,6 +889,7 @@ async function submitReport() {
             submitReportBtn.className = 'w-full px-4 py-2 bg-green-600 text-white font-bold rounded-lg shadow-lg transition-colors duration-200';
             submitReportBtn.disabled = false;
             
+            // 手動更新としてデータを更新し、メッセージを表示
             await fetchRecordsAndUpdate('manual', false);
             setTimeout(closeReportModal, 1500);
 
@@ -1108,7 +918,6 @@ async function submitReport() {
  * 外部JSONからモブデータを取得し、`No.`から`Expansion`を決定する
  */
 async function fetchBaseMobData() {
-    // ... (関数の中身は変更なし)
     try {
         const response = await fetch(MOB_DATA_URL);
         if (!response.ok) {
@@ -1143,6 +952,7 @@ async function fetchBaseMobData() {
  */
 async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = true) {
 
+    // 1. 基本データ (Base Mob Data) のロードと初期レンダリング
     if (shouldFetchBase) {
         displayError(`設定データをロード中...`);
         await fetchBaseMobData();
@@ -1153,17 +963,18 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
         }
     }
 
+    // 2. ローディングメッセージの表示
     const shouldDisplayLoading = (updateType === 'initial' || updateType === 'manual' || autoUpdateSuccessCount === 0);
     if (shouldDisplayLoading) {
         displayError(`データを更新中…`);
     }
 
-    // 初回/手動ロード時のみ、暫定表示（既存のDOMがあれば）
-    if (updateType === 'initial' || updateType === 'manual') {
-        globalMobData = [...baseMobData];
-        renderMobList(); 
-    }
+    // 3. データ取得前の暫定表示 (ロード中もカードを見せるため)
+    globalMobData = [...baseMobData];
+    renderMobList();
 
+
+    // 4. 討伐記録と湧き潰し状態の取得と更新
     try {
         const response = await fetch(GAS_ENDPOINT + '?action=getRecords');
         const data = await response.json();
@@ -1181,10 +992,11 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
                 // 討伐記録の反映
                 if (record && record.POP_Date_Unix) {
                     newMob.LastKillDate = unixTimeToDate(record.POP_Date_Unix).toLocaleString();
-                    newMob.LastKillMemo = record.Memo || '';
+                    // 【メモ情報の取得】
+                    newMob.LastKillMemo = record.Memo || ''; 
                 } else {
                     newMob.LastKillDate = '';
-                    newMob.LastKillMemo = '';
+                    newMob.LastKillMemo = ''; // メモがない場合は空文字列
                 }
 
                 // 湧き潰し状態の反映
@@ -1202,8 +1014,8 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
                 autoUpdateSuccessCount++;
             }
             
-            displayError(null);
-            adjustContentPadding();
+            displayError(null); // 成功したらメッセージを消す
+            adjustContentPadding(); // データ更新後の最終調整
             renderMobList();
 
         } else {
@@ -1220,7 +1032,6 @@ async function fetchRecordsAndUpdate(updateType = 'initial', shouldFetchBase = t
 
 /**
  * 各モブカードの進捗バーを更新する (60秒ごと)
- * 【v2.0 変更点】進捗バーと同時にソートキーのデータ属性も更新する
  */
 function updateProgressBars() {
 
@@ -1229,8 +1040,6 @@ function updateProgressBars() {
     const LIME_BAR_COLOR = 'bg-lime-500/70';
     const NEXT_TEXT_COLOR = 'text-green-400';
 
-    let shouldResort = false;
-
     document.querySelectorAll('.mob-card').forEach(card => {
         const lastKillStr = card.dataset.lastkill;
         const repop = parseInt(card.dataset.minrepop);
@@ -1238,35 +1047,25 @@ function updateProgressBars() {
 
         const lastKillDate = lastKillStr ? new Date(lastKillStr) : null;
         
+        // mobStub を廃止し、直接引数を渡す
         const repopData = calculateRepop({"REPOP(s)": repop, "MAX(s)": max}, lastKillDate);
         const percent = repopData.elapsedPercent || 0;
 
         const repopInfoDisplayEl = card.querySelector('.repop-info-display');
         const progressBarEl = card.querySelector('.progress-bar');
-        
-        // 【v2.0: ソートキーの更新】
-        const oldRepopSortTime = parseFloat(card.dataset.sortRepopTime);
-        const newRepopSortTime = repopData.repopSortTime;
-
-        if (oldRepopSortTime !== newRepopSortTime) {
-            card.setAttribute('data-sort-repop-time', newRepopSortTime);
-            if (currentSort.key === 'RepopTime') {
-                shouldResort = true; // ソートキーが変わったら再ソートフラグを立てる
-            }
-        }
-
 
         // --- 1. 表示テキストと色の更新 ---
         if (repopInfoDisplayEl) {
             repopInfoDisplayEl.textContent = repopData.timeDisplay;
             
+            // 【前回の修正を維持: POP前の文字スタイル調整】
             repopInfoDisplayEl.classList.remove('text-gray-400', NEXT_TEXT_COLOR, 'text-white', 'font-extrabold');
-            repopInfoDisplayEl.classList.add('font-mono');
+            repopInfoDisplayEl.classList.add('font-mono'); // font-monoは常に追加
 
             if (repopData.isUnknown) {
                 repopInfoDisplayEl.classList.add('text-gray-400');
             } else if (!repopData.isPop) {
-                repopInfoDisplayEl.classList.add(NEXT_TEXT_COLOR);
+                repopInfoDisplayEl.classList.add(NEXT_TEXT_COLOR); 
             } else {
                 repopInfoDisplayEl.classList.add('text-white');
             }
@@ -1297,23 +1096,19 @@ function updateProgressBars() {
             progressBarEl.style.width = `${widthPercent}%`;
         }
     });
-
-    // リポップ時刻順ソートの場合、キー値が変更されたら再ソート
-    if (shouldResort) {
-        sortAndRedistribute.call(window);
-    }
 }
 
 /**
  * エリアフィルタパネルの開閉をトグルする (アニメーション付き)
+ * @param {boolean} forceOpen 強制的に開く場合はtrue, 閉じる場合はfalse, トグルする場合は未指定
  */
 function toggleAreaFilterPanel(forceOpen) {
-    // ... (関数の中身は変更なし)
     if (!areaFilterWrapper || !areaFilterContainer) return;
 
     const isOpen = areaFilterWrapper.classList.contains('open');
     let shouldOpen = (typeof forceOpen === 'boolean') ? forceOpen : !isOpen;
 
+    // トランジション中にクリックイベントをブロック
     areaFilterWrapper.style.pointerEvents = 'none';
 
     if (shouldOpen) {
@@ -1336,6 +1131,7 @@ function toggleAreaFilterPanel(forceOpen) {
                 }
                 areaFilterWrapper.removeEventListener('transitionend', handler);
             });
+            // transitionend が発火しない場合に備える
             setTimeout(() => { areaFilterWrapper.style.pointerEvents = 'all'; adjustContentPadding(); }, 350);
         }, 0);
 
@@ -1355,6 +1151,7 @@ function toggleAreaFilterPanel(forceOpen) {
                 areaFilterWrapper.removeEventListener('transitionend', handler);
             });
 
+            // transitionend が発火しない場合に備える
             setTimeout(() => { areaFilterWrapper.style.pointerEvents = 'all'; adjustContentPadding(); }, 350);
         }, 0);
     }
@@ -1378,26 +1175,19 @@ function initializeApp() {
         uuidDisplayEl.classList.remove('hidden');
     }
 
-    // フィルタ状態のロードとソートUIの更新
+    // フィルタ状態のロードと初期表示の制御
     loadFilterState();
-    if (sortDropdown) sortDropdown.value = `${currentSort.key}:${currentSort.direction}`;
     
-    toggleAreaFilterPanel(false);
+    // 初期ロード時は、パネルは常に閉じます
+    toggleAreaFilterPanel(false); 
 
     adjustContentPadding();
-    // 【v2.0】リサイズ時のデバウンス処理
-    window.addEventListener('resize', sortAndRedistribute); 
+    window.addEventListener('resize', adjustContentPadding);
 
 
-    // 2. イベントリスナーの設定 (Event Delegation & UI Listeners)
+    // 2. イベントリスナーの設定
 
-    // 【v2.0】Event Delegation を適用
-    if (columns.length > 0) {
-        // カラムコンテナの親要素にイベントリスナーを設定
-        columns[0].parentNode.addEventListener('click', handleMobCardClick);
-    }
-
-    // ランクタブのリスナー
+    // ランクタブのリスナー (【修正点 1. 動作再定義】)
     if (rankTabs) {
         document.querySelectorAll('.tab-btn').forEach(button => {
             button.onclick = (e) => {
@@ -1406,19 +1196,25 @@ function initializeApp() {
                 const newRankIsTarget = TARGET_RANKS.includes(newRank);
                 
                 if (currentRank !== newRank) {
+                    // 1回目クリック or 別のランクへの切り替え
                     currentFilter.rank = newRank;
                     renderMobList();
-                    toggleAreaFilterPanel(false);
+                    // 別のランクへの切り替え時は、パネルは開かない（閉じている状態を維持）
+                    toggleAreaFilterPanel(false); 
                     
                 } else if (newRankIsTarget) {
+                    // 同じターゲットランクを再クリック
                     const isOpen = areaFilterWrapper.classList.contains('open');
                     
                     if (!isOpen) {
-                        toggleAreaFilterPanel(true);
+                        // 2回目クリック: パネルを開く
+                        toggleAreaFilterPanel(true); 
                     } else {
-                        toggleAreaFilterPanel(false);
+                        // 3回目クリック: パネルを閉じる
+                        toggleAreaFilterPanel(false); 
                     }
                 }
+                // ALLタブをクリックした場合、パネルは必ず閉じる（トグルしない）
             }
         });
     }
@@ -1429,33 +1225,40 @@ function initializeApp() {
             const newArea = e.currentTarget.dataset.area;
             const currentRank = currentFilter.rank;
             
+            // ALLタブ選択時は、Sランクのフィルタ状態を操作する
             const targetRank = TARGET_RANKS.includes(currentRank) ? currentRank : 'S';
             const currentAreaSet = currentFilter.areaSets[targetRank];
             
             if (!currentAreaSet) return;
 
             if (newArea === 'ALL') {
+                // ALLボタンのトグル
                 const isAllSelected = ALL_EXPANSION_NAMES.every(area => currentAreaSet.has(area));
                 
                 if (isAllSelected) {
+                    // 全選択状態なら、ALLのみに切り替える（全解除と同義で、ALLフラグを残す）
                     currentFilter.areaSets[targetRank] = new Set(['ALL']);
                 } else {
+                    // 全選択状態ではないなら、すべての拡張エリアを選択状態にする（ALLフラグも持たせる）
                     currentFilter.areaSets[targetRank] = new Set([...ALL_EXPANSION_NAMES, 'ALL']);
                 }
 
             } else {
+                // 個別エリアボタンのトグル
                 if (currentAreaSet.has(newArea)) {
                     currentAreaSet.delete(newArea);
                 } else {
                     currentAreaSet.add(newArea);
                 }
                 
+                // 選択肢が空になったら、ALLフラグを再度追加 (全て非表示)
                 if (Array.from(currentAreaSet).filter(a => a !== 'ALL').length === 0) {
                     currentAreaSet.add('ALL');
                 } else {
                     currentAreaSet.delete('ALL');
                 }
                 
+                // すべての拡張エリアが選択されたら、'ALL'フラグを追加
                 const isAllSelectedAfterToggle = ALL_EXPANSION_NAMES.every(area => currentAreaSet.has(area));
                 if (isAllSelectedAfterToggle) {
                     currentAreaSet.add('ALL');
@@ -1465,17 +1268,6 @@ function initializeApp() {
             renderMobList();
         }
     });
-
-    // 【新規】ソートドロップダウンのリスナー
-    if (sortDropdown) {
-        sortDropdown.onchange = (e) => {
-            const [key, direction] = e.target.value.split(':');
-            currentSort.key = key;
-            currentSort.direction = direction;
-            sortAndRedistribute();
-            saveFilterState();
-        };
-    }
 
 
     // モーダル関連のリスナー
