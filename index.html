@@ -9,8 +9,7 @@
     <!-- 埋め込みCSSを削除し、外部ファイルstyle.cssを読み込みます -->
     <link rel="stylesheet" href="style.css">
 
-</head>
-<body>
+</head><body>
 
     <div id="fixed-header-content" class="fixed top-0 left-0 right-0 z-50 bg-gray-950 p-3 pb-2 shadow-2xl border-b border-gray-800">
 
@@ -24,6 +23,21 @@
         
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
+            <!-- 【新規】ソートドロップダウン -->
+            <div class="mb-3 flex justify-end">
+                <div class="relative w-48">
+                    <select id="sort-dropdown" class="block appearance-none w-full bg-gray-700 border border-gray-600 text-white py-2 px-3 rounded-lg leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-lg">
+                        <option value="RepopTime:asc">リポップ予想時間 順</option>
+                        <option value="KillTime:desc">前回討伐日時 順</option>
+                        <option value="No.:asc" selected>モブ No. 順</option>
+                        <option value="Name:asc">モブ名 順</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                </div>
+            </div>
+            
             <div id="rank-tabs" class="flex justify-center space-x-2 p-2 bg-gray-900 rounded-xl shadow-lg">
                 <button data-rank="ALL" class="tab-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition">ALL</button>
                 <button data-rank="S" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">Rank S</button>
@@ -31,8 +45,8 @@
                 <button data-rank="F" class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">FATE</button>
             </div>
             
-            <div id="area-filter-wrapper" class="mt-2" style="max-height: 0;">
-                <div id="area-filter-container" class="p-2 bg-gray-900 rounded-xl shadow-lg">
+            <div id="area-filter-wrapper" class="mt-2 overflow-hidden transition-all duration-300 ease-in-out" style="max-height: 0;">
+                <div id="area-filter-container" class="p-2 bg-gray-900 rounded-xl shadow-lg border border-gray-800">
                     <div class="flex flex-wrap gap-2 justify-center">
                         <button data-area="ALL" class="area-filter-btn bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1 px-3 rounded-md text-sm transition">
                             ALL
@@ -66,7 +80,14 @@
     <div id="content-spacer" class="bg-gray-950">
         
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-            <div id="content-columns" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            
+            <!-- 【新規】マスターコンテナ: すべてのカードDOMを格納し、ソートの基点となる (非表示) -->
+            <div id="mob-container" class="hidden">
+                <!-- カードはJSによってここに作成・保持される -->
+            </div>
+            
+            <div id="content-columns" class="grid gap-4">
+                <!-- JSの determineColumnCount に基づき、grid-cols-1, md:grid-cols-2, xl:grid-cols-3 がCSSで設定されている -->
                 <div id="column-1"></div>
                 <div id="column-2"></div>
                 <div id="column-3"></div>
@@ -77,7 +98,7 @@
 
     <div id="report-modal" class="fixed inset-0 hidden items-center justify-center z-50 transition-opacity duration-300">
         <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-sm border border-gray-700">
-            <h2 class="text-xl font-bold mb-4 text-yellow-300">討伐報告 </h2>
+            <h2 class="text-xl font-bold mb-4 text-yellow-300">討伐報告 </h2>
             <p class="mb-3 text-lg">モブ名: <span id="modal-mob-name" class="font-semibold text-white"></span></p>
 
             <div class="mb-4">
@@ -99,6 +120,7 @@
         </div>
     </div>
 
+    <!-- script.js の内容は次のファイルブロックに移動 -->
     <script src="script.js"></script>
 </body>
 </html>
