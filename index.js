@@ -1,6 +1,5 @@
 // =====================================================================
 // Cloud Functions for Firebase - 第2世代 (v2)
-// [復元ロジック]: サーバーNTP時刻を基準とした遅延平均化処理を復元します。
 // =====================================================================
 
 const admin = require('firebase-admin');
@@ -8,6 +7,7 @@ const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 const { onTaskDispatched } = require('firebase-functions/v2/tasks');
 const logger = require('firebase-functions/logger');
 const { CloudTasksClient } = require('@google-cloud/tasks').v2;
+// 🚨 修正1: onCall と onRequest, HttpsError を一度にインポート
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https'); 
 
 admin.initializeApp();
@@ -31,7 +31,6 @@ const PROJECT_ID = process.env.GCLOUD_PROJECT;
 if (!PROJECT_ID) {
     logger.error("GCLOUD_PROJECT環境変数が設定されていません。プロジェクトIDをコード内で定義する必要があります。");
 }
-
 
 // Time Constants (復元)
 const FIVE_MINUTES_IN_SECONDS = 5 * 60;
@@ -113,10 +112,6 @@ exports.reportProcessor = onDocumentCreated({
     try {
         transactionResult = await db.runTransaction(async (t) => {
             const rankStatusSnap = await t.get(rankStatusRef);
-            
-            // 🚨 修正: mob_locationsの参照と取得を削除 (不要な参照を回避)
-            // const mobLocationsRef = db.collection(COLLECTIONS.MOB_LOCATIONS).doc(mobId); 
-            // const mobLocationsSnap = await t.get(mobLocationsRef);
 
             const rankStatusData = rankStatusSnap.data() || {};
             const existingMobData = rankStatusData[mobId] || {};
@@ -157,25 +152,16 @@ exports.reportProcessor = onDocumentCreated({
 
             t.set(rankStatusRef, { [`${mobId}`]: updateField }, { merge: true });
             
-            // 🚨 修正: mob_locationsの新規作成ロジックを削除
-            /*
-            if (!mobLocationsSnap.exists) {
-                t.set(mobLocationsRef, { mob_id: mobId, points: {} });
-                logger.info(`WRITE_MOB_LOCATIONS: Mob ${mobId} のロケーションドキュメントを新規作成。`);
-            }
-            */
-
             // 報告ドキュメントに is_averaged: false をセット
             t.update(reportRef, { is_averaged: false });
 
-
             // 過去ログの作成
             if (rankStatusSnap.exists && existingMobData && Object.keys(existingMobData).length > 0) {
+                // Mob Status Logs コレクションを個別のログではなく、Mob IDごとのドキュメントと仮定
                 t.set(db.collection(COLLECTIONS.MOB_STATUS_LOGS).doc(mobId), existingMobData, { merge: false });
             } else {
                 t.set(db.collection(COLLECTIONS.MOB_STATUS_LOGS).doc(mobId), { last_kill_time: reportTimeData }, { merge: true });
             }
-
 
             return true;
         });
@@ -329,7 +315,6 @@ exports.averageStatusCalculator = onTaskDispatched({
     }
 });
 
-
 // =====================================================================
 // 3. crushStatusUpdater: 湧き潰し座標の状態を更新
 // =====================================================================
@@ -337,6 +322,7 @@ exports.averageStatusCalculator = onTaskDispatched({
 exports.crushStatusUpdater = onCall({ region: DEFAULT_REGION }, async (request) => {
 
     if (!request.auth) {
+        // 🚨 修正3: HttpsError が定義済みであることを確認
         throw new HttpsError('unauthenticated', '認証が必要です。');
     }
 
@@ -390,7 +376,6 @@ exports.crushStatusUpdater = onCall({ region: DEFAULT_REGION }, async (request) 
 
     return { success: true, message: `Point ${pointId} crush status updated to ${type}.` };
 });
-
 
 // =====================================================================
 // 4. reportCleaner: reportsコレクションから古いデータを削除
