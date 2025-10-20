@@ -26,7 +26,7 @@ const COLLECTIONS = {
 
 // Functions Configuration
 const DEFAULT_REGION = 'asia-northeast1';
-const QUEUE_NAME = 'report-averaging-queue'; // Cloud Tasksキュー名
+const QUEUE_NAME = 'mob-averaging-queue'; // Cloud Tasksキュー名
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
 if (!PROJECT_ID) {
     logger.error("GCLOUD_PROJECT環境変数が設定されていません。プロジェクトIDをコード内で定義する必要があります。");
