@@ -5,7 +5,7 @@ import { openReportModal, closeReportModal } from "./modal.js";
 import { attachLocationEvents } from "./location.js"; 
 import { submitReport, toggleCrushStatus } from "./server.js"; 
 import { debounce, toJstAdjustedIsoString, } from "./cal.js"; 
-import { DOM, filterAndRender, renderRankTabs, renderAreaFilterPanel, sortAndRedistribute, toggleAreaFilterPanel } from "./uiRender.js";
+import { DOM, filterAndRender, renderRankTabs, renderAreaFilterPanel, sortAndRedistribute } from "./uiRender.js";
 
 function attachFilterEvents() {
   // Rank tabs
