@@ -474,7 +474,7 @@ function onKillReportReceived(mobId, kill_time) {
 // 定期ループ（末尾に追加）
 setInterval(() => {
   updateProgressBars();
-}, 10000); // 10秒ごと
+}, 60000); // 10秒ごと
 
 export { filterAndRender, distributeCards, updateProgressBars, createMobCard, displayStatus, DOM, 
         renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, updateFilterUI, toggleAreaPanel };
