@@ -333,15 +333,25 @@ const renderRankTabs = () => {
     // グリッドレイアウト適用
     container.className = "grid grid-cols-4 gap-2";
 
-    rankList.forEach(rank => {
-        const isSelected = state.filter.rank === rank;
-        const btn = document.createElement("button");
-        btn.dataset.rank = rank;
-        btn.textContent = rank;
-        btn.className = `tab-button px-4 py-1.5 text-sm rounded font-semibold text-white text-center transition ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"
-            }`;
-        container.appendChild(btn);
-    });
+rankList.forEach(rank => {
+  const isSelected = state.filter.rank === rank;
+  const btn = document.createElement("button");
+  btn.dataset.rank = rank;
+  btn.textContent = rank;
+  btn.className = `tab-button px-4 py-1.5 text-sm rounded font-semibold text-white text-center transition ${
+    isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"
+  }`;
+
+  // 🔧 クリックイベント追加
+  btn.addEventListener("click", () => {
+    setFilter({ rank });
+    filterAndRender();
+    renderRankTabs();
+    renderAreaFilterPanel();
+  });
+
+  container.appendChild(btn);
+});
 };
 
 const renderAreaFilterPanel = () => {
