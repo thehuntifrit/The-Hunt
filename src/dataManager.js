@@ -87,28 +87,41 @@ const MOB_DATA_URL = "./mob_data.json";
 let progressInterval = null;
 let unsubscribes = [];
 
+
+
 async function loadBaseMobData() {
   const resp = await fetch(MOB_DATA_URL);
   if (!resp.ok) throw new Error("Mob data failed to load.");
   const data = await resp.json();
 
-  const baseMobData = Object.entries(data.mobs).map(([no, mob]) => ({
-    No: parseInt(no, 10),
-    Rank: mob.rank,
-    Name: mob.name,
-    Area: mob.area,
-    Condition: mob.condition,
-    Expansion: EXPANSION_MAP[Math.floor(no / 10000)] || "Unknown",
-    REPOP_s: mob.repopSeconds,
-    MAX_s: mob.maxRepopSeconds,
-    Map: mob.mapImage,
-    spawn_points: mob.locations,
-    last_kill_time: 0,
-    prev_kill_time: 0,
-    last_kill_memo: "",
-    spawn_cull_status: {},
-    related_mob_no: mob.rank.startsWith("B") ? mob.relatedMobNo : null
-  }));
+const baseMobData = Object.entries(data.mobs).map(([no, mob]) => ({
+    No: parseInt(no, 10),
+    Rank: mob.rank,
+    Name: mob.name,
+    Area: mob.area,
+    Condition: mob.condition,
+    Expansion: EXPANSION_MAP[Math.floor(no / 10000)] || "Unknown",
+    
+    // リポップ時刻 (cal.js の calculateRepop と互換性あり)
+    REPOP_s: mob.repopSeconds,
+    MAX_s: mob.maxRepopSeconds,
+    
+    // 【重要】天候・時間・月齢の条件を追加
+    moonPhase: mob.moonPhase,
+    timeRange: mob.timeRange,
+    timeRanges: mob.timeRanges,
+    weatherSeedRange: mob.weatherSeedRange,
+    weatherSeedRanges: mob.weatherSeedRanges,
+
+    // その他のプロパティ
+    Map: mob.mapImage,
+    spawn_points: mob.locations,
+    last_kill_time: 0,
+    prev_kill_time: 0,
+    last_kill_memo: "",
+    spawn_cull_status: {},
+    related_mob_no: mob.rank.startsWith("B") ? mob.relatedMobNo : null
+}));
 
   setBaseMobData(baseMobData);
   setMobs([...baseMobData]);
