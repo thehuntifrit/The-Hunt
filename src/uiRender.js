@@ -114,7 +114,7 @@ function createMobCard(mob) {
         <div class="w-full grid grid-cols-3 items-center text-sm font-semibold" style="line-height:1;">
           <div class="pl-2 text-left">${mob.repopInfo?.remainingStr || ""}</div>
           <div class="text-center"> ( ${mob.repopInfo?.elapsedPercent?.toFixed?.(0) || 0}% )</div>
-          <div class="pr-2 text-right">Next: ${mob.repopInfo?.nextMinRepopDate ? new Intl.Da]teTimeFormat('ja-JP', absFmt).format(mob.repopInfo.nextMinRepopDate) : "未確定"}</div>
+          <div class="pr-2 text-right">Next: ${mob.repopInfo?.nextMinRepopDate ? new Intl.DateTimeFormat('ja-JP', absFmt).format(mob.repopInfo.nextMinRepopDate) : "未確定"}</div>
         </div>
       </div>
     </div>
