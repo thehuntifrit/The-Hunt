@@ -244,67 +244,82 @@ function distributeCards() {
 
 // updateProgressBars
 function updateProgressBars() {
-    const state = getState();
-    state.mobs = state.mobs.map(m => ({ ...m, repopInfo: calculateRepop(m) }));
+  const state = getState();
+  state.mobs = state.mobs.map(m => ({ ...m, repopInfo: calculateRepop(m) }));
 
-    document.querySelectorAll(".mob-card").forEach(card => {
-        const mobNo = parseInt(card.dataset.mobNo, 10);
-        const mob = state.mobs.find(m => m.No === mobNo);
-        if (!mob?.repopInfo) return;
+  document.querySelectorAll(".mob-card").forEach(card => {
+    const mobNo = parseInt(card.dataset.mobNo, 10);
+    const mob = state.mobs.find(m => m.No === mobNo);
+    if (!mob?.repopInfo) return;
 
-        const { elapsedPercent, status, nextMinRepopDate, maxRepop } = mob.repopInfo;
-        const bar = card.querySelector(".progress-bar-bg");
-        const text = card.querySelector(".progress-text");
-        const wrapper = bar?.parentElement;
-        if (!bar || !text || !wrapper) return;
+    // 差分検出
+    const prev = mob.prevRepopInfo;
+    if (prev && JSON.stringify(prev) === JSON.stringify(mob.repopInfo)) return;
+    mob.prevRepopInfo = mob.repopInfo;
 
-        // --- 条件成立時間と比較 ---
-        const conditionTime = findNextSpawnTime(mob);
-        let displayTime = null;
-        if (nextMinRepopDate && conditionTime) {
-            displayTime = conditionTime > nextMinRepopDate ? conditionTime : nextMinRepopDate;
-        } else {
-            displayTime = nextMinRepopDate || conditionTime;
-        }
+    updateProgressText(card, mob);
+    updateProgressBar(card, mob);
+  });
+}
 
-        const absFmt = { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' };
-        const nextTimeStr = displayTime
-            ? new Intl.DateTimeFormat('ja-JP', absFmt).format(displayTime)
-            : "未確定";
+function updateProgressText(card, mob) {
+  const text = card.querySelector(".progress-text");
+  if (!text) return;
 
-        const remainingStr = maxRepop
-            ? `残り ${formatDuration(maxRepop - Date.now() / 1000)}`
-            : "";
+  const { elapsedPercent, nextMinRepopDate, maxRepop } = mob.repopInfo;
+  const conditionTime = findNextSpawnTime(mob);
+  let displayTime = null;
 
-        // --- プログレスバー更新 ---
-        bar.style.width = `${elapsedPercent}%`;
+  if (nextMinRepopDate && conditionTime) {
+    displayTime = conditionTime > nextMinRepopDate ? conditionTime : nextMinRepopDate;
+  } else {
+    displayTime = nextMinRepopDate || conditionTime;
+  }
 
-        // 3カラム配置に変更
-        text.innerHTML = `
-          <div class="w-full grid grid-cols-3 items-center text-sm font-semibold" style="line-height:1;">
-            <div class="pl-2 text-left">${remainingStr} (${elapsedPercent.toFixed(0)}%)</div> <!-- 左：残り -->
-            <div class="pr-2 text-right">Next: ${nextTimeStr}</div> <!-- 右：％ -->
-          </div>
-        `;
+  const absFmt = { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' };
+  const nextTimeStr = displayTime
+    ? new Intl.DateTimeFormat('ja-JP', absFmt).format(displayTime)
+    : "未確定";
 
-        // --- 色・クラス制御 ---
-        bar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100);
-        text.classList.remove(PROGRESS_CLASSES.TEXT_NEXT, PROGRESS_CLASSES.TEXT_POP);
-        wrapper.classList.remove(PROGRESS_CLASSES.MAX_OVER_BLINK);
+  const remainingStr = maxRepop
+    ? `残り ${formatDuration(maxRepop - Date.now() / 1000)}`
+    : "";
 
-        if (status === "PopWindow") {
-            if (elapsedPercent <= 60) bar.classList.add(PROGRESS_CLASSES.P0_60);
-            else if (elapsedPercent <= 80) bar.classList.add(PROGRESS_CLASSES.P60_80);
-            else bar.classList.add(PROGRESS_CLASSES.P80_100);
-            text.classList.add(PROGRESS_CLASSES.TEXT_POP);
-        } else if (status === "MaxOver") {
-            bar.classList.add(PROGRESS_CLASSES.P80_100);
-            text.classList.add(PROGRESS_CLASSES.TEXT_POP);
-            wrapper.classList.add(PROGRESS_CLASSES.MAX_OVER_BLINK);
-        } else {
-            text.classList.add(PROGRESS_CLASSES.TEXT_NEXT);
-        }
-    });
+  text.innerHTML = `
+    <div class="w-full grid grid-cols-3 items-center text-sm font-semibold" style="line-height:1;">
+      <div class="pl-2 text-left">${remainingStr} (${elapsedPercent.toFixed(0)}%)</div>
+      <div class="pr-2 text-right">Next: ${nextTimeStr}</div>
+    </div>
+  `;
+}
+
+function updateProgressBar(card, mob) {
+  const bar = card.querySelector(".progress-bar-bg");
+  const wrapper = bar?.parentElement;
+  const text = card.querySelector(".progress-text");
+  if (!bar || !wrapper || !text) return;
+
+  const { elapsedPercent, status } = mob.repopInfo;
+
+  bar.style.transition = "width linear 60s";
+  bar.style.width = `${elapsedPercent}%`;
+
+  bar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100);
+  text.classList.remove(PROGRESS_CLASSES.TEXT_NEXT, PROGRESS_CLASSES.TEXT_POP);
+  wrapper.classList.remove(PROGRESS_CLASSES.MAX_OVER_BLINK);
+
+  if (status === "PopWindow") {
+    if (elapsedPercent <= 60) bar.classList.add(PROGRESS_CLASSES.P0_60);
+    else if (elapsedPercent <= 80) bar.classList.add(PROGRESS_CLASSES.P60_80);
+    else bar.classList.add(PROGRESS_CLASSES.P80_100);
+    text.classList.add(PROGRESS_CLASSES.TEXT_POP);
+  } else if (status === "MaxOver") {
+    bar.classList.add(PROGRESS_CLASSES.P80_100);
+    text.classList.add(PROGRESS_CLASSES.TEXT_POP);
+    wrapper.classList.add(PROGRESS_CLASSES.MAX_OVER_BLINK);
+  } else {
+    text.classList.add(PROGRESS_CLASSES.TEXT_NEXT);
+  }
 }
 
 const renderRankTabs = () => {
