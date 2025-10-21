@@ -110,7 +110,7 @@ function createMobCard(mob) {
   <!-- 下段：プログレスバー -->
     <div class="progress-bar-wrapper h-6 rounded-full relative overflow-hidden transition-all duration-100 ease-linear">
       <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear" style="width: ${mob.repopInfo?.elapsedPercent || 0}%"></div>
-<div class="progress-text absolute inset-0 flex items-center justify-center text-sm font-semibold" style="line-height: 1;">
+<div class="progress-text absolute inset-0 text-sm font-semibold" style="line-height: 1;">
     <div class="w-full grid grid-cols-3 items-center text-sm font-semibold" style="line-height:1;">
       <div class="px-2 text-left repop-remaining-text">${mob.repopInfo?.remainingStr || ""}</div>
       <div class="text-center repop-percent-text">${mob.repopInfo?.elapsedPercent?.toFixed?.(0) || 0}%</div>
