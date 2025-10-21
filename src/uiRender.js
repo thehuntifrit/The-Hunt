@@ -122,7 +122,7 @@ function createMobCard(mob) {
 
     const expandablePanelHTML = isExpandable ? `
 <div class="expandable-panel ${isOpen ? 'open' : ''}">
-  <div class="px-2 py-1 text-sm space-y-0.5">
+  <div class="px-1 py-1 text-sm space-y-0.5">
     <div class="flex justify-between items-start flex-wrap">
       <div class="w-full text-right text-sm font-mono text-green-300">次回: ${nextTimeDisplay}</div>
       <div class="w-full text-right text-xs text-gray-400 pt-1">前回: ${lastKillDisplay}</div>
