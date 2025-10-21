@@ -282,8 +282,8 @@ function updateProgressBars() {
         // 3カラム配置に変更
         text.innerHTML = `
           <div class="w-full grid grid-cols-3 items-center text-sm font-semibold" style="line-height:1;">
-            <div class="pl-2 text-left">${remainingStr} (${elapsedPercent.toFixed(0)}%)</div> <!-- 左：残り -->
-            <div class="pr-2 text-right">Next: ${nextTimeStr}</div> <!-- 右：％ -->
+            <div class="pl-2 text-left">${remainingStr} (${elapsedPercent.toFixed(0)}%)</div>
+            <div class="pr-2 text-right">Next: ${nextTimeStr}</div>
           </div>
         `;
 
