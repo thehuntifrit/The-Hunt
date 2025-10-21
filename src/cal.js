@@ -136,38 +136,59 @@ function findNextSpawnTime(mob, now = new Date()) {
 }
 
 function calculateRepop(mob) {
-  const now = Date.now() / 1000;
-  const lastKill = mob.last_kill_time || 0;
-  const repopSec = mob.REPOP_s;
-  const maxSec = mob.MAX_s;
+  const now = Date.now() / 1000;
+  const lastKill = mob.last_kill_time || 0;
+  const repopSec = mob.REPOP_s;
+  const maxSec = mob.MAX_s;
 
-  let minRepop = lastKill + repopSec;
-  let maxRepop = lastKill + maxSec;
-  let elapsedPercent = 0;
-  let timeRemaining = "Unknown";
-  let status = "Unknown";
+  let minRepop = lastKill + repopSec;
+  let maxRepop = lastKill + maxSec;
+  let elapsedPercent = 0;
+  let timeRemaining = "Unknown";
+  let status = "Unknown";
 
-  if (lastKill === 0) {
-    minRepop = now + repopSec;
-    maxRepop = now + maxSec;
-    timeRemaining = `Next: ${formatDuration(minRepop - now)}`;
-    status = "Next";
-  } else if (now < minRepop) {
-    timeRemaining = `Next: ${formatDuration(minRepop - now)}`;
-    status = "Next";
-  } else if (now >= minRepop && now < maxRepop) {
-    elapsedPercent = ((now - minRepop) / (maxRepop - minRepop)) * 100;
-    elapsedPercent = Math.min(elapsedPercent, 100);
-    timeRemaining = `${elapsedPercent.toFixed(0)}% (${formatDuration(maxRepop - now)})`;
-    status = "PopWindow";
-  } else {
-    elapsedPercent = 100;
-    timeRemaining = `100% (+${formatDuration(now - maxRepop)})`;
-    status = "MaxOver";
-  }
+  if (lastKill === 0) {
+    // 初回未討伐
+    minRepop = now + repopSec;
+    maxRepop = now + maxSec;
+    timeRemaining = `Next: ${formatDuration(minRepop - now)}`;
+    status = "Next";
+  } else if (now < minRepop) {
+    // リポップ待ち中
+    timeRemaining = `Next: ${formatDuration(minRepop - now)}`;
+    status = "Next";
+  } else if (now >= minRepop && now < maxRepop) {
+    // ポップウィンドウ中
+    elapsedPercent = ((now - minRepop) / (maxRepop - minRepop)) * 100;
+    elapsedPercent = Math.min(elapsedPercent, 100);
+    timeRemaining = `${elapsedPercent.toFixed(0)}% (${formatDuration(maxRepop - now)})`;
+    status = "PopWindow";
+  } else {
+    // 最大時間経過後
+    elapsedPercent = 100;
+    timeRemaining = `100% (+${formatDuration(now - maxRepop)})`;
+    status = "MaxOver";
+  }
 
-  const nextMinRepopDate = minRepop > now ? new Date(minRepop * 1000) : null;
-  return { minRepop, maxRepop, elapsedPercent, timeRemaining, status, nextMinRepopDate };
+  // 次回出現可能時刻（条件付きモブは findNextSpawnTime で補正）
+  let nextMinRepopDate = null;
+  if (minRepop > now) {
+    nextMinRepopDate = new Date(minRepop * 1000);
+  }
+
+  // 条件付きモブ（moonPhase, timeRange, weather など）がある場合は補正
+  if (mob.moonPhase || mob.timeRange || mob.weatherSeedRange || mob.weatherSeedRanges) {
+    nextMinRepopDate = findNextSpawnTime(mob, nextMinRepopDate || new Date());
+  }
+
+  return {
+    minRepop,
+    maxRepop,
+    elapsedPercent,
+    timeRemaining,
+    status,
+    nextMinRepopDate
+  };
 }
 
 function formatLastKillTime(timestamp) {
