@@ -144,71 +144,69 @@ function createMobCard(mob) {
 
 // filterAndRender
 function filterAndRender({ isInitialLoad = false } = {}) {
-    const state = getState();
-    const uiRank = state.filter.rank;
-    const dataRank = FILTER_TO_DATA_RANK_MAP[uiRank] || uiRank;
-    const areaSets = state.filter.areaSets; // ランクごとのエリア選択を保持している想定
+    const state = getState();
+    const uiRank = state.filter.rank;
+    const dataRank = FILTER_TO_DATA_RANK_MAP[uiRank] || uiRank;
+    const areaSets = state.filter.areaSets; // ランクごとのエリア選択を保持している想定
     
-    const filtered = state.mobs.filter(mob => {
-        // --- ALL の場合 ---
-        if (dataRank === "ALL") {
-            // mob のランクに対応するエリアセットを取得
-            const mobRank = mob.Rank.startsWith("B")
-                ? (mob.Rank.includes("A") ? "A" : "F") // B系はA/Fに寄せる
-                : mob.Rank;
-            if (!["S", "A", "F"].includes(mobRank)) return false;
+    const filtered = state.mobs.filter(mob => {
+        // --- ALL の場合 ---
+        if (dataRank === "ALL") {
+            // mob のランクに対応するエリアセットを取得
+            const mobRank = mob.Rank.startsWith("B")
+                ? (mob.Rank.includes("A") ? "A" : "F") // B系はA/Fに寄せる
+                : mob.Rank;
+            if (!["S", "A", "F"].includes(mobRank)) return false;
 
-            const areaSetForRank = areaSets[mobRank];
-            const mobExpansion = mob.Rank.startsWith("B")
-                ? state.mobs.find(m => m.No === mob.related_mob_no)?.Expansion || mob.Expansion
-                : mob.Expansion;
+            const areaSetForRank = areaSets[mobRank];
+            const mobExpansion = mob.Rank.startsWith("B")
+                ? state.mobs.find(m => m.No === mob.related_mob_no)?.Expansion || mob.Expansion
+                : mob.Expansion;
 
-            // そのランクでエリア選択が無ければ表示対象
-            if (!areaSetForRank || !(areaSetForRank instanceof Set) || areaSetForRank.size === 0) {
-                return true;
-            }
-            // 選択されているエリアに含まれていれば表示
-            return areaSetForRank.has(mobExpansion);
-        }
+            // そのランクでエリア選択が無ければ表示対象
+            if (!areaSetForRank || !(areaSetForRank instanceof Set) || areaSetForRank.size === 0) {
+                return true;
+            }
+            // 選択されているエリアに含まれていれば表示
+            return areaSetForRank.has(mobExpansion);
+        }
 
-        // --- A/F/S 単独ランクの場合 ---
-        if (dataRank === "A") {
-            if (mob.Rank !== "A" && !mob.Rank.startsWith("B")) return false;
-        } else if (dataRank === "F") {
-            if (mob.Rank !== "F" && !mob.Rank.startsWith("B")) return false;
-        } else if (mob.Rank !== dataRank) {
-            return false;
-        }
+        // --- A/F/S 単独ランクの場合 ---
+        if (dataRank === "A") {
+            if (mob.Rank !== "A" && !mob.Rank.startsWith("B")) return false;
+        } else if (dataRank === "F") {
+            if (mob.Rank !== "F" && !mob.Rank.startsWith("B")) return false;
+        } else if (mob.Rank !== dataRank) {
+            return false;
+        }
 
-        const mobExpansion = mob.Rank.startsWith("B")
-            ? state.mobs.find(m => m.No === mob.related_mob_no)?.Expansion || mob.Expansion
-            : mob.Expansion;
+        const mobExpansion = mob.Rank.startsWith("B")
+            ? state.mobs.find(m => m.No === mob.related_mob_no)?.Expansion || mob.Expansion
+            : mob.Expansion;
 
-        const areaSet = areaSets[uiRank];
-        if (!areaSet || !(areaSet instanceof Set) || areaSet.size === 0) return true;
-        return areaSet.has(mobExpansion);
-    });
+        const areaSet = areaSets[uiRank];
+        if (!areaSet || !(areaSet instanceof Set) || areaSet.size === 0) return true;
+        return areaSet.has(mobExpansion);
+    });
 
-    // ソート復活（表示の安定性のため、No昇順に統一。必要ならelapsedPercent優先へ切替可能）
-    filtered.sort((a, b) => a.No - b.No);
+    // ソート復活（表示の安定性のため、No昇順に統一。必要ならelapsedPercent優先へ切替可能）
+    filtered.sort((a, b) => a.No - b.No);
 
-    // DOM構築（文字列→要素）＋平文問題の回避
-    const frag = document.createDocumentFragment();
-    filtered.forEach(mob => {
-        const temp = document.createElement("div");
-        temp.innerHTML = createMobCard(mob);
-        frag.appendChild(temp.firstElementChild);
-    });
+    // DOM構築（文字列→要素）＋平文問題の回避
+    const frag = document.createDocumentFragment();
+    filtered.forEach(mob => {
+        const temp = document.createElement("div");
+        temp.innerHTML = createMobCard(mob);
+        frag.appendChild(temp.firstElementChild);
+    });
 
-    DOM.masterContainer.innerHTML = "";
-    DOM.masterContainer.appendChild(frag);
-    distributeCards();
-    updateFilterUI(); // タブ強調/クリックカウントの反映
+    DOM.masterContainer.innerHTML = "";
+    DOM.masterContainer.appendChild(frag);
+    distributeCards();
+    updateFilterUI(); // タブ強調/クリックカウントの反映
 
-    if (isInitialLoad) {
-        // 初期レンダリング後に進捗バーを一度更新
-        updateProgressBars();
-    }
+    // 描画直後に必ず進捗バーを更新する（初期ロード時だけでなくフィルタ切替時も必要）
+    updateProgressBars();
 }
 
 // distributeCards
