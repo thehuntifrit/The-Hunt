@@ -148,6 +148,7 @@ function createMobCard(mob) {
 </div>
 `;
 }
+
 // filterAndRender
 function filterAndRender({ isInitialLoad = false } = {}) {
     const state = getState();
