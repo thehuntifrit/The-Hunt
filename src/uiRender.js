@@ -110,10 +110,18 @@ function createMobCard(mob) {
   <!-- 下段：プログレスバー -->
 <div class="progress-bar-wrapper h-6 rounded-full relative overflow-hidden transition-all duration-100 ease-linear w-full"> 
       <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear" style="width: ${mob.repopInfo?.elapsedPercent || 0}%"></div>
-            <div class="progress-text absolute inset-0 text-sm font-semibold">
-            <div class="w-full grid grid-cols-2 items-center text-sm font-semibold repop-grid h-full" style="line-height:1; display: grid;">
-            <div class="pl-2 text-left repop-left-text whitespace-nowrap"></div>
-            <div class="pr-2 text-right repop-right-text whitespace-nowrap"></div>
+      
+            <div class="progress-text absolute inset-0 text-sm font-semibold flex items-center justify-center">
+        
+                  <div class="w-full grid grid-cols-2 items-center text-sm font-semibold repop-grid h-full" style="display: grid; line-height: 24px;"> 
+                        
+                        <div class="pl-2 text-left repop-left-text whitespace-nowrap">
+                ${mob.repopInfo?.remainingStr || ""} / ${mob.repopInfo?.elapsedPercent?.toFixed?.(0) || 0}%
+            </div>
+            
+                    <div class="pr-2 text-right repop-right-text whitespace-nowrap">
+                Next: ${mob.repopInfo?.nextMinRepopDate ? new Intl.DateTimeFormat('ja-JP', absFmt).format(mob.repopInfo.nextMinRepopDate) : "未確定"}
+            </div>
         </div>
       </div>
     </div>
@@ -150,55 +158,92 @@ function createMobCard(mob) {
 
 // filterAndRender
 function filterAndRender({ isInitialLoad = false } = {}) {
-    const state = getState();
-    const uiRank = state.filter.rank;
-    const dataRank = FILTER_TO_DATA_RANK_MAP[uiRank] || uiRank;
-    const areaSets = state.filter.areaSets; // ランクごとのエリア選択を保持している想定
+    const state = getState();
+    const uiRank = state.filter.rank;
+    const dataRank = FILTER_TO_DATA_RANK_MAP[uiRank] || uiRank;
+    const areaSets = state.filter.areaSets;
 
-    const filtered = state.mobs.filter(mob => {
-        // --- ALL の場合 ---
-        if (dataRank === "ALL") {
-            // mob のランクに対応するエリアセットを取得
-            const mobRank = mob.Rank.startsWith("B")
-                ? (mob.Rank.includes("A") ? "A" : "F") // B系はA/Fに寄せる
-                : mob.Rank;
-            if (!["S", "A", "F"].includes(mobRank)) return false;
+    const filtered = state.mobs.filter(mob => {
+        // フィルタリングロジック（元のコードを維持）
+        if (dataRank === "ALL") {
+            const mobRank = mob.Rank.startsWith("B")
+                ? (mob.Rank.includes("A") ? "A" : "F")
+                : mob.Rank;
+            if (!["S", "A", "F"].includes(mobRank)) return false;
+            const areaSetForRank = areaSets[mobRank];
+            const mobExpansion = mob.Rank.startsWith("B")
+                ? state.mobs.find(m => m.No === mob.related_mob_no)?.Expansion || mob.Expansion
+                : mob.Expansion;
+            if (!areaSetForRank || !(areaSetForRank instanceof Set) || areaSetForRank.size === 0) {
+                return true;
+            }
+            return areaSetForRank.has(mobExpansion);
+        }
 
-            const areaSetForRank = areaSets[mobRank];
-            const mobExpansion = mob.Rank.startsWith("B")
-                ? state.mobs.find(m => m.No === mob.related_mob_no)?.Expansion || mob.Expansion
-                : mob.Expansion;
+        if (dataRank === "A") {
+            if (mob.Rank !== "A" && !mob.Rank.startsWith("B")) return false;
+        } else if (dataRank === "F") {
+            if (mob.Rank !== "F" && !mob.Rank.startsWith("B")) return false;
+        } else if (mob.Rank !== dataRank) {
+            return false;
+        }
 
-            // そのランクでエリア選択が無ければ表示対象
-            if (!areaSetForRank || !(areaSetForRank instanceof Set) || areaSetForRank.size === 0) {
-                return true;
-            }
-            // 選択されているエリアに含まれていれば表示
-            return areaSetForRank.has(mobExpansion);
-        }
+        const mobExpansion = mob.Rank.startsWith("B")
+            ? state.mobs.find(m => m.No === mob.related_mob_no)?.Expansion || mob.Expansion
+            : mob.Expansion;
 
-        // --- A/F/S 単独ランクの場合 ---
-        if (dataRank === "A") {
-            if (mob.Rank !== "A" && !mob.Rank.startsWith("B")) return false;
-        } else if (dataRank === "F") {
-            if (mob.Rank !== "F" && !mob.Rank.startsWith("B")) return false;
-        } else if (mob.Rank !== dataRank) {
-            return false;
-        }
+        const areaSet = areaSets[uiRank];
+        if (!areaSet || !(areaSet instanceof Set) || areaSet.size === 0) return true;
+        return areaSet.has(mobExpansion);
+    });
 
-        const mobExpansion = mob.Rank.startsWith("B")
-            ? state.mobs.find(m => m.No === mob.related_mob_no)?.Expansion || mob.Expansion
-            : mob.Expansion;
+    filtered.sort((a, b) => a.No - b.No);
 
-        const areaSet = areaSets[uiRank];
-        if (!areaSet || !(areaSet instanceof Set) || areaSet.size === 0) return true;
-        return areaSet.has(mobExpansion);
-    });
+    const existingCards = new Map();
+    DOM.masterContainer.querySelectorAll(".mob-card").forEach(card => {
+        existingCards.set(parseInt(card.dataset.mobNo, 10), card);
+    });
 
-    // ソート復活（表示の安定性のため、No昇順に統一。必要ならelapsedPercent優先へ切替可能）
+    const newOrderFrag = document.createDocumentFragment();
+    const mobsToRender = [];
+
+    filtered.forEach(mob => {
+        const mobNo = mob.No;
+        let cardElement;
+
+        if (existingCards.has(mobNo)) {
+            cardElement = existingCards.get(mobNo);
+            existingCards.delete(mobNo);
+        } else {
+            const temp = document.createElement("div");
+            temp.innerHTML = createMobCard(mob);
+            cardElement = temp.firstElementChild;
+        }
+
+        newOrderFrag.appendChild(cardElement);
+        mobsToRender.push(mob);
+    });
+
+    existingCards.forEach(card => card.remove());
+    const parent = DOM.masterContainer.parentElement;
+    if (parent) {
+        DOM.masterContainer.remove(); // 一旦DOMツリーから削除
+        DOM.masterContainer.appendChild(newOrderFrag);
+        parent.appendChild(DOM.masterContainer); // 再挿入
+    } else {
+        DOM.masterContainer.innerHTML = "";
+        DOM.masterContainer.appendChild(newOrderFrag);
+    }
+    
+    distributeCards();
+    updateFilterUI();
+
+    if (isInitialLoad || mobsToRender.length > 0) {
+        updateProgressBars();
+    }
+}
+
     filtered.sort((a, b) => a.No - b.No);
-
-    // DOM構築（文字列→要素）＋平文問題の回避
     const frag = document.createDocumentFragment();
     filtered.forEach(mob => {
         const temp = document.createElement("div");
@@ -244,47 +289,31 @@ function distributeCards() {
 
 // updateProgressBars
 function updateProgressBars() {
-    const state = getState();
-    state.mobs = state.mobs.map(m => ({ ...m, repopInfo: calculateRepop(m) }));
+  const state = getState();
+  
+  document.querySelectorAll(".mob-card").forEach(card => {
+    const mobNo = parseInt(card.dataset.mobNo, 10);
+    // state.mobs を書き換えずに、直接 mob オブジェクトを取得
+    const mob = state.mobs.find(m => m.No === mobNo);
+    if (!mob) return;
+      
+    const currentRepopInfo = calculateRepop(mob);
+    mob.repopInfo = currentRepopInfo;
 
-    document.querySelectorAll(".mob-card").forEach(card => {
-        const mobNo = parseInt(card.dataset.mobNo, 10);
-        const mob = state.mobs.find(m => m.No === mobNo);
-        if (!mob?.repopInfo) return;
-
-        // 差分検出
-        const prev = mob.prevRepopInfo;
-        if (prev && JSON.stringify(prev) === JSON.stringify(mob.repopInfo)) return;
-        mob.prevRepopInfo = mob.repopInfo;
-
-        updateProgressText(card, mob);
-        updateProgressBar(card, mob);
-    });
+    updateProgressText(card, mob);
+    updateProgressBar(card, mob);
+  });
 }
 
 function updateProgressText(card, mob) {
     const progressTextWrapper = card.querySelector('.progress-text');
     if (!progressTextWrapper) return;
+    
+    // 要素の純粋な取得
+    const leftTextElement = progressTextWrapper.querySelector('.repop-left-text');
+    const rightTextElement = progressTextWrapper.querySelector('.repop-right-text');
 
-    let leftTextElement = progressTextWrapper.querySelector('.repop-left-text');
-    let rightTextElement = progressTextWrapper.querySelector('.repop-right-text');
-
-    if (!leftTextElement || !rightTextElement) {
-        progressTextWrapper.innerHTML = '';
-
-        const repopGrid = document.createElement('div');
-        repopGrid.className = 'w-full grid grid-cols-2 items-center text-sm font-semibold repop-grid h-full';
-        repopGrid.style.cssText = 'line-height:1; display: grid;';
-
-        leftTextElement = document.createElement('div');
-        leftTextElement.className = 'pl-2 text-left repop-left-text whitespace-nowrap';
-        rightTextElement = document.createElement('div');
-        rightTextElement.className = 'pr-2 text-right repop-right-text whitespace-nowrap';
-
-        repopGrid.appendChild(leftTextElement);
-        repopGrid.appendChild(rightTextElement);
-        progressTextWrapper.appendChild(repopGrid);
-    }
+    if (!leftTextElement || !rightTextElement) return; 
 
     const { elapsedPercent, nextMinRepopDate, maxRepop } = mob.repopInfo;
     const conditionTime = findNextSpawnTime(mob);
