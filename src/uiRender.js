@@ -110,13 +110,13 @@ function createMobCard(mob) {
   <!-- 下段：プログレスバー -->
     <div class="progress-bar-wrapper h-6 rounded-full relative overflow-hidden transition-all duration-100 ease-linear">
       <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear" style="width: ${mob.repopInfo?.elapsedPercent || 0}%"></div>
-      <div class="progress-text absolute inset-0 flex items-center justify-center text-sm font-semibold" style="line-height: 1;">
-        <div class="w-full grid grid-cols-3 items-center text-sm font-semibold" style="line-height:1;">
-          <div class="px-2 text-left">${mob.repopInfo?.remainingStr || ""}</div>
-          <div class="text-center">${mob.repopInfo?.elapsedPercent?.toFixed?.(0) || 0}%</div>
-          <div class="px-2 text-right">Next: ${mob.repopInfo?.nextMinRepopDate ? new Intl.DateTimeFormat('ja-JP', absFmt).format(mob.repopInfo.nextMinRepopDate) : "未確定"}</div>
-        </div>
-      </div>
+<div class="progress-text absolute inset-0 flex items-center justify-center text-sm font-semibold" style="line-height: 1;">
+    <div class="w-full grid grid-cols-3 items-center text-sm font-semibold" style="line-height:1;">
+      <div class="px-2 text-left repop-remaining-text">${mob.repopInfo?.remainingStr || ""}</div>
+      <div class="text-center repop-percent-text">${mob.repopInfo?.elapsedPercent?.toFixed?.(0) || 0}%</div>
+      <div class="px-2 text-right repop-next-time-text">Next: ${mob.repopInfo?.nextMinRepopDate ? new Intl.DateTimeFormat('ja-JP', absFmt).format(mob.repopInfo.nextMinRepopDate) : "未確定"}</div>
+    </div>
+</div>
     </div>
 `;
 
@@ -264,34 +264,38 @@ function updateProgressBars() {
 }
 
 function updateProgressText(card, mob) {
-  const text = card.querySelector(".progress-text");
-  if (!text) return;
+    // 更新対象となる3つの要素をクラス名で取得
+    const remainingTextElement = card.querySelector('.repop-remaining-text');
+    const percentTextElement = card.querySelector('.repop-percent-text');
+    const nextTimeTextElement = card.querySelector('.repop-next-time-text');
+    
+    // 要素が見つからない場合は処理をスキップ
+    if (!remainingTextElement || !percentTextElement || !nextTimeTextElement) return;
 
-  const { elapsedPercent, nextMinRepopDate, maxRepop } = mob.repopInfo;
-  const conditionTime = findNextSpawnTime(mob);
-  let displayTime = null;
+    const { elapsedPercent, nextMinRepopDate, maxRepop } = mob.repopInfo;
+    const conditionTime = findNextSpawnTime(mob);
+    let displayTime = null;
 
-  if (nextMinRepopDate && conditionTime) {
-    displayTime = conditionTime > nextMinRepopDate ? conditionTime : nextMinRepopDate;
-  } else {
-    displayTime = nextMinRepopDate || conditionTime;
-  }
+    // 次回ポップ時間の決定ロジック
+    if (nextMinRepopDate && conditionTime) {
+        displayTime = conditionTime > nextMinRepopDate ? conditionTime : nextMinRepopDate;
+    } else {
+        displayTime = nextMinRepopDate || conditionTime;
+    }
 
-  const absFmt = { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' };
-  const nextTimeStr = displayTime
-    ? new Intl.DateTimeFormat('ja-JP', absFmt).format(displayTime)
-    : "未確定";
+    // 時刻と残り時間の文字列フォーマット
+    const absFmt = { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' };
+    const nextTimeStr = displayTime
+        ? new Intl.DateTimeFormat('ja-JP', absFmt).format(displayTime)
+        : "未確定";
 
-  const remainingStr = maxRepop
-    ? `残り ${formatDuration(maxRepop - Date.now() / 1000)}`
-    : "";
+    const remainingStr = maxRepop
+        ? `残り ${formatDuration(maxRepop - Date.now() / 1000)}`
+        : "";
 
-  text.innerHTML = `
-    <div class="w-full grid grid-cols-2 items-center text-sm font-semibold" style="line-height:1;">
-      <div class="pl-2 text-left">${remainingStr} (${elapsedPercent.toFixed(0)}%)</div>
-      <div class="pr-2 text-right">Next: ${nextTimeStr}</div>
-    </div>
-  `;
+    remainingTextElement.textContent = remainingStr;
+    percentTextElement.textContent = `${elapsedPercent.toFixed(0)}%`;
+    nextTimeTextElement.textContent = `Next: ${nextTimeStr}`;
 }
 
 function updateProgressBar(card, mob) {
