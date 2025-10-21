@@ -259,7 +259,6 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     if (isInitialLoad) {
         // 初期レンダリング後に進捗バーを一度更新
         updateProgressBars();
-    }
 }
 
 // distributeCards
