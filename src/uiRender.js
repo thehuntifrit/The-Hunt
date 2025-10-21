@@ -98,7 +98,7 @@ function createMobCard(mob) {
       <span class="text-xs text-gray-400 truncate">${mob.Area} (${mob.Expansion})</span>
     </div>
 
-<!-- 右端：報告ボタン（表示は統一、動作のみ分岐） -->
+    <!-- 右端：報告ボタン（表示は統一、動作のみ分岐） -->
 <div class="flex-shrink-0 flex items-center justify-end">
   <button
     data-report-type="${rank === 'A' || rank === 'F' ? 'instant' : 'modal'}"data-mob-no="${mob.No}"
@@ -106,11 +106,10 @@ function createMobCard(mob) {
     text-white font-semibold transition text-center leading-tight whitespace-pre-line">報告<br>する</button>
 </div>
   
-  <!-- 下段：プログレスバー -->
-    <div class="progress-bar-wrapper h-6 rounded-full relative overflow-hidden transition-all duration-100 ease-linear">
-      <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear" style="width: ${mob.repopInfo?.elapsedPercent || 0}%"></div>
-      <div class="progress-text absolute inset-0 flex items-center justify-center text-sm font-semibold" style="line-height: 1;">
-      </div>
+    <!-- 下段：プログレスバー -->
+    <div class="progress-bar-wrapper h-6 w-full rounded-full relative overflow-hidden transition-all duration-100 ease-linear">
+        <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear" style="width: 0%;"></div>
+        <div class="progress-text absolute inset-0 flex items-center justify-center text-sm font-semibold" style="line-height: 1;"></div>
     </div>
 `;
 
