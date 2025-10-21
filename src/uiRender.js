@@ -98,19 +98,25 @@ function createMobCard(mob) {
       <span class="text-xs text-gray-400 truncate">${mob.Area} (${mob.Expansion})</span>
     </div>
 
-    <!-- 右端：報告ボタン（表示は統一、動作のみ分岐） -->
-<div class="flex-shrink-0 flex items-center justify-end">
-  <button
-    data-report-type="${rank === 'A' || rank === 'F' ? 'instant' : 'modal'}"data-mob-no="${mob.No}"
-    class="w-8 h-8 flex items-center justify-center text-[12px] rounded bg-green-600 hover:bg-green-800 selected:bg-green-400 
-    text-white font-semibold transition text-center leading-tight whitespace-pre-line">報告<br>する</button>
-</div>
-  
-    <!-- 下段：プログレスバー -->
-    <div class="progress-bar-wrapper h-6 w-full rounded-full relative overflow-hidden transition-all duration-100 ease-linear">
-        <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear" style="width: 0%;"></div>
-        <div class="progress-text absolute inset-0 flex items-center justify-center text-sm font-semibold" style="line-height: 1;"></div>
+    <!-- 右端：報告ボタン（即時報告と同じ構造） -->
+    <div class="flex-shrink-0 flex items-center justify-end">
+      <button data-report-type="${rank === 'A' || rank === 'F' ? 'instant' : 'modal'}" data-mob-no="${mob.No}"
+        class="w-8 h-8 flex items-center justify-center text-[12px] rounded bg-${rank === 'A' || rank === 'F' ? 'green' : 'green'}-600 
+        hover:bg-${rank === 'A' || rank === 'F' ? 'green' : 'green'}-800 selected:bg-${rank === 'A' || rank === 'F' ? 'red' : 'green'}-400 
+        text-white font-semibold transition text-center leading-tight whitespace-pre-line">${rank === 'A' || rank === 'F' ? '報告<br>する' : '報告<br>する'}</button>
     </div>
+  </div>
+  
+  <!-- 下段：プログレスバー -->
+<div class="progress-bar-wrapper h-6 rounded-full relative overflow-hidden transition-all duration-100 ease-linear">
+      <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear" style="width: ${mob.repopInfo?.elapsedPercent || 0}%"></div>
+      <div class="progress-text absolute inset-0 flex items-center justify-center text-sm font-semibold" style="line-height: 1;">
+        <div class="w-full grid grid-cols-2 items-center text-sm font-semibold" style="line-height:1;">
+          <div class="pl-1 text-left">${mob.repopInfo?.remainingStr || ""} (${mob.repopInfo?.elapsedPercent?.toFixed?.(0) || 0}%)</div>
+          <div class="pr-1 text-right">Next: ${mob.repopInfo?.nextMinRepopDate ? new Intl.DateTimeFormat('ja-JP', absFmt).format(mob.repopInfo.nextMinRepopDate) : "未確定"}</div>
+        </div>
+      </div>
+    </div>
 `;
 
     const expandablePanelHTML = isExpandable ? `
@@ -141,72 +147,73 @@ function createMobCard(mob) {
 </div>
 `;
 }
-
 // filterAndRender
 function filterAndRender({ isInitialLoad = false } = {}) {
-    const state = getState();
-    const uiRank = state.filter.rank;
-    const dataRank = FILTER_TO_DATA_RANK_MAP[uiRank] || uiRank;
-    const areaSets = state.filter.areaSets; // ランクごとのエリア選択を保持している想定
+    const state = getState();
+    const uiRank = state.filter.rank;
+    const dataRank = FILTER_TO_DATA_RANK_MAP[uiRank] || uiRank;
+    const areaSets = state.filter.areaSets; // ランクごとのエリア選択を保持している想定
     
-    const filtered = state.mobs.filter(mob => {
-        // --- ALL の場合 ---
-        if (dataRank === "ALL") {
-            // mob のランクに対応するエリアセットを取得
-            const mobRank = mob.Rank.startsWith("B")
-                ? (mob.Rank.includes("A") ? "A" : "F") // B系はA/Fに寄せる
-                : mob.Rank;
-            if (!["S", "A", "F"].includes(mobRank)) return false;
+    const filtered = state.mobs.filter(mob => {
+        // --- ALL の場合 ---
+        if (dataRank === "ALL") {
+            // mob のランクに対応するエリアセットを取得
+            const mobRank = mob.Rank.startsWith("B")
+                ? (mob.Rank.includes("A") ? "A" : "F") // B系はA/Fに寄せる
+                : mob.Rank;
+            if (!["S", "A", "F"].includes(mobRank)) return false;
 
-            const areaSetForRank = areaSets[mobRank];
-            const mobExpansion = mob.Rank.startsWith("B")
-                ? state.mobs.find(m => m.No === mob.related_mob_no)?.Expansion || mob.Expansion
-                : mob.Expansion;
+            const areaSetForRank = areaSets[mobRank];
+            const mobExpansion = mob.Rank.startsWith("B")
+                ? state.mobs.find(m => m.No === mob.related_mob_no)?.Expansion || mob.Expansion
+                : mob.Expansion;
 
-            // そのランクでエリア選択が無ければ表示対象
-            if (!areaSetForRank || !(areaSetForRank instanceof Set) || areaSetForRank.size === 0) {
-                return true;
-            }
-            // 選択されているエリアに含まれていれば表示
-            return areaSetForRank.has(mobExpansion);
-        }
+            // そのランクでエリア選択が無ければ表示対象
+            if (!areaSetForRank || !(areaSetForRank instanceof Set) || areaSetForRank.size === 0) {
+                return true;
+            }
+            // 選択されているエリアに含まれていれば表示
+            return areaSetForRank.has(mobExpansion);
+        }
 
-        // --- A/F/S 単独ランクの場合 ---
-        if (dataRank === "A") {
-            if (mob.Rank !== "A" && !mob.Rank.startsWith("B")) return false;
-        } else if (dataRank === "F") {
-            if (mob.Rank !== "F" && !mob.Rank.startsWith("B")) return false;
-        } else if (mob.Rank !== dataRank) {
-            return false;
-        }
+        // --- A/F/S 単独ランクの場合 ---
+        if (dataRank === "A") {
+            if (mob.Rank !== "A" && !mob.Rank.startsWith("B")) return false;
+        } else if (dataRank === "F") {
+            if (mob.Rank !== "F" && !mob.Rank.startsWith("B")) return false;
+        } else if (mob.Rank !== dataRank) {
+            return false;
+        }
 
-        const mobExpansion = mob.Rank.startsWith("B")
-            ? state.mobs.find(m => m.No === mob.related_mob_no)?.Expansion || mob.Expansion
-            : mob.Expansion;
+        const mobExpansion = mob.Rank.startsWith("B")
+            ? state.mobs.find(m => m.No === mob.related_mob_no)?.Expansion || mob.Expansion
+            : mob.Expansion;
 
-        const areaSet = areaSets[uiRank];
-        if (!areaSet || !(areaSet instanceof Set) || areaSet.size === 0) return true;
-        return areaSet.has(mobExpansion);
-    });
+        const areaSet = areaSets[uiRank];
+        if (!areaSet || !(areaSet instanceof Set) || areaSet.size === 0) return true;
+        return areaSet.has(mobExpansion);
+    });
 
-    // ソート復活（表示の安定性のため、No昇順に統一。必要ならelapsedPercent優先へ切替可能）
-    filtered.sort((a, b) => a.No - b.No);
+    // ソート復活（表示の安定性のため、No昇順に統一。必要ならelapsedPercent優先へ切替可能）
+    filtered.sort((a, b) => a.No - b.No);
 
-    // DOM構築（文字列→要素）＋平文問題の回避
-    const frag = document.createDocumentFragment();
-    filtered.forEach(mob => {
-        const temp = document.createElement("div");
-        temp.innerHTML = createMobCard(mob);
-        frag.appendChild(temp.firstElementChild);
-    });
+    // DOM構築（文字列→要素）＋平文問題の回避
+    const frag = document.createDocumentFragment();
+    filtered.forEach(mob => {
+        const temp = document.createElement("div");
+        temp.innerHTML = createMobCard(mob);
+        frag.appendChild(temp.firstElementChild);
+    });
 
-    DOM.masterContainer.innerHTML = "";
-    DOM.masterContainer.appendChild(frag);
-    distributeCards();
-    updateFilterUI(); // タブ強調/クリックカウントの反映
+    DOM.masterContainer.innerHTML = "";
+    DOM.masterContainer.appendChild(frag);
+    distributeCards();
+    updateFilterUI(); // タブ強調/クリックカウントの反映
 
-    // 描画直後に必ず進捗バーを更新する（初期ロード時だけでなくフィルタ切替時も必要）
-    updateProgressBars();
+    if (isInitialLoad) {
+        // 初期レンダリング後に進捗バーを一度更新
+        updateProgressBars();
+    }
 }
 
 // distributeCards
@@ -236,82 +243,67 @@ function distributeCards() {
 
 // updateProgressBars
 function updateProgressBars() {
-  const state = getState();
-  state.mobs = state.mobs.map(m => ({ ...m, repopInfo: calculateRepop(m) }));
+    const state = getState();
+    state.mobs = state.mobs.map(m => ({ ...m, repopInfo: calculateRepop(m) }));
 
-  document.querySelectorAll(".mob-card").forEach(card => {
-    const mobNo = parseInt(card.dataset.mobNo, 10);
-    const mob = state.mobs.find(m => m.No === mobNo);
-    if (!mob?.repopInfo) return;
+    document.querySelectorAll(".mob-card").forEach(card => {
+        const mobNo = parseInt(card.dataset.mobNo, 10);
+        const mob = state.mobs.find(m => m.No === mobNo);
+        if (!mob?.repopInfo) return;
 
-    // 差分検出
-    const prev = mob.prevRepopInfo;
-    if (prev && JSON.stringify(prev) === JSON.stringify(mob.repopInfo)) return;
-    mob.prevRepopInfo = mob.repopInfo;
+        const { elapsedPercent, status, nextMinRepopDate, maxRepop } = mob.repopInfo;
+        const bar = card.querySelector(".progress-bar-bg");
+        const text = card.querySelector(".progress-text");
+        const wrapper = bar?.parentElement;
+        if (!bar || !text || !wrapper) return;
 
-    updateProgressText(card, mob);
-    updateProgressBar(card, mob);
-  });
-}
+        // --- 条件成立時間と比較 ---
+        const conditionTime = findNextSpawnTime(mob);
+        let displayTime = null;
+        if (nextMinRepopDate && conditionTime) {
+            displayTime = conditionTime > nextMinRepopDate ? conditionTime : nextMinRepopDate;
+        } else {
+            displayTime = nextMinRepopDate || conditionTime;
+        }
 
-function updateProgressText(card, mob) {
-  const text = card.querySelector(".progress-text");
-  if (!text) return;
+        const absFmt = { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' };
+        const nextTimeStr = displayTime
+            ? new Intl.DateTimeFormat('ja-JP', absFmt).format(displayTime)
+            : "未確定";
 
-  const { elapsedPercent, nextMinRepopDate, maxRepop } = mob.repopInfo;
-  const conditionTime = findNextSpawnTime(mob);
-  let displayTime = null;
+        const remainingStr = maxRepop
+            ? `残り ${formatDuration(maxRepop - Date.now() / 1000)}`
+            : "";
 
-  if (nextMinRepopDate && conditionTime) {
-    displayTime = conditionTime > nextMinRepopDate ? conditionTime : nextMinRepopDate;
-  } else {
-    displayTime = nextMinRepopDate || conditionTime;
-  }
+        // --- プログレスバー更新 ---
+        bar.style.width = `${elapsedPercent}%`;
 
-  const absFmt = { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' };
-  const nextTimeStr = displayTime
-    ? new Intl.DateTimeFormat('ja-JP', absFmt).format(displayTime)
-    : "未確定";
+        // 2カラム配置に変更
+        text.innerHTML = `
+          <div class="w-full grid grid-cols-2 items-center text-sm font-semibold" style="line-height:1;">
+            <div class="pl-1 text-left">${remainingStr} (${elapsedPercent.toFixed(0)}%)</div>             
+            <div class="pr-1 text-right">Next: ${nextTimeStr}</div>
+        </div>
+    `;
 
-  const remainingStr = maxRepop
-    ? `残り ${formatDuration(maxRepop - Date.now() / 1000)}`
-    : "";
+        // --- 色・クラス制御 ---
+        bar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100);
+        text.classList.remove(PROGRESS_CLASSES.TEXT_NEXT, PROGRESS_CLASSES.TEXT_POP);
+        wrapper.classList.remove(PROGRESS_CLASSES.MAX_OVER_BLINK);
 
-  text.innerHTML = `
-    <div class="w-full grid grid-cols-2 items-center text-sm font-semibold" style="line-height:1;">
-      <div class="pl-2 text-left">${remainingStr} (${elapsedPercent.toFixed(0)}%)</div>
-      <div class="pr-2 text-right">Next: ${nextTimeStr}</div>
-    </div>
-  `;
-}
-
-function updateProgressBar(card, mob) {
-  const bar = card.querySelector(".progress-bar-bg");
-  const wrapper = bar?.parentElement;
-  const text = card.querySelector(".progress-text");
-  if (!bar || !wrapper || !text) return;
-
-  const { elapsedPercent, status } = mob.repopInfo;
-
-  bar.style.transition = "width linear 60s";
-  bar.style.width = `${elapsedPercent}%`;
-
-  bar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100);
-  text.classList.remove(PROGRESS_CLASSES.TEXT_NEXT, PROGRESS_CLASSES.TEXT_POP);
-  wrapper.classList.remove(PROGRESS_CLASSES.MAX_OVER_BLINK);
-
-  if (status === "PopWindow") {
-    if (elapsedPercent <= 60) bar.classList.add(PROGRESS_CLASSES.P0_60);
-    else if (elapsedPercent <= 80) bar.classList.add(PROGRESS_CLASSES.P60_80);
-    else bar.classList.add(PROGRESS_CLASSES.P80_100);
-    text.classList.add(PROGRESS_CLASSES.TEXT_POP);
-  } else if (status === "MaxOver") {
-    bar.classList.add(PROGRESS_CLASSES.P80_100);
-    text.classList.add(PROGRESS_CLASSES.TEXT_POP);
-    wrapper.classList.add(PROGRESS_CLASSES.MAX_OVER_BLINK);
-  } else {
-    text.classList.add(PROGRESS_CLASSES.TEXT_NEXT);
-  }
+        if (status === "PopWindow") {
+            if (elapsedPercent <= 60) bar.classList.add(PROGRESS_CLASSES.P0_60);
+            else if (elapsedPercent <= 80) bar.classList.add(PROGRESS_CLASSES.P60_80);
+            else bar.classList.add(PROGRESS_CLASSES.P80_100);
+            text.classList.add(PROGRESS_CLASSES.TEXT_POP);
+        } else if (status === "MaxOver") {
+            bar.classList.add(PROGRESS_CLASSES.P80_100);
+            text.classList.add(PROGRESS_CLASSES.TEXT_POP);
+            wrapper.classList.add(PROGRESS_CLASSES.MAX_OVER_BLINK);
+        } else {
+            text.classList.add(PROGRESS_CLASSES.TEXT_NEXT);
+        }
+    });
 }
 
 const renderRankTabs = () => {
@@ -324,25 +316,15 @@ const renderRankTabs = () => {
     // グリッドレイアウト適用
     container.className = "grid grid-cols-4 gap-2";
 
-rankList.forEach(rank => {
-  const isSelected = state.filter.rank === rank;
-  const btn = document.createElement("button");
-  btn.dataset.rank = rank;
-  btn.textContent = rank;
-  btn.className = `tab-button px-4 py-1.5 text-sm rounded font-semibold text-white text-center transition ${
-    isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"
-  }`;
-
-  // 🔧 クリックイベント追加
-  btn.addEventListener("click", () => {
-    setFilter({ rank });
-    filterAndRender();
-    renderRankTabs();
-    renderAreaFilterPanel();
-  });
-
-  container.appendChild(btn);
-});
+    rankList.forEach(rank => {
+        const isSelected = state.filter.rank === rank;
+        const btn = document.createElement("button");
+        btn.dataset.rank = rank;
+        btn.textContent = rank;
+        btn.className = `tab-button px-4 py-1.5 text-sm rounded font-semibold text-white text-center transition ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"
+            }`;
+        container.appendChild(btn);
+    });
 };
 
 const renderAreaFilterPanel = () => {
@@ -465,7 +447,7 @@ function onKillReportReceived(mobId, kill_time) {
 // 定期ループ（末尾に追加）
 setInterval(() => {
   updateProgressBars();
-}, 60000);
+}, 60000); // 10秒ごと
 
 export { filterAndRender, distributeCards, updateProgressBars, createMobCard, displayStatus, DOM, 
         renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, updateFilterUI, toggleAreaPanel };
