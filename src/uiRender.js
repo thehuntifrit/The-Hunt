@@ -264,36 +264,31 @@ function updateProgressBars() {
 }
 
 function updateProgressText(card, mob) {
-    // 更新対象となる3つの要素をクラス名で取得
     const remainingTextElement = card.querySelector('.repop-remaining-text');
     const percentTextElement = card.querySelector('.repop-percent-text');
     const nextTimeTextElement = card.querySelector('.repop-next-time-text');
-    
-    // 要素が見つからない場合は処理をスキップ
+    
     if (!remainingTextElement || !percentTextElement || !nextTimeTextElement) return;
 
-    const { elapsedPercent, nextMinRepopDate, maxRepop } = mob.repopInfo;
-    const conditionTime = findNextSpawnTime(mob);
-    let displayTime = null;
+    const { elapsedPercent, nextMinRepopDate, maxRepop, remainingStr: calculatedRemainingStr } = mob.repopInfo;
+    
+    const remainingStr = calculatedRemainingStr; 
+    
+    const conditionTime = findNextSpawnTime(mob);
+    let displayTime = null;
 
-    // 次回ポップ時間の決定ロジック
-    if (nextMinRepopDate && conditionTime) {
-        displayTime = conditionTime > nextMinRepopDate ? conditionTime : nextMinRepopDate;
-    } else {
-        displayTime = nextMinRepopDate || conditionTime;
-    }
+    if (nextMinRepopDate && conditionTime) {
+        displayTime = conditionTime > nextMinRepopDate ? conditionTime : nextMinRepopDate;
+    } else {
+        displayTime = nextMinRepopDate || conditionTime;
+    }
 
-    // 時刻と残り時間の文字列フォーマット
-    const absFmt = { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' };
-    const nextTimeStr = displayTime
-        ? new Intl.DateTimeFormat('ja-JP', absFmt).format(displayTime)
-        : "未確定";
-
-    const remainingStr = maxRepop
-        ? `残り ${formatDuration(maxRepop - Date.now() / 1000)}`
-        : "";
-
-    remainingTextElement.textContent = remainingStr;
+    const absFmt = { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' };
+    const nextTimeStr = displayTime
+        ? new Intl.DateTimeFormat('ja-JP', absFmt).format(displayTime)
+        : "未確定";
+    
+    remainingTextElement.textContent = remainingStr || '';
     percentTextElement.textContent = `${elapsedPercent.toFixed(0)}%`;
     nextTimeTextElement.textContent = `Next: ${nextTimeStr}`;
 }
