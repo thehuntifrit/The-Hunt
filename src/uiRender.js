@@ -291,11 +291,10 @@ function updateProgressText(card, mob) {
     const progressTextWrapper = card.querySelector('.progress-text');
     if (!progressTextWrapper) return;
     
-    // 要素の純粋な取得
     const leftTextElement = progressTextWrapper.querySelector('.repop-left-text');
     const rightTextElement = progressTextWrapper.querySelector('.repop-right-text');
 
-    if (!leftTextElement || !rightTextElement) return; 
+    if (!leftTextElement || !rightTextElement) return;
 
     const { elapsedPercent, nextMinRepopDate, maxRepop } = mob.repopInfo;
     const conditionTime = findNextSpawnTime(mob);
@@ -308,16 +307,19 @@ function updateProgressText(card, mob) {
     }
 
     const absFmt = { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' };
+    
     const nextTimeStr = displayTime
         ? new Intl.DateTimeFormat('ja-JP', absFmt).format(displayTime)
         : "未確定";
 
     const remainingStr = maxRepop
         ? `残り ${formatDuration(maxRepop - Date.now() / 1000)}`
-        : "";
+        : "残り --h --m"; 
 
-    leftTextElement.textContent = `${remainingStr} / ${elapsedPercent.toFixed(0)}%`;
-    rightTextElement.textContent = `Next: ${nextTimeStr}`;
+    const displayPercent = elapsedPercent?.toFixed(0) ?? 0;
+
+    leftTextElement.textContent = remainingStr;
+    rightTextElement.textContent = `Next: ${nextTimeStr} / ${displayPercent}%`;
 }
 
 function updateProgressBar(card, mob) {
