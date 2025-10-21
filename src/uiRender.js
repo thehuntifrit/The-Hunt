@@ -243,24 +243,6 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     }
 }
 
-    filtered.sort((a, b) => a.No - b.No);
-    const frag = document.createDocumentFragment();
-    filtered.forEach(mob => {
-        const temp = document.createElement("div");
-        temp.innerHTML = createMobCard(mob);
-        frag.appendChild(temp.firstElementChild);
-    });
-
-    DOM.masterContainer.innerHTML = "";
-    DOM.masterContainer.appendChild(frag);
-    distributeCards();
-    updateFilterUI(); // タブ強調/クリックカウントの反映
-
-    if (isInitialLoad) {
-        // 初期レンダリング後に進捗バーを一度更新
-        updateProgressBars();
-}
-
 // distributeCards
 function distributeCards() {
     const width = window.innerWidth;
