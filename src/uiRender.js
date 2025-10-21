@@ -108,15 +108,11 @@ function createMobCard(mob) {
   </div>
   
   <!-- 下段：プログレスバー -->
-<div class="progress-bar-wrapper h-6 rounded-full relative overflow-hidden transition-all duration-100 ease-linear">
-      <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear" style="width: ${mob.repopInfo?.elapsedPercent || 0}%"></div>
-      <div class="progress-text absolute inset-0 flex items-center justify-center text-sm font-semibold" style="line-height: 1;">
-                <div class="w-full grid grid-cols-2 items-center text-sm font-semibold" style="line-height:1;">
-                    <div class="px-2 text-left repop-remaining-text">${mob.repopInfo?.remainingStr || ""} (${mob.repopInfo?.elapsedPercent?.toFixed?.(0) || 0}%)</div>
-                    <div class="px-2 text-right repop-next-time-text">Next: ${mob.repopInfo?.nextMinRepopDate ? new Intl.DateTimeFormat('ja-JP', absFmt).format(mob.repopInfo.nextMinRepopDate) : "未確定"}</div>
-        </div>
-      </div>
-    </div>
+    <div class="progress-bar-wrapper h-6 rounded-full relative overflow-hidden transition-all duration-100 ease-linear">
+      <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear" style="width: ${mob.repopInfo?.elapsedPercent || 0}%"></div>
+      <div class="progress-text absolute inset-0 flex items-center justify-center text-sm font-semibold" style="line-height: 1;">
+      </div>
+    </div>
 `;
 
     const expandablePanelHTML = isExpandable ? `
@@ -253,14 +249,9 @@ function updateProgressBars() {
 
         const { elapsedPercent, status, nextMinRepopDate, maxRepop } = mob.repopInfo;
         const bar = card.querySelector(".progress-bar-bg");
+        const text = card.querySelector(".progress-text");
         const wrapper = bar?.parentElement;
-        if (!bar || !wrapper) return;
-        
-        // 更新用エレメントを取得
-        const remainingTextElement = card.querySelector('.repop-remaining-text');
-        const percentTextElement = card.querySelector('.repop-percent-text');
-        const nextTimeTextElement = card.querySelector('.repop-next-time-text');
-
+        if (!bar || !text || !wrapper) return;
 
         // --- 条件成立時間と比較 ---
         const conditionTime = findNextSpawnTime(mob);
@@ -280,22 +271,17 @@ function updateProgressBars() {
             ? `残り ${formatDuration(maxRepop - Date.now() / 1000)}`
             : "";
 
-        // --- プログレスバー更新 ---
-        bar.style.width = `${elapsedPercent}%`;
+        // --- プログレスバー更新 ---
+        bar.style.width = `${elapsedPercent}%`;
 
-        // ==========================================
-        // 【重要】innerHTMLの代わりにtextContentを直接更新
-        // ==========================================
-        if (remainingTextElement) {
-            remainingTextElement.textContent = remainingStr;
-        }
-        if (percentTextElement) {
-            percentTextElement.textContent = `${elapsedPercent.toFixed(0)}%`;
-        }
-        if (nextTimeTextElement) {
-            nextTimeTextElement.textContent = `Next: ${nextTimeStr}`;
-        }
-        
+        // 3カラム配置に変更
+        text.innerHTML = `
+          <div class="w-full grid grid-cols-3 items-center text-sm font-semibold" style="line-height:1;">
+            <div class="pl-2 text-left">${remainingStr} (${elapsedPercent.toFixed(0)}%)</div>
+            <div class="pr-2 text-right">Next: ${nextTimeStr}</div>
+          </div>
+        `;
+
         // --- 色・クラス制御 ---
         bar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100);
         text.classList.remove(PROGRESS_CLASSES.TEXT_NEXT, PROGRESS_CLASSES.TEXT_POP);
@@ -457,6 +443,7 @@ function onKillReportReceived(mobId, kill_time) {
 // 定期ループ（末尾に追加）
 setInterval(() => {
   updateProgressBars();
-}, 60000);
+}, 60000); // 10秒ごと
+
 export { filterAndRender, distributeCards, updateProgressBars, createMobCard, displayStatus, DOM, 
-        renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, updateFilterUI, toggleAreaPanel };
+        renderAreaFilterPanel, renderRankTabs, toggleAreaFilterPanel, sortAndRedistribute, updateFilterUI, toggleAreaPanel };
