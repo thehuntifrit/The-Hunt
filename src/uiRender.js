@@ -112,9 +112,9 @@ function createMobCard(mob) {
       <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear" style="width: ${mob.repopInfo?.elapsedPercent || 0}%"></div>
       <div class="progress-text absolute inset-0 flex items-center justify-center text-sm font-semibold" style="line-height: 1;">
         <div class="w-full grid grid-cols-3 items-center text-sm font-semibold" style="line-height:1;">
-          <div class="px-2 text-left">${mob.repopInfo?.remainingStr || ""}</div>
-          <div class="text-center">${mob.repopInfo?.elapsedPercent?.toFixed?.(0) || 0}%</div>
-          <div class="px-2 text-right">Next: ${mob.repopInfo?.nextMinRepopDate ? new Intl.DateTimeFormat('ja-JP', absFmt).format(mob.repopInfo.nextMinRepopDate) : "未確定"}</div>
+          <div class="pl-2 text-left">${mob.repopInfo?.remainingStr || ""}</div>
+          <div class="text-center"> ≪ ${mob.repopInfo?.elapsedPercent?.toFixed?.(0) || 0}% ≫</div>
+          <div class="pr-2 text-right">Next: ${mob.repopInfo?.nextMinRepopDate ? new Intl.DateTimeFormat('ja-JP', absFmt).format(mob.repopInfo.nextMinRepopDate) : "未確定"}</div>
         </div>
       </div>
     </div>
@@ -288,7 +288,7 @@ function updateProgressText(card, mob) {
 
   text.innerHTML = `
     <div class="w-full grid grid-cols-2 items-center text-sm font-semibold" style="line-height:1;">
-      <div class="pl-2 text-left">${remainingStr} / ${elapsedPercent.toFixed(0)}%</div>
+      <div class="pl-2 text-left">${remainingStr} ≪ ${elapsedPercent.toFixed(0)}% ≫</div>
       <div class="pr-2 text-right">Next: ${nextTimeStr}</div>
     </div>
   `;
