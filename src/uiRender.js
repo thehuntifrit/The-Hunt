@@ -98,13 +98,12 @@ function createMobCard(mob) {
       <span class="text-xs text-gray-400 truncate">${mob.Area} (${mob.Expansion})</span>
     </div>
 
-    <!-- 右端：報告ボタン（即時報告と同じ構造） -->
-    <div class="flex-shrink-0 flex items-center justify-end">
-      <button data-report-type="${rank === 'A' || rank === 'F' ? 'instant' : 'modal'}" data-mob-no="${mob.No}"
-        class="w-8 h-8 flex items-center justify-center text-[12px] rounded bg-${rank === 'A' || rank === 'F' ? 'green' : 'green'}-600 
-        hover:bg-${rank === 'A' || rank === 'F' ? 'green' : 'green'}-800 selected:bg-${rank === 'A' || rank === 'F' ? 'red' : 'green'}-400 
-        text-white font-semibold transition text-center leading-tight whitespace-pre-line">${rank === 'A' || rank === 'F' ? '報告<br>する' : '報告<br>する'}</button>
-    </div>
+<!-- 右端：報告ボタン（表示は統一、動作のみ分岐） -->
+<div class="flex-shrink-0 flex items-center justify-end">
+  <button
+    data-report-type="${rank === 'A' || rank === 'F' ? 'instant' : 'modal'}"data-mob-no="${mob.No}" class="w-8 h-8 flex items-center justify-center 
+    text-[12px] rounded bg-green-600 hover:bg-green-800 selected:bg-green-400 
+    text-white font-semibold transition text-center leading-tight whitespace-pre-line">報告<br>する</button>
   </div>
   
   <!-- 下段：プログレスバー -->
