@@ -111,16 +111,15 @@ function createMobCard(mob) {
 <div class="progress-bar-wrapper h-6 rounded-full relative overflow-hidden transition-all duration-100 ease-linear w-full"> 
       <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear" style="width: ${mob.repopInfo?.elapsedPercent || 0}%"></div>
       
-            <div class="progress-text absolute inset-0 text-sm font-semibold flex items-center justify-center">
-        
-                  <div class="w-full grid grid-cols-2 items-center text-sm font-semibold repop-grid h-full" style="display: grid; line-height: 24px;"> 
-                        
+            <div class="progress-text absolute inset-0 text-sm font-semibold" style="line-height: 24px;"> 
+                  <div class="w-full grid grid-cols-2 repop-grid" style="display: grid; height: 100%;"> // height: 100% をインラインで再適用
+          
                         <div class="pl-2 text-left repop-left-text whitespace-nowrap">
-                ${mob.repopInfo?.remainingStr || ""} / ${mob.repopInfo?.elapsedPercent?.toFixed?.(0) || 0}%
+                ${mob.repopInfo?.remainingStr || ""}
             </div>
             
                     <div class="pr-2 text-right repop-right-text whitespace-nowrap">
-                Next: ${mob.repopInfo?.nextMinRepopDate ? new Intl.DateTimeFormat('ja-JP', absFmt).format(mob.repopInfo.nextMinRepopDate) : "未確定"}
+                Next: ${mob.repopInfo?.nextMinRepopDate ? new Intl.DateTimeFormat('ja-JP', absFmt).format(mob.repopInfo.nextMinRepopDate) : "未確定"} / ${mob.repopInfo?.elapsedPercent?.toFixed?.(0) || 0}%
             </div>
         </div>
       </div>
