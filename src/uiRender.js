@@ -452,4 +452,4 @@ setInterval(() => {
 }, 10000); // 10秒ごと
 
 export { filterAndRender, distributeCards, updateProgressBars, createMobCard, displayStatus, DOM, 
-        renderAreaFilterPanel, renderRankTabs, toggleAreaFilterPanel, sortAndRedistribute, updateFilterUI, toggleAreaPanel };
+        renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, updateFilterUI, toggleAreaPanel };
