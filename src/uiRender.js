@@ -111,9 +111,8 @@ function createMobCard(mob) {
 <div class="progress-bar-wrapper h-6 rounded-full relative overflow-hidden transition-all duration-100 ease-linear">
       <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear" style="width: ${mob.repopInfo?.elapsedPercent || 0}%"></div>
       <div class="progress-text absolute inset-0 flex items-center justify-center text-sm font-semibold" style="line-height: 1;">
-                <div class="w-full grid grid-cols-3 items-center text-sm font-semibold" style="line-height:1;">
-                    <div class="px-2 text-left repop-remaining-text">${mob.repopInfo?.remainingStr || ""}</div>
-                    <div class="text-center repop-percent-text">${mob.repopInfo?.elapsedPercent?.toFixed?.(0) || 0}%</div>
+                <div class="w-full grid grid-cols-2 items-center text-sm font-semibold" style="line-height:1;">
+                    <div class="px-2 text-left repop-remaining-text">${mob.repopInfo?.remainingStr || ""} (${mob.repopInfo?.elapsedPercent?.toFixed?.(0) || 0}%)</div>
                     <div class="px-2 text-right repop-next-time-text">Next: ${mob.repopInfo?.nextMinRepopDate ? new Intl.DateTimeFormat('ja-JP', absFmt).format(mob.repopInfo.nextMinRepopDate) : "未確定"}</div>
         </div>
       </div>
@@ -458,7 +457,6 @@ function onKillReportReceived(mobId, kill_time) {
 // 定期ループ（末尾に追加）
 setInterval(() => {
   updateProgressBars();
-}, 60000); // 10秒ごと
-
+}, 60000);
 export { filterAndRender, distributeCards, updateProgressBars, createMobCard, displayStatus, DOM, 
         renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, updateFilterUI, toggleAreaPanel };
