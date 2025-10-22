@@ -473,9 +473,15 @@ const sortAndRedistribute = debounce(() => filterAndRender(), 200);
 const areaPanel = document.getElementById("area-filter-panel");
 
 function toggleAreaFilterPanel(show) {
-  const areaPanel = document.getElementById("area-filter-panel");
-  if (!areaPanel) return;
-  areaPanel.classList.toggle("hidden", !show);
+  const mobilePanel = document.getElementById("area-filter-panel-mobile");
+  const desktopPanel = document.getElementById("area-filter-panel-desktop");
+
+  if (mobilePanel) {
+    mobilePanel.classList.toggle("hidden", !show);
+  }
+  if (desktopPanel) {
+    desktopPanel.classList.toggle("hidden", !show);
+  }
 }
 
 toggleAreaFilterPanel(true);  // 表示
