@@ -72,42 +72,6 @@ function createMobCard(mob) {
           .join("")
       : "";
 
-function createMobCard(mob) {
-  const rank = mob.Rank;
-  const rankConfig = RANK_COLORS[rank] || RANK_COLORS.A;
-  const rankLabel = rankConfig.label || rank;
-
-  const isExpandable = rank === "S";
-  const { openMobCardNo } = getState();
-  const isOpen = isExpandable && mob.No === openMobCardNo;
-
-  const isS_LastOne =
-    rank === "S" &&
-    mob.spawn_points &&
-    mob.spawn_points.some(
-      (p) =>
-        p.is_last_one &&
-        (p.mob_ranks.includes("S") || p.mob_ranks.includes("A"))
-    );
-
-  const spawnPointsHtml =
-    rank === "S" && mob.Map
-      ? (mob.spawn_points ?? [])
-          .map((point) =>
-            drawSpawnPoint(
-              point,
-              mob.spawn_cull_status,
-              mob.No,
-              mob.Rank,
-              point.is_last_one,
-              isS_LastOne,
-              mob.last_kill_time,
-              mob.prev_kill_time
-            )
-          )
-          .join("")
-      : "";
-
   const cardHeaderHTML = `
 <div class="px-2 py-1 space-y-1 bg-gray-800/70" data-toggle="card-header">
     <div class="grid grid-cols-[auto_1fr_auto] items-center w-full gap-2">
@@ -587,7 +551,7 @@ function onKillReportReceived(mobId, kill_time) {
 setInterval(() => {
   updateAllMobProgress();
 }, 60000);
-  }
+  
 
 export { filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, displayStatus, DOM,
         renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, toggleAreaFilterPanel, updateFilterUI, onKillReportReceived };
