@@ -2,6 +2,7 @@
 import { DOM, displayStatus } from "./uiRender.js"; 
 import { getState } from "./dataManager.js";
 import { toJstAdjustedIsoString } from "./cal.js";
+import { initModal } from "./modal.js";
 
 function toLocalIsoString(date) {
   const pad = n => String(n).padStart(2, "0");
