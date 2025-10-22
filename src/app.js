@@ -1,6 +1,6 @@
 // app.js
 import { getState, setFilter, loadBaseMobData, setOpenMobCardNo, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js"; 
-import { openReportModal, closeReportModal, initModal as modalInit } from "./modal.js"; 
+import { openReportModal, closeReportModal, initModal } from "./modal.js"; 
 import { attachLocationEvents } from "./location.js"; 
 import { submitReport, toggleCrushStatus } from "./server.js"; 
 import { debounce, toJstAdjustedIsoString, } from "./cal.js"; 
@@ -153,7 +153,7 @@ function attachEventListeners() {
 document.addEventListener("DOMContentLoaded", () => {
     attachEventListeners();
     loadBaseMobData();
-    modalInit();
+    initModal();
   const currentRank = JSON.parse(localStorage.getItem("huntFilterState"))?.rank || "ALL";
   DOM.rankTabs.querySelectorAll(".tab-button").forEach(btn => {
     btn.dataset.clickCount = btn.dataset.rank === currentRank ? "1" : "0";
