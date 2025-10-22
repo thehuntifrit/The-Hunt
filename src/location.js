@@ -32,21 +32,38 @@ function updateCrushUI(mobNo, locationId, isCulled) {
 }
 
 function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne, isSLastOne, lastKillTime, prevKillTime) {
-    const cullStatus = spawnCullStatus[point.id] || { culled_by: [] };
-    const isCulled = cullStatus.culled_by.length > 0;
+    const cullStatus = spawnCullStatus[point.id] || { culled_by: [] };
+    const isCulled = cullStatus.culled_by.length > 0;
 
-    const culledClass = isCulled ? 'spawn-point-culled' : 'spawn-point-active';
+    const culledClass = isCulled ? 'spawn-point-culled' : 'spawn-point-active';
 
-    return `
-  <div class="spawn-point absolute w-3 h-3 rounded-full cursor-pointer transition-all ${culledClass}" 
-    style="left: ${point.x}%; top: ${point.y}%;"
-    title="湧き潰し: ${isCulled ? '済' : '未'}"
-    data-mob-no="${mobNo}"
-    data-location-id="${point.id}"
-    data-is-culled="${isCulled ? 'true' : 'false'}"
-    data-is-interactive="true"
-  ></div>
- `;
+    let colorClass = '';
+    let pointShadowClass = '';
+
+    if (!isCulled) {
+        if (isLastOne) {
+            colorClass = 'color-lastone spawn-point-lastone';
+            pointShadowClass = 'spawn-point-shadow-lastone';
+        } else if (mobRank === 'A' || mobRank === 'S' || mobRank === 'F') {
+            colorClass = 'color-b1 spawn-point-sa';
+            pointShadowClass = 'spawn-point-shadow-sa';
+        } else {
+            colorClass = 'color-b1-only spawn-point-b-only';
+        }
+    } else {
+        colorClass = 'culled-with-white-border';
+    }
+
+    return `
+  <div class="spawn-point absolute w-3 h-3 rounded-full cursor-pointer transition-all ${culledClass} ${colorClass} ${pointShadowClass}"
+    style="left: ${point.x}%; top: ${point.y}%;"
+    title="湧き潰し: ${isCulled ? '済' : '未'}"
+    data-mob-no="${mobNo}"
+    data-location-id="${point.id}"
+    data-is-culled="${isCulled ? 'true' : 'false'}"
+    data-is-interactive="true"
+  ></div>
+ `;
 }
 
 function attachLocationEvents() {
