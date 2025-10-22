@@ -30,6 +30,11 @@ function displayStatus(message, type = "info") {
   }, 5000);
 }
 
+function processText(text) {
+  if (typeof text !== "string" || !text) return "";
+  return text.replace(/\/\//g, "<br>");
+}
+
 function createMobCard(mob) {
   const rank = mob.Rank;
   const rankConfig = RANK_COLORS[rank] || RANK_COLORS.A;
