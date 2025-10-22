@@ -31,13 +31,10 @@ function updateCrushUI(mobNo, locationId, isCulled) {
   }
 }
 
-// uiRender.js からの呼び出しに合わせて引数を変更し、HTML文字列を返すように修正
 function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne, isSLastOne, lastKillTime, prevKillTime) {
-  // Mobオブジェクトには spawn_cull_status があり、それは { locationId: { culled_by: [] } } の形式を想定
   const cullStatus = spawnCullStatus[point.id] || { culled_by: [] };
   const isCulled = cullStatus.culled_by.length > 0;
   
-  // 'spawn-point' に加えて、現在の湧き潰し状態を示すクラスを追加
   const culledClass = isCulled ? 'spawn-point-culled' : 'spawn-point-active';
 
   return `
@@ -56,7 +53,6 @@ function attachLocationEvents() {
   const overlayContainers = document.querySelectorAll(".map-overlay");
   if (!overlayContainers.length) return;
 
-  // 既存のイベントリスナーを削除してから再登録
   overlayContainers.forEach(overlay => {
     overlay.removeEventListener("click", handleCrushToggle); 
     overlay.addEventListener("click", handleCrushToggle); 
