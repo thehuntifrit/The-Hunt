@@ -30,90 +30,80 @@ function displayStatus(message, type = "info") {
   }, 5000);
 }
 
-function processText(text) {
-  if (typeof text !== "string" || !text) return "";
-  return text.replace(/\/\//g, "<br>");
-}
-
 function createMobCard(mob) {
-  const rank = mob.Rank;
-  const rankConfig = RANK_COLORS[rank] || RANK_COLORS.A;
-  const rankLabel = rankConfig.label || rank;
+  const rank = mob.Rank;
+  const rankConfig = RANK_COLORS[rank] || RANK_COLORS.A;
+  const rankLabel = rankConfig.label || rank;
 
-  const isExpandable = rank === "S";
-  const { openMobCardNo } = getState();
-  const isOpen = isExpandable && mob.No === openMobCardNo;
+  const isExpandable = rank === "S";
+  const { openMobCardNo } = getState();
+  const isOpen = isExpandable && mob.No === openMobCardNo;
 
-  const isS_LastOne =
-    rank === "S" &&
-    mob.spawn_points &&
-    mob.spawn_points.some(
-      (p) =>
-        p.is_last_one &&
-        (p.mob_ranks.includes("S") || p.mob_ranks.includes("A"))
-    );
+  const isS_LastOne =
+    rank === "S" &&
+    mob.spawn_points &&
+    mob.spawn_points.some(
+      (p) =>
+        p.is_last_one &&
+        (p.mob_ranks.includes("S") || p.mob_ranks.includes("A"))
+    );
 
-  const spawnPointsHtml =
-    rank === "S" && mob.Map
-      ? (mob.spawn_points ?? [])
-          .map((point) =>
-            drawSpawnPoint(
-              point,
-              mob.spawn_cull_status,
-              mob.No,
-              mob.Rank,
-              point.is_last_one,
-              isS_LastOne,
-              mob.last_kill_time,
-              mob.prev_kill_time
-            )
-          )
-          .join("")
-      : "";
+  const spawnPointsHtml =
+    rank === "S" && mob.Map
+      ? (mob.spawn_points ?? [])
+          .map((point) =>
+            drawSpawnPoint(
+              point,
+              mob.spawn_cull_status,
+              mob.No,
+              mob.Rank,
+              point.is_last_one,
+              isS_LastOne,
+              mob.last_kill_time,
+              mob.prev_kill_time
+            )
+          )
+          .join("")
+      : "";
 
-  const cardHeaderHTML = `
+  const cardHeaderHTML = `
 <div class="px-2 py-1 space-y-1 bg-gray-800/70" data-toggle="card-header">
-  <!-- 上段：ランク・モブ名・報告ボタン -->
-  <div class="grid grid-cols-[auto_1fr_auto] items-center w-full gap-2">
-    <!-- 左：ランク -->
-    <span class="w-6 h-6 flex items-center justify-center rounded-full text-white text-xs font-bold ${
-      rankConfig.bg
-    }">
-      ${rankLabel}
-    </span>
+    <div class="grid grid-cols-[auto_1fr_auto] items-center w-full gap-2">
+        <span class="w-6 h-6 flex items-center justify-center rounded-full text-white text-xs font-bold ${
+      rankConfig.bg
+    }">
+      ${rankLabel}
+    </span>
 
-    <!-- 中央：モブ名＋エリア名 -->
-    <div class="flex flex-col min-w-0">
-      <span class="text-base font-bold truncate">${mob.Name}</span>
-      <span class="text-xs text-gray-400 truncate">${mob.Area} (${
-    mob.Expansion
-  })</span>
-    </div>
+        <div class="flex flex-col min-w-0">
+      <span class="text-base font-bold truncate">${mob.Name}</span>
+      <span class="text-xs text-gray-400 truncate">${mob.Area} (${
+    mob.Expansion
+  })</span>
+    </div>
 
-    <!-- 右端：報告ボタン（見た目は統一、動作だけ分岐） -->
-    <div class="flex-shrink-0 flex items-center justify-end">
-      <button 
-        data-report-type="${
-          rank === "A" || rank === "F" ? "instant" : "modal"
-        }" 
-        data-mob-no="${mob.No}"
-        class="w-8 h-8 flex items-center justify-center text-[12px] rounded 
-               bg-green-600 hover:bg-green-800 selected:bg-green-400 
-               text-white font-semibold transition text-center leading-tight whitespace-pre-line">
-        報告<br>する
-      </button>
-    </div>
-  </div>
-  
-  <!-- 下段：プログレスバー（構造のみ） -->
-  <div class="progress-bar-wrapper h-6 rounded-full relative overflow-hidden transition-all duration-100 ease-linear">
-    <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear" style="width: 0%"></div>
-    <div class="progress-text absolute inset-0 text-sm font-semibold" style="line-height: 1;"></div>
-  </div>
+        <div class="flex-shrink-0 flex items-center justify-end">
+      <button 
+        data-report-type="${
+          rank === "A" || rank === "F" ? "instant" : "modal"
+        }" 
+        data-mob-no="${mob.No}"
+        class="w-8 h-8 flex items-center justify-center text-[12px] rounded 
+               bg-green-600 hover:bg-green-800 selected:bg-green-400 
+               text-white font-semibold transition text-center whitespace-pre-line" style="line-height: 1;">
+        報告<br>する
+      </button>
+    </div>
+  </div>
+  
+    <div class="progress-bar-wrapper h-6 rounded-full relative overflow-hidden transition-all duration-100 ease-linear">
+    <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear" style="width: 0%"></div>
+    <div class="progress-text absolute inset-0 text-sm font-semibold flex items-center justify-center"></div>
+  </div>
 </div>
 `;
 
-  const expandablePanelHTML = isExpandable
+  const expandablePanelHTML = isExpandable
     ? `
 <div class="expandable-panel ${isOpen ? "open" : ""}">
   <div class="px-1 py-1 text-sm space-y-0.5">
@@ -286,42 +276,41 @@ function updateProgressBar(card, mob) {
 }
 
 function updateProgressText(card, mob) {
-  const text = card.querySelector(".progress-text");
-  if (!text) return;
+  const text = card.querySelector(".progress-text");
+  if (!text) return;
 
-  const { elapsedPercent, nextMinRepopDate, maxRepop } = mob.repopInfo;
-  const conditionTime = findNextSpawnTime(mob);
-  const displayTime =
-    nextMinRepopDate && conditionTime
-      ? conditionTime > nextMinRepopDate
-        ? conditionTime
-        : nextMinRepopDate
-      : nextMinRepopDate || conditionTime;
+  const { elapsedPercent, nextMinRepopDate, maxRepop } = mob.repopInfo;
+  const conditionTime = findNextSpawnTime(mob);
+  const displayTime =
+    nextMinRepopDate && conditionTime
+      ? conditionTime > nextMinRepopDate
+        ? conditionTime
+        : nextMinRepopDate
+      : nextMinRepopDate || conditionTime;
 
-  const absFmt = {
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Tokyo",
-  };
-  const nextTimeStr = displayTime
-    ? new Intl.DateTimeFormat("ja-JP", absFmt).format(displayTime)
-    : "未確定";
+  const absFmt = {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Tokyo",
+  };
+  const nextTimeStr = displayTime
+    ? new Intl.DateTimeFormat("ja-JP", absFmt).format(displayTime)
+    : "未確定";
 
-  const remainingStr = maxRepop
-    ? `残り ${formatDuration(maxRepop - Date.now() / 1000)}`
-    : "";
+  const remainingStr = maxRepop
+    ? `残り ${formatDuration(maxRepop - Date.now() / 1000)}`
+    : "";
 
-  // 3カラム：左=残り、中央=次回、右=%
-  text.innerHTML = `
-    <div class="w-full grid grid-cols-2 items-center text-sm font-semibold" style="line-height:1;">
-      <div class="pl-2 text-left">${remainingStr} ( ${elapsedPercent.toFixed(
-    0
-  )}% )</div>
-      <div class="pr-2 text-right">Next: ${nextTimeStr}</div>
-    </div>
-  `;
+  text.innerHTML = `
+    <div class="w-full grid grid-cols-2 items-center text-sm font-semibold" style="line-height:1;">
+      <div class="pl-2 text-left">${remainingStr} ( ${elapsedPercent.toFixed(
+    0
+  )}% )</div>
+      <div class="pr-2 text-right">Next: ${nextTimeStr}</div>
+    </div>
+  `;
 }
 
 function updateExpandablePanel(card, mob) {
