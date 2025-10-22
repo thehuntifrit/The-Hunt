@@ -78,18 +78,11 @@ function createMobCard(mob) {
       <span class="text-xs text-gray-400 truncate">${mob.Area} (${mob.Expansion})</span>
     </div>
 
-    <!-- 右端：報告ボタン（見た目は統一、動作だけ分岐） -->
-    <div class="flex-shrink-0 flex items-center justify-end">
-      <button 
-        data-report-type="${rank === 'A' || rank === 'F' ? 'instant' : 'modal'}" 
-        data-mob-no="${mob.No}"
-        class="w-8 h-8 flex items-center justify-center text-[12px] rounded 
-               bg-green-600 hover:bg-green-800 selected:bg-green-400 
-               text-white font-semibold transition text-center leading-tight whitespace-pre-line">
-        報告<br>する
-      </button>
-    </div>
-  </div>
+<div class="flex-shrink-0 flex items-center justify-end">
+      <button data-report-type="${rank === 'A' || rank === 'F' ? 'instant' : 'modal'}" data-mob-no="${mob.No}"
+        class="w-8 h-8 flex items-center justify-center self-center text-[12px] rounded bg-green-600 hover:bg-green-800 selected:bg-green-400 
+               text-white font-semibold transition text-center leading-tight whitespace-pre-line">報告<br>する</button></div>
+  </div>
   
   <!-- 下段：プログレスバー（構造のみ） -->
   <div class="progress-bar-wrapper h-6 rounded-full relative overflow-hidden transition-all duration-100 ease-linear">
