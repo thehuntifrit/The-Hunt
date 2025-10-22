@@ -71,11 +71,13 @@ function getEorzeaWeather(date = new Date(), weatherTable) {
  */
 function checkMobSpawnCondition(mob, date) {
   const et = getEorzeaTime(date);          // { hours, minutes }
-  const moon = getEorzeaMoonPhase(date);   // "new" / "full" / 数値など
+  const moon = getEorzeaMoonPhase(date);   // 0〜31 の数値
   const seed = getEorzeaWeatherSeed(date); // 0〜99
 
-  // 月齢条件
-  if (mob.moonPhase && mob.moonPhase !== moon) return false;
+  if (mob.moonPhase) {
+    const phases = Array.isArray(mob.moonPhase) ? mob.moonPhase : [mob.moonPhase];
+    if (!phases.includes(moon)) return false; // <--- ここを数値比較に修正
+  }
 
   // 天候シード範囲（単一）
   if (mob.weatherSeedRange) {
