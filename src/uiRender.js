@@ -567,18 +567,6 @@ setInterval(() => {
 }, 60000);
 
 // ← この下に export をまとめる
-export {
-  filterAndRender,
-  distributeCards,
-  updateProgressText,
-  updateProgressBar,
-  createMobCard,
-  displayStatus,
-  DOM,
-  renderAreaFilterPanel,
-  renderRankTabs,
-  sortAndRedistribute,
-  updateFilterUI,
-  toggleAreaPanel,
-  onKillReportReceived,
-};
+export { filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, displayStatus, DOM,
+        renderAreaFilterPanel, renderRankTabs, sortAndRedistribute,  updateFilterUI, toggleAreaPanel, onKillReportReceived
+  };
