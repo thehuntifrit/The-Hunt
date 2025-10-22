@@ -1,6 +1,6 @@
 // app.js
 
-import { setupApp, getState, setFilter, setOpenMobCardNo, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js"; 
+import { getState, setFilter, setOpenMobCardNo, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js"; 
 import { openReportModal, closeReportModal } from "./modal.js"; 
 import { attachLocationEvents } from "./location.js"; 
 import { submitReport, toggleCrushStatus } from "./server.js"; 
