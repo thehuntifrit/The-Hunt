@@ -4,7 +4,7 @@
 import { calculateRepop, findNextSpawnTime, formatDuration, formatLastKillTime } from "./cal.js";
 import { drawSpawnPoint } from "./location.js";
 import { getState, setFilter, RANK_COLORS, PROGRESS_CLASSES, EXPANSION_MAP, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
-import { debounce } from "./cal.js"; 
+import { debounce } from "./cal.js";
 
 // DOM 定義 (仕様に基づき、uiRender.jsの責務として組み込む)
 const DOM = {
@@ -134,12 +134,10 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     const state = getState();
     const uiRank = state.filter.rank;
     const dataRank = FILTER_TO_DATA_RANK_MAP[uiRank] || uiRank;
-    const areaSets = state.filter.areaSets; // ランクごとのエリア選択を保持している想定
+    const areaSets = state.filter.areaSets;
     
     const filtered = state.mobs.filter(mob => {
-        // --- ALL の場合 ---
         if (dataRank === "ALL") {
-            // mob のランクに対応するエリアセットを取得
             const mobRank = mob.Rank.startsWith("B")
                 ? (mob.Rank.includes("A") ? "A" : "F") // B系はA/Fに寄せる
                 : mob.Rank;
@@ -150,15 +148,12 @@ function filterAndRender({ isInitialLoad = false } = {}) {
                 ? state.mobs.find(m => m.No === mob.related_mob_no)?.Expansion || mob.Expansion
                 : mob.Expansion;
 
-            // そのランクでエリア選択が無ければ表示対象
             if (!areaSetForRank || !(areaSetForRank instanceof Set) || areaSetForRank.size === 0) {
                 return true;
             }
-            // 選択されているエリアに含まれていれば表示
             return areaSetForRank.has(mobExpansion);
         }
 
-        // --- A/F/S 単独ランクの場合 ---
         if (dataRank === "A") {
             if (mob.Rank !== "A" && !mob.Rank.startsWith("B")) return false;
         } else if (dataRank === "F") {
@@ -308,6 +303,17 @@ function updateExpandablePanel(card, mob) {
   if (elMemo) elMemo.textContent = memoStr;
 }
 
+function updateProgressBars() {
+  const state = getState();
+  state.mobs.forEach((mob) => {
+    const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
+    if (card) {
+      updateProgressText(card, mob);
+      updateProgressBar(card, mob);
+    }
+  });
+}
+
 const renderRankTabs = () => {
     const state = getState();
     const rankList = ["ALL", "S", "A", "FATE"];
@@ -353,7 +359,7 @@ const renderAreaFilterPanel = () => {
     return indexB - indexA;
   });
 
-  // 📱 スマホ用：横いっぱい2列
+  // スマホ用：横いっぱい2列
   const mobilePanel = document.getElementById("area-filter-panel-mobile");
   mobilePanel.innerHTML = "";
   mobilePanel.className = "grid grid-cols-2 gap-2";
@@ -373,7 +379,7 @@ const renderAreaFilterPanel = () => {
     mobilePanel.appendChild(btn);
   });
 
-  // 💻 PC用：ランクボタン下に収まる2列（ボタン幅制限）
+  // PC用：ランクボタン下に収まる2列（ボタン幅制限）
   const desktopPanel = document.getElementById("area-filter-panel-desktop");
   desktopPanel.innerHTML = "";
   desktopPanel.className = "grid grid-cols-2 gap-2";
@@ -399,15 +405,14 @@ const renderAreaFilterPanel = () => {
 };
 
 const sortAndRedistribute = debounce(() => filterAndRender(), 200);
-
 const areaPanel = document.getElementById("area-filter-panel");
 
 function toggleAreaPanel(show) {
     areaPanel.classList.toggle("hidden", !show);
 }
 
-toggleAreaPanel(true);  // 表示
-toggleAreaPanel(false); // 非表示
+toggleAreaFilterPanel(true);  // 表示
+toggleAreaFilterPanel(false); // 非表示
 
 function updateFilterUI() {
     const state = getState();
@@ -436,32 +441,24 @@ function updateFilterUI() {
 
 // 討伐報告受信ハンドラ
 function onKillReportReceived(mobId, kill_time) {
-  const mob = mobsById[mobId];
-  if (!mob) return;
+    const mob = getState().mobs.find(m => m.No === mobId);
+    if (!mob) return;
 
-  mob.last_kill_time = Number(kill_time);
-  mob.repopInfo = calculateRepop(mob);
+    mob.last_kill_time = Number(kill_time);
+    mob.repopInfo = calculateRepop(mob);
 
-  // 即時更新
-  const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
-  if (card) {
-    updateProgressText(card, mob);
-    updateProgressBar(card, mob);
-  }
+    // 即時更新
+    const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
+    if (card) {
+        updateProgressText(card, mob);
+        updateProgressBar(card, mob);
+    }
 }
 
 // 定期ループ（60秒ごとに全カードを更新）
 setInterval(() => {
-  const state = getState();
-  state.mobs.forEach(mob => {
-    const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
-    if (card) {
-      updateProgressText(card, mob);
-      updateProgressBar(card, mob);
-    }
-  });
+  updateProgressBars();
 }, 60000);
 
-// ← この下に export をまとめる
 export { filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, displayStatus, DOM,
         renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, updateFilterUI, toggleAreaPanel, onKillReportReceived };
