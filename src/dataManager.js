@@ -1,7 +1,7 @@
 // dataManager.js
 
 // 🚨 修正1 (パス修正): 外部依存関係のインポート
-import { filterAndRender, updateProgressBars, displayStatus } from "./uiRender.js";
+import { filterAndRender, displayStatus } from "./uiRender.js";
 import { subscribeMobStatusDocs, subscribeMobLocations, initializeAuth } from "./server.js";
 
 const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
