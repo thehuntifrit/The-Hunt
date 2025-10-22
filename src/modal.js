@@ -32,4 +32,10 @@ function closeReportModal() {
   DOM.modalMemoInput.value = "";
 }
 
-export { openReportModal, closeReportModal, toLocalIsoString };
+function toggleAreaFilterPanel(show) {
+  const panel = document.getElementById("area-filter-panel");
+  if (!panel) return;
+  panel.style.display = show ? "block" : "none";
+}
+ 
+export { openReportModal, closeReportModal, toLocalIsoString, toggleAreaFilterPanel };
