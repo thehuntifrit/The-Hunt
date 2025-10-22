@@ -152,7 +152,5 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.dataset.clickCount = btn.dataset.rank === currentRank ? "1" : "0";
   });
 
-  setupApp();
-});
 
 export { attachEventListeners };
