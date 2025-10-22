@@ -41,6 +41,7 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne, isSLa
 
     let colorClass = '';
     let pointShadowClass = '';
+    let inlineStyle = `left: ${point.x}%; top: ${point.y}%;`; // 基本スタイルを初期化
 
     if (!isCulled) {
         if (isLastOne) {
@@ -49,11 +50,17 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne, isSLa
         } else if (mobRank === 'A' || mobRank === 'S' || mobRank === 'F') {
             colorClass = 'color-b1 spawn-point-sa';
             pointShadowClass = 'spawn-point-shadow-sa';
+            // S/A湧き潰しポイントにもB1色を強制適用（万全を期す）
+            inlineStyle += ' background-color: var(--color-b1);';
         } else {
             if (isB2Spawn) {
                 colorClass = 'color-b2-only spawn-point-b-only';
+                // B2色をインラインで強制適用
+                inlineStyle += ' background-color: var(--color-b2);';
             } else {
                 colorClass = 'color-b1-only spawn-point-b-only';
+                // B1色をインラインで強制適用
+                inlineStyle += ' background-color: var(--color-b1);';
             }
         }
     } else {
@@ -62,7 +69,7 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne, isSLa
 
     return `
 <div class="spawn-point absolute w-3 h-3 rounded-full cursor-pointer transition-all ${culledClass} ${colorClass} ${pointShadowClass}"
-  style="left: ${point.x}%; top: ${point.y}%;"
+  style="${inlineStyle}"
   title="湧き潰し: ${isCulled ? '済' : '未'}"
   data-mob-no="${mobNo}"
   data-location-id="${point.id}"
