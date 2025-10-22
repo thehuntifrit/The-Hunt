@@ -96,7 +96,7 @@ function createMobCard(mob) {
 
     const expandablePanelHTML = isExpandable ? `
 <div class="expandable-panel bg-gray-800/70 ${isOpen ? 'open' : ''}">
-    <div class="px-1 py-0 text-sm space-y-0.5">
+    <div class="px-2 py-0 text-sm space-y-0.5">
         <div class="flex justify-between items-start flex-wrap">
             <div class="w-full text-right text-sm font-mono text-green-300" data-next-time></div>
             <div class="w-full text-right text-xs text-gray-400 pt-1" data-last-kill></div>
@@ -264,7 +264,7 @@ function updateProgressText(card, mob) {
     text.innerHTML = `
     <div class="w-full grid grid-cols-2 items-center text-sm font-semibold" style="line-height:1;">
       <div class="pl-2 text-left">Next: ${nextTimeStr}</div>
-      <div class="pr-2 text-right">Next: ${nextTimeStr}${remainingStr} ( ${elapsedPercent.toFixed(0)}% )</div>
+      <div class="pr-2 text-right">${remainingStr} ( ${elapsedPercent.toFixed(0)}% )</div>
     </div>
   `;
 }
