@@ -166,5 +166,5 @@ function startRealtime() {
   unsubscribes.push(unsubLoc);
 }
     
-export { state, EXPANSION_MAP, getState, getMobByNo, setUserId, setBaseMobData, setMobs, 
+export { state, EXPANSION_MAP, getState, getMobByNo, setUserId, setBaseMobData, setMobs, loadBaseMobData, 
         setFilter, setOpenMobCardNo, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP };
