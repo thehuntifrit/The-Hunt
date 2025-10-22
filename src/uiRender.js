@@ -477,12 +477,14 @@ const sortAndRedistribute = debounce(() => filterAndRender(), 200);
 
 const areaPanel = document.getElementById("area-filter-panel");
 
-function toggleAreaPanel(show) {
+function toggleAreaFilterPanel(show) {
+  const areaPanel = document.getElementById("area-filter-panel");
+  if (!areaPanel) return;
   areaPanel.classList.toggle("hidden", !show);
 }
 
-toggleAreaPanel(true); // 表示
-toggleAreaPanel(false); // 非表示
+toggleAreaFilterPanel(true);  // 表示
+toggleAreaFilterPanel(false); // 非表示
 
 function updateFilterUI() {
   const state = getState();
