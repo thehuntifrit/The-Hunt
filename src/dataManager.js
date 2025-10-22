@@ -2,6 +2,7 @@
 
 import { filterAndRender, displayStatus } from "./uiRender.js";
 import { subscribeMobStatusDocs, subscribeMobLocations } from "./server.js";
+import { calculateRepop } from "./cal.js";
 
 const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
 
@@ -112,12 +113,17 @@ const baseMobData = Object.entries(data.mobs).map(([no, mob]) => ({
     prev_kill_time: 0,
     last_kill_memo: "",
     spawn_cull_status: {},
-    related_mob_no: mob.rank.startsWith("B") ? mob.relatedMobNo : null
+    related_mob_no: mob.rank.startsWith("B") ? mob.relatedMobNo : null,
+    repopInfo: calculateRepop({ 
+    REPOP_s: mob.repopSeconds, 
+    MAX_s: mob.maxRepopSeconds,
+    last_kill_time: 0,
+    })
 }));
 
-  setBaseMobData(baseMobData);
-  setMobs([...baseMobData]);
-  filterAndRender({ isInitialLoad: true });
+    setBaseMobData(baseMobData);
+    setMobs([...baseMobData]);
+    filterAndRender({ isInitialLoad: true });
 }
 
 function startRealtime() {
@@ -125,29 +131,35 @@ function startRealtime() {
   unsubscribes.forEach(fn => fn && fn());
   unsubscribes = [];
 
-  // Mob ステータス購読
-  const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
-    const current = getState().mobs;
-    const map = new Map();
-    Object.values(mobStatusDataMap).forEach(docData => {
-      Object.entries(docData).forEach(([mobId, mobData]) => {
-        const mobNo = parseInt(mobId, 10);
-        map.set(mobNo, {
-          last_kill_time: mobData.last_kill_time?.seconds || 0,
-          prev_kill_time: mobData.prev_kill_time?.seconds || 0,
-          last_kill_memo: mobData.last_kill_memo || ""
+// Mob ステータス購読
+    const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
+        const current = getState().mobs;
+        const map = new Map();
+        Object.values(mobStatusDataMap).forEach(docData => {
+            Object.entries(docData).forEach(([mobId, mobData]) => {
+                const mobNo = parseInt(mobId, 10);
+                map.set(mobNo, {
+                    last_kill_time: mobData.last_kill_time?.seconds || 0,
+                    prev_kill_time: mobData.prev_kill_time?.seconds || 0,
+                    last_kill_memo: mobData.last_kill_memo || ""
+                });
+            });
         });
-      });
+        const merged = current.map(m => {
+            const dyn = map.get(m.No);
+            if (dyn) {
+                const updatedMob = { ...m, ...dyn };
+                // LKT/PKT が更新された Mob に対して repopInfo を再計算
+                updatedMob.repopInfo = calculateRepop(updatedMob); // <--- repopInfo の計算を追加
+                return updatedMob;
+            }
+            return m;
+        });
+        setMobs(merged);
+        filterAndRender();
+        displayStatus("LKT/Memoデータ更新完了。", "success");
     });
-    const merged = current.map(m => {
-      const dyn = map.get(m.No);
-      return dyn ? { ...m, ...dyn } : m;
-    });
-    setMobs(merged);
-    filterAndRender();
-    displayStatus("LKT/Memoデータ更新完了。", "success");
-  });
-  unsubscribes.push(unsubStatus);
+    unsubscribes.push(unsubStatus);
 
   // Mob 出現位置購読
   const unsubLoc = subscribeMobLocations(locationsMap => {
