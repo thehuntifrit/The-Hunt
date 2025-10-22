@@ -480,23 +480,20 @@ const renderAreaFilterPanel = () => {
 };
 
 const sortAndRedistribute = debounce(() => filterAndRender(), 200);
-
 const areaPanel = document.getElementById("area-filter-panel");
 
 function toggleAreaFilterPanel(show) {
-  const mobilePanel = document.getElementById("area-filter-panel-mobile");
-  const desktopPanel = document.getElementById("area-filter-panel-desktop");
+  const mobilePanel = document.getElementById("area-filter-panel-mobile");
+  const desktopPanel = document.getElementById("area-filter-panel-desktop");
+  const isDesktop = window.innerWidth >= 1024;
 
-  if (mobilePanel) {
-    mobilePanel.classList.toggle("hidden", !show);
-  }
-  if (desktopPanel) {
-    desktopPanel.classList.toggle("hidden", !show);
-  }
+  if (mobilePanel) {
+    mobilePanel.classList.toggle("hidden", !show || isDesktop);
+  }
+  if (desktopPanel) {
+    desktopPanel.classList.toggle("hidden", !show || !isDesktop);
+  }
 }
-
-toggleAreaFilterPanel(true);  // 表示
-toggleAreaFilterPanel(false); // 非表示
 
 function updateFilterUI() {
   const state = getState();
