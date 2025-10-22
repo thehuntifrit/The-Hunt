@@ -544,7 +544,6 @@ function onKillReportReceived(mobId, kill_time) {
 setInterval(() => {
   const state = getState();
   state.mobs.forEach((mob) => {
-    mob.repopInfo = calculateRepop(mob);
     const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
     if (card) {
       updateProgressText(card, mob);
