@@ -407,12 +407,23 @@ const renderAreaFilterPanel = () => {
 const sortAndRedistribute = debounce(() => filterAndRender(), 200);
 const areaPanel = document.getElementById("area-filter-panel");
 
-function toggleAreaPanel(show) {
-    areaPanel.classList.toggle("hidden", !show);
-}
+function toggleAreaFilterPanel(isDesktop) {
+  if (isDesktop) {
+    DOM.areaFilterPanelDesktop.classList.remove('hidden');
+    DOM.areaFilterPanelMobile.classList.add('hidden');
+    DOM.areaFilterWrapper.classList.remove('block');
+  } else {
+    DOM.areaFilterPanelDesktop.classList.add('hidden');
 
-toggleAreaFilterPanel(true);  // 表示
-toggleAreaFilterPanel(false); // 非表示
+    if (DOM.areaFilterPanelMobile.classList.contains('hidden')) {
+      DOM.areaFilterPanelMobile.classList.remove('hidden');
+    } else {
+      DOM.areaFilterPanelMobile.classList.add('hidden');
+    }
+    
+    DOM.areaFilterWrapper.classList.add('block');
+  }
+}
 
 function updateFilterUI() {
     const state = getState();
@@ -461,4 +472,4 @@ setInterval(() => {
 }, 60000);
 
 export { filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, displayStatus, DOM,
-        renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, updateFilterUI, toggleAreaPanel, onKillReportReceived };
+        renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, toggleAreaFilterPanel, updateFilterUI, onKillReportReceived, updateProgressBars };
