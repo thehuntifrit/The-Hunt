@@ -96,8 +96,8 @@ function createMobCard(mob) {
 `;
 
   const expandablePanelHTML = isExpandable ? `
-<div class="expandable-panel ${isOpen ? 'open' : ''}">
-  <div class="px-1 py-1 text-sm space-y-0.5">
+<div class="expandable-panel bg-gray-700 ${isOpen ? 'open' : ''}">
+  <div class="px-1 py-0.5 text-sm space-y-0.5">
     <div class="flex justify-between items-start flex-wrap">
       <div class="w-full text-right text-sm font-mono text-green-300" data-next-time></div>
       <div class="w-full text-right text-xs text-gray-400 pt-1" data-last-kill></div>
