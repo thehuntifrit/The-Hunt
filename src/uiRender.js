@@ -513,16 +513,21 @@ const renderAreaFilterPanel = () => {
 const sortAndRedistribute = debounce(() => filterAndRender(), 200);
 const areaPanel = document.getElementById("area-filter-panel");
 
-function toggleAreaFilterPanel(show) {
-  const mobilePanel = document.getElementById("area-filter-panel-mobile");
-  const desktopPanel = document.getElementById("area-filter-panel-desktop");
-  const isDesktop = window.innerWidth >= 1024;
+function toggleAreaFilterPanel(isDesktop) {
+  if (isDesktop) {
+    DOM.areaFilterPanelDesktop.classList.remove('hidden');
+    DOM.areaFilterPanelMobile.classList.add('hidden');
+    DOM.areaFilterWrapper.classList.remove('block');
+  } else {
+    DOM.areaFilterPanelDesktop.classList.add('hidden');
 
-  if (mobilePanel) {
-    mobilePanel.classList.toggle("hidden", !show || isDesktop);
-  }
-  if (desktopPanel) {
-    desktopPanel.classList.toggle("hidden", !show || !isDesktop);
+    if (DOM.areaFilterPanelMobile.classList.contains('hidden')) {
+      DOM.areaFilterPanelMobile.classList.remove('hidden');
+    } else {
+      DOM.areaFilterPanelMobile.classList.add('hidden');
+    }
+    
+    DOM.areaFilterWrapper.classList.add('block');
   }
 }
 
