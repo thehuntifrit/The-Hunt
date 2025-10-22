@@ -542,16 +542,16 @@ function onKillReportReceived(mobId, kill_time) {
 
 // 定期ループ（60秒ごとに全カードを更新）
 setInterval(() => {
-  const state = getState();
-  state.mobs.forEach((mob) => {
-    const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
-    if (card) {
-      updateProgressText(card, mob);
-      updateProgressBar(card, mob);
-    }
-  });
+  const state = getState();
+  state.mobs.forEach((mob) => {
+    mob.repopInfo = calculateRepop(mob);
+    const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
+    if (card) {
+      updateProgressText(card, mob);
+      updateProgressBar(card, mob);
+    }
+  });
 }, 60000);
 
-// ← この下に export をまとめる
 export { filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, displayStatus, DOM,
         renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, toggleAreaFilterPanel, updateFilterUI, onKillReportReceived };
