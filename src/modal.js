@@ -1,5 +1,4 @@
 // modal.js
-
 import { DOM, displayStatus } from "./uiRender.js"; 
 import { getState } from "./dataManager.js";
 import { toJstAdjustedIsoString } from "./cal.js";
@@ -28,14 +27,38 @@ function openReportModal(mobNo) {
 // モーダルを閉じる (責務: closeReportModal)
 function closeReportModal() {
   DOM.reportModal.classList.add("hidden");
+  DOM.reportModal.classList.remove("flex");
   DOM.modalTimeInput.value = "";
   DOM.modalMemoInput.value = "";
 }
 
-function toggleAreaFilterPanel(show) {
-  const panel = document.getElementById("area-filter-panel");
-  if (!panel) return;
-  panel.style.display = show ? "block" : "none";
+// モーダルを閉じるイベントハンドラを設定する
+function setupModalCloseHandlers() {
+  // 1. キャンセルボタン
+  const cancelButton = document.getElementById("cancel-report");
+  if (cancelButton) {
+    cancelButton.addEventListener("click", closeReportModal);
+  }
+
+  // 2. 背景クリック
+  DOM.reportModal.addEventListener("click", (e) => {
+    // クリックされた要素がモーダルウィンドウ（背景）自体であるかを確認
+    if (e.target === DOM.reportModal) {
+      closeReportModal();
+    }
+  });
+
+  // 3. Escapeキー
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !DOM.reportModal.classList.contains("hidden")) {
+      closeReportModal();
+    }
+  });
 }
- 
-export { openReportModal, closeReportModal, toLocalIsoString, toggleAreaFilterPanel };
+
+// 初期化関数
+function initModal() {
+  setupModalCloseHandlers();
+}
+
+export { openReportModal, closeReportModal, toLocalIsoString, initModal };
