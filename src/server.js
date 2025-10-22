@@ -6,7 +6,7 @@ import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gsta
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-functions.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
 
-import { setupApp, getState, setFilter, setOpenMobCardNo, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js"; 
+import { getState, setFilter, setOpenMobCardNo, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js"; 
 import { closeReportModal } from "./modal.js";
 import { displayStatus } from "./uiRender.js";
 
