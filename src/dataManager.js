@@ -121,47 +121,49 @@ const baseMobData = Object.entries(data.mobs).map(([no, mob]) => ({
 }
 
 function startRealtime() {
-  if (progressInterval) clearInterval(progressInterval);
-  unsubscribes.forEach(fn => fn && fn());
-  unsubscribes = [];
+  // 前回の購読を解除
+  unsubscribes.forEach(fn => fn && fn());
+  unsubscribes = [];
 
-const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
-  const current = getState().mobs;
-  const map = new Map();
-  Object.values(mobStatusDataMap).forEach(docData => {
-    Object.entries(docData).forEach(([mobId, mobData]) => {
-      const mobNo = parseInt(mobId, 10);
-      map.set(mobNo, {
-        last_kill_time: mobData.last_kill_time?.seconds || 0,
-        prev_kill_time: mobData.prev_kill_time?.seconds || 0,
-        last_kill_memo: mobData.last_kill_memo || ""
+  // Mob ステータス購読
+  const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
+    const current = getState().mobs;
+    const map = new Map();
+    Object.values(mobStatusDataMap).forEach(docData => {
+      Object.entries(docData).forEach(([mobId, mobData]) => {
+        const mobNo = parseInt(mobId, 10);
+        map.set(mobNo, {
+          last_kill_time: mobData.last_kill_time?.seconds || 0,
+          prev_kill_time: mobData.prev_kill_time?.seconds || 0,
+          last_kill_memo: mobData.last_kill_memo || ""
+        });
       });
     });
+    const merged = current.map(m => {
+      const dyn = map.get(m.No);
+      return dyn ? { ...m, ...dyn } : m;
+    });
+    setMobs(merged);
+    filterAndRender();
+    displayStatus("LKT/Memoデータ更新完了。", "success");
   });
-  const merged = current.map(m => {
-    const dyn = map.get(m.No);
-    return dyn ? { ...m, ...dyn } : m;
-  });
-  setMobs(merged);
-  filterAndRender();
-  displayStatus("LKT/Memoデータ更新完了。", "success");
-});
-unsubscribes.push(unsubStatus);
+  unsubscribes.push(unsubStatus);
 
-const unsubLoc = subscribeMobLocations(locationsMap => {
-  const current = getState().mobs;
-  const merged = current.map(m => {
-    const dyn = locationsMap[m.No];
-    if (m.Rank === "S" && dyn) {
-      return { ...m, spawn_cull_status: dyn.points || {} };
-    }
-    return m;
+  // Mob 出現位置購読
+  const unsubLoc = subscribeMobLocations(locationsMap => {
+    const current = getState().mobs;
+    const merged = current.map(m => {
+      const dyn = locationsMap[m.No];
+      if (m.Rank === "S" && dyn) {
+        return { ...m, spawn_cull_status: dyn.points || {} };
+      }
+      return m;
+    });
+    setMobs(merged);
+    filterAndRender();
+    displayStatus("湧き潰しデータ更新完了。", "success");
   });
-  setMobs(merged);
-  filterAndRender();
-  displayStatus("湧き潰しデータ更新完了。", "success");
-});
-unsubscribes.push(unsubLoc);
+  unsubscribes.push(unsubLoc);
 }
     
 export { state, EXPANSION_MAP, getState, getMobByNo, setUserId, setBaseMobData, setMobs, 
