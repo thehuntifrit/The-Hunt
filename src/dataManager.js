@@ -1,7 +1,7 @@
 // dataManager.js
 
 import { filterAndRender, displayStatus } from "./uiRender.js";
-import { subscribeMobStatusDocs, subscribeMobLocations, initializeAuth } from "./server.js";
+import { subscribeMobStatusDocs, subscribeMobLocations } from "./server.js";
 
 const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
 
@@ -162,6 +162,7 @@ const unsubLoc = subscribeMobLocations(locationsMap => {
   displayStatus("湧き潰しデータ更新完了。", "success");
 });
 unsubscribes.push(unsubLoc);
-
+}
+    
 export { state, EXPANSION_MAP, getState, getMobByNo, setUserId, setBaseMobData, setMobs, 
         setFilter, setOpenMobCardNo, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP };
