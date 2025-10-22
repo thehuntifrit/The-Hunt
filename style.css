@@ -104,13 +104,11 @@ overflow: hidden;
 /* transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out; */
 padding-top: 0 !important;
 padding-bottom: 0 !important;
-opacity: 0;
 }
 .expandable-panel.open {
 max-height: 2000px;
 padding-top: 0.5rem !important;
 padding-bottom: 0.5rem !important;
-opacity: 1;
 }
 
 /* --- マップオーバーレイとスポーン点 --- */
