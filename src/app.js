@@ -1,6 +1,5 @@
 // app.js
 import { getState, setFilter, loadBaseMobData, setOpenMobCardNo, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js"; 
-// initModal が他で宣言されている可能性を考慮し、別名でインポート
 import { openReportModal, closeReportModal, initModal as modalInit } from "./modal.js"; 
 import { attachLocationEvents } from "./location.js"; 
 import { submitReport, toggleCrushStatus } from "./server.js"; 
