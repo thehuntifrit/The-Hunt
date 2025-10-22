@@ -64,11 +64,11 @@ function getEorzeaWeather(date = new Date(), weatherTable) {
 }
 
 /**
- * モブの出現条件を判定する（天候シード専用）
- * @param {Object} mob - JSONで定義されたモブ
- * @param {Date} date - 判定対象のリアル時間
- * @returns {Boolean} 条件を満たしているか
- */
+ * モブの出現条件を判定する（天候シード専用）
+ * @param {Object} mob - JSONで定義されたモブ
+ * @param {Date} date - 判定対象のリアル時間
+ * @returns {Boolean} 条件を満たしているか
+ */
 function checkMobSpawnCondition(mob, date) {
   const et = getEorzeaTime(date);          // { hours, minutes }
   const moon = getEorzeaMoonPhase(date);   // 0〜31 の数値
@@ -76,7 +76,9 @@ function checkMobSpawnCondition(mob, date) {
 
   if (mob.moonPhase) {
     const phases = Array.isArray(mob.moonPhase) ? mob.moonPhase : [mob.moonPhase];
-    if (!phases.includes(moon)) return false; // <--- ここを数値比較に修正
+    // 要素を数値に変換してから比較を行う
+    const numericPhases = phases.map(p => Number(p));
+    if (!numericPhases.includes(moon)) return false;
   }
 
   // 天候シード範囲（単一）
@@ -138,59 +140,61 @@ function findNextSpawnTime(mob, now = new Date()) {
 }
 
 function calculateRepop(mob) {
-  const now = Date.now() / 1000;
-  const lastKill = mob.last_kill_time || 0;
-  const repopSec = mob.REPOP_s;
-  const maxSec = mob.MAX_s;
+  const now = Date.now() / 1000;
+  const lastKill = mob.last_kill_time || 0;
+  const repopSec = mob.REPOP_s;
+  const maxSec = mob.MAX_s;
 
-  let minRepop = lastKill + repopSec;
-  let maxRepop = lastKill + maxSec;
-  let elapsedPercent = 0;
-  let timeRemaining = "Unknown";
-  let status = "Unknown";
+  let minRepop = lastKill + repopSec;
+  let maxRepop = lastKill + maxSec;
+  let elapsedPercent = 0;
+  let timeRemaining = "Unknown";
+  let status = "Unknown";
 
-  if (lastKill === 0) {
-    // 初回未討伐
-    minRepop = now + repopSec;
-    maxRepop = now + maxSec;
-    timeRemaining = `Next: ${formatDuration(minRepop - now)}`;
-    status = "Next";
-  } else if (now < minRepop) {
-    // リポップ待ち中
-    timeRemaining = `Next: ${formatDuration(minRepop - now)}`;
-    status = "Next";
-  } else if (now >= minRepop && now < maxRepop) {
-    // ポップウィンドウ中
-    elapsedPercent = ((now - minRepop) / (maxRepop - minRepop)) * 100;
-    elapsedPercent = Math.min(elapsedPercent, 100);
-    timeRemaining = `${elapsedPercent.toFixed(0)}% (${formatDuration(maxRepop - now)})`;
-    status = "PopWindow";
-  } else {
-    // 最大時間経過後
-    elapsedPercent = 100;
-    timeRemaining = `100% (+${formatDuration(now - maxRepop)})`;
-    status = "MaxOver";
-  }
+  if (lastKill === 0) {
+    // 初回未討伐
+    minRepop = now + repopSec;
+    maxRepop = now + maxSec;
+    timeRemaining = `Next: ${formatDuration(minRepop - now)}`;
+    status = "Next";
+  } else if (now < minRepop) {
+    // リポップ待ち中
+    timeRemaining = `Next: ${formatDuration(minRepop - now)}`;
+    status = "Next";
+  } else if (now >= minRepop && now < maxRepop) {
+    // ポップウィンドウ中
+    elapsedPercent = ((now - minRepop) / (maxRepop - minRepop)) * 100;
+    elapsedPercent = Math.min(elapsedPercent, 100);
+    timeRemaining = `${elapsedPercent.toFixed(0)}% (${formatDuration(maxRepop - now)})`;
+    status = "PopWindow";
+  } else {
+    // 最大時間経過後
+    elapsedPercent = 100;
+    timeRemaining = `100% (+${formatDuration(now - maxRepop)})`;
+    status = "MaxOver";
+  }
 
-  // 次回出現可能時刻（条件付きモブは findNextSpawnTime で補正）
-  let nextMinRepopDate = null;
-  if (minRepop > now) {
-    nextMinRepopDate = new Date(minRepop * 1000);
-  }
+  // 次回出現可能時刻（条件付きモブは findNextSpawnTime で補正）
+  let nextMinRepopDate = null;
+  
+  // 条件付きモブ（moonPhase, timeRange, weather など）がある場合の補正
+  if (mob.moonPhase || mob.timeRange || mob.weatherSeedRange || mob.weatherSeedRanges) {
+    // 探索開始点を minRepop の時刻に固定する
+    const searchStart = new Date(minRepop * 1000);
+    nextMinRepopDate = findNextSpawnTime(mob, searchStart);
+  } else if (minRepop > now) {
+    // 条件がないモブで、まだリポップウィンドウに入っていない場合
+    nextMinRepopDate = new Date(minRepop * 1000);
+  }
 
-  // 条件付きモブ（moonPhase, timeRange, weather など）がある場合は補正
-  if (mob.moonPhase || mob.timeRange || mob.weatherSeedRange || mob.weatherSeedRanges) {
-    nextMinRepopDate = findNextSpawnTime(mob, nextMinRepopDate || new Date());
-  }
-
-  return {
-    minRepop,
-    maxRepop,
-    elapsedPercent,
-    timeRemaining,
-    status,
-    nextMinRepopDate
-  };
+  return {
+    minRepop,
+    maxRepop,
+    elapsedPercent,
+    timeRemaining,
+    status,
+    nextMinRepopDate
+  };
 }
 
 function formatLastKillTime(timestamp) {
