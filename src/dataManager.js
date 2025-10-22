@@ -1,6 +1,5 @@
 // dataManager.js
 
-// 🚨 修正1 (パス修正): 外部依存関係のインポート
 import { filterAndRender, displayStatus } from "./uiRender.js";
 import { subscribeMobStatusDocs, subscribeMobLocations, initializeAuth } from "./server.js";
 
@@ -24,7 +23,6 @@ const state = {
     : null
 };
 
-// Set復元ロジック
 for (const k in state.filter.areaSets) {
   const v = state.filter.areaSets[k];
   if (Array.isArray(v)) state.filter.areaSets[k] = new Set(v);
@@ -65,7 +63,6 @@ function setOpenMobCardNo(no) {
   localStorage.setItem("openMobCardNo", no ?? "");
 }
 
-// 静的定義の追記
 const RANK_COLORS = {
   S: {bg: 'bg-red-600', hover: 'hover:bg-red-700', text: 'text-red-600', hex: '#dc2626', label: 'S'},
   A: {bg: 'bg-yellow-600', hover: 'hover:bg-yellow-700', text: 'text-yellow-600', hex: '#ca8a04', label: 'A'},
@@ -100,18 +97,15 @@ const baseMobData = Object.entries(data.mobs).map(([no, mob]) => ({
     Condition: mob.condition,
     Expansion: EXPANSION_MAP[Math.floor(no / 10000)] || "Unknown",
     
-    // リポップ時刻 (cal.js の calculateRepop と互換性あり)
     REPOP_s: mob.repopSeconds,
     MAX_s: mob.maxRepopSeconds,
     
-    // 【重要】天候・時間・月齢の条件を追加
     moonPhase: mob.moonPhase,
     timeRange: mob.timeRange,
     timeRanges: mob.timeRanges,
     weatherSeedRange: mob.weatherSeedRange,
     weatherSeedRanges: mob.weatherSeedRanges,
 
-    // その他のプロパティ
     Map: mob.mapImage,
     spawn_points: mob.locations,
     last_kill_time: 0,
@@ -127,12 +121,10 @@ const baseMobData = Object.entries(data.mobs).map(([no, mob]) => ({
 }
 
 function startRealtime() {
-  // Clear previous
   if (progressInterval) clearInterval(progressInterval);
   unsubscribes.forEach(fn => fn && fn());
   unsubscribes = [];
 
-// Subscribe mob_status docs
 const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
   const current = getState().mobs;
   const map = new Map();
@@ -156,7 +148,6 @@ const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
 });
 unsubscribes.push(unsubStatus);
 
-// Subscribe mob_locations
 const unsubLoc = subscribeMobLocations(locationsMap => {
   const current = getState().mobs;
   const merged = current.map(m => {
