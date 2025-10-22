@@ -582,6 +582,7 @@ function onKillReportReceived(mobId, kill_time) {
 setInterval(() => {
   updateAllMobProgress();
 }, 60000);
+  }
 
 export { filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, displayStatus, DOM,
         renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, toggleAreaFilterPanel, updateFilterUI, onKillReportReceived };
