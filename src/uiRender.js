@@ -5,7 +5,6 @@ import { drawSpawnPoint } from "./location.js";
 import { getState, setFilter, RANK_COLORS, PROGRESS_CLASSES, EXPANSION_MAP, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
 import { debounce } from "./cal.js"; 
 
-// DOM 定義 (仕様に基づき、uiRender.jsの責務として組み込む)
 const DOM = {
   masterContainer: document.getElementById('master-mob-container'),
   colContainer: document.getElementById('column-container'),
@@ -22,7 +21,6 @@ const DOM = {
   modalMemoInput: document.getElementById('report-memo')
 };
 
-// displayStatus (仕様に基づき、uiRender.jsの責務として組み込む)
 function displayStatus(message, type = "info") {
   const el = document.getElementById("status-message");
   if (!el) return;
@@ -195,10 +193,8 @@ function filterAndRender({ isInitialLoad = false } = {}) {
         return areaSet.has(mobExpansion);
     });
 
-    // ソート復活（表示の安定性のため、No昇順に統一。必要ならelapsedPercent優先へ切替可能）
     filtered.sort((a, b) => a.No - b.No);
 
-    // DOM構築（文字列→要素）＋平文問題の回避
     const frag = document.createDocumentFragment();
     filtered.forEach(mob => {
         const temp = document.createElement("div");
@@ -209,10 +205,9 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     DOM.masterContainer.innerHTML = "";
     DOM.masterContainer.appendChild(frag);
     distributeCards();
-    updateFilterUI(); // タブ強調/クリックカウントの反映
+    updateFilterUI();
 
     if (isInitialLoad) {
-        // 初期レンダリング後に進捗バーを一度更新
         updateProgressBars();
     }
 }
@@ -466,14 +461,12 @@ function onKillReportReceived(mobId, kill_time) {
   mob.last_kill_time = Number(kill_time);
   mob.repopInfo = calculateRepop(mob);
 
-  // 即UI更新
   updateProgressBars();
 }
 
-// 定期ループ（末尾に追加）
 setInterval(() => {
   updateProgressBars();
-}, 60000); // 10秒ごと
+}, 60000); // 60秒ごと
 
 export { filterAndRender, distributeCards, updateProgressBars, createMobCard, displayStatus, DOM, 
         renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, updateFilterUI, toggleAreaPanel };
