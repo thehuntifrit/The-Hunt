@@ -41,7 +41,6 @@ text-shadow:
 1px 1px 0 #000033;
 }
 
-
 /* タブのアクティブ状態を強調 (JSがTailwindクラスで背景色を変更) */
 .tab-button {
 transition: background-color 0.2s, box-shadow 0.2s, border 0.2s;
@@ -112,7 +111,6 @@ padding-bottom: 0.5rem !important;
 }
 
 /* --- マップオーバーレイとスポーン点 --- */
-
 .map-content {
     position: relative;
     border-radius: 0.5rem;
