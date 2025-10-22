@@ -106,22 +106,18 @@ function createMobCard(mob) {
         </div>
         ${mob.Map && rank === 'S' ? `
         <div class="map-content py-0.5 flex justify-center relative">
-            <img src="./maps/${mob.Map}" alt="${mob.Area} Map"
-                class="mob-crush-map w-full h-auto rounded shadow-lg border border-gray-600" data-mob-no="${mob.No}">
+            <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="mob-crush-map w-full h-auto rounded shadow-lg border border-gray-600" data-mob-no="${mob.No}">
             <div class="map-overlay absolute inset-0" data-mob-no="${mob.No}">${spawnPointsHtml}</div>
         </div>
         ` : ''}
     </div>
 </div>
 ` : '';
-
+    
     return `
-<div class="mob-card bg-gray-700 rounded-lg shadow-xl overflow-hidden cursor-pointer border border-gray-700 transition duration-150"
-    data-mob-no="${mob.No}" data-rank="${rank}">
-    ${cardHeaderHTML}
-    ${expandablePanelHTML}
-</div>
-`;
+<div class="mob-card bg-gray-700 rounded-lg shadow-xl overflow-hidden cursor-pointer border border-gray-700 
+transition duration-150" data-mob-no="${mob.No}" data-rank="${rank}">${cardHeaderHTML}${expandablePanelHTML}</div>
+    `;
 }
 
 function filterAndRender({ isInitialLoad = false } = {}) {
