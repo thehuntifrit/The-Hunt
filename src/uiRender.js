@@ -224,7 +224,7 @@ function filterAndRender({ isInitialLoad = false } = {}) {
   updateFilterUI();
 
   if (isInitialLoad) {
-    updateProgressBars();
+    updateAllMobProgress();
   }
 }
 
@@ -357,6 +357,17 @@ function updateExpandablePanel(card, mob) {
   if (elNext) elNext.textContent = `次回: ${nextStr}`;
   if (elLast) elLast.textContent = `前回: ${lastStr}`;
   if (elMemo) elMemo.textContent = memoStr;
+}
+
+function updateAllMobProgress() {
+  const state = getState();
+  state.mobs.forEach((mob) => {
+    const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
+    if (card) {
+      updateProgressText(card, mob);
+      updateProgressBar(card, mob);
+    }
+  });
 }
 
 const renderRankTabs = () => {
@@ -526,11 +537,11 @@ function updateFilterUI() {
 
 // 討伐報告受信ハンドラ
 function onKillReportReceived(mobId, kill_time) {
-    const mob = getState().mobs.find(m => m.No === mobId); // <--- Mob 取得を修正
+    const mob = getState().mobs.find(m => m.No === mobId);
     if (!mob) return;
 
     mob.last_kill_time = Number(kill_time);
-    mob.repopInfo = calculateRepop(mob); // <--- repopInfo を更新
+    mob.repopInfo = calculateRepop(mob);
 
     // 即時更新
     const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
@@ -540,16 +551,8 @@ function onKillReportReceived(mobId, kill_time) {
     }
 }
 
-// 定期ループ（60秒ごとに全カードを更新）
 setInterval(() => {
-  const state = getState();
-  state.mobs.forEach((mob) => {
-    const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
-    if (card) {
-      updateProgressText(card, mob);
-      updateProgressBar(card, mob);
-    }
-  });
+  updateAllMobProgress();
 }, 60000);
 
 export { filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, displayStatus, DOM,
