@@ -1,42 +1,25 @@
 // uiRender.js
 
-import {
-  calculateRepop,
-  findNextSpawnTime,
-  formatDuration,
-  formatLastKillTime,
-} from "./cal.js";
+import {calculateRepop, findNextSpawnTime, formatDuration, formatLastKillTime } from "./cal.js";
 import { drawSpawnPoint } from "./location.js";
-import {
-  getState,
-  setFilter,
-  RANK_COLORS,
-  PROGRESS_CLASSES,
-  EXPANSION_MAP,
-  FILTER_TO_DATA_RANK_MAP,
-} from "./dataManager.js";
+import { getState, setFilter, RANK_COLORS, PROGRESS_CLASSES, EXPANSION_MAP, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
 import { debounce } from "./cal.js";
 
 const DOM = {
-  masterContainer: document.getElementById("master-mob-container"),
-  colContainer: document.getElementById("column-container"),
-  cols: [
-    document.getElementById("column-1"),
-    document.getElementById("column-2"),
-    document.getElementById("column-3"),
-  ],
-  rankTabs: document.getElementById("rank-tabs"),
-  areaFilterWrapper: document.getElementById("area-filter-wrapper"),
-  areaFilterPanel: document.getElementById("area-filter-panel"),
-  statusMessage: document.getElementById("status-message"),
-  reportModal: document.getElementById("report-modal"),
-  reportForm: document.getElementById("report-form"),
-  modalMobName: document.getElementById("modal-mob-name"),
-  modalStatus: document.getElementById("modal-status"),
-  modalTimeInput: document.getElementById("report-datetime"),
-  modalMemoInput: document.getElementById("report-memo"),
+  masterContainer: document.getElementById('master-mob-container'),
+  colContainer: document.getElementById('column-container'),
+  cols: [document.getElementById('column-1'), document.getElementById('column-2'), document.getElementById('column-3')],
+  rankTabs: document.getElementById('rank-tabs'),
+  areaFilterWrapper: document.getElementById('area-filter-wrapper'),
+  areaFilterPanel: document.getElementById('area-filter-panel'),
+  statusMessage: document.getElementById('status-message'),
+  reportModal: document.getElementById('report-modal'),
+  reportForm: document.getElementById('report-form'),
+  modalMobName: document.getElementById('modal-mob-name'),
+  modalStatus: document.getElementById('modal-status'),
+  modalTimeInput: document.getElementById('report-datetime'),
+  modalMemoInput: document.getElementById('report-memo')
 };
-
 function displayStatus(message, type = "info") {
   const el = document.getElementById("status-message");
   if (!el) return;
