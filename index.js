@@ -12,10 +12,8 @@ const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https')
 admin.initializeApp();
 
 const db = admin.firestore();
-// ❌ tasksClient のグローバルでの初期化を削除
 // const tasksClient = new CloudTasksClient(); 
 
-// 🚀 遅延初期化のための変数
 let tasksClient = null;
 
 // Firestore Collection Names
