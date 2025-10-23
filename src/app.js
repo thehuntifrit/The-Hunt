@@ -7,35 +7,53 @@ import { debounce, toJstAdjustedIsoString, } from "./cal.js"; 
 import { DOM, filterAndRender, renderRankTabs, renderAreaFilterPanel, sortAndRedistribute, toggleAreaFilterPanel } from "./uiRender.js";
 
 async function loadMaintenance() {
-  const res = await fetch('./maintenance.json');
-  const data = await res.json();
+  try {
+    const res = await fetch('./maintenance.json', { cache: 'no-store' });
+    if (!res.ok) return; // JSON 未配置なら何もしない
+    const data = await res.json();
 
-  const start = new Date(data.maintenance.start);
-  const end = new Date(data.maintenance.end);
-  const serverUp = new Date(data.maintenance.serverUp);
-  const now = new Date();
+    const start = new Date(data.maintenance.start);
+    const end = new Date(data.maintenance.end);
+    const serverUp = new Date(data.maintenance.serverUp);
+    const now = new Date();
 
-  // バナー表示判定
-  const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
-  if (now >= showFrom && now <= showUntil) {
-    showMaintenanceBanner(start, end, serverUp);
-  }
+    const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
 
-  // メンテ中はモブカード暗転
-  if (now >= start && now < serverUp) {
-    updateMobCards();
+    if (now >= showFrom && now <= showUntil) {
+      renderStatusBar(start, end, serverUp);
+    } else {
+      clearStatusBar();
+    }
+
+    if (now >= start && now < serverUp) {
+      updateMobCards();
+    }
+  } catch (err) {
+    console.error('maintenance.json 読み込み失敗:', err);
   }
 }
 
-function showMaintenanceBanner(start, end, serverUp) {
-  const banner = document.createElement('div');
-  banner.className = 'maintenance-banner';
-  banner.innerHTML = `
-    <div><strong>メンテナンス予定:</strong> ${formatDate(start)} ～ ${formatDate(end)}</div>
-    <div class="server-up-time">サーバー起動: ${formatDate(serverUp)}</div>
+function renderStatusBar(start, end, serverUp) {
+  const el = document.getElementById('status-message');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3">
+      <div class="font-semibold">
+        メンテナンス予定: ${formatDate(start)} ～ ${formatDate(end)}
+      </div>
+      <div class="text-gray-300">
+        サーバー起動: ${formatDate(serverUp)}
+      </div>
+    </div>
   `;
-  document.body.prepend(banner);
+  el.classList.remove('hidden');
+}
+
+function clearStatusBar() {
+  const el = document.getElementById('status-message');
+  if (!el) return;
+  el.innerHTML = '';
 }
 
 function updateMobCards() {
@@ -197,15 +215,16 @@ function attachEventListeners() {
   attachLocationEvents();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    attachEventListeners();
-    loadBaseMobData();
-    initModal();
-    loadMaintenance();
-  const currentRank = JSON.parse(localStorage.getItem("huntFilterState"))?.rank || "ALL";
-  DOM.rankTabs.querySelectorAll(".tab-button").forEach(btn => {
-    btn.dataset.clickCount = btn.dataset.rank === currentRank ? "1" : "0";
-  });
+document.addEventListener('DOMContentLoaded', () => {
+  attachEventListeners?.();
+  loadBaseMobData?.();
+  initModal?.();
+  loadMaintenance();
+
+  const currentRank = JSON.parse(localStorage.getItem('huntFilterState'))?.rank || 'ALL';
+  DOM?.rankTabs?.querySelectorAll('.tab-button').forEach(btn => {
+    btn.dataset.clickCount = btn.dataset.rank === currentRank ? '1' : '0';
+  });
 });
 
 export { attachEventListeners, showMaintenanceBanner, updateMobCards };
