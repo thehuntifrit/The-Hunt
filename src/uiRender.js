@@ -3,9 +3,8 @@
 import { calculateRepop, findNextSpawnTime, formatDuration, formatLastKillTime, debounce } from "./cal.js";
 import { drawSpawnPoint } from "./location.js";
 import { getState, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
-import { renderRankTabs, renderAreaFilterPanel, updateFilterUI } from "./filterUI.js"; // <--- filterUI.js からインポート
+import { renderRankTabs, renderAreaFilterPanel, updateFilterUI } from "./filterUI.js";
 
-// DOM定義を修正
 const DOM = {
     masterContainer: document.getElementById('master-mob-container'),
     colContainer: document.getElementById('column-container'),
