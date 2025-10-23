@@ -1,4 +1,5 @@
 // app.js
+
 import { getState, setFilter, loadBaseMobData, setOpenMobCardNo, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js"; 
 import { openReportModal, closeReportModal, initModal } from "./modal.js"; 
 import { attachLocationEvents } from "./location.js"; 
