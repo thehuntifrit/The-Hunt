@@ -6,6 +6,51 @@ import { submitReport, toggleCrushStatus } from "./server.js"; 
 import { debounce, toJstAdjustedIsoString, } from "./cal.js"; 
 import { DOM, filterAndRender, renderRankTabs, renderAreaFilterPanel, sortAndRedistribute, toggleAreaFilterPanel } from "./uiRender.js";
 
+async function loadMaintenance() {
+  try {
+    const res = await fetch('./maintenance.json');
+    if (!res.ok) throw new Error("maintenance.json が読み込めませんでした");
+    const data = await res.json();
+
+    const start = new Date(data.maintenance.start);
+    const end = new Date(data.maintenance.end);
+    const serverUp = new Date(data.maintenance.serverUp);
+    const now = new Date();
+
+    // 表示条件: メンテ開始の1週間前〜メンテ終了後4日以内
+    const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
+
+    if (now >= showFrom && now <= showUntil) {
+      showMaintenanceBanner(start, end, serverUp);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function showMaintenanceBanner(start, end, serverUp) {
+  // バナー要素を作成
+  const banner = document.createElement('div');
+  banner.className = 'maintenance-banner';
+  banner.textContent = `メンテナンス予定: ${formatDate(start)} ～ ${formatDate(end)} / サーバー起動: ${formatDate(serverUp)}`;
+
+  // body の先頭に挿入
+  document.body.prepend(banner);
+}
+
+function formatDate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const h = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+  return `${y}/${m}/${d} ${h}:${min}`;
+}
+
+// ページロード時に実行
+loadMaintenance();
+
 function attachFilterEvents() {
   const tabs = document.getElementById("rank-tabs");
   if (!tabs) return;
@@ -160,4 +205,4 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-export { attachEventListeners };
+export { attachEventListeners, loadMaintenance };
