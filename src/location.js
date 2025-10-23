@@ -31,54 +31,62 @@ function updateCrushUI(mobNo, locationId, isCulled) {
     }
 }
 
-function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne) {
-  const cullStatus = spawnCullStatus[point.id] || { culled_by: [] };
-  const isCulled = cullStatus.culled_by.length > 0;
+function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_LastOne) {
+  const isCulled = spawnCullStatus?.[point.id] === true;
 
-  const ranks = Array.isArray(point.mob_ranks) ? point.mob_ranks : [];
+  const hasS = point.mob_ranks.includes("S");
+  const hasA = point.mob_ranks.includes("A");
+  const hasB1 = point.mob_ranks.includes("B1");
+  const hasB2 = point.mob_ranks.includes("B2");
 
-  const hasS = ranks.includes("S");
-  const hasA = ranks.includes("A");
-  const hasB1 = ranks.includes("B1");
-  const hasB2 = ranks.includes("B2");
+  const isSharedB1 = (hasS || hasA) && hasB1;
+  const isSharedB2 = (hasS || hasA) && hasB2;
+  const isBOnly   = !hasS && !hasA && (hasB1 || hasB2);
 
+  let sizeClass = "";
   let colorClass = "";
-  let shadowClass = "";
-  const inlineStyle = `left: ${point.x}%; top: ${point.y}%;`;
+  let specialClass = "";
 
-  if (isCulled) {
-    colorClass = "culled-with-white-border";
-  } else if (isLastOne) {
-    colorClass = "color-lastone spawn-point-lastone";
-    shadowClass = "spawn-point-shadow-lastone";
-  } else if ((hasS || hasA) && hasB1) {
+  if (isLastOne) {
+    sizeClass = "spawn-point-lastone";
+    colorClass = "color-lastone";
+    specialClass = "spawn-point-shadow-lastone";
+  } else if (isSharedB1) {
     // S/A + B1
-    colorClass = "color-b1 spawn-point-shared";
-  } else if ((hasS || hasA) && hasB2) {
+    sizeClass = "spawn-point-sa";
+    colorClass = "color-b1";
+    specialClass = isCulled
+      ? "culled-with-white-border"
+      : "spawn-point-shadow-sa spawn-point-interactive";
+  } else if (isSharedB2) {
     // S/A + B2
-    colorClass = "color-b2 spawn-point-shared";
-  } else if (hasB1) {
-    // B1専用
-    colorClass = "color-b1-only spawn-point-b-only";
-  } else if (hasB2) {
-    // B2専用
-    colorClass = "color-b2-only spawn-point-b-only";
-  } else {
-    // フォールバック
-    colorClass = "color-b1 spawn-point-shared";
+    sizeClass = "spawn-point-sa";
+    colorClass = "color-b2";
+    specialClass = isCulled
+      ? "culled-with-white-border"
+      : "spawn-point-shadow-sa spawn-point-interactive";
+  } else if (isBOnly) {
+    // B専用
+    sizeClass = "spawn-point-b-only";
+    if (isS_LastOne) {
+      colorClass = "color-b-inverted";
+    } else if (hasB1) {
+      colorClass = "color-b1-only";
+    } else if (hasB2) {
+      colorClass = "color-b2-only";
+    }
+    specialClass = "spawn-point-b-border";
   }
 
   return `
-<div class="spawn-point absolute rounded-full transition-all 
-            ${isCulled ? "spawn-point-culled" : "spawn-point-active"} 
-            ${colorClass} ${shadowClass}"
-     style="${inlineStyle}"
-     title="湧き潰し: ${isCulled ? "済" : "未"}"
-     data-mob-no="${mobNo}"
-     data-location-id="${point.id}"
-     data-is-culled="${isCulled}"
-     data-is-interactive="true">
-</div>`;
+    <div class="spawn-point ${sizeClass} ${colorClass} ${specialClass}"
+         style="left:${point.x}%; top:${point.y}%;"
+         data-location-id="${point.id}"
+         data-mob-no="${mobNo}"
+         data-rank="${rank}"
+         data-is-culled="${isCulled}">
+    </div>
+  `;
 }
 
 function attachLocationEvents() {
