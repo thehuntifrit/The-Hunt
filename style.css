@@ -276,11 +276,23 @@ gap: 0.5rem;
 
 /* --- ステータスメッセージ表示用クラスの追加 --- */
 .bg-green-600 { 
-    background-color: #059669; /* Tailwind green-600 相当 */
+    background-color: #059669;
 }
 .bg-red-600 {
-    background-color: #dc2626; /* Tailwind red-600 相当 */
+    background-color: #dc2626;
 }
 .bg-blue-600 {
-    background-color: #2563eb; /* Tailwind blue-600 相当 */
+    background-color: #2563eb;
+
+.text-center {
+    text-align: center;
 }
+.py-1 {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+.text-xs {
+    font-size: 0.75rem;
+    line-height: 1rem;
+}
+    
