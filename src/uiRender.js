@@ -3,7 +3,6 @@
 import { calculateRepop, findNextSpawnTime, formatDuration, formatLastKillTime, debounce } from "./cal.js";
 import { drawSpawnPoint } from "./location.js";
 import { getState, setFilter, RANK_COLORS, PROGRESS_CLASSES, EXPANSION_MAP, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
-import { showMaintenanceBanner, updateMobCards } from "./app.js";
  
 const DOM = {
     masterContainer: document.getElementById('master-mob-container'),
