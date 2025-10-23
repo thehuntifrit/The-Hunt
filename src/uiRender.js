@@ -22,11 +22,18 @@ const DOM = {
 };
 
 function displayStatus(message, type = "info") {
-    const el = document.getElementById("status-message");
-    if (!el) return;
-    el.textContent = message;
-    el.className = `status ${type}`;
-    setTimeout(() => { el.textContent = ""; }, 5000);
+    const el = document.getElementById("status-message");
+    if (!el) return;
+    
+    el.classList.remove("info", "success", "error");
+    el.textContent = message;
+    el.classList.add(type);
+    el.classList.remove("hidden");
+    
+    setTimeout(() => { 
+        el.textContent = ""; 
+        el.classList.add("hidden");
+    }, 5000);
 }
 
 function processText(text) {
