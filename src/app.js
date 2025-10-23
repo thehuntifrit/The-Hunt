@@ -53,8 +53,6 @@ function formatDate(date) {
   return `${y}/${m}/${d} ${h}:${min}`;
 }
 
-loadMaintenance();
-
 function attachFilterEvents() {
   const tabs = document.getElementById("rank-tabs");
   if (!tabs) return;
@@ -203,6 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
     attachEventListeners();
     loadBaseMobData();
     initModal();
+    loadMaintenance();
   const currentRank = JSON.parse(localStorage.getItem("huntFilterState"))?.rank || "ALL";
   DOM.rankTabs.querySelectorAll(".tab-button").forEach(btn => {
     btn.dataset.clickCount = btn.dataset.rank === currentRank ? "1" : "0";
