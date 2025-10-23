@@ -77,6 +77,7 @@ function subscribeMobLocations(onUpdate) {
     });
     return unsub;
 }
+
 // 討伐報告
 const submitReport = async (mobNo, timeISO, memo) => {
     const state = getState();
