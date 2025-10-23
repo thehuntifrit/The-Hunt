@@ -37,7 +37,7 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne) {
 
   const isB1Spawn = point.mob_ranks.includes("B1");
   const isB2Spawn = point.mob_ranks.includes("B2");
-  const isShared = point.mob_ranks.includes("S") || point.mob_ranks.includes("A");
+  const isShared  = point.mob_ranks.includes("S") || point.mob_ranks.includes("A");
 
   let colorClass = "";
   let shadowClass = "";
@@ -49,34 +49,22 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne) {
     colorClass = "color-lastone spawn-point-lastone";
     shadowClass = "spawn-point-shadow-lastone";
   } else if (mobRank === "S" || mobRank === "A") {
-    // S/A のカード描画時
     colorClass = "color-b1 spawn-point-sa";
-    inlineStyle += " background-color: var(--color-b1);";
   } else if (mobRank === "B") {
-    // B のカード描画時
     if (isShared) {
-      // 共有地点 → B1/B2 を色分けしつつ「共有地点」であることを示すクラスを追加
-      if (isB2Spawn) {
-        colorClass = "color-b2 spawn-point-shared";
-        inlineStyle += " background-color: var(--color-b2);";
-      } else {
-        colorClass = "color-b1 spawn-point-shared";
-        inlineStyle += " background-color: var(--color-b1);";
-      }
+      colorClass = isB2Spawn ? "color-b2 spawn-point-shared" : "color-b1 spawn-point-shared";
     } else {
-      // B専用地点
-      if (isB2Spawn) {
-        colorClass = "color-b2-only spawn-point-b-only";
-        inlineStyle += " background-color: var(--color-b2);";
-      } else {
-        colorClass = "color-b1-only spawn-point-b-only";
-        inlineStyle += " background-color: var(--color-b1);";
-      }
+      colorClass = isB2Spawn ? "color-b2-only spawn-point-b-only" : "color-b1-only spawn-point-b-only";
     }
   }
 
+  // デフォルト保証（どの分岐にも入らなかった場合）
+  if (!colorClass) {
+    colorClass = "color-b1 spawn-point-sa";
+  }
+
   return `
-<div class="spawn-point absolute w-3 h-3 rounded-full cursor-pointer transition-all 
+<div class="spawn-point absolute rounded-full transition-all 
             ${isCulled ? "spawn-point-culled" : "spawn-point-active"} 
             ${colorClass} ${shadowClass}"
      style="${inlineStyle}"
