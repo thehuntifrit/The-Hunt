@@ -35,14 +35,12 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne) {
   const cullStatus = spawnCullStatus[point.id] || { culled_by: [] };
   const isCulled = cullStatus.culled_by.length > 0;
 
-  // 各地点が持つランク配列
   const ranks = Array.isArray(point.mob_ranks) ? point.mob_ranks : [];
 
   const isS = ranks.includes("S");
   const isA = ranks.includes("A");
   const isB1 = ranks.includes("B1");
   const isB2 = ranks.includes("B2");
-  const isShared = isS || isA; // S/A と共有される地点
 
   let colorClass = "";
   let shadowClass = "";
@@ -53,22 +51,21 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne) {
   } else if (isLastOne) {
     colorClass = "color-lastone spawn-point-lastone";
     shadowClass = "spawn-point-shadow-lastone";
-  } else if (isS || isA) {
-    // S/A の湧き地点（B1/B2 と共有している場合もある）
-    colorClass = "color-b1 spawn-point-sa";
+  } else if ((isS || isA) && isB1) {
+    // S/A + B1
+    colorClass = "color-b1 spawn-point-shared";
+  } else if ((isS || isA) && isB2) {
+    // S/A + B2
+    colorClass = "color-b2 spawn-point-shared";
   } else if (isB1) {
-    // B1 専用 or 共有
-    colorClass = isShared
-      ? "color-b1 spawn-point-shared"
-      : "color-b1-only spawn-point-b-only";
+    // B1 専用
+    colorClass = "color-b1-only spawn-point-b-only";
   } else if (isB2) {
-    // B2 専用 or 共有
-    colorClass = isShared
-      ? "color-b2 spawn-point-shared"
-      : "color-b2-only spawn-point-b-only";
+    // B2 専用
+    colorClass = "color-b2-only spawn-point-b-only";
   } else {
     // フォールバック（定義漏れ時）
-    colorClass = "color-b1 spawn-point-sa";
+    colorClass = "color-b1 spawn-point-shared";
   }
 
   return `
