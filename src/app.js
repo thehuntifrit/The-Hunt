@@ -7,32 +7,24 @@ import { debounce, toJstAdjustedIsoString, } from "./cal.js"; 
 import { DOM, filterAndRender, renderRankTabs, renderAreaFilterPanel, sortAndRedistribute, toggleAreaFilterPanel } from "./uiRender.js";
 
 async function loadMaintenance() {
-  try {
-    const res = await fetch('./maintenance.json');
-    if (!res.ok) throw new Error("maintenance.json が読み込めませんでした");
-    const data = await res.json();
+  const res = await fetch('./maintenance.json');
+  const data = await res.json();
 
-    const start = new Date(data.maintenance.start);
-    const end = new Date(data.maintenance.end);
-    const serverUp = new Date(data.maintenance.serverUp);
-    const now = new Date();
+  const start = new Date(data.maintenance.start);
+  const end = new Date(data.maintenance.end);
+  const serverUp = new Date(data.maintenance.serverUp);
+  const now = new Date();
 
-    // 表示期間: メンテ開始の1週間前〜メンテ終了後4日以内
-    const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
+  // バナー表示判定
+  const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
+  if (now >= showFrom && now <= showUntil) {
+    showMaintenanceBanner(start, end, serverUp);
+  }
 
-    if (now >= showFrom && now <= showUntil) {
-      showMaintenanceBanner(start, end, serverUp);
-    }
-
-    // メンテ中はモブカードを暗転
-    if (now >= start && now < serverUp) {
-      document.querySelectorAll('.mob-card').forEach(card => {
-        card.classList.add('mob-card-disabled');
-      });
-    }
-  } catch (err) {
-    console.error(err);
+  // メンテ中はモブカード暗転
+  if (now >= start && now < serverUp) {
+    updateMobCards();
   }
 }
 
@@ -44,6 +36,12 @@ function showMaintenanceBanner(start, end, serverUp) {
     <div class="server-up-time">サーバー起動: ${formatDate(serverUp)}</div>
   `;
   document.body.prepend(banner);
+}
+
+function updateMobCards() {
+  document.querySelectorAll('.mob-card').forEach(card => {
+    card.classList.add('mob-card-disabled');
+  });
 }
 
 function formatDate(date) {
@@ -211,4 +209,4 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-export { attachEventListeners, showMaintenanceBanner };
+export { attachEventListeners, showMaintenanceBanner, updateMobCards };
