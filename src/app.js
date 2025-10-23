@@ -8,68 +8,68 @@ import { debounce, toJstAdjustedIsoString, } from "./cal.js"; 
 import { DOM, filterAndRender, renderRankTabs, renderAreaFilterPanel, sortAndRedistribute, toggleAreaFilterPanel } from "./uiRender.js";
 
 async function loadMaintenance() {
-  try {
-    const res = await fetch('./maintenance.json', { cache: 'no-store' });
-    if (!res.ok) return; // JSON 未配置なら何もしない
-    const data = await res.json();
+  try {
+    const res = await fetch('./maintenance.json', { cache: 'no-store' });
+    if (!res.ok) return; // JSON 未配置なら何もしない
+    const data = await res.json();
 
-    const start = new Date(data.maintenance.start);
-    const end = new Date(data.maintenance.end);
-    const serverUp = new Date(data.maintenance.serverUp);
-    const now = new Date();
+    const start = new Date(data.maintenance.start);
+    const end = new Date(data.maintenance.end);
+    const serverUp = new Date(data.maintenance.serverUp);
+    const now = new Date();
 
-    const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
+    const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
 
-    if (now >= showFrom && now <= showUntil) {
-      renderStatusBar(start, end, serverUp);
-    } else {
-      clearStatusBar();
-    }
+    if (now >= showFrom && now <= showUntil) {
+      renderStatusBar(start, end, serverUp);
+    } else {
+      clearStatusBar();
+    }
 
-    if (now >= start && now < serverUp) {
-      updateMobCards();
-    }
-  } catch (err) {
-    console.error('maintenance.json 読み込み失敗:', err);
-  }
+    if (now >= start && now < serverUp) {
+      updateMobCards();
+    }
+  } catch (err) {
+    console.error('maintenance.json 読み込み失敗:', err);
+  }
 }
 
 function renderStatusBar(start, end, serverUp) {
-  const el = document.getElementById('status-message');
-  if (!el) return;
-  el.innerHTML = `
-    <div class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3">
-      <div class="font-semibold">
-        メンテナンス予定: ${formatDate(start)} ～ ${formatDate(end)}
-      </div>
-      <div class="text-gray-300">
-        サーバー起動: ${formatDate(serverUp)}
-      </div>
-    </div>
-  `;
-  el.classList.remove('hidden');
+  const el = document.getElementById('status-message');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3">
+      <div class="font-semibold">
+        メンテナンス予定: ${formatDate(start)} ～ ${formatDate(end)}
+      </div>
+      <div class="text-gray-300">
+        サーバー起動: ${formatDate(serverUp)}
+      </div>
+    </div>
+  `;
+  el.classList.remove('hidden');
 }
 
 function clearStatusBar() {
-  const el = document.getElementById('status-message');
-  if (!el) return;
-  el.innerHTML = '';
+  const el = document.getElementById('status-message');
+  if (!el) return;
+  el.innerHTML = '';
 }
 
 function updateMobCards() {
-  document.querySelectorAll('.mob-card').forEach(card => {
-    card.classList.add('mob-card-disabled');
-  });
+  document.querySelectorAll('.mob-card').forEach(card => {
+    card.classList.add('mob-card-disabled');
+  });
 }
 
 function formatDate(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  const h = String(date.getHours()).padStart(2, '0');
-  const min = String(date.getMinutes()).padStart(2, '0');
-  return `${y}/${m}/${d} ${h}:${min}`;
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const h = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+  return `${y}/${m}/${d} ${h}:${min}`;
 }
 
 function attachFilterEvents() {
@@ -97,7 +97,7 @@ function attachFilterEvents() {
     const isInitialLoad = prevRank !== newRank;
     filterAndRender({ isInitialLoad });
 
-    toggleAreaFilterPanel(newRank !== "ALL");
+    // toggleAreaFilterPanel(newRank !== "ALL"); // [仕様 3.] 削除：クリック回数による制御に変更されたため、この行は削除する
     renderRankTabs();
     renderAreaFilterPanel();
   });
@@ -217,15 +217,15 @@ function attachEventListeners() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  attachEventListeners?.();
-  loadBaseMobData?.();
-  initModal?.();
-  loadMaintenance();
+  attachEventListeners?.();
+  loadBaseMobData?.();
+  initModal?.();
+  loadMaintenance();
 
-  const currentRank = JSON.parse(localStorage.getItem('huntFilterState'))?.rank || 'ALL';
-  DOM?.rankTabs?.querySelectorAll('.tab-button').forEach(btn => {
-    btn.dataset.clickCount = btn.dataset.rank === currentRank ? '1' : '0';
-  });
+  const currentRank = JSON.parse(localStorage.getItem('huntFilterState'))?.rank || 'ALL';
+  DOM?.rankTabs?.querySelectorAll('.tab-button').forEach(btn => {
+    btn.dataset.clickCount = btn.dataset.rank === currentRank ? '1' : '0';
+  });
 });
 
 export { attachEventListeners, updateMobCards };
