@@ -1,11 +1,12 @@
 // app.js
 
-import { getState, setFilter, loadBaseMobData, setOpenMobCardNo, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js"; 
-import { openReportModal, closeReportModal, initModal } from "./modal.js"; 
-import { attachLocationEvents } from "./location.js"; 
-import { submitReport, toggleCrushStatus } from "./server.js"; 
-import { debounce, toJstAdjustedIsoString, } from "./cal.js"; 
-import { DOM, filterAndRender, renderRankTabs, renderAreaFilterPanel, sortAndRedistribute, toggleAreaFilterPanel } from "./uiRender.js";
+import { getState, setFilter, loadBaseMobData, setOpenMobCardNo, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
+import { openReportModal, closeReportModal, initModal } from "./modal.js";
+import { attachLocationEvents } from "./location.js";
+import { submitReport, toggleCrushStatus } from "./server.js";
+import { debounce, toJstAdjustedIsoString, } from "./cal.js";
+import { DOM, filterAndRender, sortAndRedistribute } from "./uiRender.js"; 
+import { renderRankTabs, renderAreaFilterPanel } from "./filterUI.js";
 
 async function loadMaintenance() {
   try {
@@ -96,13 +97,14 @@ function attachFilterEvents() {
 
     const isInitialLoad = prevRank !== newRank;
     filterAndRender({ isInitialLoad });
-
-    // toggleAreaFilterPanel(newRank !== "ALL"); // [仕様 3.] 削除：クリック回数による制御に変更されたため、この行は削除する
-    renderRankTabs();
-    renderAreaFilterPanel();
   });
 
-  document.getElementById("area-filter-panel")?.addEventListener("click", (e) => {
+  document.getElementById("area-filter-panel-mobile")?.addEventListener("click", handleAreaFilterClick);
+  document.getElementById("area-filter-panel-desktop")?.addEventListener("click", handleAreaFilterClick);
+  
+}
+
+function handleAreaFilterClick(e) {
     const btn = e.target.closest(".area-filter-btn");
     if (!btn) return;
 
@@ -150,9 +152,9 @@ function attachFilterEvents() {
     });
 
     filterAndRender();
-    renderAreaFilterPanel();
-  });
+    renderAreaFilterPanel(); // フィルタパネルを再描画し、選択状態を更新
 }
+
 
 function attachCardEvents() {
   DOM.colContainer.addEventListener("click", e => {
