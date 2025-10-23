@@ -4,7 +4,6 @@ import { getFirestore, collection, onSnapshot, addDoc, doc } from "https://www.g
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-functions.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
-import { db, auth, functions } from "./firebase.js";
 
 import { getState, setFilter, setOpenMobCardNo, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js"; 
 import { closeReportModal } from "./modal.js";
