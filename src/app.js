@@ -227,4 +227,4 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-export { attachEventListeners, showMaintenanceBanner, updateMobCards };
+export { attachEventListeners };
