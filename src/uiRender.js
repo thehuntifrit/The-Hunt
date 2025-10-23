@@ -47,18 +47,21 @@ function createMobCard(mob) {
         p => p.is_last_one && (p.mob_ranks.includes("S") || p.mob_ranks.includes("A"))
     );
 
-    const spawnPointsHtml = (rank === "S" && mob.Map)
-        ? (mob.spawn_points ?? []).map(point => drawSpawnPoint(
-            point,
-            mob.spawn_cull_status,
-            mob.No,
-            mob.Rank,
-            point.is_last_one,
-            isS_LastOne,
-            mob.last_kill_time,
-            mob.prev_kill_time
-        )).join("")
-        : "";
+const spawnPointsHtml = (rank === "S" && mob.Map)
+    ? (mob.spawn_points ?? []).map(point => drawSpawnPoint(
+        point,
+        mob.spawn_cull_status,
+        mob.No,
+        point.mob_ranks.includes("B2") ? "B2"
+          : point.mob_ranks.includes("B1") ? "B1"
+          : point.mob_ranks[0],
+        point.is_last_one,
+        isS_LastOne,
+        mob.last_kill_time,
+        mob.prev_kill_time
+    )).join("")
+    : "";
+
 
     const cardHeaderHTML = `
 <div class="px-2 py-1 space-y-1 bg-gray-800/70" data-toggle="card-header">
