@@ -24,6 +24,13 @@ async function loadMaintenance() {
     if (now >= showFrom && now <= showUntil) {
       showMaintenanceBanner(start, end, serverUp);
     }
+
+    // メンテ中はモブカードを暗転
+    if (now >= start && now < serverUp) {
+      document.querySelectorAll('.mob-card').forEach(card => {
+        card.classList.add('mob-card-disabled');
+      });
+    }
   } catch (err) {
     console.error(err);
   }
@@ -33,8 +40,8 @@ function showMaintenanceBanner(start, end, serverUp) {
   const banner = document.createElement('div');
   banner.className = 'maintenance-banner';
   banner.innerHTML = `
-    メンテナンス予定: ${formatDate(start)} ～ ${formatDate(end)}　
-    サーバー起動予定: ${formatDate(serverUp)}
+    <div><strong>メンテナンス予定:</strong> ${formatDate(start)} ～ ${formatDate(end)}</div>
+    <div class="server-up-time">サーバー起動: ${formatDate(serverUp)}</div>
   `;
   document.body.prepend(banner);
 }
@@ -48,7 +55,6 @@ function formatDate(date) {
   return `${y}/${m}/${d} ${h}:${min}`;
 }
 
-// ページロード時に実行
 loadMaintenance();
 
 function attachFilterEvents() {
@@ -205,4 +211,4 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-export { attachEventListeners, loadMaintenance };
+export { attachEventListeners, showMaintenanceBanner };
