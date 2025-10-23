@@ -33,49 +33,40 @@ function updateCrushUI(mobNo, locationId, isCulled) {
 
 function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_LastOne) {
   const isCulled = spawnCullStatus?.[point.id] === true;
-
-  const hasS = point.mob_ranks.includes("S");
-  const hasA = point.mob_ranks.includes("A");
-  const hasB1 = point.mob_ranks.includes("B1");
-  const hasB2 = point.mob_ranks.includes("B2");
-
-  const isSharedB1 = (hasS || hasA) && hasB1;
-  const isSharedB2 = (hasS || hasA) && hasB2;
-  const isBOnly   = !hasS && !hasA && (hasB1 || hasB2);
+  const isS_A_Cullable = point.mob_ranks.some(r => r === "S" || r === "A");
+  const isB_Only = point.mob_ranks.every(r => r.startsWith("B"));
 
   let sizeClass = "";
   let colorClass = "";
   let specialClass = "";
+  let dataIsInteractive = "false";
 
   if (isLastOne) {
     sizeClass = "spawn-point-lastone";
     colorClass = "color-lastone";
-    specialClass = "spawn-point-shadow-lastone";
-  } else if (isSharedB1) {
-    // S/A + B1
+    specialClass = "spawn-point-shadow-lastone spawn-point-interactive";
+    dataIsInteractive = "true";
+  } else if (isS_A_Cullable) {
+    const rankB = point.mob_ranks.find(r => r.startsWith("B"));
+    colorClass = rankB === "B1" ? "color-b1" : "color-b2";
     sizeClass = "spawn-point-sa";
-    colorClass = "color-b1";
-    specialClass = isCulled
-      ? "culled-with-white-border"
-      : "spawn-point-shadow-sa spawn-point-interactive";
-  } else if (isSharedB2) {
-    // S/A + B2
-    sizeClass = "spawn-point-sa";
-    colorClass = "color-b2";
-    specialClass = isCulled
-      ? "culled-with-white-border"
-      : "spawn-point-shadow-sa spawn-point-interactive";
-  } else if (isBOnly) {
-    // B専用
+    if (isCulled) {
+      specialClass = "culled-with-white-border spawn-point-culled";
+      dataIsInteractive = "false";
+    } else {
+      specialClass = "spawn-point-shadow-sa spawn-point-interactive";
+      dataIsInteractive = "true";
+    }
+  } else if (isB_Only) {
+    const rankB = point.mob_ranks[0];
     sizeClass = "spawn-point-b-only";
     if (isS_LastOne) {
       colorClass = "color-b-inverted";
-    } else if (hasB1) {
-      colorClass = "color-b1-only";
-    } else if (hasB2) {
-      colorClass = "color-b2-only";
+    } else {
+      colorClass = rankB === "B1" ? "color-b1-only" : "color-b2-only";
     }
     specialClass = "spawn-point-b-border";
+    dataIsInteractive = "false";
   }
 
   return `
@@ -84,7 +75,9 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_Last
          data-location-id="${point.id}"
          data-mob-no="${mobNo}"
          data-rank="${rank}"
-         data-is-culled="${isCulled}">
+         data-is-culled="${isCulled}"
+         data-is-interactive="${dataIsInteractive}"
+         tabindex="0">
     </div>
   `;
 }
