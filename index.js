@@ -6,14 +6,17 @@ const admin = require('firebase-admin');
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 const { onTaskDispatched } = require('firebase-functions/v2/tasks');
 const logger = require('firebase-functions/logger');
-const { CloudTasksClient } = require('@google-cloud/tasks').v2;
-// 🚨 修正1: onCall と onRequest, HttpsError を一度にインポート
+const { CloudTasksClient } = require('@google-cloud/tasks').v2; // ここはそのまま
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https'); 
 
 admin.initializeApp();
 
 const db = admin.firestore();
-const tasksClient = new CloudTasksClient();
+// ❌ tasksClient のグローバルでの初期化を削除
+// const tasksClient = new CloudTasksClient(); 
+
+// 🚀 遅延初期化のための変数
+let tasksClient = null;
 
 // Firestore Collection Names
 const COLLECTIONS = {
@@ -32,7 +35,7 @@ if (!PROJECT_ID) {
     logger.error("GCLOUD_PROJECT環境変数が設定されていません。プロジェクトIDをコード内で定義する必要があります。");
 }
 
-// Time Constants (復元)
+// Time Constants
 const FIVE_MINUTES_IN_SECONDS = 5 * 60;
 const AVG_WINDOW_HALF_MS = 5 * 60 * 1000; // 5分 = 300,000ms
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -74,6 +77,12 @@ exports.reportProcessor = onDocumentCreated({
     region: DEFAULT_REGION
 }, async (event) => {
 
+    // 🚀 CloudTasksClientを初めて使用するときに初期化 (遅延ロード)
+    if (!tasksClient) {
+        tasksClient = new CloudTasksClient();
+        logger.info('CloudTasksClientを遅延初期化しました。');
+    }
+
     const snap = event.data;
     if (!snap) return null;
 
@@ -85,7 +94,7 @@ exports.reportProcessor = onDocumentCreated({
     const {
         mob_id: mobId,
         kill_time: reportTimeData, 
-        reporter_uid: reporterUID,
+        reporter_uid: reporterUID, // 検証用としてのみ利用
         memo: reportMemo,
         repop_seconds: repopSeconds
     } = reportData;
@@ -141,12 +150,12 @@ exports.reportProcessor = onDocumentCreated({
             }
 
             // MOB_STATUSの暫定更新（クライアント時刻を一旦表示する）
+            // UIDの記録は削除済み
             const updateField = {
                 prev_kill_time: currentLKT,
                 prev_kill_memo: existingMobData.last_kill_memo || '',
                 last_kill_time: reportTimeData, 
                 last_kill_memo: reportMemo,
-                current_reporter_uid: reporterUID,
                 // is_averaged: false のまま
             };
 
@@ -155,13 +164,7 @@ exports.reportProcessor = onDocumentCreated({
             // 報告ドキュメントに is_averaged: false をセット
             t.update(reportRef, { is_averaged: false });
 
-            // 過去ログの作成
-            if (rankStatusSnap.exists && existingMobData && Object.keys(existingMobData).length > 0) {
-                // Mob Status Logs コレクションを個別のログではなく、Mob IDごとのドキュメントと仮定
-                t.set(db.collection(COLLECTIONS.MOB_STATUS_LOGS).doc(mobId), existingMobData, { merge: false });
-            } else {
-                t.set(db.collection(COLLECTIONS.MOB_STATUS_LOGS).doc(mobId), { last_kill_time: reportTimeData }, { merge: true });
-            }
+            // 🚨 MOB_STATUS_LOGSへのログ記録をaverageStatusCalculatorに移動したため、ここでは削除
 
             return true;
         });
@@ -178,7 +181,7 @@ exports.reportProcessor = onDocumentCreated({
     logger.info(`STATUS_UPDATED_TENTATIVE: Mob ${mobId} のステータスを暫定更新。`);
 
     // =============================================================
-    // ★ サーバーNTP時刻を基準に、5分後に平均化タスクをキューイング（復元）
+    // ★ サーバーNTP時刻を基準に、5分後に平均化タスクをキューイング
     // =============================================================
 
     const location = DEFAULT_REGION; 
@@ -220,7 +223,7 @@ exports.reportProcessor = onDocumentCreated({
 });
 
 // =====================================================================
-// 2. averageStatusCalculator: 遅延実行される平均化処理（復元）
+// 2. averageStatusCalculator: 遅延実行される平均化処理
 // =====================================================================
 
 exports.averageStatusCalculator = onTaskDispatched({
@@ -252,49 +255,79 @@ exports.averageStatusCalculator = onTaskDispatched({
 
     let transactionResult = false;
     let finalAvgTimeMs = 0;
-    let finalReporterUID = null;
-    let finalMemo = '';
+    let finalMemo = ''; // 連結後の最終メモ用
     let reportsToUpdate = [];
 
     try {
         transactionResult = await db.runTransaction(async (t) => {
             const reportsSnap = await t.get(reportsQuery);
             const rankStatusRef = db.collection(COLLECTIONS.MOB_STATUS).doc(getStatusDocId(mobId));
-            
+            const mobLocationsRef = db.collection(COLLECTIONS.MOB_LOCATIONS).doc(mobId);
+
             if (reportsSnap.empty) {
                 logger.warn(`AVG_SKIP: Mob ${mobId} の平均化ウィンドウ内に新しい報告なし。`);
                 return false;
             }
 
-            // 1. 平均時刻の計算
+            // 1. 平均時刻の計算とメモの収集
             let totalTime = 0;
+            let memos = []; // メモを収集する配列
             reportsSnap.forEach(doc => {
                 totalTime += doc.data().kill_time.toMillis();
                 reportsToUpdate.push(doc.ref);
                 
-                // 最後に報告したユーザーとメモを採用（厳密な平均ではないが、代表値として）
-                finalReporterUID = doc.data().reporter_uid;
-                finalMemo = doc.data().memo;
+                // すべてのメモを収集
+                const currentMemo = doc.data().memo;
+                if (currentMemo && currentMemo.trim().length > 0) {
+                    memos.push(currentMemo.trim());
+                }
             });
 
             finalAvgTimeMs = totalTime / reportsSnap.size;
             const finalAvgTimestamp = admin.firestore.Timestamp.fromMillis(Math.round(finalAvgTimeMs));
+            finalMemo = memos.join(' / '); // メモを連結
 
-            // 2. Mob Status の最終確定更新
+            // 2. MOB_LOCATIONS_LOGSへのログ記録（既存のMOB_LOCATIONSデータを上書き保存）
+            const mobLocationsSnap = await t.get(mobLocationsRef);
+            let mobLocationsData;
+
+            if (mobLocationsSnap.exists) {
+                mobLocationsData = mobLocationsSnap.data();
+            } else {
+                // MOB_LOCATIONSデータがない場合、最小限のデータで作成
+                mobLocationsData = { mob_id: mobId, points: {} };
+            }
+            // 既存のMOB_LOCATIONSデータをMOB_LOCATIONS_LOGSに上書き保存
+            t.set(db.collection(COLLECTIONS.MOB_LOCATIONS_LOGS).doc(mobId), mobLocationsData, { merge: false });
+
+
+            // 3. Mob Status の最終確定更新
             const rankStatusData = (await t.get(rankStatusRef)).data() || {};
             const existingMobData = rankStatusData[mobId] || {};
             
+            // 最終確定ステータスフィールドの構築
             const updateField = {
                 prev_kill_time: existingMobData.last_kill_time, // 暫定時刻をprev_kill_timeに移動
                 prev_kill_memo: existingMobData.last_kill_memo || '',
                 last_kill_time: finalAvgTimestamp, 
-                last_kill_memo: finalMemo,
-                current_reporter_uid: finalReporterUID,
+                last_kill_memo: finalMemo, // 連結したメモを使用
+                is_averaged: true // 確定
             };
 
             t.set(rankStatusRef, { [`${mobId}`]: updateField }, { merge: true });
 
-            // 3. 処理済み報告のフラグ更新
+            // ★ 3.5. MOB_STATUS_LOGSへの最終確定ステータスログ記録 (平均化処理後に実行)
+            // Mob Status Logsに最終確定したステータスを記録
+            const logData = {
+                // ログ時刻（平均化処理完了時刻）
+                logged_at: admin.firestore.Timestamp.now(),
+                // 最終確定したMOB_STATUSのデータ
+                ...updateField
+            };
+            t.set(db.collection(COLLECTIONS.MOB_STATUS_LOGS).doc(mobId), logData, { merge: false });
+
+
+            // 4. 処理済み報告のフラグ更新
             reportsToUpdate.forEach(ref => {
                 t.update(ref, { is_averaged: true, is_processed: true });
             });
@@ -322,7 +355,6 @@ exports.averageStatusCalculator = onTaskDispatched({
 exports.crushStatusUpdater = onCall({ region: DEFAULT_REGION }, async (request) => {
 
     if (!request.auth) {
-        // 🚨 修正3: HttpsError が定義済みであることを確認
         throw new HttpsError('unauthenticated', '認証が必要です。');
     }
 
@@ -336,35 +368,27 @@ exports.crushStatusUpdater = onCall({ region: DEFAULT_REGION }, async (request) 
 
     const mobLocationsRef = db.collection(COLLECTIONS.MOB_LOCATIONS).doc(mobId);
 
+    // typeに応じて更新するフィールドを決定
+    const timestampKey = type === 'add' ? 'timestamp_on' : 'timestamp_off';
+
     try {
         await db.runTransaction(async (t) => {
             const mobLocationsSnap = await t.get(mobLocationsRef);
+            const updatePath = `points.${pointId}.${timestampKey}`;
 
             if (!mobLocationsSnap.exists) {
                 // ドキュメントが存在しない場合、新規作成
+                // points.{pointId}.timestamp_on/off に現在時刻をセット
                 t.set(mobLocationsRef, {
                     mob_id: mobId,
                     points: {
-                        [pointId]: { culled_by: type === 'add' ? [request.auth.uid] : [] } // 湧き潰しユーザーを管理するフィールドを仮定
+                        [pointId]: { [timestampKey]: nowTimestamp }
                     }
                 });
             } else {
-                // 既存ドキュメントの更新 (湧き潰しユーザーIDの配列を操作するロジックを想定)
-                const mobData = mobLocationsSnap.data();
-                const currentPoints = mobData.points || {};
-                const currentPoint = currentPoints[pointId] || {};
-                let culledBy = currentPoint.culled_by || [];
-
-                if (type === 'add') {
-                    if (!culledBy.includes(request.auth.uid)) {
-                        culledBy.push(request.auth.uid);
-                    }
-                } else {
-                    culledBy = culledBy.filter(uid => uid !== request.auth.uid);
-                }
-                
-                const updateKey = `points.${pointId}.culled_by`;
-                t.update(mobLocationsRef, { [updateKey]: culledBy, update_time: nowTimestamp });
+                // 既存ドキュメントの更新
+                // 該当するタイムスタンプのみを更新
+                t.update(mobLocationsRef, { [updatePath]: nowTimestamp });
             }
         });
 
@@ -398,8 +422,6 @@ exports.reportCleaner = onRequest({ region: DEFAULT_REGION }, async (req, res) =
         .where('mob_id', '>=', 't1')
         .where('mob_id', '<', 't2')
         .where('kill_time', '<', aRankCutoff)
-        // is_averaged が true (処理済み) のもののみを対象にすることで、未処理の報告が消えることを防ぐ
-        .where('is_averaged', '==', true) 
         .limit(500)
         .get();
 
@@ -416,7 +438,6 @@ exports.reportCleaner = onRequest({ region: DEFAULT_REGION }, async (req, res) =
         .where('mob_id', '>=', 't2')
         .where('mob_id', '<', 't3')
         .where('kill_time', '<', sfRankCutoff)
-        .where('is_averaged', '==', true) 
         .limit(500)
         .get();
     
@@ -430,7 +451,6 @@ exports.reportCleaner = onRequest({ region: DEFAULT_REGION }, async (req, res) =
         .where('mob_id', '>=', 't3')
         .where('mob_id', '<', 't4')
         .where('kill_time', '<', sfRankCutoff)
-        .where('is_averaged', '==', true) 
         .limit(500)
         .get();
 
