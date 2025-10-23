@@ -37,30 +37,41 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne) {
 
   const isB1Spawn = point.mob_ranks.includes("B1");
   const isB2Spawn = point.mob_ranks.includes("B2");
+  const isShared = point.mob_ranks.includes("S") || point.mob_ranks.includes("A");
 
   let colorClass = "";
   let shadowClass = "";
   let inlineStyle = `left: ${point.x}%; top: ${point.y}%;`;
 
   if (isCulled) {
-    // 湧き潰し済みは最優先
     colorClass = "culled-with-white-border";
   } else if (isLastOne) {
-    // ラストワン
     colorClass = "color-lastone spawn-point-lastone";
     shadowClass = "spawn-point-shadow-lastone";
   } else if (mobRank === "S" || mobRank === "A") {
-    // S/A のカード描画時 → 共有地点は青で統一
+    // S/A のカード描画時
     colorClass = "color-b1 spawn-point-sa";
     inlineStyle += " background-color: var(--color-b1);";
   } else if (mobRank === "B") {
-    // B のカード描画時 → B専用 or 共有地点を B1/B2 で分岐
-    if (isB2Spawn) {
-      colorClass = "color-b2-only spawn-point-b-only";
-      inlineStyle += " background-color: var(--color-b2);";
+    // B のカード描画時
+    if (isShared) {
+      // 共有地点 → B1/B2 を色分けしつつ「共有地点」であることを示すクラスを追加
+      if (isB2Spawn) {
+        colorClass = "color-b2 spawn-point-shared";
+        inlineStyle += " background-color: var(--color-b2);";
+      } else {
+        colorClass = "color-b1 spawn-point-shared";
+        inlineStyle += " background-color: var(--color-b1);";
+      }
     } else {
-      colorClass = "color-b1-only spawn-point-b-only";
-      inlineStyle += " background-color: var(--color-b1);";
+      // B専用地点
+      if (isB2Spawn) {
+        colorClass = "color-b2-only spawn-point-b-only";
+        inlineStyle += " background-color: var(--color-b2);";
+      } else {
+        colorClass = "color-b1-only spawn-point-b-only";
+        inlineStyle += " background-color: var(--color-b1);";
+      }
     }
   }
 
