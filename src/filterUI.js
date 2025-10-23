@@ -1,10 +1,18 @@
 // filterUI.js
 
+import { getState, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
+import { EXPANSION_MAP } from "./dataManager.js"; // エリア名をソート・表示するために必要
+
+const DOM = {
+    rankTabs: document.getElementById('rank-tabs'),
+    areaFilterPanelMobile: document.getElementById('area-filter-panel-mobile'),
+    areaFilterPanelDesktop: document.getElementById('area-filter-panel-desktop')
+};
 
 const renderRankTabs = () => {
     const state = getState();
     const rankList = ["ALL", "S", "A", "FATE"];
-    const container = document.getElementById("rank-tabs");
+    const container = DOM.rankTabs;
     if (!container) return;
     container.innerHTML = "";
 
@@ -15,8 +23,12 @@ const renderRankTabs = () => {
         const btn = document.createElement("button");
         btn.dataset.rank = rank;
         btn.textContent = rank;
-        btn.className = `tab-button px-4 py-1.5 text-sm rounded font-semibold text-white text-center transition ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"
-            }`;
+        
+        btn.className = `tab-button px-4 py-1.5 text-sm rounded font-semibold text-white text-center transition ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
+        
+        const clickCount = JSON.parse(localStorage.getItem('huntFilterState'))?.rank === rank ? '1' : '0';
+        btn.dataset.clickCount = clickCount;
+
         container.appendChild(btn);
     });
 };
@@ -46,8 +58,8 @@ const renderAreaFilterPanel = () => {
     });
 
     // スマホ用：横いっぱい2列
-    const mobilePanel = document.getElementById("area-filter-panel-mobile");
-    if (!mobilePanel) return; // DOM要素が取得できない場合は処理を中止
+    const mobilePanel = DOM.areaFilterPanelMobile;
+    if (!mobilePanel) return;
     mobilePanel.innerHTML = "";
     mobilePanel.className = "grid grid-cols-2 gap-2";
 
@@ -67,8 +79,8 @@ const renderAreaFilterPanel = () => {
     });
 
     // PC用：ランクボタン下に収まる2列（ボタン幅制限）
-    const desktopPanel = document.getElementById("area-filter-panel-desktop");
-    if (!desktopPanel) return; // DOM要素が取得できない場合は処理を中止
+    const desktopPanel = DOM.areaFilterPanelDesktop;
+    if (!desktopPanel) return;
     desktopPanel.innerHTML = "";
     desktopPanel.className = "grid grid-cols-2 gap-2";
 
@@ -92,27 +104,18 @@ const renderAreaFilterPanel = () => {
     });
 };
 
-const sortAndRedistribute = debounce(() => filterAndRender(), 200);
-const areaPanel = document.getElementById("area-filter-panel");
-
-// toggleAreaFilterPanel 関数は、DOM定義の不足と、クリック回数制御の仕様変更により不要になるため、
-// 呼び出し元で削除を指示し、代わりに updateFilterUI にロジックを統合する
-function toggleAreaFilterPanel(isDesktop) {
-    // この関数は app.js 側で削除されることを前提に、ここでは空にするか、削除します。
-    // ただし、import/export を維持するため、引数を削除しロジックを削除した形で残します。
-    // console.warn("toggleAreaFilterPanel: クリック回数制御のため updateFilterUI にロジックを統合しました。");
+// この関数は app.js 側で削除されることを前提に、ここでは空にする
+function toggleAreaFilterPanel() {
 }
 
-function updateFilterUI() {
+const updateFilterUI = () => {
     const state = getState();
     const currentRankKeyForColor = FILTER_TO_DATA_RANK_MAP[state.filter.rank] || state.filter.rank;
 
     DOM.rankTabs.querySelectorAll(".tab-button").forEach(btn => {
-        // [仕様 2.1. 色の競合解消]: bg-green-500 を削除対象に追加
         btn.classList.remove("bg-blue-800", "bg-red-800", "bg-yellow-800", "bg-indigo-800", "bg-gray-500", "hover:bg-gray-400", "bg-green-500");
         btn.classList.add("bg-gray-500");
         
-        // [仕様 2.2. クリック回数管理]
         let clickCount = parseInt(btn.dataset.clickCount, 10) || 0;
 
         if (btn.dataset.rank === state.filter.rank) {
@@ -130,17 +133,13 @@ function updateFilterUI() {
                                 : "bg-gray-800"
             );
         } else {
-            // 選択中でないタブの場合: クリック回数は 1 にリセット
             clickCount = 1; // ランク切り替え時は 1 に設定 (1回目のクリックに相当)
             btn.classList.add("hover:bg-gray-400");
         }
 
         btn.dataset.clickCount = String(clickCount);
-
-        // [仕様 2.3. パネル表示制御]
         if (btn.dataset.rank === state.filter.rank) {
             if (DOM.areaFilterPanelMobile) {
-                // モバイル用パネルは count=2 のときのみ表示
                 if (clickCount === 2) {
                     DOM.areaFilterPanelMobile.classList.remove('hidden'); // 開く
                 } else {
@@ -148,14 +147,14 @@ function updateFilterUI() {
                 }
             }
         } else {
-            // 選択中のタブ以外のボタンが押された場合（ランク切り替え時）は、パネルを閉じる状態にする
             if (DOM.areaFilterPanelMobile) {
                 DOM.areaFilterPanelMobile.classList.add('hidden');
             }
         }
     });
-    // デスクトップ用パネルは常に非表示
     if (DOM.areaFilterPanelDesktop) {
         DOM.areaFilterPanelDesktop.classList.add('hidden');
     }
-}
+};
+
+export { renderRankTabs, renderAreaFilterPanel, updateFilterUI, toggleAreaFilterPanel };
