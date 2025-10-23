@@ -47,7 +47,7 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne, isSLa
         if (isLastOne) {
             colorClass = 'color-lastone spawn-point-lastone';
             pointShadowClass = 'spawn-point-shadow-lastone';
-        } else if (mobRank === 'A' || mobRank === 'S' || mobRank === 'F') {
+        } else if (mobRank === 'A' || mobRank === 'S') {
             colorClass = 'color-b1 spawn-point-sa';
             pointShadowClass = 'spawn-point-shadow-sa';
             // S/A湧き潰しポイントにもB1色を強制適用（万全を期す）
