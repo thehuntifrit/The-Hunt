@@ -48,7 +48,13 @@ async function initializeAuth() {
 async function getServerTimeUTC() {
     const getServerTime = httpsCallable(functionsInstance, "getServerTime");
     const response = await getServerTime();
-    return new Date(response.data.utc_now); // UTC基準
+    
+    if (response.data && typeof response.data.serverTimeMs === 'number') {
+        return new Date(response.data.serverTimeMs); // UTC基準
+    } else {
+        console.error("サーバー時刻取得エラー: serverTimeMs が不正です。", response.data);
+        return new Date(); 
+    }
 }
 
 // データ購読
