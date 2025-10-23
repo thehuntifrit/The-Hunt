@@ -37,10 +37,10 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne) {
 
   const ranks = Array.isArray(point.mob_ranks) ? point.mob_ranks : [];
 
-  const isS = ranks.includes("S");
-  const isA = ranks.includes("A");
-  const isB1 = ranks.includes("B1");
-  const isB2 = ranks.includes("B2");
+  const hasS = ranks.includes("S");
+  const hasA = ranks.includes("A");
+  const hasB1 = ranks.includes("B1");
+  const hasB2 = ranks.includes("B2");
 
   let colorClass = "";
   let shadowClass = "";
@@ -51,20 +51,20 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne) {
   } else if (isLastOne) {
     colorClass = "color-lastone spawn-point-lastone";
     shadowClass = "spawn-point-shadow-lastone";
-  } else if ((isS || isA) && isB1) {
+  } else if ((hasS || hasA) && hasB1) {
     // S/A + B1
     colorClass = "color-b1 spawn-point-shared";
-  } else if ((isS || isA) && isB2) {
+  } else if ((hasS || hasA) && hasB2) {
     // S/A + B2
     colorClass = "color-b2 spawn-point-shared";
-  } else if (isB1) {
-    // B1 専用
+  } else if (hasB1) {
+    // B1専用
     colorClass = "color-b1-only spawn-point-b-only";
-  } else if (isB2) {
-    // B2 専用
+  } else if (hasB2) {
+    // B2専用
     colorClass = "color-b2-only spawn-point-b-only";
   } else {
-    // フォールバック（定義漏れ時）
+    // フォールバック
     colorClass = "color-b1 spawn-point-shared";
   }
 
