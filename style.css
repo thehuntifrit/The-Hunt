@@ -237,6 +237,15 @@ z-index: 50;
 transition: opacity 0.3s;
 }
 
+#modal-mob-name .mob-name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+#modal-mob-name .mob-area {
+  font-size: 0.85rem;
+  color: #9ca3af;
+
 /* カラム間の隙間とパディングを設定 (Tailwindを補完) */
 #column-container {
 padding: 0.5rem;
