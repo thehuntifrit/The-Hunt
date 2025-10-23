@@ -104,10 +104,6 @@ const renderAreaFilterPanel = () => {
     });
 };
 
-// この関数は app.js 側で削除されることを前提に、ここでは空にする
-function toggleAreaFilterPanel() {
-}
-
 const updateFilterUI = () => {
     const state = getState();
     const currentRankKeyForColor = FILTER_TO_DATA_RANK_MAP[state.filter.rank] || state.filter.rank;
@@ -157,4 +153,4 @@ const updateFilterUI = () => {
     }
 };
 
-export { renderRankTabs, renderAreaFilterPanel, updateFilterUI, toggleAreaFilterPanel };
+export { renderRankTabs, renderAreaFilterPanel, updateFilterUI };
