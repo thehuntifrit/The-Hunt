@@ -32,7 +32,6 @@ function updateCrushUI(mobNo, locationId, isCulled) {
 }
 
 function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne, isSLastOne, lastKillTime, prevKillTime) {
-    console.log(mobRank, point.id)
     const cullStatus = spawnCullStatus[point.id] || { culled_by: [] };
     const isCulled = cullStatus.culled_by.length > 0;
 
@@ -51,7 +50,6 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne, isSLa
         } else if (mobRank === 'A' || mobRank === 'S') {
             colorClass = 'color-b1 spawn-point-sa';
             pointShadowClass = 'spawn-point-shadow-sa';
-            // S/A湧き潰しポイントにもB1色を強制適用（万全を期す）
             inlineStyle += ' background-color: var(--color-b1);';
         } else if (mobRank.startsWith('B')) {
             if (isB2Spawn) {
