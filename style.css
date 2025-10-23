@@ -250,10 +250,17 @@ gap: 0.5rem;
 .maintenance-banner {
   background: #222;
   color: #fff;
-  padding: 8px;
+  padding: 10px;
   text-align: center;
   font-weight: bold;
   position: sticky;
   top: 0;
   z-index: 1000;
+}
+
+.maintenance-banner .server-up-time {
+  font-size: 0.9em;
+  color: #bbb; /* 薄暗いグレーで控えめに */
+  font-weight: normal;
+  margin-top: 4px;
 }
