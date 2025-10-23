@@ -20,7 +20,6 @@ const DOM = {
     modalStatus: document.getElementById('modal-status'),
     modalTimeInput: document.getElementById('report-datetime'),
     modalMemoInput: document.getElementById('report-memo'),
-    // areaFilterPanelMobile, areaFilterPanelDesktop の定義を削除
 };
 
 function displayStatus(message, type = "info") {
@@ -303,16 +302,8 @@ function updateProgressBars() {
     });
 }
 
-// renderRankTabs の定義を削除
-
-// renderAreaFilterPanel の定義を削除
-
 const sortAndRedistribute = debounce(() => filterAndRender(), 200);
 const areaPanel = document.getElementById("area-filter-panel");
-
-// toggleAreaFilterPanel の定義を削除
-
-// updateFilterUI の定義を削除
 
 // 討伐報告受信ハンドラ
 function onKillReportReceived(mobId, kill_time) {
