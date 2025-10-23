@@ -1,7 +1,7 @@
 // filterUI.js
 
 import { getState, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
-import { EXPANSION_MAP } from "./dataManager.js"; // エリア名をソート・表示するために必要
+import { EXPANSION_MAP } from "./dataManager.js";
 
 const DOM = {
     rankTabs: document.getElementById('rank-tabs'),
