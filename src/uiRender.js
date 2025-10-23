@@ -63,59 +63,63 @@ const spawnPointsHtml = (rank === "S" && mob.Map)
     : "";
 
 
-    const cardHeaderHTML = `
+    const cardHeaderHTML = `
 <div class="px-2 py-1 space-y-1 bg-gray-800/70" data-toggle="card-header">
-        <div class="grid grid-cols-[auto_1fr_auto] items-center w-full gap-2">
-                <span
-            class="w-6 h-6 flex items-center justify-center rounded-full text-white text-xs font-bold ${rankConfig.bg}">
-            ${rankLabel}
-        </span>
+    <!-- 上段：ランク・モブ名・報告ボタン -->
+    <div class="grid grid-cols-[auto_1fr_auto] items-center w-full gap-2">
+        <!-- 左：ランク -->
+        <span
+            class="w-6 h-6 flex items-center justify-center rounded-full text-white text-xs font-bold ${rankConfig.bg}">
+            ${rankLabel}
+        </span>
 
-                <div class="flex flex-col min-w-0">
-            <span class="text-base font-bold truncate">${mob.Name}</span>
-            <span class="text-xs text-gray-400 truncate">${mob.Area} (${mob.Expansion})</span>
-        </div>
+        <!-- 中央：モブ名＋エリア名 -->
+        <div class="flex flex-col min-w-0">
+            <span class="text-base font-bold truncate">${mob.Name}</span>
+            <span class="text-xs text-gray-400 truncate">${mob.Area} (${mob.Expansion})</span>
+        </div>
 
-                <div class="flex-shrink-0 flex items-center justify-end">
-            <button data-report-type="${rank === 'A' || rank === 'F' ? 'instant' : 'modal'}" data-mob-no="${mob.No}"
-                class="w-8 h-8 flex items-center justify-center text-[12px] rounded bg-green-600 hover:bg-green-800 selected:bg-green-400 
-               text-white font-semibold transition text-center leading-tight whitespace-pre-line">報告<br>する</button>
-        </div>
-    </div>
+        <!-- 右端：報告ボタン（見た目は統一、動作だけ分岐） -->
+        <div class="flex-shrink-0 flex items-center justify-end">
+            <button data-report-type="${rank === 'A' || rank === 'F' ? 'instant' : 'modal'}" data-mob-no="${mob.No}"
+                class="w-8 h-8 flex items-center justify-center text-[12px] rounded bg-green-600 hover:bg-green-800 selected:bg-green-400 
+               text-white font-semibold transition text-center leading-tight whitespace-pre-line">報告<br>する</button>
+        </div>
+    </div>
 
-        <div class="progress-bar-wrapper h-6 rounded-full relative overflow-hidden transition-all duration-100 ease-linear">
-        <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear"
-            style="width: 0%"></div>
-        <div class="progress-text absolute inset-0 flex items-center justify-center text-sm font-semibold"
-            style="line-height: 1;"></div>
-    </div>
+    <!-- 下段：プログレスバー（構造のみ） -->
+    <div class="progress-bar-wrapper h-6 rounded-full relative overflow-hidden transition-all duration-100 ease-linear">
+        <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-full transition-all duration-100 ease-linear"
+            style="width: 0%"></div>
+        <div class="progress-text absolute inset-0 flex items-center justify-center text-sm font-semibold"
+            style="line-height: 1;"></div>
+    </div>
 </div>
 `;
 
-    const expandablePanelHTML = isExpandable ? `
+    const expandablePanelHTML = isExpandable ? `
 <div class="expandable-panel bg-gray-800/70 ${isOpen ? 'open' : ''}">
-    <div class="px-2 py-0 text-sm space-y-0.5">
-        <div class="flex justify-between items-start flex-wrap">
-            <div class="w-full text-right text-xs text-gray-400 pt-1" data-last-kill></div>
-            <div class="w-full text-left text-sm text-gray-300 mb-2">Memo: <span data-last-memo></span></div>
-            <div class="w-full font-semibold text-yellow-300 border-t border-gray-600">抽出条件</div>
-            <div class="w-full text-gray-300 mb-2">${processText(mob.Condition)}</div>
-        </div>
-        ${mob.Map && rank === 'S' ? `
-        <div class="map-content py-0.5 flex justify-center relative">
-            <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="mob-crush-map w-full h-auto rounded shadow-lg border border-gray-600" data-mob-no="${mob.No}">
-            <div class="map-overlay absolute inset-0" data-mob-no="${mob.No}">${spawnPointsHtml}</div>
-        </div>
-        ` : ''}
-       
-    </div>
+    <div class="px-2 py-0 text-sm space-y-0.5">
+        <div class="flex justify-between items-start flex-wrap">
+            <div class="w-full text-right text-xs text-gray-400 pt-1" data-last-kill></div>
+            <div class="w-full text-left text-sm text-gray-300 mb-2">Memo: <span data-last-memo></span></div>
+            <div class="w-full font-semibold text-yellow-300 border-t border-gray-600">抽出条件</div>
+            <div class="w-full text-gray-300 mb-2">${processText(mob.Condition)}</div>
+        </div>
+        ${mob.Map && rank === 'S' ? `
+        <div class="map-content py-0.5 flex justify-center relative">
+            <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="mob-crush-map w-full h-auto rounded shadow-lg border border-gray-600" data-mob-no="${mob.No}">
+            <div class="map-overlay absolute inset-0" data-mob-no="${mob.No}">${spawnPointsHtml}</div>
+        </div>
+        ` : ''}
+    </div>
 </div>
 ` : '';
-    
-    return `
-<div class="mob-card bg-gray-700 rounded-lg shadow-xl overflow-hidden cursor-pointer border border-gray-700 
+    
+    return `
+<div class="mob-card bg-gray-700 rounded-lg shadow-xl overflow-hidden cursor-pointer border border-gray-700 
 transition duration-150" data-mob-no="${mob.No}" data-rank="${rank}">${cardHeaderHTML}${expandablePanelHTML}</div>
-    `;
+    `;
 }
 
 function filterAndRender({ isInitialLoad = false } = {}) {
