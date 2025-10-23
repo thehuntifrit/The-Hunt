@@ -32,6 +32,7 @@ function updateCrushUI(mobNo, locationId, isCulled) {
 }
 
 function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne, isSLastOne, lastKillTime, prevKillTime) {
+    console.log(mobRank, point.id)
     const cullStatus = spawnCullStatus[point.id] || { culled_by: [] };
     const isCulled = cullStatus.culled_by.length > 0;
 
