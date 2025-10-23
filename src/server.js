@@ -50,7 +50,7 @@ async function getServerTimeUTC() {
     const response = await getServerTime();
     
     if (response.data && typeof response.data.serverTimeMs === 'number') {
-        return new Date(response.data.serverTimeMs); // UTC基準
+        return new Date(response.data.serverTimeMs);
     } else {
         console.error("サーバー時刻取得エラー: serverTimeMs が不正です。", response.data);
         return new Date(); 
