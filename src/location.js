@@ -52,17 +52,16 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, mobRank, isLastOne, isSLa
             pointShadowClass = 'spawn-point-shadow-sa';
             // S/A湧き潰しポイントにもB1色を強制適用（万全を期す）
             inlineStyle += ' background-color: var(--color-b1);';
-        } else {
+        } else if (mobRank.startsWith('B')) {
             if (isB2Spawn) {
                 colorClass = 'color-b2-only spawn-point-b-only';
-                // B2色をインラインで強制適用
                 inlineStyle += ' background-color: var(--color-b2);';
             } else {
                 colorClass = 'color-b1-only spawn-point-b-only';
-                // B1色をインラインで強制適用
                 inlineStyle += ' background-color: var(--color-b1);';
             }
         }
+
     } else {
         colorClass = 'culled-with-white-border';
     }
