@@ -17,7 +17,7 @@ async function loadMaintenance() {
     const serverUp = new Date(data.maintenance.serverUp);
     const now = new Date();
 
-    // 表示条件: メンテ開始の1週間前〜メンテ終了後4日以内
+    // 表示期間: メンテ開始の1週間前〜メンテ終了後4日以内
     const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
     const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
 
@@ -30,12 +30,12 @@ async function loadMaintenance() {
 }
 
 function showMaintenanceBanner(start, end, serverUp) {
-  // バナー要素を作成
   const banner = document.createElement('div');
   banner.className = 'maintenance-banner';
-  banner.textContent = `メンテナンス予定: ${formatDate(start)} ～ ${formatDate(end)} / サーバー起動: ${formatDate(serverUp)}`;
-
-  // body の先頭に挿入
+  banner.innerHTML = `
+    メンテナンス予定: ${formatDate(start)} ～ ${formatDate(end)}　
+    サーバー起動予定: ${formatDate(serverUp)}
+  `;
   document.body.prepend(banner);
 }
 
