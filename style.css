@@ -257,19 +257,30 @@ gap: 0.5rem;
 }
 
 .maintenance-banner {
-  background: #222;
-  color: #fff;
-  padding: 10px;
-  text-align: center;
-  font-weight: bold;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+  background: #222;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .maintenance-banner .server-up-time {
-  font-size: 0.9em;
-  color: #bbb; /* 薄暗いグレーで控えめに */
-  font-weight: normal;
-  margin-top: 4px;
+  font-size: 0.9em;
+  color: #bbb; /* 薄暗いグレーで控えめに */
+  font-weight: normal;
+  margin-top: 4px;
+}
+
+/* --- ステータスメッセージ表示用クラスの追加 --- */
+.bg-green-600 { 
+    background-color: #059669; /* Tailwind green-600 相当 */
+}
+.bg-red-600 {
+    background-color: #dc2626; /* Tailwind red-600 相当 */
+}
+.bg-blue-600 {
+    background-color: #2563eb; /* Tailwind blue-600 相当 */
 }
