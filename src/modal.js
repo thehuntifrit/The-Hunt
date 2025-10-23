@@ -15,7 +15,7 @@ function openReportModal(mobNo) {
 
   const iso = toLocalIsoString(new Date());
   DOM.reportForm.dataset.mobNo = String(mobNo);
-  DOM.modalMobName.textContent = `${mob.Name} (${mob.Area})`;
+  DOM.modalMobName.innerHTML = `<span class="mob-name">${mob.Name}</span><br><span class="mob-area">${mob.Area}</span>`;
   DOM.modalTimeInput.value = iso;
   DOM.modalMemoInput.value = mob.last_kill_memo || "";
   DOM.modalMemoInput.placeholder = `任意`;
