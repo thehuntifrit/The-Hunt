@@ -21,7 +21,7 @@ const renderRankTabs = () => {
   if (!container) return;
   container.innerHTML = "";
 
-  container.className = "grid grid-cols-4 gap-2";
+  container.className = "flex gap-2";
 
   const storedState = JSON.parse(localStorage.getItem('huntFilterState')) || {};
 
