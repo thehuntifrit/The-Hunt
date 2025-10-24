@@ -10,7 +10,6 @@ const DOM = {
     areaFilterPanelDesktop: document.getElementById('area-filter-panel-desktop')
 };
 
-// 既存コードを維持: Setを使ってエリア名を生成
 const getAllAreas = () => {
     return Array.from(new Set(Object.values(EXPANSION_MAP)));
 };
@@ -52,7 +51,6 @@ const renderAreaFilterPanel = () => {
     const currentSet = state.filter.areaSets[targetRankKey] instanceof Set ? state.filter.areaSets[targetRankKey] : new Set();
     const isAllSelected = areas.length > 0 && currentSet.size === areas.length;
 
-    // 既存コードを維持: ソートロジック
     const sortedAreas = areas.sort((a, b) => {
         const indexA = Object.values(EXPANSION_MAP).indexOf(a);
         const indexB = Object.values(EXPANSION_MAP).indexOf(b);
@@ -63,7 +61,6 @@ const renderAreaFilterPanel = () => {
         const btn = document.createElement("button");
         btn.textContent = area;
 
-        // UI維持: w-auto を維持
         const btnClass = 'py-1 px-2 text-sm rounded font-semibold text-white text-center transition w-auto';
 
         if (isAll) {
@@ -82,7 +79,6 @@ const renderAreaFilterPanel = () => {
         const allBtn = createButton(isAllSelected ? "全解除" : "全選択", true, false);
         panel.appendChild(allBtn);
 
-        // UI維持: モバイルダミー要素
         if (!isDesktop) {
             const dummy = document.createElement("div");
             dummy.className = "w-full";
@@ -118,7 +114,7 @@ const updateFilterUI = () => {
     if (!rankTabs) return;
 
     const storedFilterState = JSON.parse(localStorage.getItem('huntFilterState')) || {};
-    const prevRank = storedFilterState.rank; // 前回選択されていたランク
+    const prevRank = storedFilterState.rank; 
 
     rankTabs.querySelectorAll(".tab-button").forEach(btn => {
         const btnRank = btn.dataset.rank;
@@ -130,19 +126,16 @@ const updateFilterUI = () => {
 
         if (isCurrentRank) {
             
-            // 【バグ修正統合ロジック】: ランク切り替え時にクリックカウントを強制的に1に戻す
             if (prevRank !== btnRank) {
-                clickCount = 1; // ランクが切り替わったら、無条件で1（非表示）から開始
+                clickCount = 1; 
             } else {
-                // 同じランクを再度クリックした場合、現在のUI上のclickCountを巡回させるロジックを維持
                 if (clickCount === 1) {
-                    clickCount = 2; // 1クリック目 -> 2クリック目 (表示)
+                    clickCount = 2; 
                 } else {
-                    clickCount = (clickCount === 2) ? 3 : 2; // 3クリック目(非表示)と4クリック目(表示)を巡回
+                    clickCount = (clickCount === 2) ? 3 : 2; 
                 }
             }
             
-            // 色の変更ロジックは維持
             btn.classList.remove("bg-gray-500", "hover:bg-gray-400");
             btn.classList.add(
                 btnRank === "ALL" ? "bg-blue-800"
@@ -152,7 +145,6 @@ const updateFilterUI = () => {
                                 : "bg-gray-800"
             );
 
-            // パネル表示制御ロジックは維持
             const panels = [DOM.areaFilterPanelMobile, DOM.areaFilterPanelDesktop];
             
             if (btnRank === 'ALL' || clickCount !== 2) {
@@ -162,13 +154,11 @@ const updateFilterUI = () => {
                 panels.forEach(p => p?.classList.remove('hidden'));
             }
 
-            // ローカルストレージに新しい状態を保存
             const newFilterState = { ...storedFilterState, rank: btnRank, clickCount: clickCount };
             localStorage.setItem("huntFilterState", JSON.stringify(newFilterState));
 
         } else {
           
-            // 現在のランクではないタブはクリックカウントを1にリセット（UI維持）
             clickCount = 1; 
             btn.classList.add("bg-gray-500", "hover:bg-gray-400");
             
@@ -191,7 +181,6 @@ function handleAreaFilterClick(e) {
 
     if (uiRank === 'ALL') return;
 
-    // 既存コードを維持: Set操作ロジック
     const currentSet = state.filter.areaSets[targetRankKey] instanceof Set ? state.filter.areaSets[targetRankKey] : new Set();
     const nextAreaSets = { ...state.filter.areaSets };
 
@@ -218,7 +207,6 @@ function handleAreaFilterClick(e) {
     renderAreaFilterPanel();
 }
 
-// 【フィルタリングバグ修正統合ロジック】: ALLモードでのエリアフィルタリングを修正
 function filterMobsByRankAndArea(mobs) {
     const filter = getState().filter;
     const uiRank = filter.rank;
@@ -234,47 +222,37 @@ function filterMobsByRankAndArea(mobs) {
 
     return mobs.filter(m => {
         const mobRank = m.Rank;
-        const mobExpansion = m.Expansion; // モブデータ内の拡張エリア名
+        const mobExpansion = m.Expansion; 
         const mobRankKey = getMobRankKey(mobRank);
 
         if (!mobRankKey) return false;
 
         const filterKey = mobRankKey; 
 
-        // 1. ALLタブ選択時のロジック統合
         if (uiRank === 'ALL') {
             if (filterKey !== 'S' && filterKey !== 'A' && filterKey !== 'F') return false; 
             
             const targetSet = areaSets[filterKey];
 
-            // フィルタセットが存在しない、または空の場合は、そのランクは全て表示
             if (!(targetSet instanceof Set) || targetSet.size === 0) return true;
-            // 全選択されている場合も全て表示
             if (targetSet.size === allExpansions) return true;
 
-            // 選択されたエリアに含まれているか判定
             return targetSet.has(mobExpansion);
 
         } 
-        // 2. S/A/FATEタブ選択時のロジック統合
         else {
 
-            // ランクの一致判定（Bモブの扱いを考慮）
             const isRankMatch = (uiRank === 'S' && mobRank === 'S') ||
                 (uiRank === 'A' && (mobRank === 'A' || mobRank.startsWith('B'))) ||
                 (uiRank === 'FATE' && mobRank === 'F');
 
             if (!isRankMatch) return false;
 
-            // 該当ランクのフィルタセットを参照
             const targetSet = areaSets[filterKey];
 
-            // フィルタセットが存在しない、または空の場合は、そのランクのモブは全て表示
             if (!(targetSet instanceof Set) || targetSet.size === 0) return true;
-            // 全選択されている場合も全て表示
             if (targetSet.size === allExpansions) return true;
 
-            // 選択されたエリアに含まれているか判定
             return targetSet.has(mobExpansion);
         }
     });
