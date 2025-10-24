@@ -20,8 +20,7 @@ const renderRankTabs = () => {
   const container = DOM.rankTabs;
   if (!container) return;
   container.innerHTML = "";
-
-  container.className = "flex gap-2";
+  container.className = "grid grid-cols-4 gap-2";
 
   const storedState = JSON.parse(localStorage.getItem('huntFilterState')) || {};
 
@@ -61,8 +60,8 @@ const renderAreaFilterPanel = () => {
   const createButton = (area, isAll, isSelected) => {
     const btn = document.createElement("button");
     btn.textContent = area;
-    // text-xs を text-sm に修正
-    const btnClass = 'py-1 text-sm rounded font-semibold text-white text-center transition w-full';
+    
+    const btnClass = 'py-1 px-3 text-sm rounded font-semibold text-white text-center transition w-auto';
 
     if (isAll) {
       btn.className = `area-filter-btn ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
