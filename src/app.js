@@ -4,12 +4,12 @@ import { attachLocationEvents } from "./location.js";
 import { submitReport, toggleCrushStatus } from "./server.js";
 import { debounce, toJstAdjustedIsoString, } from "./cal.js";
 import { DOM, filterAndRender, sortAndRedistribute } from "./uiRender.js";
-import { renderRankTabs, renderAreaFilterPanel } from "./filterUI.js";
+import { renderRankTabs, renderAreaFilterPanel, handleAreaFilterClick } from "./filterUI.js";
 
 async function loadMaintenance() {
     try {
         const res = await fetch('./maintenance.json', { cache: 'no-store' });
-        if (!res.ok) return; // JSON 未配置なら何もしない
+        if (!res.ok) return;
         const data = await res.json();
 
         const start = new Date(data.maintenance.start);
@@ -88,50 +88,12 @@ function attachFilterEvents() {
             rank: newRank,
             areaSets: nextAreaSets
         });
-
-        const isInitialLoad = prevRank !== newRank;
-        filterAndRender({ isInitialLoad });
+        filterAndRender(); 
     });
 
     document.getElementById("area-filter-panel-mobile")?.addEventListener("click", handleAreaFilterClick);
     document.getElementById("area-filter-panel-desktop")?.addEventListener("click", handleAreaFilterClick);
 
-}
-
-function handleAreaFilterClick(e) {
-    const btn = e.target.closest(".area-filter-btn");
-    if (!btn) return;
-
-    const state = getState();
-    const uiRank = state.filter.rank;
-    const allAreas = Array.from(new Set(Object.values(EXPANSION_MAP)));
-
-    const currentSet =
-        state.filter.areaSets[uiRank] instanceof Set
-            ? state.filter.areaSets[uiRank]
-            : new Set();
-
-    if (btn.dataset.area === "ALL") {
-        if (currentSet.size === allAreas.size) {
-            state.filter.areaSets[uiRank] = new Set();
-        } else {
-            state.filter.areaSets[uiRank] = new Set(allAreas);
-        }
-    } else {
-        const area = btn.dataset.area;
-        const next = new Set(currentSet);
-        if (next.has(area)) next.delete(area);
-        else next.add(area);
-        state.filter.areaSets[uiRank] = next;
-    }
-
-    setFilter({
-        rank: uiRank,
-        areaSets: state.filter.areaSets
-    });
-
-    filterAndRender();
-    renderAreaFilterPanel();
 }
 
 function attachCardEvents() {
