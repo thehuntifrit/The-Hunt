@@ -37,11 +37,6 @@ text-shadow:
 1px 1px 0 #000033;
 }
 
-/* モブカードの基本スタイル */
-.mob-card {
-transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-}
-
 /* ランクアイコンのスタイル */
 .rank-icon {
 transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -53,7 +48,6 @@ transform: scale(1.15);
 
 /* --- 進捗バー関連のスタイル定義 --- */
 .progress-bar-wrapper {
-/* 進捗バーの背景と点滅アニメーションの親要素 */
 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 background-color: rgba(0, 0, 0, 0.4);
 }
