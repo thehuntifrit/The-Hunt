@@ -344,7 +344,7 @@
       "locations": [] 
     },
       "22011": {"rank": "S", "name":"カイザーベヒーモス", "area": "クルザス西部高地",
-      "POP Date": "ミニオン「ロイヤルベビーモス」を連れてPOP地点を踏む",
+      "condition": "ミニオン「ロイヤルベビーモス」を連れてPOP地点を踏む",
       "repopSeconds": 302400, "maxRepopSeconds": 475200,
       "mapImage": "Coerthas_Western_Highlands.webp",
       "locations": [
