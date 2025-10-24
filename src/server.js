@@ -30,7 +30,6 @@ const callUpdateCrushStatus = httpsCallable(functions, 'crushStatusUpdater');
 const callRevertStatus = httpsCallable(functions, 'revertStatus');
 const callGetServerTime = httpsCallable(functions, 'getServerTime');
 
-const auth = getAuth();
 console.log(auth.currentUser?.uid);
 
 // 認証
