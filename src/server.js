@@ -33,11 +33,20 @@ const callGetServerTime = httpsCallable(functions, 'getServerTime');
 // 認証
 async function initializeAuth() {
     return new Promise((resolve) => {
-        onAuthStateChanged(auth, (user) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            unsubscribe(); 
+
             if (user) {
                 resolve(user.uid);
             } else {
-                signInAnonymously(auth).catch(() => { }).then(() => { });
+                signInAnonymously(auth)
+                    .then((credential) => {
+                        resolve(credential.user.uid);
+                    })
+                    .catch((error) => {
+                        console.error("匿名認証に失敗しました:", error);
+                        resolve(null); 
+                    });
             }
         });
     });
