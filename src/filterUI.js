@@ -61,11 +61,11 @@ const renderAreaFilterPanel = () => {
     const createPanelContent = (isDesktop) => {
         const panel = document.createDocumentFragment();
 
-        const maxWClass = isDesktop ? 'max-w-[8rem]' : 'w-full';
+        const btnClass = 'py-1 text-xs rounded font-semibold text-white text-center transition w-full max-w-[8rem]'; 
 
         const allBtn = document.createElement("button");
         allBtn.textContent = isAllSelected ? "全解除" : "全選択";
-        allBtn.className = `area-filter-btn py-1 text-xs rounded font-semibold text-white text-center transition ${maxWClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
+        allBtn.className = `area-filter-btn ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
         allBtn.dataset.area = "ALL";
         panel.appendChild(allBtn);
 
@@ -79,24 +79,23 @@ const renderAreaFilterPanel = () => {
             const isSelected = currentSet.has(area);
             const btn = document.createElement("button");
             btn.textContent = area;
-            btn.className = `area-filter-btn py-1 text-xs rounded font-semibold text-white text-center transition ${maxWClass} ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
+            btn.className = `area-filter-btn ${btnClass} ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
             btn.dataset.area = area;
             panel.appendChild(btn);
         });
         return panel;
     };
 
+
     const mobilePanel = DOM.areaFilterPanelMobile;
     if (mobilePanel) {
         mobilePanel.innerHTML = "";
-        mobilePanel.className = "max-w-6xl mx-auto flex flex-wrap gap-2 px-4 py-2 grid grid-cols-2";
         mobilePanel.appendChild(createPanelContent(false));
     }
 
     const desktopPanel = DOM.areaFilterPanelDesktop;
     if (desktopPanel) {
         desktopPanel.innerHTML = "";
-        desktopPanel.className = "max-w-6xl mx-auto flex flex-wrap gap-2 px-4 py-2 grid grid-cols-2";
         desktopPanel.appendChild(createPanelContent(true));
     }
 };
@@ -124,7 +123,7 @@ const updateFilterUI = () => {
                 clickCount = 1;
             } else {
                 if (clickCount === 1) {
-                    clickCount = 2; 
+                    clickCount = 2;
                 } else {
                     clickCount = (clickCount === 2) ? 3 : 2;
                 }
