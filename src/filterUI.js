@@ -121,7 +121,6 @@ const renderAreaFilterPanel = () => {
         panel.appendChild(allBtn);
 
         if (!isDesktop) {
-            // モバイルの場合、grid-cols-2 の2列目を埋めるためのダミー要素を挿入
             const dummy = document.createElement("div");
             dummy.className = "w-full";
             panel.appendChild(dummy);
@@ -134,7 +133,6 @@ const renderAreaFilterPanel = () => {
         
         return panel;
     };
-
 
     const mobilePanel = DOM.areaFilterPanelMobile?.querySelector('div');
     const desktopPanel = DOM.areaFilterPanelDesktop?.querySelector('div');
