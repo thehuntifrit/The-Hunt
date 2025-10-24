@@ -3,7 +3,7 @@
 import { calculateRepop, findNextSpawnTime, formatDuration, formatLastKillTime, debounce } from "./cal.js";
 import { drawSpawnPoint } from "./location.js";
 import { getState, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
-import { renderRankTabs, renderAreaFilterPanel, updateFilterUI } from "./filterUI.js";
+import { renderRankTabs, renderAreaFilterPanel, updateFilterUI, filterMobsByRankAndArea } from "./filterUI.js";
 
 const DOM = {
   masterContainer: document.getElementById('master-mob-container'),
@@ -26,10 +26,10 @@ function displayStatus(message, type = "info") {
   if (!el) return;
 
   const typeClasses = {
-    'success': 'bg-green-600', // 成功時: 緑色にする
-    'error': 'bg-red-600', // エラー時: 赤色にする
-    'warning': 'bg-yellow-600',// 警告時: 黄色にする
-    'info': 'bg-blue-600' // 情報表示時: 青色にする
+    'success': 'bg-green-600',
+    'error': 'bg-red-600', // エラー時
+    'warning': 'bg-yellow-600',// 警告時
+    'info': 'bg-blue-600' // 情報表示
   };
 
   Object.values(typeClasses).forEach(cls => el.classList.remove(cls));
@@ -137,70 +137,32 @@ transition duration-150" data-mob-no="${mob.No}" data-rank="${rank}">${cardHeade
 `;
 }
 
-
 function filterAndRender({ isInitialLoad = false } = {}) {
-  const state = getState();
-  const uiRank = state.filter.rank;
-  const dataRank = FILTER_TO_DATA_RANK_MAP[uiRank] || uiRank;
-  const areaSets = state.filter.areaSets;
+    const state = getState();
+    const filtered = filterMobsByRankAndArea(state.mobs);
 
-  const filtered = state.mobs.filter(mob => {
-    if (dataRank === "ALL") {
-      const mobRank = mob.Rank.startsWith("B")
-        ? (mob.Rank.includes("A") ? "A" : "F")
-        : mob.Rank;
-      if (!["S", "A", "F"].includes(mobRank)) return false;
+    filtered.sort((a, b) => a.No - b.No);
 
-      const areaSetForRank = areaSets[mobRank];
-      const mobExpansion = mob.Rank.startsWith("B")
-        ? state.mobs.find(m => m.No === mob.related_mob_no)?.Expansion || mob.Expansion
-        : mob.Expansion;
+    const frag = document.createDocumentFragment();
+    filtered.forEach(mob => {
+        const temp = document.createElement("div");
+        temp.innerHTML = createMobCard(mob);
+        const card = temp.firstElementChild;
+        frag.appendChild(card);
 
-      if (!areaSetForRank || !(areaSetForRank instanceof Set) || areaSetForRank.size === 0) {
-        return true;
-      }
-      return areaSetForRank.has(mobExpansion);
+        updateProgressText(card, mob);
+        updateProgressBar(card, mob);
+        updateExpandablePanel(card, mob);
+    });
+
+    DOM.masterContainer.innerHTML = "";
+    DOM.masterContainer.appendChild(frag);
+    distributeCards();
+    updateFilterUI();
+
+    if (isInitialLoad) {
+        updateProgressBars();
     }
-
-    if (dataRank === "A") {
-      if (mob.Rank !== "A" && !mob.Rank.startsWith("B")) return false;
-    } else if (dataRank === "F") {
-      if (mob.Rank !== "F" && !mob.Rank.startsWith("B")) return false;
-    } else if (mob.Rank !== dataRank) {
-      return false;
-    }
-
-    const mobExpansion = mob.Rank.startsWith("B")
-      ? state.mobs.find(m => m.No === mob.related_mob_no)?.Expansion || mob.Expansion
-      : mob.Expansion;
-
-    const areaSet = areaSets[uiRank];
-    if (!areaSet || !(areaSet instanceof Set) || areaSet.size === 0) return true;
-    return areaSet.has(mobExpansion);
-  });
-
-  filtered.sort((a, b) => a.No - b.No);
-
-  const frag = document.createDocumentFragment();
-  filtered.forEach(mob => {
-    const temp = document.createElement("div");
-    temp.innerHTML = createMobCard(mob);
-    const card = temp.firstElementChild;
-    frag.appendChild(card);
-
-    updateProgressText(card, mob);
-    updateProgressBar(card, mob);
-    updateExpandablePanel(card, mob);
-  });
-
-  DOM.masterContainer.innerHTML = "";
-  DOM.masterContainer.appendChild(frag);
-  distributeCards();
-  updateFilterUI();
-
-  if (isInitialLoad) {
-    updateProgressBars();
-  }
 }
 
 function distributeCards() {
