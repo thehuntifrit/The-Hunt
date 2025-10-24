@@ -2,7 +2,6 @@
 
 import { getState, FILTER_TO_DATA_RANK_MAP, setFilter } from "./dataManager.js";
 import { EXPANSION_MAP } from "./dataManager.js";
-// uiRender.js の filterAndRender が必要となるためインポート
 import { filterAndRender } from "./uiRender.js"; 
 
 const DOM = {
