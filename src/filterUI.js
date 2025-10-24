@@ -34,74 +34,65 @@ const renderRankTabs = () => {
 };
 
 const renderAreaFilterPanel = () => {
-  const state = getState();
-  const uiRank = state.filter.rank;
-  const dataRank = FILTER_TO_DATA_RANK_MAP[uiRank] || uiRank;
+  const state = getState();
+  const uiRank = state.filter.rank;
 
-  const areas = state.mobs
-    .filter(m => (dataRank === "A" || dataRank === "F") ? (m.Rank === dataRank || m.Rank.startsWith("B")) : (m.Rank === dataRank))
-    .reduce((set, m) => {
-      const mobExpansion = m.Rank.startsWith("B")
-        ? state.mobs.find(x => x.No === m.related_mob_no)?.Expansion || m.Expansion
-        : m.Expansion;
-      if (mobExpansion) set.add(mobExpansion);
-      return set;
-    }, new Set());
+  const areas = Array.from(new Set(Object.values(EXPANSION_MAP)));
 
-  const currentSet = state.filter.areaSets[uiRank] instanceof Set ? state.filter.areaSets[uiRank] : new Set();
-  const isAllSelected = areas.size > 0 && currentSet.size === areas.size;
+  const currentSet = state.filter.areaSets[uiRank] instanceof Set ? state.filter.areaSets[uiRank] : new Set();
+  const isAllSelected = areas.size > 0 && currentSet.size === areas.size;
 
-  const sortedAreas = Array.from(areas).sort((a, b) => {
-    const indexA = Object.values(EXPANSION_MAP).indexOf(a);
-    const indexB = Object.values(EXPANSION_MAP).indexOf(b);
-    return indexB - indexA;
-  });
+  const sortedAreas = Array.from(areas).sort((a, b) => {
+    const indexA = Object.values(EXPANSION_MAP).indexOf(a);
+    const indexB = Object.values(EXPANSION_MAP).indexOf(b);
+    return indexB - indexA;
+  });
 
-  // スマホ用：横いっぱい2列
-  const mobilePanel = DOM.areaFilterPanelMobile;
-  if (!mobilePanel) return;
-  mobilePanel.innerHTML = "";
-  mobilePanel.className = "grid grid-cols-2 gap-2";
+  // スマホ用：横いっぱい2列
+  const mobilePanel = DOM.areaFilterPanelMobile;
+  if (!mobilePanel) return;
+  mobilePanel.innerHTML = "";
+  mobilePanel.className = "grid grid-cols-2 gap-2";
 
-  const allBtnMobile = document.createElement("button");
-  allBtnMobile.textContent = isAllSelected ? "全解除" : "全選択";
-  allBtnMobile.className = `area-filter-btn py-1 text-xs rounded font-semibold text-white text-center transition w-full ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
-  allBtnMobile.dataset.area = "ALL";
-  mobilePanel.appendChild(allBtnMobile);
+  const allBtnMobile = document.createElement("button");
+  allBtnMobile.textContent = isAllSelected ? "全解除" : "全選択";
+  allBtnMobile.className = `area-filter-btn py-1 text-xs rounded font-semibold text-white text-center transition w-full ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
+  allBtnMobile.dataset.area = "ALL";
+  mobilePanel.appendChild(allBtnMobile);
 
-  sortedAreas.forEach(area => {
-    const isSelected = currentSet.has(area);
-    const btn = document.createElement("button");
-    btn.textContent = area;
-    btn.className = `area-filter-btn py-1 text-xs rounded font-semibold text-white text-center transition w-full ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
-    btn.dataset.area = area;
-    mobilePanel.appendChild(btn);
-  });
+  sortedAreas.forEach(area => {
+    const isSelected = currentSet.has(area);
+    const btn = document.createElement("button");
+    btn.textContent = area;
+    btn.className = `area-filter-btn py-1 text-xs rounded font-semibold text-white text-center transition w-full ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
+    btn.dataset.area = area;
+    mobilePanel.appendChild(btn);
+  });
 
-  // PC用：ランクボタン下に収まる2列（ボタン幅制限）
-  const desktopPanel = DOM.areaFilterPanelDesktop;
-  if (!desktopPanel) return;
-  desktopPanel.innerHTML = "";
-  desktopPanel.className = "grid grid-cols-2 gap-2";
+  // PC用：ランクボタン下に収まる2列（ボタン幅制限）
+  const desktopPanel = DOM.areaFilterPanelDesktop;
+  if (!desktopPanel) return;
+  desktopPanel.innerHTML = "";
+  desktopPanel.className = "grid grid-cols-2 gap-2";
 
-  const allBtnDesktop = document.createElement("button");
-  allBtnDesktop.textContent = isAllSelected ? "全解除" : "全選択";
-  allBtnDesktop.className = `area-filter-btn py-1 text-xs rounded font-semibold text-white text-center transition w-full max-w-[8rem] ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
-  allBtnDesktop.dataset.area = "ALL";
-  desktopPanel.appendChild(allBtnDesktop);
+  const allBtnDesktop = document.createElement("button");
+  allBtnDesktop.textContent = isAllSelected ? "全解除" : "全選択";
+  allBtnDesktop.className = `area-filter-btn py-1 text-xs rounded font-semibold text-white text-center transition w-full max-w-[8rem] ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
+  allBtnDesktop.dataset.area = "ALL";
+  desktopPanel.appendChild(allBtnDesktop);
 
-  const spacer = document.createElement("div");
-  spacer.className = "hidden lg:block";
-  desktopPanel.appendChild(spacer);
+  const spacer = document.createElement("div");
+  spacer.className = "hidden lg:block";
+  desktopPanel.appendChild(spacer);
 
-  sortedAreas.forEach(area => {
-    const isSelected = currentSet.has(area);
-    const btn = document.createElement("button");
-    btn.textContent = area;
-    btn.className = `area-filter-btn py-1 text-xs rounded font-semibold text-white text-center transition w-full max-w-[8rem] ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
-    btn.dataset.area = area;
-    desktopPanel.appendChild(btn);
-  });
+  sortedAreas.forEach(area => {
+    const isSelected = currentSet.has(area);
+    const btn = document.createElement("button");
+    btn.textContent = area;
+    btn.className = `area-filter-btn py-1 text-xs rounded font-semibold text-white text-center transition w-full max-w-[8rem] ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
+    btn.dataset.area = area;
+    desktopPanel.appendChild(btn);
+  });
 };
 
 const updateFilterUI = () => {
