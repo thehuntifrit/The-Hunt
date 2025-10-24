@@ -70,7 +70,14 @@ function subscribeMobStatusDocs(onUpdate) {
     return () => unsubs.forEach(u => u());
 }
 
-console.log(auth.currentUser?.uid);
+const auth = getAuth();
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("UID:", user.uid);
+  } else {
+    console.log("まだ認証されていません");
+  }
+});
 
 function subscribeMobLocations(onUpdate) {
     const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
