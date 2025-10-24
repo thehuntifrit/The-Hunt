@@ -4,7 +4,7 @@ import { attachLocationEvents } from "./location.js";
 import { submitReport, toggleCrushStatus } from "./server.js";
 import { debounce, toJstAdjustedIsoString, } from "./cal.js";
 import { DOM, filterAndRender, sortAndRedistribute } from "./uiRender.js";
-import { renderRankTabs, renderAreaFilterPanel, handleAreaFilterClick } from "./filterUI.js";
+import { renderRankTabs, renderAreaFilterPanel, updateFilterUI, handleAreaFilterClick } from "./filterUI.js";
 
 async function loadMaintenance() {
     try {
@@ -77,7 +77,6 @@ function attachFilterEvents() {
 
         const newRank = btn.dataset.rank.toUpperCase();
         const state = getState();
-        const prevRank = state.filter.rank;
 
         const nextAreaSets = { ...state.filter.areaSets };
         if (!(nextAreaSets[newRank] instanceof Set)) {
@@ -88,7 +87,7 @@ function attachFilterEvents() {
             rank: newRank,
             areaSets: nextAreaSets
         });
-        filterAndRender(); 
+        filterAndRender();
     });
 
     document.getElementById("area-filter-panel-mobile")?.addEventListener("click", handleAreaFilterClick);
@@ -127,7 +126,7 @@ function attachCardEvents() {
         }
 
         if (e.target.closest("[data-toggle='card-header']")) {
-            if (rank === "S" || rank === "A" || rank === "F") {
+            if (rank === "S") { 
                 const panel = card.querySelector(".expandable-panel");
                 if (panel) {
                     if (!panel.classList.contains("open")) {
@@ -150,7 +149,6 @@ function attachWindowResizeEvents() {
     window.addEventListener("resize", debounce(() => sortAndRedistribute(), 200));
 }
 
-// モーダル送信イベントハンドラ (追加)
 async function handleReportSubmit(e) {
     e.preventDefault();
 
