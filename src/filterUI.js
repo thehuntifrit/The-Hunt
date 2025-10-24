@@ -86,7 +86,6 @@ const renderAreaFilterPanel = () => {
         return panel;
     };
 
-
     const mobilePanel = DOM.areaFilterPanelMobile;
     if (mobilePanel) {
         mobilePanel.innerHTML = "";
@@ -124,7 +123,11 @@ const updateFilterUI = () => {
             if (prevRank !== btnRank) {
                 clickCount = 1;
             } else {
-                clickCount = (clickCount % 3) + 1;
+                if (clickCount === 1) {
+                    clickCount = 2; 
+                } else {
+                    clickCount = (clickCount === 2) ? 3 : 2;
+                }
             }
             
             btn.classList.remove("bg-gray-500", "hover:bg-gray-400");
