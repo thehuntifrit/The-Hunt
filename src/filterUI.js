@@ -30,7 +30,6 @@ const renderRankTabs = () => {
 
         btn.className = `tab-button px-2 py-1 text-sm rounded font-semibold text-white text-center transition ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
 
-        // UI開閉不具合修正のため、クリックカウントの初期値を1とする
         const currentFilterState = JSON.parse(localStorage.getItem('huntFilterState'));
         const clickCount = (rank === state.filter.rank && currentFilterState && currentFilterState.rank === rank) ? currentFilterState.clickCount || '1' : '1';
 
