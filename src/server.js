@@ -43,6 +43,15 @@ async function initializeAuth() {
     });
 }
 
+const auth = getAuth();
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("UID:", user.uid);
+  } else {
+    console.log("まだ認証されていません");
+  }
+});
+
 // サーバーUTC取得
 async function getServerTimeUTC() {
     const getServerTime = httpsCallable(functionsInstance, "getServerTime");
@@ -69,15 +78,6 @@ function subscribeMobStatusDocs(onUpdate) {
     );
     return () => unsubs.forEach(u => u());
 }
-
-const auth = getAuth();
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("UID:", user.uid);
-  } else {
-    console.log("まだ認証されていません");
-  }
-});
 
 function subscribeMobLocations(onUpdate) {
     const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
