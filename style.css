@@ -37,6 +37,11 @@ text-shadow:
 1px 1px 0 #000033;
 }
 
+#status-message {
+  min-height: 2rem; /* 常に2remの高さを確保 */
+  line-height: 2rem; /* テキストを中央寄せ */
+}
+
 /* ランクアイコンのスタイル */
 .rank-icon {
 transition: transform 0.2s ease, box-shadow 0.2s ease;
