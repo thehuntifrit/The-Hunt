@@ -220,16 +220,6 @@ z-index: 50;
 transition: opacity 0.3s;
 }
 
-/* カラム間の隙間とパディングを設定 (Tailwindを補完) */
-#column-container {
-padding: 0.5rem;
-}
-#column-1, #column-2, #column-3 {
-display: flex;
-flex-direction: column;
-gap: 0.5rem;
-}
-
 .maintenance-banner {
   background: #222;
   color: #fff;
