@@ -104,22 +104,7 @@ function handleAreaFilterClick(e) {
 
     const state = getState();
     const uiRank = state.filter.rank;
-    const dataRank = FILTER_TO_DATA_RANK_MAP[uiRank] || uiRank;
-
-    const areas = state.mobs
-        .filter((m) =>
-            dataRank === "A" || dataRank === "F"
-                ? m.Rank === dataRank || m.Rank.startsWith("B")
-                : m.Rank === dataRank
-        )
-        .reduce((set, m) => {
-            const mobExpansion =
-                m.Rank.startsWith("B")
-                    ? state.mobs.find((x) => x.No === m.related_mob_no)?.Expansion || m.Expansion
-                    : m.Expansion;
-            if (mobExpansion) set.add(mobExpansion);
-            return set;
-        }, new Set());
+    const allAreas = Array.from(new Set(Object.values(EXPANSION_MAP)));
 
     const currentSet =
         state.filter.areaSets[uiRank] instanceof Set
@@ -127,10 +112,10 @@ function handleAreaFilterClick(e) {
             : new Set();
 
     if (btn.dataset.area === "ALL") {
-        if (currentSet.size === areas.size) {
+        if (currentSet.size === allAreas.size) {
             state.filter.areaSets[uiRank] = new Set();
         } else {
-            state.filter.areaSets[uiRank] = new Set(areas);
+            state.filter.areaSets[uiRank] = new Set(allAreas);
         }
     } else {
         const area = btn.dataset.area;
@@ -205,7 +190,7 @@ function attachWindowResizeEvents() {
 
 // モーダル送信イベントハンドラ (追加)
 async function handleReportSubmit(e) {
-    e.preventDefault(); // ページリロードを阻止
+    e.preventDefault();
 
     const form = e.target;
     const mobNo = parseInt(form.dataset.mobNo, 10);
