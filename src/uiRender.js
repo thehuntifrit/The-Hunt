@@ -68,7 +68,7 @@ function createMobCard(mob) {
       mob.No,
       point.mob_ranks.includes("B2") ? "B2"
         : point.mob_ranks.includes("B1") ? "B1"
-          : point.mob_ranks[0],
+        : point.mob_ranks[0],
       point.is_last_one,
       isS_LastOne,
       mob.last_kill_time,
@@ -117,7 +117,7 @@ function createMobCard(mob) {
         <div class="flex justify-between items-start flex-wrap">
             <div class="w-full text-right text-xs text-gray-400 pt-1" data-last-kill></div>
             <div class="w-full text-left text-sm text-gray-300 mb-2">Memo: <span data-last-memo></span></div>
-            <div class="w-full font-semibold text-yellow-300 border-t border-gray-600">抽出条件</div>
+            <div class="w-full font-semibold text-yellow-300 border-t border-gray-600">抽選条件</div>
             <div class="w-full text-gray-300 mb-2">${processText(mob.Condition)}</div>
         </div>
         ${mob.Map && rank === 'S' ? `
