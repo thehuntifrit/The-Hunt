@@ -58,42 +58,51 @@ const renderAreaFilterPanel = () => {
         return indexB - indexA;
     });
 
+    const createButton = (area, isAll, isSelected) => {
+        const btn = document.createElement("button");
+        btn.textContent = area;
+        const btnClass = 'py-1 text-xs rounded font-semibold text-white text-center transition w-full'; 
+        
+        if (isAll) {
+            btn.className = `area-filter-btn ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
+            btn.dataset.area = "ALL";
+        } else {
+            btn.className = `area-filter-btn ${btnClass} ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
+            btn.dataset.area = area;
+        }
+        return btn;
+    };
+
     const createPanelContent = (isDesktop) => {
         const panel = document.createDocumentFragment();
 
-        const btnClass = 'py-1 text-xs rounded font-semibold text-white text-center transition w-full max-w-[8rem]'; 
-
-        const allBtn = document.createElement("button");
-        allBtn.textContent = isAllSelected ? "全解除" : "全選択";
-        allBtn.className = `area-filter-btn ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
-        allBtn.dataset.area = "ALL";
+        const allBtn = createButton(isAllSelected ? "全解除" : "全選択", true, false);
         panel.appendChild(allBtn);
 
-        if (isDesktop) {
-            const spacer = document.createElement("div");
-            spacer.className = "hidden lg:block";
-            panel.appendChild(spacer);
+        if (!isDesktop) {
+            // モバイルの場合、grid-cols-2 の2列目を埋めるためのダミー要素を挿入
+            const dummy = document.createElement("div");
+            dummy.className = "w-full";
+            panel.appendChild(dummy);
         }
 
         sortedAreas.forEach(area => {
             const isSelected = currentSet.has(area);
-            const btn = document.createElement("button");
-            btn.textContent = area;
-            btn.className = `area-filter-btn ${btnClass} ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
-            btn.dataset.area = area;
-            panel.appendChild(btn);
+            panel.appendChild(createButton(area, false, isSelected));
         });
+        
         return panel;
     };
 
 
     const mobilePanel = DOM.areaFilterPanelMobile?.querySelector('div');
+    const desktopPanel = DOM.areaFilterPanelDesktop?.querySelector('div');
+
     if (mobilePanel) {
         mobilePanel.innerHTML = "";
         mobilePanel.appendChild(createPanelContent(false));
     }
 
-    const desktopPanel = DOM.areaFilterPanelDesktop?.querySelector('div');
     if (desktopPanel) {
         desktopPanel.innerHTML = "";
         desktopPanel.appendChild(createPanelContent(true));
@@ -224,13 +233,11 @@ function filterMobsByRankAndArea(mobs) {
         const filterKey = mobRankKey === 'F' ? 'F' : mobRankKey; 
 
         if (uiRank === 'ALL') {
-            
             if (filterKey !== 'S' && filterKey !== 'A' && filterKey !== 'F') return true; 
 
             const targetSet = areaSets[filterKey];
 
             if (!(targetSet instanceof Set) || targetSet.size === 0) return true;
-
             if (targetSet.size === allExpansions) return true;
 
             return targetSet.has(mobExpansion);
@@ -246,7 +253,6 @@ function filterMobsByRankAndArea(mobs) {
             const targetSet = areaSets[filterKey];
             
             if (!(targetSet instanceof Set) || targetSet.size === 0) return true;
-            
             if (targetSet.size === allExpansions) return true;
 
             return targetSet.has(mobExpansion);
