@@ -38,8 +38,8 @@ text-shadow:
 }
 
 #status-message {
-  min-height: 2rem; /* 常に2remの高さを確保 */
-  line-height: 2rem; /* テキストを中央寄せ */
+  min-height: 1rem; /* 常に2remの高さを確保 */
+  line-height: 1rem; /* テキストを中央寄せ */
 }
 
 /* ランクアイコンのスタイル */
