@@ -87,13 +87,13 @@ const renderAreaFilterPanel = () => {
     };
 
 
-    const mobilePanel = DOM.areaFilterPanelMobile;
+    const mobilePanel = DOM.areaFilterPanelMobile?.querySelector('div');
     if (mobilePanel) {
         mobilePanel.innerHTML = "";
         mobilePanel.appendChild(createPanelContent(false));
     }
 
-    const desktopPanel = DOM.areaFilterPanelDesktop;
+    const desktopPanel = DOM.areaFilterPanelDesktop?.querySelector('div');
     if (desktopPanel) {
         desktopPanel.innerHTML = "";
         desktopPanel.appendChild(createPanelContent(true));
@@ -155,9 +155,6 @@ const updateFilterUI = () => {
             btn.classList.add("bg-gray-500", "hover:bg-gray-400");
             
             if (DOM.areaFilterPanelMobile && DOM.areaFilterPanelDesktop) {
-                 if (btn.dataset.rank === prevRank) {
-                    [DOM.areaFilterPanelMobile, DOM.areaFilterPanelDesktop].forEach(p => p?.classList.add('hidden'));
-                }
             }
         }
 
