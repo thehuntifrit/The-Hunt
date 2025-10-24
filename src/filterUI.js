@@ -14,30 +14,71 @@ const getAllAreas = () => {
     return Array.from(new Set(Object.values(EXPANSION_MAP)));
 };
 
-const renderRankTabs = () => {
+const renderAreaFilterPanel = () => {
     const state = getState();
-    const rankList = ["ALL", "S", "A", "FATE"];
-    const container = DOM.rankTabs;
-    if (!container) return;
-    container.innerHTML = "";
+    const uiRank = state.filter.rank;
 
-    container.className = "grid grid-cols-4 gap-2";
+    if (uiRank === 'ALL') return;
 
-    const storedState = JSON.parse(localStorage.getItem('huntFilterState')) || {};
+    const targetRankKey = uiRank === 'FATE' ? 'F' : uiRank;
+    const areas = getAllAreas();
 
-    rankList.forEach(rank => {
-        const isSelected = state.filter.rank === rank;
-        const btn = document.createElement("button");
-        btn.dataset.rank = rank;
-        btn.textContent = rank;
+    const currentSet = state.filter.areaSets[targetRankKey] instanceof Set ? state.filter.areaSets[targetRankKey] : new Set();
+    const isAllSelected = areas.length > 0 && currentSet.size === areas.length;
 
-        btn.className = `tab-button px-2 py-1 text-sm rounded font-semibold text-white text-center transition ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
-
-        const clickCount = (rank === state.filter.rank) ? (storedState.clickCount || '1') : '1';
-        btn.dataset.clickCount = clickCount;
-
-        container.appendChild(btn);
+    const sortedAreas = areas.sort((a, b) => {
+        const indexA = Object.values(EXPANSION_MAP).indexOf(a);
+        const indexB = Object.values(EXPANSION_MAP).indexOf(b);
+        return indexB - indexA;
     });
+
+    const createButton = (area, isAll, isSelected) => {
+        const btn = document.createElement("button");
+        btn.textContent = area;
+        const btnClass = 'py-1 text-sm rounded font-semibold text-white text-center transition w-full'; 
+        
+        if (isAll) {
+            btn.className = `area-filter-btn ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
+            btn.dataset.area = "ALL";
+        } else {
+            btn.className = `area-filter-btn ${btnClass} ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
+            btn.dataset.area = area;
+        }
+        return btn;
+    };
+
+    const createPanelContent = (isDesktop) => {
+        const panel = document.createDocumentFragment();
+
+        const allBtn = createButton(isAllSelected ? "全解除" : "全選択", true, false);
+        panel.appendChild(allBtn);
+
+        if (!isDesktop) {
+            const dummy = document.createElement("div");
+            dummy.className = "w-full";
+            panel.appendChild(dummy);
+        }
+
+        sortedAreas.forEach(area => {
+            const isSelected = currentSet.has(area);
+            panel.appendChild(createButton(area, false, isSelected));
+        });
+        
+        return panel;
+    };
+
+    const mobilePanel = DOM.areaFilterPanelMobile?.querySelector('div');
+    const desktopPanel = DOM.areaFilterPanelDesktop?.querySelector('div');
+
+    if (mobilePanel) {
+        mobilePanel.innerHTML = "";
+        mobilePanel.appendChild(createPanelContent(false));
+    }
+
+    if (desktopPanel) {
+        desktopPanel.innerHTML = "";
+        desktopPanel.appendChild(createPanelContent(true));
+    }
 };
 
 const renderAreaFilterPanel = () => {
