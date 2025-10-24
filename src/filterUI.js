@@ -60,7 +60,7 @@ const renderAreaFilterPanel = () => {
   const createButton = (area, isAll, isSelected) => {
     const btn = document.createElement("button");
     btn.textContent = area;
-    
+
     const btnClass = 'py-1 px-3 text-sm rounded font-semibold text-white text-center transition w-auto';
 
     if (isAll) {
@@ -161,8 +161,8 @@ const updateFilterUI = () => {
       clickCount = 1;
       btn.classList.add("bg-gray-500", "hover:bg-gray-400");
 
-      if (DOM.areaFilterPanelMobile && DOM.areaFilterPanelDesktop) {
-      }
+      const panels = [DOM.areaFilterPanelMobile, DOM.areaFilterPanelDesktop];
+      panels.forEach(p => p?.classList.add('hidden'));
     }
 
     btn.dataset.clickCount = String(clickCount);
