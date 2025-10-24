@@ -30,8 +30,6 @@ const callUpdateCrushStatus = httpsCallable(functions, 'crushStatusUpdater');
 const callRevertStatus = httpsCallable(functions, 'revertStatus');
 const callGetServerTime = httpsCallable(functions, 'getServerTime');
 
-console.log(auth.currentUser?.uid);
-
 // 認証
 async function initializeAuth() {
     return new Promise((resolve) => {
@@ -71,6 +69,8 @@ function subscribeMobStatusDocs(onUpdate) {
     );
     return () => unsubs.forEach(u => u());
 }
+
+console.log(auth.currentUser?.uid);
 
 function subscribeMobLocations(onUpdate) {
     const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
