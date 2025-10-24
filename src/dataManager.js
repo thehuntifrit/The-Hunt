@@ -1,7 +1,7 @@
 // dataManager.js
 
 import { filterAndRender, displayStatus } from "./uiRender.js";
-import { subscribeMobStatusDocs, subscribeMobLocations } from "./server.js";
+import { subscribeMobStatusDocs, subscribeMobLocations, initializeAuth } from "./server.js";
 import { calculateRepop } from "./cal.js";
 
 const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
@@ -91,92 +91,95 @@ async function loadBaseMobData() {
   const data = await resp.json();
 
 const baseMobData = Object.entries(data.mobs).map(([no, mob]) => ({
-    No: parseInt(no, 10),
-    Rank: mob.rank,
-    Name: mob.name,
-    Area: mob.area,
-    Condition: mob.condition,
-    Expansion: EXPANSION_MAP[Math.floor(no / 10000)] || "Unknown",
-    
-    REPOP_s: mob.repopSeconds,
-    MAX_s: mob.maxRepopSeconds,
-    
-    moonPhase: mob.moonPhase,
-    timeRange: mob.timeRange,
-    timeRanges: mob.timeRanges,
-    weatherSeedRange: mob.weatherSeedRange,
-    weatherSeedRanges: mob.weatherSeedRanges,
+    No: parseInt(no, 10),
+    Rank: mob.rank,
+    Name: mob.name,
+    Area: mob.area,
+    Condition: mob.condition,
+    Expansion: EXPANSION_MAP[Math.floor(no / 10000)] || "Unknown",
+    
+    REPOP_s: mob.repopSeconds,
+    MAX_s: mob.maxRepopSeconds,
+    
+    moonPhase: mob.moonPhase,
+    timeRange: mob.timeRange,
+    timeRanges: mob.timeRanges,
+    weatherSeedRange: mob.weatherSeedRange,
+    weatherSeedRanges: mob.weatherSeedRanges,
 
-    Map: mob.mapImage,
-    spawn_points: mob.locations,
-    last_kill_time: 0,
-    prev_kill_time: 0,
-    last_kill_memo: "",
-    spawn_cull_status: {},
-    related_mob_no: mob.rank.startsWith("B") ? mob.relatedMobNo : null,
-    repopInfo: calculateRepop({ 
-    REPOP_s: mob.repopSeconds, 
-    MAX_s: mob.maxRepopSeconds,
-    last_kill_time: 0,
-    })
+    Map: mob.mapImage,
+    spawn_points: mob.locations,
+    last_kill_time: 0,
+    prev_kill_time: 0,
+    last_kill_memo: "",
+    spawn_cull_status: {},
+    related_mob_no: mob.rank.startsWith("B") ? mob.relatedMobNo : null,
+    repopInfo: calculateRepop({ 
+    REPOP_s: mob.repopSeconds, 
+    MAX_s: mob.maxRepopSeconds,
+    last_kill_time: 0,
+    })
 }));
 
-    setBaseMobData(baseMobData);
-    setMobs([...baseMobData]);
-    filterAndRender({ isInitialLoad: true });
+    setBaseMobData(baseMobData);
+    setMobs([...baseMobData]);
+    filterAndRender({ isInitialLoad: true });
 }
 
 function startRealtime() {
-  // 前回の購読を解除
-  unsubscribes.forEach(fn => fn && fn());
-  unsubscribes = [];
-
-// Mob ステータス購読
-    const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
-        const current = getState().mobs;
-        const map = new Map();
-        Object.values(mobStatusDataMap).forEach(docData => {
-            Object.entries(docData).forEach(([mobId, mobData]) => {
-                const mobNo = parseInt(mobId, 10);
-                map.set(mobNo, {
-                    last_kill_time: mobData.last_kill_time?.seconds || 0,
-                    prev_kill_time: mobData.prev_kill_time?.seconds || 0,
-                    last_kill_memo: mobData.last_kill_memo || ""
-                });
-            });
-        });
-        const merged = current.map(m => {
-            const dyn = map.get(m.No);
-            if (dyn) {
-                const updatedMob = { ...m, ...dyn };
-                // LKT/PKT が更新された Mob に対して repopInfo を再計算
-                updatedMob.repopInfo = calculateRepop(updatedMob); // <--- repopInfo の計算を追加
-                return updatedMob;
-            }
-            return m;
-        });
-        setMobs(merged);
-        filterAndRender();
-        displayStatus("LKT/Memoデータ更新完了。", "success");
-    });
-    unsubscribes.push(unsubStatus);
-
-  // Mob 出現位置購読
-  const unsubLoc = subscribeMobLocations(locationsMap => {
-    const current = getState().mobs;
-    const merged = current.map(m => {
-      const dyn = locationsMap[m.No];
-      if (m.Rank === "S" && dyn) {
-        return { ...m, spawn_cull_status: dyn.points || {} };
-      }
-      return m;
-    });
-    setMobs(merged);
-    filterAndRender();
-    displayStatus("湧き潰しデータ更新完了。", "success");
-  });
-  unsubscribes.push(unsubLoc);
-}
+  unsubscribes.forEach(fn => fn && fn());
+  unsubscribes = [];
     
-export { state, EXPANSION_MAP, getState, getMobByNo, setUserId, setBaseMobData, setMobs, loadBaseMobData, 
-        setFilter, setOpenMobCardNo, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP };
+    const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
+        const current = getState().mobs;
+        const map = new Map();
+        Object.values(mobStatusDataMap).forEach(docData => {
+            Object.entries(docData).forEach(([mobId, mobData]) => {
+                const mobNo = parseInt(mobId, 10);
+                map.set(mobNo, {
+                    last_kill_time: mobData.last_kill_time?.seconds || 0,
+                    prev_kill_time: mobData.prev_kill_time?.seconds || 0,
+                    last_kill_memo: mobData.last_kill_memo || ""
+                });
+            });
+        });
+        const merged = current.map(m => {
+            const dyn = map.get(m.No);
+            if (dyn) {
+                const updatedMob = { ...m, ...dyn };
+                updatedMob.repopInfo = calculateRepop(updatedMob);
+                return updatedMob;
+            }
+            return m;
+        });
+        setMobs(merged);
+        filterAndRender();
+        displayStatus("LKT/Memoデータ更新完了。", "success");
+    });
+    unsubscribes.push(unsubStatus);
+
+  const unsubLoc = subscribeMobLocations(locationsMap => {
+    const current = getState().mobs;
+    const merged = current.map(m => {
+      const dyn = locationsMap[m.No];
+      if (m.Rank === "S" && dyn) {
+        return { ...m, spawn_cull_status: dyn.points || {} };
+      }
+      return m;
+    });
+    setMobs(merged);
+    filterAndRender();
+    displayStatus("湧き潰しデータ更新完了。", "success");
+  });
+  unsubscribes.push(unsubLoc);
+}
+
+async function initializeAuthenticationAndRealtime() {
+    const userId = await initializeAuth();
+    setUserId(userId);
+    startRealtime(); 
+}
+    
+export { state, EXPANSION_MAP, getState, getMobByNo, setUserId, setBaseMobData, setMobs, loadBaseMobData, 
+        setFilter, setOpenMobCardNo, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP,
+        initializeAuthenticationAndRealtime };
