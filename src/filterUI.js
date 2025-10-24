@@ -61,7 +61,7 @@ const renderAreaFilterPanel = () => {
     const btn = document.createElement("button");
     btn.textContent = area;
 
-    const btnClass = 'py-1 px-3 text-sm rounded font-semibold text-white text-center transition w-auto';
+    const btnClass = 'py-1 px-2 text-sm rounded font-semibold text-white text-center transition w-auto';
 
     if (isAll) {
       btn.className = `area-filter-btn ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
