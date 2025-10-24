@@ -105,61 +105,63 @@ const renderAreaFilterPanel = () => {
 };
 
 const updateFilterUI = () => {
-  const state = getState();
-  const currentRankKeyForColor = FILTER_TO_DATA_RANK_MAP[state.filter.rank] || state.filter.rank;
+    const state = getState();
+    const currentRankKeyForColor = FILTER_TO_DATA_RANK_MAP[state.filter.rank] || state.filter.rank;
 
-  DOM.rankTabs.querySelectorAll(".tab-button").forEach(btn => {
-    btn.classList.remove("bg-blue-800", "bg-red-800", "bg-yellow-800", "bg-indigo-800", "bg-gray-500", "hover:bg-gray-400", "bg-green-500");
+    DOM.rankTabs.querySelectorAll(".tab-button").forEach(btn => {
+        btn.classList.remove("bg-blue-800", "bg-red-800", "bg-yellow-800", "bg-indigo-800", "bg-gray-500", "hover:bg-gray-400", "bg-green-500");
 
-    btn.classList.add("bg-gray-500", "hover:bg-gray-400");
+        btn.classList.add("bg-gray-500", "hover:bg-gray-400");
 
-    let clickCount = parseInt(btn.dataset.clickCount, 10) || 0;
+        let clickCount = parseInt(btn.dataset.clickCount, 10) || 0;
 
-    if (btn.dataset.rank === state.filter.rank) {
-      clickCount = clickCount + 1;
-      if (clickCount > 3) clickCount = 1;
+        if (btn.dataset.rank === state.filter.rank) {
+            clickCount = clickCount + 1;
+            if (clickCount > 3) clickCount = 1;
 
-      btn.classList.remove("bg-gray-500", "hover:bg-gray-400");
-      const rank = btn.dataset.rank;
+            btn.classList.remove("bg-gray-500", "hover:bg-gray-400");
+            const rank = btn.dataset.rank;
 
-      btn.classList.add(
-        rank === "ALL" ? "bg-blue-800"
-          : currentRankKeyForColor === "S" ? "bg-red-800"
-            : currentRankKeyForColor === "A" ? "bg-yellow-800"
-              : currentRankKeyForColor === "F" ? "bg-indigo-800"
-                : "bg-gray-800"
-      );
-    } else {
-      clickCount = 1;
-      btn.classList.add("hover:bg-gray-400");
-    }
-
-    btn.dataset.clickCount = String(clickCount);
-
-    if (DOM.areaFilterPanelMobile && DOM.areaFilterPanelDesktop) {
-      const panels = [DOM.areaFilterPanelMobile, DOM.areaFilterPanelDesktop];
-
-      if (btn.dataset.rank === state.filter.rank) {
-        if (clickCount === 2) {
-          panels.forEach(p => p.classList.remove('hidden'));
+            btn.classList.add(
+                rank === "ALL" ? "bg-blue-800"
+                    : currentRankKeyForColor === "S" ? "bg-red-800"
+                        : currentRankKeyForColor === "A" ? "bg-yellow-800"
+                            : currentRankKeyForColor === "F" ? "bg-indigo-800"
+                                : "bg-gray-800"
+            );
         } else {
-          panels.forEach(p => p.classList.add('hidden'));
+            clickCount = 1;
+            btn.classList.add("hover:bg-gray-400");
         }
-      } else {
-        panels.forEach(p => p.classList.add('hidden'));
-      }
-    } else if (DOM.areaFilterPanelMobile) {
-      if (btn.dataset.rank === state.filter.rank) {
-        if (clickCount === 2) {
-          DOM.areaFilterPanelMobile.classList.remove('hidden');
-        } else {
-          DOM.areaFilterPanelMobile.classList.add('hidden');
+
+        btn.dataset.clickCount = String(clickCount);
+
+        if (DOM.areaFilterPanelMobile && DOM.areaFilterPanelDesktop) {
+            const panels = [DOM.areaFilterPanelMobile, DOM.areaFilterPanelDesktop];
+
+            if (btn.dataset.rank === state.filter.rank) {
+                if (clickCount === 2) {
+                    renderAreaFilterPanel();
+                    panels.forEach(p => p.classList.remove('hidden'));
+                } else {
+                    panels.forEach(p => p.classList.add('hidden'));
+                }
+            } else {
+                panels.forEach(p => p.classList.add('hidden'));
+            }
+        } else if (DOM.areaFilterPanelMobile) {
+            if (btn.dataset.rank === state.filter.rank) {
+                if (clickCount === 2) {
+                    renderAreaFilterPanel();
+                    DOM.areaFilterPanelMobile.classList.remove('hidden');
+                } else {
+                    DOM.areaFilterPanelMobile.classList.add('hidden');
+                }
+            } else {
+                DOM.areaFilterPanelMobile.classList.add('hidden');
+            }
         }
-      } else {
-        DOM.areaFilterPanelMobile.classList.add('hidden');
-      }
-    }
-  });
+    });
 };
 
 export { renderRankTabs, renderAreaFilterPanel, updateFilterUI };
