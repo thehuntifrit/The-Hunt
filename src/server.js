@@ -1,5 +1,4 @@
-// server.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+// server.jsimport { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, addDoc, doc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-functions.js";
@@ -8,6 +7,8 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase
 import { getState, setFilter, setOpenMobCardNo, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js"; 
 import { closeReportModal } from "./modal.js";
 import { displayStatus } from "./uiRender.js";
+
+const CRUSH_STATUS_UPDATER_URL = "https://asia-northeast1-the-hunt-ifrit.cloudfunctions.net/crushStatusUpdater"; 
 
 // 初期化と設定
 const FIREBASE_CONFIG = {
@@ -157,6 +158,7 @@ const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
     }
 
     const action = isCurrentlyCulled ? "uncrush" : "crush";
+    const type = action === "crush" ? "add" : "remove";
     const mob = mobs.find(m => m.No === mobNo);
     if (!mob) return;
 
@@ -165,12 +167,30 @@ const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
     );
 
     try {
-        const result = await callUpdateCrushStatus({
+        const payload = {
             mob_id: mobNo.toString(),
             point_id: locationId,
-            type: action === "crush" ? "add" : "remove",
+            type: type,
             userId: userId
-        });
+        };
+
+        let result;
+        
+        if (mob.Rank === 'S') {
+            const response = await fetchSecureData(CRUSH_STATUS_UPDATER_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            result = { data: data }; // 応答形式をFunctionsに合わせる
+            
+            if (data.success === false) {
+                throw new Error(data.message || "内部処理エラー");
+            }
+
+        } else {
+            result = await callUpdateCrushStatus(payload);
+        }
 
         if (result.data?.success) {
             displayStatus(`${mob.Name} の状態を更新しました。`, "success");
@@ -221,44 +241,42 @@ const revertMobStatus = async (mobNo) => {
 };
 
 async function fetchSecureData(serviceUrl, options = {}) {
-    const user = auth.currentUser;
+    const user = auth.currentUser;
 
-    if (!user) {
-        displayStatus("認証ユーザーがいません。", "error");
-        throw new Error("User not authenticated.");
-    }
+    if (!user) {
+        displayStatus("認証ユーザーがいません。", "error");
+        throw new Error("User not authenticated.");
+    }
 
-    displayStatus(`Cloud Runへの認証リクエストを準備中...`);
-    
-    try {
-        // 1. IDトークンの取得
-        const idToken = await user.getIdToken();
+    displayStatus(`外部サービス (${serviceUrl}) への認証リクエストを準備中...`);
+    
+    try {
+        const idToken = await user.getIdToken();
+        const headers = {
+            ...options.headers,
+            'Authorization': `Bearer ${idToken}`,
+            'Content-Type': 'application/json'
+        };
 
-        // 2. Authorizationヘッダーの設定
-        const headers = {
-            ...options.headers,
-            'Authorization': `Bearer ${idToken}`,
-            'Content-Type': 'application/json'
-        };
+        const response = await fetch(serviceUrl, {
+            ...options,
+            headers: headers,
+        });
 
-        const response = await fetch(serviceUrl, {
-            ...options,
-            headers: headers,
-        });
+        if (!response.ok) {
+            const errorBody = await response.text();
+            displayStatus(`外部サービスリクエスト失敗: ${response.status} ${response.statusText}. 詳細: ${errorBody.substring(0, 100)}`, "error");
+            throw new Error(`External service request failed with status ${response.status}`);
+        }
 
-        if (!response.ok) {
-            displayStatus(`Cloud Runリクエスト失敗: ${response.status} ${response.statusText}`, "error");
-            throw new Error(`Cloud Run request failed with status ${response.status}`);
-        }
+        displayStatus("外部サービスからの応答を受け取りました。", "success");
+        return response;
 
-        displayStatus("Cloud Runからの応答を受け取りました。", "success");
-        return response;
-
-    } catch (error) {
-        console.error("Cloud Run認証リクエストエラー:", error);
-        displayStatus(`リクエストエラー: ${error.message}`, "error");
-        throw error;
-    }
+    } catch (error) {
+        console.error("外部サービス認証リクエストエラー:", error);
+        displayStatus(`リクエストエラー: ${error.message}`, "error");
+        throw error;
+    }
 }
 
 export { initializeAuth, subscribeMobStatusDocs, subscribeMobLocations, submitReport, toggleCrushStatus, revertMobStatus, getServerTimeUTC, fetchSecureData };
