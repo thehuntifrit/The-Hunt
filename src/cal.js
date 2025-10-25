@@ -45,13 +45,17 @@ function getEorzeaMoonPhase(date = new Date()) {
   const unixSeconds = date.getTime() / 1000;
   const EORZEA_SPEED_RATIO = 20.57142857142857;
   const eorzeaTotalDays = (unixSeconds * EORZEA_SPEED_RATIO) / 86400;
+  // 小数位相を 1.00〜33.00 の範囲で返す
   return (eorzeaTotalDays % 32) + 1;
 }
 
+/**
+ * 月齢値に基づいてフェーズ名を取得
+ */
 function getMoonPhaseLabel(phase) {
   if (phase >= 32.5 || phase < 4.5) return "新月";
   if (phase >= 16.5 && phase < 20.5) return "満月";
-  return null;
+  return null; // その他のフェーズ
 }
 
 function getEorzeaWeatherSeed(date = new Date()) {
@@ -87,6 +91,7 @@ function checkMobSpawnCondition(mob, date) {
   const seed = getEorzeaWeatherSeed(date);
 
   if (mob.moonPhase) {
+    // mob.moonPhaseが文字列（例："満月"）の場合のみを想定
     const currentLabel = getMoonPhaseLabel(moon);
     if (currentLabel !== mob.moonPhase) return false;
   }
@@ -128,11 +133,14 @@ function findNextSpawnTime(mob, now = new Date()) {
   let date = new Date(now.getTime());
   const limit = now.getTime() + 7 * 24 * 60 * 60 * 1000;
 
+  // 月齢条件の精度を上げるため、探索ステップをリアル1分（60秒）刻みに変更
+  const REAL_SECONDS_STEP = 60; 
+
   while (date.getTime() < limit) {
     if (checkMobSpawnCondition(mob, date)) {
       return date;
     }
-    date = new Date(date.getTime() + 1400 * 1000);
+    date = new Date(date.getTime() + REAL_SECONDS_STEP * 1000);
   }
 
   return null;
