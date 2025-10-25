@@ -1,3 +1,6 @@
+
+// cal.js
+
 // formatDuration
 function formatDuration(seconds) {
   const h = Math.floor(seconds / 3600);
@@ -40,30 +43,14 @@ function getEorzeaMoonPhase(date = new Date()) {
   return phase;
 }
 
-// 天候シード計算 (新しいロジック)
+// 天候シード計算
 function getEorzeaWeatherSeed(date = new Date()) {
-  // Get seconds since Jan 1st 1970
   const unixSeconds = Math.floor(date.getTime() / 1000);
-  
-  // Get Eorzean hours/days since (1 Eorzean hour = 175 seconds)
-  const eorzeanHours = Math.floor(unixSeconds / 175);
-  const eorzeanDays = Math.floor(eorzeanHours / 24);
-  
-  // Compute which of the 3 time chunks the hour falls in (0, 8, or 16)
-  let timeChunk = (eorzeanHours % 24) - (eorzeanHours % 8);
-  // Adjust time chunk so that 00:00 is 0, 08:00 is 8, 16:00 is 16
-  timeChunk = (timeChunk + 8) % 24; 
-
-  // The number of Eorzean days and the time chunk form the seed that is hashed.
-  // Note: For weather calculation, the time chunk is scaled by 100.
-  const seed = eorzeanDays * 100 + timeChunk; 
-  
-  // Do a little hashing
-  const step1 = (seed << 11) ^ seed;
+  const bell = Math.floor(unixSeconds / 175) % 24; // ETの時刻
+  const increment = (Math.floor(unixSeconds / 175 / 24) * 100) + bell;
+  const step1 = (increment << 11) ^ increment;
   const step2 = (step1 >>> 8) ^ step1;
-  
-  // Return a number between 0-99 inclusive
-  return step2 % 100;
+  return step2 % 100; // 0〜99 の値
 }
 
 // 天候決定（エリアごとのテーブルを渡す）
@@ -84,8 +71,8 @@ function getEorzeaWeather(date = new Date(), weatherTable) {
  * @returns {Boolean} 条件を満たしているか
  */
 function checkMobSpawnCondition(mob, date) {
-  const et = getEorzeaTime(date);          // { hours, minutes }
-  const moon = getEorzeaMoonPhase(date);   // 0〜31 の数値
+  const et = getEorzeaTime(date);          // { hours, minutes }
+  const moon = getEorzeaMoonPhase(date);   // 0〜31 の数値
   const seed = getEorzeaWeatherSeed(date); // 0〜99
 
   if (mob.moonPhase) {
@@ -227,4 +214,4 @@ function formatLastKillTime(timestamp) {
 }
 
 export { calculateRepop, checkMobSpawnCondition, findNextSpawnTime, getEorzeaTime, getEorzeaMoonPhase, 
-         getEorzeaWeatherSeed, getEorzeaWeather, formatDuration, debounce, toJstAdjustedIsoString, formatLastKillTime };
+        getEorzeaWeatherSeed, getEorzeaWeather, formatDuration, debounce, toJstAdjustedIsoString, formatLastKillTime };
