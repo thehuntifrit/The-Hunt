@@ -1,5 +1,5 @@
 // server.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import * as firebaseApp from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, addDoc, doc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-functions.js";
@@ -9,6 +9,7 @@ import { getState, setFilter, setOpenMobCardNo, FILTER_TO_DATA_RANK_MAP } from "
 import { closeReportModal } from "./modal.js";
 import { displayStatus } from "./uiRender.js";
 
+// Cloud Run サービスのURL (Sモブ湧き潰し専用)
 const CRUSH_STATUS_UPDATER_URL = "https://asia-northeast1-the-hunt-ifrit.cloudfunctions.net/crushStatusUpdater"; 
 
 // 初期化と設定
@@ -18,10 +19,10 @@ const FIREBASE_CONFIG = {
     projectId: "the-hunt-ifrit",
     storageBucket: "the-hunt-ifrit.firebasestorage.app",
     messagingSenderId: "285578581189",
-    appId: "1:285578581189:web:4d9826ee3f988a7519ccac"
+    appId: "1:285578581189:web:4d9926ee3f988a7519ccac"
 };
 
-const app = initializeApp(FIREBASE_CONFIG);
+const app = firebaseApp.initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const functionsInstance = getFunctions(app, "asia-northeast1");
@@ -175,23 +176,9 @@ const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
             userId: userId
         };
 
-        let result;
-        
-        if (mob.Rank === 'S') {
-            const response = await fetchSecureData(CRUSH_STATUS_UPDATER_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
-            const data = await response.json();
-            result = { data: data }; // 応答形式をFunctionsに合わせる
-            
-            if (data.success === false) {
-                throw new Error(data.message || "内部処理エラー");
-            }
-
-        } else {
-            result = await callUpdateCrushStatus(payload);
-        }
+        // S/A/Fランクに関わらず、すべての更新を callUpdateCrushStatus (httpsCallable) 経由で行う
+        // httpsCallable は認証トークンの付与とCORS処理を自動で行うため、Failed to fetch の発生を防ぎます。
+        const result = await callUpdateCrushStatus(payload);
 
         if (result.data?.success) {
             displayStatus(`${mob.Name} の状態を更新しました。`, "success");
@@ -252,7 +239,10 @@ async function fetchSecureData(serviceUrl, options = {}) {
     displayStatus(`外部サービス (${serviceUrl}) への認証リクエストを準備中...`);
     
     try {
+        // 1. IDトークンの取得
         const idToken = await user.getIdToken();
+
+        // 2. Authorizationヘッダーの設定
         const headers = {
             ...options.headers,
             'Authorization': `Bearer ${idToken}`,
@@ -265,6 +255,7 @@ async function fetchSecureData(serviceUrl, options = {}) {
         });
 
         if (!response.ok) {
+            // エラー応答のテキストを読み込み、具体的なエラーメッセージを表示
             const errorBody = await response.text();
             displayStatus(`外部サービスリクエスト失敗: ${response.status} ${response.statusText}. 詳細: ${errorBody.substring(0, 100)}`, "error");
             throw new Error(`External service request failed with status ${response.status}`);
