@@ -1085,7 +1085,7 @@
       "62013": {"rank": "S", "name":"3️⃣厭忌のキーリーゲー", "area": "オルコ・パチャ",
       "condition": "新月のET 0:00～5:59 + 天候が「霧」の条件を満たした時にPOP地点を踏む",
       "repopSeconds": 302400, "maxRepopSeconds": 475200,
-      "moonPhase": 新月",
+      "moonPhase": "新月",
       "weatherSeedRange": [70, 79], 
       "timeRange": { "start": 0, "end": 6 },
       "mapImage": "Urqopacha.webp",
