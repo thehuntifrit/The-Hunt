@@ -41,6 +41,12 @@ function getEorzeaTime(date = new Date()) {
     };
 }
 
+function getMoonPhaseLabel(phase) {
+  if (phase >= 32.5 || phase < 4.5) return "新月";
+  if (phase >= 16.5 && phase < 20.5) return "満月";
+  return null;
+}
+
 function getEorzeaMoonPhase(date = new Date()) {
   const unixSeconds = Math.floor(date.getTime() / 1000);
   const EORZEA_SPEED_RATIO = 20.57142857142857;
