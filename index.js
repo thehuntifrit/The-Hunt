@@ -6,14 +6,13 @@ const admin = require('firebase-admin');
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 const { onTaskDispatched } = require('firebase-functions/v2/tasks');
 const logger = require('firebase-functions/logger');
-const { CloudTasksClient } = require('@google-cloud/tasks').v2; // ここはそのまま
+const { CloudTasksClient } = require('@google-cloud/tasks').v2;
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https'); 
 
 admin.initializeApp();
 
 const db = admin.firestore();
-// const tasksClient = new CloudTasksClient(); 
-
+// 🚀 遅延初期化のための変数
 let tasksClient = null;
 
 // Firestore Collection Names
@@ -189,6 +188,8 @@ exports.reportProcessor = onDocumentCreated({
     const intendedSeconds = Math.floor(createdTime.getTime() / 1000) + Math.floor(AVG_WINDOW_HALF_MS / 1000);
     const scheduleTime = new Date(intendedSeconds * 1000);
 
+    const targetUrl = `https://${location}-${PROJECT_ID}.cloudfunctions.net/averageStatusCalculator`;
+
     const payload = {
         mobId: mobId,
         // 平均化ウィンドウの中心時刻として、サーバーの正確なNTP時刻 + 5分を送る
@@ -198,12 +199,21 @@ exports.reportProcessor = onDocumentCreated({
     const task = {
         httpRequest: {
             httpMethod: 'POST',
-            url: `https://${location}-${PROJECT_ID}.cloudfunctions.net/averageStatusCalculator`, 
+            url: targetUrl, 
             body: Buffer.from(JSON.stringify(payload)).toString('base64'),
             headers: {
                 'Content-Type': 'application/json',
             },
-            // OIDCトークン認証の設定を省略（デプロイ環境で自動設定）
+            
+            // ===============================================================
+            // 【修正箇所】OIDCトークン認証の設定を明示的に追記
+            // ===============================================================
+            oidcToken: {
+                // タスク実行に用いるサービスアカウント（App Engine default SA）
+                serviceAccountEmail: 'the-hunt-ifrit@appspot.gserviceaccount.com', 
+                // トークンがこのURL宛であることを指定（オーディエンス）
+                audience: targetUrl,
+            },
         },
         scheduleTime: {
             seconds: intendedSeconds
