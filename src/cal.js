@@ -1,5 +1,3 @@
-// cal.js
-
 // formatDuration
 function formatDuration(seconds) {
   const h = Math.floor(seconds / 3600);
@@ -41,18 +39,21 @@ function getEorzeaTime(date = new Date()) {
     };
 }
 
+function getEorzeaMoonPhase(date = new Date()) {
+  const unixSeconds = date.getTime() / 1000;
+  const EORZEA_SPEED_RATIO = 20.57142857142857;
+  const eorzeaTotalDays = (unixSeconds * EORZEA_SPEED_RATIO) / 86400;
+  // 小数位相を 1.00〜33.00 の範囲で返す
+  return (eorzeaTotalDays % 32) + 1;
+}
+
+/**
+ * 月齢値に基づいてフェーズ名を取得
+ */
 function getMoonPhaseLabel(phase) {
   if (phase >= 32.5 || phase < 4.5) return "新月";
   if (phase >= 16.5 && phase < 20.5) return "満月";
-  return null;
-}
-
-function getEorzeaMoonPhase(date = new Date()) {
-  const unixSeconds = Math.floor(date.getTime() / 1000);
-  const EORZEA_SPEED_RATIO = 20.57142857142857;
-  const eorzeaDays = Math.floor(unixSeconds * EORZEA_SPEED_RATIO / 86400);
-  const phase = (eorzeaDays % 32) + 1; 
-  return phase;
+  return null; // その他のフェーズ
 }
 
 function getEorzeaWeatherSeed(date = new Date()) {
@@ -88,9 +89,9 @@ function checkMobSpawnCondition(mob, date) {
   const seed = getEorzeaWeatherSeed(date);
 
   if (mob.moonPhase) {
-    const phases = Array.isArray(mob.moonPhase) ? mob.moonPhase : [mob.moonPhase];
-    const numericPhases = phases.map(p => Number(p));
-    if (!numericPhases.includes(moon)) return false;
+    // mob.moonPhaseが文字列（例："満月"）の場合のみを想定
+    const currentLabel = getMoonPhaseLabel(moon);
+    if (currentLabel !== mob.moonPhase) return false;
   }
 
   if (mob.weatherSeedRange) {
@@ -130,6 +131,7 @@ function findNextSpawnTime(mob, now = new Date()) {
   let date = new Date(now.getTime());
   const limit = now.getTime() + 7 * 24 * 60 * 60 * 1000;
 
+  // 探索ステップはET時間8時間（リアル1400秒）刻みを維持し、全ての条件の変化点を捉える
   while (date.getTime() < limit) {
     if (checkMobSpawnCondition(mob, date)) {
       return date;
@@ -206,4 +208,4 @@ function formatLastKillTime(timestamp) {
 }
 
 export { calculateRepop, checkMobSpawnCondition, findNextSpawnTime, getEorzeaTime, getEorzeaMoonPhase, 
-         getEorzeaWeatherSeed, getEorzeaWeather, formatDuration, debounce, toJstAdjustedIsoString, formatLastKillTime };
+         getEorzeaWeatherSeed, getEorzeaWeather, getMoonPhaseLabel, formatDuration, debounce, toJstAdjustedIsoString, formatLastKillTime };
