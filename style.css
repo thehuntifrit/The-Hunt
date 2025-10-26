@@ -6,15 +6,22 @@
 --header-height: 4rem;
 font-family: 'Inter', sans-serif;
   
+:root {
+  /* Repop進捗バーの色定義 */
+  --progress-0-60: #d9ead4;   /* 緑系 */
+  --progress-60-80: #fff3ce;  /* 黄系 */
+  --progress-80-100: #fce5ce; /* 赤系 */
+}
+
 /* 進捗バー色クラス */
 .progress-p0-60 {
-  background-color: var(--progress-p0-60);
+  background-color: var(--progress-0-60);
 }
 .progress-p60-80 {
-  background-color: var(--progress-p60-80);
+  background-color: var(--progress-60-80);
 }
 .progress-p80-100 {
-  background-color: var(--progress-p80-100);
+  background-color: var(--progress-80-100);
 }
 
 /* テキスト色定義 */
