@@ -1,5 +1,3 @@
-// location.js
-
 import { DOM } from "./uiRender.js";
 import { toggleCrushStatus } from "./server.js";
 import { getState, getMobByNo } from "./dataManager.js";
@@ -35,6 +33,7 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_Last
   const pointStatus = spawnCullStatus?.[point.id];
   const culledTimeMs = pointStatus?.culled_at?.toMillis() || 0;
   const uncullTimeMs = pointStatus?.uncull_at?.toMillis() || 0;
+  
   const isCulled = culledTimeMs > uncullTimeMs;
 
   const isS_A_Cullable = point.mob_ranks.some(r => r === "S" || r === "A");
