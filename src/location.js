@@ -1,7 +1,7 @@
 // location.js
 
 import { DOM } from "./uiRender.js";
-import { toggleCrushStatus } from "./data.js";
+import { toggleCrushStatus } from "./server.js";
 import { getState, getMobByNo } from "./dataManager.js";
 
 function handleCrushToggle(e) {
