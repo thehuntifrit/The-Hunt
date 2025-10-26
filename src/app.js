@@ -9,32 +9,43 @@ import { DOM, filterAndRender, sortAndRedistribute } from "./uiRender.js";
 import { renderRankTabs, renderAreaFilterPanel, updateFilterUI, handleAreaFilterClick } from "./filterUI.js";
 
 async function loadMaintenance() {
-    try {
-        const res = await fetch('./maintenance.json', { cache: 'no-store' });
-        if (!res.ok) return;
-        const data = await res.json();
+  try {
+    const res = await fetch('./maintenance.json', { cache: 'no-store' });
+    if (!res.ok) return null;
+    const data = await res.json();
 
-        const start = new Date(data.maintenance.start);
-        const end = new Date(data.maintenance.end);
-        const serverUp = new Date(data.maintenance.serverUp);
-        const now = new Date();
+    const start = new Date(data.maintenance.start);
+    const end = new Date(data.maintenance.end);
+    const serverUp = new Date(data.maintenance.serverUp);
+    const now = new Date();
 
-        const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
-        const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
+    const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
 
-        if (now >= showFrom && now <= showUntil) {
-            renderStatusBar(start, end, serverUp);
-        } else {
-            clearStatusBar();
-        }
+    if (now >= showFrom && now <= showUntil) {
+      renderStatusBar(start, end, serverUp);
+    } else {
+      clearStatusBar();
+    }
 
-        if (now >= start && now < serverUp) {
-            updateMobCards();
-        }
-    } catch (err) {
-        console.error('maintenance.json 読み込み失敗:', err);
-    }
+    if (now >= start && now < serverUp) {
+      updateMobCards();
+    }
+
+    // 計算用に返す値
+    return {
+      start,
+      end,
+      serverUp,
+      serverUpSec: serverUp.getTime() / 1000
+    };
+
+  } catch (err) {
+    console.error('maintenance.json 読み込み失敗:', err);
+    return null;
+  }
 }
+
 
 function renderStatusBar(start, end, serverUp) {
     const el = document.getElementById('status-message');
@@ -200,4 +211,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-export { attachEventListeners, updateMobCards };
+export { attachEventListeners, updateMobCards, loadMaintenance };
