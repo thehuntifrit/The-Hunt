@@ -71,12 +71,12 @@ const RANK_COLORS = {
 };
 
 const PROGRESS_CLASSES = {
-    P0_60: 'progress-p0-60',
-    P60_80: 'progress-p60-80',
-    P80_100: 'progress-p80-100',
-    TEXT_NEXT: 'progress-next-text',
-    TEXT_POP: 'progress-pop-text',
-    MAX_OVER_BLINK: 'progress-max-over-blink'
+  P0_60: "progress-p0-60",
+  P60_80: "progress-p60-80",
+  P80_100: "progress-p80-100",
+  TEXT_NEXT: "text-next",
+  TEXT_POP: "text-pop",
+  MAX_OVER_BLINK: "max-over-blink"
 };
 
 const FILTER_TO_DATA_RANK_MAP = { FATE: 'F', ALL: 'ALL', S: 'S', A: 'A' };
