@@ -179,23 +179,23 @@ function calculateRepop(mob, maintenance) {
     timeRemaining = `Next: ${formatDuration(minRepop - now)}`;
     status = "Next";
 
-  // --- PopWindow（出現可能窓） ---
-  } else if (now >= lastKill + repopSec && now < lastKill + maxSec) {
-    minRepop = lastKill + repopSec;
-    maxRepop = lastKill + maxSec;
-    elapsedPercent = ((now - minRepop) / (maxRepop - minRepop)) * 100;
-    elapsedPercent = Math.min(elapsedPercent, 100);
-    timeRemaining = `残り ${formatDuration(maxRepop - now)} (${elapsedPercent.toFixed(0)}%)`;
-    status = "PopWindow";
+// --- PopWindow（出現可能窓） ---
+} else if (now >= lastKill + repopSec && now < lastKill + maxSec) {
+  minRepop = lastKill + repopSec;
+  maxRepop = lastKill + maxSec;
+  elapsedPercent = ((now - minRepop) / (maxRepop - minRepop)) * 100;
+  elapsedPercent = Math.min(elapsedPercent, 100);
+  timeRemaining = `残り ${formatDuration(maxRepop - now)} (${elapsedPercent.toFixed(0)}%)`;
+  status = "PopWindow";
 
-  // --- MaxOver（最大超過） ---
-  } else {
-    minRepop = lastKill + repopSec;
-    maxRepop = lastKill + maxSec;
-    elapsedPercent = 100;
-    timeRemaining = `+${formatDuration(now - maxRepop)} (100%)`;
-    status = "MaxOver";
-  }
+// --- MaxOver（最大超過） ---
+} else {
+  minRepop = lastKill + repopSec;
+  maxRepop = lastKill + maxSec;
+  elapsedPercent = 100;
+  timeRemaining = `00:00 (100%)`; // 常に固定
+  status = "MaxOver";
+}
 
   let nextMinRepopDate = null;
   if (mob.moonPhase || mob.timeRange || mob.weatherSeedRange || mob.weatherSeedRanges) {
