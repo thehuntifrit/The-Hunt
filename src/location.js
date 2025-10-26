@@ -1,5 +1,3 @@
-// location.js
-
 import { DOM } from "./uiRender.js";
 import { toggleCrushStatus } from "./server.js";
 import { getState, getMobByNo } from "./dataManager.js";
@@ -37,13 +35,12 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_Last
     
     const rawX = (typeof point.x === 'number' && isFinite(point.x)) ? point.x : 0;
     const rawY = (typeof point.y === 'number' && isFinite(point.y)) ? point.y : 0;
+
     const xPos = clamp(rawX, 0, 100);
     const yPos = clamp(rawY, 0, 100);
 
-    // --- 湧き潰し判定ロジック ---
     const pointStatus = spawnCullStatus?.[point.id];
     const isCulled = !!pointStatus?.culled_at;
-
 
     const isS_A_Cullable = point.mob_ranks.some(r => r === "S" || r === "A");
     const isB_Only = point.mob_ranks.every(r => r.startsWith("B"));
@@ -62,7 +59,6 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_Last
         const rankB = point.mob_ranks.find(r => r.startsWith("B"));
         colorClass = rankB === "B1" ? "color-b1" : "color-b2";
         sizeClass = "spawn-point-sa";
-        
         if (isCulled) {
             specialClass = "culled-with-white-border spawn-point-culled";
             dataIsInteractive = "false";
@@ -106,4 +102,3 @@ function attachLocationEvents() {
 }
 
 export { drawSpawnPoint, handleCrushToggle, updateCrushUI, attachLocationEvents };
-
