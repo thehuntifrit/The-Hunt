@@ -1,22 +1,21 @@
-// server.js
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, addDoc, doc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-functions.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
+import { increment } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-import { getState, setFilter, setOpenMobCardNo, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js"; 
+import { getState } from "./dataManager.js"; 
 import { closeReportModal } from "./modal.js";
 import { displayStatus } from "./uiRender.js";
 
 const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyBikwjGsjL_PVFhx3Vj-OeJCocKA_hQOgU",
-    authDomain: "the-hunt-ifrit.firebaseapp.com",
-    projectId: "the-hunt-ifrit",
-    storageBucket: "the-hunt-ifrit.firebasestorage.app",
-    messagingSenderId: "285578581189",
-    appId: "1:285578581189:web:4d9826ee3f988a7519ccac"
+    apiKey: "AIzaSyBikwjGsjL_PVFhx3Vj-OeJCocKA_hQOgU",
+    authDomain: "the-hunt-ifrit.firebaseapp.com",
+    projectId: "the-hunt-ifrit",
+    storageBucket: "the-hunt-ifrit.firebasestorage.app",
+    messagingSenderId: "285578581189",
+    appId: "1:285578581189:web:4d9826ee3f988a7519ccac"
 };
 
 const app = initializeApp(FIREBASE_CONFIG);
@@ -26,254 +25,213 @@ const functionsInstance = getFunctions(app, "asia-northeast1");
 const analytics = getAnalytics(app);
 
 const functions = functionsInstance;
-// const callUpdateCrushStatus = httpsCallable(functions, 'crushStatusUpdater');
-// const callRevertStatus = httpsCallable(functions, 'revertStatus');
+
+// httpsCallable の初期化
 const callGetServerTime = httpsCallable(functions, 'getServerTime');
-const CRUSH_STATUS_UPDATER_URL = "https://asia-northeast1-the-hunt-ifrit.cloudfunctions.net/crushStatusUpdater";
-const REVERT_STATUS_URL = "https://asia-northeast1-the-hunt-ifrit.cloudfunctions.net/revertStatus";
+const callRevertStatus = httpsCallable(functions, 'revertStatus'); // 巻き戻し機能用
 
 
 // 認証
 async function initializeAuth() {
-    return new Promise((resolve) => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            unsubscribe(); 
+    return new Promise((resolve) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            unsubscribe(); 
 
-            if (user) {
-                resolve(user.uid);
-            } else {
-                signInAnonymously(auth)
-                    .then((credential) => {
-                        resolve(credential.user.uid);
-                    })
-                    .catch((error) => {
-                        console.error("匿名認証に失敗しました:", error);
-                        resolve(null); 
-                    });
-            }
-        });
-    });
+            if (user) {
+                resolve(user.uid);
+            } else {
+                signInAnonymously(auth)
+                    .then((credential) => {
+                        resolve(credential.user.uid);
+                    })
+                    .catch((error) => {
+                        console.error("匿名認証に失敗しました:", error);
+                        resolve(null); 
+                    });
+            }
+        });
+    });
 }
 
 onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("UID:", user.uid);
-  } else {
-    console.log("まだ認証されていません");
-  }
+  if (user) {
+    console.log("UID:", user.uid);
+  } else {
+    console.log("まだ認証されていません");
+  }
 });
 
 // サーバーUTC取得
 async function getServerTimeUTC() {
-    const getServerTime = httpsCallable(functionsInstance, "getServerTime");
-    const response = await getServerTime();
-    
-    if (response.data && typeof response.data.serverTimeMs === 'number') {
-        return new Date(response.data.serverTimeMs);
-    } else {
-        console.error("サーバー時刻取得エラー: serverTimeMs が不正です。", response.data);
-        return new Date(); 
-    }
+    const getServerTime = httpsCallable(functionsInstance, "getServerTime");
+    try {
+        const response = await getServerTime();
+        
+        if (response.data && typeof response.data.serverTimeMs === 'number') {
+            return new Date(response.data.serverTimeMs);
+        } else {
+            console.error("サーバー時刻取得エラー: serverTimeMs が不正です。", response.data);
+            return new Date(); 
+        }
+    } catch (error) {
+        console.error("サーバー時刻取得のためのFunctions呼び出しに失敗しました:", error);
+        return new Date();
+    }
 }
 
 // データ購読
 function subscribeMobStatusDocs(onUpdate) {
-    const docIds = ["s_latest", "a_latest", "f_latest"];
-    const mobStatusDataMap = {};
-    const unsubs = docIds.map(id =>
-        onSnapshot(doc(db, "mob_status", id), snap => {
-            const data = snap.data();
-            if (data) mobStatusDataMap[id] = data;
-            onUpdate(mobStatusDataMap);
-        })
-    );
-    return () => unsubs.forEach(u => u());
+    const docIds = ["s_latest", "a_latest", "f_latest"];
+    const mobStatusDataMap = {};
+    const unsubs = docIds.map(id =>
+        onSnapshot(doc(db, "mob_status", id), snap => {
+            const data = snap.data();
+            if (data) mobStatusDataMap[id] = data;
+            onUpdate(mobStatusDataMap);
+        })
+    );
+    return () => unsubs.forEach(u => u());
 }
 
 function subscribeMobLocations(onUpdate) {
-    const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
-        const map = {};
-        snapshot.forEach(docSnap => {
-            const mobNo = parseInt(docSnap.id, 10);
-            const data = docSnap.data();
-            map[mobNo] = { points: data.points || {} };
-        });
-        onUpdate(map);
-    });
-    return unsub;
+    const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
+        const map = {};
+        snapshot.forEach(docSnap => {
+            const mobNo = parseInt(docSnap.id, 10);
+            const data = docSnap.data();
+            map[mobNo] = { points: data.points || {} };
+        });
+        onUpdate(map);
+    });
+    return unsub;
 }
 
-// 討伐報告
+// 討伐報告 (reportsコレクションへの直接書き込み)
 const submitReport = async (mobNo, timeISO, memo) => {
-    const state = getState();
-    const userId = state.userId;
-    const mobs = state.mobs;
+    const state = getState();
+    const userId = state.userId;
+    const mobs = state.mobs;
 
-    if (!userId) {
-        displayStatus("認証が完了していません。ページをリロードしてください。", "error");
-        return;
-    }
+    if (!userId) {
+        displayStatus("認証が完了していません。ページをリロードしてください。", "error");
+        return;
+    }
 
-    const mob = mobs.find(m => m.No === mobNo);
-    if (!mob) {
-        displayStatus("モブデータが見つかりません。", "error");
-        return;
-    }
+    const mob = mobs.find(m => m.No === mobNo);
+    if (!mob) {
+        displayStatus("モブデータが見つかりません。", "error");
+        return;
+    }
 
-    const killTimeDate = await getServerTimeUTC();
+    const killTimeDate = await getServerTimeUTC();
 
-    const modalStatusEl = document.querySelector("#modal-status");
-    if (modalStatusEl) {
-        modalStatusEl.textContent = "送信中...";
-    }
-    displayStatus(`${mob.Name} 討伐時間報告中...`);
+    const modalStatusEl = document.querySelector("#modal-status");
+    if (modalStatusEl) {
+        modalStatusEl.textContent = "送信中...";
+    }
+    displayStatus(`${mob.Name} 討伐時間報告中...`);
 
-    try {
-        await addDoc(collection(db, "reports"), {
-            mob_id: mobNo.toString(),
-            kill_time: killTimeDate,
-            reporter_uid: userId,
-            memo: memo,
-            repop_seconds: mob.REPOP_s
-        });
+    try {
+        await addDoc(collection(db, "reports"), {
+            mob_id: mobNo.toString(),
+            kill_time: killTimeDate,
+            reporter_uid: userId,
+            memo: memo,
+            repop_seconds: mob.REPOP_s
+        });
 
-        closeReportModal();
-        displayStatus("報告が完了しました。データ反映を待っています。", "success");
-    } catch (error) {
-        console.error("レポート送信エラー:", error);
-        if (modalStatusEl) {
-            modalStatusEl.textContent = "送信エラー: " + (error.message || "通信失敗");
-        }
-        displayStatus(`LKT報告エラー: ${error.message || "通信失敗"}`, "error");
-    }
+        closeReportModal();
+        displayStatus("報告が完了しました。データ反映を待っています。", "success");
+    } catch (error) {
+        console.error("レポート送信エラー:", error);
+        if (modalStatusEl) {
+            modalStatusEl.textContent = "送信エラー: " + (error.message || "通信失敗");
+        }
+        displayStatus(`LKT報告エラー: ${error.message || "通信失敗"}`, "error");
+    }
 };
 
-// 湧き潰し報告 (toggleCrushStatus)
+// 湧き潰し報告 (toggleCrushStatus) - Firestore直接書き込み方式へ修正
 const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
-    const state = getState();
-    const userId = state.userId;
-    const mobs = state.mobs;
+    const state = getState();
+    const userId = state.userId;
+    const mobs = state.mobs;
 
-    if (!userId) {
-        displayStatus("認証が完了していません。", "error");
-        return;
-    }
+    if (!userId) {
+        displayStatus("認証が完了していません。", "error");
+        return;
+    }
 
-    const action = isCurrentlyCulled ? "uncrush" : "crush";
-    const mob = mobs.find(m => m.No === mobNo);
-    if (!mob) return;
+    const action = isCurrentlyCulled ? "uncrush" : "crush";
+    const mob = mobs.find(m => m.No === mobNo);
+    if (!mob) return;
 
-    displayStatus(
-        `${mob.Name} (${locationId}) ${action === "crush" ? "湧き潰し" : "解除"}報告中...`
-    );
+    displayStatus(
+        `${mob.Name} (${locationId}) ${action === "crush" ? "湧き潰し" : "解除"}報告中...`
+    );
 
-    const data = {
-        mob_id: mobNo.toString(),
-        point_id: locationId,
-        type: action === "crush" ? "add" : "remove",
-        userId: userId
-    };
-
-    try {
-        const response = await fetchSecureData(CRUSH_STATUS_UPDATER_URL, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-
-        const result = await response.json();
-
-        if (result?.success) {
-            displayStatus(`${mob.Name} の状態を更新しました。`, "success");
-        } else {
-            displayStatus(
-                `更新失敗: ${result?.message || "不明なエラー"}`,
-                "error"
-            );
-        }
-    } catch (error) {
-        displayStatus(`湧き潰し報告エラー: ${error.message}`, "error");
-    }
-};
-
-// 巻き戻し (revertMobStatus)
-const revertMobStatus = async (mobNo) => {
-    const state = getState();
-    const userId = state.userId;
-    const mobs = state.mobs;
-
-    if (!userId) {
-        displayStatus("認証が完了していません。ページをリロードしてください。", "error");
-        return;
-    }
-
-    const mob = mobs.find(m => m.No === mobNo);
-    if (!mob) return;
-
-    displayStatus(`${mob.Name} の状態を巻き戻し中...`, "warning");
-
-    const data = {
-        mob_id: mobNo.toString(),
-    };
-
-    try {
-        const response = await fetchSecureData(REVERT_STATUS_URL, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-
-        const result = await response.json();
-
-        if (result?.success) {
-            displayStatus(`${mob.Name} の状態を直前のログへ巻き戻しました。`, "success");
-        } else {
-            displayStatus(
-                `巻き戻し失敗: ${result?.message || "ログデータが見つからないか、巻き戻しに失敗しました。"}`,
-                "error"
-            );
-        }
-    } catch (error) {
-        console.error("巻き戻しエラー:", error);
-        displayStatus(`巻き戻しエラー: ${error.message}`, "error");
-    }
-};
-
-async function fetchSecureData(serviceUrl, options = {}) {
-    const user = auth.currentUser;
-
-    if (!user) {
-        displayStatus("認証ユーザーがいません。", "error");
-        throw new Error("User not authenticated.");
-    }
-
-    displayStatus(`Cloud Runへの認証リクエストを準備中...`);
+    // MOB_LOCATIONSドキュメントへの参照
+    const mobLocationsRef = doc(db, "mob_locations", mobNo.toString());
     
-    try {
-        const idToken = await user.getIdToken();
+    const updateData = {};
+    const pointPath = `points.${locationId}`;
 
-        const headers = {
-            ...options.headers,
-            'Authorization': `Bearer ${idToken}`,
-            'Content-Type': 'application/json'
+    if (action === "crush") {
+        updateData[pointPath] = {
+            culler_uid: userId,
+            culled_at: new Date(),
+            count: increment(1)
         };
-
-        const response = await fetch(serviceUrl, {
-            ...options,
-            headers: headers,
-        });
-
-        if (!response.ok) {
-            displayStatus(`Cloud Runリクエスト失敗: ${response.status} ${response.statusText}`, "error");
-            throw new Error(`Cloud Run request failed with status ${response.status}`);
-        }
-
-        displayStatus("Cloud Runからの応答を受け取りました。", "success");
-        return response;
-
-    } catch (error) {
-        console.error("Cloud Run認証リクエストエラー:", error);
-        displayStatus(`リクエストエラー: ${error.message}`, "error");
-        throw error;
+    } else {
+        updateData[pointPath] = {}; 
     }
-}
+    
+    try {
+        await updateDoc(mobLocationsRef, updateData);
 
-export { initializeAuth, subscribeMobStatusDocs, subscribeMobLocations, submitReport, toggleCrushStatus, revertMobStatus, getServerTimeUTC, fetchSecureData };
+        displayStatus(`${mob.Name} の状態を更新しました。`, "success");
+    } catch (error) {
+        console.error("湧き潰し報告エラー:", error);
+        displayStatus(`湧き潰し報告エラー: ${error.message}`, "error");
+    }
+};
+
+// 巻き戻し (revertMobStatus) - httpsCallable方式へ修正
+const revertMobStatus = async (mobNo) => {
+    const state = getState();
+    const userId = state.userId;
+    const mobs = state.mobs;
+
+    if (!userId) {
+        displayStatus("認証が完了していません。ページをリロードしてください。", "error");
+        return;
+    }
+
+    const mob = mobs.find(m => m.No === mobNo);
+    if (!mob) return;
+
+    displayStatus(`${mob.Name} の状態を巻き戻し中...`, "warning");
+
+    const data = {
+        mob_id: mobNo.toString(),
+    };
+
+    try {
+        const response = await callRevertStatus(data);
+        const result = response.data;
+
+        if (result?.success) {
+            displayStatus(`${mob.Name} の状態を直前のログへ巻き戻しました。`, "success");
+        } else {
+            displayStatus(
+                `巻き戻し失敗: ${result?.message || "ログデータが見つからないか、巻き戻しに失敗しました。"}`,
+                "error"
+            );
+        }
+    } catch (error) {
+        console.error("巻き戻しエラー:", error);
+        displayStatus(`巻き戻しエラー: ${error.message}`, "error");
+    }
+};
+
+export { initializeAuth, subscribeMobStatusDocs, subscribeMobLocations, submitReport, toggleCrushStatus, revertMobStatus, getServerTimeUTC };
