@@ -215,20 +215,24 @@ function updateProgressBar(card, mob) {
 }
 
 function updateProgressText(card, mob) {
-  const text = card.querySelector(".progress-text"); if (!text) return; const {
-    elapsedPercent, nextMinRepopDate, maxRepop } = mob.repopInfo; const conditionTime = findNextSpawnTime(mob); const
-      displayTime = (nextMinRepopDate && conditionTime) ? (conditionTime > nextMinRepopDate ? conditionTime :
-        nextMinRepopDate)
-        : (nextMinRepopDate || conditionTime);
-
+  const text = card.querySelector(".progress-text"); 
+  if (!text) return; 
+  const { elapsedPercent, nextMinRepopDate, maxRepop } = mob.repopInfo; 
+  const conditionTime = findNextSpawnTime(mob); 
+  const displayTime = (nextMinRepopDate && conditionTime) ? (conditionTime > nextMinRepopDate ? conditionTime : nextMinRepopDate) : (nextMinRepopDate || conditionTime);
   const absFmt = { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' };
   const nextTimeStr = displayTime
     ? new Intl.DateTimeFormat('ja-JP', absFmt).format(displayTime)
     : "未確定";
 
-  const remainingStr = maxRepop
-    ? `残り ${formatDuration(maxRepop - Date.now() / 1000)}`
-    : "";
+  let remainingStr = "";
+    if (status === "Next") {
+      remainingStr = `Next ${formatDuration(minRepop - Date.now() / 1000)}`;
+    } else if (status === "PopWindow") {
+      remainingStr = `残り ${formatDuration(maxRepop - Date.now() / 1000)}`;
+    } else if (status === "MaxOver") {
+      remainingStr = `00:00`;
+    }
 
   text.innerHTML = `
     <div class="w-full grid grid-cols-2 items-center text-sm font-semibold" style="line-height:1;">
@@ -259,7 +263,6 @@ function updateExpandablePanel(card, mob) {
   const lastStr = formatLastKillTime(mob.last_kill_time);
   const memoStr = mob.last_kill_memo || "なし";
 
-  if (elNext) elNext.textContent = `次回: ${nextStr}`;
   if (elLast) elLast.textContent = `前回: ${lastStr}`;
   if (elMemo) elMemo.textContent = memoStr;
 }
