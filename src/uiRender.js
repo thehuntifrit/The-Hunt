@@ -213,6 +213,7 @@ function updateProgressBar(card, mob) {
     wrapper.classList.add(PROGRESS_CLASSES.MAX_OVER_BLINK);
   } else { text.classList.add(PROGRESS_CLASSES.TEXT_NEXT); }
 }
+
 function updateProgressText(card, mob) {
   const text = card.querySelector(".progress-text"); if (!text) return; const {
     elapsedPercent, nextMinRepopDate, maxRepop } = mob.repopInfo; const conditionTime = findNextSpawnTime(mob); const
