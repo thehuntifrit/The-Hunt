@@ -86,19 +86,6 @@ const MAINTENANCE_URL = "./maintenance.json";
 let progressInterval = null;
 let unsubscribes = [];
 
-async function loadMaintenance() {
-  try {
-    const response = await fetch(MAINTENANCE_URL);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data.maintenance; // { start, end, serverUp } が入っている
-  } catch (err) {
-    console.error("Failed to load maintenance.json:", err);
-    return null;
-  }
-
 async function loadBaseMobData() {
   const resp = await fetch(MOB_DATA_URL);
   if (!resp.ok) throw new Error("Mob data failed to load.");
@@ -193,5 +180,5 @@ const unsubLoc = subscribeMobLocations(locationsMap => {
 unsubscribes.push(unsubLoc);
 }
     
-export { state, EXPANSION_MAP, getState, getMobByNo, setUserId, setBaseMobData, setMobs, loadBaseMobData, loadMaintenance,
+export { state, EXPANSION_MAP, getState, getMobByNo, setUserId, setBaseMobData, setMobs, loadBaseMobData, 
         startRealtime, setFilter, setOpenMobCardNo, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP };
