@@ -1,4 +1,3 @@
-
 // dataManager.js
 
 import { filterAndRender, displayStatus } from "./uiRender.js";
@@ -162,21 +161,22 @@ function startRealtime() {
     });
     unsubscribes.push(unsubStatus);
 
-// Mob 出現位置購読
-const unsubLoc = subscribeMobLocations(locationsMap => {
-  const current = getState().mobs;
-  const merged = current.map(m => {
-  const dyn = locationsMap[m.No];
-    if (m.Rank === "S" && dyn) { 
-      return { ...m, spawn_cull_status: dyn.points || {} };
-    }
-    return m;
+  // Mob 出現位置購読
+  const unsubLoc = subscribeMobLocations(locationsMap => {
+    const current = getState().mobs;
+    const merged = current.map(m => {
+      const dyn = locationsMap[m.No];
+      if (m.Rank === "S" && dyn) {
+        return { ...m, spawn_cull_status: dyn.points || {} };
+      }
+      return m;
+    });
+    setMobs(merged);
+    filterAndRender();
+    displayStatus("湧き潰しデータ更新完了。", "success");
   });
-  setMobs(merged);
-  filterAndRender();
-  displayStatus("湧き潰しデータ更新完了。", "success");
-});
-unsubscribes.push(unsubLoc);
+  unsubscribes.push(unsubLoc);
+}
     
 export { state, EXPANSION_MAP, getState, getMobByNo, setUserId, setBaseMobData, setMobs, loadBaseMobData, 
         startRealtime, setFilter, setOpenMobCardNo, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP };
