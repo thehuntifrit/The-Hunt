@@ -5,11 +5,17 @@
 --text-light: #e0e0e0;
 --header-height: 4rem;
 font-family: 'Inter', sans-serif;
-
-/* Repop進捗バーの色定義 */
---progress-p0-60: #d9ead4;
---progress-p60-80: #fff3ce;
---progress-p80-100: #fce5ce;
+  
+/* 進捗バー色クラス */
+.progress-p0-60 {
+  background-color: var(--progress-p0-60);
+}
+.progress-p60-80 {
+  background-color: var(--progress-p60-80);
+}
+.progress-p80-100 {
+  background-color: var(--progress-p80-100);
+}
 
 /* テキスト色定義 */
 --text-next: #3e83c4; /* Blue */
