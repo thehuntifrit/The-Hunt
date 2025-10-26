@@ -1,5 +1,7 @@
 // cal.js
 
+import { attachLocationEvents } from "./app.js";
+
 // formatDuration
 function formatDuration(seconds) {
   const totalMinutes = Math.floor(seconds / 60);
