@@ -76,9 +76,7 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_Last
         dataIsInteractive = "false";
     }
 
-    return `<div class="spawn-point ${sizeClass} ${colorClass} ${specialClass}" style="left:${xPos}%; top:${yPos}%; 
-    transform: translate(-50%, -50%);" data-location-id="${point.id}" data-mob-no="${mobNoStr}" 
-    data-rank="${rank}" data-is-culled="${isCulled}" data-is-interactive="${dataIsInteractive}" tabindex="0"></div>`;
+    return `<div class="spawn-point ${sizeClass} ${colorClass} ${specialClass}" style="left:${xPos}%; top:${yPos}%; transform: translate(-50%, -50%);" data-location-id="${point.id}" data-mob-no="${mobNoStr}" data-rank="${rank}" data-is-culled="${isCulled}" data-is-interactive="${dataIsInteractive}" tabindex="0"></div>`;
 }
 
 function attachLocationEvents() {
