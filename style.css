@@ -1,3 +1,4 @@
+
 /* CSSカスタムプロパティの定義 */
 :root {
 --bg-dark: #1a1a2e;
@@ -38,8 +39,8 @@ text-shadow:
 }
 
 #status-message {
-  min-height: 1rem; /* 常に2remの高さを確保 */
-  line-height: 1rem; /* テキストを中央寄せ */
+  min-height: 1rem; /* 常に2remの高さを確保 */
+  line-height: 1rem; /* テキストを中央寄せ */
 }
 
 /* ランクアイコンのスタイル */
@@ -94,116 +95,115 @@ padding-bottom: 0.5rem !important;
 
 /* --- マップオーバーレイとスポーン点 --- */
 .map-content {
-    position: relative;
-    border-radius: 0.5rem;
+    position: relative;
+    border-radius: 0.5rem;
 }
 .map-overlay {
-    position: absolute;
-    top: 0; right: 0; bottom: 0; left: 0;
-    z-index: 20;
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    z-index: 20;
 }
 .spawn-point {
-    position: absolute;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: transform 0.1s ease, box-shadow 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
-    pointer-events: auto;
-    user-select: none;
-    cursor: default; 
+    position: absolute;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease, box-shadow 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+    pointer-events: auto;
+    user-select: none;
+    cursor: default; 
 }
 
 #crush-map-modal {
-  cursor: zoom-out;
+  cursor: zoom-out;
 }
 
 /* ただし、操作可能なポイントではポインターを表示する方が親切なため、以下のルールを優先*/
 .spawn-point-interactive,
 [data-is-interactive="true"] {
-    cursor: pointer;
+    cursor: pointer;
 }
 
 /* インタラクティブなポイント (ホバー時の強調) - ダブルクリック仕様に変更に伴い、ホバーのスケールは維持 */
 .spawn-point[data-is-interactive="true"]:hover {
-    cursor: pointer;
-    transform: translate(-50%, -50%) scale(1.6);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    transform: translate(-50%, -50%) scale(1.6);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.9);
 }
 
 /* 湧き潰し/ラストワンポイントの新しい濃い外枠/影 */
 .spawn-point-shadow-sa {
-    box-shadow: 0 0 4px 2px rgba(0, 0, 139, 0.9); 
+    box-shadow: 0 0 4px 2px rgba(0, 0, 139, 0.9); 
 }
 .spawn-point-shadow-lastone {
-    /* ラストワン用 (緑系の色に対して濃い外枠/影) */
-    box-shadow: 0 0 4px 2px rgba(0, 128, 0, 0.9);
+    /* ラストワン用 (緑系の色に対して濃い外枠/影) */
+    box-shadow: 0 0 4px 2px rgba(0, 128, 0, 0.9);
 }
 
 /* 1. S/A湧き潰し対象ポイント (未選択) - レスポンシブ化 */
 .spawn-point-sa {
-    /* スマホサイズ */
-    width: 12px;
-    height: 12px;
-    border: 2px solid #000000; /* 現在は黒枠 */
+    /* スマホサイズ */
+    width: 12px;
+    height: 12px;
+    border: 2px solid #000000; /* 現在は黒枠 */
 }
 @media (min-width: 1024px) { /* PCサイズ (lg breakpoint) */
-    .spawn-point-sa {
-        width: 14px; /* PCでのサイズ拡大 */
-        height: 14px;
-    }
+    .spawn-point-sa {
+        width: 14px; /* PCでのサイズ拡大 */
+        height: 14px;
+    }
 }
 
 /* 湧き潰し済みポイント - 外枠白、未湧き潰し時と同サイズに修正 */
 .spawn-point-culled {
-    background-color: var(--color-b-inverted-bg);
-    border: 2px solid #000000; /* 白枠 (2pxに統一) */
-    opacity: 0.7;
-    box-shadow: none;
-    cursor: default;
-    transform: translate(-50%, -50%); /* 地点ずれ対策のため明示的に再定義 */
+    background-color: var(--color-b-inverted-bg);
+    border: 2px solid #000000; /* 白枠 (2pxに統一) */
+    opacity: 0.7;
+    box-shadow: none;
+    cursor: default;
 }
 .spawn-point-culled:hover {
-    transform: translate(-50%, -50%);
-    box-shadow: none;
+    transform: translate(-50%, -50%);
+    box-shadow: none;
 }
 /* 新しいクラス: 湧き潰し済の時に適用する白枠/サイズ固定クラス（drawSpawnPointで使用） */
 .culled-with-white-border {
-    border: 2px solid #ffffff;
-    box-shadow: none;
-    opacity: 0.7;
+    border: 2px solid #ffffff;
+    box-shadow: none;
+    opacity: 0.7;
 }
 
 /* 2. Bランクのみポイント (非湧き潰し対象) - 視認性向上とレスポンシブ化 */
 .spawn-point-b-only {
-    /* スマホサイズ */
-    width: 10px;
-    height: 10px;
-    pointer-events: none !important;
-    opacity: 0.75; /* 透過を 0.8 -> 0.75 に少し下げる */
-    box-shadow: none;
-    border: 1px solid #ffffff; /* 白枠 2px を追加 */
+    /* スマホサイズ */
+    width: 10px;
+    height: 10px;
+    pointer-events: none !important;
+    opacity: 0.75; /* 透過を 0.8 -> 0.75 に少し下げる */
+    box-shadow: none;
+    border: 1px solid #ffffff; /* 白枠 2px を追加 */
 }
 @media (min-width: 1024px) { /* PCサイズ (lg breakpoint) */
-    .spawn-point-b-only {
-        width: 12px; /* PCでのサイズ拡大 */
-        height: 12px;
-    }
+    .spawn-point-b-only {
+        width: 12px; /* PCでのサイズ拡大 */
+        height: 12px;
+    }
 }
 
 /* 3. ラストワン強調ポイント - レスポンシブ化 */
 .spawn-point-lastone {
-    /* スマホサイズ */
-    width: 14px;
-    height: 14px;
-    border: 2px solid #008000;
+    /* スマホサイズ */
+    width: 14px;
+    height: 14px;
+    border: 2px solid #008000;
 }
 @media (min-width: 1024px) { /* PCサイズ (lg breakpoint) */
-    .spawn-point-lastone {
-        width: 16px; /* PCでのサイズ拡大 */
-        height: 16px;
-    }
+    .spawn-point-lastone {
+        width: 16px; /* PCでのサイズ拡大 */
+        height: 16px;
+    }
 }
 .spawn-point-lastone:hover {
-    transform: translate(-50%, -50%) scale(1.4);
+    transform: translate(-50%, -50%) scale(1.4);
 }
 
 /* --- 色クラス定義 --- */
@@ -215,8 +215,8 @@ padding-bottom: 0.5rem !important;
 
 /* [仕様 IV-5] B反転ロジック用 */
 .color-b-inverted {
-    background-color: var(--color-b-inverted);
-    opacity: 0.4;
+    background-color: var(--color-b-inverted);
+    opacity: 0.4;
 }
 
 /* モーダルの背景 */
@@ -227,41 +227,42 @@ transition: opacity 0.5s;
 }
 
 .maintenance-banner {
-  background: #222;
-  color: #fff;
-  padding: 10px;
-  text-align: center;
-  font-weight: bold;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+  background: #222;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .maintenance-banner .server-up-time {
-  font-size: 0.9em;
-  color: #bbb; /* 薄暗いグレーで控えめに */
-  font-weight: normal;
-  margin-top: 4px;
+  font-size: 0.9em;
+  color: #bbb; /* 薄暗いグレーで控えめに */
+  font-weight: normal;
+  margin-top: 4px;
 }
 
 /* --- ステータスメッセージ表示用クラスの追加 --- */
-.bg-green-600 { 
-    background-color: #059669;
+.bg-green-600 { 
+    background-color: #059669;
 }
 .bg-red-600 {
-    background-color: #dc2626;
+    background-color: #dc2626;
 }
 .bg-blue-600 {
-    background-color: #2563eb;
+    background-color: #2563eb;
 }
 .text-center {
-    text-align: center;
+    text-align: center;
 }
 .py-1 {
-    padding-top: 0.25rem;
-    padding-bottom: 0.25rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
 }
 .text-xs {
-    font-size: 0.75rem;
-    line-height: 1rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
 }
+    
