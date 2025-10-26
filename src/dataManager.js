@@ -161,21 +161,21 @@ function startRealtime() {
     });
     unsubscribes.push(unsubStatus);
 
-  // Mob 出現位置購読
-  const unsubLoc = subscribeMobLocations(locationsMap => {
-    const current = getState().mobs;
-    const merged = current.map(m => {
-      const dyn = locationsMap[m.No];
-      if (m.Rank === "S" && dyn) {
-        return { ...m, spawn_cull_status: dyn.points || {} };
-      }
-      return m;
-    });
-    setMobs(merged);
-    filterAndRender();
-    displayStatus("湧き潰しデータ更新完了。", "success");
-  });
-  unsubscribes.push(unsubLoc);
+// Mob 出現位置購読 (メインロジック)
+const unsubLoc = subscribeMobLocations(locationsMap => {
+  const current = getState().mobs;
+  const merged = current.map(m => {
+  const dyn = locationsMap[m.No];
+    
+    let newMob = { ...m };
+    newMob.spawn_cull_status = (dyn && dyn.points) ? dyn.points : {};
+        return newMob;
+  });  
+  setMobs(merged);
+  filterAndRender();
+  displayStatus("湧き潰しデータ更新完了。", "success");
+});
+unsubscribes.push(unsubLoc);
 }
     
 export { state, EXPANSION_MAP, getState, getMobByNo, setUserId, setBaseMobData, setMobs, loadBaseMobData, 
