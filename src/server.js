@@ -1,5 +1,7 @@
+// server.js
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, updateDoc, increment, FieldValue } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-functions.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
@@ -16,6 +18,9 @@ const FIREBASE_CONFIG = {
     messagingSenderId: "285578581189",
     appId: "1:285578581189:web:4d9826ee3f988a7519ccac"
 };
+
+// Firestore FieldValue を利用するため、明示的にインポート
+import { serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 // グローバル変数（Firebase SDKの都合上、この形式を維持）
 const app = initializeApp(FIREBASE_CONFIG);
@@ -54,11 +59,11 @@ async function initializeAuth() {
 }
 
 onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("UID:", user.uid);
-  } else {
-    console.log("まだ認証されていません");
-  }
+    if (user) {
+        console.log("UID:", user.uid);
+    } else {
+        console.log("まだ認証されていません");
+    }
 });
 
 // サーバーUTC取得
@@ -151,7 +156,7 @@ const submitReport = async (mobNo, timeISO, memo) => {
     }
 };
 
-// 湧き潰し報告 (toggleCrushStatus) - setDoc(merge: true) へ修正
+// 湧き潰し報告
 const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
     const state = getState();
     const userId = state.userId;
@@ -178,21 +183,18 @@ const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
 
     if (action === "crush") {
         updateData[pointPath] = {
-            culler_uid: userId,
-            culled_at: new Date(),
-            count: increment(1)
+            culled_at: serverTimestamp() // サーバー側での正確な時刻を設定
         };
     } else {
-        // 解除の場合はフィールド自体を削除したいが、setDoc/updateDocでオブジェクトを空にすると
-        // その Mob No. のデータ構造が崩れる可能性があるため、今回は空オブジェクトで上書きする。
-        // （Firestoreのmerge: trueの性質上、points全体を上書きしないように注意が必要）
-        updateData[pointPath] = {}; 
+        updateData[`${pointPath}.uncull_at`] = serverTimestamp();
     }
     
     try {
-        // ★ updateDoc の代わりに setDoc({ merge: true }) を使用し、
-        // ドキュメントが存在しない場合に新規作成できるようにする
-        await setDoc(mobLocationsRef, updateData, { merge: true });
+        if (action === "crush") {
+            await setDoc(mobLocationsRef, updateData, { merge: true });
+        } else {
+            await updateDoc(mobLocationsRef, updateData);
+        }
 
         displayStatus(`${mob.Name} の状態を更新しました。`, "success");
     } catch (error) {
