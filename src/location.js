@@ -32,62 +32,54 @@ function updateCrushUI(mobNo, locationId, isCulled) {
 }
 
 function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_LastOne) {
-    const xPos = point.x !== undefined && point.x !== null ? point.x : '0';
-    const yPos = point.y !== undefined && point.y !== null ? point.y : '0';
+  const isCulled = spawnCullStatus?.[point.id] === true;
+  const isS_A_Cullable = point.mob_ranks.some(r => r === "S" || r === "A");
+  const isB_Only = point.mob_ranks.every(r => r.startsWith("B"));
 
-    // --- 湧き潰し判定ロジック (前回修正済み) ---
-    const pointStatus = spawnCullStatus?.[point.id];
-    const culledTimeMs = pointStatus?.culled_at?.toMillis() || 0;
-    const uncullTimeMs = pointStatus?.uncull_at?.toMillis() || 0;
-    const isCulled = culledTimeMs > uncullTimeMs;
+  let sizeClass = "";
+  let colorClass = "";
+  let specialClass = "";
+  let dataIsInteractive = "false";
 
-    const isS_A_Cullable = point.mob_ranks.some(r => r === "S" || r === "A");
-    const isB_Only = point.mob_ranks.every(r => r.startsWith("B"));
-
-    let sizeClass = "";
-    let colorClass = "";
-    let specialClass = "";
-    let dataIsInteractive = "false";
-
-    if (isLastOne) {
-        sizeClass = "spawn-point-lastone";
-        colorClass = "color-lastone";
-        specialClass = "spawn-point-shadow-lastone spawn-point-interactive";
-        dataIsInteractive = "true";
-    } else if (isS_A_Cullable) {
-        const rankB = point.mob_ranks.find(r => r.startsWith("B"));
-        colorClass = rankB === "B1" ? "color-b1" : "color-b2";
-        sizeClass = "spawn-point-sa";
-        if (isCulled) {
-            specialClass = "culled-with-white-border spawn-point-culled";
-            dataIsInteractive = "false";
-        } else {
-            specialClass = "spawn-point-shadow-sa spawn-point-interactive";
-            dataIsInteractive = "true";
-        }
-    } else if (isB_Only) {
-        const rankB = point.mob_ranks[0];
-        sizeClass = "spawn-point-b-only";
-        if (isS_LastOne) {
-            colorClass = "color-b-inverted";
-        } else {
-            colorClass = rankB === "B1" ? "color-b1-only" : "color-b2-only";
-        }
-        specialClass = "spawn-point-b-border";
-        dataIsInteractive = "false";
+  if (isLastOne) {
+    sizeClass = "spawn-point-lastone";
+    colorClass = "color-lastone";
+    specialClass = "spawn-point-shadow-lastone spawn-point-interactive";
+    dataIsInteractive = "true";
+  } else if (isS_A_Cullable) {
+    const rankB = point.mob_ranks.find(r => r.startsWith("B"));
+    colorClass = rankB === "B1" ? "color-b1" : "color-b2";
+    sizeClass = "spawn-point-sa";
+    if (isCulled) {
+      specialClass = "culled-with-white-border spawn-point-culled";
+      dataIsInteractive = "false";
+    } else {
+      specialClass = "spawn-point-shadow-sa spawn-point-interactive";
+      dataIsInteractive = "true";
     }
+  } else if (isB_Only) {
+    const rankB = point.mob_ranks[0];
+    sizeClass = "spawn-point-b-only";
+    if (isS_LastOne) {
+      colorClass = "color-b-inverted";
+    } else {
+      colorClass = rankB === "B1" ? "color-b1-only" : "color-b2-only";
+    }
+    specialClass = "spawn-point-b-border";
+    dataIsInteractive = "false";
+  }
 
-    return `
-        <div class="spawn-point ${sizeClass} ${colorClass} ${specialClass}"
-             style="left:${xPos}%; top:${yPos}%; transform: translate(-50%, -50%);"
-             data-location-id="${point.id}"
-             data-mob-no="${mobNo}"
-             data-rank="${rank}"
-             data-is-culled="${isCulled}"
-             data-is-interactive="${dataIsInteractive}"
-             tabindex="0">
-        </div>
-    `;
+  return `
+    <div class="spawn-point ${sizeClass} ${colorClass} ${specialClass}"
+         style="left:${point.x}%; top:${point.y}%;"
+         data-location-id="${point.id}"
+         data-mob-no="${mobNo}"
+         data-rank="${rank}"
+         data-is-culled="${isCulled}"
+         data-is-interactive="${dataIsInteractive}"
+         tabindex="0">
+    </div>
+  `;
 }
 
 function attachLocationEvents() {
