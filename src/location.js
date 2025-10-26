@@ -2,6 +2,8 @@ import { DOM } from "./uiRender.js";
 import { toggleCrushStatus } from "./server.js";
 import { getState, getMobByNo } from "./dataManager.js";
 
+const clamp = (num, min, max) => Math.max(min, Math.min(max, num));
+
 function handleCrushToggle(e) {
     const point = e.target.closest(".spawn-point");
     if (point && point.dataset.isInteractive === "true") {
@@ -13,8 +15,8 @@ function handleCrushToggle(e) {
         const mobNo = parseInt(card.dataset.mobNo, 10);
         const locationId = point.dataset.locationId;
         const isCurrentlyCulled = point.dataset.isCulled === "true";
-        
-        toggleCrushStatus(mobNo, locationId, isCurrentlyCulled); 
+                
+        toggleCrushStatus(mobNo, locationId, isCurrentlyCulled); 
         return true;
     }
     return false;
@@ -31,6 +33,7 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_Last
     const culledTimeMs = pointStatus?.culled_at?.toMillis() || 0;
     const uncullTimeMs = pointStatus?.uncull_at?.toMillis() || 0;
     const isCulled = culledTimeMs > uncullTimeMs;
+        
     const isS_A_Cullable = point.mob_ranks.some(r => r === "S" || r === "A");
     const isB_Only = point.mob_ranks.every(r => r.startsWith("B"));
 
