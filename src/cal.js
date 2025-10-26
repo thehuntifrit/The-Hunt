@@ -1,6 +1,6 @@
 // cal.js
 
-import { attachLocationEvents } from "./app.js";
+import { loadMaintenance } from "./app.js";
 
 // formatDuration
 function formatDuration(seconds) {
