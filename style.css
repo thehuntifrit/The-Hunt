@@ -7,9 +7,9 @@
 font-family: 'Inter', sans-serif;
 
 /* Repop進捗バーの色定義 */
---progress-0-60: #d9ead4;
---progress-60-80: #fff3ce;
---progress-80-100: #fce5ce;
+--progress-p0-60: #d9ead4;
+--progress-p60-80: #fff3ce;
+--progress-p80-100: #fce5ce;
 
 /* テキスト色定義 */
 --text-next: #3e83c4; /* Blue */
