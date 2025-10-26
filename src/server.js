@@ -18,11 +18,8 @@ const FIREBASE_CONFIG = {
     messagingSenderId: "285578581189",
     appId: "1:285578581189:web:4d9826ee3f988a7519ccac"
 };
-
-// Firestore FieldValue を利用するため、明示的にインポート
 import { serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-// グローバル変数（Firebase SDKの都合上、この形式を維持）
 const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
 const auth = getAuth(app);
@@ -34,7 +31,6 @@ const functions = functionsInstance;
 // httpsCallable の初期化
 const callGetServerTime = httpsCallable(functions, 'getServerTime');
 const callRevertStatus = httpsCallable(functions, 'revertStatus'); // 巻き戻し機能用
-
 
 // 認証
 async function initializeAuth() {
