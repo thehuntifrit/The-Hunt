@@ -149,13 +149,13 @@ function findNextSpawnTime(mob, now = new Date()) {
   return null;
 }
 
+// repop計算
 function calculateRepop(mob, maintenance) {
   const now = Date.now() / 1000;
   const lastKill = mob.last_kill_time || 0;
   const repopSec = mob.REPOP_s;
   const maxSec = mob.MAX_s;
 
-  // serverUp を秒に変換
   const serverUp = maintenance
     ? new Date(maintenance.serverUp).getTime() / 1000
     : 0;
