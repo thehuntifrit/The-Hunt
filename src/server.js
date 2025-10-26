@@ -1,5 +1,5 @@
-
 // server.js
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, addDoc, doc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
@@ -10,7 +10,6 @@ import { getState, setFilter, setOpenMobCardNo, FILTER_TO_DATA_RANK_MAP } from "
 import { closeReportModal } from "./modal.js";
 import { displayStatus } from "./uiRender.js";
 
-// 初期化と設定
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyBikwjGsjL_PVFhx3Vj-OeJCocKA_hQOgU",
     authDomain: "the-hunt-ifrit.firebaseapp.com",
@@ -27,9 +26,12 @@ const functionsInstance = getFunctions(app, "asia-northeast1");
 const analytics = getAnalytics(app);
 
 const functions = functionsInstance;
-const callUpdateCrushStatus = httpsCallable(functions, 'crushStatusUpdater');
-const callRevertStatus = httpsCallable(functions, 'revertStatus');
+// const callUpdateCrushStatus = httpsCallable(functions, 'crushStatusUpdater');
+// const callRevertStatus = httpsCallable(functions, 'revertStatus');
 const callGetServerTime = httpsCallable(functions, 'getServerTime');
+const CRUSH_STATUS_UPDATER_URL = "https://asia-northeast1-the-hunt-ifrit.cloudfunctions.net/crushStatusUpdater";
+const REVERT_STATUS_URL = "https://asia-northeast1-the-hunt-ifrit.cloudfunctions.net/revertStatus";
+
 
 // 認証
 async function initializeAuth() {
@@ -165,19 +167,26 @@ const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
         `${mob.Name} (${locationId}) ${action === "crush" ? "湧き潰し" : "解除"}報告中...`
     );
 
+    const data = {
+        mob_id: mobNo.toString(),
+        point_id: locationId,
+        type: action === "crush" ? "add" : "remove",
+        userId: userId
+    };
+
     try {
-        const result = await callUpdateCrushStatus({
-            mob_id: mobNo.toString(),
-            point_id: locationId,
-            type: action === "crush" ? "add" : "remove",
-            userId: userId
+        const response = await fetchSecureData(CRUSH_STATUS_UPDATER_URL, {
+            method: 'POST',
+            body: JSON.stringify(data)
         });
 
-        if (result.data?.success) {
+        const result = await response.json();
+
+        if (result?.success) {
             displayStatus(`${mob.Name} の状態を更新しました。`, "success");
         } else {
             displayStatus(
-                `更新失敗: ${result.data?.message || "不明なエラー"}`,
+                `更新失敗: ${result?.message || "不明なエラー"}`,
                 "error"
             );
         }
@@ -202,16 +211,23 @@ const revertMobStatus = async (mobNo) => {
 
     displayStatus(`${mob.Name} の状態を巻き戻し中...`, "warning");
 
+    const data = {
+        mob_id: mobNo.toString(),
+    };
+
     try {
-        const result = await callRevertStatus({
-            mob_id: mobNo.toString(),
+        const response = await fetchSecureData(REVERT_STATUS_URL, {
+            method: 'POST',
+            body: JSON.stringify(data)
         });
 
-        if (result.data?.success) {
+        const result = await response.json();
+
+        if (result?.success) {
             displayStatus(`${mob.Name} の状態を直前のログへ巻き戻しました。`, "success");
         } else {
             displayStatus(
-                `巻き戻し失敗: ${result.data?.message || "ログデータが見つからないか、巻き戻しに失敗しました。"}`,
+                `巻き戻し失敗: ${result?.message || "ログデータが見つからないか、巻き戻しに失敗しました。"}`,
                 "error"
             );
         }
@@ -232,10 +248,8 @@ async function fetchSecureData(serviceUrl, options = {}) {
     displayStatus(`Cloud Runへの認証リクエストを準備中...`);
     
     try {
-        // 1. IDトークンの取得
         const idToken = await user.getIdToken();
 
-        // 2. Authorizationヘッダーの設定
         const headers = {
             ...options.headers,
             'Authorization': `Bearer ${idToken}`,
