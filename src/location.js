@@ -31,6 +31,14 @@ function updateCrushUI(mobNo, locationId, isCulled) {
     }
 }
 
+function isCulled(pointStatus) {
+  const culledMs = pointStatus?.culled_at ? pointStatus.culled_at.toMillis() : 0;
+  const uncullMs = pointStatus?.uncull_at ? pointStatus.uncull_at.toMillis() : 0;
+
+  if (culledMs === 0 && uncullMs === 0) return false;
+  return culledMs > uncullMs;
+}
+
 function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_LastOne) {
     const pointStatus = spawnCullStatus?.[point.id];
 const culledTimeMs = pointStatus?.culled_at ? pointStatus.culled_at.toMillis() : null;
