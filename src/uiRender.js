@@ -189,6 +189,22 @@ function distributeCards() {
   });
 }
 
+function getContrastingColor(bgColor) {
+  const rgb = bgColor.match(/\d+/g).map(Number);
+  const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
+  return brightness > 128 ? "#000000" : "#ffffff";
+}
+
+function applyTextContrast(card) {
+  const bar = card.querySelector(".progress-bar-bg");
+  const text = card.querySelector(".progress-text");
+  if (!bar || !text) return;
+
+  const bgColor = getComputedStyle(bar).backgroundColor;
+  const contrastColor = getContrastingColor(bgColor);
+  text.style.color = contrastColor;
+}
+
 function updateProgressBar(card, mob) {
   const bar = card.querySelector(".progress-bar-bg");
   const wrapper = bar?.parentElement;
@@ -205,22 +221,31 @@ function updateProgressBar(card, mob) {
   wrapper.classList.remove(PROGRESS_CLASSES.MAX_OVER_BLINK);
 
   if (status === "PopWindow") {
-    if (elapsedPercent <= 60) bar.classList.add(PROGRESS_CLASSES.P0_60); else if (elapsedPercent <= 80)
-      bar.classList.add(PROGRESS_CLASSES.P60_80); else bar.classList.add(PROGRESS_CLASSES.P80_100);
+    if (elapsedPercent <= 60) {
+      bar.classList.add(PROGRESS_CLASSES.P0_60);
+    } else if (elapsedPercent <= 80) {
+      bar.classList.add(PROGRESS_CLASSES.P60_80);
+    } else {
+      bar.classList.add(PROGRESS_CLASSES.P80_100);
+    }
     text.classList.add(PROGRESS_CLASSES.TEXT_POP);
   } else if (status === "MaxOver") {
-    bar.classList.add(PROGRESS_CLASSES.P80_100); text.classList.add(PROGRESS_CLASSES.TEXT_POP);
+    bar.classList.add(PROGRESS_CLASSES.P80_100);
+    text.classList.add(PROGRESS_CLASSES.TEXT_POP);
     wrapper.classList.add(PROGRESS_CLASSES.MAX_OVER_BLINK);
-  } else { text.classList.add(PROGRESS_CLASSES.TEXT_NEXT); }
+  } else {
+    text.classList.add(PROGRESS_CLASSES.TEXT_NEXT);
+  }
+
+  // 文字色を背景に応じて反転
+  applyTextContrast(card);
 }
 
 function updateProgressText(card, mob) {
   const text = card.querySelector(".progress-text");
   if (!text) return;
 
-  // repopInfo から必要な値をすべて取り出す
   const { elapsedPercent, nextMinRepopDate, minRepop, maxRepop, status } = mob.repopInfo;
-
   const conditionTime = findNextSpawnTime(mob);
   const displayTime = (nextMinRepopDate && conditionTime)
     ? (conditionTime > nextMinRepopDate ? conditionTime : nextMinRepopDate)
