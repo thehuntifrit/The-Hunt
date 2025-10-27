@@ -46,7 +46,6 @@ async function loadMaintenance() {
     }
 }
 
-
 function renderStatusBar(start, end, serverUp) {
     const el = document.getElementById('status-message');
     if (!el) return;
@@ -196,7 +195,6 @@ async function initializeAuthenticationAndRealtime() {
         setUserId(null);
     }
 }
-
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeAuthenticationAndRealtime();
