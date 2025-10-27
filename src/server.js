@@ -96,16 +96,22 @@ function subscribeMobStatusDocs(onUpdate) {
 }
 
 function subscribeMobLocations(onUpdate) {
-    const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
-        const map = {};
-        snapshot.forEach(docSnap => {
-            const mobNo = parseInt(docSnap.id, 10);
-            const data = docSnap.data();
-            map[mobNo] = { points: data.points || {} };
-        });
-        onUpdate(map);
+  const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
+    const map = {};
+    snapshot.forEach(docSnap => {
+      const mobNo = parseInt(docSnap.id, 10);
+      const data = docSnap.data();
+      map[mobNo] = { points: data.points || {} };
+
+      // 各地点の UI 更新
+      Object.entries(data.points || {}).forEach(([locationId, status]) => {
+        const isCulledFlag = isCulled(status);
+        updateCrushUI(mobNo, locationId, isCulledFlag);
+      });
     });
-    return unsub;
+    onUpdate(map);
+  });
+  return unsub;
 }
 
 // 討伐報告 (reportsコレクションへの直接書き込み)
