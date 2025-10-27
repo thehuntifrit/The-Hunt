@@ -1,7 +1,8 @@
+
 // location.js
 
 import { DOM } from "./uiRender.js";
-import { toggleCrushStatus, subscribeMobLocations } from "./server.js";
+import { toggleCrushStatus } from "./server.js";
 import { getState, getMobByNo } from "./dataManager.js";
 
 function handleCrushToggle(e) {
@@ -32,20 +33,10 @@ function updateCrushUI(mobNo, locationId, isCulled) {
 }
 
 function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_LastOne) {
-const pointStatus = spawnCullStatus?.[point.id];
-const culledTimeMs = pointStatus?.culled_at ? pointStatus.culled_at.toMillis() : null;
-const uncullTimeMs = pointStatus?.uncull_at ? pointStatus.uncull_at.toMillis() : null;
-
-let isCulled = false;
-if (culledTimeMs && !uncullTimeMs) {
-  isCulled = true;
-} else if (!culledTimeMs && uncullTimeMs) {
-  isCulled = false;
-} else if (culledTimeMs && uncullTimeMs) {
-  isCulled = culledTimeMs > uncullTimeMs;
-} else {
-  isCulled = false;
-}
+    const pointStatus = spawnCullStatus?.[point.id];
+    const culledTimeMs = pointStatus?.culled_at?.toMillis() || 0;
+    const uncullTimeMs = pointStatus?.uncull_at?.toMillis() || 0;
+    const isCulled = culledTimeMs > uncullTimeMs;
 
     const isS_A_Cullable = point.mob_ranks.some(r => r === "S" || r === "A");
     const isB_Only = point.mob_ranks.every(r => r.startsWith("B"));
@@ -64,7 +55,7 @@ if (culledTimeMs && !uncullTimeMs) {
         const rankB = point.mob_ranks.find(r => r.startsWith("B"));
         colorClass = rankB === "B1" ? "color-b1" : "color-b2";
         sizeClass = "spawn-point-sa";
-        if (isCulledFlag) {
+        if (isCulled) {
             specialClass = "culled-with-white-border spawn-point-culled";
             dataIsInteractive = "false";
         } else {
@@ -89,7 +80,7 @@ if (culledTimeMs && !uncullTimeMs) {
          data-location-id="${point.id}"
          data-mob-no="${mobNo}"
          data-rank="${rank}"
-         data-is-culled="${isCulledFlag}"
+         data-is-culled="${isCulled}"
          data-is-interactive="${dataIsInteractive}"
          tabindex="0">
     </div>
