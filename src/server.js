@@ -9,7 +9,6 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase
 import { getState } from "./dataManager.js";
 import { closeReportModal } from "./modal.js";
 import { displayStatus } from "./uiRender.js";
-import { updateCrushUI } from "./location.js";
 
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyBikwjGsjL_PVFhx3Vj-OeJCocKA_hQOgU",
@@ -96,22 +95,16 @@ function subscribeMobStatusDocs(onUpdate) {
 }
 
 function subscribeMobLocations(onUpdate) {
-  const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
-    const map = {};
-    snapshot.forEach(docSnap => {
-      const mobNo = parseInt(docSnap.id, 10);
-      const data = docSnap.data();
-      map[mobNo] = { points: data.points || {} };
-
-      // 各地点の UI 更新
-      Object.entries(data.points || {}).forEach(([locationId, status]) => {
-        const isCulledFlag = isCulled(status);
-        updateCrushUI(mobNo, locationId, isCulledFlag);
-      });
+    const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
+        const map = {};
+        snapshot.forEach(docSnap => {
+            const mobNo = parseInt(docSnap.id, 10);
+            const data = docSnap.data();
+            map[mobNo] = { points: data.points || {} };
+        });
+        onUpdate(map);
     });
-    onUpdate(map);
-  });
-  return unsub;
+    return unsub;
 }
 
 // 討伐報告 (reportsコレクションへの直接書き込み)
