@@ -82,14 +82,29 @@ const PROGRESS_CLASSES = {
 const FILTER_TO_DATA_RANK_MAP = { FATE: 'F', ALL: 'ALL', S: 'S', A: 'A' };
 
 const MOB_DATA_URL = "./mob_data.json";
-const MAINTENANCE_URL = "./maintenance.json";
 let progressInterval = null;
 let unsubscribes = [];
+const MAINTENANCE_URL = "./maintenance.json";
+let maintenanceCache = null;
+
+async function loadMaintenance() {
+    const res = await fetch(MAINTENANCE_URL);
+    if (!res.ok) throw new Error("Maintenance data failed to load.");
+    const data = await res.json();
+    // 形を正規化してキャッシュ
+    maintenanceCache = (data && typeof data === "object" && "maintenance" in data)
+        ? data.maintenance
+        : data;
+    return maintenanceCache;
+}
 
 async function loadBaseMobData() {
     const resp = await fetch(MOB_DATA_URL);
     if (!resp.ok) throw new Error("Mob data failed to load.");
     const data = await resp.json();
+
+    // maintenance を必ずロード
+    const maintenance = maintenanceCache || await loadMaintenance();
 
     const baseMobData = Object.entries(data.mobs).map(([no, mob]) => ({
         No: parseInt(no, 10),
@@ -98,16 +113,13 @@ async function loadBaseMobData() {
         Area: mob.area,
         Condition: mob.condition,
         Expansion: EXPANSION_MAP[Math.floor(no / 10000)] || "Unknown",
-
         REPOP_s: mob.repopSeconds,
         MAX_s: mob.maxRepopSeconds,
-
         moonPhase: mob.moonPhase,
         timeRange: mob.timeRange,
         timeRanges: mob.timeRanges,
         weatherSeedRange: mob.weatherSeedRange,
         weatherSeedRanges: mob.weatherSeedRanges,
-
         Map: mob.mapImage,
         spawn_points: mob.locations,
         last_kill_time: 0,
@@ -119,7 +131,7 @@ async function loadBaseMobData() {
             REPOP_s: mob.repopSeconds,
             MAX_s: mob.maxRepopSeconds,
             last_kill_time: 0,
-        })
+        }, maintenance) // ← 正規化済み maintenance を渡す
     }));
 
     setBaseMobData(baseMobData);
@@ -128,56 +140,58 @@ async function loadBaseMobData() {
 }
 
 function startRealtime() {
-    // 前回の購読を解除
     unsubscribes.forEach(fn => fn && fn());
     unsubscribes = [];
 
-    // Mob ステータス購読
-    const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
-        const current = getState().mobs;
-        const map = new Map();
-        Object.values(mobStatusDataMap).forEach(docData => {
-            Object.entries(docData).forEach(([mobId, mobData]) => {
-                const mobNo = parseInt(mobId, 10);
-                map.set(mobNo, {
-                    last_kill_time: mobData.last_kill_time?.seconds || 0,
-                    prev_kill_time: mobData.prev_kill_time?.seconds || 0,
-                    last_kill_memo: mobData.last_kill_memo || ""
+    // maintenance をロード（キャッシュ再利用）
+    (async () => {
+        const maintenance = maintenanceCache || await loadMaintenance();
+
+        const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
+            const current = getState().mobs;
+            const map = new Map();
+            Object.values(mobStatusDataMap).forEach(docData => {
+                Object.entries(docData).forEach(([mobId, mobData]) => {
+                    const mobNo = parseInt(mobId, 10);
+                    map.set(mobNo, {
+                        last_kill_time: mobData.last_kill_time?.seconds || 0,
+                        prev_kill_time: mobData.prev_kill_time?.seconds || 0,
+                        last_kill_memo: mobData.last_kill_memo || ""
+                    });
                 });
             });
+            const merged = current.map(m => {
+                const dyn = map.get(m.No);
+                if (dyn) {
+                    const updatedMob = { ...m, ...dyn };
+                    updatedMob.repopInfo = calculateRepop(updatedMob, maintenance);
+                    return updatedMob;
+                }
+                return m;
+            });
+            setMobs(merged);
+            filterAndRender();
+            updateProgressBars();
+            displayStatus("LKT/Memoデータ更新完了。", "success");
         });
-        const merged = current.map(m => {
-            const dyn = map.get(m.No);
-            if (dyn) {
-                const updatedMob = { ...m, ...dyn };
-                // LKT/PKT が更新された Mob に対して repopInfo を再計算
-                updatedMob.repopInfo = calculateRepop(updatedMob);
-                return updatedMob;
-            }
-            return m;
-        });
-        setMobs(merged);
-        filterAndRender();
-        updateProgressBars();
-        displayStatus("LKT/Memoデータ更新完了。", "success");
-    });
-    unsubscribes.push(unsubStatus);
+        unsubscribes.push(unsubStatus);
 
-    // Mob 出現位置購読 (メインロジック)
-    const unsubLoc = subscribeMobLocations(locationsMap => {
-        const current = getState().mobs;
-        const merged = current.map(m => {
-            const dyn = locationsMap[m.No];
-
-            let newMob = { ...m };
-            newMob.spawn_cull_status = (dyn && dyn.points) ? dyn.points : {};
-            return newMob;
+        const unsubLoc = subscribeMobLocations(locationsMap => {
+            const current = getState().mobs;
+            const merged = current.map(m => {
+                const dyn = locationsMap[m.No];
+                let newMob = { ...m };
+                newMob.spawn_cull_status = (dyn && dyn.points) ? dyn.points : {};
+                return newMob;
+            });
+            setMobs(merged);
+            filterAndRender();
+            displayStatus("湧き潰しデータ更新完了。", "success");
         });
-        setMobs(merged);
-        filterAndRender();
-        displayStatus("湧き潰しデータ更新完了。", "success");
+        unsubscribes.push(unsubLoc);
+    })().catch(err => {
+        console.error("Failed to init realtime with maintenance:", err);
     });
-    unsubscribes.push(unsubLoc);
 }
 
 export {
