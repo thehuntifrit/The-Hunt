@@ -9,6 +9,7 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase
 import { getState } from "./dataManager.js";
 import { closeReportModal } from "./modal.js";
 import { displayStatus } from "./uiRender.js";
+import { isCulled, updateCrushUI } from "./location.js";
 
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyBikwjGsjL_PVFhx3Vj-OeJCocKA_hQOgU",
@@ -95,16 +96,22 @@ function subscribeMobStatusDocs(onUpdate) {
 }
 
 function subscribeMobLocations(onUpdate) {
-    const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
-        const map = {};
-        snapshot.forEach(docSnap => {
-            const mobNo = parseInt(docSnap.id, 10);
-            const data = docSnap.data();
-            map[mobNo] = { points: data.points || {} };
-        });
-        onUpdate(map);
+  const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
+    const map = {};
+    snapshot.forEach(docSnap => {
+      const mobNo = parseInt(docSnap.id, 10);
+      const data = docSnap.data();
+      map[mobNo] = { points: data.points || {} };
+      // 各地点の UI 更新
+Object.entries(data.points || {}).forEach(([locationId, status]) => {
+  console.log("mobNo:", mobNo, "locationId:", locationId, "status:", status);
+  const isCulledFlag = isCulled(status);
+  updateCrushUI(mobNo, locationId, isCulledFlag);
+});
     });
-    return unsub;
+    onUpdate(map);
+  });
+  return unsub;
 }
 
 // 討伐報告 (reportsコレクションへの直接書き込み)
@@ -171,26 +178,19 @@ const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
         `${mob.Name} (${locationId}) ${action === "crush" ? "湧き潰し" : "解除"}報告中...`
     );
 
-    // MOB_LOCATIONSドキュメントへの参照
     const mobLocationsRef = doc(db, "mob_locations", mobNo.toString());
 
     const updateData = {};
-    const pointPath = `points.${locationId}`;
+    const pointPath = `points.${locationId.toString()}`;
 
     if (action === "crush") {
-        updateData[pointPath] = {
-            culled_at: serverTimestamp() // サーバー側での正確な時刻を設定
-        };
+        updateData[`${pointPath}.culled_at`] = serverTimestamp();
     } else {
         updateData[`${pointPath}.uncull_at`] = serverTimestamp();
     }
 
     try {
-        if (action === "crush") {
-            await setDoc(mobLocationsRef, updateData, { merge: true });
-        } else {
-            await updateDoc(mobLocationsRef, updateData);
-        }
+        await updateDoc(mobLocationsRef, updateData);
 
         displayStatus(`${mob.Name} の状態を更新しました。`, "success");
     } catch (error) {
