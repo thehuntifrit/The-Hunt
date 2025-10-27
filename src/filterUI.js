@@ -1,3 +1,4 @@
+
 // filterUI.js
 
 import { getState, FILTER_TO_DATA_RANK_MAP, setFilter } from "./dataManager.js";
