@@ -190,7 +190,14 @@ function distributeCards() {
 }
 
 function getContrastingColor(bgColor) {
-  const rgb = bgColor.match(/\d+/g).map(Number);
+  if (!bgColor) {
+    return "#ffffff";
+  }
+  const rgbMatch = bgColor.match(/\d+/g);
+  if (!rgbMatch) {
+    return "#ffffff";
+  }
+  const rgb = rgbMatch.map(Number);
   const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
   return brightness > 128 ? "#000000" : "#ffffff";
 }
@@ -201,7 +208,7 @@ function applyTextContrast(card) {
   if (!bar || !text) return;
 
   const bgColor = getComputedStyle(bar).backgroundColor;
-  const contrastColor = getContrastingColor(bgColor);
+  const contrastColor = getContrastingColor(bgColor || "rgb(255,255,255)");
   text.style.color = contrastColor;
 }
 
