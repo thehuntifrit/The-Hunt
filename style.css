@@ -89,13 +89,13 @@ text-shadow: 0 0 4px rgba(0, 0, 0, 1.0);
 
 /* 点滅アニメーション定義 */
 @keyframes max-over-blink {
-0%, 100% { box-shadow: 0 0 15px rgba(255, 100, 100, 0.9); }
-50% { box-shadow: 0 0 5px rgba(255, 100, 100, 0.2); }
+  0%, 100% { box-shadow: 0 0 15px rgba(255, 100, 100, 0.9); }
+  50% { box-shadow: 0 0 5px rgba(255, 100, 100, 0.2); }
 }
 
-/* 点滅クラス */
-.progress-max-over-blink {
-animation: max-over-blink 2s ease-in-out infinite;
+/* ラッパーに点滅を適用 */
+.progress-bar-wrapper.progress-max-over-blink {
+  animation: max-over-blink 2s ease-in-out infinite;
 }
 
 /* --- 詳細パネルの折りたたみアニメーション --- */
