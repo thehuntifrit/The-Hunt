@@ -74,15 +74,8 @@ function createMobCard(mob) {
 		// ラストワン判定は純粋な湧き潰し状態だけで判定
 		validSpawnPoints = (mob.spawn_points ?? []).filter(point => {
 			const pointStatus = mob.spawn_cull_status?.[point.id];
-			// 修正1: isActuallyCulled を利用し、討伐リセットを無視した純粋な湧き潰し状態での判定を行う
 			return !isActuallyCulled(pointStatus);
 		});
-
-		if (validSpawnPoints.length === 0) {
-			// 全て湧き潰し済みの場合（LastOneなし）
-			validSpawnPoints = mob.spawn_points ?? [];
-		}
-
 		isLastOne = validSpawnPoints.length === 1;
 	}
 
