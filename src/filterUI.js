@@ -1,8 +1,6 @@
-
 // filterUI.js
 
-import { getState, FILTER_TO_DATA_RANK_MAP, setFilter } from "./dataManager.js";
-import { EXPANSION_MAP } from "./dataManager.js";
+import { getState, EXPANSION_MAP, FILTER_TO_DATA_RANK_MAP, setFilter } from "./dataManager.js";
 import { filterAndRender } from "./uiRender.js";
 
 const DOM = {
@@ -20,10 +18,9 @@ const renderRankTabs = () => {
     const rankList = ["ALL", "S", "A", "FATE"];
     const container = DOM.rankTabs;
     if (!container) return;
+
     container.innerHTML = "";
     container.className = "grid grid-cols-4 gap-2";
-
-    const storedState = JSON.parse(localStorage.getItem('huntFilterState')) || {};
 
     rankList.forEach(rank => {
         const isSelected = state.filter.rank === rank;
@@ -31,10 +28,20 @@ const renderRankTabs = () => {
         btn.dataset.rank = rank;
         btn.textContent = rank;
 
-        btn.className = `tab-button px-2 py-1 text-sm rounded font-semibold text-white text-center transition ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
+        btn.className =
+            `tab-button px-2 py-1 text-sm rounded font-semibold text-white text-center transition ` +
+            (isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400");
 
-        const clickCount = (rank === state.filter.rank) ? (storedState.clickCount || '1') : '1';
-        btn.dataset.clickCount = clickCount;
+        // --- クリックイベント ---
+        btn.addEventListener("click", () => {
+            const currentState = getState();
+            setFilter({
+                rank,
+                areaSets: currentState.filter.areaSets
+            });
+            filterAndRender();
+            updateFilterUI();
+        });
 
         container.appendChild(btn);
     });
@@ -43,13 +50,16 @@ const renderRankTabs = () => {
 const renderAreaFilterPanel = () => {
     const state = getState();
     const uiRank = state.filter.rank;
-
     if (uiRank === 'ALL') return;
 
     const targetRankKey = uiRank === 'FATE' ? 'F' : uiRank;
     const areas = getAllAreas();
 
-    const currentSet = state.filter.areaSets[targetRankKey] instanceof Set ? state.filter.areaSets[targetRankKey] : new Set();
+    const currentSet =
+        state.filter.areaSets[targetRankKey] instanceof Set
+            ? state.filter.areaSets[targetRankKey]
+            : new Set();
+
     const isAllSelected = areas.length > 0 && currentSet.size === areas.length;
 
     const sortedAreas = areas.sort((a, b) => {
@@ -61,7 +71,6 @@ const renderAreaFilterPanel = () => {
     const createButton = (area, isAll, isSelected) => {
         const btn = document.createElement("button");
         btn.textContent = area;
-
         const btnClass = 'py-1 px-2 text-sm rounded font-semibold text-white text-center transition w-auto';
 
         if (isAll) {
@@ -76,7 +85,6 @@ const renderAreaFilterPanel = () => {
 
     const createPanelContent = (isDesktop) => {
         const panel = document.createDocumentFragment();
-
         const allBtn = createButton(isAllSelected ? "全解除" : "全選択", true, false);
         panel.appendChild(allBtn);
 
@@ -101,7 +109,6 @@ const renderAreaFilterPanel = () => {
         mobilePanel.innerHTML = "";
         mobilePanel.appendChild(createPanelContent(false));
     }
-
     if (desktopPanel) {
         desktopPanel.innerHTML = "";
         desktopPanel.appendChild(createPanelContent(true));
@@ -110,64 +117,66 @@ const renderAreaFilterPanel = () => {
 
 const updateFilterUI = () => {
     const state = getState();
-    const currentRankKeyForColor = FILTER_TO_DATA_RANK_MAP[state.filter.rank] || state.filter.rank;
     const rankTabs = DOM.rankTabs;
     if (!rankTabs) return;
 
-    const storedFilterState = JSON.parse(localStorage.getItem('huntFilterState')) || {};
-    const prevRank = storedFilterState.rank;
+    const stored = JSON.parse(localStorage.getItem("huntUIState")) || {};
+    const prevRank = stored.rank;
+    let clickStep = stored.clickStep || 1;
+
+    const isMobile = window.matchMedia("(max-width: 1023px)").matches;
 
     rankTabs.querySelectorAll(".tab-button").forEach(btn => {
         const btnRank = btn.dataset.rank;
-        const isCurrentRank = btnRank === state.filter.rank;
+        const isCurrent = btnRank === state.filter.rank;
 
-        btn.classList.remove("bg-blue-800", "bg-red-800", "bg-yellow-800", "bg-indigo-800", "bg-gray-500", "hover:bg-gray-400", "bg-green-500");
+        btn.classList.remove(
+            "bg-blue-800", "bg-red-800", "bg-yellow-800", "bg-indigo-800",
+            "bg-gray-500", "hover:bg-gray-400", "bg-green-500", "bg-gray-800"
+        );
 
-        let clickCount = parseInt(btn.dataset.clickCount, 10) || 1;
-
-        if (isCurrentRank) {
-
-            if (prevRank !== btnRank) {
-                clickCount = 1;
+        if (isCurrent) {
+            if (btnRank === "ALL") {
+                clickStep = 1;
+            } else if (!prevRank || prevRank !== btnRank) {
+                clickStep = 1;
             } else {
-                if (clickCount === 1) {
-                    clickCount = 2;
-                } else {
-                    clickCount = (clickCount === 2) ? 3 : 2;
-                }
+                if (clickStep === 1) clickStep = 2;
+                else if (clickStep === 2) clickStep = 3;
+                else clickStep = 2;
             }
 
-            btn.classList.remove("bg-gray-500", "hover:bg-gray-400");
             btn.classList.add(
                 btnRank === "ALL" ? "bg-blue-800"
-                    : currentRankKeyForColor === "S" ? "bg-red-800"
-                        : currentRankKeyForColor === "A" ? "bg-yellow-800"
-                            : currentRankKeyForColor === "F" ? "bg-indigo-800"
+                    : btnRank === "S" ? "bg-red-800"
+                        : btnRank === "A" ? "bg-yellow-800"
+                            : btnRank === "FATE" ? "bg-indigo-800"
                                 : "bg-gray-800"
             );
 
             const panels = [DOM.areaFilterPanelMobile, DOM.areaFilterPanelDesktop];
-
-            if (btnRank === 'ALL' || clickCount !== 2) {
-                panels.forEach(p => p?.classList.add('hidden'));
-            } else if (clickCount === 2) {
+            if (btnRank === "ALL" || clickStep === 1 || clickStep === 3) {
+                panels.forEach(p => p?.classList.add("hidden"));
+            } else if (clickStep === 2) {
                 renderAreaFilterPanel();
-                panels.forEach(p => p?.classList.remove('hidden'));
+                if (isMobile) {
+                    DOM.areaFilterPanelMobile?.classList.remove("hidden");
+                    DOM.areaFilterPanelDesktop?.classList.add("hidden");
+                } else {
+                    DOM.areaFilterPanelDesktop?.classList.remove("hidden");
+                    DOM.areaFilterPanelDesktop?.classList.add("flex"); // ← 明示的に付与
+                    DOM.areaFilterPanelMobile?.classList.add("hidden");
+                }
+
             }
 
-            const newFilterState = { ...storedFilterState, rank: btnRank, clickCount: clickCount };
-            localStorage.setItem("huntFilterState", JSON.stringify(newFilterState));
-
+            localStorage.setItem("huntUIState", JSON.stringify({
+                rank: btnRank,
+                clickStep
+            }));
         } else {
-
-            clickCount = 1;
             btn.classList.add("bg-gray-500", "hover:bg-gray-400");
-
-            const panels = [DOM.areaFilterPanelMobile, DOM.areaFilterPanelDesktop];
-            panels.forEach(p => p?.classList.add('hidden'));
         }
-
-        btn.dataset.clickCount = String(clickCount);
     });
 };
 
@@ -182,7 +191,11 @@ function handleAreaFilterClick(e) {
 
     if (uiRank === 'ALL') return;
 
-    const currentSet = state.filter.areaSets[targetRankKey] instanceof Set ? state.filter.areaSets[targetRankKey] : new Set();
+    const currentSet =
+        state.filter.areaSets[targetRankKey] instanceof Set
+            ? state.filter.areaSets[targetRankKey]
+            : new Set();
+
     const nextAreaSets = { ...state.filter.areaSets };
 
     if (btn.dataset.area === "ALL") {
@@ -231,27 +244,29 @@ function filterMobsByRankAndArea(mobs) {
         const filterKey = mobRankKey;
 
         if (uiRank === 'ALL') {
+            // ALL: S/A/F それぞれの保存済みエリア選択を合算して適用
             if (filterKey !== 'S' && filterKey !== 'A' && filterKey !== 'F') return false;
 
-            const targetSet = areaSets[filterKey];
+            const targetSet =
+                areaSets?.[filterKey] instanceof Set ? areaSets[filterKey] : new Set();
 
-            if (!(targetSet instanceof Set) || targetSet.size === 0) return true;
+            if (targetSet.size === 0) return true;
             if (targetSet.size === allExpansions) return true;
 
             return targetSet.has(mobExpansion);
-
-        }
-        else {
-
-            const isRankMatch = (uiRank === 'S' && mobRank === 'S') ||
+        } else {
+            // 個別ランク
+            const isRankMatch =
+                (uiRank === 'S' && mobRank === 'S') ||
                 (uiRank === 'A' && (mobRank === 'A' || mobRank.startsWith('B'))) ||
                 (uiRank === 'FATE' && mobRank === 'F');
 
             if (!isRankMatch) return false;
 
-            const targetSet = areaSets[filterKey];
+            const targetSet =
+                areaSets?.[filterKey] instanceof Set ? areaSets[filterKey] : new Set();
 
-            if (!(targetSet instanceof Set) || targetSet.size === 0) return true;
+            if (targetSet.size === 0) return true;
             if (targetSet.size === allExpansions) return true;
 
             return targetSet.has(mobExpansion);
