@@ -4,6 +4,12 @@ import { DOM, displayStatus } from "./uiRender.js";
 import { getState } from "./dataManager.js";
 import { toJstAdjustedIsoString } from "./cal.js";
 
+function toLocalIsoString(date) { 
+    const pad = n => String(n).padStart(2, "0"); 
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())
+    }`; 
+}
+
 function openReportModal(mobNo) {
     const mob = getState().mobs.find(m => m.No === mobNo);
     if (!mob) return;
@@ -51,4 +57,4 @@ function initModal() {
     setupModalCloseHandlers();
 }
 
-export { openReportModal, closeReportModal, initModal };
+export { openReportModal, closeReportModal, initModal, toLocalIsoString };
