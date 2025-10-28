@@ -133,12 +133,29 @@ function checkMobSpawnCondition(mob, date) {
 
 function findNextSpawnTime(mob, now = new Date()) {
     let date = new Date(now.getTime());
-    const limit = now.getTime() + 7 * 24 * 60 * 60 * 1000;
-    const REAL_SECONDS_STEP = 60;
+    const limit = now.getTime() + 7 * 24 * 60 * 60 * 1000; // 1週間先まで探索
+    const REAL_SECONDS_STEP = 60; // 1分刻みで探索
 
     while (date.getTime() < limit) {
         if (checkMobSpawnCondition(mob, date)) {
-            return date;
+            // --- 連続時間チェック ---
+            const durationMin = mob.weatherDuration?.minutes || 0;
+            if (durationMin > 0) {
+                let ok = true;
+                let checkDate = new Date(date.getTime());
+                for (let i = 0; i < durationMin; i++) {
+                    checkDate = new Date(checkDate.getTime() + 60 * 1000);
+                    if (!checkMobSpawnCondition(mob, checkDate)) {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok) {
+                    return date; // 連続成立した開始時刻を返す
+                }
+            } else {
+                return date; // 単発条件なら即成立
+            }
         }
         date = new Date(date.getTime() + REAL_SECONDS_STEP * 1000);
     }
@@ -227,12 +244,20 @@ function calculateRepop(mob, maintenance) {
     }
     // --- in 表記用（常に MINREPOP 基準） ---
     const nextMinRepopDate = new Date(minRepop * 1000);
-    // --- Next 表記用（特殊条件がある場合は常に探す） ---
+    // --- Next 表記用（条件モブのみ探索） ---
     let nextConditionSpawnDate = null;
-    if (mob.moonPhase || mob.timeRange || mob.weatherSeedRange || mob.weatherSeedRanges) {
-        const searchStart = new Date(minRepop * 1000);
+    const hasCondition =
+        !!mob.moonPhase || !!mob.timeRange || !!mob.weatherSeedRange || !!mob.weatherSeedRanges;
+
+    if (hasCondition) {
+        // ここを変更：最短を超えていれば「現在時刻」を起点に探索
+        const searchStartRealSeconds =
+            now < minRepop ? minRepop : now;
+
+        const searchStart = new Date(searchStartRealSeconds * 1000);
         nextConditionSpawnDate = findNextSpawnTime(mob, searchStart);
     }
+
     return {
         minRepop,
         maxRepop,
