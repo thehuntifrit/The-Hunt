@@ -347,18 +347,20 @@ const areaPanel = document.getElementById("area-filter-panel");
 
 // 討伐報告受信ハンドラ
 function onKillReportReceived(mobId, kill_time) {
-    const mob = getState().mobs.find(m => m.No === mobId);
-    if (!mob) return;
+	const mob = getState().mobs.find(m => m.No === mobId);
+	if (!mob) return;
 
-    mob.last_kill_time = Number(kill_time);
-    mob.repopInfo = calculateRepop(mob);
-
-    // 即時更新
-    const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
-    if (card) {
-        updateProgressText(card, mob);
-        updateProgressBar(card, mob);
-    }
+	mob.last_kill_time = Number(kill_time);
+	mob.repopInfo = calculateRepop(mob);
+	// 即時更新
+	const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
+	if (card) {
+		updateProgressText(card, mob);
+		updateProgressBar(card, mob);
+	}
+	if (mob.Rank === "S" || mob.Rank === "A") {
+		filterAndRender(); 
+	}
 }
 
 // 定期ループ（60秒ごとに全カードを更新）
