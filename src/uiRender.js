@@ -71,9 +71,10 @@ function createMobCard(mob) {
     let validSpawnPoints = [];
 
     if (mob.Map && mob.spawn_points) {
+        // ラストワン判定は純粋な湧き潰し状態だけで判定
         validSpawnPoints = (mob.spawn_points ?? []).filter(point => {
             const pointStatus = mob.spawn_cull_status?.[point.id];
-            return !isCulled(pointStatus, mob.No);
+            return !isActuallyCulled(pointStatus);
         });
 
         if (validSpawnPoints.length === 0) {
@@ -93,7 +94,6 @@ function createMobCard(mob) {
             point.mob_ranks.includes("B2") ? "B2"
                 : point.mob_ranks.includes("B1") ? "B1"
                     : point.mob_ranks[0],
-            // ラストワン判定を正しく渡す
             isLastOne && point.id === validSpawnPoints[0]?.id,
             isS_LastOne
         )).join("")
