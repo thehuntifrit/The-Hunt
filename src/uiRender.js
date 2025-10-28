@@ -59,45 +59,47 @@ function processText(text) {
 }
 
 function createMobCard(mob) {
-    const rank = mob.Rank;
-    const rankConfig = RANK_COLORS[rank] || RANK_COLORS.A;
-    const rankLabel = rankConfig.label || rank;
+	const rank = mob.Rank;
+	const rankConfig = RANK_COLORS[rank] || RANK_COLORS.A;
+	const rankLabel = rankConfig.label || rank;
 
-    const isExpandable = rank === "S";
-    const { openMobCardNo } = getState();
-    const isOpen = isExpandable && mob.No === openMobCardNo;
+	const isExpandable = rank === "S";
+	const { openMobCardNo } = getState();
+	const isOpen = isExpandable && mob.No === openMobCardNo;
 
-    let isLastOne = false;
-    let validSpawnPoints = [];
+	let isLastOne = false;
+	let validSpawnPoints = [];
 
-    if (mob.Map && mob.spawn_points) {
-        // ラストワン判定は純粋な湧き潰し状態だけで判定
-        validSpawnPoints = (mob.spawn_points ?? []).filter(point => {
-            const pointStatus = mob.spawn_cull_status?.[point.id];
-            return !isActuallyCulled(pointStatus);
-        });
+	if (mob.Map && mob.spawn_points) {
+		// ラストワン判定は純粋な湧き潰し状態だけで判定
+		validSpawnPoints = (mob.spawn_points ?? []).filter(point => {
+			const pointStatus = mob.spawn_cull_status?.[point.id];
+			// 修正1: isActuallyCulled を利用し、討伐リセットを無視した純粋な湧き潰し状態での判定を行う
+			return !isActuallyCulled(pointStatus);
+		});
 
-        if (validSpawnPoints.length === 0) {
-            validSpawnPoints = mob.spawn_points ?? [];
-        }
+		if (validSpawnPoints.length === 0) {
+			// 全て湧き潰し済みの場合（LastOneなし）
+			validSpawnPoints = mob.spawn_points ?? [];
+		}
 
-        isLastOne = validSpawnPoints.length === 1;
-    }
+		isLastOne = validSpawnPoints.length === 1;
+	}
 
-    const isS_LastOne = rank === "S" && isLastOne;
+	const isS_LastOne = rank === "S" && isLastOne;
 
-    const spawnPointsHtml = (rank === "S" && mob.Map)
-        ? (mob.spawn_points ?? []).map(point => drawSpawnPoint(
-            point,
-            mob.spawn_cull_status,
-            mob.No,
-            point.mob_ranks.includes("B2") ? "B2"
-                : point.mob_ranks.includes("B1") ? "B1"
-                    : point.mob_ranks[0],
-            isLastOne && point.id === validSpawnPoints[0]?.id,
-            isS_LastOne
-        )).join("")
-        : "";
+	const spawnPointsHtml = (rank === "S" && mob.Map)
+		? (mob.spawn_points ?? []).map(point => drawSpawnPoint(
+			point,
+			mob.spawn_cull_status,
+			mob.No,
+			point.mob_ranks.includes("B2") ? "B2"
+				: point.mob_ranks.includes("B1") ? "B1"
+					: point.mob_ranks[0],
+			isLastOne && point.id === validSpawnPoints[0]?.id,
+			isS_LastOne
+		)).join("")
+		: "";
 
     const cardHeaderHTML = `
 <div class="px-2 py-1 space-y-1 bg-gray-800/70" data-toggle="card-header">
@@ -160,30 +162,30 @@ transition duration-150" data-mob-no="${mob.No}" data-rank="${rank}">${cardHeade
 }
 
 function filterAndRender({ isInitialLoad = false } = {}) {
-    const state = getState();
-    const filtered = filterMobsByRankAndArea(state.mobs);
+	const state = getState();
+	const filtered = filterMobsByRankAndArea(state.mobs);
 
-    filtered.sort((a, b) => a.No - b.No);
+	filtered.sort((a, b) => a.No - b.No);
 
-    const frag = document.createDocumentFragment();
-    filtered.forEach(mob => {
-        const temp = document.createElement("div");
-        temp.innerHTML = createMobCard(mob);
-        const card = temp.firstElementChild;
-        frag.appendChild(card);
+	const frag = document.createDocumentFragment();
+	filtered.forEach(mob => {
+		const temp = document.createElement("div");
+		temp.innerHTML = createMobCard(mob);
+		const card = temp.firstElementChild;
+		frag.appendChild(card);
 
-        updateProgressText(card, mob);
-        updateProgressBar(card, mob);
-        updateExpandablePanel(card, mob);
-    });
+		updateProgressText(card, mob);
+		updateProgressBar(card, mob);
+		updateExpandablePanel(card, mob);
+	});
 
-    DOM.masterContainer.innerHTML = "";
-    DOM.masterContainer.appendChild(frag);
-    distributeCards();
+	DOM.masterContainer.innerHTML = "";
+	DOM.masterContainer.appendChild(frag);
+	distributeCards();
 
-    if (isInitialLoad) {
-        updateProgressBars();
-    }
+	if (isInitialLoad) {
+		updateProgressBars();
+	}
 }
 
 function distributeCards() {
