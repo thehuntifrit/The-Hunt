@@ -49,6 +49,14 @@ function isCulled(pointStatus, mobNo) {
     return culled;
 }
 
+// ラストワン判定用：討伐リセットは考慮しない
+function isActuallyCulled(pointStatus) {
+    const culledMs = pointStatus?.culled_at ? pointStatus.culled_at.toMillis() : 0;
+    const uncullMs = pointStatus?.uncull_at ? pointStatus.uncull_at.toMillis() : 0;
+    if (culledMs === 0 && uncullMs === 0) return false;
+    return culledMs > uncullMs;
+}
+
 function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_LastOne) {
     const pointStatus = spawnCullStatus?.[point.id];
     const isCulledFlag = isCulled(pointStatus, mobNo);
@@ -128,4 +136,4 @@ function attachLocationEvents() {
     });
 }
 
-export { isCulled, drawSpawnPoint, handleCrushToggle, updateCrushUI, attachLocationEvents };
+export { isCulled, isActuallyCulled, drawSpawnPoint, handleCrushToggle, updateCrushUI, attachLocationEvents };
