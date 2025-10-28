@@ -164,22 +164,6 @@ const submitReport = async (mobNo, timeISO, memo) => {
     }
 };
 
-// フォーム送信イベントをserver側で拾う
-document.addEventListener("DOMContentLoaded", () => {
-    const reportForm = document.getElementById("report-form");
-    if (reportForm) {
-        reportForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-
-            const mobNo = Number(reportForm.dataset.mobNo);
-            const timeISO = document.getElementById("report-datetime").value;
-            const memo = document.getElementById("report-memo").value;
-
-            submitReport(mobNo, timeISO, memo);
-        });
-    }
-});
-
 // 湧き潰し報告
 const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
     const state = getState();
