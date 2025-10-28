@@ -1,7 +1,8 @@
+
 // uiRender.js
 
-import { calculateRepop, findNextSpawnTime, formatDuration, formatDurationHM, formatLastKillTime, debounce } from "./cal.js";
-import { drawSpawnPoint } from "./location.js";
+import { calculateRepop, findNextSpawnTime, formatDuration, formatDurationHM, formatLastKillTime, debounce, getEorzeaTime } from "./cal.js";
+import { drawSpawnPoint, isCulled } from "./location.js"; 
 import { getState, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
 import { renderRankTabs, renderAreaFilterPanel, updateFilterUI, filterMobsByRankAndArea } from "./filterUI.js";
 
@@ -20,6 +21,16 @@ const DOM = {
     modalTimeInput: document.getElementById('report-datetime'),
     modalMemoInput: document.getElementById('report-memo'),
 };
+
+function updateEorzeaTime() {
+    const et = getEorzeaTime();
+    const el = document.getElementById("eorzea-time");
+    if (el) {
+        el.textContent = `ET ${et.hours}:${et.minutes}`;
+    }
+}
+updateEorzeaTime();
+setInterval(updateEorzeaTime, 3000);
 
 function displayStatus(message, type = "info") {
     const el = document.getElementById("status-message");
@@ -57,10 +68,20 @@ function createMobCard(mob) {
     const { openMobCardNo } = getState();
     const isOpen = isExpandable && mob.No === openMobCardNo;
 
-    const isS_LastOne = rank === "S" && mob.spawn_points && mob.spawn_points.some(
-        p => p.is_last_one && (p.mob_ranks.includes("S") || p.mob_ranks.includes("A"))
-    );
+    let isLastOne = false;
+    let validSpawnPoints = [];
 
+    if (mob.Map && mob.spawn_points) {
+        validSpawnPoints = (mob.spawn_points ?? []).filter(point => {
+            const pointStatus = mob.spawn_cull_status?.[point.id];
+            // isCulled には mob.No が必要
+            return !isCulled(pointStatus, mob.No); 
+        });
+        isLastOne = validSpawnPoints.length === 1;
+    }
+
+    const isS_LastOne = rank === "S" && isLastOne; 
+    
     const spawnPointsHtml = (rank === "S" && mob.Map)
         ? (mob.spawn_points ?? []).map(point => drawSpawnPoint(
             point,
@@ -69,13 +90,13 @@ function createMobCard(mob) {
             point.mob_ranks.includes("B2") ? "B2"
                 : point.mob_ranks.includes("B1") ? "B1"
                     : point.mob_ranks[0],
-            point.is_last_one,
+            // isLastOne のフラグを渡す
+            isLastOne && point.id === validSpawnPoints[0]?.id, 
             isS_LastOne,
             mob.last_kill_time,
             mob.prev_kill_time
         )).join("")
         : "";
-
 
     const cardHeaderHTML = `
 <div class="px-2 py-1 space-y-1 bg-gray-800/70" data-toggle="card-header">
@@ -158,7 +179,6 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     DOM.masterContainer.innerHTML = "";
     DOM.masterContainer.appendChild(frag);
     distributeCards();
-    updateFilterUI();
 
     if (isInitialLoad) {
         updateProgressBars();
@@ -264,7 +284,6 @@ function updateProgressText(card, mob) {
         toggleContainer.dataset.toggleStarted = "true";
     }
 }
-// in と Next を3秒ごとに交互表示
 function startToggleInNext(container) {
     const inLabel = container.querySelector(".label-in");
     const nextLabel = container.querySelector(".label-next");
@@ -281,7 +300,7 @@ function startToggleInNext(container) {
             nextLabel.style.display = "none";
         }
         showingIn = !showingIn;
-    }, 3000); // 3秒ごとに切り替え
+    }, 5000);
 }
 
 function updateExpandablePanel(card, mob) {
