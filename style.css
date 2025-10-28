@@ -166,5 +166,5 @@ padding-bottom: 0.5rem !important;
 /* --- ラストワン --- */
 .color-lastone { background-color: var(--color-lastone); border: 2px solid #008000; }
 /* --- B-only --- */
-.color-b1-only { background-color: var(--color-b1); border: 1px solid #fff; opacity: 0.75; }
-.color-b2-only { background-color: var(--color-b2); border: 1px solid #fff; opacity: 0.75; }
+.color-b1-only { background-color: var(--color-b1); border: 1px solid #fff; width: 12px; height: 12px; opacity: 0.75; }
+.color-b2-only { background-color: var(--color-b2); border: 1px solid #fff; width: 12px; height: 12px; opacity: 0.75; }
