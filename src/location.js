@@ -68,25 +68,25 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_Last
     let dataIsInteractive = "false";
 
     if (isLastOne) {
-        // ラストワンは固定色・非インタラクティブ
         colorClass = "color-lastone";
         dataIsInteractive = "false";
-
+        
     } else if (isS_A_Cullable) {
+        // ラストワンではないS/A湧き潰し可能なポイントの判定
         const rankB = point.mob_ranks.find(r => r.startsWith("B"));
         if (isCulledFlag) {
             colorClass = rankB === "B1" ? "color-b1-culled" : "color-b2-culled";
         } else {
             colorClass = rankB === "B1" ? "color-b1" : "color-b2";
         }
-        dataIsInteractive = "true";
-
+        dataIsInteractive = "true"; 
+        
     } else if (isB_Only) {
         const rankB = point.mob_ranks[0];
         colorClass = rankB === "B1" ? "color-b1-only" : "color-b2-only";
         dataIsInteractive = "false";
     }
-
+    
     return `
     <div class="spawn-point ${colorClass}"
          style="left:${point.x}%; top:${point.y}%;"
