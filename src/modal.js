@@ -4,16 +4,13 @@ import { DOM, displayStatus } from "./uiRender.js";
 import { getState } from "./dataManager.js";
 import { toJstAdjustedIsoString } from "./cal.js";
 
-function toLocalIsoString(date) { 
-    const pad = n => String(n).padStart(2, "0"); 
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`; 
-}
-
-function openReportModal(mobNo) {
+async function openReportModal(mobNo) {
     const mob = getState().mobs.find(m => m.No === mobNo);
     if (!mob) return;
-
-    const iso = toLocalIsoString(new Date());
+    // 💡 サーバーの UTC 時刻を取得
+    const serverDateUTC = await getServerTimeUTC();
+    const iso = toJstAdjustedIsoString(serverDateUTC);
+    
     DOM.reportForm.dataset.mobNo = String(mobNo);
     DOM.modalMobName.textContent = `${mob.Name}`;
     DOM.modalTimeInput.value = iso;
