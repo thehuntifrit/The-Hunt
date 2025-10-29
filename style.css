@@ -72,9 +72,9 @@ transform: scale(1.15);
   --header-height: 4rem;
   font-family: 'Inter', sans-serif;
 
-  --progress-0-60: #808080;
-  --progress-60-80: #808080;
-  --progress-80-100: #808080;
+  --progress-0-60: #FFFFFF;
+  --progress-60-80: #FFFFFF;
+  --progress-80-100: #FFFFFF;
 }
 
 .progress-p0-60 {
