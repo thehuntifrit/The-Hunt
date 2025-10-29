@@ -284,38 +284,35 @@ function calculateRepop(mob, maintenance) {
 
     const nextMinRepopDate = minRepop ? new Date(minRepop * 1000) : null;
 
-    // --- 条件モブ探索 ---
-    let nextConditionSpawnDate = null;
-    const hasCondition =
-        !!mob.moonPhase || !!mob.timeRange || !!mob.weatherSeedRange || !!mob.weatherSeedRanges;
+  // --- 条件モブ探索 ---
+let nextConditionSpawnDate = null;
+const hasCondition =
+    !!mob.moonPhase || !!mob.timeRange || !!mob.weatherSeedRange || !!mob.weatherSeedRanges;
 
-    if (hasCondition) {
-        if (mob.weatherDuration?.minutes) {
-            const durationMin = mob.weatherDuration.minutes;
-            const lookBackSeconds = (durationMin + 30) * 60;
-            const referencePointRealSeconds = now < minRepop ? minRepop : now;
-            const searchStartRealSeconds = Math.max(referencePointRealSeconds - lookBackSeconds, serverUp);
-            const searchStart = new Date(searchStartRealSeconds * 1000);
+if (hasCondition) {
+    if (mob.weatherDuration?.minutes) {
+        const durationMin = mob.weatherDuration.minutes;
+        const lookBackSeconds = (durationMin + 30) * 60;
+        const referencePointRealSeconds = now < minRepop ? minRepop : now;
+        const searchStartRealSeconds = Math.max(referencePointRealSeconds - lookBackSeconds, serverUp);
+        const searchStart = new Date(searchStartRealSeconds * 1000);
 
-            const found = findNextSpawnTime(mob, searchStart);
-            if (found) {
-                const T_cond_start_sec = found.getTime() / 1000;
-                if (T_cond_start_sec < minRepop) {
-                    const T_cond_end_sec = T_cond_start_sec + durationMin * 60;
-                    if (T_cond_end_sec >= minRepop) {
-                        nextConditionSpawnDate = new Date(minRepop * 1000);
-                    } else {
-                        const retry = findNextSpawnTime(mob, new Date(minRepop * 1000));
-                        nextConditionSpawnDate = retry || null;
-                    }
-                } else {
-                    nextConditionSpawnDate = found;
-                }
+        const found = findNextSpawnTime(mob, searchStart);
+        if (found) {
+            const foundSec = found.getTime() / 1000;
+            if (foundSec < minRepop) {
+                const retry = findNextSpawnTime(mob, new Date(minRepop * 1000));
+                nextConditionSpawnDate = retry || null;
+            } else {
+                nextConditionSpawnDate = found;
             }
-        } else {
-            nextConditionSpawnDate = findNextSpawnTime(mob, new Date(minRepop * 1000));
         }
+    } else {
+        // MaxOver の場合も含めて、常に次の条件成立時刻を探索する
+        const base = Math.max(minRepop, now, serverUp);
+        nextConditionSpawnDate = findNextSpawnTime(mob, new Date(base * 1000));
     }
+}
 
     return {
         minRepop,
