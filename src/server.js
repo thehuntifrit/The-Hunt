@@ -29,6 +29,7 @@ const analytics = getAnalytics(app);
 
 const functions = functionsInstance;
 
+// httpsCallable の初期化
 const callGetServerTime = httpsCallable(functions, 'getServerTime');
 const callRevertStatus = httpsCallable(functions, 'revertStatus'); // 巻き戻し機能用
 
@@ -128,20 +129,17 @@ const submitReport = async (mobNo, timeISO, memo) => {
         displayStatus("モブデータが見つかりません。", "error");
         return;
     }
+
     // モーダル入力を優先、未入力や不正ならサーバー時刻を fallback
     let killTimeDate;
     if (timeISO) {
         const modalDate = new Date(timeISO);
-        // Dateオブジェクトとして有効な場合にのみ採用
-        if (!isNaN(modalDate.getTime())) { 
-            killTimeDate = modalDate; 
+        if (!isNaN(modalDate)) {
+            killTimeDate = modalDate; // ← モーダル値をそのまま採用
         }
     }
-        // 💡 サーバー時刻をフォールバックとして取得・設定
     if (!killTimeDate) {
-        // timeISOが無効または空の場合、サーバー時刻を取得
-        const serverTimeUTC = await getServerTimeUTC(); 
-        killTimeDate = serverTimeUTC;
+        killTimeDate = await getServerTimeUTC(); // fallback
     }
 
     const modalStatusEl = document.querySelector("#modal-status");
@@ -151,7 +149,7 @@ const submitReport = async (mobNo, timeISO, memo) => {
     try {
         await addDoc(collection(db, "reports"), {
             mob_id: mobNo.toString(),
-            kill_time: killTimeDate, // Dateオブジェクトを直接Firestoreに保存 (UTC)
+            kill_time: killTimeDate,
             reporter_uid: userId,
             memo: memo,
             repop_seconds: mob.REPOP_s
@@ -165,6 +163,22 @@ const submitReport = async (mobNo, timeISO, memo) => {
         displayStatus(`討伐報告エラー: ${error.message || "通信失敗"}`, "error");
     }
 };
+
+// フォーム送信イベントをserver側で拾う
+document.addEventListener("DOMContentLoaded", () => {
+    const reportForm = document.getElementById("report-form");
+    if (reportForm) {
+        reportForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const mobNo = Number(reportForm.dataset.mobNo);
+            const timeISO = document.getElementById("report-datetime").value;
+            const memo = document.getElementById("report-memo").value;
+
+            submitReport(mobNo, timeISO, memo);
+        });
+    }
+});
 
 // 湧き潰し報告
 const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
@@ -189,15 +203,11 @@ const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
 
     const updateData = {};
     const pointPath = `points.${locationId.toString()}`;
-    // 💡 湧き潰し報告の時刻もサーバー時刻に依存するため、getServerTimeUTC()で取得
-    const serverTimeUTC = await getServerTimeUTC();
-    const serverTimestampValue = serverTimeUTC; 
 
     if (action === "crush") {
-        // serverTimestamp() はクライアント側で時刻決定権がないため、サーバー関数またはDateオブジェクトを使用
-        updateData[`${pointPath}.culled_at`] = serverTimestampValue; 
+        updateData[`${pointPath}.culled_at`] = serverTimestamp();
     } else {
-        updateData[`${pointPath}.uncull_at`] = serverTimestampValue; 
+        updateData[`${pointPath}.uncull_at`] = serverTimestamp();
     }
 
     try {
