@@ -25,25 +25,25 @@ function debounce(func, wait) {
 }
 
 function toJstAdjustedIsoString(date) {
-    const options = {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-        timeZone: 'Asia/Tokyo'
-    };
+    const options = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'Asia/Tokyo'
+    };
 
-    const parts = new Intl.DateTimeFormat('ja-JP', options).formatToParts(date);
+    const parts = new Intl.DateTimeFormat('ja-JP', options).formatToParts(date);
 
-    const year = parts.find(p => p.type === 'year').value;
-    const month = parts.find(p => p.type === 'month').value;
-    const day = parts.find(p => p.type === 'day').value;
-    const hour = parts.find(p => p.type === 'hour').value;
-    const minute = parts.find(p => p.type === 'minute').value;
+    const year = parts.find(p => p.type === 'year').value;
+    const month = parts.find(p => p.type === 'month').value;
+    const day = parts.find(p => p.type === 'day').value;
+    const hour = parts.find(p => p.type === 'hour').value;
+    const minute = parts.find(p => p.type === 'minute').value;
 
-    return `${year}-${month}-${day}T${hour}:${minute}`;
+    return `${year}-${month}-${day}T${hour}:${minute}`;
 }
 
 function getEorzeaTime(date = new Date()) {
@@ -146,6 +146,21 @@ function checkMobSpawnCondition(mob, date) {
     return true;
 }
 
+// 時間帯条件チェック関数
+function checkTimeRange(timeRange, timestamp) {
+    const et = getEorzeaTime(new Date(timestamp * 1000));
+    const h = Number(et.hours);
+    const { start, end } = timeRange;
+
+    if (start < end) {
+        return h >= start && h < end;
+    } else {
+        // 例: 22:00〜04:00 のように日付を跨ぐ場合
+        return h >= start || h < end;
+    }
+}
+
+// 次の条件成立時刻を探索
 function findNextSpawnTime(mob, startDate) {
     if (!startDate || !(startDate instanceof Date) || isNaN(startDate.getTime())) {
         return null; // 不正な引数は即 null
@@ -153,6 +168,7 @@ function findNextSpawnTime(mob, startDate) {
 
     const WEATHER_CYCLE_SEC = 23 * 60 + 20; // 1周期 = 23分20秒 = 1400秒
     const startSec = Math.floor(startDate.getTime() / 1000);
+
     // --- weatherDuration がある場合のみ「連続周期条件」を探索 ---
     if (mob.weatherDuration?.minutes) {
         const requiredMinutes = mob.weatherDuration.minutes;
@@ -177,18 +193,23 @@ function findNextSpawnTime(mob, startDate) {
         }
         return null;
     }
+
     // --- weatherDuration がない場合は「瞬間条件」判定 ---
     for (let t = startSec; t < startSec + 7 * 24 * 3600; t += WEATHER_CYCLE_SEC) {
         const seed = getEorzeaWeatherSeed(mob.area, t);
         if (mob.weatherSeedRange && seed >= mob.weatherSeedRange[0] && seed <= mob.weatherSeedRange[1]) {
+            // 月齢条件がある場合は追加判定
             if (mob.moonPhase && !checkMoonPhase(mob.moonPhase, t)) continue;
+            // 時間帯条件がある場合は追加判定
             if (mob.timeRange && !checkTimeRange(mob.timeRange, t)) continue;
             return new Date(t * 1000);
         }
     }
+
     return null;
 }
 
+// repop計算
 function calculateRepop(mob, maintenance) {
     const now = Date.now() / 1000;
     const lastKill = mob.last_kill_time || 0;
