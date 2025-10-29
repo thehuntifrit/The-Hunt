@@ -2,9 +2,9 @@
 
 import { calculateRepop, findNextSpawnTime, formatDuration, formatDurationHM, formatLastKillTime, debounce, getEorzeaTime } from "./cal.js";
 import { drawSpawnPoint, isCulled, isActuallyCulled } from "./location.js";
-import { getState, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP, toggleOpenMobCard } from "./dataManager.js";
+import { getState, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
 import { renderRankTabs, renderAreaFilterPanel, updateFilterUI, filterMobsByRankAndArea } from "./filterUI.js";
-import { submitReport } from "./server.js";
+import { submitReport, getServerTimeUTC } from "./server.js";
 import { openReportModal, closeReportModal, initModal } from "./modal.js";
 
 
