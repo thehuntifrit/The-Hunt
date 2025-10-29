@@ -1,3 +1,4 @@
+
 // uiRender.js
 
 import { toJstAdjustedIsoString, calculateRepop, findNextSpawnTime, formatDuration, formatDurationHM, formatLastKillTime, debounce, getEorzeaTime } from "./cal.js";
@@ -9,56 +10,56 @@ import { openReportModal, closeReportModal, initModal } from "./modal.js";
 
 
 const DOM = {
-    masterContainer: document.getElementById('master-mob-container'),
-    colContainer: document.getElementById('column-container'),
-    cols: [document.getElementById('column-1'), document.getElementById('column-2'), document.getElementById('column-3')],
-    rankTabs: document.getElementById('rank-tabs'),
-    areaFilterWrapper: document.getElementById('area-filter-wrapper'),
-    areaFilterPanel: document.getElementById('area-filter-panel'),
-    statusMessage: document.getElementById('status-message'),
-    reportModal: document.getElementById('report-modal'),
-    reportForm: document.getElementById('report-form'),
-    modalMobName: document.getElementById('modal-mob-name'),
-    modalStatus: document.getElementById('modal-status'),
-    modalTimeInput: document.getElementById('report-datetime'),
-    modalMemoInput: document.getElementById('report-memo'),
+    masterContainer: document.getElementById('master-mob-container'),
+    colContainer: document.getElementById('column-container'),
+    cols: [document.getElementById('column-1'), document.getElementById('column-2'), document.getElementById('column-3')],
+    rankTabs: document.getElementById('rank-tabs'),
+    areaFilterWrapper: document.getElementById('area-filter-wrapper'),
+    areaFilterPanel: document.getElementById('area-filter-panel'),
+    statusMessage: document.getElementById('status-message'),
+    reportModal: document.getElementById('report-modal'),
+    reportForm: document.getElementById('report-form'),
+    modalMobName: document.getElementById('modal-mob-name'),
+    modalStatus: document.getElementById('modal-status'),
+    modalTimeInput: document.getElementById('report-datetime'),
+    modalMemoInput: document.getElementById('report-memo'),
 };
 
 function updateEorzeaTime() {
-    const et = getEorzeaTime();
-    const el = document.getElementById("eorzea-time");
-    if (el) {
-        el.textContent = `ET ${et.hours}:${et.minutes}`;
-    }
+    const et = getEorzeaTime();
+    const el = document.getElementById("eorzea-time");
+    if (el) {
+        el.textContent = `ET ${et.hours}:${et.minutes}`;
+    }
 }
 updateEorzeaTime();
 setInterval(updateEorzeaTime, 3000);
 
 function displayStatus(message, type = "info") {
-    const el = document.getElementById("status-message");
-    if (!el) return;
+    const el = document.getElementById("status-message");
+    if (!el) return;
 
-    const typeClasses = {
-        'success': 'bg-green-600',
-        'error': 'bg-red-600', // エラー時
-        'warning': 'bg-yellow-600',// 警告時
-        'info': 'bg-blue-600' // 情報表示
-    };
+    const typeClasses = {
+        'success': 'bg-green-600',
+        'error': 'bg-red-600', // エラー時
+        'warning': 'bg-yellow-600',// 警告時
+        'info': 'bg-blue-600' // 情報表示
+    };
 
-    Object.values(typeClasses).forEach(cls => el.classList.remove(cls));
+    Object.values(typeClasses).forEach(cls => el.classList.remove(cls));
 
-    el.textContent = message;
-    el.classList.add(typeClasses[type] || typeClasses['info']);
+    el.textContent = message;
+    el.classList.add(typeClasses[type] || typeClasses['info']);
 
-    setTimeout(() => {
-        el.textContent = "";
-        Object.values(typeClasses).forEach(cls => el.classList.remove(cls));
-    }, 5000);
+    setTimeout(() => {
+        el.textContent = "";
+        Object.values(typeClasses).forEach(cls => el.classList.remove(cls));
+    }, 5000);
 }
 
 function processText(text) {
-    if (typeof text !== "string" || !text) return "";
-    return text.replace(/\/\//g, "<br>");
+    if (typeof text !== "string" || !text) return "";
+    return text.replace(/\/\//g, "<br>");
 }
 
 function createMobCard(mob) {
@@ -178,6 +179,7 @@ function filterAndRender({ isInitialLoad = false } = {}) {
 	DOM.masterContainer.innerHTML = "";
 	DOM.masterContainer.appendChild(frag);
 	distributeCards();
+    setupReportListeners(); 
 
 	if (isInitialLoad) {
 		updateProgressBars();
@@ -185,28 +187,72 @@ function filterAndRender({ isInitialLoad = false } = {}) {
 	}
 }
 
-function distributeCards() {
-    const width = window.innerWidth;
-    const md = 768;
-    const lg = 1024;
-    let cols = 1;
-    if (width >= lg) {
-        cols = 3;
-        DOM.cols[2].classList.remove("hidden");
-    } else if (width >= md) {
-        cols = 2;
-        DOM.cols[2].classList.add("hidden");
-    } else {
-        cols = 1;
-        DOM.cols[2].classList.add("hidden");
-    }
+async function handleMasterContainerClick(event) {
+    // 報告ボタンの処理
+    const reportButton = event.target.closest('button[data-report-type]');
+    if (reportButton) {
+        const mobNo = parseInt(reportButton.dataset.mobNo, 10);
+        const reportType = reportButton.dataset.reportType;
 
-    DOM.cols.forEach(col => (col.innerHTML = ""));
-    const cards = Array.from(DOM.masterContainer.children);
-    cards.forEach((card, idx) => {
-        const target = idx % cols;
-        DOM.cols[target].appendChild(card);
-    });
+        if (reportType === 'instant') {
+            // A/Fモブ即時報告の場合
+            await submitReport(mobNo, "", "");
+        } else if (reportType === 'modal') {
+            // Sモブモーダル報告の場合 (modal.jsからインポートした関数を使用)
+            await openReportModal(mobNo);
+        }
+        return; // ボタンクリック処理が完了
+    }
+
+    // カード開閉の処理
+    const cardHeader = event.target.closest('[data-toggle="card-header"]');
+    if (cardHeader) {
+        const card = cardHeader.closest('.mob-card');
+        const mobNo = parseInt(card.dataset.mobNo, 10);
+        if (card.dataset.rank === 'S') {
+        }
+    }
+}
+
+// 💡 報告ボタンイベントリスナーの設定
+function setupReportListeners() {
+    if (!DOM.masterContainer.dataset.delegatedListeners) {
+        DOM.masterContainer.addEventListener('click', handleMasterContainerClick);
+        DOM.masterContainer.dataset.delegatedListeners = 'true';
+    }
+	
+    DOM.reportForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const mobNo = parseInt(DOM.reportForm.dataset.mobNo, 10);
+        const timeISO = DOM.modalTimeInput.value;
+        const memo = DOM.modalMemoInput.value;
+        
+        await submitReport(mobNo, timeISO, memo);
+    };
+}
+
+function distributeCards() {
+    const width = window.innerWidth;
+    const md = 768;
+    const lg = 1024;
+    let cols = 1;
+    if (width >= lg) {
+        cols = 3;
+        DOM.cols[2].classList.remove("hidden");
+    } else if (width >= md) {
+        cols = 2;
+        DOM.cols[2].classList.add("hidden");
+    } else {
+        cols = 1;
+        DOM.cols[2].classList.add("hidden");
+    }
+
+    DOM.cols.forEach(col => (col.innerHTML = ""));
+    const cards = Array.from(DOM.masterContainer.children);
+    cards.forEach((card, idx) => {
+        const target = idx % cols;
+        DOM.cols[target].appendChild(card);
+    });
 }
 
 function updateProgressBar(card, mob) {
@@ -277,66 +323,66 @@ function updateProgressText(card, mob) {
     </div>
   `;
 
-    // 初回のみ切り替え処理を開始
-    const toggleContainer = text.querySelector(".toggle-container");
-    if (toggleContainer && !toggleContainer.dataset.toggleStarted) {
-        startToggleInNext(toggleContainer);
-        toggleContainer.dataset.toggleStarted = "true";
-    }
+    // 初回のみ切り替え処理を開始
+    const toggleContainer = text.querySelector(".toggle-container");
+    if (toggleContainer && !toggleContainer.dataset.toggleStarted) {
+        startToggleInNext(toggleContainer);
+        toggleContainer.dataset.toggleStarted = "true";
+    }
 }
 function startToggleInNext(container) {
-    const inLabel = container.querySelector(".label-in");
-    const nextLabel = container.querySelector(".label-next");
-    let showingIn = true;
+    const inLabel = container.querySelector(".label-in");
+    const nextLabel = container.querySelector(".label-next");
+    let showingIn = true;
 
-    setInterval(() => {
-        if (nextLabel.textContent.trim() === "") return; // Next が無い場合は切り替え不要
+    setInterval(() => {
+        if (nextLabel.textContent.trim() === "") return; // Next が無い場合は切り替え不要
 
-        if (showingIn) {
-            inLabel.style.display = "none";
-            nextLabel.style.display = "inline";
-        } else {
-            inLabel.style.display = "inline";
-            nextLabel.style.display = "none";
-        }
-        showingIn = !showingIn;
-    }, 5000);
+        if (showingIn) {
+            inLabel.style.display = "none";
+            nextLabel.style.display = "inline";
+        } else {
+            inLabel.style.display = "inline";
+            nextLabel.style.display = "none";
+        }
+        showingIn = !showingIn;
+    }, 5000);
 }
 
 function updateExpandablePanel(card, mob) {
-    const elNext = card.querySelector("[data-next-time]");
-    const elLast = card.querySelector("[data-last-kill]");
-    const elMemo = card.querySelector("[data-last-memo]");
-    if (!elNext && !elLast && !elMemo) return;
+    const elNext = card.querySelector("[data-next-time]");
+    const elLast = card.querySelector("[data-last-kill]");
+    const elMemo = card.querySelector("[data-last-memo]");
+    if (!elNext && !elLast && !elMemo) return;
 
-    const absFmt = { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' };
+    const absFmt = { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' };
 
-    const nextMin = mob.repopInfo?.nextMinRepopDate;
-    const conditionTime = findNextSpawnTime(mob);
-    const displayTime = (nextMin && conditionTime)
-        ? (conditionTime > nextMin ? conditionTime : nextMin)
-        : (nextMin || conditionTime);
+    const nextMin = mob.repopInfo?.nextMinRepopDate;
+    const conditionTime = findNextSpawnTime(mob);
+    const displayTime = (nextMin && conditionTime)
+        ? (conditionTime > nextMin ? conditionTime : nextMin)
+        : (nextMin || conditionTime);
 
-    const nextStr = displayTime
-        ? new Intl.DateTimeFormat('ja-JP', absFmt).format(displayTime)
-        : "未確定";
+    const nextStr = displayTime
+        ? new Intl.DateTimeFormat('ja-JP', absFmt).format(displayTime)
+        : "未確定";
 
-    const lastStr = formatLastKillTime(mob.last_kill_time);
-    const memoStr = mob.last_kill_memo || "なし";
+    const lastStr = formatLastKillTime(mob.last_kill_time);
+    const memoStr = mob.last_kill_memo || "なし";
 
-    if (elLast) elLast.textContent = `前回: ${lastStr}`;
-    if (elMemo) elMemo.textContent = memoStr;
+    if (elLast) elLast.textContent = `前回: ${lastStr}`;
+    if (elMemo) elMemo.textContent = memoStr;
 }
 
 function updateProgressBars() {
-    const state = getState();
-    state.mobs.forEach((mob) => {
-        const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
-        if (card) {
-            updateProgressText(card, mob);
-            updateProgressBar(card, mob);
-        }
-    });
+    const state = getState();
+    state.mobs.forEach((mob) => {
+        const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
+        if (card) {
+            updateProgressText(card, mob);
+            updateProgressBar(card, mob);
+        }
+    });
 }
 
 const sortAndRedistribute = debounce(() => filterAndRender(), 200);
@@ -356,15 +402,16 @@ function onKillReportReceived(mobId, kill_time) {
 		updateProgressBar(card, mob);
 	}
 	if (mob.Rank === "S" || mob.Rank === "A") {
-		filterAndRender(); 
+		filterAndRender(); 
 	}
 }
 
 // 定期ループ（60秒ごとに全カードを更新）
 setInterval(() => {
-    updateProgressBars();
+    updateProgressBars();
 }, 60000);
 
-export { filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, displayStatus, DOM,
-    renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, updateFilterUI, onKillReportReceived, updateProgressBars
+export {
+    filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, displayStatus, DOM,
+    renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, updateFilterUI, onKillReportReceived, updateProgressBars, setupReportListeners
 };
