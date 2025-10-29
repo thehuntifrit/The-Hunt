@@ -195,7 +195,6 @@ function calculateRepop(mob, maintenance) {
     const lastKill = mob.last_kill_time || 0;
     const repopSec = mob.REPOP_s;
     const maxSec = mob.MAX_s;
-
     // --- maintenance 正規化 ---
     let maint = maintenance;
     if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
@@ -214,7 +213,6 @@ function calculateRepop(mob, maintenance) {
     let elapsedPercent = 0;
     let timeRemaining = "Unknown";
     let status = "Unknown";
-
     // --- 初回（メンテ後 or 未報告） ---
     if (lastKill === 0 || lastKill < serverUp) {
         minRepop = serverUp + repopSec;
@@ -258,31 +256,37 @@ function calculateRepop(mob, maintenance) {
     }
 
     const nextMinRepopDate = new Date(minRepop * 1000);
-
     // --- 条件モブ探索 ---
     let nextConditionSpawnDate = null;
     const hasCondition =
         !!mob.moonPhase || !!mob.timeRange || !!mob.weatherSeedRange || !!mob.weatherSeedRanges;
 
     if (hasCondition) {
-        const durationMin = mob.weatherDuration?.minutes || 0;
-        const lookBackSeconds = (durationMin + 30) * 60;
-        const referencePointRealSeconds = now < minRepop ? minRepop : now;
-        const searchStartRealSeconds = Math.max(referencePointRealSeconds - lookBackSeconds, serverUp);
-        const searchStart = new Date(searchStartRealSeconds * 1000);
+        // weatherDuration がある場合のみ「連続周期条件」を探索
+        if (mob.weatherDuration?.minutes) {
+            const durationMin = mob.weatherDuration.minutes;
+            const lookBackSeconds = (durationMin + 30) * 60;
+            const referencePointRealSeconds = now < minRepop ? minRepop : now;
+            const searchStartRealSeconds = Math.max(referencePointRealSeconds - lookBackSeconds, serverUp);
+            const searchStart = new Date(searchStartRealSeconds * 1000);
 
-        nextConditionSpawnDate = findNextSpawnTime(mob, searchStart);
+            nextConditionSpawnDate = findNextSpawnTime(mob, searchStart);
 
-        if (nextConditionSpawnDate) {
-            const T_cond_start_sec = nextConditionSpawnDate.getTime() / 1000;
-            if (T_cond_start_sec < minRepop) {
-                const T_cond_end_sec = T_cond_start_sec + durationMin * 60;
-                if (T_cond_end_sec >= minRepop) {
-                    nextConditionSpawnDate = new Date(minRepop * 1000);
-                } else {
-                    nextConditionSpawnDate = findNextSpawnTime(mob, new Date(minRepop * 1000));
+            if (nextConditionSpawnDate) {
+                const T_cond_start_sec = nextConditionSpawnDate.getTime() / 1000;
+                if (T_cond_start_sec < minRepop) {
+                    const T_cond_end_sec = T_cond_start_sec + durationMin * 60;
+                    if (T_cond_end_sec >= minRepop) {
+                        nextConditionSpawnDate = new Date(minRepop * 1000);
+                    } else {
+                        nextConditionSpawnDate = findNextSpawnTime(mob, new Date(minRepop * 1000));
+                    }
                 }
             }
+        }
+        // weatherDuration がない場合は「瞬間条件」探索
+        else {
+            nextConditionSpawnDate = findNextSpawnTime(mob, new Date(minRepop * 1000));
         }
     }
 
