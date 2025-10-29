@@ -147,6 +147,10 @@ function checkMobSpawnCondition(mob, date) {
 }
 
 function findNextSpawnTime(mob, startDate) {
+    if (!startDate || !(startDate instanceof Date) || isNaN(startDate.getTime())) {
+        return null; // 不正な引数は即 null
+    }
+
     const WEATHER_CYCLE_SEC = 23 * 60 + 20; // 1周期 = 23分20秒 = 1400秒
     const startSec = Math.floor(startDate.getTime() / 1000);
     // --- weatherDuration がある場合のみ「連続周期条件」を探索 ---
@@ -156,7 +160,7 @@ function findNextSpawnTime(mob, startDate) {
 
         let consecutive = 0;
         let cycleStart = startSec;
-        // 天候シードを順に評価（擬似コード: getWeatherSeed は天候IDを返す関数）
+
         for (let t = startSec; t < startSec + 7 * 24 * 3600; t += WEATHER_CYCLE_SEC) {
             const seed = getEorzeaWeatherSeed(mob.area, t);
             if (mob.weatherSeedRange && seed >= mob.weatherSeedRange[0] && seed <= mob.weatherSeedRange[1]) {
@@ -165,7 +169,6 @@ function findNextSpawnTime(mob, startDate) {
                     cycleStart = t; // 連続開始時刻を記録
                 }
                 if (consecutive >= requiredCycles) {
-                    // 条件成立開始時刻を返す
                     return new Date(cycleStart * 1000);
                 }
             } else {
@@ -178,23 +181,20 @@ function findNextSpawnTime(mob, startDate) {
     for (let t = startSec; t < startSec + 7 * 24 * 3600; t += WEATHER_CYCLE_SEC) {
         const seed = getEorzeaWeatherSeed(mob.area, t);
         if (mob.weatherSeedRange && seed >= mob.weatherSeedRange[0] && seed <= mob.weatherSeedRange[1]) {
-            // 月齢条件がある場合は追加判定
             if (mob.moonPhase && !checkMoonPhase(mob.moonPhase, t)) continue;
-            // 時間帯条件がある場合は追加判定
             if (mob.timeRange && !checkTimeRange(mob.timeRange, t)) continue;
             return new Date(t * 1000);
         }
     }
-
     return null;
 }
 
-// repop計算
 function calculateRepop(mob, maintenance) {
     const now = Date.now() / 1000;
     const lastKill = mob.last_kill_time || 0;
     const repopSec = mob.REPOP_s;
     const maxSec = mob.MAX_s;
+
     // --- maintenance 正規化 ---
     let maint = maintenance;
     if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
@@ -213,6 +213,7 @@ function calculateRepop(mob, maintenance) {
     let elapsedPercent = 0;
     let timeRemaining = "Unknown";
     let status = "Unknown";
+
     // --- 初回（メンテ後 or 未報告） ---
     if (lastKill === 0 || lastKill < serverUp) {
         minRepop = serverUp + repopSec;
@@ -255,7 +256,8 @@ function calculateRepop(mob, maintenance) {
         timeRemaining = `Over (100%)`;
     }
 
-    const nextMinRepopDate = new Date(minRepop * 1000);
+    const nextMinRepopDate = minRepop ? new Date(minRepop * 1000) : null;
+
     // --- 条件モブ探索 ---
     let nextConditionSpawnDate = null;
     const hasCondition =
@@ -269,27 +271,22 @@ function calculateRepop(mob, maintenance) {
             const searchStartRealSeconds = Math.max(referencePointRealSeconds - lookBackSeconds, serverUp);
             const searchStart = new Date(searchStartRealSeconds * 1000);
 
-            nextConditionSpawnDate = findNextSpawnTime(mob, searchStart);
-
-            if (nextConditionSpawnDate) {
-                const T_cond_start_sec = nextConditionSpawnDate.getTime() / 1000;
+            const found = findNextSpawnTime(mob, searchStart);
+            if (found) {
+                const T_cond_start_sec = found.getTime() / 1000;
                 if (T_cond_start_sec < minRepop) {
                     const T_cond_end_sec = T_cond_start_sec + durationMin * 60;
                     if (T_cond_end_sec >= minRepop) {
                         nextConditionSpawnDate = new Date(minRepop * 1000);
                     } else {
-                        // 再探索結果が null の場合も考慮
                         const retry = findNextSpawnTime(mob, new Date(minRepop * 1000));
-                        if (retry) {
-                            nextConditionSpawnDate = retry;
-                        } else {
-                            nextConditionSpawnDate = null;
-                        }
+                        nextConditionSpawnDate = retry || null;
                     }
+                } else {
+                    nextConditionSpawnDate = found;
                 }
             }
         } else {
-            // weatherDuration がない場合
             nextConditionSpawnDate = findNextSpawnTime(mob, new Date(minRepop * 1000));
         }
     }
