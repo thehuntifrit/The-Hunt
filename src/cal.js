@@ -158,7 +158,7 @@ function findNextSpawnTime(mob, startDate) {
         let cycleStart = startSec;
         // 天候シードを順に評価（擬似コード: getWeatherSeed は天候IDを返す関数）
         for (let t = startSec; t < startSec + 7 * 24 * 3600; t += WEATHER_CYCLE_SEC) {
-            const seed = getWeatherSeed(mob.area, t);
+            const seed = getEorzeaWeatherSeed(mob.area, t);
             if (mob.weatherSeedRange && seed >= mob.weatherSeedRange[0] && seed <= mob.weatherSeedRange[1]) {
                 consecutive++;
                 if (consecutive === 1) {
@@ -176,7 +176,7 @@ function findNextSpawnTime(mob, startDate) {
     }
     // --- weatherDuration がない場合は「瞬間条件」判定 ---
     for (let t = startSec; t < startSec + 7 * 24 * 3600; t += WEATHER_CYCLE_SEC) {
-        const seed = getWeatherSeed(mob.area, t);
+        const seed = getEorzeaWeatherSeed(mob.area, t);
         if (mob.weatherSeedRange && seed >= mob.weatherSeedRange[0] && seed <= mob.weatherSeedRange[1]) {
             // 月齢条件がある場合は追加判定
             if (mob.moonPhase && !checkMoonPhase(mob.moonPhase, t)) continue;
@@ -262,7 +262,6 @@ function calculateRepop(mob, maintenance) {
         !!mob.moonPhase || !!mob.timeRange || !!mob.weatherSeedRange || !!mob.weatherSeedRanges;
 
     if (hasCondition) {
-        // weatherDuration がある場合のみ「連続周期条件」を探索
         if (mob.weatherDuration?.minutes) {
             const durationMin = mob.weatherDuration.minutes;
             const lookBackSeconds = (durationMin + 30) * 60;
@@ -279,13 +278,18 @@ function calculateRepop(mob, maintenance) {
                     if (T_cond_end_sec >= minRepop) {
                         nextConditionSpawnDate = new Date(minRepop * 1000);
                     } else {
-                        nextConditionSpawnDate = findNextSpawnTime(mob, new Date(minRepop * 1000));
+                        // 再探索結果が null の場合も考慮
+                        const retry = findNextSpawnTime(mob, new Date(minRepop * 1000));
+                        if (retry) {
+                            nextConditionSpawnDate = retry;
+                        } else {
+                            nextConditionSpawnDate = null;
+                        }
                     }
                 }
             }
-        }
-        // weatherDuration がない場合は「瞬間条件」探索
-        else {
+        } else {
+            // weatherDuration がない場合
             nextConditionSpawnDate = findNextSpawnTime(mob, new Date(minRepop * 1000));
         }
     }
