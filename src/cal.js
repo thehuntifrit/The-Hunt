@@ -2,33 +2,6 @@
 
 import { loadMaintenance } from "./app.js";
 
-var SERVER_TIME_OFFSET_MS = 0;
-
-async function initializeServerTimeOffset(getServerTimeUTC) {
-    const clientTimeBefore = Date.now();
-    try {
-        const serverDate = await getServerTimeUTC();
-        const serverTimeMs = serverDate.getTime();
-        const clientTimeAfter = Date.now();
-        
-        const clientTimeMid = (clientTimeBefore + clientTimeAfter) / 2;
-        
-        SERVER_TIME_OFFSET_MS = serverTimeMs - clientTimeMid;
-        console.log(`サーバー時刻オフセットを設定しました: ${SERVER_TIME_OFFSET_MS.toFixed(0)} ms`);
-    } catch (error) {
-        console.error("サーバー時刻オフセットの初期化に失敗しました。クライアント時刻を使用します。", error);
-        SERVER_TIME_OFFSET_MS = 0;
-    }
-}
-
-function getServerNowMs() {
-    return Date.now() + SERVER_TIME_OFFSET_MS;
-}
-
-function getServerNowDate() {
-    return new Date(getServerNowMs());
-}
-
 function formatDuration(seconds) {
     const totalMinutes = Math.floor(seconds / 60);
     const h = Math.floor(totalMinutes / 60);
@@ -58,7 +31,7 @@ function toJstAdjustedIsoString(date) {
         day: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false,
+        hour12: false, // 24時間表示を強制
         timeZone: 'Asia/Tokyo'
     };
 
@@ -73,7 +46,7 @@ function toJstAdjustedIsoString(date) {
     return `${year}-${month}-${day}T${hour}:${minute}`;
 }
 
-function getEorzeaTime(date = getServerNowDate()) {
+function getEorzeaTime(date = new Date()) {
     let unixMs = date.getTime();
     const REAL_MS_PER_ET_HOUR = 175 * 1000;
     const ET_HOURS_PER_DAY = 24;
@@ -91,7 +64,7 @@ function getEorzeaTime(date = getServerNowDate()) {
     };
 }
 
-function getEorzeaMoonPhase(date = getServerNowDate()) {
+function getEorzeaMoonPhase(date = new Date()) {
     const unixSeconds = date.getTime() / 1000;
     const EORZEA_SPEED_RATIO = 20.57142857142857;
     const eorzeaTotalDays = (unixSeconds * EORZEA_SPEED_RATIO) / 86400;
@@ -104,7 +77,7 @@ function getMoonPhaseLabel(phase) {
     return null;
 }
 
-function getEorzeaWeatherSeed(date = getServerNowDate()) {
+function getEorzeaWeatherSeed(date = new Date()) {
     const unixSeconds = Math.floor(date.getTime() / 1000);
     const eorzeanHours = Math.floor(unixSeconds / 175);
     const eorzeanDays = Math.floor(eorzeanHours / 24);
@@ -120,7 +93,7 @@ function getEorzeaWeatherSeed(date = getServerNowDate()) {
     return step2 % 100; // 0〜99
 }
 
-function getEorzeaWeather(date = getServerNowDate(), weatherTable) {
+function getEorzeaWeather(date = new Date(), weatherTable) {
     const seed = getEorzeaWeatherSeed(date);
     let cumulative = 0;
     for (const entry of weatherTable) {
@@ -136,6 +109,7 @@ function checkMobSpawnCondition(mob, date) {
     const seed = getEorzeaWeatherSeed(date);
 
     if (mob.moonPhase) {
+        // mob.moonPhaseが文字列（例："満月"）の場合のみを想定
         const currentLabel = getMoonPhaseLabel(moon);
         if (currentLabel !== mob.moonPhase) return false;
     }
@@ -172,13 +146,14 @@ function checkMobSpawnCondition(mob, date) {
     return true;
 }
 
-function findNextSpawnTime(mob, now = getServerNowDate()) {
+function findNextSpawnTime(mob, now = new Date()) {
     let date = new Date(now.getTime());
-    const limit = now.getTime() + 7 * 24 * 60 * 60 * 1000;
-    const REAL_SECONDS_STEP = 60;
+    const limit = now.getTime() + 7 * 24 * 60 * 60 * 1000; // 1週間先まで探索
+    const REAL_SECONDS_STEP = 60; // 1分刻みで探索
 
     while (date.getTime() < limit) {
         if (checkMobSpawnCondition(mob, date)) {
+            // --- 連続時間チェック ---
             const durationMin = mob.weatherDuration?.minutes || 0;
             if (durationMin > 0) {
                 let ok = true;
@@ -191,10 +166,10 @@ function findNextSpawnTime(mob, now = getServerNowDate()) {
                     }
                 }
                 if (ok) {
-                    return date;
+                    return date; // 連続成立した開始時刻を返す
                 }
             } else {
-                return date;
+                return date; // 単発条件なら即成立
             }
         }
         date = new Date(date.getTime() + REAL_SECONDS_STEP * 1000);
@@ -202,12 +177,13 @@ function findNextSpawnTime(mob, now = getServerNowDate()) {
     return null;
 }
 
+// repop計算
 function calculateRepop(mob, maintenance) {
-    const now = getServerNowMs() / 1000;
+    const now = Date.now() / 1000;
     const lastKill = mob.last_kill_time || 0;
     const repopSec = mob.REPOP_s;
     const maxSec = mob.MAX_s;
-
+    // --- maintenance 正規化 ---
     let maint = maintenance;
     if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
         maint = maint.maintenance;
@@ -241,7 +217,7 @@ function calculateRepop(mob, maintenance) {
     let elapsedPercent = 0;
     let timeRemaining = "Unknown";
     let status = "Unknown";
-
+    // --- 初回（メンテ後 or 未報告） ---
     if (lastKill === 0 || lastKill < serverUp) {
         minRepop = serverUp + repopSec;
         maxRepop = serverUp + maxSec;
@@ -259,11 +235,13 @@ function calculateRepop(mob, maintenance) {
             elapsedPercent = Math.min(elapsedPercent, 100);
             timeRemaining = `残り ${formatDurationHM(maxRepop - now)} (${elapsedPercent.toFixed(0)}%)`;
         }
+        // --- Next（最短未到達） ---
     } else if (now < lastKill + repopSec) {
         minRepop = lastKill + repopSec;
         maxRepop = lastKill + maxSec;
         status = "Next";
         timeRemaining = `Next: ${formatDurationHM(minRepop - now)}`;
+        // --- PopWindow（出現可能窓） ---
     } else if (now < lastKill + maxSec) {
         minRepop = lastKill + repopSec;
         maxRepop = lastKill + maxSec;
@@ -271,6 +249,7 @@ function calculateRepop(mob, maintenance) {
         elapsedPercent = ((now - minRepop) / (maxRepop - minRepop)) * 100;
         elapsedPercent = Math.min(elapsedPercent, 100);
         timeRemaining = `残り ${formatDurationHM(maxRepop - now)} (${elapsedPercent.toFixed(0)}%)`;
+        // --- MaxOver（最大超過） ---
     } else {
         minRepop = lastKill + repopSec;
         maxRepop = lastKill + maxSec;
@@ -278,14 +257,15 @@ function calculateRepop(mob, maintenance) {
         elapsedPercent = 100;
         timeRemaining = `Over (100%)`;
     }
-
+    // --- in 表記用（常に MINREPOP 基準） ---
     const nextMinRepopDate = new Date(minRepop * 1000);
-
+    // --- Next 表記用（条件モブのみ探索） ---
     let nextConditionSpawnDate = null;
     const hasCondition =
         !!mob.moonPhase || !!mob.timeRange || !!mob.weatherSeedRange || !!mob.weatherSeedRanges;
 
     if (hasCondition) {
+        // ここを変更：最短を超えていれば「現在時刻」を起点に探索
         const searchStartRealSeconds =
             now < minRepop ? minRepop : now;
 
@@ -307,7 +287,7 @@ function calculateRepop(mob, maintenance) {
 function formatLastKillTime(timestamp) {
     if (timestamp === 0) return "未報告";
     const killTimeMs = timestamp * 1000;
-    const nowMs = getServerNowMs();
+    const nowMs = Date.now();
     const diffSeconds = Math.floor((nowMs - killTimeMs) / 1000);
     if (diffSeconds < 3600) {
         if (diffSeconds < 60) return `Just now`;
@@ -321,6 +301,5 @@ function formatLastKillTime(timestamp) {
 
 export {
     calculateRepop, checkMobSpawnCondition, findNextSpawnTime, getEorzeaTime, getEorzeaMoonPhase, formatDuration,
-    getEorzeaWeatherSeed, getEorzeaWeather, getMoonPhaseLabel, formatDurationHM, debounce, toJstAdjustedIsoString, formatLastKillTime,
-    initializeServerTimeOffset
+    getEorzeaWeatherSeed, getEorzeaWeather, getMoonPhaseLabel, formatDurationHM, debounce, toJstAdjustedIsoString, formatLastKillTime
 };
