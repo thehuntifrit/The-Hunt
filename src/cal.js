@@ -183,33 +183,18 @@ function calculateRepop(mob, maintenance) {
     const lastKill = mob.last_kill_time || 0;
     const repopSec = mob.REPOP_s;
     const maxSec = mob.MAX_s;
+
     // --- maintenance 正規化 ---
     let maint = maintenance;
     if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
         maint = maint.maintenance;
     }
     if (!maint || !maint.serverUp) {
-        return {
-            minRepop: null,
-            maxRepop: null,
-            elapsedPercent: 0,
-            timeRemaining: "未確定",
-            status: "Unknown",
-            nextMinRepopDate: null,
-            nextConditionSpawnDate: null
-        };
+        return baseResult("Unknown");
     }
     const serverUpDate = new Date(maint.serverUp);
-    if (isNaN(serverUpDate)) {
-        return {
-            minRepop: null,
-            maxRepop: null,
-            elapsedPercent: 0,
-            timeRemaining: "未確定",
-            status: "Unknown",
-            nextMinRepopDate: null,
-            nextConditionSpawnDate: null
-        };
+    if (isNaN(serverUpDate.getTime())) {
+        return baseResult("Unknown");
     }
     const serverUp = serverUpDate.getTime() / 1000;
 
@@ -217,6 +202,7 @@ function calculateRepop(mob, maintenance) {
     let elapsedPercent = 0;
     let timeRemaining = "Unknown";
     let status = "Unknown";
+
     // --- 初回（メンテ後 or 未報告） ---
     if (lastKill === 0 || lastKill < serverUp) {
         minRepop = serverUp + repopSec;
@@ -231,46 +217,61 @@ function calculateRepop(mob, maintenance) {
             timeRemaining = `Next: ${formatDurationHM(minRepop - now)}`;
         } else {
             status = "PopWindow";
-            elapsedPercent = ((now - minRepop) / (maxRepop - minRepop)) * 100;
-            elapsedPercent = Math.min(elapsedPercent, 100);
+            elapsedPercent = Math.min(((now - minRepop) / (maxRepop - minRepop)) * 100, 100);
             timeRemaining = `残り ${formatDurationHM(maxRepop - now)} (${elapsedPercent.toFixed(0)}%)`;
         }
-        // --- Next（最短未到達） ---
-    } else if (now < lastKill + repopSec) {
+    }
+    // --- Next（最短未到達） ---
+    else if (now < lastKill + repopSec) {
         minRepop = lastKill + repopSec;
         maxRepop = lastKill + maxSec;
         status = "Next";
         timeRemaining = `Next: ${formatDurationHM(minRepop - now)}`;
-        // --- PopWindow（出現可能窓） ---
-    } else if (now < lastKill + maxSec) {
+    }
+    // --- PopWindow（出現可能窓） ---
+    else if (now < lastKill + maxSec) {
         minRepop = lastKill + repopSec;
         maxRepop = lastKill + maxSec;
         status = "PopWindow";
-        elapsedPercent = ((now - minRepop) / (maxRepop - minRepop)) * 100;
-        elapsedPercent = Math.min(elapsedPercent, 100);
+        elapsedPercent = Math.min(((now - minRepop) / (maxRepop - minRepop)) * 100, 100);
         timeRemaining = `残り ${formatDurationHM(maxRepop - now)} (${elapsedPercent.toFixed(0)}%)`;
-        // --- MaxOver（最大超過） ---
-    } else {
+    }
+    // --- MaxOver（最大超過） ---
+    else {
         minRepop = lastKill + repopSec;
         maxRepop = lastKill + maxSec;
         status = "MaxOver";
         elapsedPercent = 100;
         timeRemaining = `Over (100%)`;
     }
-    // --- in 表記用（常に MINREPOP 基準） ---
+
     const nextMinRepopDate = new Date(minRepop * 1000);
-    // --- Next 表記用（条件モブのみ探索） ---
+
+    // --- 条件モブ探索 ---
     let nextConditionSpawnDate = null;
     const hasCondition =
         !!mob.moonPhase || !!mob.timeRange || !!mob.weatherSeedRange || !!mob.weatherSeedRanges;
 
     if (hasCondition) {
-        // ここを変更：最短を超えていれば「現在時刻」を起点に探索
-        const searchStartRealSeconds =
-            now < minRepop ? minRepop : now;
-
+        const durationMin = mob.weatherDuration?.minutes || 0;
+        const lookBackSeconds = (durationMin + 30) * 60;
+        const referencePointRealSeconds = now < minRepop ? minRepop : now;
+        const searchStartRealSeconds = Math.max(referencePointRealSeconds - lookBackSeconds, serverUp);
         const searchStart = new Date(searchStartRealSeconds * 1000);
+
         nextConditionSpawnDate = findNextSpawnTime(mob, searchStart);
+
+        if (nextConditionSpawnDate) {
+            const T_cond_start_sec = nextConditionSpawnDate.getTime() / 1000;
+            if (T_cond_start_sec < minRepop) {
+                const T_cond_end_sec = T_cond_start_sec + durationMin * 60;
+                if (T_cond_end_sec >= minRepop) {
+                    nextConditionSpawnDate = new Date(minRepop * 1000);
+                } else {
+                    nextConditionSpawnDate = findNextSpawnTime(mob, new Date(minRepop * 1000));
+                }
+            }
+        }
     }
 
     return {
@@ -282,6 +283,18 @@ function calculateRepop(mob, maintenance) {
         nextMinRepopDate,
         nextConditionSpawnDate
     };
+
+    function baseResult(status) {
+        return {
+            minRepop: null,
+            maxRepop: null,
+            elapsedPercent: 0,
+            timeRemaining: "未確定",
+            status,
+            nextMinRepopDate: null,
+            nextConditionSpawnDate: null
+        };
+    }
 }
 
 function formatLastKillTime(timestamp) {
