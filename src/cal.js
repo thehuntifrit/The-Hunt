@@ -25,10 +25,10 @@ function debounce(func, wait) {
 }
 
 function toJstAdjustedIsoString(date) {
-    const offsetMs = date.getTimezoneOffset() * 60000;
-    const jstOffsetMs = 9 * 60 * 60 * 1000;
-    const jstTime = date.getTime() - offsetMs + jstOffsetMs;
-    return new Date(jstTime).toISOString().slice(0, 16);
+    const jstTime = date.getTime() + (9 * 60 * 60 * 1000);
+    const jstDate = new Date(jstTime);
+    const pad = n => String(n).padStart(2, "0");
+    return `${jstDate.getUTCFullYear()}-${pad(jstDate.getUTCMonth() + 1)}-${pad(jstDate.getUTCDate())}T${pad(jstDate.getUTCHours())}:${pad(jstDate.getUTCMinutes())}`;
 }
 
 function getEorzeaTime(date = new Date()) {
