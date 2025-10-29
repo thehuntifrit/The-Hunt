@@ -115,7 +115,19 @@ function attachCardEvents() {
         const mobNo = parseInt(card.dataset.mobNo, 10);
         const rank = card.dataset.rank;
 
-        // --- 湧き潰しトグル処理 ---
+        const reportBtn = e.target.closest("button[data-report-type]");
+        if (reportBtn) {
+            e.stopPropagation();
+            const type = reportBtn.dataset.reportType;
+            if (type === "modal") {
+                openReportModal(mobNo);
+            } else if (type === "instant") {
+                const iso = toJstAdjustedIsoString(new Date());
+                submitReport(mobNo, iso, `${rank}ランク即時報告`);
+            }
+            return;
+        }
+
         const point = e.target.closest(".spawn-point");
         if (point && point.dataset.isInteractive === "true") {
             e.preventDefault();
@@ -126,7 +138,6 @@ function attachCardEvents() {
             return;
         }
 
-        // --- カードヘッダー開閉処理 ---
         if (e.target.closest("[data-toggle='card-header']")) {
             if (rank === "S") {
                 const panel = card.querySelector(".expandable-panel");
@@ -185,6 +196,7 @@ async function initializeAuthenticationAndRealtime() {
         setUserId(null);
     }
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeAuthenticationAndRealtime();
