@@ -186,6 +186,9 @@ function findNextSpawnTime(mob, startDate) {
                     : mob.weatherSeedRanges
                         ? mob.weatherSeedRanges.some(([min, max]) => seed >= min && seed <= max)
                         : false;
+console.log(
+  `[cycle] ${new Date(tSec*1000).toISOString()} ET=${getEorzeaTime(new Date(tSec*1000)).hours}:00 seed=${seed} weather=${mapSeedToWeather(seed)} consecutive=${consecutive}`
+);
 
             if (inRange) {
                 if (consecutive === 0) conditionStartSec = tSec;
