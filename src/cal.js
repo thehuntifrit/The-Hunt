@@ -244,7 +244,7 @@ function calculateRepop(mob, maintenance) {
         minRepop = serverUp + repopSec;
         maxRepop = serverUp + maxSec;
         if (now >= maxRepop) {
-            status = "MaxOver"; elapsedPercent = 100; timeRemaining = `Over (100%)`;
+            status = "MaxOver"; elapsedPercent = 100; timeRemaining = `Time Over (100%)`;
         } else if (now < minRepop) {
             status = "Maintenance"; timeRemaining = `Next: ${formatDurationHM(minRepop - now)}`;
         } else {
@@ -265,7 +265,7 @@ function calculateRepop(mob, maintenance) {
     } else {
         minRepop = lastKill + repopSec;
         maxRepop = lastKill + maxSec;
-        status = "MaxOver"; elapsedPercent = 100; timeRemaining = `Over (100%)`;
+        status = "MaxOver"; elapsedPercent = 100; timeRemaining = `Time Over (100%)`;
     }
 
     const nextMinRepopDate = new Date(minRepop * 1000);
