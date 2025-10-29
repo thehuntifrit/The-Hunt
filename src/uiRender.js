@@ -266,12 +266,12 @@ function updateProgressText(card, mob) {
     // 左側に in と Next の両方を置き、Next は初期非表示
     text.innerHTML = `
     <div class="w-full grid grid-cols-2 items-center text-sm font-semibold" style="line-height:1;">
-        <div class="pl-2 text-left toggle-container">
+        <div class="pl-2 text-left">
+          ${rightStr}${status !== "MaxOver" && status !== "Unknown" ? ` (${elapsedPercent.toFixed(0)}%)` : ""}
+        </div>
+        <div class="pr-1 text-right toggle-container">
           <span class="label-in">in ${inTimeStr}</span>
           <span class="label-next" style="display:none;">${nextTimeStr ? `Next ${nextTimeStr}` : ""}</span>
-        </div>
-        <div class="pr-1 text-right">
-          ${rightStr}${status !== "MaxOver" && status !== "Unknown" ? ` (${elapsedPercent.toFixed(0)}%)` : ""}
         </div>
     </div>
   `;
