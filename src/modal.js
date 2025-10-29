@@ -1,15 +1,14 @@
-
 // modal.js
 
 import { DOM, displayStatus } from "./uiRender.js";
 import { getState } from "./dataManager.js";
 import { toJstAdjustedIsoString } from "./cal.js";
-import { submitReport, getServerTimeUTC } from "./server.js";
+import { getServerTimeUTC } from "./server.js";
 
 async function openReportModal(mobNo) {
     const mob = getState().mobs.find(m => m.No === mobNo);
-    if (!mob) return;
-    // 💡 サーバーの UTC 時刻を取得
+    if (!mob) return;    
+    // 💡 サーバー（実行環境）の UTC 時刻を取得
     const serverDateUTC = await getServerTimeUTC();
     const iso = toJstAdjustedIsoString(serverDateUTC);
     
@@ -55,4 +54,5 @@ function initModal() {
     setupModalCloseHandlers();
 }
 
+// 【修正点3】toLocalIsoString の削除と、エクスポートの修正
 export { openReportModal, closeReportModal, initModal };
