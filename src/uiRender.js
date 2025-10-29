@@ -1,9 +1,11 @@
+// uiRender.js
+
 import { calculateRepop, findNextSpawnTime, formatDuration, formatDurationHM, formatLastKillTime, debounce, getEorzeaTime } from "./cal.js";
-import { drawSpawnPoint, isCulled, isActuallyCulled } from "./location.js"; 
-import { getState, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
+import { drawSpawnPoint, isCulled, isActuallyCulled } from "./location.js";
+import { getState, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP, toggleOpenMobCard } from "./dataManager.js";
 import { renderRankTabs, renderAreaFilterPanel, updateFilterUI, filterMobsByRankAndArea } from "./filterUI.js";
-import { submitReport } from "./server.js"; 
-import { openReportModal, closeReportModal, initModal } from "./modal.js"; 
+import { submitReport } from "./server.js";
+import { openReportModal, closeReportModal, initModal } from "./modal.js";
 
 
 const DOM = {
@@ -176,51 +178,59 @@ function filterAndRender({ isInitialLoad = false } = {}) {
 	DOM.masterContainer.innerHTML = "";
 	DOM.masterContainer.appendChild(frag);
 	distributeCards();
-    // 💡 イベントリスナーの設定を呼び出し
-    setupReportListeners(); 
+    setupReportListeners(); 
 
 	if (isInitialLoad) {
 		updateProgressBars();
+        initModal();
 	}
 }
 
-// 💡 報告ボタンクリック時の処理
-async function handleReportButtonClick(event) {
-    const button = event.currentTarget;
-    const reportType = button.getAttribute('data-report-type');
-    const mobNo = parseInt(button.getAttribute('data-mob-no'), 10);
-    const state = getState();
-    const mob = state.mobs.find(m => m.No === mobNo);
+async function handleMasterContainerClick(event) {
+    // 報告ボタンの処理
+    const reportButton = event.target.closest('button[data-report-type]');
+    if (reportButton) {
+        const mobNo = parseInt(reportButton.dataset.mobNo, 10);
+        const reportType = reportButton.dataset.reportType;
 
-    if (!mob) {
-        displayStatus("モブデータが見つかりません。", "error");
-        return;
+        if (reportType === 'instant') {
+            // A/Fモブ即時報告の場合
+            await submitReport(mobNo, "", "");
+        } else if (reportType === 'modal') {
+            // Sモブモーダル報告の場合 (modal.jsからインポートした関数を使用)
+            await openReportModal(mobNo);
+        }
+        return; // ボタンクリック処理が完了
     }
 
-    if (reportType === 'instant') {
-        // Aモブ即時報告の場合
-        // timeISOとmemoを空文字で渡すことで、server.jsのsubmitReport内でサーバー時刻がフォールバックされる
-        await submitReport(mobNo, "", ""); 
-    } else if (reportType === 'modal') {
-        // S/Fモブモーダル報告の場合
-        // openReportModal は modal.js に定義されている想定
-        if (typeof openReportModal === 'function') {
-             openReportModal(mobNo);
-        } else {
-             displayStatus("モーダル機能が読み込まれていません。", "error");
+    // カード開閉の処理
+    const cardHeader = event.target.closest('[data-toggle="card-header"]');
+    if (cardHeader) {
+        const card = cardHeader.closest('.mob-card');
+        const mobNo = parseInt(card.dataset.mobNo, 10);
+        if (card.dataset.rank === 'S') {
+            // Sランクモブの開閉ロジックを呼び出す
+            toggleOpenMobCard(mobNo);
+            filterAndRender();
         }
     }
 }
 
 // 💡 報告ボタンイベントリスナーの設定
 function setupReportListeners() {
-    // ページ全体で報告ボタンを検索
-    const reportButtons = document.querySelectorAll('button[data-report-type]');
-    reportButtons.forEach(button => {
-        // 複数回登録を防ぐために、一度削除してから登録
-        button.removeEventListener('click', handleReportButtonClick);
-        button.addEventListener('click', handleReportButtonClick);
-    });
+    if (!DOM.masterContainer.dataset.delegatedListeners) {
+        DOM.masterContainer.addEventListener('click', handleMasterContainerClick);
+        DOM.masterContainer.dataset.delegatedListeners = 'true';
+    }
+	
+    DOM.reportForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const mobNo = parseInt(DOM.reportForm.dataset.mobNo, 10);
+        const timeISO = DOM.modalTimeInput.value;
+        const memo = DOM.modalMemoInput.value;
+        
+        await submitReport(mobNo, timeISO, memo);
+    };
 }
 
 function distributeCards() {
