@@ -1,139 +1,277 @@
-// location.js
+// filterUI.js
 
-import { DOM } from "./uiRender.js";
-import { toggleCrushStatus } from "./server.js";
-import { getState, getMobByNo } from "./dataManager.js";
+import { getState, EXPANSION_MAP, FILTER_TO_DATA_RANK_MAP, setFilter } from "./dataManager.js";
+import { filterAndRender } from "./uiRender.js";
 
-function handleCrushToggle(e) {
-    const point = e.target.closest(".spawn-point");
-    if (!point) return false;
-    if (point.dataset.isInteractive !== "true") return false;
+const DOM = {
+    rankTabs: document.getElementById('rank-tabs'),
+    areaFilterPanelMobile: document.getElementById('area-filter-panel-mobile'),
+    areaFilterPanelDesktop: document.getElementById('area-filter-panel-desktop')
+};
 
-    e.preventDefault();
-    e.stopPropagation();
+const getAllAreas = () => {
+    return Array.from(new Set(Object.values(EXPANSION_MAP)));
+};
 
-    const card = e.target.closest(".mob-card");
-    if (!card) return true;
+const renderRankTabs = () => {
+    const state = getState();
+    const rankList = ["ALL", "S", "A", "FATE"];
+    const container = DOM.rankTabs;
+    if (!container) return;
 
-    const mobNo = parseInt(card.dataset.mobNo, 10);
-    const locationId = point.dataset.locationId;
-    const isCurrentlyCulled = point.dataset.isCulled === "true";
-    toggleCrushStatus(mobNo, locationId, isCurrentlyCulled);
-    return true;
-}
+    container.innerHTML = "";
+    container.className = "grid grid-cols-4 gap-2";
 
-function isCulled(pointStatus, mobNo) {
-    const culledMs = pointStatus?.culled_at ? pointStatus.culled_at.toMillis() : 0;
-    const uncullMs = pointStatus?.uncull_at ? pointStatus.uncull_at.toMillis() : 0;
+    rankList.forEach(rank => {
+        const isSelected = state.filter.rank === rank;
+        const btn = document.createElement("button");
+        btn.dataset.rank = rank;
+        btn.textContent = rank;
 
-    if (culledMs === 0 && uncullMs === 0) return false;
-    let culled = culledMs > uncullMs;
+        btn.className =
+            `tab-button px-2 py-1 text-sm rounded font-semibold text-white text-center transition ` +
+            (isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400");
 
-    if (culled && mobNo) {
-        const mob = getMobByNo(mobNo);
+        // --- クリックイベント ---
+        btn.addEventListener("click", () => {
+            const currentState = getState();
+            setFilter({
+                rank,
+                areaSets: currentState.filter.areaSets
+            });
+            filterAndRender();
+            updateFilterUI();
+        });
 
-        let lastKill = 0;
-        if (mob?.last_kill_time) {
-            if (typeof mob.last_kill_time.toMillis === 'function') {
-                lastKill = mob.last_kill_time.toMillis();
-            } else if (typeof mob.last_kill_time === 'number') {
-                lastKill = mob.last_kill_time * 1000;
-            }
-        }
+        container.appendChild(btn);
+    });
+};
 
-        if (lastKill > culledMs) {
-            // 討伐の方が新しい → 見かけ上リセット
-            culled = false;
-        }
-    }
-    return culled;
-}
+const renderAreaFilterPanel = () => {
+    const state = getState();
+    const uiRank = state.filter.rank;
+    if (uiRank === 'ALL') return;
 
-// ラストワン判定用：討伐リセットは考慮しない
-function isActuallyCulled(pointStatus) {
-    const culledMs = pointStatus?.culled_at ? pointStatus.culled_at.toMillis() : 0;
-    const uncullMs = pointStatus?.uncull_at ? pointStatus.uncull_at.toMillis() : 0;
-    if (culledMs === 0 && uncullMs === 0) return false;
-    return culledMs > uncullMs;
-}
+    const targetRankKey = uiRank === 'FATE' ? 'F' : uiRank;
+    const areas = getAllAreas();
 
-function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_LastOne) {
-    const pointStatus = spawnCullStatus?.[point.id];
-    const isCulledFlag = isCulled(pointStatus, mobNo);
+    const currentSet =
+        state.filter.areaSets[targetRankKey] instanceof Set
+            ? state.filter.areaSets[targetRankKey]
+            : new Set();
 
-    const isS_A_Cullable = point.mob_ranks.some(r => r === "S" || r === "A");
-    const isB_Only = point.mob_ranks.every(r => r.startsWith("B"));
+    const isAllSelected = areas.length > 0 && currentSet.size === areas.length;
 
-    let colorClass = "";
-    let dataIsInteractive = "false";
+    const sortedAreas = areas.sort((a, b) => {
+        const indexA = Object.values(EXPANSION_MAP).indexOf(a);
+        const indexB = Object.values(EXPANSION_MAP).indexOf(b);
+        return indexB - indexA;
+    });
 
-    if (isLastOne) {
-        colorClass = "color-lastone";
-        dataIsInteractive = "false";
-        
-    } else if (isS_A_Cullable) {
-        // ラストワンではないS/A湧き潰し可能なポイントの判定
-        const rankB = point.mob_ranks.find(r => r.startsWith("B"));
-        if (isCulledFlag) {
-            colorClass = rankB === "B1" ? "color-b1-culled" : "color-b2-culled";
+    const createButton = (area, isAll, isSelected) => {
+        const btn = document.createElement("button");
+        btn.textContent = area;
+        const btnClass = 'py-1 px-2 text-sm rounded font-semibold text-white text-center transition w-auto';
+
+        if (isAll) {
+            btn.className = `area-filter-btn ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
+            btn.dataset.area = "ALL";
         } else {
-            colorClass = rankB === "B1" ? "color-b1" : "color-b2";
+            btn.className = `area-filter-btn ${btnClass} ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
+            btn.dataset.area = area;
         }
-        dataIsInteractive = "true"; 
-        
-    } else if (isB_Only) {
-        const rankB = point.mob_ranks[0];
-        colorClass = rankB === "B1" ? "color-b1-only" : "color-b2-only";
-        dataIsInteractive = "false";
+        return btn;
+    };
+
+    const createPanelContent = (isDesktop) => {
+        const panel = document.createDocumentFragment();
+        const allBtn = createButton(isAllSelected ? "全解除" : "全選択", true, false);
+        panel.appendChild(allBtn);
+
+        if (!isDesktop) {
+            const dummy = document.createElement("div");
+            dummy.className = "w-full";
+            panel.appendChild(dummy);
+        }
+
+        sortedAreas.forEach(area => {
+            const isSelected = currentSet.has(area);
+            panel.appendChild(createButton(area, false, isSelected));
+        });
+
+        return panel;
+    };
+
+    const mobilePanel = DOM.areaFilterPanelMobile?.querySelector('div');
+    const desktopPanel = DOM.areaFilterPanelDesktop?.querySelector('div');
+
+    if (mobilePanel) {
+        mobilePanel.innerHTML = "";
+        mobilePanel.appendChild(createPanelContent(false));
     }
-    
-    return `
-    <div class="spawn-point ${colorClass}"
-         style="left:${point.x}%; top:${point.y}%;"
-         data-location-id="${point.id}"
-         data-mob-no="${mobNo}"
-         data-rank="${rank}"
-         data-is-culled="${isCulledFlag}"
-         data-is-lastone="${isLastOne ? "true" : "false"}"
-         data-is-interactive="${dataIsInteractive}"
-         tabindex="0">
-    </div>
-  `;
-}
-
-function updateCrushUI(mobNo, locationId, isCulled) {
-    const marker = document.querySelector(
-        `.spawn-point[data-mob-no="${mobNo}"][data-location-id="${locationId}"]`
-    );
-    if (!marker) return;
-
-    if (marker.dataset.isLastone === "true") {
-        // ラストワンは湧き潰し対象外
-        marker.dataset.isCulled = "false";
-        marker.title = "ラストワン（湧き潰し不可）";
-        return;
+    if (desktopPanel) {
+        desktopPanel.innerHTML = "";
+        desktopPanel.appendChild(createPanelContent(true));
     }
+};
 
-    const rank = marker.dataset.rank;
-    if (isCulled) {
-        marker.classList.remove("color-b1", "color-b2");
-        marker.classList.add(rank === "B1" ? "color-b1-culled" : "color-b2-culled");
+const updateFilterUI = () => {
+    const state = getState();
+    const rankTabs = DOM.rankTabs;
+    if (!rankTabs) return;
+
+    const stored = JSON.parse(localStorage.getItem("huntUIState")) || {};
+    const prevRank = stored.rank;
+    let clickStep = stored.clickStep || 1;
+
+    const isMobile = window.matchMedia("(max-width: 1023px)").matches;
+
+    rankTabs.querySelectorAll(".tab-button").forEach(btn => {
+        const btnRank = btn.dataset.rank;
+        const isCurrent = btnRank === state.filter.rank;
+
+        btn.classList.remove(
+            "bg-blue-800", "bg-red-800", "bg-yellow-800", "bg-indigo-800",
+            "bg-gray-500", "hover:bg-gray-400", "bg-green-500", "bg-gray-800"
+        );
+
+        if (isCurrent) {
+            if (btnRank === "ALL") {
+                clickStep = 1;
+            } else if (!prevRank || prevRank !== btnRank) {
+                clickStep = 1;
+            } else {
+                if (clickStep === 1) clickStep = 2;
+                else if (clickStep === 2) clickStep = 3;
+                else clickStep = 2;
+            }
+
+            btn.classList.add(
+                btnRank === "ALL" ? "bg-blue-800"
+                    : btnRank === "S" ? "bg-red-800"
+                        : btnRank === "A" ? "bg-yellow-800"
+                            : btnRank === "FATE" ? "bg-indigo-800"
+                                : "bg-gray-800"
+            );
+
+            const panels = [DOM.areaFilterPanelMobile, DOM.areaFilterPanelDesktop];
+            if (btnRank === "ALL" || clickStep === 1 || clickStep === 3) {
+                panels.forEach(p => p?.classList.add("hidden"));
+            } else if (clickStep === 2) {
+                renderAreaFilterPanel();
+                if (isMobile) {
+                    DOM.areaFilterPanelMobile?.classList.remove("hidden");
+                    DOM.areaFilterPanelDesktop?.classList.add("hidden");
+                } else {
+                    DOM.areaFilterPanelDesktop?.classList.remove("hidden");
+                    DOM.areaFilterPanelDesktop?.classList.add("flex"); // ← 明示的に付与
+                    DOM.areaFilterPanelMobile?.classList.add("hidden");
+                }
+
+            }
+
+            localStorage.setItem("huntUIState", JSON.stringify({
+                rank: btnRank,
+                clickStep
+            }));
+        } else {
+            btn.classList.add("bg-gray-500", "hover:bg-gray-400");
+        }
+    });
+};
+
+function handleAreaFilterClick(e) {
+    const btn = e.target.closest(".area-filter-btn");
+    if (!btn) return;
+
+    const state = getState();
+    const uiRank = state.filter.rank;
+    const targetRankKey = uiRank === 'FATE' ? 'F' : uiRank;
+    const allAreas = getAllAreas();
+
+    if (uiRank === 'ALL') return;
+
+    const currentSet =
+        state.filter.areaSets[targetRankKey] instanceof Set
+            ? state.filter.areaSets[targetRankKey]
+            : new Set();
+
+    const nextAreaSets = { ...state.filter.areaSets };
+
+    if (btn.dataset.area === "ALL") {
+        if (currentSet.size === allAreas.length) {
+            nextAreaSets[targetRankKey] = new Set();
+        } else {
+            nextAreaSets[targetRankKey] = new Set(allAreas);
+        }
     } else {
-        marker.classList.remove("color-b1-culled", "color-b2-culled");
-        marker.classList.add(rank === "B1" ? "color-b1" : "color-b2");
+        const area = btn.dataset.area;
+        const next = new Set(currentSet);
+        if (next.has(area)) next.delete(area);
+        else next.add(area);
+        nextAreaSets[targetRankKey] = next;
     }
-    marker.dataset.isCulled = isCulled.toString();
-    marker.title = `湧き潰し: ${isCulled ? "済" : "未"}`;
+
+    setFilter({
+        rank: uiRank,
+        areaSets: nextAreaSets
+    });
+
+    filterAndRender();
+    renderAreaFilterPanel();
 }
 
-function attachLocationEvents() {
-    const overlayContainers = document.querySelectorAll(".map-overlay");
-    if (!overlayContainers.length) return;
+function filterMobsByRankAndArea(mobs) {
+    const filter = getState().filter;
+    const uiRank = filter.rank;
+    const areaSets = filter.areaSets;
+    const allExpansions = getAllAreas().length;
 
-    overlayContainers.forEach(overlay => {
-        overlay.removeEventListener("click", handleCrushToggle);
-        overlay.addEventListener("click", handleCrushToggle);
+    const getMobRankKey = (rank) => {
+        if (rank === 'S' || rank === 'A') return rank;
+        if (rank === 'F') return 'F';
+        if (rank.startsWith('B')) return 'A';
+        return null;
+    };
+
+    return mobs.filter(m => {
+        const mobRank = m.Rank;
+        const mobExpansion = m.Expansion;
+        const mobRankKey = getMobRankKey(mobRank);
+
+        if (!mobRankKey) return false;
+
+        const filterKey = mobRankKey;
+
+        if (uiRank === 'ALL') {
+            // ALL: S/A/F それぞれの保存済みエリア選択を合算して適用
+            if (filterKey !== 'S' && filterKey !== 'A' && filterKey !== 'F') return false;
+
+            const targetSet =
+                areaSets?.[filterKey] instanceof Set ? areaSets[filterKey] : new Set();
+
+            if (targetSet.size === 0) return true;
+            if (targetSet.size === allExpansions) return true;
+
+            return targetSet.has(mobExpansion);
+        } else {
+            // 個別ランク
+            const isRankMatch =
+                (uiRank === 'S' && mobRank === 'S') ||
+                (uiRank === 'A' && (mobRank === 'A' || mobRank.startsWith('B'))) ||
+                (uiRank === 'FATE' && mobRank === 'F');
+
+            if (!isRankMatch) return false;
+
+            const targetSet =
+                areaSets?.[filterKey] instanceof Set ? areaSets[filterKey] : new Set();
+
+            if (targetSet.size === 0) return true;
+            if (targetSet.size === allExpansions) return true;
+
+            return targetSet.has(mobExpansion);
+        }
     });
 }
 
-export { isCulled, isActuallyCulled, drawSpawnPoint, handleCrushToggle, updateCrushUI, attachLocationEvents };
+export { renderRankTabs, renderAreaFilterPanel, updateFilterUI, handleAreaFilterClick, filterMobsByRankAndArea };
