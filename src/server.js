@@ -29,7 +29,6 @@ const analytics = getAnalytics(app);
 
 const functions = functionsInstance;
 
-// httpsCallable の初期化
 const callGetServerTime = httpsCallable(functions, 'getServerTime');
 const callRevertStatus = httpsCallable(functions, 'revertStatus'); // 巻き戻し機能用
 
@@ -129,17 +128,20 @@ const submitReport = async (mobNo, timeISO, memo) => {
         displayStatus("モブデータが見つかりません。", "error");
         return;
     }
-
     // モーダル入力を優先、未入力や不正ならサーバー時刻を fallback
     let killTimeDate;
     if (timeISO) {
         const modalDate = new Date(timeISO);
-        if (!isNaN(modalDate)) {
-            killTimeDate = modalDate; // ← モーダル値をそのまま採用
+        // Dateオブジェクトとして有効な場合にのみ採用
+        if (!isNaN(modalDate.getTime())) { 
+            killTimeDate = modalDate; 
         }
     }
+        // 💡 サーバー時刻をフォールバックとして取得・設定
     if (!killTimeDate) {
-        killTimeDate = await getServerTimeUTC(); // fallback
+        // timeISOが無効または空の場合、サーバー時刻を取得
+        const serverTimeUTC = await getServerTimeUTC(); 
+        killTimeDate = serverTimeUTC;
     }
 
     const modalStatusEl = document.querySelector("#modal-status");
@@ -149,7 +151,7 @@ const submitReport = async (mobNo, timeISO, memo) => {
     try {
         await addDoc(collection(db, "reports"), {
             mob_id: mobNo.toString(),
-            kill_time: killTimeDate,
+            kill_time: killTimeDate, // Dateオブジェクトを直接Firestoreに保存 (UTC)
             reporter_uid: userId,
             memo: memo,
             repop_seconds: mob.REPOP_s
@@ -187,11 +189,15 @@ const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
 
     const updateData = {};
     const pointPath = `points.${locationId.toString()}`;
+    // 💡 湧き潰し報告の時刻もサーバー時刻に依存するため、getServerTimeUTC()で取得
+    const serverTimeUTC = await getServerTimeUTC();
+    const serverTimestampValue = serverTimeUTC; 
 
     if (action === "crush") {
-        updateData[`${pointPath}.culled_at`] = serverTimestamp();
+        // serverTimestamp() はクライアント側で時刻決定権がないため、サーバー関数またはDateオブジェクトを使用
+        updateData[`${pointPath}.culled_at`] = serverTimestampValue; 
     } else {
-        updateData[`${pointPath}.uncull_at`] = serverTimestamp();
+        updateData[`${pointPath}.uncull_at`] = serverTimestampValue; 
     }
 
     try {
