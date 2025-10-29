@@ -259,7 +259,7 @@ function updateProgressText(card, mob) {
     } else if (status === "PopWindow") {
         rightStr = `残り ${formatDurationHM(maxRepop - nowSec)}`;
     } else if (status === "MaxOver") {
-        rightStr = `Over (100%)`;
+        rightStr = `Time Over (100%)`;
     } else {
         rightStr = `未確定`;
     }
