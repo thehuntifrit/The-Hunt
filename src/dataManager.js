@@ -172,7 +172,7 @@ function startRealtime() {
             setMobs(merged);
             filterAndRender();
             updateProgressBars();
-            displayStatus("討伐報告/Memo更新完了。", "success");
+            displayStatus("LKT/Memoデータ更新完了。", "success");
         });
         unsubscribes.push(unsubStatus);
 
