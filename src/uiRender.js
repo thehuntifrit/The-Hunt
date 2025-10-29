@@ -3,7 +3,7 @@ import { drawSpawnPoint, isCulled, isActuallyCulled } from "./location.js"; 
 import { getState, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
 import { renderRankTabs, renderAreaFilterPanel, updateFilterUI, filterMobsByRankAndArea } from "./filterUI.js";
 import { submitReport } from "./server.js"; 
-import { openReportModal, initModal } from "./modal.js"; 
+import { openReportModal, closeReportModal, initModal } from "./modal.js"; 
 
 
 const DOM = {
