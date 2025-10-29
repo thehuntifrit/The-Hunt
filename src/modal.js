@@ -13,7 +13,7 @@ function openReportModal(mobNo) {
     const mob = getState().mobs.find(m => m.No === mobNo);
     if (!mob) return;
 
-    const iso = toLocalIsoString(new Date());
+    const iso = toJstAdjustedIsoString(new Date());
     DOM.reportForm.dataset.mobNo = String(mobNo);
     DOM.modalMobName.textContent = `${mob.Name}`;
     DOM.modalTimeInput.value = iso;
@@ -56,4 +56,4 @@ function initModal() {
     setupModalCloseHandlers();
 }
 
-export { openReportModal, closeReportModal, initModal, toLocalIsoString };
+export { openReportModal, closeReportModal, initModal };
