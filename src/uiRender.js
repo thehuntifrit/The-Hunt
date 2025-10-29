@@ -178,56 +178,11 @@ function filterAndRender({ isInitialLoad = false } = {}) {
 	DOM.masterContainer.innerHTML = "";
 	DOM.masterContainer.appendChild(frag);
 	distributeCards();
-    setupReportListeners(); 
 
 	if (isInitialLoad) {
 		updateProgressBars();
         initModal();
 	}
-}
-
-async function handleMasterContainerClick(event) {
-    // 報告ボタンの処理
-    const reportButton = event.target.closest('button[data-report-type]');
-    if (reportButton) {
-        const mobNo = parseInt(reportButton.dataset.mobNo, 10);
-        const reportType = reportButton.dataset.reportType;
-
-        if (reportType === 'instant') {
-            // A/Fモブ即時報告の場合
-            await submitReport(mobNo, "", "");
-        } else if (reportType === 'modal') {
-            // Sモブモーダル報告の場合 (modal.jsからインポートした関数を使用)
-            await openReportModal(mobNo);
-        }
-        return; // ボタンクリック処理が完了
-    }
-
-    // カード開閉の処理
-    const cardHeader = event.target.closest('[data-toggle="card-header"]');
-    if (cardHeader) {
-        const card = cardHeader.closest('.mob-card');
-        const mobNo = parseInt(card.dataset.mobNo, 10);
-        if (card.dataset.rank === 'S') {
-        }
-    }
-}
-
-// 💡 報告ボタンイベントリスナーの設定
-function setupReportListeners() {
-    if (!DOM.masterContainer.dataset.delegatedListeners) {
-        DOM.masterContainer.addEventListener('click', handleMasterContainerClick);
-        DOM.masterContainer.dataset.delegatedListeners = 'true';
-    }
-	
-    DOM.reportForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const mobNo = parseInt(DOM.reportForm.dataset.mobNo, 10);
-        const timeISO = DOM.modalTimeInput.value;
-        const memo = DOM.modalMemoInput.value;
-        
-        await submitReport(mobNo, timeISO, memo);
-    };
 }
 
 function distributeCards() {
@@ -410,7 +365,6 @@ setInterval(() => {
     updateProgressBars();
 }, 60000);
 
-export {
-    filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, displayStatus, DOM,
-    renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, updateFilterUI, onKillReportReceived, updateProgressBars, setupReportListeners
+export { filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, displayStatus, DOM,
+    renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, updateFilterUI, onKillReportReceived, updateProgressBars
 };
