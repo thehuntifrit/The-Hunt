@@ -2,7 +2,6 @@ import { calculateRepop, findNextSpawnTime, formatDuration, formatDurationHM, fo
 import { drawSpawnPoint, isCulled, isActuallyCulled } from "./location.js"; 
 import { getState, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
 import { renderRankTabs, renderAreaFilterPanel, updateFilterUI, filterMobsByRankAndArea } from "./filterUI.js";
-// 💡 server.js から submitReport と openReportModal をインポート
 import { submitReport } from "./server.js"; 
 import { openReportModal } from "./modal.js"; 
 
