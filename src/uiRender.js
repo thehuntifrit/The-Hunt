@@ -209,8 +209,6 @@ async function handleMasterContainerClick(event) {
         const card = cardHeader.closest('.mob-card');
         const mobNo = parseInt(card.dataset.mobNo, 10);
         if (card.dataset.rank === 'S') {
-            // Sランクモブの開閉ロジックを呼び出す
-            filterAndRender();
         }
     }
 }
