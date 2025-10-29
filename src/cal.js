@@ -163,46 +163,51 @@ function checkTimeRange(timeRange, timestamp) {
 // 次の条件成立時刻を探索
 function findNextSpawnTime(mob, startDate) {
     if (!startDate || !(startDate instanceof Date) || isNaN(startDate.getTime())) {
-        return null; // 不正な引数は即 null
+        return null;
     }
-
-    const WEATHER_CYCLE_SEC = 23 * 60 + 20; // 1周期 = 23分20秒 = 1400秒
+    const WEATHER_CYCLE_SEC = 23 * 60 + 20; // 1400秒
     const startSec = Math.floor(startDate.getTime() / 1000);
-
-    // --- weatherDuration がある場合のみ「連続周期条件」を探索 ---
+    // --- 継続条件（weatherDurationあり） ---
     if (mob.weatherDuration?.minutes) {
         const requiredMinutes = mob.weatherDuration.minutes;
         const requiredCycles = Math.ceil((requiredMinutes * 60) / WEATHER_CYCLE_SEC);
 
         let consecutive = 0;
-        let cycleStart = startSec;
+        let conditionStartSec = null;
 
         for (let t = startSec; t < startSec + 7 * 24 * 3600; t += WEATHER_CYCLE_SEC) {
-            const seed = getEorzeaWeatherSeed(mob.area, t);
-            if (mob.weatherSeedRange && seed >= mob.weatherSeedRange[0] && seed <= mob.weatherSeedRange[1]) {
+            const date = new Date(t * 1000);
+            const seed = getEorzeaWeatherSeed(date);
+
+            const inRange =
+                mob.weatherSeedRange
+                    ? (seed >= mob.weatherSeedRange[0] && seed <= mob.weatherSeedRange[1])
+                    : mob.weatherSeedRanges
+                        ? mob.weatherSeedRanges.some(([min, max]) => seed >= min && seed <= max)
+                        : false;
+
+            if (inRange) {
                 consecutive++;
                 if (consecutive === 1) {
-                    cycleStart = t; // 連続開始時刻を記録
+                    conditionStartSec = t;
                 }
                 if (consecutive >= requiredCycles) {
-                    return new Date(cycleStart * 1000);
+                    // 出現可能時刻 = 条件開始 + minutes
+                    const popSec = conditionStartSec + requiredMinutes * 60;
+                    return new Date(popSec * 1000);
                 }
             } else {
                 consecutive = 0;
+                conditionStartSec = null;
             }
         }
         return null;
     }
-
-    // --- weatherDuration がない場合は「瞬間条件」判定 ---
+    // --- 瞬間条件（weatherDurationなし） ---
     for (let t = startSec; t < startSec + 7 * 24 * 3600; t += WEATHER_CYCLE_SEC) {
-        const seed = getEorzeaWeatherSeed(mob.area, t);
-        if (mob.weatherSeedRange && seed >= mob.weatherSeedRange[0] && seed <= mob.weatherSeedRange[1]) {
-            // 月齢条件がある場合は追加判定
-            if (mob.moonPhase && !checkMoonPhase(mob.moonPhase, t)) continue;
-            // 時間帯条件がある場合は追加判定
-            if (mob.timeRange && !checkTimeRange(mob.timeRange, t)) continue;
-            return new Date(t * 1000);
+        const date = new Date(t * 1000);
+        if (checkMobSpawnCondition(mob, date)) {
+            return date;
         }
     }
 
