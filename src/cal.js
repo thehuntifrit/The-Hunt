@@ -146,34 +146,46 @@ function checkMobSpawnCondition(mob, date) {
     return true;
 }
 
-function findNextSpawnTime(mob, now = new Date()) {
-    let date = new Date(now.getTime());
-    const limit = now.getTime() + 7 * 24 * 60 * 60 * 1000; // 1週間先まで探索
-    const REAL_SECONDS_STEP = 60; // 1分刻みで探索
+function findNextSpawnTime(mob, startDate) {
+    const WEATHER_CYCLE_SEC = 23 * 60 + 20; // 1周期 = 23分20秒 = 1400秒
+    const startSec = Math.floor(startDate.getTime() / 1000);
+    // --- weatherDuration がある場合のみ「連続周期条件」を探索 ---
+    if (mob.weatherDuration?.minutes) {
+        const requiredMinutes = mob.weatherDuration.minutes;
+        const requiredCycles = Math.ceil((requiredMinutes * 60) / WEATHER_CYCLE_SEC);
 
-    while (date.getTime() < limit) {
-        if (checkMobSpawnCondition(mob, date)) {
-            // --- 連続時間チェック ---
-            const durationMin = mob.weatherDuration?.minutes || 0;
-            if (durationMin > 0) {
-                let ok = true;
-                let checkDate = new Date(date.getTime());
-                for (let i = 0; i < durationMin; i++) {
-                    checkDate = new Date(checkDate.getTime() + 60 * 1000);
-                    if (!checkMobSpawnCondition(mob, checkDate)) {
-                        ok = false;
-                        break;
-                    }
+        let consecutive = 0;
+        let cycleStart = startSec;
+        // 天候シードを順に評価（擬似コード: getWeatherSeed は天候IDを返す関数）
+        for (let t = startSec; t < startSec + 7 * 24 * 3600; t += WEATHER_CYCLE_SEC) {
+            const seed = getWeatherSeed(mob.area, t);
+            if (mob.weatherSeedRange && seed >= mob.weatherSeedRange[0] && seed <= mob.weatherSeedRange[1]) {
+                consecutive++;
+                if (consecutive === 1) {
+                    cycleStart = t; // 連続開始時刻を記録
                 }
-                if (ok) {
-                    return date; // 連続成立した開始時刻を返す
+                if (consecutive >= requiredCycles) {
+                    // 条件成立開始時刻を返す
+                    return new Date(cycleStart * 1000);
                 }
             } else {
-                return date; // 単発条件なら即成立
+                consecutive = 0;
             }
         }
-        date = new Date(date.getTime() + REAL_SECONDS_STEP * 1000);
+        return null;
     }
+    // --- weatherDuration がない場合は「瞬間条件」判定 ---
+    for (let t = startSec; t < startSec + 7 * 24 * 3600; t += WEATHER_CYCLE_SEC) {
+        const seed = getWeatherSeed(mob.area, t);
+        if (mob.weatherSeedRange && seed >= mob.weatherSeedRange[0] && seed <= mob.weatherSeedRange[1]) {
+            // 月齢条件がある場合は追加判定
+            if (mob.moonPhase && !checkMoonPhase(mob.moonPhase, t)) continue;
+            // 時間帯条件がある場合は追加判定
+            if (mob.timeRange && !checkTimeRange(mob.timeRange, t)) continue;
+            return new Date(t * 1000);
+        }
+    }
+
     return null;
 }
 
