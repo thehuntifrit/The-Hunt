@@ -117,6 +117,7 @@ transform: scale(1.15);
   font-weight: 600;
   line-height: 1;
   color: #fff;
+  mix-blend-mode: difference;
   pointer-events: none;
 }
 
