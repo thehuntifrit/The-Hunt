@@ -210,7 +210,6 @@ async function handleMasterContainerClick(event) {
         const mobNo = parseInt(card.dataset.mobNo, 10);
         if (card.dataset.rank === 'S') {
             // Sランクモブの開閉ロジックを呼び出す
-            toggleOpenMobCard(mobNo);
             filterAndRender();
         }
     }
