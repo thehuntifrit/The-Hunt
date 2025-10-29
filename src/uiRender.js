@@ -1,13 +1,9 @@
-
 // uiRender.js
 
-import { toJstAdjustedIsoString, calculateRepop, findNextSpawnTime, formatDuration, formatDurationHM, formatLastKillTime, debounce, getEorzeaTime } from "./cal.js";
-import { drawSpawnPoint, isCulled, isActuallyCulled } from "./location.js";
+import { calculateRepop, findNextSpawnTime, formatDuration, formatDurationHM, formatLastKillTime, debounce, getEorzeaTime } from "./cal.js";
+import { drawSpawnPoint, isCulled } from "./location.js"; 
 import { getState, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
 import { renderRankTabs, renderAreaFilterPanel, updateFilterUI, filterMobsByRankAndArea } from "./filterUI.js";
-import { submitReport, getServerTimeUTC } from "./server.js";
-import { openReportModal, closeReportModal, initModal } from "./modal.js";
-
 
 const DOM = {
     masterContainer: document.getElementById('master-mob-container'),
@@ -63,40 +59,43 @@ function processText(text) {
 }
 
 function createMobCard(mob) {
-	const rank = mob.Rank;
-	const rankConfig = RANK_COLORS[rank] || RANK_COLORS.A;
-	const rankLabel = rankConfig.label || rank;
+    const rank = mob.Rank;
+    const rankConfig = RANK_COLORS[rank] || RANK_COLORS.A;
+    const rankLabel = rankConfig.label || rank;
 
-	const isExpandable = rank === "S";
-	const { openMobCardNo } = getState();
-	const isOpen = isExpandable && mob.No === openMobCardNo;
+    const isExpandable = rank === "S";
+    const { openMobCardNo } = getState();
+    const isOpen = isExpandable && mob.No === openMobCardNo;
 
-	let isLastOne = false;
-	let validSpawnPoints = [];
+    let isLastOne = false;
+    let validSpawnPoints = [];
 
-	if (mob.Map && mob.spawn_points) {
-		// ラストワン判定は純粋な湧き潰し状態だけで判定
-		validSpawnPoints = (mob.spawn_points ?? []).filter(point => {
-			const pointStatus = mob.spawn_cull_status?.[point.id];
-			return !isActuallyCulled(pointStatus);
-		});
-		isLastOne = validSpawnPoints.length === 1;
-	}
+    if (mob.Map && mob.spawn_points) {
+        validSpawnPoints = (mob.spawn_points ?? []).filter(point => {
+            const pointStatus = mob.spawn_cull_status?.[point.id];
+            // isCulled には mob.No が必要
+            return !isCulled(pointStatus, mob.No); 
+        });
+        isLastOne = validSpawnPoints.length === 1;
+    }
 
-	const isS_LastOne = rank === "S" && isLastOne;
-
-	const spawnPointsHtml = (rank === "S" && mob.Map)
-		? (mob.spawn_points ?? []).map(point => drawSpawnPoint(
-			point,
-			mob.spawn_cull_status,
-			mob.No,
-			point.mob_ranks.includes("B2") ? "B2"
-				: point.mob_ranks.includes("B1") ? "B1"
-					: point.mob_ranks[0],
-			isLastOne && point.id === validSpawnPoints[0]?.id,
-			isS_LastOne
-		)).join("")
-		: "";
+    const isS_LastOne = rank === "S" && isLastOne; 
+    
+    const spawnPointsHtml = (rank === "S" && mob.Map)
+        ? (mob.spawn_points ?? []).map(point => drawSpawnPoint(
+            point,
+            mob.spawn_cull_status,
+            mob.No,
+            point.mob_ranks.includes("B2") ? "B2"
+                : point.mob_ranks.includes("B1") ? "B1"
+                    : point.mob_ranks[0],
+            // isLastOne のフラグを渡す
+            isLastOne && point.id === validSpawnPoints[0]?.id, 
+            isS_LastOne,
+            mob.last_kill_time,
+            mob.prev_kill_time
+        )).join("")
+        : "";
 
     const cardHeaderHTML = `
 <div class="px-2 py-1 space-y-1 bg-gray-800/70" data-toggle="card-header">
@@ -116,7 +115,7 @@ function createMobCard(mob) {
 
         <!-- 右端：報告ボタン（見た目は統一、動作だけ分岐） -->
         <div class="flex-shrink-0 flex items-center justify-end">
-            <button data-report-type="${rank === 'A' ? 'instant' : 'modal'}" data-mob-no="${mob.No}"
+            <button data-report-type="${rank === 'A' || rank === 'F' ? 'instant' : 'modal'}" data-mob-no="${mob.No}"
                 class="w-8 h-8 flex items-center justify-center text-[12px] rounded bg-green-600 hover:bg-green-800 selected:bg-green-400 
                text-white font-semibold transition text-center leading-tight whitespace-pre-line">報告<br>する</button>
         </div>
@@ -159,77 +158,30 @@ transition duration-150" data-mob-no="${mob.No}" data-rank="${rank}">${cardHeade
 }
 
 function filterAndRender({ isInitialLoad = false } = {}) {
-	const state = getState();
-	const filtered = filterMobsByRankAndArea(state.mobs);
+    const state = getState();
+    const filtered = filterMobsByRankAndArea(state.mobs);
 
-	filtered.sort((a, b) => a.No - b.No);
+    filtered.sort((a, b) => a.No - b.No);
 
-	const frag = document.createDocumentFragment();
-	filtered.forEach(mob => {
-		const temp = document.createElement("div");
-		temp.innerHTML = createMobCard(mob);
-		const card = temp.firstElementChild;
-		frag.appendChild(card);
+    const frag = document.createDocumentFragment();
+    filtered.forEach(mob => {
+        const temp = document.createElement("div");
+        temp.innerHTML = createMobCard(mob);
+        const card = temp.firstElementChild;
+        frag.appendChild(card);
 
-		updateProgressText(card, mob);
-		updateProgressBar(card, mob);
-		updateExpandablePanel(card, mob);
-	});
+        updateProgressText(card, mob);
+        updateProgressBar(card, mob);
+        updateExpandablePanel(card, mob);
+    });
 
-	DOM.masterContainer.innerHTML = "";
-	DOM.masterContainer.appendChild(frag);
-	distributeCards();
-    setupReportListeners(); 
+    DOM.masterContainer.innerHTML = "";
+    DOM.masterContainer.appendChild(frag);
+    distributeCards();
 
-	if (isInitialLoad) {
-		updateProgressBars();
-        initModal();
-	}
-}
-
-async function handleMasterContainerClick(event) {
-    // 報告ボタンの処理
-    const reportButton = event.target.closest('button[data-report-type]');
-    if (reportButton) {
-        const mobNo = parseInt(reportButton.dataset.mobNo, 10);
-        const reportType = reportButton.dataset.reportType;
-
-        if (reportType === 'instant') {
-            // A/Fモブ即時報告の場合
-            await submitReport(mobNo, "", "");
-        } else if (reportType === 'modal') {
-            // Sモブモーダル報告の場合 (modal.jsからインポートした関数を使用)
-            await openReportModal(mobNo);
-        }
-        return; // ボタンクリック処理が完了
+    if (isInitialLoad) {
+        updateProgressBars();
     }
-
-    // カード開閉の処理
-    const cardHeader = event.target.closest('[data-toggle="card-header"]');
-    if (cardHeader) {
-        const card = cardHeader.closest('.mob-card');
-        const mobNo = parseInt(card.dataset.mobNo, 10);
-        if (card.dataset.rank === 'S') {
-			filterAndRender();
-        }
-    }
-}
-
-// 💡 報告ボタンイベントリスナーの設定
-function setupReportListeners() {
-    if (!DOM.masterContainer.dataset.delegatedListeners) {
-        DOM.masterContainer.addEventListener('click', handleMasterContainerClick);
-        DOM.masterContainer.dataset.delegatedListeners = 'true';
-    }
-	
-    DOM.reportForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const mobNo = parseInt(DOM.reportForm.dataset.mobNo, 10);
-        const timeISO = DOM.modalTimeInput.value;
-        const memo = DOM.modalMemoInput.value;
-        
-        await submitReport(mobNo, timeISO, memo);
-    };
 }
 
 function distributeCards() {
@@ -391,20 +343,18 @@ const areaPanel = document.getElementById("area-filter-panel");
 
 // 討伐報告受信ハンドラ
 function onKillReportReceived(mobId, kill_time) {
-	const mob = getState().mobs.find(m => m.No === mobId);
-	if (!mob) return;
+    const mob = getState().mobs.find(m => m.No === mobId);
+    if (!mob) return;
 
-	mob.last_kill_time = Number(kill_time);
-	mob.repopInfo = calculateRepop(mob);
-	// 即時更新
-	const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
-	if (card) {
-		updateProgressText(card, mob);
-		updateProgressBar(card, mob);
-	}
-	if (mob.Rank === "S" || mob.Rank === "A") {
-		filterAndRender(); 
-	}
+    mob.last_kill_time = Number(kill_time);
+    mob.repopInfo = calculateRepop(mob);
+
+    // 即時更新
+    const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
+    if (card) {
+        updateProgressText(card, mob);
+        updateProgressBar(card, mob);
+    }
 }
 
 // 定期ループ（60秒ごとに全カードを更新）
@@ -414,5 +364,5 @@ setInterval(() => {
 
 export {
     filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, displayStatus, DOM,
-    renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, updateFilterUI, onKillReportReceived, updateProgressBars, setupReportListeners
+    renderAreaFilterPanel, renderRankTabs, sortAndRedistribute, updateFilterUI, onKillReportReceived, updateProgressBars
 };
