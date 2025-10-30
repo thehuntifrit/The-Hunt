@@ -10,6 +10,8 @@ const state = {
     userId: localStorage.getItem("user_uuid") || null,
     baseMobData: [],
     mobs: [],
+    mobLocations: {}, 
+    
     filter: JSON.parse(localStorage.getItem("huntFilterState")) || {
         rank: "ALL",
         areaSets: {
@@ -176,8 +178,11 @@ function startRealtime() {
         });
         unsubscribes.push(unsubStatus);
 
-        const unsubLoc = subscribeMobLocations(locationsMap => {
+const unsubLoc = subscribeMobLocations(locationsMap => {
             const current = getState().mobs;
+            
+            state.mobLocations = locationsMap; 
+            
             const merged = current.map(m => {
                 const dyn = locationsMap[m.No];
                 let newMob = { ...m };
