@@ -23,7 +23,7 @@ const FIREBASE_CONFIG = {
 const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
 const auth = getAuth(app);
-const DEFAULT_FUNCTIONS_REGION = "asia-northeast1"; 
+const DEFAULT_FUNCTIONS_REGION = "us-central1"; 
 const functionsInstance = getFunctions(app, DEFAULT_FUNCTIONS_REGION);
 const analytics = getAnalytics(app);
 
@@ -92,6 +92,18 @@ function subscribeMobStatusDocs(onUpdate) {
     return () => unsubs.forEach(u => u());
 }
 
+function normalizePoints(data) {
+    const result = {};
+    for (const [key, value] of Object.entries(data)) {
+        if (key.startsWith("points.")) {
+            const [, locId, field] = key.split(".");
+            if (!result[locId]) result[locId] = {};
+            result[locId][field] = value;
+        }
+    }
+    return result;
+}
+
 // データ購読 (Mob Locations)
 function subscribeMobLocations(onUpdate) {
     const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
@@ -99,8 +111,9 @@ function subscribeMobLocations(onUpdate) {
         snapshot.forEach(docSnap => {
             const mobNo = parseInt(docSnap.id, 10);
             const data = docSnap.data();
-            
-            map[mobNo] = { points: data.points || {} }; 
+            const normalized = normalizePoints(data);
+
+            map[mobNo] = normalized;
         });
         onUpdate(map);
     });
@@ -180,8 +193,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// ★ 湧き潰し報告を Callable に変更
-const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
+// 湧き潰し報告
+const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
     const state = getState();
     const userId = state.userId;
     const mobs = state.mobs;
@@ -190,18 +203,16 @@ const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
         displayStatus("認証が完了していません。", "error");
         return;
     }
-    const action = isCurrentlyCulled ? "UNCULL" : "CULL"; 
+    const action = nextCulled ? "CULL" : "UNCULL"; 
     const mob = mobs.find(m => m.No === mobNo);
     if (!mob) return;
 
     displayStatus(
-        `${mob.Name} (${locationId}) ${action === "CULL" ? "湧き潰し" : "解除"}報告中...`,
-        "warning" // warningなど、処理中のステータスを表示
-    );
-    
+        `${mob.Name} (${locationId}) ${nextCulled ? "湧き潰し" : "解除"}報告中...`,
+        "warning" // 処理中のステータスを表示
+    );    
     // report_time にクライアント時刻を使用
     const reportTimeDate = new Date();
-    
     // サーバー側が期待するデータ構造
     const data = {
         mob_id: mobNo.toString(),
@@ -217,10 +228,12 @@ const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
         
         if (result?.success) {
             displayStatus(`${mob.Name} の状態を更新しました。`, "success");
+            // 成功時にUIを即時更新
+            updateCrushUI(mobNo, locationId, nextCulled);
         } else {
-             const errorMessage = result?.error || "Functions内部でエラーが発生しました。";
-             console.error("湧き潰し報告エラー (Functions内部):", errorMessage);
-             displayStatus(`湧き潰し報告エラー: ${errorMessage}`, "error");
+            const errorMessage = result?.error || "Functions内部でエラーが発生しました。";
+            console.error("湧き潰し報告エラー (Functions内部):", errorMessage);
+            displayStatus(`湧き潰し報告エラー: ${errorMessage}`, "error");
         }
 
     } catch (error) {
