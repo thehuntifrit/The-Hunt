@@ -3,8 +3,8 @@
 import { getState, setFilter, loadBaseMobData, setOpenMobCardNo, FILTER_TO_DATA_RANK_MAP, setUserId, startRealtime } from "./dataManager.js";
 import { openReportModal, closeReportModal, initModal } from "./modal.js";
 import { attachLocationEvents } from "./location.js";
-import { submitReport, toggleCrushStatus, initializeAuth } from "./server.js";
-import { debounce, toJstAdjustedIsoString, } from "./cal.js";
+import { submitReport, toggleCrushStatus, initializeAuth, getServerTimeUTC } from "./server.js";
+import { debounce } from "./cal.js";
 import { DOM, filterAndRender, sortAndRedistribute } from "./uiRender.js";
 import { renderRankTabs, renderAreaFilterPanel, updateFilterUI, handleAreaFilterClick } from "./filterUI.js";
 
@@ -122,9 +122,14 @@ function attachCardEvents() {
             if (type === "modal") {
                 openReportModal(mobNo);
             } else if (type === "instant") {
-                const now = new Date();
-                const iso = now.toISOString();
-                submitReport(mobNo, iso, `${rank}ランク即時報告`);
+                getServerTimeUTC().then(serverDateUTC => {
+                    const iso = serverDateUTC.toISOString();
+                    submitReport(mobNo, iso, `${rank}ランク即時報告`);
+                }).catch(err => {
+                    console.error("サーバー時刻取得失敗、ローカル時刻で代用:", err);
+                    const fallbackIso = new Date().toISOString();
+                    submitReport(mobNo, fallbackIso, `${rank}ランク即時報告`);
+                });
             }
             return;
         }
