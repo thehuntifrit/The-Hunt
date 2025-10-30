@@ -1,8 +1,7 @@
-
-// server.js (修正版)
+// server.js (修正版 - PC/スマホ互換性強化)
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, updateDoc, increment, FieldValue } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-functions.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
@@ -10,7 +9,7 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase
 import { getState } from "./dataManager.js";
 import { closeReportModal } from "./modal.js";
 import { displayStatus } from "./uiRender.js";
-import { isCulled, updateCrushUI } from "./location.js"; // isCulled 関数はLKTを受け取るようにlocation.js側も修正済みを想定
+import { isCulled, updateCrushUI } from "./location.js"; 
 
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyBikwjGsjL_PVFhx3Vj-OeJCocKA_hQOgU",
@@ -20,20 +19,17 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "285578581189",
   appId: "1:285578581189:web:4d9826ee3f988a7519ccac"
 };
-import { serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
 const auth = getAuth(app);
-const functionsInstance = getFunctions(app, "asia-northeast1");
+const DEFAULT_FUNCTIONS_REGION = "asia-northeast1"; 
+const functionsInstance = getFunctions(app, DEFAULT_FUNCTIONS_REGION);
 const analytics = getAnalytics(app);
 
-const functions = functionsInstance;
-
-// ★ HTTPS Callable の初期化: V1関数名に統一し、湧き潰し関数を追加
-const callGetServerTime = httpsCallable(functions, 'getServerTimeV1'); // ★ 関数名変更
-const callRevertStatus = httpsCallable(functions, 'revertStatusV1');   // ★ 関数名変更
-const callMobCullUpdater = httpsCallable(functions, 'mobCullUpdaterV1'); // ★ 新規追加
+const callGetServerTime = httpsCallable(functionsInstance, 'getServerTimeV1'); 
+const callRevertStatus = httpsCallable(functionsInstance, 'revertStatusV1');   
+const callMobCullUpdater = httpsCallable(functionsInstance, 'mobCullUpdaterV1'); 
 
 // 認証 (変更なし)
 async function initializeAuth() {
@@ -67,9 +63,8 @@ onAuthStateChanged(auth, (user) => {
 
 // サーバーUTC取得
 async function getServerTimeUTC() {
-    // const getServerTime = httpsCallable(functionsInstance, "getServerTime"); // 削除
     try {
-        const response = await callGetServerTime(); // ★ 定義済みの V1 関数を呼び出し
+        const response = await callGetServerTime(); 
 
         if (response.data && typeof response.data.serverTimeMs === 'number') {
             return new Date(response.data.serverTimeMs);
@@ -97,30 +92,22 @@ function subscribeMobStatusDocs(onUpdate) {
     return () => unsubs.forEach(u => u());
 }
 
-// ★ データ購読 (Mob Locations)
+// データ購読 (Mob Locations)
 function subscribeMobLocations(onUpdate) {
     const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
-        const map = {}; // ★ 常に空オブジェクトで初期化される
+        const map = {};
         snapshot.forEach(docSnap => {
             const mobNo = parseInt(docSnap.id, 10);
             const data = docSnap.data();
             
-            const mobLastKillTime = data.last_kill_time || null; 
-            
-            map[mobNo] = { points: data.points || {}, last_kill_time: mobLastKillTime };
-            // 各地点の UI 更新
-            Object.entries(data.points || {}).forEach(([locationId, status]) => {
-                // isCulled に Mob Locations ドキュメントの LKT を渡す
-                const isCulledFlag = isCulled(status, mobLastKillTime); 
-                updateCrushUI(mobNo, locationId, isCulledFlag);
-            });
+            map[mobNo] = { points: data.points || {} }; 
         });
         onUpdate(map);
     });
     return unsub;
 }
 
-// 討伐報告 (reportsコレクションへの直接書き込み) (変更なし)
+// 討伐報告 (reportsコレクションへの直接書き込み)
 const submitReport = async (mobNo, timeISO, memo) => {
     const state = getState();
     const userId = state.userId;
@@ -136,16 +123,23 @@ const submitReport = async (mobNo, timeISO, memo) => {
         displayStatus("モブデータが見つかりません。", "error");
         return;
     }
-    // モーダル入力を優先、未入力や不正ならサーバー時刻を fallback
+    
     let killTimeDate;
     if (timeISO) {
-        const modalDate = new Date(timeISO);
-        if (!isNaN(modalDate)) {
+        let parseStr = timeISO;
+        if (timeISO.length === 16 && !timeISO.endsWith('Z')) { // YYYY-MM-DDTHH:mm の場合
+            parseStr = timeISO + ':00.000Z'; 
+        }
+
+        const modalDate = new Date(parseStr);
+        if (!isNaN(modalDate.getTime())) { // getTime() が有効な数値であるかを確認
             killTimeDate = modalDate;
         }
     }
+    
     if (!killTimeDate) {
-        killTimeDate = await getServerTimeUTC(); // fallback
+        // fallbackとしてサーバー時刻を取得
+        killTimeDate = await getServerTimeUTC();
     }
 
     const modalStatusEl = document.querySelector("#modal-status");
@@ -196,40 +190,47 @@ const toggleCrushStatus = async (mobNo, locationId, isCurrentlyCulled) => {
         displayStatus("認証が完了していません。", "error");
         return;
     }
-    // サーバー関数に合わせてアクション名を大文字に
     const action = isCurrentlyCulled ? "UNCULL" : "CULL"; 
     const mob = mobs.find(m => m.No === mobNo);
     if (!mob) return;
 
     displayStatus(
-        `${mob.Name} (${locationId}) ${action === "CULL" ? "湧き潰し" : "解除"}報告中...`
+        `${mob.Name} (${locationId}) ${action === "CULL" ? "湧き潰し" : "解除"}報告中...`,
+        "warning" // warningなど、処理中のステータスを表示
     );
+    
+    // report_time にクライアント時刻を使用
+    const reportTimeDate = new Date();
+    
     // サーバー側が期待するデータ構造
     const data = {
         mob_id: mobNo.toString(),
         location_id: locationId.toString(),
         action: action,
-        report_time: new Date().toISOString(),
+        report_time: reportTimeDate.toISOString(), // DateオブジェクトをISO形式で送信
     };
 
     try {
-        
+        // Functionsへの呼び出し
         const response = await callMobCullUpdater(data);
         const result = response.data;
         
         if (result?.success) {
             displayStatus(`${mob.Name} の状態を更新しました。`, "success");
         } else {
-             displayStatus(`湧き潰し報告エラー: ${result?.error || "通信失敗"}`, "error");
+             const errorMessage = result?.error || "Functions内部でエラーが発生しました。";
+             console.error("湧き潰し報告エラー (Functions内部):", errorMessage);
+             displayStatus(`湧き潰し報告エラー: ${errorMessage}`, "error");
         }
 
     } catch (error) {
-        console.error("湧き潰し報告エラー:", error);
-        displayStatus(`湧き潰し報告エラー: ${error.message}`, "error");
+        console.error("湧き潰し報告エラー (通信レベル):", error);
+        const userFriendlyError = error.message || "通信または認証に失敗しました。";
+        displayStatus(`致命的な通信エラー: ${userFriendlyError}`, "error");
     }
 };
 
-// 巻き戻し (revertMobStatus) - Callable 方式に修正済み (関数名とペイロードを最終調整)
+// 巻き戻し (revertMobStatus) - Callable 方式
 const revertMobStatus = async (mobNo) => {
     const state = getState();
     const userId = state.userId;
@@ -251,7 +252,7 @@ const revertMobStatus = async (mobNo) => {
     };
 
     try {
-        const response = await callRevertStatus(data); // ★ 定義済みの V1 Callable を使用
+        const response = await callRevertStatus(data); 
         const result = response.data;
 
         if (result?.success) {
