@@ -133,61 +133,54 @@ function checkMobSpawnCondition(mob, date) {
         });
         if (!ok) return false;
     }
-
     return true;
 }
 
-// 次の条件成立時刻を探索
 function findNextSpawnTime(mob, startDate) {
     if (!startDate || !(startDate instanceof Date) || isNaN(startDate.getTime())) {
         return null;
     }
-
     let tSec = Math.floor(startDate.getTime() / 1000);
-    tSec = alignToCycleBoundary(tSec);
-// --- 継続条件あり ---
-if (mob.weatherDuration?.minutes) {
-    const requiredMinutes = mob.weatherDuration.minutes;
-    const requiredCycles = Math.ceil((requiredMinutes * 60) / WEATHER_CYCLE_SEC);
+    // --- 連続天候条件あり ---
+    if (mob.weatherDuration?.minutes) {
+        const requiredMinutes = mob.weatherDuration.minutes;
+        const requiredCycles = Math.ceil((requiredMinutes * 60) / WEATHER_CYCLE_SEC);
 
-    let consecutive = 0;
-    let conditionStartSec = null;
+        let consecutive = 0;
+        let conditionStartSec = null;
+        // 天候は1400秒刻みで探索
+        tSec = alignToCycleBoundary(tSec);
 
-    for (let end = tSec + 14 * 24 * 3600; tSec < end; tSec += WEATHER_CYCLE_SEC) {
-        const date = new Date(tSec * 1000);
-        const seed = getEorzeaWeatherSeed(date);
+        for (let end = tSec + 14 * 24 * 3600; tSec < end; tSec += WEATHER_CYCLE_SEC) {
+            const date = new Date(tSec * 1000);
+            const seed = getEorzeaWeatherSeed(date);
 
-        const inRange =
-            mob.weatherSeedRange
-                ? (seed >= mob.weatherSeedRange[0] && seed <= mob.weatherSeedRange[1])
-                : mob.weatherSeedRanges
-                    ? mob.weatherSeedRanges.some(([min, max]) => seed >= min && seed <= max)
-                    : false;
+            const inRange =
+                mob.weatherSeedRange
+                    ? (seed >= mob.weatherSeedRange[0] && seed <= mob.weatherSeedRange[1])
+                    : mob.weatherSeedRanges
+                        ? mob.weatherSeedRanges.some(([min, max]) => seed >= min && seed <= max)
+                        : false;
 
-        console.log(
-            `[cycle] ${date.toISOString()} `
-            + `ET=${getEorzeaTime(date).hours}:00 `
-            + `seed=${seed} inRange=${inRange} consecutive=${consecutive}`
-        );
-
-        if (inRange) {
-            if (consecutive === 0) conditionStartSec = tSec;
-            consecutive++;
-            if (consecutive >= requiredCycles) {
-                // 連続成立 → 条件開始＋minutes が出現可能時刻
-                const popSec = conditionStartSec + requiredMinutes * 60;
-                return new Date(popSec * 1000);
+            if (inRange) {
+                if (consecutive === 0) conditionStartSec = tSec;
+                consecutive++;
+                if (consecutive >= requiredCycles) {
+                    // 連続成立 → 条件開始＋minutes が出現可能時刻
+                    const popSec = conditionStartSec + requiredMinutes * 60;
+                    return new Date(popSec * 1000);
+                }
+            } else {
+                consecutive = 0;
+                conditionStartSec = null;
             }
-        } else {
-            consecutive = 0;
-            conditionStartSec = null;
         }
+        return null;
     }
-    return null;
-}
+    // --- 瞬間条件（天候以外: 月齢・時間帯） ---
+    tSec = Math.floor(tSec / 60) * 60;
 
-    // --- 瞬間条件 ---
-    for (let end = tSec + 14 * 24 * 3600; tSec < end; tSec += WEATHER_CYCLE_SEC) {
+    for (let end = tSec + 14 * 24 * 3600; tSec < end; tSec += 60) {
         const date = new Date(tSec * 1000);
         if (checkMobSpawnCondition(mob, date)) {
             return date;
@@ -203,7 +196,6 @@ function calculateRepop(mob, maintenance) {
     const lastKill = mob.last_kill_time || 0;
     const repopSec = mob.REPOP_s;
     const maxSec = mob.MAX_s;
-
     // --- maintenance 正規化 ---
     let maint = maintenance;
     if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
@@ -257,27 +249,55 @@ function calculateRepop(mob, maintenance) {
 
     if (hasCondition) {
         if (mob.weatherDuration?.minutes) {
-            const durationMin = mob.weatherDuration.minutes;
-            const lookBackSeconds = (durationMin + 30) * 60;
-            const refSec = Math.max(now, minRepop);
-            const scanStartSec = Math.max(refSec - lookBackSeconds, serverUp);
-            const alignedScanStartSec = alignToCycleBoundary(scanStartSec);
-            const searchStart = new Date(alignedScanStartSec * 1000);
+            // 連続天候条件専用ロジック
+            const requiredMinutes = mob.weatherDuration.minutes;
+            const requiredCycles = Math.ceil((requiredMinutes * 60) / WEATHER_CYCLE_SEC);
+            // 基準時刻の決定
+            let baseSec = (lastKill === 0 || lastKill < serverUp)
+                ? serverUp + repopSec
+                : lastKill + repopSec;
 
-            const found = findNextSpawnTime(mob, searchStart);
-            if (found) {
-                const foundSec = found.getTime() / 1000;
-                if (foundSec < minRepop) {
-                    const retry = findNextSpawnTime(mob, new Date(alignToCycleBoundary(minRepop) * 1000));
-                    nextConditionSpawnDate = retry || null;
+            if (now > baseSec || now > maxRepop) {
+                baseSec = now;
+            }
+            // 探索開始点 = 基準時刻 - 必要サイクル分
+            let scanStartSec = baseSec - requiredCycles * WEATHER_CYCLE_SEC;
+            if (scanStartSec < serverUp) scanStartSec = serverUp;
+            scanStartSec = alignToCycleBoundary(scanStartSec);
+            // 連続天候探索
+            let consecutive = 0;
+            let conditionStartSec = null;
+            for (let tSec = scanStartSec; tSec < baseSec + 14 * 24 * 3600; tSec += WEATHER_CYCLE_SEC) {
+                const date = new Date(tSec * 1000);
+                const seed = getEorzeaWeatherSeed(date);
+                const inRange =
+                    mob.weatherSeedRange
+                        ? (seed >= mob.weatherSeedRange[0] && seed <= mob.weatherSeedRange[1])
+                        : mob.weatherSeedRanges
+                            ? mob.weatherSeedRanges.some(([min, max]) => seed >= min && seed <= max)
+                            : false;
+
+                if (inRange) {
+                    if (consecutive === 0) conditionStartSec = tSec;
+                    consecutive++;
+                    if (consecutive >= requiredCycles) {
+                        const popSec = conditionStartSec + requiredMinutes * 60;
+                        if (popSec >= minRepop) {
+                            // 内部は秒精度のまま返す（切り捨て不要）
+                            nextConditionSpawnDate = new Date(popSec * 1000);
+                            break;
+                        }
+                    }
                 } else {
-                    nextConditionSpawnDate = found;
+                    consecutive = 0;
+                    conditionStartSec = null;
                 }
             }
         } else {
+            // 月齢・時間帯条件は従来通りの探索
             const baseSec = Math.max(minRepop, now, serverUp);
-            const alignedBase = alignToCycleBoundary(baseSec);
-            nextConditionSpawnDate = findNextSpawnTime(mob, new Date(alignedBase * 1000));
+            // 内部は秒精度のまま返す
+            nextConditionSpawnDate = findNextSpawnTime(mob, new Date(baseSec * 1000));
         }
     }
 
@@ -306,15 +326,26 @@ function calculateRepop(mob, maintenance) {
 
 function formatLastKillTime(timestamp) {
     if (timestamp === 0) return "未報告";
-    const killTimeMs = timestamp * 1000;
+    // 秒を切り捨てて分単位に揃える
+    const aligned = Math.floor(timestamp / 60) * 60;
+    const killTimeMs = aligned * 1000;
+
     const nowMs = Date.now();
     const diffSeconds = Math.floor((nowMs - killTimeMs) / 1000);
+
     if (diffSeconds < 3600) {
         if (diffSeconds < 60) return `Just now`;
         const minutes = Math.floor(diffSeconds / 60);
         return `${minutes}m ago`;
     }
-    const options = { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Tokyo" };
+
+    const options = {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Asia/Tokyo"
+    };
     const date = new Date(killTimeMs);
     return new Intl.DateTimeFormat("ja-JP", options).format(date);
 }
