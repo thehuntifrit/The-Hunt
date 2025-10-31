@@ -10,8 +10,8 @@ const state = {
     userId: localStorage.getItem("user_uuid") || null,
     baseMobData: [],
     mobs: [],
-    mobLocations: {}, 
-    
+    mobLocations: {},
+
     filter: JSON.parse(localStorage.getItem("huntFilterState")) || {
         rank: "ALL",
         areaSets: {
@@ -73,12 +73,12 @@ const RANK_COLORS = {
 };
 
 const PROGRESS_CLASSES = {
-  P0_60: "progress-p0-60",
-  P60_80: "progress-p60-80",
-  P80_100: "progress-p80-100",
-  TEXT_NEXT: "text-next",
-  TEXT_POP: "text-pop",
-  MAX_OVER_BLINK: "max-over-blink"
+    P0_60: "progress-p0-60",
+    P60_80: "progress-p60-80",
+    P80_100: "progress-p80-100",
+    TEXT_NEXT: "text-next",
+    TEXT_POP: "text-pop",
+    MAX_OVER_BLINK: "max-over-blink"
 };
 
 const FILTER_TO_DATA_RANK_MAP = { FATE: 'F', ALL: 'ALL', S: 'S', A: 'A' };
@@ -117,10 +117,11 @@ async function loadBaseMobData() {
         REPOP_s: mob.repopSeconds,
         MAX_s: mob.maxRepopSeconds,
         moonPhase: mob.moonPhase,
+        conditions: mob.conditions,   
         timeRange: mob.timeRange,
         timeRanges: mob.timeRanges,
         weatherSeedRange: mob.weatherSeedRange,
-        weatherSeedRanges: mob.weatherSeedRanges,
+        weatherDuration: mob.weatherDuration,   // ★ これを追加
         Map: mob.mapImage,
         spawn_points: mob.locations,
         last_kill_time: 0,
