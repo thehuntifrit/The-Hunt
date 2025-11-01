@@ -5,13 +5,12 @@ import { toggleCrushStatus } from "./server.js";
 import { getState } from "./dataManager.js"; 
 
 function handleCrushToggle(e) {
-    const point = e.target.closest(".spawn-point");
-    if (!point) return;
+    const point = e.target.closest(".spawn-point");
+    if (!point) return;
+    if (point.dataset.isInteractive !== "true") return;
+    if (point.dataset.isLastone === "true") return;
 
-    // インタラクティブ判定（文字列比較を明示）
-    if (point.dataset.isInteractive !== "true") return;
-
-    const card = e.target.closest(".mob-card");
+    const card = e.target.closest(".mob-card");
     if (!card) {
         console.error("FATAL: Mob card (.mob-card) not found for interactive spawn point click.");
         return;
@@ -98,34 +97,29 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_Last
 }
 
 function updateCrushUI(mobNo, locationId, isCulled) {
-    const marker = document.querySelector(
-        `.spawn-point[data-mob-no="${mobNo}"][data-location-id="${locationId}"]`
-    );
-    if (!marker) return;
-    // ラストワンは常に非インタラクティブ
-    if (marker.dataset.isLastone === "true") {
-        marker.dataset.isCulled = "false";
-        marker.title = "ラストワン（湧き潰し不可）";
-        return;
-    }
+    const marker = document.querySelector(
+        `.spawn-point[data-mob-no="${mobNo}"][data-location-id="${locationId}"]`
+    );
+    if (!marker) return;
+    
+    const rank = marker.dataset.rank;
+    const isInteractive = marker.dataset.isInteractive === "true";
+    const isLastOne = marker.dataset.isLastone === "true";
+    // 湧き潰し可能なマーカーのみを対象にする
+    const isS_A_Cullable = isInteractive && !isLastOne;
 
-    const rank = marker.dataset.rank;
-    const isInteractive = marker.dataset.isInteractive === "true";
-    const isLastOne = marker.dataset.isLastone === "true";
-    const isS_A_Cullable = isInteractive && !isLastOne;
+    if (isS_A_Cullable) {
+        if (isCulled) {
+            marker.classList.remove("color-b1", "color-b2");
+            marker.classList.add(rank === "B1" ? "color-b1-culled" : "color-b2-culled");
+        } else {
+            marker.classList.remove("color-b1-culled", "color-b2-culled");
+            marker.classList.add(rank === "B1" ? "color-b1" : "color-b2");
+        }
+    }
 
-    if (isS_A_Cullable) {
-        if (isCulled) {
-            marker.classList.remove("color-b1", "color-b2");
-            marker.classList.add(rank === "B1" ? "color-b1-culled" : "color-b2-culled");
-        } else {
-            marker.classList.remove("color-b1-culled", "color-b2-culled");
-            marker.classList.add(rank === "B1" ? "color-b1" : "color-b2");
-        }
-    }
-
-    marker.dataset.isCulled = isCulled.toString();
-    marker.title = `湧き潰し: ${isCulled ? "済" : "未"}`;
+    marker.dataset.isCulled = isCulled.toString();
+    marker.title = `湧き潰し: ${isCulled ? "済" : "未"}`;
 }
 
 function attachLocationEvents() {
