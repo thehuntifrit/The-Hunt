@@ -119,7 +119,8 @@ function createMobCard(mob) {
 
         <!-- 右端：報告ボタン（見た目は統一、動作だけ分岐） -->
         <div class="flex-shrink-0 flex items-center justify-end">
-            <button data-report-type="${rank === 'A' ? 'instant' : 'modal'}" data-mob-no="${mob.No}" class="w-8 h-8 flex items-center justify-center text-[12px] rounded 
+            <button data-report-type="${rank === 'A' ? 'instant' : 'modal'}" data-mob-no="${mob.No}"
+                class="w-8 h-8 flex items-center justify-center text-[12px] rounded 
             bg-amber-900 hover:bg-amber-700 selected:bg-amber-600 text-white font-semibold transition text-center leading-tight whitespace-pre-line">報告<br>する</button>
         </div>
     </div>
@@ -141,7 +142,7 @@ function createMobCard(mob) {
             <div class="w-full text-right text-xs text-gray-400 pt-1" data-last-kill></div>
             <div class="w-full text-left text-sm text-gray-300 mb-2">Memo: <span data-last-memo></span></div>
             <div class="w-full font-semibold text-yellow-300 border-t border-gray-600">抽選条件</div>
-            <div class="w-full text-gray-300 mb-2">${processText(mob.Condition)}</div>
+            <div class="w-full text-gray-300 pt-1">${processText(mob.Condition)}</div>
         </div>
         ${mob.Map && rank === 'S' ? `
         <div class="map-content py-0.5 flex justify-center relative">
@@ -284,26 +285,35 @@ function updateProgressBar(card, mob) {
 
     bar.style.transition = "width linear 60s";
     bar.style.width = `${elapsedPercent}%`;
-    // 既存クラスをリセット
-    bar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100);
-    text.classList.remove(PROGRESS_CLASSES.TEXT_NEXT, PROGRESS_CLASSES.TEXT_POP);
-    wrapper.classList.remove(PROGRESS_CLASSES.MAX_OVER_BLINK, PROGRESS_CLASSES.BLINK_WHITE);
+
+    // リセット
+    bar.classList.remove(
+        PROGRESS_CLASSES.P0_60,
+        PROGRESS_CLASSES.P60_80,
+        PROGRESS_CLASSES.P80_100,
+        PROGRESS_CLASSES.MAX_OVER
+    );
+    text.classList.remove(
+        PROGRESS_CLASSES.TEXT_NEXT,
+        PROGRESS_CLASSES.TEXT_POP
+    );
+    wrapper.classList.remove(PROGRESS_CLASSES.BLINK_WHITE);
 
     if (status === "PopWindow") {
-        if (elapsedPercent <= 60) {
+        if (elapsedPercent <= 40) {
             bar.classList.add(PROGRESS_CLASSES.P0_60);
         } else if (elapsedPercent <= 80) {
             bar.classList.add(PROGRESS_CLASSES.P60_80);
+        } else if (elapsedPercent <= 90) {
+            bar.classList.add(PROGRESS_CLASSES.P80_100);
         } else {
             bar.classList.add(PROGRESS_CLASSES.P80_100);
-            wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE); // ★ 白点滅
+            wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
         }
         text.classList.add(PROGRESS_CLASSES.TEXT_POP);
 
     } else if (status === "MaxOver") {
-        // 100% 到達後は点滅させず固定表示
-        bar.classList.add(PROGRESS_CLASSES.P80_100);
-        bar.style.animation = "none"; // ★ アニメーションを無効化
+        bar.classList.add(PROGRESS_CLASSES.MAX_OVER);
         text.classList.add(PROGRESS_CLASSES.TEXT_POP);
     } else {
         text.classList.add(PROGRESS_CLASSES.TEXT_NEXT);
@@ -358,6 +368,7 @@ function updateProgressText(card, mob) {
         toggleContainer.dataset.toggleStarted = "true";
     }
 }
+
 function startToggleInNext(container) {
     const inLabel = container.querySelector(".label-in");
     const nextLabel = container.querySelector(".label-next");
