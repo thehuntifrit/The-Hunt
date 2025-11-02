@@ -125,7 +125,7 @@ function createMobCard(mob) {
         <div class="flex-shrink-0 flex items-center justify-end">
             <button data-report-type="${rank === 'A' ? 'instant' : 'modal'}" data-mob-no="${mob.No}"
                 class="w-8 h-8 flex items-center justify-center text-[12px] rounded 
-            bg-amber-900 hover:bg-amber-700 selected:bg-amber-600 text-white font-semibold transition text-center leading-tight whitespace-pre-line">報告<br>する</button>
+            bg-green-900 hover:bg-green-700 selected:bg-green-600 text-white font-semibold transition text-center leading-tight whitespace-pre-line">報告<br>する</button>
         </div>
     </div>
 
@@ -144,9 +144,9 @@ function createMobCard(mob) {
     <div class="px-2 py-0 text-sm space-y-0.5">
         <div class="flex justify-between items-start flex-wrap">
             <div class="w-full text-right text-xs text-gray-400 pt-1" data-last-kill></div>
-            <div class="w-full text-left text-sm text-gray-300 mb-2">Memo: <span data-last-memo></span></div>
+            <div class="w-full text-left text-sm text-gray-300">Memo: <span data-last-memo></span></div>
             <div class="w-full font-semibold text-yellow-300 border-t border-gray-600">抽選条件</div>
-            <div class="w-full text-gray-300 pt-1">${processText(mob.Condition)}</div>
+            <div class="w-full text-gray-300 text-xs mt-1">${processText(mob.Condition)}</div>
         </div>
         ${mob.Map && rank === 'S' ? `
         <div class="map-content py-0.5 flex justify-center relative">
