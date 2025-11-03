@@ -1,5 +1,6 @@
 // uiRender.js
 
+import { loadMaintenance } from "./app.js";
 import { calculateRepop, findNextSpawnTime, formatDuration, formatDurationHM, formatLastKillTime, debounce, getEorzeaTime } from "./cal.js";
 import { drawSpawnPoint, isCulled, attachLocationEvents } from "./location.js";
 import { getState, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP } from "./dataManager.js";
@@ -57,7 +58,6 @@ function processText(text) {
     if (typeof text !== "string" || !text) return "";
     return text.replace(/\/\//g, "<br>");
 }
-
 
 function createMobCard(mob) {
     const rank = mob.Rank;
@@ -172,9 +172,13 @@ function createMobCard(mob) {
 </div>
 ` : '';
 
+    const repopInfo = calculateRepop(mob, state.maintenance);
+    const isStopped = repopInfo.isMaintenanceStop;
+    const stoppedClass = isStopped ? "opacity-50 grayscale pointer-events-none" : "";
+
     return `
 <div class="mob-card bg-gray-700 rounded-lg shadow-xl overflow-hidden cursor-pointer border ${rankConfig.border} 
-transition duration-150" data-mob-no="${mob.No}" data-rank="${rank}">${cardHeaderHTML}${expandablePanelHTML}</div>
+transition duration-150 ${stoppedClass}" data-mob-no="${mob.No}" data-rank="${rank}">${cardHeaderHTML}${expandablePanelHTML}</div>
 `;
 }
 
