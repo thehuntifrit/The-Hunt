@@ -1,4 +1,3 @@
-
 // cal.js
 
 import { loadMaintenance } from "./app.js";
@@ -202,7 +201,7 @@ function findNextSpawnTime(mob, startDate, repopStartSec, repopEndSec) {
         consecutiveCycles++;
 
         if (consecutiveCycles >= requiredCycles) {
-          const popSec = consecutiveStartSec + requiredSec; // 満了時刻
+          const popSec = consecutiveStartSec + requiredSec;
           if (popSec >= minRepopSec && popSec <= limitSec) {
             return new Date(popSec * 1000);
           }
@@ -215,7 +214,7 @@ function findNextSpawnTime(mob, startDate, repopStartSec, repopEndSec) {
     return null;
   }
   // 2) 連続条件がないモブのみ、瞬間条件を探索
-  const stepSec = 60; // 1分刻み
+  const stepSec = 60;
   const t0 = Math.floor(startSec / stepSec) * stepSec;
   const limitSec = repopEndSec ?? (startSec + 14 * 24 * 3600);
 
@@ -234,26 +233,30 @@ function calculateRepop(mob, maintenance) {
   const lastKill = mob.last_kill_time || 0;
   const repopSec = mob.REPOP_s;
   const maxSec = mob.MAX_s;
-  // --- maintenance 正規化 ---
   let maint = maintenance;
   if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
     maint = maint.maintenance;
   }
-  if (!maint || !maint.serverUp) return baseResult("Unknown");
+  if (!maint || !maint.serverUp || !maint.start) return baseResult("Unknown"); 
 
   const serverUpDate = new Date(maint.serverUp);
-  if (isNaN(serverUpDate.getTime())) return baseResult("Unknown");
+  const startDate = new Date(maint.start);
+  
+  if (isNaN(serverUpDate.getTime()) || isNaN(startDate.getTime())) return baseResult("Unknown");
 
   const serverUp = serverUpDate.getTime() / 1000;
+  const maintenanceStart = startDate.getTime() / 1000;
 
   let minRepop = 0, maxRepop = 0;
   let elapsedPercent = 0;
   let timeRemaining = "Unknown";
   let status = "Unknown";
+  let isMaintenanceStop = false;
 
   if (lastKill === 0 || lastKill < serverUp) {
-    minRepop = serverUp + repopSec;
-    maxRepop = serverUp + maxSec;
+    minRepop = serverUp + (repopSec * 0.6);
+    maxRepop = serverUp + (maxSec * 0.6);
+
     if (now >= maxRepop) {
       status = "MaxOver"; elapsedPercent = 100; timeRemaining = `Time Over (100%)`;
     } else if (now < minRepop) {
@@ -286,13 +289,14 @@ function calculateRepop(mob, maintenance) {
   const hasCondition = !!mob.moonPhase || !!mob.timeRange || !!mob.weatherSeedRange || !!mob.weatherSeedRanges;
 
   if (hasCondition) {
+    const baseSecForConditionSearch = Math.max(minRepop, now, serverUp);
+
     if (mob.weatherDuration?.minutes) {
-      // 連続天候条件専用ロジック
       const requiredMinutes = mob.weatherDuration.minutes;
       const requiredCycles = Math.ceil((requiredMinutes * 60) / WEATHER_CYCLE_SEC);
       // 基準時刻の決定
       let baseSec = (lastKill === 0 || lastKill < serverUp)
-        ? serverUp + repopSec
+        ? serverUp + (repopSec * 0.6)
         : lastKill + repopSec;
 
       if (now > baseSec || now > maxRepop) {
@@ -321,7 +325,6 @@ function calculateRepop(mob, maintenance) {
           if (consecutive >= requiredCycles) {
             const popSec = conditionStartSec + requiredMinutes * 60;
             if (popSec >= minRepop) {
-              // 内部は秒精度のまま返す（切り捨て不要）
               nextConditionSpawnDate = new Date(popSec * 1000);
               break;
             }
@@ -332,12 +335,18 @@ function calculateRepop(mob, maintenance) {
         }
       }
     } else {
-      // 月齢・時間帯条件は従来通りの探索
-      const baseSec = Math.max(minRepop, now, serverUp);
-      // 内部は秒精度のまま返す
+      const baseSec = baseSecForConditionSearch; 
       nextConditionSpawnDate = findNextSpawnTime(mob, new Date(baseSec * 1000));
     }
   }
+
+  // --- メンテナンス停止判定ロジック ---
+  const minRepopAfterMaintenanceStart = minRepop > maintenanceStart;
+  const conditionAfterMaintenanceStart = nextConditionSpawnDate 
+    ? (nextConditionSpawnDate.getTime() / 1000) > maintenanceStart
+    : false;
+  isMaintenanceStop = minRepopAfterMaintenanceStart || conditionAfterMaintenanceStart;
+
 
   return {
     minRepop,
@@ -346,7 +355,8 @@ function calculateRepop(mob, maintenance) {
     timeRemaining,
     status,
     nextMinRepopDate,
-    nextConditionSpawnDate
+    nextConditionSpawnDate,
+    isMaintenanceStop
   };
 
   function baseResult(status) {
@@ -357,7 +367,8 @@ function calculateRepop(mob, maintenance) {
       timeRemaining: "未確定",
       status,
       nextMinRepopDate: null,
-      nextConditionSpawnDate: null
+      nextConditionSpawnDate: null,
+      isMaintenanceStop: false
     };
   }
 }
