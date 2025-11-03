@@ -1,3 +1,4 @@
+
 // filterUI.js
 
 import { getState, EXPANSION_MAP, FILTER_TO_DATA_RANK_MAP, setFilter } from "./dataManager.js";
@@ -30,7 +31,7 @@ const renderRankTabs = () => {
 
     btn.className =
       `tab-button px-2 py-1 text-sm rounded font-semibold text-white text-center transition ` +
-      (isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400");
+      (isSelected ? "bg-purple-500" : "bg-gray-500 hover:bg-gray-400");
 
     // --- クリックイベント ---
     btn.addEventListener("click", () => {
@@ -77,7 +78,7 @@ const renderAreaFilterPanel = () => {
       btn.className = `area-filter-btn ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
       btn.dataset.area = "ALL";
     } else {
-      btn.className = `area-filter-btn ${btnClass} ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
+      btn.className = `area-filter-btn ${btnClass} ${isSelected ? "bg-purple-500" : "bg-gray-500 hover:bg-gray-400"}`;
       btn.dataset.area = area;
     }
     return btn;
@@ -131,9 +132,9 @@ const updateFilterUI = () => {
     const isCurrent = btnRank === state.filter.rank;
 
     btn.classList.remove(
-      "bg-rose-800", "bg-amber-800", "bg-purple-800", "bg-green-800",
+      "bg-rose-800", "bg-amber-800", "bg-green-800", "bg-purple-800",
       "bg-gray-500", "hover:bg-gray-400", "bg-green-500", "bg-gray-800",
-      "bg-rose-600", "bg-amber-600", "bg-purple-600", "bg-green-600"
+      "bg-rose-600", "bg-amber-600", "bg-green-600", "bg-purple-600"
     );
 
 
@@ -151,8 +152,8 @@ const updateFilterUI = () => {
       btn.classList.add(
         btnRank === "ALL" ? "bg-rose-600"
           : btnRank === "S" ? "bg-amber-600"
-            : btnRank === "A" ? "bg-purple-600"
-              : btnRank === "FATE" ? "bg-green-600"
+            : btnRank === "A" ? "bg-green-600"
+              : btnRank === "FATE" ? "bg-purple-600"
                 : "bg-gray-800"
       );
 
