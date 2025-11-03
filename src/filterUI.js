@@ -31,7 +31,7 @@ const renderRankTabs = () => {
 
     btn.className =
       `tab-button px-2 py-1 text-sm rounded font-semibold text-white text-center transition ` +
-      (isSelected ? "bg-purple-500" : "bg-gray-500 hover:bg-gray-400");
+      (isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400");
 
     // --- クリックイベント ---
     btn.addEventListener("click", () => {
@@ -78,7 +78,7 @@ const renderAreaFilterPanel = () => {
       btn.className = `area-filter-btn ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
       btn.dataset.area = "ALL";
     } else {
-      btn.className = `area-filter-btn ${btnClass} ${isSelected ? "bg-purple-500" : "bg-gray-500 hover:bg-gray-400"}`;
+      btn.className = `area-filter-btn ${btnClass} ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
       btn.dataset.area = area;
     }
     return btn;
