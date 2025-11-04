@@ -220,6 +220,11 @@ function progressComparator(a, b) {
     const nowSec = Date.now() / 1000;
     const aInfo = a.repopInfo || {};
     const bInfo = b.repopInfo || {};
+    // メンテナンス停止中のモブは最下層へ
+    const aStopped = aInfo.isMaintenanceStop;
+    const bStopped = bInfo.isMaintenanceStop;
+    if (aStopped && !bStopped) return 1;
+    if (!aStopped && bStopped) return -1;
 
     const aOver = (aInfo.status === "PopWindow" || aInfo.status === "MaxOver");
     const bOver = (bInfo.status === "PopWindow" || bInfo.status === "MaxOver");
@@ -235,7 +240,7 @@ function progressComparator(a, b) {
         const bRemain = (bInfo.minRepop || 0) - nowSec;
         if (aRemain !== bRemain) return aRemain - bRemain;
     }
-    // fallback は baseComparator
+
     return baseComparator(a, b);
 }
 
