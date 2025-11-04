@@ -63,7 +63,7 @@ function createMobCard(mob) {
     const rank = mob.Rank;
     const rankConfig = RANK_COLORS[rank] || RANK_COLORS.A;
     const rankLabel = rankConfig.label || rank;
-
+    
     const isExpandable = rank === "S";
     const { openMobCardNo } = getState();
     const isOpen = isExpandable && mob.No === openMobCardNo;
@@ -93,10 +93,10 @@ function createMobCard(mob) {
             isLastOne = true;
             const pointId = validSpawnPoints[0]?.id || "";
             const pointNumber = pointId.slice(-2); // 末尾2桁を抽出
-            displayCountText = ` <span class="text-yellow-400">${pointNumber}番</span>`;
+            displayCountText = ` <span class="text-yellow-600">${pointNumber}番</span>`;
         } else if (remainingCount > 1) {
             isLastOne = false;
-            displayCountText = ` <span class="text-xs relative -top-0.5">@</span> ${remainingCount}個`;
+            displayCountText = ` <span class="text-xs text-gray-400 relative -top-0.5">@</span>&nbsp;${remainingCount}<span class="text-xs relative -top-[0.04rem]">個</span>`;
         }
 
         isLastOne = remainingCount === 1; // ラスト1点の判定は維持
@@ -120,7 +120,7 @@ function createMobCard(mob) {
         }).join("")
         : "";
 
-    const mobNameAndCountHtml = `<span class="text-base font-bold truncate">${mob.Name}</span><span class="text-sm font-bold">${displayCountText}</span>`;
+    const mobNameAndCountHtml = `<span class="text-base flex items-baseline font-bold truncate">${mob.Name}</span><span class="text-sm flex items-baseline font-bold">${displayCountText}</span>`;
     const cardHeaderHTML = `
 <div class="px-2 py-1 space-y-1 bg-gray-800/70" data-toggle="card-header">
     <!-- 上段：ランク・モブ名・報告ボタン -->
@@ -360,6 +360,7 @@ function updateProgressText(card, mob) {
     const nextTimeStr = nextConditionSpawnDate
         ? new Intl.DateTimeFormat('ja-JP', absFmt).format(nextConditionSpawnDate)
         : null;
+
     let rightStr = "";
     const nowSec = Date.now() / 1000;
     if (status === "Maintenance" || status === "Next") {
@@ -371,6 +372,7 @@ function updateProgressText(card, mob) {
     } else {
         rightStr = `未確定`;
     }
+    
     text.innerHTML = `
     <div class="w-full grid grid-cols-2 items-center text-sm font-semibold" style="line-height:1;">
         <div class="pl-2 text-left">
@@ -382,6 +384,19 @@ function updateProgressText(card, mob) {
         </div>
     </div>
   `;
+
+    // --- 状態に応じたクラス付与 ---
+    if (status === "MaxOver") {
+        text.classList.add("max-over");
+    } else {
+        text.classList.remove("max-over");
+    }
+
+    if (minRepop - nowSec >= 3600) {
+        text.classList.add("long-wait");
+    } else {
+        text.classList.remove("long-wait");
+    }
 
     const toggleContainer = text.querySelector(".toggle-container");
     if (toggleContainer && !toggleContainer.dataset.toggleStarted) {
