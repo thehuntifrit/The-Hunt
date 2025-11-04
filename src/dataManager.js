@@ -1,4 +1,3 @@
-
 // dataManager.js
 
 import { filterAndRender, displayStatus, updateProgressBars } from "./uiRender.js";
