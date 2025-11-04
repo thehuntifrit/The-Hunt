@@ -1,3 +1,4 @@
+
 // dataManager.js
 
 import { filterAndRender, displayStatus, updateProgressBars } from "./uiRender.js";
@@ -67,9 +68,9 @@ function setOpenMobCardNo(no) {
 }
 
 const RANK_COLORS = {
-    S: { bg: 'bg-amber-600', hover: 'hover:bg-amber-700', text: 'text-amber-600', hex: '#ff8c00', border: "border-amber-600", label: 'S' },
-    A: { bg: 'bg-green-600', hover: 'hover:bg-green-700', text: 'text-green-600', hex: '#0000cd', border: "border-green-600", label: 'A' },
-    F: { bg: 'bg-purple-600', hover: 'hover:bg-purple-700', text: 'text-purple-600', hex: '#006400', border: "border-purple-600", label: 'F' },
+    S: { bg: 'bg-amber-600', hover: 'hover:bg-amber-700', text: 'text-amber-600', rgbaBorder: 'rgba(217, 119, 6, 0.6)', label: 'S' },
+    A: { bg: 'bg-green-600', hover: 'hover:bg-green-700', text: 'text-green-600', rgbaBorder: 'rgba(22, 163, 74, 0.6)', label: 'A' },
+    F: { bg: 'bg-purple-600', hover: 'hover:bg-purple-700', text: 'text-purple-600', rgbaBorder: 'rgba(147, 51, 234, 0.6)', label: 'F' },
 };
 
 const PROGRESS_CLASSES = {
