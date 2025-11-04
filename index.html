@@ -1,11 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="Warrior.png" />
     <title>The Hunt</title>
-    <link rel="icon" type="image/png" href="./icon/The_Hunt.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -16,7 +17,10 @@
     <header id="main-header" class="fixed top-0 left-0 right-0 bg-gray-800 shadow-lg z-50 transition-all duration-300">
 
         <!-- ステータスメッセージ -->
-        <div id="status-message" class="text-center py-2 text-sm text-white bg-gray-800" role="status" aria-live="polite"></div>
+        <div id="status-message" class="text-center py-2 text-sm text-white bg-gray-800" role="status" aria-live="polite">
+            <div id="status-message-maintenance"></div>
+            <div id="status-message-temp"></div>
+        </div>
 
         <!-- 帯部分（タイトル＋ET＋ランクタブ） -->
         <div class="max-w-6xl mx-auto px-4 flex items-center justify-between min-h-16 sm:min-h-16 lg:min-h-20">
@@ -30,8 +34,7 @@
         </div>
 
         <!-- エリアパネル（スマホ） -->
-        <div id="area-filter-panel-mobile"
-            class="max-w-6xl mx-auto flex flex-wrap justify-end px-4 py-2 block lg:hidden">
+        <div id="area-filter-panel-mobile" class="max-w-6xl mx-auto flex flex-wrap justify-end px-4 py-2 block lg:hidden">
             <div class="grid grid-cols-2 gap-2 w-full sm:w-auto"></div>
         </div>
         <!-- エリアパネル（デスクトップ） -->
