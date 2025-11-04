@@ -1,3 +1,4 @@
+
 // cal.js
 
 import { loadMaintenance } from "./app.js";
@@ -116,7 +117,7 @@ function isOtherNightsPhase(phase) {
 function checkMobSpawnCondition(mob, date) {
   const ts = Math.floor(date.getTime() / 1000);
   const et = getEorzeaTime(date);
-  const moon = getEorzeaMoonPhase(date); // 数値 (0〜33)
+  const moon = getEorzeaMoonPhase(date); // 数値 (1〜33)
   const seed = getEorzeaWeatherSeed(date);
   // 月齢ラベル条件
   if (mob.moonPhase) {
@@ -137,11 +138,10 @@ function checkMobSpawnCondition(mob, date) {
     let ok = false;
     const fn = mob.conditions.firstNight;
     const on = mob.conditions.otherNights;
-    // 初回夜: 月齢が 32.5〜1.5 の範囲
+    
     if (fn && fn.timeRange && (moon >= 32.5 || moon <= 1.5)) {
       ok = ok || checkTimeRange(fn.timeRange, ts);
     }
-    // 以降夜: 月齢が 1.5〜4.5 の範囲
     if (on && on.timeRange && moon > 1.5 && moon < 4.5) {
       ok = ok || checkTimeRange(on.timeRange, ts);
     }
@@ -286,7 +286,7 @@ function calculateRepop(mob, maintenance) {
 
   // --- 条件探索 ---
   let nextConditionSpawnDate = null;
-  const hasCondition = !!mob.moonPhase || !!mob.timeRange || !!mob.weatherSeedRange || !!mob.weatherSeedRanges;
+  const hasCondition = !!mob.moonPhase || !!mob.timeRange || !!mob.timeRanges || !!mob.weatherSeedRange || !!mob.weatherSeedRanges;
 
   if (hasCondition) {
     const baseSecForConditionSearch = Math.max(minRepop, now, serverUp);
