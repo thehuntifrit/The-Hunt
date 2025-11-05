@@ -139,7 +139,7 @@ function createMobCard(mob) {
         <div class="flex-shrink-0 flex items-center justify-end">
             <button data-report-type="${rank === 'A' ? 'instant' : 'modal'}" data-mob-no="${mob.No}" class="w-8 h-8 flex items-center justify-center text-[12px] rounded 
             transition text-center leading-tight whitespace-pre-line">
-                <img src="./icon/reports.webp" alt="報告する" class="w-8 h-8 object-contain"
+                <img src="./icon/reports.png" alt="報告する" class="w-8 h-8 object-contain"
                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <span style="display:none;" class="w-8 h-8 flex items-center justify-center text-[12px] rounded 
                 bg-green-600 hover:bg-green-400 selected:bg-green-800 text-white font-semibold leading-tight whitespace-pre-line">報告<br>する</span></button>
