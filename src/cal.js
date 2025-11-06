@@ -351,23 +351,42 @@ function calculateRepop(mob, maintenance) {
             }
         } else {
             const baseSec = baseSecForConditionSearch;
+            // 単発天候のみ、天候境界に丸めて -1400 秒から探索開始
             if (mob.weatherSeedRange || mob.weatherSeedRanges) {
-                // 天候境界に丸めて -1400 秒から探索開始
-                const alignedBase = alignToCycleBoundary(baseSec);
-                let tSec = alignedBase - WEATHER_CYCLE_SEC;
+                const alignedBaseCycle = alignToCycleBoundary(baseSec);
+                const shiftedStartSec = alignedBaseCycle - WEATHER_CYCLE_SEC; // -1400秒のみ適用
 
-                // サイクル内を 175 秒刻みで走査
-                for (; tSec <= limitSec; tSec += 175) {
-                    const date = new Date(tSec * 1000);
-                    if (checkMobSpawnCondition(mob, date) && tSec >= minRepop) {
-                        nextConditionSpawnDate = date;
-                        break;
+                // 直前サイクルから次々サイクルまでを「区間」で評価
+                const cycleStarts = [shiftedStartSec, shiftedStartSec + WEATHER_CYCLE_SEC, shiftedStartSec + 2 * WEATHER_CYCLE_SEC];
+                for (let i = 0; i < cycleStarts.length; i++) {
+                    const cycleStart = cycleStarts[i];
+                    const cycleEnd = cycleStart + WEATHER_CYCLE_SEC;
+
+                    // 天候シードが条件内か
+                    const seed = getEorzeaWeatherSeed(new Date(cycleStart * 1000));
+                    const inWeather =
+                        mob.weatherSeedRange
+                            ? (seed >= mob.weatherSeedRange[0] && seed <= mob.weatherSeedRange[1])
+                            : mob.weatherSeedRanges
+                                ? mob.weatherSeedRanges.some(([min, max]) => seed >= min && seed <= max)
+                                : false;
+
+                    if (!inWeather) continue;
+
+                    // ET/月齢の区間を算出（なければ「サイクル全体」）
+                    const ranges = getEtMoonRangesWithinCycle(mob, cycleStart, cycleEnd); // 下のヘルパ参照
+                    for (const [winStart, winEnd] of ranges) {
+                        const candidateSec = Math.max(minRepop, winStart);
+                        if (candidateSec <= winEnd) {
+                            nextConditionSpawnDate = new Date(candidateSec * 1000);
+                            i = cycleStarts.length; // 外側ループも終了
+                            break;
+                        }
                     }
                 }
             } else {
-                // ET/月齢のみは従来通り
-                const alignedEt = alignToEtHourBoundary(baseSec);
-                nextConditionSpawnDate = findNextSpawnTime(mob, new Date(alignedEt * 1000));
+                // ET/月齢のみは変更なし（点評価のまま）
+                nextConditionSpawnDate = findNextSpawnTime(mob, new Date(baseSec * 1000));
             }
         }
     }
