@@ -351,7 +351,15 @@ function calculateRepop(mob, maintenance) {
       }
     } else {
       const baseSec = baseSecForConditionSearch; 
-      nextConditionSpawnDate = findNextSpawnTime(mob, new Date(baseSec * 1000));
+      // 単発天候のみ、天候境界に丸めて -1400 秒から探索開始
+      if (mob.weatherSeedRange || mob.weatherSeedRanges) {
+        const alignedBaseCycle = alignToCycleBoundary(baseSec);
+        const shiftedStartSec = alignedBaseCycle - WEATHER_CYCLE_SEC; // -1400秒のみ適用
+        nextConditionSpawnDate = findNextSpawnTime(mob, new Date(shiftedStartSec * 1000));
+      } else {
+        // ET/月齢のみは変更なし
+        nextConditionSpawnDate = findNextSpawnTime(mob, new Date(baseSec * 1000));
+      }
     }
   }
 
@@ -361,7 +369,6 @@ function calculateRepop(mob, maintenance) {
     ? (nextConditionSpawnDate.getTime() / 1000) > maintenanceStart
     : false;
   isMaintenanceStop = minRepopAfterMaintenanceStart || conditionAfterMaintenanceStart;
-
 
   return {
     minRepop,
