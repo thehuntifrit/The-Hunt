@@ -253,7 +253,6 @@ function calculateRepop(mob, maintenance) {
   let elapsedPercent = 0;
   let timeRemaining = "Unknown";
   let status = "Unknown";
-  let isMaintenanceStop = false;
 
   if (lastKill === 0 || lastKill < serverUp) {
     minRepop = serverUp + (repopSec * 0.6);
