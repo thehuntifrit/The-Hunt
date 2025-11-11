@@ -343,12 +343,7 @@ function calculateRepop(mob, maintenance) {
   }
 
   // --- メンテナンス停止判定ロジック ---
-  const minRepopAfterMaintenanceStart = minRepop > maintenanceStart;
-  const conditionAfterMaintenanceStart = nextConditionSpawnDate 
-    ? (nextConditionSpawnDate.getTime() / 1000) > maintenanceStart
-    : false;
-  isMaintenanceStop = minRepopAfterMaintenanceStart || conditionAfterMaintenanceStart;
-
+      const isMaintenanceStop = (now >= maintenanceStart && now < serverUp);
 
   return {
     minRepop,
