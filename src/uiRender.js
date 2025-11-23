@@ -1,3 +1,4 @@
+
 // uiRender.js
 
 import { calculateRepop, findNextSpawnTime, formatDurationHM, formatLastKillTime, debounce, getEorzeaTime } from "./cal.js";
@@ -115,14 +116,17 @@ function createMobCard(mob) {
     }).join("")
     : "";
 
-  const memoIcon = mob.memo_text && mob.memo_text.trim() !== "" ? " 📋️" : "";
+  const memoIcon = mob.memo_text && mob.memo_text.trim() !== ""
+    ? ` <span data-tooltip="${mob.memo_text}" class="cursor-help">📋️</span>`
+    : "";
 
   const mobNameHtml = `<span class="text-base flex items-baseline font-bold truncate text-gray-100">${mob.Name}${memoIcon}</span>`;
 
-  let areaInfoHtml = `${mob.Area} <span class="opacity-50">|</span> ${mob.Expansion}`;
+  let areaInfoHtml = `<span class="flex items-center gap-1"><span>${mob.Area}</span><span class="opacity-50">|</span><span>${mob.Expansion}</span>`;
   if (mob.Map && mob.spawn_points) {
-    areaInfoHtml += ` <span class="ml-1">📍</span>${displayCountText}`;
+    areaInfoHtml += `<span class="flex items-center ml-1">📍${displayCountText}</span>`;
   }
+  areaInfoHtml += `</span>`;
 
   const cardHeaderHTML = `
 <div class="px-2 py-1 space-y-1 bg-transparent" data-toggle="card-header">
