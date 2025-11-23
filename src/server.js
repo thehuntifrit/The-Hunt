@@ -1,7 +1,7 @@
-// server.js (修正版 - PC/スマホ互換性強化)
+// server.js
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, addDoc, doc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-functions.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
@@ -9,7 +9,7 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase
 import { getState } from "./dataManager.js";
 import { closeReportModal } from "./modal.js";
 import { displayStatus } from "./uiRender.js";
-import { isCulled, updateCrushUI } from "./location.js";
+import { updateCrushUI } from "./location.js";
 
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyBikwjGsjL_PVFhx3Vj-OeJCocKA_hQOgU",
@@ -28,15 +28,14 @@ const functionsInstance = getFunctions(app, DEFAULT_FUNCTIONS_REGION);
 const analytics = getAnalytics(app);
 
 const callGetServerTime = httpsCallable(functionsInstance, 'getServerTimeV1');
-const callRevertStatus = httpsCallable(functionsInstance, 'revertStatusV1');
 const callMobCullUpdater = httpsCallable(functionsInstance, 'mobCullUpdaterV1');
+const callPostMobMemo = httpsCallable(functionsInstance, 'postMobMemoV1');
 
-// 認証 (変更なし)
+// 認証
 async function initializeAuth() {
     return new Promise((resolve) => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             unsubscribe();
-
             if (user) {
                 resolve(user.uid);
             } else {
@@ -53,19 +52,10 @@ async function initializeAuth() {
     });
 }
 
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        console.log("UID:", user.uid);
-    } else {
-        console.log("まだ認証されていません");
-    }
-});
-
 // サーバーUTC取得
 async function getServerTimeUTC() {
     try {
         const response = await callGetServerTime();
-
         if (response.data && typeof response.data.serverTimeMs === 'number') {
             return new Date(response.data.serverTimeMs);
         } else {
@@ -73,7 +63,7 @@ async function getServerTimeUTC() {
             return new Date();
         }
     } catch (error) {
-        console.error("サーバー時刻取得のためのFunctions呼び出しに失敗しました:", error);
+        console.error("サーバー時刻取得失敗:", error);
         return new Date();
     }
 }
@@ -92,6 +82,17 @@ function subscribeMobStatusDocs(onUpdate) {
     return () => unsubs.forEach(u => u());
 }
 
+// データ購読 (shared_data/memo)
+function subscribeMobMemos(onUpdate) {
+    const memoDocRef = doc(db, "shared_data", "memo");
+    const unsub = onSnapshot(memoDocRef, snap => {
+        const data = snap.data() || {};
+        onUpdate(data);
+    });
+    return unsub;
+}
+
+// Mob Location関連
 function normalizePoints(data) {
     const result = {};
     for (const [key, value] of Object.entries(data)) {
@@ -112,7 +113,6 @@ function subscribeMobLocations(onUpdate) {
             const mobNo = parseInt(docSnap.id, 10);
             const data = docSnap.data();
             const normalized = normalizePoints(data);
-
             map[mobNo] = normalized;
         });
         onUpdate(map);
@@ -120,8 +120,8 @@ function subscribeMobLocations(onUpdate) {
     return unsub;
 }
 
-// 討伐報告 (reportsコレクションへの直接書き込み)
-const submitReport = async (mobNo, timeISO, memo) => {
+// 討伐報告
+const submitReport = async (mobNo, timeISO) => {
     const state = getState();
     const userId = state.userId;
     const mobs = state.mobs;
@@ -138,22 +138,12 @@ const submitReport = async (mobNo, timeISO, memo) => {
     }
 
     let killTimeDate;
-
     if (timeISO && typeof timeISO === "string") {
         const m = timeISO.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
         if (m) {
             const [, y, mo, d, h, mi, s] = m;
-            const year = Number(y);
-            const monthIndex = Number(mo) - 1; // JS の月は 0 始まり
-            const day = Number(d);
-            const hour = Number(h);
-            const minute = Number(mi);
-            const second = s ? Number(s) : 0;
-
-            // ローカルタイムとして Date を生成
-            killTimeDate = new Date(year, monthIndex, day, hour, minute, second, 0);
+            killTimeDate = new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), s ? Number(s) : 0, 0);
         } else {
-            // ISO 完全形式（タイムゾーン付き）の場合はそのまま解釈
             const modalDate = new Date(timeISO);
             if (!isNaN(modalDate.getTime())) {
                 killTimeDate = modalDate;
@@ -162,7 +152,6 @@ const submitReport = async (mobNo, timeISO, memo) => {
     }
 
     if (!killTimeDate) {
-        // fallback としてサーバー時刻を取得
         killTimeDate = await getServerTimeUTC();
     }
 
@@ -173,9 +162,8 @@ const submitReport = async (mobNo, timeISO, memo) => {
     try {
         await addDoc(collection(db, "reports"), {
             mob_id: mobNo.toString(),
-            kill_time: killTimeDate, // Firestore では Timestamp として保存される
+            kill_time: killTimeDate,
             reporter_uid: userId,
-            memo: memo,
             repop_seconds: mob.REPOP_s
         });
 
@@ -188,21 +176,50 @@ const submitReport = async (mobNo, timeISO, memo) => {
     }
 };
 
-// フォーム送信イベント (変更なし)
-document.addEventListener("DOMContentLoaded", () => {
-    const reportForm = document.getElementById("report-form");
-    if (reportForm) {
-        reportForm.addEventListener("submit", (e) => {
-            e.preventDefault();
+// メモの投稿
+const submitMemo = async (mobNo, memoText) => {
+    const state = getState();
+    const userId = state.userId;
+    const mobs = state.mobs;
 
-            const mobNo = Number(reportForm.dataset.mobNo);
-            const timeISO = document.getElementById("report-datetime").value;
-            const memo = document.getElementById("report-memo").value;
-
-            submitReport(mobNo, timeISO, memo);
-        });
+    if (!userId) {
+        displayStatus("認証が完了していません。", "error");
+        return { success: false, error: "認証エラー" };
     }
-});
+
+    const mob = mobs.find(m => m.No === mobNo);
+    if (!mob) {
+        displayStatus("モブデータが見つかりません。", "error");
+        return { success: false, error: "Mobデータエラー" };
+    }
+
+    displayStatus(`${mob.Name} のメモを投稿中...`, "warning");
+
+    const data = {
+        mob_id: mobNo.toString(),
+        memo_text: memoText
+    };
+
+    try {
+        const response = await callPostMobMemo(data);
+        const result = response.data;
+
+        if (result?.success) {
+            displayStatus(`メモを正常に投稿しました。`, "success");
+            return { success: true };
+        } else {
+            const errorMessage = result?.error || "Functions内部でエラーが発生しました。";
+            console.error("メモ投稿エラー:", result);
+            displayStatus(`メモ投稿エラー: ${errorMessage}`, "error");
+            return { success: false, error: errorMessage };
+        }
+    } catch (error) {
+        console.error("メモ投稿エラー:", error);
+        const userFriendlyError = error.message || "通信または認証に失敗しました。";
+        displayStatus(`致命的な通信エラー: ${userFriendlyError}`, "error");
+        return { success: false, error: userFriendlyError };
+    }
+};
 
 // 湧き潰し報告
 const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
@@ -220,77 +237,44 @@ const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
 
     displayStatus(
         `${mob.Name} (${locationId}) ${nextCulled ? "湧き潰し" : "解除"}報告中...`,
-        "warning" // 処理中のステータスを表示
+        "warning"
     );
-    // report_time にクライアント時刻を使用
+
     const reportTimeDate = new Date();
-    // サーバー側が期待するデータ構造
     const data = {
         mob_id: mobNo.toString(),
         location_id: locationId.toString(),
         action: action,
-        report_time: reportTimeDate.toISOString(), // DateオブジェクトをISO形式で送信
+        report_time: reportTimeDate.toISOString(),
     };
 
     try {
-        // Functionsへの呼び出し
         const response = await callMobCullUpdater(data);
         const result = response.data;
 
         if (result?.success) {
             displayStatus(`${mob.Name} の状態を更新しました。`, "success");
-            // 成功時にUIを即時更新
             updateCrushUI(mobNo, locationId, nextCulled);
         } else {
             const errorMessage = result?.error || "Functions内部でエラーが発生しました。";
-            console.error("湧き潰し報告エラー (Functions内部):", errorMessage);
+            console.error("湧き潰し報告エラー:", errorMessage);
             displayStatus(`湧き潰し報告エラー: ${errorMessage}`, "error");
         }
 
     } catch (error) {
-        console.error("湧き潰し報告エラー (通信レベル):", error);
+        console.error("湧き潰し報告エラー:", error);
         const userFriendlyError = error.message || "通信または認証に失敗しました。";
         displayStatus(`致命的な通信エラー: ${userFriendlyError}`, "error");
     }
 };
 
-// 巻き戻し (revertMobStatus) - Callable 方式
-const revertMobStatus = async (mobNo) => {
-    const state = getState();
-    const userId = state.userId;
-    const mobs = state.mobs;
-
-    if (!userId) {
-        displayStatus("認証が完了していません。ページをリロードしてください。", "error");
-        return;
-    }
-
-    const mob = mobs.find(m => m.No === mobNo);
-    if (!mob) return;
-
-    displayStatus(`${mob.Name} の状態を巻き戻し中...`, "warning");
-
-    const data = {
-        mob_id: mobNo.toString(),
-        target_report_index: 'prev', // 確定履歴への巻き戻しを明示
-    };
-
-    try {
-        const response = await callRevertStatus(data);
-        const result = response.data;
-
-        if (result?.success) {
-            displayStatus(`${mob.Name} の状態と湧き潰し時刻を直前の記録に巻き戻しました。`, "success");
-        } else {
-            displayStatus(
-                `巻き戻し失敗: ${result?.error || "ログデータが見つからないか、巻き戻しに失敗しました。"}`,
-                "error"
-            );
-        }
-    } catch (error) {
-        console.error("巻き戻しエラー:", error);
-        displayStatus(`巻き戻しエラー: ${error.message}`, "error");
-    }
+export {
+    initializeAuth,
+    subscribeMobStatusDocs,
+    subscribeMobLocations,
+    subscribeMobMemos,
+    submitReport,
+    submitMemo,
+    toggleCrushStatus,
+    getServerTimeUTC
 };
-
-export { initializeAuth, subscribeMobStatusDocs, subscribeMobLocations, submitReport, toggleCrushStatus, revertMobStatus, getServerTimeUTC };
