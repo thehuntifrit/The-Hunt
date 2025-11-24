@@ -151,7 +151,7 @@ function createMobCard(mob) {
     <!-- Progress Bar -->
     <div class="progress-bar-wrapper rounded relative overflow-hidden text-center">
         <div class="progress-bar-bg absolute left-0 top-0 h-full rounded transition-all duration-100 ease-linear" style="width: 0%"></div>
-        <div class="progress-text relative z-10 py-0.5 text-xs font-bold tracking-wider" style="line-height: 1;"></div>
+        <div class="progress-text relative z-10 py-0.5 text-xs font-bold tracking-wider"></div>
     </div>
 </div>
 `;
@@ -192,43 +192,54 @@ function createMobCard(mob) {
 `;
 }
 
-function rankPriority(rankCode) {
-  switch (rankCode) {
-    case 2: return 0; // S
-    case 1: return 1; // A
-    case 3: return 2; // F
+function rankPriority(rank) {
+  switch (rank) {
+    case "S": return 0;
+    case "A": return 1;
+    case "F": return 2;
     default: return 99;
   }
 }
 
-function parseMobNo(no) {
+function getExpansionPriority(expansionName) {
+  switch (expansionName) {
+    case "黄金": return 6;
+    case "暁月": return 5;
+    case "漆黒": return 4;
+    case "紅蓮": return 3;
+    case "蒼天": return 2;
+    case "新生": return 1;
+    default: return 0;
+  }
+}
+
+function parseMobIdParts(no) {
   const str = String(no).padStart(5, "0");
   return {
-    expansion: parseInt(str[0], 10),
-    rankCode: parseInt(str[1], 10),
     mobNo: parseInt(str.slice(2, 4), 10),
     instance: parseInt(str[4], 10),
   };
 }
 
 function baseComparator(a, b) {
-  const pa = parseMobNo(a.No);
-  const pb = parseMobNo(b.No);
-
-  const rankDiff = rankPriority(pa.rankCode) - rankPriority(pb.rankCode);
+  // 1. Rank (S > A > F)
+  const rankDiff = rankPriority(a.Rank) - rankPriority(b.Rank);
   if (rankDiff !== 0) return rankDiff;
 
-  if (pa.expansion !== pb.expansion) return pb.expansion - pa.expansion;
+  // 2. Expansion (Descending: Golden > ... > ARR)
+  const expA = getExpansionPriority(a.Expansion);
+  const expB = getExpansionPriority(b.Expansion);
+  if (expA !== expB) return expB - expA;
+
+  // 3. MobNo (Ascending)
+  const pa = parseMobIdParts(a.No);
+  const pb = parseMobIdParts(b.No);
   if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
-  return pa.instance - pb.instance;
-}
 
-function progressComparator(a, b) {
-  const pa = parseMobNo(a.No);
-  const pb = parseMobNo(b.No);
-  const rankDiff = rankPriority(pa.rankCode) - rankPriority(pb.rankCode);
-  if (rankDiff !== 0) return rankDiff;
+  // 4. Instance (Ascending)
+  if (pa.instance !== pb.instance) return pa.instance - pb.instance;
 
+  // 5. % Rate (Descending)
   const aInfo = a.repopInfo || {};
   const bInfo = b.repopInfo || {};
   const aPercent = aInfo.elapsedPercent || 0;
@@ -238,16 +249,92 @@ function progressComparator(a, b) {
     return bPercent - aPercent;
   }
 
-  if (pa.expansion !== pb.expansion) return pb.expansion - pa.expansion;
+  // 6. Time (Ascending - sooner is smaller timestamp)
+  const aTime = aInfo.minRepop || 0;
+  const bTime = bInfo.minRepop || 0;
+  return aTime - bTime;
+}
 
+function allTabComparator(a, b) {
+  const aInfo = a.repopInfo || {};
+  const bInfo = b.repopInfo || {};
+  const aStatus = aInfo.status;
+  const bStatus = bInfo.status;
+
+  // Special handling for MaxOver
+  const isAMaxOver = aStatus === "MaxOver";
+  const isBMaxOver = bStatus === "MaxOver";
+
+  if (isAMaxOver && isBMaxOver) {
+    // Both are MaxOver: Sort by Expansion > Rank > MobNo > Instance
+
+    // 1. Expansion (Descending: Golden > ... > ARR)
+    const expA = getExpansionPriority(a.Expansion);
+    const expB = getExpansionPriority(b.Expansion);
+    if (expA !== expB) return expB - expA;
+
+    // 2. Rank (S > A > F)
+    const rankDiff = rankPriority(a.Rank) - rankPriority(b.Rank);
+    if (rankDiff !== 0) return rankDiff;
+
+    // 3. MobNo (Ascending)
+    const pa = parseMobIdParts(a.No);
+    const pb = parseMobIdParts(b.No);
+    if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
+
+    // 4. Instance (Ascending)
+    return pa.instance - pb.instance;
+  }
+
+  // If one is MaxOver and the other isn't, MaxOver should come first (highest %)
+  // This is naturally handled by the % Rate check below, assuming MaxOver has > 100% or high %.
+  // But let's be explicit to be safe.
+  if (isAMaxOver && !isBMaxOver) return -1;
+  if (!isAMaxOver && isBMaxOver) return 1;
+
+  // Standard ALL tab sort for non-MaxOver (or mixed if logic above failed, but it won't)
+
+  // 1. % Rate (Descending)
+  const aPercent = aInfo.elapsedPercent || 0;
+  const bPercent = bInfo.elapsedPercent || 0;
+
+  if (Math.abs(aPercent - bPercent) > 0.001) {
+    return bPercent - aPercent;
+  }
+
+  // 2. Time (Ascending - sooner is smaller timestamp)
+  const aTime = aInfo.minRepop || 0;
+  const bTime = bInfo.minRepop || 0;
+  if (aTime !== bTime) return aTime - bTime;
+
+  // 3. Rank (S > A > F)
+  const rankDiff = rankPriority(a.Rank) - rankPriority(b.Rank);
+  if (rankDiff !== 0) return rankDiff;
+
+  // 4. Expansion (Descending: Golden > ... > ARR)
+  const expA = getExpansionPriority(a.Expansion);
+  const expB = getExpansionPriority(b.Expansion);
+  if (expA !== expB) return expB - expA;
+
+  // 5. MobNo (Ascending)
+  const pa = parseMobIdParts(a.No);
+  const pb = parseMobIdParts(b.No);
   if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
+
+  // 6. Instance (Ascending)
   return pa.instance - pb.instance;
 }
 
 function filterAndRender({ isInitialLoad = false } = {}) {
   const state = getState();
   const filtered = filterMobsByRankAndArea(state.mobs);
-  const sortedMobs = (["S", "A", "FATE"].includes(state.filter.rank) ? filtered.sort(progressComparator) : filtered.sort(baseComparator));
+
+  let sortedMobs;
+  if (state.filter.rank === 'ALL') {
+    sortedMobs = filtered.sort(allTabComparator);
+  } else {
+    sortedMobs = filtered.sort(baseComparator);
+  }
 
   const existingCards = new Map();
   DOM.masterContainer.querySelectorAll('.mob-card').forEach(card => {
@@ -378,7 +465,7 @@ function updateProgressText(card, mob) {
   } else if (nextConditionSpawnDate) {
     try {
       const dateStr = new Intl.DateTimeFormat("ja-JP", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Tokyo" }).format(nextConditionSpawnDate);
-      rightStr = `Next ${dateStr}`;
+      rightStr = `🔔 ${dateStr}`;
       isNext = true;
     } catch {
       rightStr = "未確定";
