@@ -20,18 +20,40 @@ const state = {
             A: new Set(),
             F: new Set(),
             ALL: new Set()
-        }
+        },
+        allRankSet: new Set() // For ALL tab rank filtering
     },
     openMobCardNo: localStorage.getItem("openMobCardNo")
         ? parseInt(localStorage.getItem("openMobCardNo"), 10)
         : null
 };
 
-// Setの復元
-for (const k in state.filter.areaSets) {
-    const v = state.filter.areaSets[k];
-    if (Array.isArray(v)) state.filter.areaSets[k] = new Set(v);
-    else if (!(v instanceof Set)) state.filter.areaSets[k] = new Set();
+// Setの復元 (Robust Restoration)
+if (state.filter.areaSets) {
+    for (const k in state.filter.areaSets) {
+        const v = state.filter.areaSets[k];
+        if (Array.isArray(v)) {
+            state.filter.areaSets[k] = new Set(v);
+        } else if (!(v instanceof Set)) {
+            // If it's an object (from older JSON stringify) or null/undefined
+            state.filter.areaSets[k] = new Set();
+        }
+    }
+} else {
+    // Fallback if areaSets is missing entirely
+    state.filter.areaSets = {
+        S: new Set(),
+        A: new Set(),
+        F: new Set(),
+        ALL: new Set()
+    };
+}
+
+// allRankSetの復元
+if (Array.isArray(state.filter.allRankSet)) {
+    state.filter.allRankSet = new Set(state.filter.allRankSet);
+} else if (!(state.filter.allRankSet instanceof Set)) {
+    state.filter.allRankSet = new Set();
 }
 
 const getState = () => state;
@@ -54,7 +76,8 @@ function setFilter(partial) {
             const v = state.filter.areaSets[key];
             acc[key] = v instanceof Set ? Array.from(v) : v;
             return acc;
-        }, {})
+        }, {}),
+        allRankSet: Array.from(state.filter.allRankSet || [])
     };
     localStorage.setItem("huntFilterState", JSON.stringify(serialized));
 }
