@@ -234,12 +234,5 @@ const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
     }
 };
 
-export {
-    initializeAuth,
-    subscribeMobStatusDocs,
-    subscribeMobLocations,
-    subscribeMobMemos,
-    submitReport,
-    submitMemo,
-    toggleCrushStatus
-};
+export { initializeAuth, subscribeMobStatusDocs, subscribeMobLocations, 
+    subscribeMobMemos, submitReport, submitMemo, toggleCrushStatus };
