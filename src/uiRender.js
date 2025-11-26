@@ -18,7 +18,6 @@ const DOM = {
   modalMobName: document.getElementById('modal-mob-name'),
   modalStatus: document.getElementById('modal-status'),
   modalTimeInput: document.getElementById('report-datetime'),
-
 };
 
 function updateEorzeaTime() {
@@ -31,17 +30,18 @@ function updateEorzeaTime() {
 updateEorzeaTime();
 setInterval(updateEorzeaTime, 3000);
 
-
-
 function processText(text) {
   if (typeof text !== "string" || !text) return "";
   return text.replace(/\/\//g, "<br>");
 }
 
 function createMobCard(mob) {
+  const template = document.getElementById('mob-card-template');
+  const clone = template.content.cloneNode(true);
+  const card = clone.querySelector('.mob-card');
+
   const rank = mob.Rank;
   const rankLabel = rank;
-
   const isExpandable = rank === "S";
   const { openMobCardNo } = getState();
   const isOpen = isExpandable && mob.No === openMobCardNo;
@@ -50,6 +50,7 @@ function createMobCard(mob) {
   const mobLocationsData = state.mobLocations?.[mob.No];
   const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
 
+  // --- Data Preparation (Same as before) ---
   let isLastOne = false;
   let validSpawnPoints = [];
   let displayCountText = "";
@@ -68,12 +69,11 @@ function createMobCard(mob) {
       isLastOne = true;
       const pointId = validSpawnPoints[0]?.id || "";
       const pointNumber = pointId.slice(-2);
-      displayCountText = ` <span class="text-sm text-yellow-400 font-bold text-glow">${pointNumber}</span><span class="text-xs text-yellow-400 font-bold text-glow">番</span>`;
+      displayCountText = ` <span class="text-xs text-yellow-400 font-bold text-glow">${pointNumber}番</span>`;
     } else if (remainingCount > 1) {
       isLastOne = false;
-      displayCountText = ` <span class="text-xs text-gray-400 relative -top-[0.05rem]">@</span>&nbsp;<span class="text-sm -top-[0.01rem]">${remainingCount}</span><span class="text-xs">個</span>`;
+      displayCountText = ` <span class="text-xs text-gray-400 relative -top-[0.09rem]">@</span><span class="text-sm text-gray-400 font-stretch-condensed relative top-[0.02rem]">${remainingCount}</span>`;
     }
-
     isLastOne = remainingCount === 1;
   }
 
@@ -94,90 +94,83 @@ function createMobCard(mob) {
     }).join("")
     : "";
 
-  const memoIcon = mob.memo_text && mob.memo_text.trim() !== ""
-    ? ` <span data-tooltip="${mob.memo_text}" class="cursor-help">📋️</span>`
+  const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
+  const isMemoNewer = (mob.memo_updated_at || 0) > (mob.last_kill_time || 0);
+  const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
+
+  const memoIcon = shouldShowMemo
+    ? ` <span data-tooltip="${mob.memo_text}" class="cursor-help">📝</span>`
     : "";
 
-  const mobNameHtml = `<span class="text-base flex items-baseline font-bold truncate text-gray-100">${mob.Name}${memoIcon}</span>`;
+  // --- Populate Template ---
 
+  // Card Attributes
+  card.dataset.mobNo = mob.No;
+  card.dataset.rank = rank;
+  const repopInfo = calculateRepop(mob, state.maintenance);
+  if (repopInfo.isMaintenanceStop) {
+    card.classList.add("opacity-50", "grayscale", "pointer-events-none");
+  }
+
+  // Rank Badge
+  const rankBadge = card.querySelector('.rank-badge');
+  rankBadge.classList.add(`rank-${rank.toLowerCase()}`);
+  rankBadge.textContent = rankLabel;
+
+  // Mob Name
+  const mobNameEl = card.querySelector('.mob-name');
+  mobNameEl.textContent = mob.Name;
+
+  const memoIconContainer = card.querySelector('.memo-icon-container');
+  memoIconContainer.innerHTML = memoIcon;
+
+  // Area Info
+  const areaInfoContainer = card.querySelector('.area-info-container');
   let areaInfoHtml = `<span class="flex items-center gap-1"><span>${mob.Area}</span><span class="opacity-50">|</span><span>${mob.Expansion}</span>`;
   if (mob.Map && mob.spawn_points) {
-    areaInfoHtml += `<span class="flex items-center ml-1">📍${displayCountText}</span>`;
+    areaInfoHtml += `<span class="flex items-center ml-1">📍 ${displayCountText}</span>`;
   }
   areaInfoHtml += `</span>`;
+  areaInfoContainer.innerHTML = areaInfoHtml;
 
-  const cardHeaderHTML = `
-<div class="px-2 py-1 space-y-1 bg-transparent" data-toggle="card-header">
-    <div class="grid grid-cols-[auto_1fr_auto] items-center w-full gap-3">
-        <!-- Rank Badge -->
-        <span class="w-8 h-8 flex items-center justify-center rounded-md text-white text-sm rank-badge rank-${rank.toLowerCase()}">${rankLabel}</span>
+  // Report Button
+  const reportBtn = card.querySelector('.report-btn');
+  reportBtn.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
+  reportBtn.dataset.mobNo = mob.No;
 
-        <div class="flex flex-col min-w-0">
-            <div class="flex items-baseline">${mobNameHtml}</div>
-            <div class="text-xs text-gray-400 truncate font-mono tracking-wide h-5 flex items-center">${areaInfoHtml}</div>
-        </div>
+  // Expandable Panel
+  const expandablePanel = card.querySelector('.expandable-panel');
+  if (isExpandable) {
+    if (isOpen) {
+      expandablePanel.classList.add('open');
+    }
 
-        <div class="flex-shrink-0 flex items-center justify-end">
-            <button data-report-type="${rank === 'A' ? 'instant' : 'modal'}" data-mob-no="${mob.No}" class="w-8 h-8 flex items-center justify-center rounded transition text-center leading-tight hover:scale-110 active:scale-95">
-                <img src="./icon/reports.webp" alt="報告する" class="w-7 h-7 object-contain filter drop-shadow-lg" 
-                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <span style="display:none;" class="w-8 h-8 flex items-center justify-center text-[10px] rounded 
-                bg-green-600 hover:bg-green-500 text-white font-bold leading-tight whitespace-pre-line shadow-lg">報告</span>
-            </button>
-        </div>
-    </div>
+    // Memo Input
+    const memoInput = card.querySelector('.memo-input');
+    memoInput.value = mob.memo_text || "";
+    memoInput.dataset.mobNo = mob.No;
 
-    <!-- Progress Bar -->
-    <div class="progress-bar-wrapper rounded relative overflow-hidden text-center">
-        <div class="progress-bar-bg absolute left-0 top-0 h-full rounded transition-all duration-100 ease-linear" style="width: 0%"></div>
-        <div class="progress-text relative z-10 py-0.5 text-xs font-bold"></div>
-    </div>
-</div>
-`;
+    // Condition
+    const conditionText = card.querySelector('.condition-text');
+    conditionText.innerHTML = processText(mob.Condition);
 
-  const expandablePanelHTML = isExpandable ? `
-<div class="expandable-panel ${isOpen ? 'open' : ''}">
-    <div class="px-2 py-1 text-sm space-y-1">
-        <div class="flex justify-between items-start flex-wrap gap-y-1">
-            <div class="w-full text-right text-xs text-gray-400 font-mono" data-last-kill></div>
-            <div class="mob-memo-row w-full mt-1">
-                <div class="flex items-center bg-gray-800/50 rounded px-2 py-1 border border-gray-700 hover:bg-gray-700/50 transition">
-                    <span class="mr-2 text-cyan-400 font-bold text-xs">Memo:</span>
-                    <input type="text" 
-                        class="bg-transparent text-gray-200 text-sm w-full outline-none placeholder-gray-500"
-                        placeholder="メモを入力 (全角30文字)"
-                        maxlength="30"
-                        value="${mob.memo_text || ""}"
-                        data-action="save-memo"
-                        data-mob-no="${mob.No}">
-                </div>
-            </div>
-            
-            <div class="w-full mt-2">
-                <div class="font-semibold text-yellow-400 text-xs uppercase tracking-widest mb-1">Condition</div>
-                <div class="text-gray-300 text-xs leading-relaxed pl-2 border-l-2 border-yellow-600/50">${processText(mob.Condition)}</div>
-            </div>
-        </div>
-        ${mob.Map && rank === 'S' ? `
-        <div class="map-content mt-2 flex justify-center relative rounded overflow-hidden border border-gray-600 shadow-lg">
-            <img src="./maps/${mob.Map}" alt="${mob.Area} Map" class="mob-crush-map w-full h-auto opacity-90 hover:opacity-100 transition-opacity">
-            <div class="map-overlay absolute inset-0">${spawnPointsHtml}</div>
-        </div>
-        ` : ''}
-    </div>
-</div>
-` : '';
+    // Map
+    const mapContainer = card.querySelector('.map-container');
+    if (mob.Map && rank === 'S') {
+      const mapImg = mapContainer.querySelector('.mob-map-img');
+      mapImg.src = `./maps/${mob.Map}`;
+      mapImg.alt = `${mob.Area} Map`;
+      const mapOverlay = mapContainer.querySelector('.map-overlay');
+      mapOverlay.innerHTML = spawnPointsHtml;
+    } else {
+      mapContainer.remove();
+    }
 
-  const repopInfo = calculateRepop(mob, state.maintenance);
-  const isStopped = repopInfo.isMaintenanceStop;
-  const stoppedClass = isStopped ? "opacity-50 grayscale pointer-events-none" : "";
+  } else {
+    expandablePanel.remove();
+  }
 
-  return `
-<div class="mob-card rounded-lg shadow-xl cursor-pointer ${stoppedClass}"
-    data-mob-no="${mob.No}" data-rank="${rank}">
-    ${cardHeaderHTML}${expandablePanelHTML}
-</div>
-`;
+  return card;
 }
 
 function rankPriority(rank) {
@@ -213,20 +206,16 @@ function baseComparator(a, b) {
   // 1. Rank (S > A > F)
   const rankDiff = rankPriority(a.Rank) - rankPriority(b.Rank);
   if (rankDiff !== 0) return rankDiff;
-
   // 2. Expansion (Descending: Golden > ... > ARR)
   const expA = getExpansionPriority(a.Expansion);
   const expB = getExpansionPriority(b.Expansion);
   if (expA !== expB) return expB - expA;
-
   // 3. MobNo (Ascending)
   const pa = parseMobIdParts(a.No);
   const pb = parseMobIdParts(b.No);
   if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
-
   // 4. Instance (Ascending)
   if (pa.instance !== pb.instance) return pa.instance - pb.instance;
-
   // 5. % Rate (Descending)
   const aInfo = a.repopInfo || {};
   const bInfo = b.repopInfo || {};
@@ -236,7 +225,6 @@ function baseComparator(a, b) {
   if (Math.abs(aPercent - bPercent) > 0.001) {
     return bPercent - aPercent;
   }
-
   // 6. Time (Ascending - sooner is smaller timestamp)
   const aTime = aInfo.minRepop || 0;
   const bTime = bInfo.minRepop || 0;
@@ -248,7 +236,6 @@ function allTabComparator(a, b) {
   const bInfo = b.repopInfo || {};
   const aStatus = aInfo.status;
   const bStatus = bInfo.status;
-
   // Special handling for MaxOver
   const isAMaxOver = aStatus === "MaxOver";
   const isBMaxOver = bStatus === "MaxOver";
@@ -267,17 +254,14 @@ function allTabComparator(a, b) {
     // 1. Rank (S > F > A)
     const rankDiff = getMaxOverRankPriority(a.Rank) - getMaxOverRankPriority(b.Rank);
     if (rankDiff !== 0) return rankDiff;
-
     // 2. Expansion (Descending: Golden > ... > ARR)
     const expA = getExpansionPriority(a.Expansion);
     const expB = getExpansionPriority(b.Expansion);
     if (expA !== expB) return expB - expA;
-
     // 3. MobNo (Ascending)
     const pa = parseMobIdParts(a.No);
     const pb = parseMobIdParts(b.No);
     if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
-
     // 4. Instance (Ascending)
     return pa.instance - pb.instance;
   }
@@ -286,8 +270,6 @@ function allTabComparator(a, b) {
   if (isAMaxOver && !isBMaxOver) return -1;
   if (!isAMaxOver && isBMaxOver) return 1;
 
-  // Standard ALL tab sort for non-MaxOver
-
   // 1. % Rate (Descending)
   const aPercent = aInfo.elapsedPercent || 0;
   const bPercent = bInfo.elapsedPercent || 0;
@@ -295,26 +277,21 @@ function allTabComparator(a, b) {
   if (Math.abs(aPercent - bPercent) > 0.001) {
     return bPercent - aPercent;
   }
-
   // 2. Time (Ascending - sooner is smaller timestamp)
   const aTime = aInfo.minRepop || 0;
   const bTime = bInfo.minRepop || 0;
   if (aTime !== bTime) return aTime - bTime;
-
   // 3. Rank (S > A > F)
   const rankDiff = rankPriority(a.Rank) - rankPriority(b.Rank);
   if (rankDiff !== 0) return rankDiff;
-
   // 4. Expansion (Descending: Golden > ... > ARR)
   const expA = getExpansionPriority(a.Expansion);
   const expB = getExpansionPriority(b.Expansion);
   if (expA !== expB) return expB - expA;
-
   // 5. MobNo (Ascending)
   const pa = parseMobIdParts(a.No);
   const pb = parseMobIdParts(b.No);
   if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
-
   // 6. Instance (Ascending)
   return pa.instance - pb.instance;
 }
@@ -356,9 +333,7 @@ function filterAndRender({ isInitialLoad = false } = {}) {
       }
 
     } else {
-      const temp = document.createElement("div");
-      temp.innerHTML = createMobCard(mob);
-      card = temp.firstElementChild;
+      card = createMobCard(mob);
       updateProgressText(card, mob);
       updateProgressBar(card, mob);
       updateExpandablePanel(card, mob);
@@ -498,8 +473,8 @@ function updateProgressText(card, mob) {
 
   text.innerHTML = `
     <div class="w-full h-full grid grid-cols-2 items-center text-sm font-bold">
-      <div class="pl-1 text-left truncate">${leftStr}${percentStr}</div>
-      <div class="pr-1 text-right truncate">${rightContent}</div>
+      <div class="pl-2 text-left truncate">${leftStr}${percentStr}</div>
+      <div class="pr-2 text-right truncate">${rightContent}</div>
     </div>
   `;
 
@@ -565,4 +540,7 @@ setInterval(() => {
   updateProgressBars();
 }, 60000);
 
-export { filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, DOM, sortAndRedistribute, onKillReportReceived, updateProgressBars };
+export {
+  filterAndRender, distributeCards, updateProgressText, updateProgressBar,
+  createMobCard, DOM, sortAndRedistribute, onKillReportReceived, updateProgressBars
+};
