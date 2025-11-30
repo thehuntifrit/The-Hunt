@@ -48,13 +48,26 @@ function initHeaderObserver() {
 
     const adjustPadding = () => {
         const headerHeight = header.offsetHeight;
-        main.style.paddingTop = `${headerHeight + 10}px`;
+        const isMobile = window.innerWidth < 1024;
+
+        if (isMobile) {
+            main.style.paddingTop = "1rem";
+            main.style.paddingBottom = "2.5rem";
+            document.body.style.paddingBottom = `${headerHeight + 20}px`;
+        } else {
+            main.style.paddingTop = `${headerHeight + 10}px`;
+            main.style.paddingBottom = "2.5rem";
+            document.body.style.paddingBottom = "0";
+        }
     };
+
     adjustPadding();
     const resizeObserver = new ResizeObserver(() => {
         adjustPadding();
     });
     resizeObserver.observe(header);
+
+    window.addEventListener("resize", adjustPadding);
 }
 
 function renderMaintenanceStatus() {
