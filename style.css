@@ -49,6 +49,11 @@ body {
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     position: relative;
     overflow: hidden;
+    transform: translateZ(0);
+    will-change: transform, box-shadow;
+    display: flex;
+    flex-direction: column;
+    font-size: 0;
 }
 
 .mob-card:hover {
@@ -95,7 +100,7 @@ body {
 
 .mob-card-header {
     background: var(--bg-card);
-    padding: 0.36rem 0.5rem 0.5rem;
+    padding: 0.36rem 0.5rem 0.36rem;
 }
 
 .progress-bar-bg {
@@ -292,7 +297,6 @@ body {
     z-index: 20;
 }
 
-/* Custom Tooltip */
 .custom-tooltip {
     position: fixed;
     z-index: 9999;
@@ -306,11 +310,52 @@ body {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.1);
     transform: translate(-50%, -100%);
-    /* マウスの上に表示 */
     transition: opacity 0.1s ease;
 }
 
 .custom-tooltip.hidden {
     opacity: 0;
     visibility: hidden;
+}
+
+@media (max-width: 1023px) {
+    #main-header {
+        top: auto;
+        bottom: 0;
+        padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: none;
+        box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    #main-header #status-message {
+        padding-bottom: 0;
+        padding-top: 0.25rem;
+    }
+}
+
+.expandable-panel {
+    display: none;
+    background: var(--bg-card);
+    overflow: hidden;
+    padding: 0 !important;
+    margin: 0;
+}
+
+.expandable-panel.open {
+    display: block;
+    padding: 0 !important;
+}
+
+.expandable-panel>div {
+    min-height: 0;
+    padding: 0.5rem;
+    opacity: 0;
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
 }
