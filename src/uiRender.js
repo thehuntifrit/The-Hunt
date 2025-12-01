@@ -18,7 +18,7 @@ const DOM = {
   modalMobName: document.getElementById('modal-mob-name'),
   modalStatus: document.getElementById('modal-status'),
   modalTimeInput: document.getElementById('report-datetime'),
-  modalForceSubmit: document.getElementById('report-force-submit'), // 追加
+  modalForceSubmit: document.getElementById('report-force-submit'),
   statusMessageTemp: document.getElementById('status-message-temp'),
 };
 
@@ -100,7 +100,7 @@ function createMobCard(mob) {
   const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
 
   const memoIcon = shouldShowMemo
-    ? ` <span data-tooltip="${mob.memo_text}" class="cursor-help">📝</span>`
+    ? ` <span data-tooltip="${mob.memo_text}" class="cursor-help" style="font-size: 1rem">📝</span>`
     : "";
 
   // Card Attributes
@@ -146,7 +146,7 @@ function createMobCard(mob) {
 
     // Memo Input
     const memoInput = card.querySelector('.memo-input');
-    memoInput.value = mob.memo_text || "";
+    memoInput.value = shouldShowMemo ? (mob.memo_text || "") : "";
     memoInput.dataset.mobNo = mob.No;
 
     // Condition
@@ -274,6 +274,7 @@ function filterAndRender({ isInitialLoad = false } = {}) {
       updateProgressText(card, mob);
       updateProgressBar(card, mob);
       updateExpandablePanel(card, mob);
+      updateMemoIcon(card, mob);
 
       const repopInfo = calculateRepop(mob, state.maintenance);
       if (repopInfo.isMaintenanceStop) {
@@ -359,7 +360,6 @@ function updateProgressBar(card, mob) {
     bar.classList.add(PROGRESS_CLASSES.MAX_OVER);
     text.classList.add(PROGRESS_CLASSES.TEXT_POP);
 
-    // Fix: Add white border if MaxOver AND in condition window
     if (mob.repopInfo.isInConditionWindow) {
       wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
     }
@@ -451,7 +451,10 @@ function updateExpandablePanel(card, mob) {
 
   if (elMemoInput) {
     if (document.activeElement !== elMemoInput) {
-      elMemoInput.value = mob.memo_text || "";
+      const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
+      const isMemoNewer = (mob.memo_updated_at || 0) > (mob.last_kill_time || 0);
+      const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
+      elMemoInput.value = shouldShowMemo ? (mob.memo_text || "") : "";
     }
   }
 }
@@ -505,12 +508,35 @@ function onKillReportReceived(mobId, kill_time) {
   if (card) {
     updateProgressText(card, mob);
     updateProgressBar(card, mob);
+    updateExpandablePanel(card, mob);
+    updateMemoIcon(card, mob);
   }
 }
 
 setInterval(() => {
   updateProgressBars();
 }, EORZEA_MINUTE_MS);
+
+function updateMemoIcon(card, mob) {
+  const memoIconContainer = card.querySelector('.memo-icon-container');
+  if (!memoIconContainer) return;
+
+  const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
+  const isMemoNewer = (mob.memo_updated_at || 0) > (mob.last_kill_time || 0);
+  const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
+
+  if (shouldShowMemo) {
+    const span = document.createElement('span');
+    span.className = 'cursor-help';
+    span.style.fontSize = '1rem';  // font-size: 0の影響を無効化
+    span.textContent = '📝';
+    span.setAttribute('data-tooltip', mob.memo_text);
+    memoIconContainer.innerHTML = '';
+    memoIconContainer.appendChild(span);
+  } else {
+    memoIconContainer.innerHTML = '';
+  }
+}
 
 export {
   filterAndRender, distributeCards, updateProgressText, updateProgressBar,
