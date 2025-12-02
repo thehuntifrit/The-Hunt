@@ -87,12 +87,6 @@ function setOpenMobCardNo(no) {
     }
 }
 
-const RANK_COLORS = {
-    S: { bg: 'bg-amber-600', hover: 'hover:bg-amber-700', text: 'text-amber-600', rgbaBorder: 'rgba(217, 119, 6, 0.8)', label: 'S' },
-    A: { bg: 'bg-green-600', hover: 'hover:bg-green-700', text: 'text-green-600', rgbaBorder: 'rgba(22, 163, 74, 0.8)', label: 'A' },
-    F: { bg: 'bg-purple-600', hover: 'hover:bg-purple-700', text: 'text-purple-600', rgbaBorder: 'rgba(147, 51, 234, 0.8)', label: 'F' },
-};
-
 const PROGRESS_CLASSES = {
     P0_60: "progress-p0-60",
     P60_80: "progress-p60-80",
@@ -286,6 +280,6 @@ function startRealtime() {
 }
 
 export {
-    state, EXPANSION_MAP, getState, getMobByNo, setUserId, setMobs, loadBaseMobData, startRealtime, setFilter,
-    setOpenMobCardNo, RANK_COLORS, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP, loadMaintenance
+    state, EXPANSION_MAP, getState, getMobByNo, setUserId, setMobs, loadBaseMobData, startRealtime, 
+    setFilter, setOpenMobCardNo, PROGRESS_CLASSES, FILTER_TO_DATA_RANK_MAP, loadMaintenance
 };
