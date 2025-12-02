@@ -598,10 +598,6 @@ setInterval(() => {
   updateProgressBars();
 }, EORZEA_MINUTE_MS);
 
-setInterval(() => {
-  sortAndRedistribute();
-}, 60000);
-
 export {
   filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, DOM,
   sortAndRedistribute, onKillReportReceived, updateProgressBars, updateAreaInfo, updateMapOverlay
