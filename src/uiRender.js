@@ -367,8 +367,12 @@ function updateProgressText(card, mob) {
     ? ` (${Number(elapsedPercent || 0).toFixed(0)}%)`
     : "";
 
+  const now = Date.now() / 1000;
   const mobNameEl = card.querySelector('.mob-name');
-  if (status === "Next") {
+
+  // 最短REPOP前の場合のみ彩度を下げる
+  const isBeforeMinRepop = now < mob.repopInfo.minRepop;
+  if (status === "Next" || (status === "NextCondition" && isBeforeMinRepop)) {
     card.classList.add("opacity-60");
     if (mobNameEl) {
       mobNameEl.style.color = "#999";
