@@ -144,10 +144,10 @@ const updateFilterUI = () => {
 
     if (isCurrent) {
       btn.classList.add(
-        btnRank === "ALL" ? "bg-rose-600"
-          : btnRank === "S" ? "bg-orange-600"
-            : btnRank === "A" ? "bg-emerald-600"
-              : btnRank === "FATE" ? "bg-indigo-600"
+        btnRank === "ALL" ? "bg-rose-400"
+          : btnRank === "S" ? "bg-orange-400"
+            : btnRank === "A" ? "bg-emerald-400"
+              : btnRank === "FATE" ? "bg-indigo-400"
                 : "bg-gray-800"
       );
 
