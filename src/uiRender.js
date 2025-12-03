@@ -368,7 +368,7 @@ function updateProgressText(card, mob) {
     : "";
 
   const mobNameEl = card.querySelector('.mob-name');
-  if (status === "Next" || status === "NextCondition") {
+  if (status === "Next") {
     card.classList.add("opacity-60");
     if (mobNameEl) {
       mobNameEl.style.color = "#999";
