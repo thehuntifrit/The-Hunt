@@ -66,14 +66,21 @@ function createMobCard(mob) {
     card.classList.add("opacity-50", "grayscale", "pointer-events-none");
   }
 
-  // Rank Badge
+  // Rank Badge - Removed as requested
   const rankBadge = card.querySelector('.rank-badge');
-  rankBadge.classList.add(`rank-${rank.toLowerCase()}`);
-  rankBadge.textContent = rankLabel;
+  if (rankBadge) rankBadge.remove();
+
+  // Adjust grid layout
+  const headerGrid = card.querySelector('.mob-card-header > div');
+  if (headerGrid) {
+    headerGrid.classList.remove('grid-cols-[auto_1fr_auto]');
+    headerGrid.classList.add('grid-cols-[1fr_auto]');
+  }
 
   // Mob Name
   const mobNameEl = card.querySelector('.mob-name');
   mobNameEl.textContent = mob.Name;
+  mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
 
   const memoIconContainer = card.querySelector('.memo-icon-container');
   memoIconContainer.innerHTML = memoIcon;
@@ -402,7 +409,7 @@ function updateProgressText(card, mob) {
 
   text.innerHTML = `
     <div class="w-full h-full grid grid-cols-2 items-center text-sm font-bold">
-      <div class="pl-2 text-left truncate">${leftStr}${percentStr}</div>
+      <div class="pl-1 text-left truncate">${leftStr}${percentStr}</div>
       <div class="pr-2 text-right truncate">${rightContent}</div>
     </div>
   `;
@@ -487,7 +494,8 @@ function updateAreaInfo(card, mob) {
     }
   }
 
-  let areaInfoHtml = `<span class="flex items-center gap-1"><span>${mob.Area}</span><span class="opacity-50">|</span><span>${mob.Expansion}</span>`;
+  let areaInfoHtml = `<span class="flex items-center gap-1 font-normal"><span>${mob.Area}</span><span class="opacity-50">|</span><span class="flex items-center">${mob.Expansion}<span class="inline-flex items-center justify-center w-[13px] h-[13px] border border-white text-white rounded-[3px] text-[9px] ml-[1px] leading-none relative">${mob.Rank}</span></span>`;
+
   if (mob.Map && mob.spawn_points) {
     areaInfoHtml += `<span class="flex items-center ml-1">📍 ${displayCountText}</span>`;
   }
