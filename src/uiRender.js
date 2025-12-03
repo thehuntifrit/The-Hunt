@@ -494,10 +494,10 @@ function updateAreaInfo(card, mob) {
     }
   }
 
-  let areaInfoHtml = `<span class="flex items-center gap-1 font-normal"><span>${mob.Area}</span><span class="opacity-50">|</span><span class="flex items-center">${mob.Expansion}&thinsp;<span class="inline-flex items-center justify-center w-[13px] h-[13px] border border-white text-white rounded-[3px] text-[9px] leading-none relative">${mob.Rank}</span>`;
+  let areaInfoHtml = `<span class="flex items-center gap-1 font-normal"><span>${mob.Area}</span><span class="opacity-50">|</span><span class="flex items-center">${mob.Expansion}&thinsp;<span class="inline-flex items-center justify-center w-[13px] h-[13px] border border-current rounded-[3px] text-[9px] leading-none relative">${mob.Rank}</span>`;
 
   if (mob.Map && mob.spawn_points) {
-    areaInfoHtml += `&thinsp;<span class="flex items-center">📍${displayCountText}</span>`;
+    areaInfoHtml += `<span class="flex items-center">📍${displayCountText}</span>`;
   }
   areaInfoHtml += `</span></span>`;
   areaInfoContainer.innerHTML = areaInfoHtml;
