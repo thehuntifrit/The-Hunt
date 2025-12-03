@@ -137,17 +137,17 @@ const updateFilterUI = () => {
     const isCurrent = btnRank === state.filter.rank;
 
     btn.classList.remove(
-      "bg-rose-500", "bg-orange-500", "bg-emerald-500", "bg-indigo-500",
+      "bg-rose-400", "bg-orange-400", "bg-emerald-400", "bg-indigo-400",
       "bg-gray-500", "hover:bg-gray-400", "bg-green-500", "bg-gray-800",
-      "bg-rose-300", "bg-orange-300", "bg-emerald-300", "bg-indigo-300"
+      "bg-rose-200", "bg-orange-200", "bg-emerald-200", "bg-indigo-200"
     );
 
     if (isCurrent) {
       btn.classList.add(
-        btnRank === "ALL" ? "bg-rose-500"
-          : btnRank === "S" ? "bg-orange-500"
-            : btnRank === "A" ? "bg-emerald-500"
-              : btnRank === "FATE" ? "bg-indigo-500"
+        btnRank === "ALL" ? "bg-rose-600"
+          : btnRank === "S" ? "bg-orange-600"
+            : btnRank === "A" ? "bg-emerald-600"
+              : btnRank === "FATE" ? "bg-indigo-600"
                 : "bg-gray-800"
       );
 
