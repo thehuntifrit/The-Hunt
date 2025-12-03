@@ -74,9 +74,7 @@ exports.updateMobStatusV2 = onCall({ cors: true }, async (request) => {
     try {
         const updateData = {
             [mobId]: {
-                last_kill_time: firestoreTime,
-                last_update: Timestamp.now(),
-                is_reverted: false
+                last_kill_time: firestoreTime
             }
         };
 
