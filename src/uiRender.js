@@ -367,10 +367,17 @@ function updateProgressText(card, mob) {
     ? ` (${Number(elapsedPercent || 0).toFixed(0)}%)`
     : "";
 
+  const mobNameEl = card.querySelector('.mob-name');
   if (status === "Next" || status === "NextCondition") {
     card.classList.add("opacity-60");
+    if (mobNameEl) {
+      mobNameEl.style.color = "#999";
+    }
   } else {
     card.classList.remove("opacity-60");
+    if (mobNameEl) {
+      mobNameEl.style.color = `var(--rank-${mob.Rank.toLowerCase()})`;
+    }
   }
 
   if (isBlockedByMaintenance) {
