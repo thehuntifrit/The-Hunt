@@ -490,7 +490,7 @@ function updateAreaInfo(card, mob) {
       const pointNumber = pointId.slice(-2);
       displayCountText = ` <span class="text-xs text-yellow-400 font-bold text-glow">${pointNumber}番</span>`;
     } else if (remainingCount > 1) {
-      displayCountText = ` <span class="text-xs text-gray-400 relative -top-[0.09rem]">@</span><span class="text-xs text-gray-400 font-bold text-glow relative top-[0.02rem]">${remainingCount}</span>`;
+      displayCountText = ` <span class="text-xs text-gray-400 relative -top-[0.09rem]">@</span><span class="text-xs text-gray-400 font-bold text-glow relative top-[0.02rem]">&thinsp;${remainingCount}</span>`;
     }
   }
 
