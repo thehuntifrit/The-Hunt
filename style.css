@@ -184,20 +184,20 @@ body {
 }
 
 .blink-border-white {
-    animation: blink-white-border 1.5s infinite alternate;
-    border-color: rgba(255, 255, 255, 0.8) !important;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3) !important;
+    animation: blink-white-border 1.0s infinite alternate;
+    border-color: rgba(255, 255, 255, 1.0);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
 }
 
 @keyframes blink-white-border {
     from {
-        border-color: rgba(255, 255, 255, 0.3);
-        box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 2px rgba(255, 255, 255, 0.1);
     }
 
     to {
         border-color: rgba(255, 255, 255, 1.0);
-        box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
     }
 }
 
