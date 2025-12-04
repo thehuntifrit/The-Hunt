@@ -191,9 +191,20 @@ function allTabComparator(a, b) {
   if (Math.abs(aPercent - bPercent) > 0.001) {
     return bPercent - aPercent;
   }
-  const aTime = aInfo.minRepop || 0;
-  const bTime = bInfo.minRepop || 0;
-  if (aTime !== bTime) return aTime - bTime;
+
+  // メンテナンス判定 (大項目3の代わり/前)
+  const isAMaint = aInfo.isMaintenanceStop;
+  const isBMaint = bInfo.isMaintenanceStop;
+
+  if (isAMaint && !isBMaint) return 1;
+  if (!isAMaint && isBMaint) return -1;
+
+  // 両方ともメンテナンス中でない場合のみ、minRepopで比較
+  if (!isAMaint && !isBMaint) {
+    const aTime = aInfo.minRepop || 0;
+    const bTime = bInfo.minRepop || 0;
+    if (aTime !== bTime) return aTime - bTime;
+  }
   const rankDiff = rankPriority(a.Rank) - rankPriority(b.Rank);
   if (rankDiff !== 0) return rankDiff;
   const expA = getExpansionPriority(a.Expansion);
@@ -358,8 +369,8 @@ function updateProgressText(card, mob) {
   const text = card.querySelector(".progress-text");
   if (!text) return;
 
-  const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, minRepop, 
-          maxRepop, status, isInConditionWindow, timeRemaining, isBlockedByMaintenance
+  const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, minRepop,
+    maxRepop, status, isInConditionWindow, timeRemaining, isBlockedByMaintenance
   } = mob.repopInfo || {};
 
   const nowSec = Date.now() / 1000;
