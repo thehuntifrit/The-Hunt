@@ -170,7 +170,7 @@ body {
 }
 
 .progress-blink-white {
-    animation: neon-pulse 1.5s infinite alternate;
+    animation: neon-pulse 3s infinite alternate;
 }
 
 @keyframes neon-pulse {
