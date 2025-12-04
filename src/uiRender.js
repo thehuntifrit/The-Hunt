@@ -192,14 +192,12 @@ function allTabComparator(a, b) {
     return bPercent - aPercent;
   }
 
-  // メンテナンス判定 (大項目3の代わり/前)
-  const isAMaint = aInfo.isMaintenanceStop;
-  const isBMaint = bInfo.isMaintenanceStop;
+  const isAMaint = aInfo.isMaintenanceStop || aInfo.isBlockedByMaintenance;
+  const isBMaint = bInfo.isMaintenanceStop || bInfo.isBlockedByMaintenance;
 
   if (isAMaint && !isBMaint) return 1;
   if (!isAMaint && isBMaint) return -1;
 
-  // 両方ともメンテナンス中でない場合のみ、minRepopで比較
   if (!isAMaint && !isBMaint) {
     const aTime = aInfo.minRepop || 0;
     const bTime = bInfo.minRepop || 0;
@@ -222,7 +220,6 @@ function filterAndRender({ isInitialLoad = false } = {}) {
 
   const sortedMobs = filtered.sort(allTabComparator);
 
-  // Focus preservation logic
   const activeElement = document.activeElement;
   let focusedMobNo = null;
   let focusedAction = null;
