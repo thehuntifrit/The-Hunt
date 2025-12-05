@@ -14,7 +14,7 @@
     --rank-f: #a3b3ff;
 
     --progress-bg: rgba(0, 0, 0, 0.5);
-    --progress-fill: linear-gradient(90deg, var(--accent-cyan), #3b82f6);
+    --progress-fill: linear-gradient(90deg, var(--accent-cyan), #3963bd);
     --progress-max-over: linear-gradient(90deg, #3963bd, #3963bd);
 
     --color-b1: #4494f7;
@@ -28,7 +28,7 @@ body {
     color: var(--text-primary);
     font-family: 'Inter', sans-serif;
     background-image:
-        radial-gradient(circle at 10% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 20%),
+        radial-gradient(circle at 10% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 35%),
         radial-gradient(circle at 90% 80%, rgba(234, 179, 8, 0.05) 0%, transparent 20%);
     background-attachment: fixed;
 }
@@ -251,6 +251,32 @@ body {
     padding-bottom: 0.25rem !important;
 }
 
+.expandable-panel {
+    display: none;
+    background: var(--bg-card);
+    overflow: hidden;
+    padding: 0 !important;
+    margin: 0;
+}
+
+.expandable-panel.open {
+    display: block;
+    padding: 0 !important;
+}
+
+.expandable-panel>div {
+    min-height: 0;
+    padding: 0.5rem;
+    opacity: 0;
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
 .spawn-point {
     position: absolute;
     border-radius: 50%;
@@ -345,31 +371,5 @@ body {
     #main-header #status-message {
         padding-bottom: 0;
         padding-top: 0.25rem;
-    }
-}
-
-.expandable-panel {
-    display: none;
-    background: var(--bg-card);
-    overflow: hidden;
-    padding: 0 !important;
-    margin: 0;
-}
-
-.expandable-panel.open {
-    display: block;
-    padding: 0 !important;
-}
-
-.expandable-panel>div {
-    min-height: 0;
-    padding: 0.5rem;
-    opacity: 0;
-    animation: fadeIn 0.3s ease-out forwards;
-}
-
-@keyframes fadeIn {
-    to {
-        opacity: 1;
     }
 }
