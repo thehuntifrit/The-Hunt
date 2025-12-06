@@ -86,7 +86,7 @@ body {
 
 .progress-bar-bg {
     background: var(--progress-fill);
-    box-shadow: 0 0 10px rgba(55, 200, 255, 0.6);
+    box-shadow: 0 0 10px rgba(0, 191, 255, 0.6);
 }
 
 .progress-text {
