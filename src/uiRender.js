@@ -526,10 +526,10 @@ function updateMobCount(card, mob) {
       const pointNumber = pointId.slice(-2);
       displayCountText = `<span class="text-yellow-400 font-bold text-glow">${pointNumber}番</span>`;
     } else if (remainingCount > 1) {
-      displayCountText = `<span class="text-xs text-gray-400 relative -top-[0.09rem]">@</span><span class="text-sm text-gray-400 font-bold text-glow relative">&thinsp;${remainingCount}</span>`;
+      displayCountText = `<span class="text-xs text-gray-400 relative -top-[0.09rem]">@</span><span class="text-sm text-gray-400 font-bold text-glow relative -top-[0.01rem]">&thinsp;${remainingCount}</span>`;
     }
 
-    displayCountText = `📍&thinsp;${displayCountText}`;
+    displayCountText = `📍${displayCountText}`;
   }
 
   countContainer.innerHTML = displayCountText;
