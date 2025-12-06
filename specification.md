@@ -1,10 +1,12 @@
 # The Hunt - システム仕様書
 
 ## 1. プロジェクト概要
+
 FFXIVのモブハント情報をリアルタイムで管理・共有するWebアプリケーション。
 ユーザーはモブの湧き時間、討伐状況、湧き位置などを確認・報告できる。
 
 ### 技術スタック
+
 - **Frontend**: HTML5, CSS3 (Tailwind CSS + Custom CSS), Vanilla JavaScript (ES Modules)
 - **Backend**: Firebase (Firestore, Authentication, Cloud Functions)
 - **Hosting**: Firebase Hosting
@@ -14,7 +16,8 @@ FFXIVのモブハント情報をリアルタイムで管理・共有するWebア
   - Google Fonts (Inter)
 
 ## 2. ディレクトリ構成
-```
+
+```text
 /
 ├── index.html          # アプリケーションエントリーポイント
 ├── style.css           # グローバルスタイル・カスタムCSS変数
@@ -38,7 +41,9 @@ FFXIVのモブハント情報をリアルタイムで管理・共有するWebア
 ## 3. データアーキテクチャ
 
 ### 3.1 静的データ (`mob_data.json`)
+
 モブIDをキーとしたオブジェクト。
+
 - `rank`: S, A, F
 - `name`: モブ名称
 - `area`: エリア名
@@ -48,6 +53,7 @@ FFXIVのモブハント情報をリアルタイムで管理・共有するWebア
 - `locations`: 湧き候補地点リスト (id, x, y, mob_ranks)
 
 ### 3.2 動的データ (Firestore)
+
 - **`mob_status`**: 討伐情報
   - `last_kill_time`: 最終討伐時刻 (Timestamp)
   - `prev_kill_time`: 前回の討伐時刻
@@ -58,7 +64,9 @@ FFXIVのモブハント情報をリアルタイムで管理・共有するWebア
   - `created_at`: 作成日時
 
 ### 3.3 状態管理 (`dataManager.js`)
+
 `state` オブジェクトで一元管理。
+
 - `mobs`: 結合されたモブデータの配列
 - `maintenance`: メンテナンス情報
 - `filter`: フィルタ設定 (Rank, Area)
@@ -67,6 +75,7 @@ FFXIVのモブハント情報をリアルタイムで管理・共有するWebア
 ## 4. コアロジック
 
 ### 4.1 湧き時間計算 (`cal.js`)
+
 - **通常時**: `last_kill_time` + `repopSeconds` = `minRepop`
 - **メンテナンス時**:
   - メンテナンス開始〜終了(ServerUp)の間はカウント停止扱い。
@@ -74,12 +83,14 @@ FFXIVのモブハント情報をリアルタイムで管理・共有するWebア
 - **特殊条件**: 天候、ET、月齢などの条件を考慮し、`nextConditionSpawnDate` を算出。
 
 ### 4.2 ステータス判定
+
 - **Next**: 湧き時間前
 - **PopWindow**: 湧き時間内 (MinRepop <= Now < MaxRepop)
 - **MaxOver**: 最長湧き時間超過 (Now >= MaxRepop)
 - **ConditionActive**: 特殊条件を満たしている期間
 
 ### 4.3 ソートロジック (`uiRender.js`)
+
 1. **MaxOver優先**: MaxOver状態のモブを最優先 (S > F > A)。
 2. **進行度順**: 湧き時間の進行度 (`elapsedPercent`) が高い順。
 3. **時間順**: `minRepop` が早い順。
@@ -92,6 +103,7 @@ FFXIVのモブハント情報をリアルタイムで管理・共有するWebア
 ## 5. UIデザインシステム
 
 ### 5.1 カラーパレット (`style.css`)
+
 - **背景**: `--bg-dark` (#0f172a) + グラデーション
 - **カード背景**: `--bg-card` (rgba(41, 55, 79, 0.85)) + Glassmorphism
 - **アクセント**:
@@ -104,29 +116,34 @@ FFXIVのモブハント情報をリアルタイムで管理・共有するWebア
   - F: `#a3b3ff`
 
 ### 5.2 プログレスバー
+
 - **通常**: Cyan -> Blue グラデーション (`#06b6d4` -> `#3963bd`)
 - **MaxOver**: 赤系グラデーション
 - **ConditionActive**: 枠が白く点滅 (`blink-border-white`)
 
 ### 5.3 背景エフェクト
+
 - 上部: `linear-gradient` (Cyan系, 上から下へフェード)
 - 右下: `radial-gradient` (Gold系)
 
 ## 6. 機能仕様
 
 ### 6.1 討伐報告
+
 - **Aランク**: ボタン押下で即時報告（現在時刻）。
 - **S/Fランク**: モーダル表示。日時指定可能。
 - **バリデーション**: 未来時間や、理論上あり得ない時間の報告時に警告・修正オプションを表示。
 
 ### 6.2 マップ・湧き潰し
+
 - Sランクカード展開時にマップ表示。
 - 湧き候補地点 (`spawn-point`) をクリックでトグル（未確認/済）。
 - **スマホ対応**: 誤操作防止のためダブルタップでトグル。
 
 ### 6.3 メンテナンス表示
+
 - **停止中**: カード全体がグレーアウト、操作無効。
 - **被り**: カードはグレーアウトするが、報告等の操作は可能。
 
 ---
-*Last Updated: 2025-12-01*
+Last Updated: 2025-12-01
