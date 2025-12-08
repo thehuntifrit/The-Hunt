@@ -1,9 +1,8 @@
 // server.js
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, addDoc, doc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, setDoc, Timestamp, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-functions.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
 
 import { getState } from "./dataManager.js";
@@ -22,13 +21,7 @@ const FIREBASE_CONFIG = {
 const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
 const auth = getAuth(app);
-const DEFAULT_FUNCTIONS_REGION = "asia-northeast1"; // 東京リージョンに変更
-const functionsInstance = getFunctions(app, DEFAULT_FUNCTIONS_REGION);
 const analytics = getAnalytics(app);
-
-const callMobCullUpdater = httpsCallable(functionsInstance, 'mobCullUpdaterV2');
-const callPostMobMemo = httpsCallable(functionsInstance, 'postMobMemoV2');
-const callUpdateMobStatus = httpsCallable(functionsInstance, 'updateMobStatusV2');
 
 async function initializeAuth() {
     return new Promise((resolve) => {
@@ -185,19 +178,29 @@ const submitReport = async (mobNo, timeISO) => {
         }
     }
 
-    // 即座にモーダルを閉じる (バックグラウンド送信)
     closeReportModal();
 
     try {
-        const response = await callUpdateMobStatus({
-            mob_id: mobNo.toString(),
-            kill_time: killTimeDate.toISOString()
-        });
+        let collectionSuffix = "s_latest";
+        if (mob.Rank === "A") collectionSuffix = "a_latest";
+        else if (mob.Rank === "F") collectionSuffix = "f_latest";
 
-        const result = response.data;
-        if (!result?.success) {
-            throw new Error(result?.message || "不明なエラー");
-        }
+        const docRef = doc(db, "mob_status", collectionSuffix);
+
+        const prevTimeSeconds = mob.last_kill_time || 0;
+        const prevTimestamp = prevTimeSeconds > 0
+            ? Timestamp.fromMillis(prevTimeSeconds * 1000)
+            : null;
+
+        const newData = {
+            [mobNo]: {
+                last_kill_time: Timestamp.fromDate(killTimeDate),
+                prev_kill_time: prevTimestamp
+            }
+        };
+
+        await updateDoc(docRef, newData);
+
         console.log(`[Report] Success: Mob ${mobNo}`);
 
     } catch (error) {
@@ -222,22 +225,21 @@ const submitMemo = async (mobNo, memoText) => {
         return { success: false, error: "Mobデータエラー" };
     }
 
-    const data = {
-        mob_id: mobNo.toString(),
-        memo_text: memoText
-    };
-
     try {
-        const response = await callPostMobMemo(data);
-        const result = response.data;
+        // shared_data/memo ドキュメントへの書き込み
+        const docRef = doc(db, "shared_data", "memo");
+        const memoData = {
+            memo_text: memoText,
+            created_at: Timestamp.now(),
+            created_by: userId
+        };
 
-        if (result?.success) {
-            return { success: true };
-        } else {
-            const errorMessage = result?.error || "Functions内部でエラーが発生しました。";
-            console.error("メモ投稿エラー:", result);
-            return { success: false, error: errorMessage };
-        }
+        await setDoc(docRef, {
+            [mobNo]: [memoData]
+        }, { merge: true });
+
+        return { success: true };
+
     } catch (error) {
         console.error("メモ投稿エラー:", error);
         const userFriendlyError = error.message || "通信または認証に失敗しました。";
@@ -254,32 +256,26 @@ const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
         console.error("認証が完了していません。");
         return;
     }
-    const action = nextCulled ? "CULL" : "UNCULL";
+
     const mob = mobs.find(m => m.No === mobNo);
     if (!mob) return;
 
-    const reportTimeDate = new Date();
-    const data = {
-        mob_id: mobNo.toString(),
-        location_id: locationId.toString(),
-        action: action,
-        report_time: reportTimeDate.toISOString(),
-    };
-
     try {
-        const response = await callMobCullUpdater(data);
-        const result = response.data;
-
-        if (result?.success) {
-            updateCrushUI(mobNo, locationId, nextCulled);
-        } else {
-            const errorMessage = result?.error || "Functions内部でエラーが発生しました。";
-            console.error("湧き潰し報告エラー:", errorMessage);
-        }
-
+        // mob_locations/{mobNo} ドキュメント
+        const docRef = doc(db, "mob_locations", mobNo.toString());
+        const updatePayload = {
+            points: {
+                [locationId]: {
+                    culled: nextCulled,
+                    last_updated: Timestamp.now(),
+                    updated_by: userId
+                }
+            }
+        };
+        await setDoc(docRef, updatePayload, { merge: true });
+        updateCrushUI(mobNo, locationId, nextCulled);
     } catch (error) {
         console.error("湧き潰し報告エラー:", error);
-        const userFriendlyError = error.message || "通信または認証に失敗しました。";
     }
 };
 
