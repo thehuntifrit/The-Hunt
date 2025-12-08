@@ -1,284 +1,659 @@
-// server.js
+// uiRender.js
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
+import { calculateRepop, formatDurationHM, formatLastKillTime, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
+import { drawSpawnPoint, isCulled, attachLocationEvents } from "./location.js";
+import { getState, PROGRESS_CLASSES } from "./dataManager.js";
+import { filterMobsByRankAndArea } from "./filterUI.js";
 
-import { getState } from "./dataManager.js";
-import { closeReportModal } from "./modal.js";
-import { updateCrushUI } from "./location.js";
-
-const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyBikwjGsjL_PVFhx3Vj-OeJCocKA_hQOgU",
-    authDomain: "the-hunt-ifrit.firebaseapp.com",
-    projectId: "the-hunt-ifrit",
-    storageBucket: "the-hunt-ifrit.firebasestorage.app",
-    messagingSenderId: "285578581189",
-    appId: "1:285578581189:web:4d9826ee3f988a7519ccac"
+const DOM = {
+  masterContainer: document.getElementById('master-mob-container'),
+  colContainer: document.getElementById('column-container'),
+  cols: [document.getElementById('column-1'), document.getElementById('column-2'), document.getElementById('column-3')],
+  rankTabs: document.getElementById('rank-tabs'),
+  areaFilterWrapper: document.getElementById('area-filter-wrapper'),
+  areaFilterPanel: document.getElementById('area-filter-panel'),
+  statusMessage: document.getElementById('status-message'),
+  reportModal: document.getElementById('report-modal'),
+  reportForm: document.getElementById('report-form'),
+  modalMobName: document.getElementById('modal-mob-name'),
+  modalStatus: document.getElementById('modal-status'),
+  modalTimeInput: document.getElementById('report-datetime'),
+  modalForceSubmit: document.getElementById('report-force-submit'),
+  statusMessageTemp: document.getElementById('status-message-temp'),
 };
 
-const app = initializeApp(FIREBASE_CONFIG);
-const db = getFirestore(app);
-const auth = getAuth(app);
-const analytics = getAnalytics(app);
+function updateEorzeaTime() {
+  const et = getEorzeaTime(new Date());
+  const el = document.getElementById("eorzea-time");
+  if (el) {
+    el.textContent = `ET ${et.hours}:${et.minutes}`;
+  }
+}
+updateEorzeaTime();
+setInterval(updateEorzeaTime, EORZEA_MINUTE_MS);
 
-async function initializeAuth() {
-    return new Promise((resolve) => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            unsubscribe();
-            if (user) {
-                resolve(user.uid);
-            } else {
-                signInAnonymously(auth)
-                    .then((credential) => {
-                        resolve(credential.user.uid);
-                    })
-                    .catch((error) => {
-                        console.error("匿名認証に失敗しました:", error);
-                        resolve(null);
-                    });
-            }
-        });
-    });
+function processText(text) {
+  if (typeof text !== "string" || !text) return "";
+  return text.replace(/\/\//g, "<br>");
 }
 
-function subscribeMobStatusDocs(onUpdate) {
-    const docIds = ["s_latest", "a_latest", "f_latest"];
-    const mobStatusDataMap = {};
-    const unsubs = docIds.map(id =>
-        onSnapshot(doc(db, "mob_status", id), snap => {
-            const data = snap.data();
-            if (data) mobStatusDataMap[id] = data;
-            onUpdate(mobStatusDataMap);
-        })
-    );
-    return () => unsubs.forEach(u => u());
+function createMobCard(mob) {
+  const template = document.getElementById('mob-card-template');
+  const clone = template.content.cloneNode(true);
+  const card = clone.querySelector('.mob-card');
+
+  const rank = mob.Rank;
+  const rankLabel = rank;
+  const isExpandable = rank === "S";
+  const { openMobCardNo } = getState();
+  const isOpen = isExpandable && mob.No === openMobCardNo;
+
+  const state = getState();
+
+  const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
+  const isMemoNewer = (mob.memo_updated_at || 0) > (mob.last_kill_time || 0);
+  const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
+
+  const memoIcon = shouldShowMemo
+    ? ` <span data-tooltip="${mob.memo_text}" style="font-size: 1rem">📝</span>`
+    : "";
+
+  // Card Attributes
+  card.dataset.mobNo = mob.No;
+  card.dataset.rank = rank;
+  const repopInfo = calculateRepop(mob, state.maintenance);
+  if (repopInfo.isMaintenanceStop) {
+    card.classList.add("opacity-50", "grayscale", "pointer-events-none");
+  }
+
+  // Rank Badge - Removed as requested
+  const rankBadge = card.querySelector('.rank-badge');
+  if (rankBadge) rankBadge.remove();
+
+  // Adjust grid layout
+  const headerGrid = card.querySelector('.mob-card-header > div');
+  if (headerGrid) {
+    headerGrid.classList.remove('grid-cols-[auto_1fr_auto]');
+    headerGrid.classList.add('grid-cols-[1fr_auto]');
+  }
+
+  // Mob Name
+  const mobNameEl = card.querySelector('.mob-name');
+  mobNameEl.textContent = mob.Name;
+  mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
+
+  const memoIconContainer = card.querySelector('.memo-icon-container');
+  memoIconContainer.innerHTML = memoIcon;
+
+  // Report Button
+  const reportBtn = card.querySelector('.report-btn');
+  reportBtn.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
+  reportBtn.dataset.mobNo = mob.No;
+
+  // Expandable Panel
+  const expandablePanel = card.querySelector('.expandable-panel');
+  if (isExpandable) {
+    if (isOpen) {
+      expandablePanel.classList.add('open');
+    }
+
+    // Memo Input
+    const memoInput = card.querySelector('.memo-input');
+    memoInput.value = shouldShowMemo ? (mob.memo_text || "") : "";
+    memoInput.dataset.mobNo = mob.No;
+
+    // Condition
+    const conditionText = card.querySelector('.condition-text');
+    conditionText.innerHTML = processText(mob.Condition);
+
+    // Map
+    const mapContainer = card.querySelector('.map-container');
+    if (mob.Map && rank === 'S') {
+      const mapImg = mapContainer.querySelector('.mob-map-img');
+      mapImg.src = `./maps/${mob.Map}`;
+      mapImg.alt = `${mob.Area} Map`;
+    } else {
+      mapContainer.remove();
+    }
+
+  } else {
+    expandablePanel.remove();
+  }
+
+  updateAreaInfo(card, mob);
+  updateMobCount(card, mob);
+  updateMapOverlay(card, mob);
+
+  return card;
 }
 
-function subscribeMobMemos(onUpdate) {
-    const memoDocRef = doc(db, "shared_data", "memo");
-    const unsub = onSnapshot(memoDocRef, snap => {
-        const data = snap.data() || {};
-        onUpdate(data);
-    });
-    return unsub;
+function rankPriority(rank) {
+  switch (rank) {
+    case "S": return 0;
+    case "A": return 1;
+    case "F": return 2;
+    default: return 99;
+  }
 }
 
-function normalizePoints(data) {
-    const result = {};
-    for (const [key, value] of Object.entries(data)) {
-        if (key.startsWith("points.")) {
-            const [, locId, field] = key.split(".");
-            if (!result[locId]) result[locId] = {};
-            result[locId][field] = value;
-        }
-    }
-    return result;
+function getExpansionPriority(expansionName) {
+  switch (expansionName) {
+    case "黄金": return 6;
+    case "暁月": return 5;
+    case "漆黒": return 4;
+    case "紅蓮": return 3;
+    case "蒼天": return 2;
+    case "新生": return 1;
+    default: return 0;
+  }
 }
 
-function subscribeMobLocations(onUpdate) {
-    const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
-        const map = {};
-        snapshot.forEach(docSnap => {
-            const mobNo = parseInt(docSnap.id, 10);
-            const data = docSnap.data();
-            const normalized = normalizePoints(data);
-            map[mobNo] = normalized;
-        });
-        onUpdate(map);
-    });
-    return unsub;
+function parseMobIdParts(no) {
+  const str = String(no).padStart(5, "0");
+  return {
+    mobNo: parseInt(str.slice(2, 4), 10),
+    instance: parseInt(str[4], 10),
+  };
 }
 
-const submitReport = async (mobNo, timeISO) => {
-    const state = getState();
-    const userId = state.userId;
-    const mobs = state.mobs;
+function allTabComparator(a, b) {
+  const aInfo = a.repopInfo || {};
+  const bInfo = b.repopInfo || {};
+  const aStatus = aInfo.status;
+  const bStatus = bInfo.status;
+  const isAMaxOver = aStatus === "MaxOver";
+  const isBMaxOver = bStatus === "MaxOver";
 
-    if (!userId) {
-        console.error("認証が完了していません。ページをリロードしてください。");
-        return;
+  if (isAMaxOver && isBMaxOver) {
+    const getMaxOverRankPriority = (r) => {
+      if (r === 'S') return 0;
+      if (r === 'F') return 1;
+      if (r === 'A') return 2;
+      return 99;
+    };
+
+    const rankDiff = getMaxOverRankPriority(a.Rank) - getMaxOverRankPriority(b.Rank);
+    if (rankDiff !== 0) return rankDiff;
+    const expA = getExpansionPriority(a.Expansion);
+    const expB = getExpansionPriority(b.Expansion);
+    if (expA !== expB) return expB - expA;
+    const pa = parseMobIdParts(a.No);
+    const pb = parseMobIdParts(b.No);
+    if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
+    return pa.instance - pb.instance;
+  }
+
+  if (isAMaxOver && !isBMaxOver) return -1;
+  if (!isAMaxOver && isBMaxOver) return 1;
+
+  const isAMaint = aInfo.isMaintenanceStop || aInfo.isBlockedByMaintenance;
+  const isBMaint = bInfo.isMaintenanceStop || bInfo.isBlockedByMaintenance;
+
+  if (isAMaint && !isBMaint) return 1;
+  if (!isAMaint && isBMaint) return -1;
+
+  const aPercent = aInfo.elapsedPercent || 0;
+  const bPercent = bInfo.elapsedPercent || 0;
+
+  if (Math.abs(aPercent - bPercent) > 0.001) {
+    return bPercent - aPercent;
+  }
+
+  if (!isAMaint && !isBMaint) {
+    const aTime = aInfo.minRepop || 0;
+    const bTime = bInfo.minRepop || 0;
+    if (aTime !== bTime) return aTime - bTime;
+  }
+  const rankDiff = rankPriority(a.Rank) - rankPriority(b.Rank);
+  if (rankDiff !== 0) return rankDiff;
+  const expA = getExpansionPriority(a.Expansion);
+  const expB = getExpansionPriority(b.Expansion);
+  if (expA !== expB) return expB - expA;
+  const pa = parseMobIdParts(a.No);
+  const pb = parseMobIdParts(b.No);
+  if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
+  return pa.instance - pb.instance;
+}
+
+function filterAndRender({ isInitialLoad = false } = {}) {
+  const state = getState();
+  const filtered = filterMobsByRankAndArea(state.mobs);
+
+  const sortedMobs = filtered.sort(allTabComparator);
+
+  const activeElement = document.activeElement;
+  let focusedMobNo = null;
+  let focusedAction = null;
+  let selectionStart = null;
+  let selectionEnd = null;
+
+  if (activeElement && activeElement.closest('.mob-card')) {
+    focusedMobNo = activeElement.closest('.mob-card').dataset.mobNo;
+    if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
+      focusedAction = activeElement.dataset.action;
+      selectionStart = activeElement.selectionStart;
+      selectionEnd = activeElement.selectionEnd;
+    }
+  }
+
+  const existingCards = new Map();
+  document.querySelectorAll('.mob-card').forEach(card => {
+    const mobNo = card.getAttribute('data-mob-no');
+    existingCards.set(mobNo, card);
+  });
+
+  const frag = document.createDocumentFragment();
+
+  sortedMobs.forEach(mob => {
+    const mobNoStr = String(mob.No);
+    let card = existingCards.get(mobNoStr);
+
+    if (card) {
+      updateProgressText(card, mob);
+      updateProgressBar(card, mob);
+      updateExpandablePanel(card, mob);
+      updateMemoIcon(card, mob);
+      updateAreaInfo(card, mob);
+      updateMobCount(card, mob);
+      updateMapOverlay(card, mob);
+
+      if (mob.repopInfo.isMaintenanceStop) {
+        card.classList.add("opacity-50", "grayscale", "pointer-events-none");
+      } else {
+        card.classList.remove("opacity-50", "grayscale", "pointer-events-none");
+      }
+
+    } else {
+      card = createMobCard(mob);
+      updateProgressText(card, mob);
+      updateProgressBar(card, mob);
+      updateExpandablePanel(card, mob);
     }
 
-    const mob = mobs.find(m => m.No === mobNo);
-    if (!mob) {
-        console.error("モブデータが見つかりません。");
-        return;
+    if (card) {
+      frag.appendChild(card);
     }
+  });
 
-    let killTimeDate;
-    if (timeISO && typeof timeISO === "string") {
-        const m = timeISO.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
-        if (m) {
-            const [, y, mo, d, h, mi, s] = m;
-            killTimeDate = new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), s ? Number(s) : 0, 0);
-        } else {
-            const modalDate = new Date(timeISO);
-            if (!isNaN(modalDate.getTime())) {
-                killTimeDate = modalDate;
-            }
+  DOM.masterContainer.appendChild(frag);
+
+  distributeCards();
+  attachLocationEvents();
+
+  if (isInitialLoad) updateProgressBars();
+
+  // Restore focus
+  if (focusedMobNo) {
+    const card = document.querySelector(`.mob-card[data-mob-no="${focusedMobNo}"]`);
+    if (card) {
+      if (focusedAction) {
+        const input = card.querySelector(`input[data-action="${focusedAction}"]`);
+        if (input) {
+          input.focus();
+          if (selectionStart !== null && selectionEnd !== null) {
+            input.setSelectionRange(selectionStart, selectionEnd);
+          }
         }
+      }
     }
+  }
+}
 
-    if (!killTimeDate) {
-        killTimeDate = new Date();
+function distributeCards() {
+  const width = window.innerWidth;
+  const md = 768;
+  const lg = 1024;
+  let cols = 1;
+  if (width >= lg) {
+    cols = 3;
+    DOM.cols[2].classList.remove("hidden");
+  } else if (width >= md) {
+    cols = 2;
+    DOM.cols[2].classList.add("hidden");
+  } else {
+    cols = 1;
+    DOM.cols[2].classList.add("hidden");
+  }
+
+  DOM.cols.forEach(col => (col.innerHTML = ""));
+  const cards = Array.from(DOM.masterContainer.children);
+  cards.forEach((card, idx) => {
+    const target = idx % cols;
+    DOM.cols[target].appendChild(card);
+  });
+}
+
+function updateProgressBar(card, mob) {
+  const bar = card.querySelector(".progress-bar-bg");
+  const wrapper = bar?.parentElement;
+  const text = card.querySelector(".progress-text");
+  if (!bar || !wrapper || !text) return;
+
+  const { elapsedPercent, status } = mob.repopInfo;
+
+  bar.style.transition = "width linear 60s";
+  bar.style.width = `${elapsedPercent}%`;
+
+  bar.classList.remove(
+    PROGRESS_CLASSES.P0_60,
+    PROGRESS_CLASSES.P60_80,
+    PROGRESS_CLASSES.P80_100,
+    PROGRESS_CLASSES.MAX_OVER
+  );
+  text.classList.remove(
+    PROGRESS_CLASSES.TEXT_NEXT,
+    PROGRESS_CLASSES.TEXT_POP
+  );
+  wrapper.classList.remove(PROGRESS_CLASSES.BLINK_WHITE);
+
+  if (status === "PopWindow" || status === "ConditionActive") {
+    if (elapsedPercent > 90) {
+      wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
     }
+    text.classList.add(PROGRESS_CLASSES.TEXT_POP);
 
-    const modalStatusEl = document.querySelector("#modal-status");
-    const forceSubmitEl = document.querySelector("#report-force-submit");
-    const isForceSubmit = forceSubmitEl ? forceSubmitEl.checked : false;
-    // 未来時刻チェック (現在時刻 + 10分)
-    const nowMs = Date.now();
-    if (killTimeDate.getTime() > nowMs + 600000) {
-        const msg = "現在時刻より10分以上未来の時刻は報告できません。";
-        console.warn(msg);
-        if (modalStatusEl) {
-            modalStatusEl.textContent = msg;
-            modalStatusEl.style.color = "#ef4444";
-        }
-        return;
+  } else if (status === "MaxOver") {
+    bar.classList.add(PROGRESS_CLASSES.MAX_OVER);
+    text.classList.add(PROGRESS_CLASSES.TEXT_POP);
+
+    if (mob.repopInfo.isInConditionWindow) {
+      wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
     }
+  } else {
+    text.classList.add(PROGRESS_CLASSES.TEXT_NEXT);
+  }
+}
 
-    if (!isForceSubmit && mob.last_kill_time) {
-        let maintenance = state.maintenance;
-        if (maintenance && maintenance.maintenance) {
-            maintenance = maintenance.maintenance;
-        }
+function updateProgressText(card, mob) {
+  const text = card.querySelector(".progress-text");
+  if (!text) return;
 
-        let repopSeconds = mob.REPOP_s;
-        let baseTimeMs = mob.last_kill_time * 1000;
+  const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, minRepop,
+    maxRepop, status, isInConditionWindow, timeRemaining, isBlockedByMaintenance
+  } = mob.repopInfo || {};
 
-        if (maintenance && maintenance.serverUp) {
-            const serverUpMs = new Date(maintenance.serverUp).getTime();
-            const serverUpSec = serverUpMs / 1000;
+  const nowSec = Date.now() / 1000;
+  let leftStr = timeRemaining || "未確定";
+  const percentStr = (status === "PopWindow" || status === "ConditionActive")
+    ? ` (${Number(elapsedPercent || 0).toFixed(0)}%)`
+    : "";
 
-            if (mob.last_kill_time <= serverUpSec) {
-                repopSeconds = repopSeconds * 0.6;
-                baseTimeMs = serverUpMs;
-            }
-        }
+  const now = Date.now() / 1000;
+  const mobNameEl = card.querySelector('.mob-name');
 
-        const minRepopTimeMs = baseTimeMs + (repopSeconds * 1000);
-        const allowedTimeMs = minRepopTimeMs - (300 * 1000);
-
-        if (killTimeDate.getTime() < allowedTimeMs) {
-            const allowedDate = new Date(allowedTimeMs);
-            const timeStr = allowedDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
-
-            const msg = `まだ湧き時間になっていません。\n最短でも ${timeStr} 以降である必要があります。\n(強制送信する場合はチェックを入れてください)`;
-            console.warn(msg);
-            if (modalStatusEl) {
-                modalStatusEl.textContent = msg;
-                modalStatusEl.style.color = "#ef4444";
-                modalStatusEl.style.whiteSpace = "pre-wrap";
-            }
-            return;
-        }
+  // 最短REPOP前の場合のみ彩度を下げる
+  const isBeforeMinRepop = now < mob.repopInfo.minRepop;
+  if (status === "Next" || (status === "NextCondition" && isBeforeMinRepop)) {
+    card.classList.add("opacity-60");
+    if (mobNameEl) {
+      mobNameEl.style.color = "#999";
     }
+  } else {
+    card.classList.remove("opacity-60");
+    if (mobNameEl) {
+      mobNameEl.style.color = `var(--rank-${mob.Rank.toLowerCase()})`;
+    }
+  }
 
-    closeReportModal();
+  if (isBlockedByMaintenance) {
+    card.classList.add("grayscale", "opacity-50");
+  } else {
+    card.classList.remove("grayscale", "opacity-50");
+  }
 
+  let rightStr = "未確定";
+  let isNext = false;
+
+  let isSpecialCondition = false;
+
+  if (isInConditionWindow && mob.repopInfo.conditionRemaining) {
+    rightStr = mob.repopInfo.conditionRemaining;
+    isSpecialCondition = true;
+  } else if (nextConditionSpawnDate) {
     try {
-        let collectionSuffix = "s_latest";
-        if (mob.Rank === "A") collectionSuffix = "a_latest";
-        else if (mob.Rank === "F") collectionSuffix = "f_latest";
+      const dateStr = new Intl.DateTimeFormat("ja-JP", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Asia/Tokyo"
+      }).format(nextConditionSpawnDate);
 
-        const docRef = doc(db, "mob_status", collectionSuffix);
-
-        const prevTimeSeconds = mob.last_kill_time || 0;
-        const prevTimestamp = prevTimeSeconds > 0
-            ? Timestamp.fromMillis(prevTimeSeconds * 1000)
-            : null;
-
-        const newData = {
-            [mobNo]: {
-                last_kill_time: Timestamp.fromDate(killTimeDate),
-                prev_kill_time: prevTimestamp
-            }
-        };
-
-        await updateDoc(docRef, newData);
-
-        console.log(`[Report] Success: Mob ${mobNo}`);
-
-    } catch (error) {
-        console.error("レポート送信エラー:", error);
-        alert("レポート送信エラー: " + (error.message || "通信失敗"));
+      rightStr = `🔔 ${dateStr}`;
+      isNext = true;
+      isSpecialCondition = true;
+    } catch {
+      rightStr = "未確定";
     }
-};
-
-const submitMemo = async (mobNo, memoText) => {
-    const state = getState();
-    const userId = state.userId;
-    const mobs = state.mobs;
-
-    if (!userId) {
-        console.error("認証が完了していません。");
-        return { success: false, error: "認証エラー" };
-    }
-
-    const mob = mobs.find(m => m.No === mobNo);
-    if (!mob) {
-        console.error("モブデータが見つかりません。");
-        return { success: false, error: "Mobデータエラー" };
-    }
-
+  } else if (nextMinRepopDate) {
     try {
-        // shared_data/memo ドキュメントへの書き込み
-        const docRef = doc(db, "shared_data", "memo");
-        const memoData = {
-            memo_text: memoText,
-            created_at: Timestamp.now(),
-            created_by: userId
-        };
+      const dateStr = new Intl.DateTimeFormat("ja-JP", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Asia/Tokyo"
+      }).format(nextMinRepopDate);
 
-        await setDoc(docRef, {
-            [mobNo]: [memoData]
-        }, { merge: true });
-
-        return { success: true };
-
-    } catch (error) {
-        console.error("メモ投稿エラー:", error);
-        const userFriendlyError = error.message || "通信または認証に失敗しました。";
-        return { success: false, error: userFriendlyError };
+      rightStr = `in ${dateStr}`;
+    } catch {
+      rightStr = "未確定";
     }
-};
+  }
 
-const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
+  let rightContent = `<span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span>`;
+
+  text.innerHTML = `
+<div class="w-full h-full grid grid-cols-2 items-center text-sm font-bold">
+<div class="pl-1 text-left truncate">${leftStr}${percentStr}</div>
+<div class="pr-2 text-right truncate">${rightContent}</div>
+</div>
+`;
+
+  if (status === "MaxOver") text.classList.add("max-over");
+  else text.classList.remove("max-over");
+
+  if (minRepop - nowSec >= 3600) text.classList.add("long-wait");
+  else text.classList.remove("long-wait");
+
+  if (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow)) {
+    card.classList.add("blink-border-white");
+  } else {
+    card.classList.remove("blink-border-white");
+  }
+}
+
+function updateExpandablePanel(card, mob) {
+  const elNext = card.querySelector("[data-next-time]");
+  const elLast = card.querySelector("[data-last-kill]");
+  const elMemoInput = card.querySelector("input[data-action='save-memo']");
+
+  const lastStr = formatLastKillTime(mob.last_kill_time);
+  if (elLast) elLast.textContent = `前回: ${lastStr}`;
+
+  if (elMemoInput) {
+    if (document.activeElement !== elMemoInput) {
+      const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
+      const isMemoNewer = (mob.memo_updated_at || 0) > (mob.last_kill_time || 0);
+      const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
+      elMemoInput.value = shouldShowMemo ? (mob.memo_text || "") : "";
+    }
+  }
+}
+
+function updateMemoIcon(card, mob) {
+  const memoIconContainer = card.querySelector('.memo-icon-container');
+  if (!memoIconContainer) return;
+
+  const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
+  const isMemoNewer = (mob.memo_updated_at || 0) > (mob.last_kill_time || 0);
+  const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
+
+  if (shouldShowMemo) {
+    const span = document.createElement('span');
+    span.style.fontSize = '0.875rem';
+    span.textContent = '📝';
+    span.setAttribute('data-tooltip', mob.memo_text);
+    memoIconContainer.innerHTML = '';
+    memoIconContainer.appendChild(span);
+  } else {
+    memoIconContainer.innerHTML = '';
+  }
+}
+
+function updateMobCount(card, mob) {
+  const countContainer = card.querySelector('.mob-count-container');
+  if (!countContainer) return;
+
+  const state = getState();
+  const mobLocationsData = state.mobLocations?.[mob.No];
+  const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
+
+  let displayCountText = "";
+
+  if (mob.Map && mob.spawn_points) {
+    const validSpawnPoints = (mob.spawn_points ?? []).filter(point => {
+      const isS_SpawnPoint = point.mob_ranks.includes("S");
+      if (!isS_SpawnPoint) return false;
+      const pointStatus = spawnCullStatus?.[point.id];
+      return !isCulled(pointStatus, mob.No);
+    });
+
+    const remainingCount = validSpawnPoints.length;
+
+    if (remainingCount === 1) {
+      const pointId = validSpawnPoints[0]?.id || "";
+      const pointNumber = parseInt(pointId.slice(-2), 10);
+      displayCountText = `<span class="text-sm text-yellow-400 font-bold text-glow">${pointNumber}&thinsp;番</span>`;
+    } else if (remainingCount > 1) {
+      displayCountText = `<span class="text-sm text-gray-400 relative -top-[0.12rem]">@</span><span class="text-base text-gray-400 font-bold text-glow relative top-[0.04rem]">&thinsp;${remainingCount}</span>`;
+    }
+
+    displayCountText = `<span class="text-sm">📍</span>${displayCountText}`;
+  }
+
+  countContainer.innerHTML = displayCountText;
+}
+
+function updateAreaInfo(card, mob) {
+  const areaInfoContainer = card.querySelector('.area-info-container');
+  if (!areaInfoContainer) return;
+
+  let areaInfoHtml = `<span class="flex items-center gap-1 font-normal"><span>${mob.Area}</span>
+<span class="opacity-50">|</span>
+<span class="flex items-center">${mob.Expansion}&thinsp;
+<span class="inline-flex items-center justify-center w-[13px] h-[13px] border 
+border-current rounded-[3px] text-[9px] leading-none relative">${mob.Rank}</span>`;
+
+  areaInfoHtml += `</span></span>`;
+  areaInfoContainer.innerHTML = areaInfoHtml;
+}
+
+function updateMapOverlay(card, mob) {
+  const mapContainer = card.querySelector('.map-container');
+  if (!mapContainer) return;
+  const mapOverlay = mapContainer.querySelector('.map-overlay');
+  if (!mapOverlay) return;
+
+  if (mob.Map && mob.Rank === 'S') {
     const state = getState();
-    const userId = state.userId;
-    const mobs = state.mobs;
+    const mobLocationsData = state.mobLocations?.[mob.No];
+    const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
 
-    if (!userId) {
-        console.error("認証が完了していません。");
-        return;
+    let isLastOne = false;
+    let validSpawnPoints = [];
+
+    validSpawnPoints = (mob.spawn_points ?? []).filter(point => {
+      const isS_SpawnPoint = point.mob_ranks.includes("S");
+      if (!isS_SpawnPoint) return false;
+      const pointStatus = spawnCullStatus?.[point.id];
+      return !isCulled(pointStatus, mob.No);
+    });
+
+    const remainingCount = validSpawnPoints.length;
+    isLastOne = remainingCount === 1;
+    const isS_LastOne = isLastOne;
+
+    const spawnPointsHtml = (mob.spawn_points ?? []).map(point => {
+      const isThisPointTheLastOne = isLastOne && point.id === validSpawnPoints[0]?.id;
+      return drawSpawnPoint(
+        point,
+        spawnCullStatus,
+        mob.No,
+        point.mob_ranks.includes("B2") ? "B2"
+          : point.mob_ranks.includes("B1") ? "B1"
+            : point.mob_ranks[0],
+        isThisPointTheLastOne,
+        isS_LastOne
+      );
+    }).join("");
+
+    mapOverlay.innerHTML = spawnPointsHtml;
+  }
+}
+
+function updateProgressBars() {
+  const state = getState();
+  const conditionMobs = [];
+
+  state.mobs.forEach((mob) => {
+    mob.repopInfo = calculateRepop(mob, state.maintenance);
+
+    if (mob.repopInfo.nextConditionSpawnDate && mob.repopInfo.conditionWindowEnd) {
+      const nowSec = Date.now() / 1000;
+      const spawnSec = mob.repopInfo.nextConditionSpawnDate.getTime() / 1000;
+      const endSec = mob.repopInfo.conditionWindowEnd.getTime() / 1000;
+
+      if (nowSec >= (spawnSec - 900) && nowSec <= endSec) {
+        conditionMobs.push(mob.Name);
+      }
     }
 
-    const mob = mobs.find(m => m.No === mobNo);
-    if (!mob) return;
-
-    try {
-        // mob_locations/{mobNo} ドキュメント
-        const docRef = doc(db, "mob_locations", mobNo.toString());
-        const updatePayload = {
-            points: {
-                [locationId]: {
-                    culled: nextCulled,
-                    last_updated: Timestamp.now(),
-                    updated_by: userId
-                }
-            }
-        };
-        await setDoc(docRef, updatePayload, { merge: true });
-        updateCrushUI(mobNo, locationId, nextCulled);
-    } catch (error) {
-        console.error("湧き潰し報告エラー:", error);
+    const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
+    if (card) {
+      updateProgressText(card, mob);
+      updateProgressBar(card, mob);
     }
-};
+  });
+
+  if (DOM.statusMessageTemp) {
+    if (conditionMobs.length > 0) {
+      DOM.statusMessageTemp.textContent = `🔜 ${conditionMobs.join(" / ")}`;
+      DOM.statusMessageTemp.className = "text-cyan-300 font-bold animate-pulse";
+      DOM.statusMessageTemp.classList.remove("hidden");
+    } else {
+      DOM.statusMessageTemp.textContent = "";
+      DOM.statusMessageTemp.classList.add("hidden");
+    }
+  }
+}
+
+const sortAndRedistribute = debounce(() => filterAndRender(), 200);
+
+function onKillReportReceived(mobId, kill_time) {
+  const mob = getState().mobs.find(m => m.No === mobId);
+  if (!mob) return;
+
+  mob.last_kill_time = Number(kill_time);
+  mob.repopInfo = calculateRepop(mob, getState().maintenance);
+
+  const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
+  if (card) {
+    updateProgressText(card, mob);
+    updateProgressBar(card, mob);
+    updateExpandablePanel(card, mob);
+    updateMemoIcon(card, mob);
+    updateAreaInfo(card, mob);
+    updateMobCount(card, mob);
+    updateMapOverlay(card, mob);
+  }
+}
+
+setInterval(() => {
+  updateProgressBars();
+}, EORZEA_MINUTE_MS);
 
 export {
-    initializeAuth, subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos,
-    submitReport, submitMemo, toggleCrushStatus
+  filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, DOM,
+  sortAndRedistribute, onKillReportReceived, updateProgressBars, updateAreaInfo, updateMapOverlay, updateMobCount
 };
