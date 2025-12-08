@@ -235,8 +235,7 @@ const submitMemo = async (mobNo, memoText) => {
         const docRef = doc(db, "shared_data", "memo");
         const memoData = {
             memo_text: memoText,
-            created_at: Timestamp.now(),
-            created_by: userId
+            created_at: Timestamp.now()
         };
 
         await setDoc(docRef, {
@@ -271,14 +270,10 @@ const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
         const action = nextCulled ? "CULL" : "UNCULL";
         const fieldName = action === "CULL" ? "culled_at" : "uncull_at";
 
+        const updateKey = `points.${locationId}.${fieldName}`;
+
         const updatePayload = {
-            points: {
-                [locationId]: {
-                    [fieldName]: Timestamp.now(),
-                    last_updated: Timestamp.now(),
-                    updated_by: userId
-                }
-            }
+            [updateKey]: Timestamp.now()
         };
 
         await setDoc(docRef, updatePayload, { merge: true });
