@@ -79,7 +79,6 @@ function renderMaintenanceStatus() {
 
     const start = new Date(maintenance.start);
     const end = new Date(maintenance.end);
-    const serverUp = new Date(maintenance.serverUp);
     const now = new Date();
 
     const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -199,15 +198,9 @@ function toggleCardExpand(card, mobNo) {
 }
 
 async function handleInstantReport(mobNo, rank) {
-    try {
-        const now = new Date();
-        const iso = now.toISOString();
-        await submitReport(mobNo, iso);
-    } catch (err) {
-        console.error("Instant report failed:", err);
-        const fallbackIso = new Date().toISOString();
-        await submitReport(mobNo, fallbackIso);
-    }
+    const now = new Date();
+    const iso = now.toISOString();
+    await submitReport(mobNo, iso);
 }
 
 async function handleReportSubmit(e) {
