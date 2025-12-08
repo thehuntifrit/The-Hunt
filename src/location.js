@@ -103,7 +103,7 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_Last
         dataIsInteractive = "false";
     }
 
-    const pointNumber = point.id.slice(-2);
+    const pointNumber = parseInt(point.id.slice(-2), 10);
     const titleText = `${pointNumber}${isCulledFlag ? " (済)" : ""}`;
 
     return `
@@ -143,7 +143,7 @@ function updateCrushUI(mobNo, locationId, isCulled) {
     }
 
     marker.dataset.isCulled = isCulled.toString();
-    const pointNumber = locationId.slice(-2);
+    const pointNumber = parseInt(locationId.slice(-2), 10);
     marker.setAttribute("data-tooltip", `${pointNumber} (${isCulled ? "済" : ""})`);
     marker.removeAttribute("title");
 }
