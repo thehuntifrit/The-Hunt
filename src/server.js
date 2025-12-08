@@ -231,8 +231,15 @@ const submitMemo = async (mobNo, memoText) => {
     }
 
     try {
-        // shared_data/memo ドキュメントへの書き込み
         const docRef = doc(db, "shared_data", "memo");
+
+        if (!memoText || memoText.trim() === "") {
+            await setDoc(docRef, {
+                [mobNo]: []
+            }, { merge: true });
+            return { success: true };
+        }
+
         const memoData = {
             memo_text: memoText,
             created_at: Timestamp.now()
@@ -286,6 +293,6 @@ const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
 };
 
 export {
-    initializeAuth, subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos,
-    submitReport, submitMemo, toggleCrushStatus
+    initializeAuth, subscribeMobStatusDocs, subscribeMobLocations,
+    subscribeMobMemos, submitReport, submitMemo, toggleCrushStatus
 };
