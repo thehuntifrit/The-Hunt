@@ -1,7 +1,7 @@
 // server.js
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, setDoc, Timestamp, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
 
@@ -128,7 +128,6 @@ const submitReport = async (mobNo, timeISO) => {
     const modalStatusEl = document.querySelector("#modal-status");
     const forceSubmitEl = document.querySelector("#report-force-submit");
     const isForceSubmit = forceSubmitEl ? forceSubmitEl.checked : false;
-
     // 未来時刻チェック (現在時刻 + 10分)
     const nowMs = Date.now();
     if (killTimeDate.getTime() > nowMs + 600000) {
