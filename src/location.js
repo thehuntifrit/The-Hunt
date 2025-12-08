@@ -45,7 +45,6 @@ function handleCrushToggle(e) {
     const nextCulled = !isCurrentlyCulled;
 
     toggleCrushStatus(mobNo, locationId, nextCulled);
-    updateCrushUI(mobNo, locationId, nextCulled);
 }
 
 function isCulled(pointStatus, mobNo) {
