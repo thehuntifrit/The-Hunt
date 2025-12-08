@@ -186,18 +186,18 @@ function allTabComparator(a, b) {
   if (isAMaxOver && !isBMaxOver) return -1;
   if (!isAMaxOver && isBMaxOver) return 1;
 
+  const isAMaint = aInfo.isMaintenanceStop || aInfo.isBlockedByMaintenance;
+  const isBMaint = bInfo.isMaintenanceStop || bInfo.isBlockedByMaintenance;
+
+  if (isAMaint && !isBMaint) return 1;
+  if (!isAMaint && isBMaint) return -1;
+
   const aPercent = aInfo.elapsedPercent || 0;
   const bPercent = bInfo.elapsedPercent || 0;
 
   if (Math.abs(aPercent - bPercent) > 0.001) {
     return bPercent - aPercent;
   }
-
-  const isAMaint = aInfo.isMaintenanceStop || aInfo.isBlockedByMaintenance;
-  const isBMaint = bInfo.isMaintenanceStop || bInfo.isBlockedByMaintenance;
-
-  if (isAMaint && !isBMaint) return 1;
-  if (!isAMaint && isBMaint) return -1;
 
   if (!isAMaint && !isBMaint) {
     const aTime = aInfo.minRepop || 0;
