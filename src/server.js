@@ -73,6 +73,12 @@ function normalizePoints(data) {
             if (!result[locId]) result[locId] = {};
             result[locId][field] = value;
         }
+        else if (key === "points" && typeof value === "object" && value !== null) {
+            for (const [locId, locData] of Object.entries(value)) {
+                if (!result[locId]) result[locId] = {};
+                Object.assign(result[locId], locData);
+            }
+        }
     }
     return result;
 }
@@ -260,19 +266,25 @@ const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
     if (!mob) return;
 
     try {
-        // mob_locations/{mobNo} ドキュメント
         const docRef = doc(db, "mob_locations", mobNo.toString());
+
+        const action = nextCulled ? "CULL" : "UNCULL";
+        const fieldName = action === "CULL" ? "culled_at" : "uncull_at";
+
         const updatePayload = {
             points: {
                 [locationId]: {
-                    culled: nextCulled,
+                    [fieldName]: Timestamp.now(),
                     last_updated: Timestamp.now(),
                     updated_by: userId
                 }
             }
         };
+
         await setDoc(docRef, updatePayload, { merge: true });
+
         updateCrushUI(mobNo, locationId, nextCulled);
+
     } catch (error) {
         console.error("湧き潰し報告エラー:", error);
     }
