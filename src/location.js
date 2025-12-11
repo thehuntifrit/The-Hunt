@@ -147,14 +147,16 @@ function updateCrushUI(mobNo, locationId, isCulled) {
     marker.removeAttribute("title");
 }
 
-function attachLocationEvents() {
-    const overlayContainers = document.querySelectorAll(".map-overlay");
-    if (!overlayContainers.length) return;
+let locationEventsAttached = false;
 
-    overlayContainers.forEach(overlay => {
-        overlay.removeEventListener("click", handleCrushToggle, { capture: true });
-        overlay.addEventListener("click", handleCrushToggle, { capture: true });
-    });
+function attachLocationEvents() {
+    if (locationEventsAttached) return;
+
+    const colContainer = document.getElementById("column-container");
+    if (!colContainer) return;
+
+    colContainer.addEventListener("click", handleCrushToggle, { capture: true });
+    locationEventsAttached = true;
 }
 
 export { isCulled, drawSpawnPoint, updateCrushUI, attachLocationEvents };
