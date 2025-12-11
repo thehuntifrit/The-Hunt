@@ -324,7 +324,7 @@ function filterAndRender({ isInitialLoad = false } = {}) {
           if (selectionStart !== null && selectionEnd !== null) {
             try {
               input.setSelectionRange(selectionStart, selectionEnd);
-            } catch (e) {}
+            } catch (e) { }
           }
         }
       }
@@ -350,7 +350,12 @@ function updateProgressBar(card, mob) {
 
   const { elapsedPercent, status } = mob.repopInfo;
 
-  bar.style.transition = "width linear 60s";
+  const currentWidth = parseFloat(bar.style.width) || 0;
+  if (elapsedPercent < currentWidth) {
+    bar.style.transition = "none";
+  } else {
+    bar.style.transition = "width linear 60s";
+  }
   bar.style.width = `${elapsedPercent}%`;
 
   bar.classList.remove(
