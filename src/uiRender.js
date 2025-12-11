@@ -333,13 +333,17 @@ function filterAndRender({ isInitialLoad = false } = {}) {
 }
 
 function showColumnContainer() {
-  if (DOM.colContainer) {
-    DOM.colContainer.classList.remove("opacity-0");
-  }
-  const overlay = document.getElementById("loading-overlay");
-  if (overlay) {
-    overlay.classList.add("hidden");
-  }
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (DOM.colContainer) {
+        DOM.colContainer.classList.remove("opacity-0");
+      }
+      const overlay = document.getElementById("loading-overlay");
+      if (overlay) {
+        overlay.classList.add("hidden");
+      }
+    });
+  });
 }
 
 function updateProgressBar(card, mob) {
