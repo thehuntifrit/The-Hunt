@@ -216,6 +216,11 @@ function allTabComparator(a, b) {
 
 function filterAndRender({ isInitialLoad = false } = {}) {
   const state = getState();
+
+  if (!state.initialLoadComplete && !isInitialLoad) {
+    return;
+  }
+
   const filtered = filterMobsByRankAndArea(state.mobs);
   const sortedMobs = filtered.sort(allTabComparator);
 
