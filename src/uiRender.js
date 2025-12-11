@@ -284,15 +284,6 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     updateProgressBars();
   }
 
-  // コンテナがまだ非表示の場合は表示する
-  if (DOM.colContainer && DOM.colContainer.classList.contains("opacity-0")) {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        showColumnContainer();
-      });
-    });
-  }
-
   // Restore focus
   if (focusedMobNo) {
     const card = document.querySelector(`.mob-card[data-mob-no="${focusedMobNo}"]`);
@@ -674,6 +665,6 @@ setInterval(() => {
 }, EORZEA_MINUTE_MS);
 
 export {
-  filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, DOM,
-  sortAndRedistribute, onKillReportReceived, updateProgressBars, updateAreaInfo, updateMapOverlay, updateMobCount
+  filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, DOM, sortAndRedistribute, 
+  onKillReportReceived, updateProgressBars, updateAreaInfo, updateMapOverlay, updateMobCount, showColumnContainer
 };
