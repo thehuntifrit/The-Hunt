@@ -4,7 +4,7 @@ import { loadBaseMobData, startRealtime, setOpenMobCardNo, getState, setUserId }
 import { initializeAuth, submitReport, submitMemo } from "./server.js";
 import { openReportModal, initModal } from "./modal.js";
 import { renderRankTabs, handleAreaFilterClick, updateFilterUI } from "./filterUI.js";
-import { DOM, sortAndRedistribute } from "./uiRender.js";
+import { DOM, sortAndRedistribute, showColumnContainer } from "./uiRender.js";
 import { debounce } from "./cal.js";
 import { initTooltip } from "./tooltip.js";
 
@@ -38,6 +38,12 @@ async function initializeApp() {
         renderMaintenanceStatus();
         attachGlobalEventListeners();
         initHeaderObserver();
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                showColumnContainer();
+            });
+        });
 
     } catch (e) {
         console.error("App initialization failed:", e);
