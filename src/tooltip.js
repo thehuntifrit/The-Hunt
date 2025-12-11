@@ -12,7 +12,6 @@ export function initTooltip() {
     document.addEventListener("mousemove", (e) => {
         if (!currentTarget) return;
 
-        // currentTargetがDOMから削除されていないか確認
         if (!document.body.contains(currentTarget)) {
             currentTarget = null;
             tooltip.classList.add("hidden");
