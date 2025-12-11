@@ -190,7 +190,7 @@ async function loadBaseMobData() {
             setMobs([...processed]);
             filterAndRender({ isInitialLoad: true });
 
-            await scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
+            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
         } catch (e) {
             console.warn("Cache parse error:", e);
         }
@@ -224,7 +224,7 @@ async function loadBaseMobData() {
                 filterAndRender();
             }
 
-            await scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
+            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
         } else {
             console.log("Mob data is up to date");
         }
@@ -243,34 +243,27 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
         mob.weatherSeedRange || mob.weatherSeedRanges || mob.conditions
     );
 
-    if (conditionMobs.length === 0) return Promise.resolve();
+    if (conditionMobs.length === 0) return;
 
-    return new Promise((resolve) => {
-        const doCalculation = () => {
-            let updatedCount = 0;
-            const newCache = { ...existingCache };
+    let updatedCount = 0;
+    const newCache = { ...existingCache };
 
-            conditionMobs.forEach(mob => {
-                mob.repopInfo = calculateRepop(mob, maintenance);
+    conditionMobs.forEach(mob => {
+        mob.repopInfo = calculateRepop(mob, maintenance);
 
-                if (mob._spawnCache) {
-                    newCache[mob.No] = mob._spawnCache;
-                }
-                updatedCount++;
-            });
-
-            saveSpawnCache(newCache);
-
-            setMobs([...state.baseMobData]);
-            filterAndRender();
-            updateProgressBars();
-
-            console.log(`Condition calculation completed for ${updatedCount} mobs`);
-            resolve();
-        };
-
-        setTimeout(doCalculation, 0);
+        if (mob._spawnCache) {
+            newCache[mob.No] = mob._spawnCache;
+        }
+        updatedCount++;
     });
+
+    saveSpawnCache(newCache);
+
+    setMobs([...state.baseMobData]);
+    filterAndRender();
+    updateProgressBars();
+
+    console.log(`Condition calculation completed for ${updatedCount} mobs`);
 }
 
 let unsubscribes = [];
