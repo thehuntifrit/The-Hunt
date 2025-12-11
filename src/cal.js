@@ -6,7 +6,7 @@ const ET_DAY_SEC = ET_HOUR_SEC * 24;
 const MOON_CYCLE_SEC = ET_DAY_SEC * 32;
 const MOON_PHASE_DURATION_SEC = ET_DAY_SEC * 4;
 const MAX_SEARCH_ITERATIONS = 5000;
-const LIMIT_DAYS = 60;
+const LIMIT_DAYS = 20;
 export const EORZEA_MINUTE_MS = 2917;
 
 function formatDurationHM(seconds) {
@@ -395,7 +395,8 @@ function findNextSpawn(mob, pointSec, searchLimit) {
   return null;
 }
 
-function calculateRepop(mob, maintenance) {
+function calculateRepop(mob, maintenance, options = {}) {
+  const { skipConditionCalc = false } = options;
   const now = Date.now() / 1000;
   const lastKill = mob.last_kill_time || 0;
   const repopSec = mob.REPOP_s;
@@ -439,7 +440,7 @@ function calculateRepop(mob, maintenance) {
     mob.conditions
   );
 
-  if (hasCondition) {
+  if (hasCondition && !skipConditionCalc) {
     const cacheKey = `${lastKill}_${maintenanceStart || 0}`;
     let useCache = false;
 
