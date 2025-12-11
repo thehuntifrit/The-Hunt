@@ -1,6 +1,5 @@
 /* style.css */
 
-/* ローディングオーバーレイ */
 .loading-overlay {
     position: fixed;
     top: 0;
@@ -188,7 +187,6 @@ body {
 
 .report-btn:hover .report-text {
     background-color: #22c55e !important;
-    /* green-500 */
     box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
 }
 
