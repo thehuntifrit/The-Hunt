@@ -39,8 +39,20 @@ async function initializeApp() {
         attachGlobalEventListeners();
         initHeaderObserver();
 
+        // ローディングオーバーレイを非表示
+        hideLoadingOverlay();
+
     } catch (e) {
         console.error("App initialization failed:", e);
+        // エラー時もオーバーレイを非表示にする
+        hideLoadingOverlay();
+    }
+}
+
+function hideLoadingOverlay() {
+    const overlay = document.getElementById("loading-overlay");
+    if (overlay) {
+        overlay.classList.add("hidden");
     }
 }
 
