@@ -42,7 +42,7 @@ async function initializeApp() {
         window.addEventListener('allDataLoaded', () => {
             setTimeout(() => {
                 showColumnContainer();
-            }, 300);
+            }, 100);
         }, { once: true });
 
     } catch (e) {
