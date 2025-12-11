@@ -41,7 +41,9 @@ async function initializeApp() {
 
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-                showColumnContainer();
+                setTimeout(() => {
+                    showColumnContainer();
+                }, 0);
             });
         });
 
