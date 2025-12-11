@@ -340,7 +340,4 @@ function startRealtime() {
     unsubscribes.push(unsubMemo);
 }
 
-export {
-    state, EXPANSION_MAP, getState, setUserId, loadBaseMobData,
-    startRealtime, setFilter, setOpenMobCardNo, PROGRESS_CLASSES
-};
+export { state, EXPANSION_MAP, getState, setUserId, loadBaseMobData, startRealtime, setFilter, setOpenMobCardNo, PROGRESS_CLASSES };
