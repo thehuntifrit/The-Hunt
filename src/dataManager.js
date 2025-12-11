@@ -113,7 +113,8 @@ async function loadMaintenance() {
     }
 }
 
-function processMobData(rawMobData, maintenance) {
+function processMobData(rawMobData, maintenance, options = {}) {
+    const { skipConditionCalc = false } = options;
     return Object.entries(rawMobData.mobs).map(([no, mob]) => ({
         No: parseInt(no, 10),
         Rank: mob.rank,
@@ -135,7 +136,6 @@ function processMobData(rawMobData, maintenance) {
         last_kill_time: 0,
         prev_kill_time: 0,
         spawn_cull_status: {},
-        // メモ機能用フィールド
         memo_text: "",
         memo_updated_at: 0,
 
@@ -143,8 +143,27 @@ function processMobData(rawMobData, maintenance) {
             REPOP_s: mob.repopSeconds,
             MAX_s: mob.maxRepopSeconds,
             last_kill_time: 0,
-        }, maintenance)
+        }, maintenance, { skipConditionCalc })
     }));
+}
+
+const SPAWN_CACHE_KEY = "spawnConditionCache";
+
+function loadSpawnCache() {
+    try {
+        const cached = localStorage.getItem(SPAWN_CACHE_KEY);
+        return cached ? JSON.parse(cached) : {};
+    } catch (e) {
+        return {};
+    }
+}
+
+function saveSpawnCache(cache) {
+    try {
+        localStorage.setItem(SPAWN_CACHE_KEY, JSON.stringify(cache));
+    } catch (e) {
+        console.warn("Failed to save spawn cache:", e);
+    }
 }
 
 async function loadBaseMobData() {
@@ -152,14 +171,30 @@ async function loadBaseMobData() {
 
     const cachedDataStr = localStorage.getItem(MOB_DATA_CACHE_KEY);
     let cachedData = null;
+
+    // 永続化された特殊条件キャッシュを読み込み
+    const persistedSpawnCache = loadSpawnCache();
+
     if (cachedDataStr) {
         try {
             cachedData = JSON.parse(cachedDataStr);
             console.log("Using cached mob data");
-            const processed = processMobData(cachedData, maintenance);
+            // フェーズ1: 特殊天候計算をスキップして高速レンダリング
+            const processed = processMobData(cachedData, maintenance, { skipConditionCalc: true });
+
+            // 永続化キャッシュを適用
+            processed.forEach(mob => {
+                if (persistedSpawnCache[mob.No]) {
+                    mob._spawnCache = persistedSpawnCache[mob.No];
+                }
+            });
+
             state.baseMobData = processed;
             setMobs([...processed]);
             filterAndRender({ isInitialLoad: true });
+
+            // フェーズ2: 特殊条件モブの計算を非同期で実行
+            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
         } catch (e) {
             console.warn("Cache parse error:", e);
         }
@@ -176,7 +211,15 @@ async function loadBaseMobData() {
             console.log("Updating mob data from network");
             localStorage.setItem(MOB_DATA_CACHE_KEY, freshDataStr);
 
-            const processed = processMobData(freshData, maintenance);
+            const processed = processMobData(freshData, maintenance, { skipConditionCalc: true });
+
+            // 永続化キャッシュを適用
+            processed.forEach(mob => {
+                if (persistedSpawnCache[mob.No]) {
+                    mob._spawnCache = persistedSpawnCache[mob.No];
+                }
+            });
+
             state.baseMobData = processed;
             setMobs([...processed]);
 
@@ -185,6 +228,9 @@ async function loadBaseMobData() {
             } else {
                 filterAndRender();
             }
+
+            // フェーズ2: 特殊条件モブの計算を非同期で実行
+            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
         } else {
             console.log("Mob data is up to date");
         }
@@ -194,6 +240,49 @@ async function loadBaseMobData() {
         if (!cachedData) {
             console.error("データの読み込みに失敗しました。");
         }
+    }
+}
+
+function scheduleConditionCalculation(mobs, maintenance, existingCache) {
+    // 特殊条件を持つモブのみ抽出
+    const conditionMobs = mobs.filter(mob =>
+        mob.moonPhase || mob.timeRange || mob.timeRanges ||
+        mob.weatherSeedRange || mob.weatherSeedRanges || mob.conditions
+    );
+
+    if (conditionMobs.length === 0) return;
+
+    const doCalculation = () => {
+        let updatedCount = 0;
+        const newCache = { ...existingCache };
+
+        conditionMobs.forEach(mob => {
+            // 完全な計算を実行
+            mob.repopInfo = calculateRepop(mob, maintenance);
+
+            // キャッシュを永続化用に保存
+            if (mob._spawnCache) {
+                newCache[mob.No] = mob._spawnCache;
+            }
+            updatedCount++;
+        });
+
+        // キャッシュを永続化
+        saveSpawnCache(newCache);
+
+        // UIを更新
+        setMobs([...state.baseMobData]);
+        filterAndRender();
+        updateProgressBars();
+
+        console.log(`Condition calculation completed for ${updatedCount} mobs`);
+    };
+
+    // requestIdleCallbackがあれば使用、なければsetTimeoutでフォールバック
+    if (typeof requestIdleCallback !== 'undefined') {
+        requestIdleCallback(doCalculation, { timeout: 2000 });
+    } else {
+        setTimeout(doCalculation, 100);
     }
 }
 
@@ -272,6 +361,6 @@ function startRealtime() {
 }
 
 export {
-    state, EXPANSION_MAP, getState, setUserId, loadBaseMobData, 
+    state, EXPANSION_MAP, getState, setUserId, loadBaseMobData,
     startRealtime, setFilter, setOpenMobCardNo, PROGRESS_CLASSES
 };
