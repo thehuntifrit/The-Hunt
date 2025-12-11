@@ -280,7 +280,14 @@ function filterAndRender({ isInitialLoad = false } = {}) {
   distributeCards();
   attachLocationEvents();
 
-  if (isInitialLoad) updateProgressBars();
+  if (isInitialLoad) {
+    updateProgressBars();
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        showColumnContainer();
+      });
+    });
+  }
 
   // Restore focus
   if (focusedMobNo) {
@@ -296,6 +303,16 @@ function filterAndRender({ isInitialLoad = false } = {}) {
         }
       }
     }
+  }
+}
+
+function showColumnContainer() {
+  if (DOM.colContainer) {
+    DOM.colContainer.classList.remove("opacity-0");
+  }
+  const overlay = document.getElementById("loading-overlay");
+  if (overlay) {
+    overlay.classList.add("hidden");
   }
 }
 
@@ -381,7 +398,6 @@ function updateProgressText(card, mob) {
   const now = Date.now() / 1000;
   const mobNameEl = card.querySelector('.mob-name');
 
-  // 最短REPOP前の場合のみ彩度を下げる
   const isBeforeMinRepop = now < mob.repopInfo.minRepop;
   if (status === "Next" || (status === "NextCondition" && isBeforeMinRepop)) {
     card.classList.add("opacity-60");
