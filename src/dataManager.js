@@ -172,17 +172,14 @@ async function loadBaseMobData() {
     const cachedDataStr = localStorage.getItem(MOB_DATA_CACHE_KEY);
     let cachedData = null;
 
-    // 永続化された特殊条件キャッシュを読み込み
     const persistedSpawnCache = loadSpawnCache();
 
     if (cachedDataStr) {
         try {
             cachedData = JSON.parse(cachedDataStr);
             console.log("Using cached mob data");
-            // フェーズ1: 特殊天候計算をスキップして高速レンダリング
             const processed = processMobData(cachedData, maintenance, { skipConditionCalc: true });
 
-            // 永続化キャッシュを適用
             processed.forEach(mob => {
                 if (persistedSpawnCache[mob.No]) {
                     mob._spawnCache = persistedSpawnCache[mob.No];
@@ -193,8 +190,7 @@ async function loadBaseMobData() {
             setMobs([...processed]);
             filterAndRender({ isInitialLoad: true });
 
-            // フェーズ2: 特殊条件モブの計算を非同期で実行
-            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
+            await scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
         } catch (e) {
             console.warn("Cache parse error:", e);
         }
@@ -213,7 +209,6 @@ async function loadBaseMobData() {
 
             const processed = processMobData(freshData, maintenance, { skipConditionCalc: true });
 
-            // 永続化キャッシュを適用
             processed.forEach(mob => {
                 if (persistedSpawnCache[mob.No]) {
                     mob._spawnCache = persistedSpawnCache[mob.No];
@@ -229,8 +224,7 @@ async function loadBaseMobData() {
                 filterAndRender();
             }
 
-            // フェーズ2: 特殊条件モブの計算を非同期で実行
-            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
+            await scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
         } else {
             console.log("Mob data is up to date");
         }
@@ -244,46 +238,39 @@ async function loadBaseMobData() {
 }
 
 function scheduleConditionCalculation(mobs, maintenance, existingCache) {
-    // 特殊条件を持つモブのみ抽出
     const conditionMobs = mobs.filter(mob =>
         mob.moonPhase || mob.timeRange || mob.timeRanges ||
         mob.weatherSeedRange || mob.weatherSeedRanges || mob.conditions
     );
 
-    if (conditionMobs.length === 0) return;
+    if (conditionMobs.length === 0) return Promise.resolve();
 
-    const doCalculation = () => {
-        let updatedCount = 0;
-        const newCache = { ...existingCache };
+    return new Promise((resolve) => {
+        const doCalculation = () => {
+            let updatedCount = 0;
+            const newCache = { ...existingCache };
 
-        conditionMobs.forEach(mob => {
-            // 完全な計算を実行
-            mob.repopInfo = calculateRepop(mob, maintenance);
+            conditionMobs.forEach(mob => {
+                mob.repopInfo = calculateRepop(mob, maintenance);
 
-            // キャッシュを永続化用に保存
-            if (mob._spawnCache) {
-                newCache[mob.No] = mob._spawnCache;
-            }
-            updatedCount++;
-        });
+                if (mob._spawnCache) {
+                    newCache[mob.No] = mob._spawnCache;
+                }
+                updatedCount++;
+            });
 
-        // キャッシュを永続化
-        saveSpawnCache(newCache);
+            saveSpawnCache(newCache);
 
-        // UIを更新
-        setMobs([...state.baseMobData]);
-        filterAndRender();
-        updateProgressBars();
+            setMobs([...state.baseMobData]);
+            filterAndRender();
+            updateProgressBars();
 
-        console.log(`Condition calculation completed for ${updatedCount} mobs`);
-    };
+            console.log(`Condition calculation completed for ${updatedCount} mobs`);
+            resolve();
+        };
 
-    // requestIdleCallbackがあれば使用、なければsetTimeoutでフォールバック
-    if (typeof requestIdleCallback !== 'undefined') {
-        requestIdleCallback(doCalculation, { timeout: 2000 });
-    } else {
-        setTimeout(doCalculation, 100);
-    }
+        setTimeout(doCalculation, 0);
+    });
 }
 
 let unsubscribes = [];
