@@ -41,7 +41,7 @@ async function initializeApp() {
 
         setTimeout(() => {
             showColumnContainer();
-        }, 500);
+        }, 400);
 
     } catch (e) {
         console.error("App initialization failed:", e);
