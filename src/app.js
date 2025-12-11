@@ -39,13 +39,9 @@ async function initializeApp() {
         attachGlobalEventListeners();
         initHeaderObserver();
 
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                setTimeout(() => {
-                    showColumnContainer();
-                }, 0);
-            });
-        });
+        setTimeout(() => {
+            showColumnContainer();
+        }, 100);
 
     } catch (e) {
         console.error("App initialization failed:", e);
