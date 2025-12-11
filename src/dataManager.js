@@ -2,7 +2,7 @@
 
 import { calculateRepop } from "./cal.js";
 import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos } from "./server.js";
-import { filterAndRender, updateProgressBars, showColumnContainer } from "./uiRender.js";
+import { filterAndRender, updateProgressBars } from "./uiRender.js";
 
 const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
 
@@ -12,6 +12,8 @@ const state = {
     mobs: [],
     mobLocations: {},
     maintenance: null,
+    pendingInitialLoads: 0,
+    initialLoadComplete: false,
 
     filter: JSON.parse(localStorage.getItem("huntFilterState")) || {
         rank: "ALL",
@@ -190,7 +192,7 @@ async function loadBaseMobData() {
             setMobs([...processed]);
             filterAndRender({ isInitialLoad: true });
 
-            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache, true);
+            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
         } catch (e) {
             console.warn("Cache parse error:", e);
         }
@@ -224,7 +226,7 @@ async function loadBaseMobData() {
                 filterAndRender();
             }
 
-            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache, true);
+            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
         } else {
             console.log("Mob data is up to date");
         }
@@ -237,18 +239,13 @@ async function loadBaseMobData() {
     }
 }
 
-function scheduleConditionCalculation(mobs, maintenance, existingCache, isInitialLoad = false) {
+function scheduleConditionCalculation(mobs, maintenance, existingCache) {
     const conditionMobs = mobs.filter(mob =>
         mob.moonPhase || mob.timeRange || mob.timeRanges ||
         mob.weatherSeedRange || mob.weatherSeedRanges || mob.conditions
     );
 
-    if (conditionMobs.length === 0) {
-        if (isInitialLoad) {
-            showColumnContainer();
-        }
-        return;
-    }
+    if (conditionMobs.length === 0) return;
 
     let updatedCount = 0;
     const newCache = { ...existingCache };
@@ -269,17 +266,25 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache, isInitia
     updateProgressBars();
 
     console.log(`Condition calculation completed for ${updatedCount} mobs`);
-
-    if (isInitialLoad) {
-        showColumnContainer();
-    }
 }
 
 let unsubscribes = [];
 
+function checkInitialLoadComplete() {
+    if (state.pendingInitialLoads === 0 && !state.initialLoadComplete) {
+        state.initialLoadComplete = true;
+        window.dispatchEvent(new CustomEvent('allDataLoaded'));
+    }
+}
+
 function startRealtime() {
     unsubscribes.forEach(fn => fn && fn());
     unsubscribes = [];
+
+    state.pendingInitialLoads = 3;
+    let statusFirstCall = true;
+    let locFirstCall = true;
+    let memoFirstCall = true;
 
     const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
         const current = state.mobs;
@@ -307,6 +312,12 @@ function startRealtime() {
         setMobs(merged);
         filterAndRender();
         updateProgressBars();
+
+        if (statusFirstCall) {
+            statusFirstCall = false;
+            state.pendingInitialLoads--;
+            checkInitialLoadComplete();
+        }
     });
     unsubscribes.push(unsubStatus);
 
@@ -323,6 +334,12 @@ function startRealtime() {
 
         setMobs(merged);
         filterAndRender();
+
+        if (locFirstCall) {
+            locFirstCall = false;
+            state.pendingInitialLoads--;
+            checkInitialLoadComplete();
+        }
     });
     unsubscribes.push(unsubLoc);
 
@@ -345,6 +362,12 @@ function startRealtime() {
 
         setMobs(merged);
         filterAndRender();
+
+        if (memoFirstCall) {
+            memoFirstCall = false;
+            state.pendingInitialLoads--;
+            checkInitialLoadComplete();
+        }
     });
     unsubscribes.push(unsubMemo);
 }
