@@ -190,7 +190,6 @@ async function loadBaseMobData() {
 
             state.baseMobData = processed;
             setMobs([...processed]);
-            filterAndRender({ isInitialLoad: true });
 
             scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
         } catch (e) {
@@ -219,12 +218,6 @@ async function loadBaseMobData() {
 
             state.baseMobData = processed;
             setMobs([...processed]);
-
-            if (!cachedData) {
-                filterAndRender({ isInitialLoad: true });
-            } else {
-                filterAndRender();
-            }
 
             scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
         } else {
@@ -262,8 +255,6 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
     saveSpawnCache(newCache);
 
     setMobs([...state.baseMobData]);
-    filterAndRender();
-    updateProgressBars();
 
     console.log(`Condition calculation completed for ${updatedCount} mobs`);
 }
@@ -273,6 +264,8 @@ let unsubscribes = [];
 function checkInitialLoadComplete() {
     if (state.pendingInitialLoads === 0 && !state.initialLoadComplete) {
         state.initialLoadComplete = true;
+        filterAndRender({ isInitialLoad: true });
+        updateProgressBars();
         window.dispatchEvent(new CustomEvent('allDataLoaded'));
     }
 }
