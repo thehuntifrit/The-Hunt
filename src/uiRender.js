@@ -257,7 +257,10 @@ function filterAndRender({ isInitialLoad = false } = {}) {
   }
 
   // Create fragments for each column
-  const fragments = Array.from({ length: numCols }, () => document.createDocumentFragment());
+  // const fragments = Array.from({ length: numCols }, () => document.createDocumentFragment());
+
+  // Track usage in each column to determine insertion points
+  const colPointers = Array(numCols).fill(0);
 
   sortedMobs.forEach((mob, index) => {
     const mobNoStr = String(mob.No);
@@ -287,19 +290,36 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     // Determine target column
     if (card) {
       const targetColIndex = index % numCols;
-      fragments[targetColIndex].appendChild(card);
+      const targetCol = DOM.cols[targetColIndex];
+      const currentChild = targetCol.children[colPointers[targetColIndex]];
+
+      // If card is not in the correct position, move it
+      if (currentChild !== card) {
+        if (currentChild) {
+          targetCol.insertBefore(card, currentChild);
+        } else {
+          targetCol.appendChild(card);
+        }
+      }
+      // If correct, do nothing (no flicker)
+
+      colPointers[targetColIndex]++;
     }
   });
 
-  // Apply changes to the DOM
+  // Remove any remaining children in columns that shouldn't be there (e.g. filtered out cards)
   DOM.cols.forEach((col, idx) => {
     if (idx < numCols) {
-      col.innerHTML = ""; // Clear existing content
-      col.appendChild(fragments[idx]);
+      // Remove children starting from the end of the valid list
+      while (col.children.length > colPointers[idx]) {
+        col.removeChild(col.lastChild);
+      }
     } else {
-      col.innerHTML = ""; // Clear unused columns (though 'hidden' handles visibility)
+      col.innerHTML = "";
     }
   });
+
+
 
   // NOTE: DOM.masterContainer is no longer used for distribution, 
   // but we might want to keep using it if other logic depends on it, 
