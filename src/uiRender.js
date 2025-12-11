@@ -61,8 +61,7 @@ function createMobCard(mob) {
   // Card Attributes
   card.dataset.mobNo = mob.No;
   card.dataset.rank = rank;
-  const repopInfo = calculateRepop(mob, state.maintenance);
-  if (repopInfo.isMaintenanceStop) {
+  if (mob.repopInfo?.isMaintenanceStop) {
     card.classList.add("opacity-50", "grayscale", "pointer-events-none");
   }
 
@@ -278,9 +277,9 @@ function filterAndRender({ isInitialLoad = false } = {}) {
   DOM.masterContainer.appendChild(frag);
 
   distributeCards();
-  attachLocationEvents();
 
   if (isInitialLoad) {
+    attachLocationEvents();
     updateProgressBars();
   }
 
@@ -327,11 +326,50 @@ function distributeCards() {
     DOM.cols[2].classList.add("hidden");
   }
 
-  DOM.cols.forEach(col => (col.innerHTML = ""));
   const cards = Array.from(DOM.masterContainer.children);
+  if (cards.length === 0) return;
+
+  // 現在のカラム配置を取得
+  const currentPositions = new Map();
+  DOM.cols.forEach((col, colIdx) => {
+    Array.from(col.children).forEach((card, pos) => {
+      currentPositions.set(card.dataset.mobNo, { col: colIdx, pos });
+    });
+  });
+
+  // 新しい配置を計算
+  const newPositions = new Map();
   cards.forEach((card, idx) => {
-    const target = idx % cols;
-    DOM.cols[target].appendChild(card);
+    const targetCol = idx % cols;
+    const targetPos = Math.floor(idx / cols);
+    newPositions.set(card.dataset.mobNo, { col: targetCol, pos: targetPos, card });
+  });
+
+  // 配置が同じか確認
+  let needsRedistribute = currentPositions.size !== newPositions.size;
+  if (!needsRedistribute) {
+    for (const [mobNo, newPos] of newPositions) {
+      const currentPos = currentPositions.get(mobNo);
+      if (!currentPos || currentPos.col !== newPos.col || currentPos.pos !== newPos.pos) {
+        needsRedistribute = true;
+        break;
+      }
+    }
+  }
+
+  if (!needsRedistribute) return;
+
+  // 再配置が必要な場合のみDOM操作
+  const fragments = [document.createDocumentFragment(), document.createDocumentFragment(), document.createDocumentFragment()];
+
+  cards.forEach((card, idx) => {
+    const targetCol = idx % cols;
+    fragments[targetCol].appendChild(card);
+  });
+
+  DOM.cols.forEach((col, idx) => {
+    col.innerHTML = "";
+    col.appendChild(fragments[idx]);
   });
 }
 
@@ -665,6 +703,6 @@ setInterval(() => {
 }, EORZEA_MINUTE_MS);
 
 export {
-  filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, DOM, sortAndRedistribute, 
+  filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, DOM, sortAndRedistribute,
   onKillReportReceived, updateProgressBars, updateAreaInfo, updateMapOverlay, updateMobCount, showColumnContainer
 };
