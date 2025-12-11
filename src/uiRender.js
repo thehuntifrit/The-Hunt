@@ -217,7 +217,6 @@ function allTabComparator(a, b) {
 function filterAndRender({ isInitialLoad = false } = {}) {
   const state = getState();
   const filtered = filterMobsByRankAndArea(state.mobs);
-
   const sortedMobs = filtered.sort(allTabComparator);
 
   const activeElement = document.activeElement;
@@ -241,9 +240,26 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     existingCards.set(mobNo, card);
   });
 
-  const frag = document.createDocumentFragment();
+  // Determine column count
+  const width = window.innerWidth;
+  const md = 768;
+  const lg = 1024;
+  let numCols = 1;
+  if (width >= lg) {
+    numCols = 3;
+    DOM.cols[2].classList.remove("hidden");
+  } else if (width >= md) {
+    numCols = 2;
+    DOM.cols[2].classList.add("hidden");
+  } else {
+    numCols = 1;
+    DOM.cols[2].classList.add("hidden");
+  }
 
-  sortedMobs.forEach(mob => {
+  // Create fragments for each column
+  const fragments = Array.from({ length: numCols }, () => document.createDocumentFragment());
+
+  sortedMobs.forEach((mob, index) => {
     const mobNoStr = String(mob.No);
     let card = existingCards.get(mobNoStr);
 
@@ -261,7 +277,6 @@ function filterAndRender({ isInitialLoad = false } = {}) {
       } else {
         card.classList.remove("opacity-50", "grayscale", "pointer-events-none");
       }
-
     } else {
       card = createMobCard(mob);
       updateProgressText(card, mob);
@@ -269,14 +284,27 @@ function filterAndRender({ isInitialLoad = false } = {}) {
       updateExpandablePanel(card, mob);
     }
 
+    // Determine target column
     if (card) {
-      frag.appendChild(card);
+      const targetColIndex = index % numCols;
+      fragments[targetColIndex].appendChild(card);
     }
   });
 
-  DOM.masterContainer.appendChild(frag);
+  // Apply changes to the DOM
+  DOM.cols.forEach((col, idx) => {
+    if (idx < numCols) {
+      col.innerHTML = ""; // Clear existing content
+      col.appendChild(fragments[idx]);
+    } else {
+      col.innerHTML = ""; // Clear unused columns (though 'hidden' handles visibility)
+    }
+  });
 
-  distributeCards();
+  // NOTE: DOM.masterContainer is no longer used for distribution, 
+  // but we might want to keep using it if other logic depends on it, 
+  // currently nothing seems to depend on children of masterContainer except distributeCards.
+  // We can leave masterContainer empty.
 
   if (isInitialLoad) {
     attachLocationEvents();
@@ -291,8 +319,12 @@ function filterAndRender({ isInitialLoad = false } = {}) {
         const input = card.querySelector(`input[data-action="${focusedAction}"]`);
         if (input) {
           input.focus();
+          // We need a slight delay or to ensure layout is done if text selection is to be restored correctly?
+          // Usually synchronous appendChild is enough.
           if (selectionStart !== null && selectionEnd !== null) {
-            input.setSelectionRange(selectionStart, selectionEnd);
+            try {
+              input.setSelectionRange(selectionStart, selectionEnd);
+            } catch (e) { /* ignore */ }
           }
         }
       }
@@ -310,68 +342,7 @@ function showColumnContainer() {
   }
 }
 
-function distributeCards() {
-  const width = window.innerWidth;
-  const md = 768;
-  const lg = 1024;
-  let cols = 1;
-  if (width >= lg) {
-    cols = 3;
-    DOM.cols[2].classList.remove("hidden");
-  } else if (width >= md) {
-    cols = 2;
-    DOM.cols[2].classList.add("hidden");
-  } else {
-    cols = 1;
-    DOM.cols[2].classList.add("hidden");
-  }
-
-  const cards = Array.from(DOM.masterContainer.children);
-  if (cards.length === 0) return;
-
-  // 現在のカラム配置を取得
-  const currentPositions = new Map();
-  DOM.cols.forEach((col, colIdx) => {
-    Array.from(col.children).forEach((card, pos) => {
-      currentPositions.set(card.dataset.mobNo, { col: colIdx, pos });
-    });
-  });
-
-  // 新しい配置を計算
-  const newPositions = new Map();
-  cards.forEach((card, idx) => {
-    const targetCol = idx % cols;
-    const targetPos = Math.floor(idx / cols);
-    newPositions.set(card.dataset.mobNo, { col: targetCol, pos: targetPos, card });
-  });
-
-  // 配置が同じか確認
-  let needsRedistribute = currentPositions.size !== newPositions.size;
-  if (!needsRedistribute) {
-    for (const [mobNo, newPos] of newPositions) {
-      const currentPos = currentPositions.get(mobNo);
-      if (!currentPos || currentPos.col !== newPos.col || currentPos.pos !== newPos.pos) {
-        needsRedistribute = true;
-        break;
-      }
-    }
-  }
-
-  if (!needsRedistribute) return;
-
-  // 再配置が必要な場合のみDOM操作
-  const fragments = [document.createDocumentFragment(), document.createDocumentFragment(), document.createDocumentFragment()];
-
-  cards.forEach((card, idx) => {
-    const targetCol = idx % cols;
-    fragments[targetCol].appendChild(card);
-  });
-
-  DOM.cols.forEach((col, idx) => {
-    col.innerHTML = "";
-    col.appendChild(fragments[idx]);
-  });
-}
+// distributeCards is removed as it's folded into filterAndRender
 
 function updateProgressBar(card, mob) {
   const bar = card.querySelector(".progress-bar-bg");
@@ -703,6 +674,6 @@ setInterval(() => {
 }, EORZEA_MINUTE_MS);
 
 export {
-  filterAndRender, distributeCards, updateProgressText, updateProgressBar, createMobCard, DOM, sortAndRedistribute,
+  filterAndRender, updateProgressText, updateProgressBar, createMobCard, DOM, sortAndRedistribute,
   onKillReportReceived, updateProgressBars, updateAreaInfo, updateMapOverlay, updateMobCount, showColumnContainer
 };
