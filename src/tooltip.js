@@ -12,6 +12,13 @@ export function initTooltip() {
     document.addEventListener("mousemove", (e) => {
         if (!currentTarget) return;
 
+        // currentTargetがDOMから削除されていないか確認
+        if (!document.body.contains(currentTarget)) {
+            currentTarget = null;
+            tooltip.classList.add("hidden");
+            return;
+        }
+
         const offset = 15;
         const x = e.clientX;
         const y = e.clientY - offset;
