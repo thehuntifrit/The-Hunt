@@ -2,7 +2,7 @@
 
 import { calculateRepop } from "./cal.js";
 import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos } from "./server.js";
-import { filterAndRender, updateProgressBars } from "./uiRender.js";
+import { filterAndRender, updateProgressBars, showColumnContainer } from "./uiRender.js";
 
 const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
 
@@ -190,7 +190,7 @@ async function loadBaseMobData() {
             setMobs([...processed]);
             filterAndRender({ isInitialLoad: true });
 
-            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
+            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache, true);
         } catch (e) {
             console.warn("Cache parse error:", e);
         }
@@ -224,7 +224,7 @@ async function loadBaseMobData() {
                 filterAndRender();
             }
 
-            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
+            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache, true);
         } else {
             console.log("Mob data is up to date");
         }
@@ -237,13 +237,18 @@ async function loadBaseMobData() {
     }
 }
 
-function scheduleConditionCalculation(mobs, maintenance, existingCache) {
+function scheduleConditionCalculation(mobs, maintenance, existingCache, isInitialLoad = false) {
     const conditionMobs = mobs.filter(mob =>
         mob.moonPhase || mob.timeRange || mob.timeRanges ||
         mob.weatherSeedRange || mob.weatherSeedRanges || mob.conditions
     );
 
-    if (conditionMobs.length === 0) return;
+    if (conditionMobs.length === 0) {
+        if (isInitialLoad) {
+            showColumnContainer();
+        }
+        return;
+    }
 
     let updatedCount = 0;
     const newCache = { ...existingCache };
@@ -264,6 +269,10 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
     updateProgressBars();
 
     console.log(`Condition calculation completed for ${updatedCount} mobs`);
+
+    if (isInitialLoad) {
+        showColumnContainer();
+    }
 }
 
 let unsubscribes = [];
