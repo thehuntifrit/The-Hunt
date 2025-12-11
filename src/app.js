@@ -38,18 +38,13 @@ async function initializeApp() {
         renderMaintenanceStatus();
         attachGlobalEventListeners();
         initHeaderObserver();
-        hideLoadingOverlay();
 
     } catch (e) {
         console.error("App initialization failed:", e);
-        hideLoadingOverlay();
-    }
-}
-
-function hideLoadingOverlay() {
-    const overlay = document.getElementById("loading-overlay");
-    if (overlay) {
-        overlay.classList.add("hidden");
+        const overlay = document.getElementById("loading-overlay");
+        if (overlay) {
+            overlay.classList.add("hidden");
+        }
     }
 }
 
