@@ -256,10 +256,6 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     DOM.cols[2].classList.add("hidden");
   }
 
-  // Create fragments for each column
-  // const fragments = Array.from({ length: numCols }, () => document.createDocumentFragment());
-
-  // Track usage in each column to determine insertion points
   const colPointers = Array(numCols).fill(0);
 
   sortedMobs.forEach((mob, index) => {
@@ -287,13 +283,10 @@ function filterAndRender({ isInitialLoad = false } = {}) {
       updateExpandablePanel(card, mob);
     }
 
-    // Determine target column
     if (card) {
       const targetColIndex = index % numCols;
       const targetCol = DOM.cols[targetColIndex];
       const currentChild = targetCol.children[colPointers[targetColIndex]];
-
-      // If card is not in the correct position, move it
       if (currentChild !== card) {
         if (currentChild) {
           targetCol.insertBefore(card, currentChild);
@@ -301,16 +294,12 @@ function filterAndRender({ isInitialLoad = false } = {}) {
           targetCol.appendChild(card);
         }
       }
-      // If correct, do nothing (no flicker)
-
       colPointers[targetColIndex]++;
     }
   });
 
-  // Remove any remaining children in columns that shouldn't be there (e.g. filtered out cards)
   DOM.cols.forEach((col, idx) => {
     if (idx < numCols) {
-      // Remove children starting from the end of the valid list
       while (col.children.length > colPointers[idx]) {
         col.removeChild(col.lastChild);
       }
@@ -318,13 +307,6 @@ function filterAndRender({ isInitialLoad = false } = {}) {
       col.innerHTML = "";
     }
   });
-
-
-
-  // NOTE: DOM.masterContainer is no longer used for distribution, 
-  // but we might want to keep using it if other logic depends on it, 
-  // currently nothing seems to depend on children of masterContainer except distributeCards.
-  // We can leave masterContainer empty.
 
   if (isInitialLoad) {
     attachLocationEvents();
@@ -339,12 +321,10 @@ function filterAndRender({ isInitialLoad = false } = {}) {
         const input = card.querySelector(`input[data-action="${focusedAction}"]`);
         if (input) {
           input.focus();
-          // We need a slight delay or to ensure layout is done if text selection is to be restored correctly?
-          // Usually synchronous appendChild is enough.
           if (selectionStart !== null && selectionEnd !== null) {
             try {
               input.setSelectionRange(selectionStart, selectionEnd);
-            } catch (e) { /* ignore */ }
+            } catch (e) {}
           }
         }
       }
@@ -361,8 +341,6 @@ function showColumnContainer() {
     overlay.classList.add("hidden");
   }
 }
-
-// distributeCards is removed as it's folded into filterAndRender
 
 function updateProgressBar(card, mob) {
   const bar = card.querySelector(".progress-bar-bg");
