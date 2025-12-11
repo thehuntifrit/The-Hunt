@@ -282,6 +282,10 @@ function filterAndRender({ isInitialLoad = false } = {}) {
 
   if (isInitialLoad) {
     updateProgressBars();
+  }
+
+  // コンテナがまだ非表示の場合は表示する
+  if (DOM.colContainer && DOM.colContainer.classList.contains("opacity-0")) {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         showColumnContainer();
