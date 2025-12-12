@@ -2,7 +2,7 @@
 
 import { calculateRepop } from "./cal.js";
 import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos } from "./server.js";
-import { filterAndRender, updateProgressBars } from "./uiRender.js";
+import { filterAndRender, updateProgressBars, invalidateFilterCache } from "./uiRender.js";
 
 const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
 
@@ -77,6 +77,7 @@ function setFilter(partial) {
         allRankSet: Array.from(state.filter.allRankSet || [])
     };
     localStorage.setItem("huntFilterState", JSON.stringify(serialized));
+    invalidateFilterCache();
 }
 
 function setOpenMobCardNo(no) {
