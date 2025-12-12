@@ -1,16 +1,18 @@
 // app.js
 
-import { loadBaseMobData, startRealtime, setOpenMobCardNo, getState, setUserId } from "./dataManager.js";
+import { loadBaseMobData, startRealtime, setOpenMobCardNo, getState, setUserId, setRenderCallbacks } from "./dataManager.js";
 import { initializeAuth, submitReport, submitMemo } from "./server.js";
 import { openReportModal, initModal } from "./modal.js";
 import { renderRankTabs, handleAreaFilterClick, updateFilterUI } from "./filterUI.js";
-import { DOM, sortAndRedistribute, showColumnContainer } from "./uiRender.js";
+import { DOM, sortAndRedistribute, showColumnContainer, filterAndRender, updateProgressBars } from "./uiRender.js";
 import { debounce } from "./cal.js";
 import { initTooltip } from "./tooltip.js";
 
 async function initializeApp() {
     try {
         initTooltip();
+        setRenderCallbacks(filterAndRender, updateProgressBars);
+
         await loadBaseMobData();
         console.log("Mob Data Loaded.");
 
@@ -38,12 +40,6 @@ async function initializeApp() {
         renderMaintenanceStatus();
         attachGlobalEventListeners();
         initHeaderObserver();
-
-        window.addEventListener('allDataLoaded', () => {
-            setTimeout(() => {
-                showColumnContainer();
-            }, 300);
-        }, { once: true });
 
     } catch (e) {
         console.error("App initialization failed:", e);
