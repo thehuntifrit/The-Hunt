@@ -214,7 +214,7 @@ function allTabComparator(a, b) {
   return pa.instance - pb.instance;
 }
 
-function filterAndRender({ isInitialLoad = false, onlySort = false } = {}) {
+function filterAndRender({ isInitialLoad = false } = {}) {
   const state = getState();
 
   if (!state.initialLoadComplete && !isInitialLoad) {
@@ -270,15 +270,6 @@ function filterAndRender({ isInitialLoad = false, onlySort = false } = {}) {
     let card = existingCards.get(mobNoStr);
 
     if (card) {
-      if (!onlySort) {
-        updateProgressText(card, mob);
-        updateProgressBar(card, mob);
-        updateExpandablePanel(card, mob);
-        updateMemoIcon(card, mob);
-        updateAreaInfo(card, mob);
-        updateMobCount(card, mob);
-        updateMapOverlay(card, mob);
-      }
 
     } else {
       card = createMobCard(mob);
