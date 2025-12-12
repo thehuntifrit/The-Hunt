@@ -254,7 +254,6 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
     saveSpawnCache(newCache);
 
     setMobs([...state.baseMobData]);
-    filterAndRender();
 
     console.log(`Condition calculation completed for ${updatedCount} mobs`);
 }
