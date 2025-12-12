@@ -155,6 +155,7 @@ function processMobData(rawMobData, maintenance, options = {}) {
         memo_updated_at: 0,
 
         repopInfo: calculateRepop({
+            ...mob,
             REPOP_s: mob.repopSeconds,
             MAX_s: mob.maxRepopSeconds,
             last_kill_time: 0,
@@ -328,7 +329,7 @@ function startRealtime() {
         });
 
         setMobs(merged);
-        filterAndRender();
+        triggerRender();
     });
     unsubscribes.push(unsubLoc);
 
@@ -350,9 +351,12 @@ function startRealtime() {
         });
 
         setMobs(merged);
-        filterAndRender();
+        triggerRender();
     });
     unsubscribes.push(unsubMemo);
 }
 
-export { state, EXPANSION_MAP, getState, setUserId, loadBaseMobData, startRealtime, setFilter, setOpenMobCardNo, PROGRESS_CLASSES };
+export {
+    state, EXPANSION_MAP, getState, setUserId, loadBaseMobData,
+    startRealtime, setFilter, setOpenMobCardNo, setRenderCallbacks, PROGRESS_CLASSES
+};
