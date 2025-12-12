@@ -645,6 +645,8 @@ function updateProgressBars() {
   const nowSec = Date.now() / 1000;
 
   state.mobs.forEach((mob) => {
+    mob.repopInfo = calculateRepop(mob, state.maintenance);
+
     if (mob.repopInfo?.nextConditionSpawnDate && mob.repopInfo?.conditionWindowEnd) {
       const spawnSec = mob.repopInfo.nextConditionSpawnDate.getTime() / 1000;
       const endSec = mob.repopInfo.conditionWindowEnd.getTime() / 1000;
@@ -701,7 +703,6 @@ setInterval(() => {
 }, EORZEA_MINUTE_MS);
 
 export {
-  filterAndRender, updateProgressText, updateProgressBar, createMobCard, DOM, sortAndRedistribute,
-  onKillReportReceived, updateProgressBars, updateAreaInfo, updateMapOverlay, updateMobCount, showColumnContainer,
-  invalidateFilterCache
+  filterAndRender, updateProgressText, updateProgressBar, createMobCard, DOM, sortAndRedistribute, onKillReportReceived, 
+  updateProgressBars, updateAreaInfo, updateMapOverlay, updateMobCount, showColumnContainer, invalidateFilterCache
 };
