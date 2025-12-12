@@ -204,9 +204,9 @@ async function loadBaseMobData() {
 
             state.baseMobData = processed;
             setMobs([...processed]);
-            triggerRender({ isInitialLoad: true });
 
             scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
+            triggerRender({ isInitialLoad: true });
         } catch (e) {
             console.warn("Cache parse error:", e);
         }
@@ -234,13 +234,13 @@ async function loadBaseMobData() {
             state.baseMobData = processed;
             setMobs([...processed]);
 
+            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
+
             if (!cachedData) {
                 triggerRender({ isInitialLoad: true });
             } else {
                 triggerRender();
             }
-
-            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
         } else {
             console.log("Mob data is up to date");
         }
@@ -276,8 +276,6 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
     saveSpawnCache(newCache);
 
     setMobs([...state.baseMobData]);
-    triggerRender();
-    triggerProgress();
 
     console.log(`Condition calculation completed for ${updatedCount} mobs`);
 }
