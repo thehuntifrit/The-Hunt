@@ -411,21 +411,15 @@ function calculateNextCondition(mob, maintenance, options = {}) {
   const serverUp = new Date(maint.serverUp).getTime() / 1000;
   const maintenanceStart = new Date(maint.start).getTime() / 1000;
 
-  let minRepop, maxRepop;
+  let minRepop;
   if (lastKill === 0 || lastKill <= serverUp) {
     minRepop = serverUp + repopSec * 0.6;
-    maxRepop = serverUp + maxSec * 0.6;
   } else {
     minRepop = lastKill + repopSec;
-    maxRepop = lastKill + maxSec;
   }
 
   const pointSec = Math.max(minRepop, now);
-  const nextMinRepopDate = new Date(minRepop * 1000);
   const searchLimit = pointSec + LIMIT_DAYS * 24 * 3600;
-
-  let nextConditionSpawnDate = null;
-  let conditionWindowEnd = null;
 
   const hasCondition = !!(
     mob.moonPhase ||
@@ -436,81 +430,86 @@ function calculateNextCondition(mob, maintenance, options = {}) {
     mob.conditions
   );
 
-  if (hasCondition && !skipConditionCalc) {
-    const cacheKey = `${lastKill}_${maintenanceStart || 0}`;
-    let useCache = false;
+  if (!hasCondition || skipConditionCalc) {
+    return null;
+  }
 
-    if (mob._spawnCache && mob._spawnCache.key === cacheKey) {
-      if (mob._spawnCache.result) {
-        if (now < mob._spawnCache.result.end) {
-          useCache = true;
-        }
-      } else {
+  const cacheKey = `${lastKill}_${maintenanceStart || 0}`;
+  let useCache = false;
+
+  if (mob._spawnCache && mob._spawnCache.key === cacheKey) {
+    if (mob._spawnCache.result) {
+      if (now < mob._spawnCache.result.end) {
         useCache = true;
       }
-    }
-
-    let result = null;
-    if (useCache) {
-      result = mob._spawnCache.result;
     } else {
-      result = findNextSpawn(mob, pointSec, searchLimit);
-      mob._spawnCache = {
-        key: cacheKey,
-        result: result
-      };
-    }
-
-    if (result) {
-      nextConditionSpawnDate = new Date(result.start * 1000);
-      conditionWindowEnd = new Date(result.end * 1000);
+      useCache = true;
     }
   }
 
-  return {
-    minRepop,
-    maxRepop,
-    nextMinRepopDate,
-    nextConditionSpawnDate,
-    conditionWindowEnd
-  };
+  let result = null;
+  if (useCache) {
+    result = mob._spawnCache.result;
+  } else {
+    result = findNextSpawn(mob, pointSec, searchLimit);
+    mob._spawnCache = {
+      key: cacheKey,
+      result: result
+    };
+  }
+
+  if (result) {
+    const { start, end } = result;
+
+    return {
+      nextConditionSpawnDate: new Date(start * 1000),
+      conditionWindowEnd: new Date(end * 1000)
+    };
+  }
+
+  return null;
 }
 
 function calculateMobStatus(mob, maintenance) {
-  if (!mob.repopInfo || !mob.repopInfo.minRepop) {
-    const heavyData = calculateNextCondition(mob, maintenance);
-    if (heavyData) {
-      mob.repopInfo = { ...mob.repopInfo, ...heavyData };
-    } else {
-      return baseResult("Unknown");
-    }
-  }
-
-  const { minRepop, maxRepop, nextConditionSpawnDate, conditionWindowEnd } = mob.repopInfo;
-  if (!minRepop) return baseResult("Unknown");
-
   const now = Date.now() / 1000;
+  const lastKill = mob.last_kill_time || 0;
+  const repopSec = mob.REPOP_s;
+  const maxSec = mob.MAX_s;
+
   let maint = maintenance;
   if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
     maint = maint.maintenance;
   }
+
   const maintenanceStart = maint?.start ? new Date(maint.start).getTime() / 1000 : 0;
   const serverUp = maint?.serverUp ? new Date(maint.serverUp).getTime() / 1000 : 0;
+
+  if (!maint || !maint.serverUp || !maint.start) {
+    return baseResult("Unknown");
+  }
+
+  let minRepop, maxRepop;
+  if (lastKill === 0 || lastKill <= serverUp) {
+    minRepop = serverUp + repopSec * 0.6;
+    maxRepop = serverUp + maxSec * 0.6;
+  } else {
+    minRepop = lastKill + repopSec;
+    maxRepop = lastKill + maxSec;
+  }
+
+  const nextConditionSpawnDate = mob.repopInfo?.nextConditionSpawnDate || null;
+  const conditionWindowEnd = mob.repopInfo?.conditionWindowEnd || null;
 
   let status = "Unknown";
   let timeRemaining = "Unknown";
   let conditionRemaining = null;
-  let elapsedPercent = 0;
   let isInConditionWindow = false;
+  const nextMinRepopDate = new Date(minRepop * 1000);
 
-  const hasCondition = !!(
-    mob.moonPhase || mob.timeRange || mob.timeRanges ||
-    mob.weatherSeedRange || mob.weatherSeedRanges || mob.conditions
-  );
-
-  if (hasCondition && nextConditionSpawnDate && conditionWindowEnd) {
+  if (nextConditionSpawnDate && conditionWindowEnd) {
     const startSec = nextConditionSpawnDate.getTime() / 1000;
     const endSec = conditionWindowEnd.getTime() / 1000;
+
     isInConditionWindow = (now >= startSec && now < endSec);
 
     if (isInConditionWindow) {
@@ -518,6 +517,8 @@ function calculateMobStatus(mob, maintenance) {
       conditionRemaining = `残り ${Math.ceil(remainingSec / 60)}分`;
     }
   }
+
+  let elapsedPercent = 0;
 
   if (now >= maxRepop) {
     status = "MaxOver";
@@ -536,11 +537,11 @@ function calculateMobStatus(mob, maintenance) {
     if (status !== "MaxOver") {
       status = "ConditionActive";
     }
-  } else if (hasCondition && nextConditionSpawnDate && now < nextConditionSpawnDate.getTime() / 1000 && status !== "MaxOver") {
+  } else if (nextConditionSpawnDate && now < nextConditionSpawnDate.getTime() / 1000 && status !== "MaxOver") {
     status = "NextCondition";
   }
 
-  const isMaintenanceStop = (maintenanceStart && serverUp && now >= maintenanceStart && now < serverUp);
+  const isMaintenanceStop = (now >= maintenanceStart && now < serverUp);
   let isBlockedByMaintenance = false;
   const nextTime = nextConditionSpawnDate ? (nextConditionSpawnDate.getTime() / 1000) : minRepop;
 
@@ -549,10 +550,15 @@ function calculateMobStatus(mob, maintenance) {
   }
 
   return {
+    minRepop,
+    maxRepop,
     elapsedPercent,
     timeRemaining,
     conditionRemaining,
     status,
+    nextMinRepopDate,
+    nextConditionSpawnDate,
+    conditionWindowEnd,
     isInConditionWindow,
     isMaintenanceStop,
     isBlockedByMaintenance
@@ -575,11 +581,16 @@ function baseResult(status) {
 
 function calculateRepop(mob, maintenance, options = {}) {
   const heavy = calculateNextCondition(mob, maintenance, options);
+  let combinedInfo = { ...mob.repopInfo };
+
   if (heavy) {
-    mob.repopInfo = { ...mob.repopInfo, ...heavy };
+    combinedInfo = { ...combinedInfo, ...heavy };
   }
-  const status = calculateMobStatus(mob, maintenance);
-  return { ...mob.repopInfo, ...status };
+
+  const tempMob = { ...mob, repopInfo: combinedInfo };
+  const status = calculateMobStatus(tempMob, maintenance);
+
+  return { ...combinedInfo, ...status };
 }
 
 export { calculateRepop, calculateNextCondition, calculateMobStatus, getEorzeaTime, formatDurationHM, debounce, formatLastKillTime };
