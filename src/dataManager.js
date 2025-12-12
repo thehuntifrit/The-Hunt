@@ -358,5 +358,5 @@ function startRealtime() {
 
 export {
     state, EXPANSION_MAP, getState, setUserId, loadBaseMobData,
-    startRealtime, setFilter, setOpenMobCardNo, setRenderCallbacks, PROGRESS_CLASSES
+    startRealtime, setFilter, setOpenMobCardNo, PROGRESS_CLASSES
 };
