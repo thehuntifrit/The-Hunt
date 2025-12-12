@@ -395,19 +395,6 @@ function findNextSpawn(mob, pointSec, searchLimit) {
   return null;
 }
 
-function parseMaintenance(maintenance) {
-  let maint = maintenance;
-  if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
-    maint = maint.maintenance;
-  }
-  if (!maint || !maint.serverUp || !maint.start) return null;
-
-  return {
-    serverUp: new Date(maint.serverUp).getTime() / 1000,
-    start: new Date(maint.start).getTime() / 1000
-  };
-}
-
 function calculateNextCondition(mob, maintenance, options = {}) {
   const { skipConditionCalc = false } = options;
   const now = Date.now() / 1000;
@@ -415,20 +402,30 @@ function calculateNextCondition(mob, maintenance, options = {}) {
   const repopSec = mob.REPOP_s;
   const maxSec = mob.MAX_s;
 
-  const maintInfo = parseMaintenance(maintenance);
-  if (!maintInfo) return null;
+  let maint = maintenance;
+  if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
+    maint = maint.maintenance;
+  }
+  if (!maint || !maint.serverUp || !maint.start) return null;
+
+  const serverUp = new Date(maint.serverUp).getTime() / 1000;
+  const maintenanceStart = new Date(maint.start).getTime() / 1000;
 
   let minRepop, maxRepop;
-  if (lastKill === 0 || lastKill <= maintInfo.serverUp) {
-    minRepop = maintInfo.serverUp + repopSec * 0.6;
-    maxRepop = maintInfo.serverUp + maxSec * 0.6;
+  if (lastKill === 0 || lastKill <= serverUp) {
+    minRepop = serverUp + repopSec * 0.6;
+    maxRepop = serverUp + maxSec * 0.6;
   } else {
     minRepop = lastKill + repopSec;
     maxRepop = lastKill + maxSec;
   }
 
   const pointSec = Math.max(minRepop, now);
+  const nextMinRepopDate = new Date(minRepop * 1000);
   const searchLimit = pointSec + LIMIT_DAYS * 24 * 3600;
+
+  let nextConditionSpawnDate = null;
+  let conditionWindowEnd = null;
 
   const hasCondition = !!(
     mob.moonPhase ||
@@ -439,11 +436,8 @@ function calculateNextCondition(mob, maintenance, options = {}) {
     mob.conditions
   );
 
-  let nextConditionSpawnDate = null;
-  let conditionWindowEnd = null;
-
   if (hasCondition && !skipConditionCalc) {
-    const cacheKey = `${lastKill}_${maintInfo.start || 0}`;
+    const cacheKey = `${lastKill}_${maintenanceStart || 0}`;
     let useCache = false;
 
     if (mob._spawnCache && mob._spawnCache.key === cacheKey) {
@@ -476,7 +470,7 @@ function calculateNextCondition(mob, maintenance, options = {}) {
   return {
     minRepop,
     maxRepop,
-    nextMinRepopDate: new Date(minRepop * 1000),
+    nextMinRepopDate,
     nextConditionSpawnDate,
     conditionWindowEnd
   };
@@ -484,19 +478,24 @@ function calculateNextCondition(mob, maintenance, options = {}) {
 
 function calculateMobStatus(mob, maintenance) {
   if (!mob.repopInfo || !mob.repopInfo.minRepop) {
-    console.warn(`calculateMobStatus: repopInfo missing for mob ${mob.No || 'unknown'}, performing fallback calculation`);
     const heavyData = calculateNextCondition(mob, maintenance);
-    if (!heavyData) return baseResult("Unknown");
-    mob.repopInfo = { ...mob.repopInfo, ...heavyData };
+    if (heavyData) {
+      mob.repopInfo = { ...mob.repopInfo, ...heavyData };
+    } else {
+      return baseResult("Unknown");
+    }
   }
 
   const { minRepop, maxRepop, nextConditionSpawnDate, conditionWindowEnd } = mob.repopInfo;
   if (!minRepop) return baseResult("Unknown");
 
   const now = Date.now() / 1000;
-  const maintInfo = parseMaintenance(maintenance);
-  const maintenanceStart = maintInfo ? maintInfo.start : 0;
-  const serverUp = maintInfo ? maintInfo.serverUp : 0;
+  let maint = maintenance;
+  if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
+    maint = maint.maintenance;
+  }
+  const maintenanceStart = maint?.start ? new Date(maint.start).getTime() / 1000 : 0;
+  const serverUp = maint?.serverUp ? new Date(maint.serverUp).getTime() / 1000 : 0;
 
   let status = "Unknown";
   let timeRemaining = "Unknown";
@@ -505,12 +504,8 @@ function calculateMobStatus(mob, maintenance) {
   let isInConditionWindow = false;
 
   const hasCondition = !!(
-    mob.moonPhase ||
-    mob.timeRange ||
-    mob.timeRanges ||
-    mob.weatherSeedRange ||
-    mob.weatherSeedRanges ||
-    mob.conditions
+    mob.moonPhase || mob.timeRange || mob.timeRanges ||
+    mob.weatherSeedRange || mob.weatherSeedRanges || mob.conditions
   );
 
   if (hasCondition && nextConditionSpawnDate && conditionWindowEnd) {
@@ -541,15 +536,11 @@ function calculateMobStatus(mob, maintenance) {
     if (status !== "MaxOver") {
       status = "ConditionActive";
     }
-  } else if (
-    hasCondition &&
-    nextConditionSpawnDate &&
-    now < nextConditionSpawnDate.getTime() / 1000 &&
-    status !== "MaxOver"
-  ) {
+  } else if (hasCondition && nextConditionSpawnDate && now < nextConditionSpawnDate.getTime() / 1000 && status !== "MaxOver") {
     status = "NextCondition";
   }
 
+  const isMaintenanceStop = (maintenanceStart && serverUp && now >= maintenanceStart && now < serverUp);
   let isBlockedByMaintenance = false;
   const nextTime = nextConditionSpawnDate ? (nextConditionSpawnDate.getTime() / 1000) : minRepop;
 
@@ -557,10 +548,7 @@ function calculateMobStatus(mob, maintenance) {
     isBlockedByMaintenance = true;
   }
 
-  const isMaintenanceStop = (maintenanceStart && serverUp && now >= maintenanceStart && now < serverUp);
-
   return {
-    ...mob.repopInfo,
     elapsedPercent,
     timeRemaining,
     conditionRemaining,
@@ -590,7 +578,8 @@ function calculateRepop(mob, maintenance, options = {}) {
   if (heavy) {
     mob.repopInfo = { ...mob.repopInfo, ...heavy };
   }
-  return calculateMobStatus(mob, maintenance);
+  const status = calculateMobStatus(mob, maintenance);
+  return { ...mob.repopInfo, ...status };
 }
 
 export { calculateRepop, calculateNextCondition, calculateMobStatus, getEorzeaTime, formatDurationHM, debounce, formatLastKillTime };
