@@ -214,7 +214,7 @@ function allTabComparator(a, b) {
   return pa.instance - pb.instance;
 }
 
-function filterAndRender({ isInitialLoad = false } = {}) {
+function filterAndRender({ isInitialLoad = false, onlySort = false } = {}) {
   const state = getState();
 
   if (!state.initialLoadComplete && !isInitialLoad) {
@@ -270,19 +270,16 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     let card = existingCards.get(mobNoStr);
 
     if (card) {
-      updateProgressText(card, mob);
-      updateProgressBar(card, mob);
-      updateExpandablePanel(card, mob);
-      updateMemoIcon(card, mob);
-      updateAreaInfo(card, mob);
-      updateMobCount(card, mob);
-      updateMapOverlay(card, mob);
-
-      if (mob.repopInfo.isMaintenanceStop) {
-        card.classList.add("opacity-50", "grayscale", "pointer-events-none");
-      } else {
-        card.classList.remove("opacity-50", "grayscale", "pointer-events-none");
+      if (!onlySort) {
+        updateProgressText(card, mob);
+        updateProgressBar(card, mob);
+        updateExpandablePanel(card, mob);
+        updateMemoIcon(card, mob);
+        updateAreaInfo(card, mob);
+        updateMobCount(card, mob);
+        updateMapOverlay(card, mob);
       }
+
     } else {
       card = createMobCard(mob);
       updateProgressText(card, mob);
@@ -431,10 +428,10 @@ function updateProgressText(card, mob) {
     }
   }
 
-  if (isBlockedByMaintenance) {
-    card.classList.add("grayscale", "opacity-50");
+  if (isBlockedByMaintenance || mob.repopInfo.isMaintenanceStop) {
+    card.classList.add("grayscale", "opacity-50", "pointer-events-none");
   } else {
-    card.classList.remove("grayscale", "opacity-50");
+    card.classList.remove("grayscale", "opacity-50", "pointer-events-none");
   }
 
   let rightStr = "未確定";
