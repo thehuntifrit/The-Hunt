@@ -263,6 +263,9 @@ function filterAndRender({ isInitialLoad = false } = {}) {
 
   const colPointers = Array(numCols).fill(0);
 
+  // キャッシュされた順序を保存 (DOMから取得するか、前回のリストを保持するか)
+  lastRenderedOrderStr = sortedMobs.map(m => m.No).join(",");
+
   sortedMobs.forEach((mob, index) => {
     const mobNoStr = String(mob.No);
     let card = existingCards.get(mobNoStr);
@@ -626,6 +629,8 @@ function updateMapOverlay(card, mob) {
   }
 }
 
+let lastRenderedOrderStr = "";
+
 function updateProgressBars() {
   const state = getState();
   const conditionMobs = [];
@@ -637,18 +642,27 @@ function updateProgressBars() {
       const nowSec = Date.now() / 1000;
       const spawnSec = mob.repopInfo.nextConditionSpawnDate.getTime() / 1000;
       const endSec = mob.repopInfo.conditionWindowEnd.getTime() / 1000;
-
       if (nowSec >= (spawnSec - 900) && nowSec <= endSec) {
         conditionMobs.push(mob.Name);
       }
     }
-
-    const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
-    if (card) {
-      updateProgressText(card, mob);
-      updateProgressBar(card, mob);
-    }
   });
+
+  const filtered = filterMobsByRankAndArea(state.mobs);
+  const sorted = filtered.sort(allTabComparator);
+  const currentOrderStr = sorted.map(m => m.No).join(",");
+
+  if (currentOrderStr !== lastRenderedOrderStr) {
+    filterAndRender();
+  } else {
+    sorted.forEach(mob => {
+      const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
+      if (card) {
+        updateProgressText(card, mob);
+        updateProgressBar(card, mob);
+      }
+    });
+  }
 
   if (DOM.statusMessageTemp) {
     if (conditionMobs.length > 0) {
