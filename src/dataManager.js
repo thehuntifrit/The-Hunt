@@ -354,7 +354,6 @@ function startRealtime() {
 
             if (hasChanges) {
                 setMobs([...current]);
-                filterAndRender();
                 updateProgressBars();
             }
         }
@@ -375,7 +374,7 @@ function startRealtime() {
             checkInitialLoadComplete();
         } else {
             setMobs([...current]);
-            filterAndRender();
+            updateProgressBars();
         }
     });
     unsubscribes.push(unsubLoc);
@@ -399,7 +398,7 @@ function startRealtime() {
             checkInitialLoadComplete();
         } else {
             setMobs([...current]);
-            filterAndRender();
+            updateProgressBars();
         }
     });
     unsubscribes.push(unsubMemo);
