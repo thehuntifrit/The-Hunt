@@ -2,22 +2,7 @@
 
 import { calculateRepop } from "./cal.js";
 import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos } from "./server.js";
-
-let renderCallback = null;
-let progressCallback = null;
-
-export function setRenderCallbacks(render, progress) {
-    renderCallback = render;
-    progressCallback = progress;
-}
-
-function triggerRender(options) {
-    if (renderCallback) renderCallback(options);
-}
-
-function triggerProgress() {
-    if (progressCallback) progressCallback();
-}
+import { filterAndRender, updateProgressBars } from "./uiRender.js";
 
 const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
 
@@ -27,6 +12,8 @@ const state = {
     mobs: [],
     mobLocations: {},
     maintenance: null,
+    pendingInitialLoads: 0,
+    initialLoadComplete: false,
 
     filter: JSON.parse(localStorage.getItem("huntFilterState")) || {
         rank: "ALL",
@@ -155,7 +142,6 @@ function processMobData(rawMobData, maintenance, options = {}) {
         memo_updated_at: 0,
 
         repopInfo: calculateRepop({
-            ...mob,
             REPOP_s: mob.repopSeconds,
             MAX_s: mob.maxRepopSeconds,
             last_kill_time: 0,
@@ -206,7 +192,6 @@ async function loadBaseMobData() {
             setMobs([...processed]);
 
             scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
-            triggerRender({ isInitialLoad: true });
         } catch (e) {
             console.warn("Cache parse error:", e);
         }
@@ -235,12 +220,6 @@ async function loadBaseMobData() {
             setMobs([...processed]);
 
             scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
-
-            if (!cachedData) {
-                triggerRender({ isInitialLoad: true });
-            } else {
-                triggerRender();
-            }
         } else {
             console.log("Mob data is up to date");
         }
@@ -282,9 +261,23 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
 
 let unsubscribes = [];
 
+function checkInitialLoadComplete() {
+    if (state.pendingInitialLoads === 0 && !state.initialLoadComplete) {
+        state.initialLoadComplete = true;
+        filterAndRender({ isInitialLoad: true });
+        updateProgressBars();
+        window.dispatchEvent(new CustomEvent('allDataLoaded'));
+    }
+}
+
 function startRealtime() {
     unsubscribes.forEach(fn => fn && fn());
     unsubscribes = [];
+
+    state.pendingInitialLoads = 3;
+    let statusFirstCall = true;
+    let locFirstCall = true;
+    let memoFirstCall = true;
 
     const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
         const current = state.mobs;
@@ -310,8 +303,14 @@ function startRealtime() {
         });
 
         setMobs(merged);
-        triggerRender();
-        triggerProgress();
+        filterAndRender();
+        updateProgressBars();
+
+        if (statusFirstCall) {
+            statusFirstCall = false;
+            state.pendingInitialLoads--;
+            checkInitialLoadComplete();
+        }
     });
     unsubscribes.push(unsubStatus);
 
@@ -327,7 +326,13 @@ function startRealtime() {
         });
 
         setMobs(merged);
-        triggerRender();
+        filterAndRender();
+
+        if (locFirstCall) {
+            locFirstCall = false;
+            state.pendingInitialLoads--;
+            checkInitialLoadComplete();
+        }
     });
     unsubscribes.push(unsubLoc);
 
@@ -349,12 +354,15 @@ function startRealtime() {
         });
 
         setMobs(merged);
-        triggerRender();
+        filterAndRender();
+
+        if (memoFirstCall) {
+            memoFirstCall = false;
+            state.pendingInitialLoads--;
+            checkInitialLoadComplete();
+        }
     });
     unsubscribes.push(unsubMemo);
 }
 
-export {
-    state, EXPANSION_MAP, getState, setUserId, loadBaseMobData,
-    startRealtime, setFilter, setOpenMobCardNo, PROGRESS_CLASSES
-};
+export { state, EXPANSION_MAP, getState, setUserId, loadBaseMobData, startRealtime, setFilter, setOpenMobCardNo, PROGRESS_CLASSES };
