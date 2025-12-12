@@ -261,23 +261,57 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
 
 let unsubscribes = [];
 
+const initialLoadState = {
+    status: false,
+    location: false,
+    memo: false
+};
+
 function checkInitialLoadComplete() {
-    if (state.pendingInitialLoads === 0 && !state.initialLoadComplete) {
-        state.initialLoadComplete = true;
-        filterAndRender({ isInitialLoad: true });
-        updateProgressBars();
-        window.dispatchEvent(new CustomEvent('allDataLoaded'));
+    if (initialLoadState.status && initialLoadState.location && initialLoadState.memo) {
+        if (!state.initialLoadComplete) {
+            state.initialLoadComplete = true;
+            console.log("All initial realtime data loaded. Calculating and rendering...");
+
+
+            const current = state.mobs;
+            const maintenance = state.maintenance;
+            current.forEach(mob => {
+                mob.repopInfo = calculateRepop(mob, maintenance);
+            });
+            setMobs([...current]);
+
+            filterAndRender({ isInitialLoad: true });
+            updateProgressBars();
+            window.dispatchEvent(new CustomEvent('allDataLoaded'));
+        }
     }
+}
+
+function recalculateMob(mobNo) {
+    const state = getState();
+    const mobIndex = state.mobs.findIndex(m => m.No === mobNo);
+    if (mobIndex === -1) return;
+
+    const mob = state.mobs[mobIndex];
+    mob.repopInfo = calculateRepop(mob, state.maintenance);
+
+    const newMobs = [...state.mobs];
+    newMobs[mobIndex] = mob;
+    setMobs(newMobs);
+
+    return mob;
 }
 
 function startRealtime() {
     unsubscribes.forEach(fn => fn && fn());
     unsubscribes = [];
 
-    state.pendingInitialLoads = 3;
-    let statusFirstCall = true;
-    let locFirstCall = true;
-    let memoFirstCall = true;
+    // Reset load state
+    state.initialLoadComplete = false;
+    initialLoadState.status = false;
+    initialLoadState.location = false;
+    initialLoadState.memo = false;
 
     const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
         const current = state.mobs;
@@ -293,23 +327,36 @@ function startRealtime() {
             });
         });
 
-        const merged = current.map(m => {
-            const dyn = map.get(m.No);
-            if (!dyn) return m;
-
-            const updatedMob = { ...m, ...dyn };
-            updatedMob.repopInfo = calculateRepop(updatedMob, state.maintenance);
-            return updatedMob;
-        });
-
-        setMobs(merged);
-        filterAndRender();
-        updateProgressBars();
-
-        if (statusFirstCall) {
-            statusFirstCall = false;
-            state.pendingInitialLoads--;
+        if (!state.initialLoadComplete) {
+            current.forEach(m => {
+                const dyn = map.get(m.No);
+                if (dyn) {
+                    m.last_kill_time = dyn.last_kill_time;
+                    m.prev_kill_time = dyn.prev_kill_time;
+                }
+            });
+            initialLoadState.status = true;
             checkInitialLoadComplete();
+        } else {
+            let hasChanges = false;
+            current.forEach(m => {
+                const dyn = map.get(m.No);
+                if (dyn) {
+                    if (m.last_kill_time !== dyn.last_kill_time || m.prev_kill_time !== dyn.prev_kill_time) {
+                        m.last_kill_time = dyn.last_kill_time;
+
+                        m.prev_kill_time = dyn.prev_kill_time;
+                        m.repopInfo = calculateRepop(m, state.maintenance);
+                        hasChanges = true;
+                    }
+                }
+            });
+
+            if (hasChanges) {
+                setMobs([...current]);
+                filterAndRender();
+                updateProgressBars();
+            }
         }
     });
     unsubscribes.push(unsubStatus);
@@ -318,20 +365,17 @@ function startRealtime() {
         const current = state.mobs;
         state.mobLocations = locationsMap;
 
-        const merged = current.map(m => {
+        current.forEach(m => {
             const dyn = locationsMap[m.No];
-            const updatedMob = { ...m };
-            updatedMob.spawn_cull_status = dyn || {};
-            return updatedMob;
+            m.spawn_cull_status = dyn || {};
         });
 
-        setMobs(merged);
-        filterAndRender();
-
-        if (locFirstCall) {
-            locFirstCall = false;
-            state.pendingInitialLoads--;
+        if (!state.initialLoadComplete) {
+            initialLoadState.location = true;
             checkInitialLoadComplete();
+        } else {
+            setMobs([...current]);
+            filterAndRender();
         }
     });
     unsubscribes.push(unsubLoc);
@@ -339,30 +383,26 @@ function startRealtime() {
     const unsubMemo = subscribeMobMemos(memoData => {
         const current = state.mobs;
 
-        const merged = current.map(m => {
+        current.forEach(m => {
             const memos = memoData[m.No] || [];
             const latest = memos[0];
-
-            const updatedMob = { ...m };
             if (latest) {
-                updatedMob.memo_text = latest.memo_text;
-                updatedMob.memo_updated_at = latest.created_at?.seconds || 0;
+                m.memo_text = latest.memo_text;
+                m.memo_updated_at = latest.created_at?.seconds || 0;
             } else {
-                updatedMob.memo_text = "";
+                m.memo_text = "";
             }
-            return updatedMob;
         });
 
-        setMobs(merged);
-        filterAndRender();
-
-        if (memoFirstCall) {
-            memoFirstCall = false;
-            state.pendingInitialLoads--;
+        if (!state.initialLoadComplete) {
+            initialLoadState.memo = true;
             checkInitialLoadComplete();
+        } else {
+            setMobs([...current]);
+            filterAndRender();
         }
     });
     unsubscribes.push(unsubMemo);
 }
 
-export { state, EXPANSION_MAP, getState, setUserId, loadBaseMobData, startRealtime, setFilter, setOpenMobCardNo, PROGRESS_CLASSES };
+export { state, EXPANSION_MAP, getState, setUserId, loadBaseMobData, startRealtime, setFilter, setOpenMobCardNo, PROGRESS_CLASSES, recalculateMob };
