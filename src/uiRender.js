@@ -263,7 +263,6 @@ function filterAndRender({ isInitialLoad = false } = {}) {
 
   const colPointers = Array(numCols).fill(0);
 
-  // キャッシュされた順序を保存 (DOMから取得するか、前回のリストを保持するか)
   lastRenderedOrderStr = sortedMobs.map(m => m.No).join(",");
 
   sortedMobs.forEach((mob, index) => {
@@ -353,7 +352,7 @@ function showColumnContainer() {
         }
       });
     });
-  }, 500);
+  }, 100);
 }
 
 function updateProgressBar(card, mob) {
