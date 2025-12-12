@@ -1,6 +1,6 @@
 // uiRender.js
 
-import { calculateNextCondition, calculateMobStatus, formatDurationHM, formatLastKillTime, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
+import { calculateMobStatus, calculateRepop, formatDurationHM, formatLastKillTime, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
 import { drawSpawnPoint, isCulled, attachLocationEvents } from "./location.js";
 import { getState, PROGRESS_CLASSES } from "./dataManager.js";
 import { filterMobsByRankAndArea } from "./filterUI.js";
@@ -19,11 +19,8 @@ const DOM = {
   modalStatus: document.getElementById('modal-status'),
   modalTimeInput: document.getElementById('report-datetime'),
   modalForceSubmit: document.getElementById('report-force-submit'),
-  modalForceSubmit: document.getElementById('report-force-submit'),
   statusMessageTemp: document.getElementById('status-message-temp'),
 };
-
-const mobCardCache = new Map();
 
 function updateEorzeaTime() {
   const et = getEorzeaTime(new Date());
@@ -46,12 +43,9 @@ function createMobCard(mob) {
   const card = clone.querySelector('.mob-card');
 
   const rank = mob.Rank;
-  const rankLabel = rank;
   const isExpandable = rank === "S";
   const { openMobCardNo } = getState();
   const isOpen = isExpandable && mob.No === openMobCardNo;
-
-  const state = getState();
 
   const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
   const isMemoNewer = (mob.memo_updated_at || 0) > (mob.last_kill_time || 0);
@@ -219,11 +213,6 @@ function allTabComparator(a, b) {
 
 function filterAndRender({ isInitialLoad = false } = {}) {
   const state = getState();
-
-  if (!state.initialLoadComplete && !isInitialLoad) {
-    return;
-  }
-
   const filtered = filterMobsByRankAndArea(state.mobs);
   const sortedMobs = filtered.sort(allTabComparator);
 
@@ -241,6 +230,12 @@ function filterAndRender({ isInitialLoad = false } = {}) {
       selectionEnd = activeElement.selectionEnd;
     }
   }
+
+  const existingCards = new Map();
+  document.querySelectorAll('.mob-card').forEach(card => {
+    const mobNo = card.getAttribute('data-mob-no');
+    existingCards.set(mobNo, card);
+  });
 
   // Determine column count
   const width = window.innerWidth;
@@ -262,7 +257,7 @@ function filterAndRender({ isInitialLoad = false } = {}) {
 
   sortedMobs.forEach((mob, index) => {
     const mobNoStr = String(mob.No);
-    let card = mobCardCache.get(mobNoStr);
+    let card = existingCards.get(mobNoStr);
 
     if (card) {
       updateProgressText(card, mob);
@@ -280,8 +275,6 @@ function filterAndRender({ isInitialLoad = false } = {}) {
       }
     } else {
       card = createMobCard(mob);
-      mobCardCache.set(mobNoStr, card);
-
       updateProgressText(card, mob);
       updateProgressBar(card, mob);
       updateExpandablePanel(card, mob);
@@ -315,6 +308,9 @@ function filterAndRender({ isInitialLoad = false } = {}) {
   if (isInitialLoad) {
     attachLocationEvents();
     updateProgressBars();
+    requestAnimationFrame(() => {
+      showColumnContainer();
+    });
   }
 
   // Restore focus
@@ -337,19 +333,13 @@ function filterAndRender({ isInitialLoad = false } = {}) {
 }
 
 function showColumnContainer() {
-  setTimeout(() => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (DOM.colContainer) {
-          DOM.colContainer.classList.remove("opacity-0");
-        }
-        const overlay = document.getElementById("loading-overlay");
-        if (overlay) {
-          overlay.classList.add("hidden");
-        }
-      });
-    });
-  }, 500);
+  if (DOM.colContainer) {
+    DOM.colContainer.classList.remove("opacity-0");
+  }
+  const overlay = document.getElementById("loading-overlay");
+  if (overlay) {
+    overlay.classList.add("hidden");
+  }
 }
 
 function updateProgressBar(card, mob) {
@@ -360,12 +350,7 @@ function updateProgressBar(card, mob) {
 
   const { elapsedPercent, status } = mob.repopInfo;
 
-  const currentWidth = parseFloat(bar.style.width) || 0;
-  if (elapsedPercent < currentWidth) {
-    bar.style.transition = "none";
-  } else {
-    bar.style.transition = "width linear 60s";
-  }
+  bar.style.transition = "width linear 60s";
   bar.style.width = `${elapsedPercent}%`;
 
   bar.classList.remove(
@@ -435,7 +420,6 @@ function updateProgressText(card, mob) {
   }
 
   let rightStr = "未確定";
-  let isNext = false;
 
   let isSpecialCondition = false;
 
@@ -620,6 +604,7 @@ function updateMapOverlay(card, mob) {
         isS_LastOne
       );
     }).join("");
+
     mapOverlay.innerHTML = spawnPointsHtml;
   }
 }
@@ -627,29 +612,17 @@ function updateMapOverlay(card, mob) {
 function updateProgressBars() {
   const state = getState();
   const conditionMobs = [];
-  const now = Date.now() / 1000;
 
   state.mobs.forEach((mob) => {
     const statusUpdate = calculateMobStatus(mob, state.maintenance);
     mob.repopInfo = { ...mob.repopInfo, ...statusUpdate };
 
-    if (mob.repopInfo.conditionWindowEnd) {
-      const endSec = mob.repopInfo.conditionWindowEnd.getTime() / 1000;
-      if (now > endSec) {
-        const nextCondition = calculateNextCondition(mob, state.maintenance);
-        if (nextCondition) {
-          mob.repopInfo = { ...mob.repopInfo, ...nextCondition };
-          const newStatus = calculateMobStatus(mob, state.maintenance);
-          mob.repopInfo = { ...mob.repopInfo, ...newStatus };
-        }
-      }
-    }
-
     if (mob.repopInfo.nextConditionSpawnDate && mob.repopInfo.conditionWindowEnd) {
+      const nowSec = Date.now() / 1000;
       const spawnSec = mob.repopInfo.nextConditionSpawnDate.getTime() / 1000;
       const endSec = mob.repopInfo.conditionWindowEnd.getTime() / 1000;
 
-      if (now >= (spawnSec - 900) && now <= endSec) {
+      if (nowSec >= (spawnSec - 900) && nowSec <= endSec) {
         conditionMobs.push(mob.Name);
       }
     }
@@ -675,11 +648,30 @@ function updateProgressBars() {
 
 const sortAndRedistribute = debounce(() => filterAndRender(), 200);
 
+function onKillReportReceived(mobId, kill_time) {
+  const mob = getState().mobs.find(m => m.No === mobId);
+  if (!mob) return;
+
+  mob.last_kill_time = Number(kill_time);
+  mob.repopInfo = calculateRepop(mob, getState().maintenance);
+
+  const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
+  if (card) {
+    updateProgressText(card, mob);
+    updateProgressBar(card, mob);
+    updateExpandablePanel(card, mob);
+    updateMemoIcon(card, mob);
+    updateAreaInfo(card, mob);
+    updateMobCount(card, mob);
+    updateMapOverlay(card, mob);
+  }
+}
+
 setInterval(() => {
   updateProgressBars();
 }, EORZEA_MINUTE_MS);
 
 export {
   filterAndRender, updateProgressText, updateProgressBar, createMobCard, DOM, sortAndRedistribute,
-  updateProgressBars, updateAreaInfo, updateMapOverlay, updateMobCount, showColumnContainer
+  onKillReportReceived, updateProgressBars, updateAreaInfo, updateMapOverlay, updateMobCount, showColumnContainer
 };
