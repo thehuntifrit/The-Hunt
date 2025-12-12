@@ -395,7 +395,7 @@ function findNextSpawn(mob, pointSec, searchLimit) {
   return null;
 }
 
-function calculateNextCondition(mob, maintenance, options = {}) {
+function calculateRepop(mob, maintenance, options = {}) {
   const { skipConditionCalc = false } = options;
   const now = Date.now() / 1000;
   const lastKill = mob.last_kill_time || 0;
@@ -406,87 +406,10 @@ function calculateNextCondition(mob, maintenance, options = {}) {
   if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
     maint = maint.maintenance;
   }
-  if (!maint || !maint.serverUp || !maint.start) return null;
+  if (!maint || !maint.serverUp || !maint.start) return baseResult("Unknown");
 
   const serverUp = new Date(maint.serverUp).getTime() / 1000;
   const maintenanceStart = new Date(maint.start).getTime() / 1000;
-
-  let minRepop;
-  if (lastKill === 0 || lastKill <= serverUp) {
-    minRepop = serverUp + repopSec * 0.6;
-  } else {
-    minRepop = lastKill + repopSec;
-  }
-
-  const pointSec = Math.max(minRepop, now);
-  const searchLimit = pointSec + LIMIT_DAYS * 24 * 3600;
-
-  const hasCondition = !!(
-    mob.moonPhase ||
-    mob.timeRange ||
-    mob.timeRanges ||
-    mob.weatherSeedRange ||
-    mob.weatherSeedRanges ||
-    mob.conditions
-  );
-
-  if (!hasCondition || skipConditionCalc) {
-    return null;
-  }
-
-  const cacheKey = `${lastKill}_${maintenanceStart || 0}`;
-  let useCache = false;
-
-  if (mob._spawnCache && mob._spawnCache.key === cacheKey) {
-    if (mob._spawnCache.result) {
-      if (now < mob._spawnCache.result.end) {
-        useCache = true;
-      }
-    } else {
-      useCache = true;
-    }
-  }
-
-  let result = null;
-  if (useCache) {
-    result = mob._spawnCache.result;
-  } else {
-    result = findNextSpawn(mob, pointSec, searchLimit);
-    mob._spawnCache = {
-      key: cacheKey,
-      result: result
-    };
-  }
-
-  if (result) {
-    const { start, end } = result;
-
-    return {
-      nextConditionSpawnDate: new Date(start * 1000),
-      conditionWindowEnd: new Date(end * 1000)
-    };
-  }
-
-  return null;
-}
-
-function calculateMobStatus(mob, maintenance) {
-  const now = Date.now() / 1000;
-  const lastKill = mob.last_kill_time || 0;
-  const repopSec = mob.REPOP_s;
-  const maxSec = mob.MAX_s;
-
-  let maint = maintenance;
-  if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
-    maint = maint.maintenance;
-  }
-
-  const maintenanceStart = maint?.start ? new Date(maint.start).getTime() / 1000 : 0;
-  const serverUp = maint?.serverUp ? new Date(maint.serverUp).getTime() / 1000 : 0;
-
-  if (!maint || !maint.serverUp || !maint.start) {
-    return baseResult("Unknown");
-  }
 
   let minRepop, maxRepop;
   if (lastKill === 0 || lastKill <= serverUp) {
@@ -497,24 +420,63 @@ function calculateMobStatus(mob, maintenance) {
     maxRepop = lastKill + maxSec;
   }
 
-  const nextConditionSpawnDate = mob.repopInfo?.nextConditionSpawnDate || null;
-  const conditionWindowEnd = mob.repopInfo?.conditionWindowEnd || null;
+  const pointSec = Math.max(minRepop, now);
+  const nextMinRepopDate = new Date(minRepop * 1000);
+  const searchLimit = pointSec + LIMIT_DAYS * 24 * 3600;
 
   let status = "Unknown";
   let timeRemaining = "Unknown";
   let conditionRemaining = null;
+  let nextConditionSpawnDate = null;
+  let conditionWindowEnd = null;
   let isInConditionWindow = false;
-  const nextMinRepopDate = new Date(minRepop * 1000);
 
-  if (nextConditionSpawnDate && conditionWindowEnd) {
-    const startSec = nextConditionSpawnDate.getTime() / 1000;
-    const endSec = conditionWindowEnd.getTime() / 1000;
+  const hasCondition = !!(
+    mob.moonPhase ||
+    mob.timeRange ||
+    mob.timeRanges ||
+    mob.weatherSeedRange ||
+    mob.weatherSeedRanges ||
+    mob.conditions
+  );
 
-    isInConditionWindow = (now >= startSec && now < endSec);
+  if (hasCondition && !skipConditionCalc) {
+    const cacheKey = `${lastKill}_${maintenanceStart || 0}`;
+    let useCache = false;
 
-    if (isInConditionWindow) {
-      const remainingSec = endSec - now;
-      conditionRemaining = `残り ${Math.ceil(remainingSec / 60)}分`;
+    if (mob._spawnCache && mob._spawnCache.key === cacheKey) {
+      if (mob._spawnCache.result) {
+        if (now < mob._spawnCache.result.end) {
+          useCache = true;
+        }
+      } else {
+        useCache = true;
+      }
+    }
+
+    let result = null;
+    if (useCache) {
+      result = mob._spawnCache.result;
+    } else {
+      result = findNextSpawn(mob, pointSec, searchLimit);
+      mob._spawnCache = {
+        key: cacheKey,
+        result: result
+      };
+    }
+
+    if (result) {
+      const { start, end } = result;
+
+      nextConditionSpawnDate = new Date(start * 1000);
+      conditionWindowEnd = new Date(end * 1000);
+
+      isInConditionWindow = (now >= start && now < end);
+
+      if (isInConditionWindow) {
+        const remainingSec = end - now;
+        conditionRemaining = `残り ${Math.ceil(remainingSec / 60)}分`;
+      }
     }
   }
 
@@ -537,11 +499,12 @@ function calculateMobStatus(mob, maintenance) {
     if (status !== "MaxOver") {
       status = "ConditionActive";
     }
-  } else if (nextConditionSpawnDate && now < nextConditionSpawnDate.getTime() / 1000 && status !== "MaxOver") {
+  } else if (hasCondition && nextConditionSpawnDate && now < nextConditionSpawnDate.getTime() / 1000 && status !== "MaxOver") {
     status = "NextCondition";
   }
 
   const isMaintenanceStop = (now >= maintenanceStart && now < serverUp);
+
   let isBlockedByMaintenance = false;
   const nextTime = nextConditionSpawnDate ? (nextConditionSpawnDate.getTime() / 1000) : minRepop;
 
@@ -563,34 +526,20 @@ function calculateMobStatus(mob, maintenance) {
     isMaintenanceStop,
     isBlockedByMaintenance
   };
-}
 
-function baseResult(status) {
-  return {
-    minRepop: null,
-    maxRepop: null,
-    elapsedPercent: 0,
-    timeRemaining: "未確定",
-    status,
-    nextMinRepopDate: null,
-    conditionWindowEnd: null,
-    isInConditionWindow: false,
-    isMaintenanceStop: false
-  };
-}
-
-function calculateRepop(mob, maintenance, options = {}) {
-  const heavy = calculateNextCondition(mob, maintenance, options);
-  let combinedInfo = { ...mob.repopInfo };
-
-  if (heavy) {
-    combinedInfo = { ...combinedInfo, ...heavy };
+  function baseResult(status) {
+    return {
+      minRepop: null,
+      maxRepop: null,
+      elapsedPercent: 0,
+      timeRemaining: "未確定",
+      status,
+      nextMinRepopDate: null,
+      conditionWindowEnd: null,
+      isInConditionWindow: false,
+      isMaintenanceStop: false
+    };
   }
-
-  const tempMob = { ...mob, repopInfo: combinedInfo };
-  const status = calculateMobStatus(tempMob, maintenance);
-
-  return { ...combinedInfo, ...status };
 }
 
-export { calculateRepop, calculateNextCondition, calculateMobStatus, getEorzeaTime, formatDurationHM, debounce, formatLastKillTime };
+export { calculateRepop, getEorzeaTime, formatDurationHM, debounce, formatLastKillTime };
