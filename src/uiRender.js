@@ -1,6 +1,6 @@
 // uiRender.js
 
-import { calculateMobStatus, calculateRepop, formatDurationHM, formatLastKillTime, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
+import { calculateRepop, formatDurationHM, formatLastKillTime, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
 import { drawSpawnPoint, isCulled, attachLocationEvents } from "./location.js";
 import { getState, PROGRESS_CLASSES } from "./dataManager.js";
 import { filterMobsByRankAndArea } from "./filterUI.js";
@@ -43,9 +43,12 @@ function createMobCard(mob) {
   const card = clone.querySelector('.mob-card');
 
   const rank = mob.Rank;
+  const rankLabel = rank;
   const isExpandable = rank === "S";
   const { openMobCardNo } = getState();
   const isOpen = isExpandable && mob.No === openMobCardNo;
+
+  const state = getState();
 
   const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
   const isMemoNewer = (mob.memo_updated_at || 0) > (mob.last_kill_time || 0);
@@ -213,6 +216,11 @@ function allTabComparator(a, b) {
 
 function filterAndRender({ isInitialLoad = false } = {}) {
   const state = getState();
+
+  if (!state.initialLoadComplete && !isInitialLoad) {
+    return;
+  }
+
   const filtered = filterMobsByRankAndArea(state.mobs);
   const sortedMobs = filtered.sort(allTabComparator);
 
@@ -308,9 +316,6 @@ function filterAndRender({ isInitialLoad = false } = {}) {
   if (isInitialLoad) {
     attachLocationEvents();
     updateProgressBars();
-    requestAnimationFrame(() => {
-      showColumnContainer();
-    });
   }
 
   // Restore focus
@@ -333,13 +338,19 @@ function filterAndRender({ isInitialLoad = false } = {}) {
 }
 
 function showColumnContainer() {
-  if (DOM.colContainer) {
-    DOM.colContainer.classList.remove("opacity-0");
-  }
-  const overlay = document.getElementById("loading-overlay");
-  if (overlay) {
-    overlay.classList.add("hidden");
-  }
+  setTimeout(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (DOM.colContainer) {
+          DOM.colContainer.classList.remove("opacity-0");
+        }
+        const overlay = document.getElementById("loading-overlay");
+        if (overlay) {
+          overlay.classList.add("hidden");
+        }
+      });
+    });
+  }, 500);
 }
 
 function updateProgressBar(card, mob) {
@@ -350,7 +361,12 @@ function updateProgressBar(card, mob) {
 
   const { elapsedPercent, status } = mob.repopInfo;
 
-  bar.style.transition = "width linear 60s";
+  const currentWidth = parseFloat(bar.style.width) || 0;
+  if (elapsedPercent < currentWidth) {
+    bar.style.transition = "none";
+  } else {
+    bar.style.transition = "width linear 60s";
+  }
   bar.style.width = `${elapsedPercent}%`;
 
   bar.classList.remove(
@@ -420,6 +436,7 @@ function updateProgressText(card, mob) {
   }
 
   let rightStr = "未確定";
+  let isNext = false;
 
   let isSpecialCondition = false;
 
@@ -614,8 +631,7 @@ function updateProgressBars() {
   const conditionMobs = [];
 
   state.mobs.forEach((mob) => {
-    const statusUpdate = calculateMobStatus(mob, state.maintenance);
-    mob.repopInfo = { ...mob.repopInfo, ...statusUpdate };
+    mob.repopInfo = calculateRepop(mob, state.maintenance);
 
     if (mob.repopInfo.nextConditionSpawnDate && mob.repopInfo.conditionWindowEnd) {
       const nowSec = Date.now() / 1000;
