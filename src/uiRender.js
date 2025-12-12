@@ -22,6 +22,29 @@ const DOM = {
   statusMessageTemp: document.getElementById('status-message-temp'),
 };
 
+const FIFTEEN_MINUTES_SEC = 15 * 60;
+
+let cachedFilterString = null;
+let cachedFilteredMobs = null;
+
+function getFilteredMobs() {
+  const state = getState();
+  const filterString = JSON.stringify(state.filter);
+
+  if (cachedFilterString === filterString && cachedFilteredMobs) {
+    return cachedFilteredMobs;
+  }
+
+  cachedFilterString = filterString;
+  cachedFilteredMobs = filterMobsByRankAndArea(state.mobs);
+  return cachedFilteredMobs;
+}
+
+function invalidateFilterCache() {
+  cachedFilterString = null;
+  cachedFilteredMobs = null;
+}
+
 function updateEorzeaTime() {
   const et = getEorzeaTime(new Date());
   const el = document.getElementById("eorzea-time");
@@ -221,7 +244,7 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     return;
   }
 
-  const filtered = filterMobsByRankAndArea(state.mobs);
+  const filtered = getFilteredMobs();
   const sortedMobs = filtered.sort(allTabComparator);
 
   const activeElement = document.activeElement;
@@ -619,21 +642,19 @@ let lastRenderedOrderStr = "";
 function updateProgressBars() {
   const state = getState();
   const conditionMobs = [];
+  const nowSec = Date.now() / 1000;
 
   state.mobs.forEach((mob) => {
-    mob.repopInfo = calculateRepop(mob, state.maintenance);
-
-    if (mob.repopInfo.nextConditionSpawnDate && mob.repopInfo.conditionWindowEnd) {
-      const nowSec = Date.now() / 1000;
+    if (mob.repopInfo?.nextConditionSpawnDate && mob.repopInfo?.conditionWindowEnd) {
       const spawnSec = mob.repopInfo.nextConditionSpawnDate.getTime() / 1000;
       const endSec = mob.repopInfo.conditionWindowEnd.getTime() / 1000;
-      if (nowSec >= (spawnSec - 900) && nowSec <= endSec) {
+      if (nowSec >= (spawnSec - FIFTEEN_MINUTES_SEC) && nowSec <= endSec) {
         conditionMobs.push(mob.Name);
       }
     }
   });
 
-  const filtered = filterMobsByRankAndArea(state.mobs);
+  const filtered = getFilteredMobs();
   const sorted = filtered.sort(allTabComparator);
   const currentOrderStr = sorted.map(m => m.No).join(",");
 
@@ -645,6 +666,8 @@ function updateProgressBars() {
       if (card) {
         updateProgressText(card, mob);
         updateProgressBar(card, mob);
+        updateMobCount(card, mob);
+        updateMapOverlay(card, mob);
       }
     });
   }
@@ -679,5 +702,6 @@ setInterval(() => {
 
 export {
   filterAndRender, updateProgressText, updateProgressBar, createMobCard, DOM, sortAndRedistribute,
-  onKillReportReceived, updateProgressBars, updateAreaInfo, updateMapOverlay, updateMobCount, showColumnContainer
+  onKillReportReceived, updateProgressBars, updateAreaInfo, updateMapOverlay, updateMobCount, showColumnContainer,
+  invalidateFilterCache
 };
