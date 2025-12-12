@@ -117,36 +117,35 @@ async function loadMaintenance() {
 
 function processMobData(rawMobData, maintenance, options = {}) {
     const { skipConditionCalc = false } = options;
-    return Object.entries(rawMobData.mobs).map(([no, mob]) => ({
-        No: parseInt(no, 10),
-        Rank: mob.rank,
-        Name: mob.name,
-        Area: mob.area,
-        Condition: mob.condition || "",
-        Expansion: EXPANSION_MAP[Math.floor(no / 10000)] || "Unknown",
-        REPOP_s: mob.repopSeconds,
-        MAX_s: mob.maxRepopSeconds,
-        moonPhase: mob.moonPhase || null,
-        conditions: mob.conditions || null,
-        timeRange: mob.timeRange || null,
-        timeRanges: mob.timeRanges || null,
-        weatherSeedRange: mob.weatherSeedRange || null,
-        weatherSeedRanges: mob.weatherSeedRanges || null,
-        weatherDuration: mob.weatherDuration || null,
-        Map: mob.mapImage || "",
-        spawn_points: mob.locations || [],
-        last_kill_time: 0,
-        prev_kill_time: 0,
-        spawn_cull_status: {},
-        memo_text: "",
-        memo_updated_at: 0,
-
-        repopInfo: calculateRepop({
+    return Object.entries(rawMobData.mobs).map(([no, mob]) => {
+        const mobObj = {
+            No: parseInt(no, 10),
+            Rank: mob.rank,
+            Name: mob.name,
+            Area: mob.area,
+            Condition: mob.condition || "",
+            Expansion: EXPANSION_MAP[Math.floor(no / 10000)] || "Unknown",
             REPOP_s: mob.repopSeconds,
             MAX_s: mob.maxRepopSeconds,
+            moonPhase: mob.moonPhase || null,
+            conditions: mob.conditions || null,
+            timeRange: mob.timeRange || null,
+            timeRanges: mob.timeRanges || null,
+            weatherSeedRange: mob.weatherSeedRange || null,
+            weatherSeedRanges: mob.weatherSeedRanges || null,
+            weatherDuration: mob.weatherDuration || null,
+            Map: mob.mapImage || "",
+            spawn_points: mob.locations || [],
             last_kill_time: 0,
-        }, maintenance, { skipConditionCalc })
-    }));
+            prev_kill_time: 0,
+            spawn_cull_status: {},
+            memo_text: "",
+            memo_updated_at: 0,
+        };
+
+        mobObj.repopInfo = calculateRepop(mobObj, maintenance, { skipConditionCalc });
+        return mobObj;
+    });
 }
 
 const SPAWN_CACHE_KEY = "spawnConditionCache";
@@ -255,6 +254,7 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
     saveSpawnCache(newCache);
 
     setMobs([...state.baseMobData]);
+    filterAndRender();
 
     console.log(`Condition calculation completed for ${updatedCount} mobs`);
 }
@@ -304,7 +304,6 @@ function startRealtime() {
 
         setMobs(merged);
         filterAndRender();
-        updateProgressBars();
 
         if (statusFirstCall) {
             statusFirstCall = false;
