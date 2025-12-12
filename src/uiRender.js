@@ -19,8 +19,11 @@ const DOM = {
   modalStatus: document.getElementById('modal-status'),
   modalTimeInput: document.getElementById('report-datetime'),
   modalForceSubmit: document.getElementById('report-force-submit'),
+  modalForceSubmit: document.getElementById('report-force-submit'),
   statusMessageTemp: document.getElementById('status-message-temp'),
 };
+
+const mobCardCache = new Map();
 
 function updateEorzeaTime() {
   const et = getEorzeaTime(new Date());
@@ -239,12 +242,6 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     }
   }
 
-  const existingCards = new Map();
-  document.querySelectorAll('.mob-card').forEach(card => {
-    const mobNo = card.getAttribute('data-mob-no');
-    existingCards.set(mobNo, card);
-  });
-
   // Determine column count
   const width = window.innerWidth;
   const md = 768;
@@ -265,7 +262,7 @@ function filterAndRender({ isInitialLoad = false } = {}) {
 
   sortedMobs.forEach((mob, index) => {
     const mobNoStr = String(mob.No);
-    let card = existingCards.get(mobNoStr);
+    let card = mobCardCache.get(mobNoStr);
 
     if (card) {
       updateProgressText(card, mob);
@@ -283,6 +280,8 @@ function filterAndRender({ isInitialLoad = false } = {}) {
       }
     } else {
       card = createMobCard(mob);
+      mobCardCache.set(mobNoStr, card);
+
       updateProgressText(card, mob);
       updateProgressBar(card, mob);
       updateExpandablePanel(card, mob);
