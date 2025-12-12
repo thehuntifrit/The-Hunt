@@ -1,687 +1,596 @@
-// uiRender.js
+// cal.js
 
-import { calculateRepop, calculateNextCondition, calculateMobStatus, formatDurationHM, formatLastKillTime, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
-import { drawSpawnPoint, isCulled, attachLocationEvents } from "./location.js";
-import { getState, PROGRESS_CLASSES } from "./dataManager.js";
-import { filterMobsByRankAndArea } from "./filterUI.js";
+const ET_HOUR_SEC = 175;
+const WEATHER_CYCLE_SEC = 1400;
+const ET_DAY_SEC = ET_HOUR_SEC * 24;
+const MOON_CYCLE_SEC = ET_DAY_SEC * 32;
+const MOON_PHASE_DURATION_SEC = ET_DAY_SEC * 4;
+const MAX_SEARCH_ITERATIONS = 5000;
+const LIMIT_DAYS = 20;
+export const EORZEA_MINUTE_MS = 2917;
 
-const DOM = {
-  masterContainer: document.getElementById('master-mob-container'),
-  colContainer: document.getElementById('column-container'),
-  cols: [document.getElementById('column-1'), document.getElementById('column-2'), document.getElementById('column-3')],
-  rankTabs: document.getElementById('rank-tabs'),
-  areaFilterWrapper: document.getElementById('area-filter-wrapper'),
-  areaFilterPanel: document.getElementById('area-filter-panel'),
-  statusMessage: document.getElementById('status-message'),
-  reportModal: document.getElementById('report-modal'),
-  reportForm: document.getElementById('report-form'),
-  modalMobName: document.getElementById('modal-mob-name'),
-  modalStatus: document.getElementById('modal-status'),
-  modalTimeInput: document.getElementById('report-datetime'),
-  modalForceSubmit: document.getElementById('report-force-submit'),
-  statusMessageTemp: document.getElementById('status-message-temp'),
-};
-
-function updateEorzeaTime() {
-  const et = getEorzeaTime(new Date());
-  const el = document.getElementById("eorzea-time");
-  if (el) {
-    el.textContent = `ET ${et.hours}:${et.minutes}`;
-  }
-}
-updateEorzeaTime();
-setInterval(updateEorzeaTime, EORZEA_MINUTE_MS);
-
-function processText(text) {
-  if (typeof text !== "string" || !text) return "";
-  return text.replace(/\/\//g, "<br>");
+function formatDurationHM(seconds) {
+  if (seconds < 0) seconds = 0;
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  return `${String(h).padStart(2, "0")}h${String(m).padStart(2, "0")}m`;
 }
 
-function createMobCard(mob) {
-  const template = document.getElementById('mob-card-template');
-  const clone = template.content.cloneNode(true);
-  const card = clone.querySelector('.mob-card');
-
-  const rank = mob.Rank;
-  const rankLabel = rank;
-  const isExpandable = rank === "S";
-  const { openMobCardNo } = getState();
-  const isOpen = isExpandable && mob.No === openMobCardNo;
-
-  const state = getState();
-
-  const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
-  const isMemoNewer = (mob.memo_updated_at || 0) > (mob.last_kill_time || 0);
-  const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
-
-  const memoIcon = shouldShowMemo
-    ? ` <span data-tooltip="${mob.memo_text}" style="font-size: 1rem">📝</span>`
-    : "";
-
-  // Card Attributes
-  card.dataset.mobNo = mob.No;
-  card.dataset.rank = rank;
-  if (mob.repopInfo?.isMaintenanceStop) {
-    card.classList.add("opacity-50", "grayscale", "pointer-events-none");
-  }
-
-  // Rank Badge - Removed as requested
-  const rankBadge = card.querySelector('.rank-badge');
-  if (rankBadge) rankBadge.remove();
-
-  // Adjust grid layout
-  const headerGrid = card.querySelector('.mob-card-header > div');
-  if (headerGrid) {
-    headerGrid.classList.remove('grid-cols-[auto_1fr_auto]');
-    headerGrid.classList.add('grid-cols-[1fr_auto]');
-  }
-
-  // Mob Name
-  const mobNameEl = card.querySelector('.mob-name');
-  mobNameEl.textContent = mob.Name;
-  mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
-
-  const memoIconContainer = card.querySelector('.memo-icon-container');
-  memoIconContainer.innerHTML = memoIcon;
-
-  // Report Button
-  const reportBtn = card.querySelector('.report-btn');
-  reportBtn.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
-  reportBtn.dataset.mobNo = mob.No;
-
-  // Expandable Panel
-  const expandablePanel = card.querySelector('.expandable-panel');
-  if (isExpandable) {
-    if (isOpen) {
-      expandablePanel.classList.add('open');
-    }
-
-    // Memo Input
-    const memoInput = card.querySelector('.memo-input');
-    memoInput.value = shouldShowMemo ? (mob.memo_text || "") : "";
-    memoInput.dataset.mobNo = mob.No;
-
-    // Condition
-    const conditionText = card.querySelector('.condition-text');
-    conditionText.innerHTML = processText(mob.Condition);
-
-    // Map
-    const mapContainer = card.querySelector('.map-container');
-    if (mob.Map && rank === 'S') {
-      const mapImg = mapContainer.querySelector('.mob-map-img');
-      mapImg.src = `./maps/${mob.Map}`;
-      mapImg.alt = `${mob.Area} Map`;
-    } else {
-      mapContainer.remove();
-    }
-
-  } else {
-    expandablePanel.remove();
-  }
-
-  updateAreaInfo(card, mob);
-  updateMobCount(card, mob);
-  updateMapOverlay(card, mob);
-
-  return card;
-}
-
-function rankPriority(rank) {
-  switch (rank) {
-    case "S": return 0;
-    case "A": return 1;
-    case "F": return 2;
-    default: return 99;
-  }
-}
-
-function getExpansionPriority(expansionName) {
-  switch (expansionName) {
-    case "黄金": return 6;
-    case "暁月": return 5;
-    case "漆黒": return 4;
-    case "紅蓮": return 3;
-    case "蒼天": return 2;
-    case "新生": return 1;
-    default: return 0;
-  }
-}
-
-function parseMobIdParts(no) {
-  const str = String(no).padStart(5, "0");
-  return {
-    mobNo: parseInt(str.slice(2, 4), 10),
-    instance: parseInt(str[4], 10),
+function debounce(func, wait) {
+  let timeout;
+  return function executed(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
   };
 }
 
-function allTabComparator(a, b) {
-  const aInfo = a.repopInfo || {};
-  const bInfo = b.repopInfo || {};
-  const aStatus = aInfo.status;
-  const bStatus = bInfo.status;
-  const isAMaxOver = aStatus === "MaxOver";
-  const isBMaxOver = bStatus === "MaxOver";
+function formatLastKillTime(timestamp) {
+  if (timestamp === 0) return "未報告";
+  const aligned = Math.floor(timestamp / 60) * 60;
+  const killTimeMs = aligned * 1000;
+  const nowMs = Date.now();
+  const diffSeconds = Math.floor((nowMs - killTimeMs) / 1000);
 
-  if (isAMaxOver && isBMaxOver) {
-    const getMaxOverRankPriority = (r) => {
-      if (r === 'S') return 0;
-      if (r === 'F') return 1;
-      if (r === 'A') return 2;
-      return 99;
-    };
-
-    const rankDiff = getMaxOverRankPriority(a.Rank) - getMaxOverRankPriority(b.Rank);
-    if (rankDiff !== 0) return rankDiff;
-    const expA = getExpansionPriority(a.Expansion);
-    const expB = getExpansionPriority(b.Expansion);
-    if (expA !== expB) return expB - expA;
-    const pa = parseMobIdParts(a.No);
-    const pb = parseMobIdParts(b.No);
-    if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
-    return pa.instance - pb.instance;
+  if (diffSeconds < 3600) {
+    if (diffSeconds < 60) return `Just now`;
+    const minutes = Math.floor(diffSeconds / 60);
+    return `${minutes}m ago`;
   }
 
-  if (isAMaxOver && !isBMaxOver) return -1;
-  if (!isAMaxOver && isBMaxOver) return 1;
-
-  const isAMaint = aInfo.isMaintenanceStop || aInfo.isBlockedByMaintenance;
-  const isBMaint = bInfo.isMaintenanceStop || bInfo.isBlockedByMaintenance;
-
-  if (isAMaint && !isBMaint) return 1;
-  if (!isAMaint && isBMaint) return -1;
-
-  const aPercent = aInfo.elapsedPercent || 0;
-  const bPercent = bInfo.elapsedPercent || 0;
-
-  if (Math.abs(aPercent - bPercent) > 0.001) {
-    return bPercent - aPercent;
-  }
-
-  if (!isAMaint && !isBMaint) {
-    const aTime = aInfo.minRepop || 0;
-    const bTime = bInfo.minRepop || 0;
-    if (aTime !== bTime) return aTime - bTime;
-  }
-  const rankDiff = rankPriority(a.Rank) - rankPriority(b.Rank);
-  if (rankDiff !== 0) return rankDiff;
-  const expA = getExpansionPriority(a.Expansion);
-  const expB = getExpansionPriority(b.Expansion);
-  if (expA !== expB) return expB - expA;
-  const pa = parseMobIdParts(a.No);
-  const pb = parseMobIdParts(b.No);
-  if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
-  return pa.instance - pb.instance;
+  const options = {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Tokyo"
+  };
+  const date = new Date(killTimeMs);
+  return new Intl.DateTimeFormat("ja-JP", options).format(date);
 }
 
-function filterAndRender({ isInitialLoad = false } = {}) {
-  const state = getState();
+function getEorzeaTime(date = new Date()) {
+  const unixMs = date.getTime();
+  const REAL_MS_PER_ET_HOUR = ET_HOUR_SEC * 1000;
+  const ET_HOURS_PER_DAY = 24;
 
-  if (!state.initialLoadComplete && !isInitialLoad) {
+  const eorzeaTotalHours = Math.floor(unixMs / REAL_MS_PER_ET_HOUR);
+  const hours = eorzeaTotalHours % ET_HOURS_PER_DAY;
+
+  const remainingMs = unixMs % REAL_MS_PER_ET_HOUR;
+  const REAL_MS_PER_ET_MINUTE = REAL_MS_PER_ET_HOUR / 60;
+  const minutes = Math.floor(remainingMs / REAL_MS_PER_ET_MINUTE);
+
+  return {
+    hours: hours.toString().padStart(2, "0"),
+    minutes: minutes.toString().padStart(2, "0")
+  };
+}
+
+function getEtHourFromRealSec(realSec) {
+  const ticks = Math.floor(realSec / ET_HOUR_SEC);
+  return ticks % 24;
+}
+
+function alignToEtHour(realSec) {
+  return Math.floor(realSec / ET_HOUR_SEC) * ET_HOUR_SEC;
+}
+
+function alignToWeatherCycle(realSec) {
+  return Math.floor(realSec / WEATHER_CYCLE_SEC) * WEATHER_CYCLE_SEC;
+}
+
+function ceilToWeatherCycle(realSec) {
+  return Math.ceil(realSec / WEATHER_CYCLE_SEC) * WEATHER_CYCLE_SEC;
+}
+
+function getEorzeaMoonInfo(date = new Date()) {
+  const unixSeconds = date.getTime() / 1000;
+  const EORZEA_SPEED_RATIO = 20.57142857142857;
+  const eorzeaTotalDays = (unixSeconds * EORZEA_SPEED_RATIO) / 86400;
+  const phase = (eorzeaTotalDays % 32) + 1;
+
+  let label = null;
+  if (phase >= 32.5 || phase < 4.5) label = "新月";
+  else if (phase >= 16.5 && phase < 20.5) label = "満月";
+
+  return { phase, label };
+}
+
+function getEorzeaWeatherSeed(date = new Date()) {
+  const unixSeconds = Math.floor(date.getTime() / 1000);
+  const eorzeanHours = Math.floor(unixSeconds / ET_HOUR_SEC);
+  const eorzeanDays = Math.floor(eorzeanHours / 24);
+
+  let timeChunk = (eorzeanHours % 24) - (eorzeanHours % 8);
+  timeChunk = (timeChunk + 8) % 24;
+
+  const seed = eorzeanDays * 100 + timeChunk;
+  const step1 = (seed << 11) ^ seed;
+  const step2 = ((step1 >>> 8) ^ step1) >>> 0;
+  return step2 % 100;
+}
+
+function checkWeatherInRange(mob, seed) {
+  if (mob.weatherSeedRange) {
+    const [min, max] = mob.weatherSeedRange;
+    return seed >= min && seed <= max;
+  }
+  if (mob.weatherSeedRanges) {
+    return mob.weatherSeedRanges.some(([min, max]) => seed >= min && seed <= max);
+  }
+  return false;
+}
+
+function checkTimeRange(timeRange, realSec) {
+  const etHour = getEtHourFromRealSec(realSec);
+  const { start, end } = timeRange;
+
+  if (start < end) return etHour >= start && etHour < end;
+  return etHour >= start || etHour < end;
+}
+
+function checkEtCondition(mob, realSec) {
+  const { phase } = getEorzeaMoonInfo(new Date(realSec * 1000));
+
+  if (mob.conditions) {
+    const { firstNight, otherNights } = mob.conditions;
+    if (firstNight?.timeRange && (isFirstNightPhase(phase) || mob.moonPhase === "新月")) {
+      return checkTimeRange(firstNight.timeRange, realSec);
+    }
+    if (otherNights?.timeRange && (isOtherNightsPhase(phase) || mob.moonPhase === "満月")) {
+      return checkTimeRange(otherNights.timeRange, realSec);
+    }
+    return false;
+  }
+
+  if (mob.timeRange) return checkTimeRange(mob.timeRange, realSec);
+  if (mob.timeRanges) return mob.timeRanges.some(tr => checkTimeRange(tr, realSec));
+
+  return true;
+}
+
+function isFirstNightPhase(phase) {
+  return phase >= 32.5 || phase < 1.5;
+}
+
+function isOtherNightsPhase(phase) {
+  return phase >= 1.5 && phase < 4.5;
+}
+
+function calculateNextMoonStart(startSec, targetPhase) {
+  const startPhase = getEorzeaMoonInfo(new Date(startSec * 1000)).phase;
+  let phaseDiff = targetPhase - startPhase;
+  if (phaseDiff < 0) phaseDiff += 32;
+
+  let nextStartSec = startSec + phaseDiff * ET_DAY_SEC;
+
+  if (nextStartSec < startSec) {
+    nextStartSec += MOON_CYCLE_SEC;
+  }
+  return nextStartSec;
+}
+
+function* getValidWeatherIntervals(mob, windowStart, windowEnd) {
+  const requiredMinutes = mob.weatherDuration?.minutes || 0;
+  const requiredSec = requiredMinutes * 60;
+  const isContinuous = requiredSec > WEATHER_CYCLE_SEC;
+
+  if (!mob.weatherSeedRange && !mob.weatherSeedRanges) {
+    yield [windowStart, windowEnd];
     return;
   }
 
-  const filtered = filterMobsByRankAndArea(state.mobs);
-  const sortedMobs = filtered.sort(allTabComparator);
+  let currentCursor = alignToWeatherCycle(windowStart);
+  let loopSafety = 0;
 
-  const activeElement = document.activeElement;
-  let focusedMobNo = null;
-  let focusedAction = null;
-  let selectionStart = null;
-  let selectionEnd = null;
+  if (checkWeatherInRange(mob, getEorzeaWeatherSeed(new Date(currentCursor * 1000)))) {
+    let chainStart = currentCursor;
+    let chainEnd = 0;
 
-  if (activeElement && activeElement.closest('.mob-card')) {
-    focusedMobNo = activeElement.closest('.mob-card').dataset.mobNo;
-    if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
-      focusedAction = activeElement.dataset.action;
-      selectionStart = activeElement.selectionStart;
-      selectionEnd = activeElement.selectionEnd;
-    }
-  }
+    if (isContinuous) {
+      const searchBackLimit = windowStart - LIMIT_DAYS * 24 * 3600;
+      while (true) {
+        const prevTime = chainStart - WEATHER_CYCLE_SEC;
+        if (prevTime < searchBackLimit) break;
 
-  const existingCards = new Map();
-  document.querySelectorAll('.mob-card').forEach(card => {
-    const mobNo = card.getAttribute('data-mob-no');
-    existingCards.set(mobNo, card);
-  });
-
-  // Determine column count
-  const width = window.innerWidth;
-  const md = 768;
-  const lg = 1024;
-  let numCols = 1;
-  if (width >= lg) {
-    numCols = 3;
-    DOM.cols[2].classList.remove("hidden");
-  } else if (width >= md) {
-    numCols = 2;
-    DOM.cols[2].classList.add("hidden");
-  } else {
-    numCols = 1;
-    DOM.cols[2].classList.add("hidden");
-  }
-
-  const colPointers = Array(numCols).fill(0);
-
-  sortedMobs.forEach((mob, index) => {
-    const mobNoStr = String(mob.No);
-    let card = existingCards.get(mobNoStr);
-
-    if (card) {
-      updateProgressText(card, mob);
-      updateProgressBar(card, mob);
-      updateExpandablePanel(card, mob);
-      updateMemoIcon(card, mob);
-      updateAreaInfo(card, mob);
-      updateMobCount(card, mob);
-      updateMapOverlay(card, mob);
-
-      if (mob.repopInfo.isMaintenanceStop) {
-        card.classList.add("opacity-50", "grayscale", "pointer-events-none");
-      } else {
-        card.classList.remove("opacity-50", "grayscale", "pointer-events-none");
-      }
-    } else {
-      card = createMobCard(mob);
-      updateProgressText(card, mob);
-      updateProgressBar(card, mob);
-      updateExpandablePanel(card, mob);
-    }
-
-    if (card) {
-      const targetColIndex = index % numCols;
-      const targetCol = DOM.cols[targetColIndex];
-      const currentChild = targetCol.children[colPointers[targetColIndex]];
-      if (currentChild !== card) {
-        if (currentChild) {
-          targetCol.insertBefore(card, currentChild);
+        const seed = getEorzeaWeatherSeed(new Date(prevTime * 1000));
+        if (checkWeatherInRange(mob, seed)) {
+          chainStart = prevTime;
         } else {
-          targetCol.appendChild(card);
+          break;
         }
       }
-      colPointers[targetColIndex]++;
-    }
-  });
 
-  DOM.cols.forEach((col, idx) => {
-    if (idx < numCols) {
-      while (col.children.length > colPointers[idx]) {
-        col.removeChild(col.lastChild);
+      let tempCursor = currentCursor;
+      while (true) {
+        if (loopSafety++ > MAX_SEARCH_ITERATIONS) break;
+
+        const nextTime = tempCursor + WEATHER_CYCLE_SEC;
+        const seed = getEorzeaWeatherSeed(new Date(nextTime * 1000));
+
+        if (checkWeatherInRange(mob, seed)) {
+          tempCursor = nextTime;
+        } else {
+          chainEnd = nextTime;
+          break;
+        }
       }
+
+      const duration = chainEnd - chainStart;
+
+      if (duration >= requiredSec) {
+        const validPopStart = chainStart + requiredSec;
+        const intersectStart = Math.max(validPopStart, windowStart);
+        const intersectEnd = Math.min(chainEnd, windowEnd);
+
+        if (intersectStart < intersectEnd) {
+          yield [intersectStart, intersectEnd];
+        }
+      }
+
+      currentCursor = chainEnd;
+
     } else {
-      col.innerHTML = "";
-    }
-  });
+      chainStart = currentCursor;
+      let tempCursor = currentCursor;
+      while (true) {
+        if (loopSafety++ > MAX_SEARCH_ITERATIONS) break;
 
-  if (isInitialLoad) {
-    attachLocationEvents();
-    updateProgressBars();
+        const nextTime = tempCursor + WEATHER_CYCLE_SEC;
+        const seed = getEorzeaWeatherSeed(new Date(nextTime * 1000));
+
+        if (checkWeatherInRange(mob, seed)) {
+          tempCursor = nextTime;
+        } else {
+          chainEnd = nextTime;
+          break;
+        }
+      }
+
+      const intersectStart = windowStart;
+      const intersectEnd = Math.min(chainEnd, windowEnd);
+
+      if (intersectStart < intersectEnd) {
+        yield [intersectStart, intersectEnd];
+      }
+
+      currentCursor = chainEnd;
+    }
+
+  } else {
+    currentCursor += WEATHER_CYCLE_SEC;
   }
 
-  // Restore focus
-  if (focusedMobNo) {
-    const card = document.querySelector(`.mob-card[data-mob-no="${focusedMobNo}"]`);
-    if (card) {
-      if (focusedAction) {
-        const input = card.querySelector(`input[data-action="${focusedAction}"]`);
-        if (input) {
-          input.focus();
-          if (selectionStart !== null && selectionEnd !== null) {
-            try {
-              input.setSelectionRange(selectionStart, selectionEnd);
-            } catch (e) { }
-          }
+  let cursor = currentCursor;
+
+  while (cursor < windowEnd) {
+    if (loopSafety++ > MAX_SEARCH_ITERATIONS) break;
+
+    let activeStart = null;
+    while (cursor < windowEnd + WEATHER_CYCLE_SEC) {
+      const seed = getEorzeaWeatherSeed(new Date(cursor * 1000));
+      if (checkWeatherInRange(mob, seed)) {
+        activeStart = cursor;
+        break;
+      }
+      cursor += WEATHER_CYCLE_SEC;
+      if (cursor - windowStart > LIMIT_DAYS * 24 * 3600) break;
+    }
+
+    if (activeStart === null) break;
+
+    let activeEnd = activeStart;
+    let tempCursor = activeStart;
+    while (true) {
+      if (loopSafety++ > MAX_SEARCH_ITERATIONS) break;
+
+      const nextTime = tempCursor + WEATHER_CYCLE_SEC;
+      const seed = getEorzeaWeatherSeed(new Date(nextTime * 1000));
+
+      if (checkWeatherInRange(mob, seed)) {
+        tempCursor = nextTime;
+        activeEnd = nextTime;
+      } else {
+        activeEnd = nextTime;
+        break;
+      }
+    }
+    const duration = activeEnd - activeStart;
+    if (duration >= requiredSec) {
+      const validPopStart = isContinuous ? activeStart + requiredSec : activeStart;
+
+      const intersectStart = Math.max(validPopStart, windowStart);
+      const intersectEnd = Math.min(activeEnd, windowEnd);
+
+      if (intersectStart < intersectEnd) {
+        yield [intersectStart, intersectEnd];
+      }
+    }
+
+    cursor = activeEnd;
+  }
+}
+
+function* getValidEtIntervals(mob, windowStart, windowEnd) {
+  if (!mob.timeRange && !mob.timeRanges && !mob.conditions) {
+    yield [windowStart, windowEnd];
+    return;
+  }
+  let cursor = alignToEtHour(windowStart);
+  let loopSafety = 0;
+
+  while (cursor < windowEnd) {
+    if (loopSafety++ > MAX_SEARCH_ITERATIONS) break;
+
+    if (checkEtCondition(mob, cursor)) {
+      const start = cursor;
+      let end = cursor + ET_HOUR_SEC;
+      let tempCursor = end;
+      while (tempCursor < windowEnd + ET_HOUR_SEC) {
+        if (checkEtCondition(mob, tempCursor)) {
+          end += ET_HOUR_SEC;
+          tempCursor += ET_HOUR_SEC;
+        } else {
+          break;
+        }
+      }
+      const intersectStart = Math.max(start, windowStart);
+      const intersectEnd = Math.min(end, windowEnd);
+
+      if (intersectStart < intersectEnd) {
+        yield [intersectStart, intersectEnd];
+      }
+
+      cursor = end;
+    } else {
+      cursor += ET_HOUR_SEC;
+    }
+  }
+}
+
+function findNextSpawn(mob, pointSec, searchLimit) {
+  let moonPhases = [];
+  if (!mob.moonPhase) {
+    moonPhases.push([pointSec, searchLimit]);
+  } else {
+    let targetPhase = mob.moonPhase === "新月" ? 32.5 : 16.5;
+    const startPhase = getEorzeaMoonInfo(new Date(pointSec * 1000)).phase;
+
+    if (
+      (mob.moonPhase === "新月" && (startPhase >= 32.5 || startPhase < 4.5)) ||
+      (mob.moonPhase === "満月" && (startPhase >= 16.5 && startPhase < 20.5))
+    ) {
+      let currentPhaseStart = pointSec - (startPhase - targetPhase) * ET_DAY_SEC;
+      while (currentPhaseStart > pointSec) currentPhaseStart -= MOON_CYCLE_SEC;
+
+      const currentPhaseEnd = currentPhaseStart + MOON_PHASE_DURATION_SEC;
+
+      if (currentPhaseEnd > pointSec) {
+        moonPhases.push([pointSec, currentPhaseEnd]);
+      }
+    }
+
+    let moonStart = calculateNextMoonStart(pointSec, targetPhase);
+    while (moonStart < searchLimit) {
+      moonPhases.push([moonStart, moonStart + MOON_PHASE_DURATION_SEC]);
+      moonStart += MOON_CYCLE_SEC;
+    }
+  }
+  for (const [mStart, mEnd] of moonPhases) {
+    const weatherIterator = getValidWeatherIntervals(mob, mStart, mEnd);
+
+    for (const [wStart, wEnd] of weatherIterator) {
+      const etIterator = getValidEtIntervals(mob, wStart, wEnd);
+
+      for (const [eStart, eEnd] of etIterator) {
+        const finalStart = Math.max(eStart, pointSec);
+        const finalEnd = eEnd;
+
+        if (finalStart < finalEnd) {
+          return { start: finalStart, end: finalEnd };
         }
       }
     }
   }
+  return null;
 }
 
-function showColumnContainer() {
-  setTimeout(() => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (DOM.colContainer) {
-          DOM.colContainer.classList.remove("opacity-0");
-        }
-        const overlay = document.getElementById("loading-overlay");
-        if (overlay) {
-          overlay.classList.add("hidden");
-        }
-      });
-    });
-  }, 500);
-}
-
-function updateProgressBar(card, mob) {
-  const bar = card.querySelector(".progress-bar-bg");
-  const wrapper = bar?.parentElement;
-  const text = card.querySelector(".progress-text");
-  if (!bar || !wrapper || !text) return;
-
-  const { elapsedPercent, status } = mob.repopInfo;
-
-  const currentWidth = parseFloat(bar.style.width) || 0;
-  if (elapsedPercent < currentWidth) {
-    bar.style.transition = "none";
-  } else {
-    bar.style.transition = "width linear 60s";
+function parseMaintenance(maintenance) {
+  let maint = maintenance;
+  if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
+    maint = maint.maintenance;
   }
-  bar.style.width = `${elapsedPercent}%`;
+  if (!maint || !maint.serverUp || !maint.start) return null;
 
-  bar.classList.remove(
-    PROGRESS_CLASSES.P0_60,
-    PROGRESS_CLASSES.P60_80,
-    PROGRESS_CLASSES.P80_100,
-    PROGRESS_CLASSES.MAX_OVER
-  );
-  text.classList.remove(
-    PROGRESS_CLASSES.TEXT_NEXT,
-    PROGRESS_CLASSES.TEXT_POP
-  );
-  wrapper.classList.remove(PROGRESS_CLASSES.BLINK_WHITE);
-
-  if (status === "PopWindow" || status === "ConditionActive") {
-    if (elapsedPercent > 90) {
-      wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
-    }
-    text.classList.add(PROGRESS_CLASSES.TEXT_POP);
-
-  } else if (status === "MaxOver") {
-    bar.classList.add(PROGRESS_CLASSES.MAX_OVER);
-    text.classList.add(PROGRESS_CLASSES.TEXT_POP);
-
-    if (mob.repopInfo.isInConditionWindow) {
-      wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
-    }
-  } else {
-    text.classList.add(PROGRESS_CLASSES.TEXT_NEXT);
-  }
+  return {
+    serverUp: new Date(maint.serverUp).getTime() / 1000,
+    start: new Date(maint.start).getTime() / 1000
+  };
 }
 
-function updateProgressText(card, mob) {
-  const text = card.querySelector(".progress-text");
-  if (!text) return;
+function calculateNextCondition(mob, maintenance, options = {}) {
+  const { skipConditionCalc = false } = options;
+  const now = Date.now() / 1000;
+  const lastKill = mob.last_kill_time || 0;
+  const repopSec = mob.REPOP_s;
+  const maxSec = mob.MAX_s;
 
-  const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, minRepop,
-    maxRepop, status, isInConditionWindow, timeRemaining, isBlockedByMaintenance
-  } = mob.repopInfo || {};
+  const maintInfo = parseMaintenance(maintenance);
+  if (!maintInfo) return null;
 
-  const nowSec = Date.now() / 1000;
-  let leftStr = timeRemaining || "未確定";
-  const percentStr = (status === "PopWindow" || status === "ConditionActive")
-    ? ` (${Number(elapsedPercent || 0).toFixed(0)}%)`
-    : "";
+  let minRepop, maxRepop;
+  if (lastKill === 0 || lastKill <= maintInfo.serverUp) {
+    minRepop = maintInfo.serverUp + repopSec * 0.6;
+    maxRepop = maintInfo.serverUp + maxSec * 0.6;
+  } else {
+    minRepop = lastKill + repopSec;
+    maxRepop = lastKill + maxSec;
+  }
+
+  const pointSec = Math.max(minRepop, now);
+  const searchLimit = pointSec + LIMIT_DAYS * 24 * 3600;
+
+  const hasCondition = !!(
+    mob.moonPhase ||
+    mob.timeRange ||
+    mob.timeRanges ||
+    mob.weatherSeedRange ||
+    mob.weatherSeedRanges ||
+    mob.conditions
+  );
+
+  let nextConditionSpawnDate = null;
+  let conditionWindowEnd = null;
+
+  if (hasCondition && !skipConditionCalc) {
+    const cacheKey = `${lastKill}_${maintInfo.start || 0}`;
+    let useCache = false;
+
+    if (mob._spawnCache && mob._spawnCache.key === cacheKey) {
+      if (mob._spawnCache.result) {
+        if (now < mob._spawnCache.result.end) {
+          useCache = true;
+        }
+      } else {
+        useCache = true;
+      }
+    }
+
+    let result = null;
+    if (useCache) {
+      result = mob._spawnCache.result;
+    } else {
+      result = findNextSpawn(mob, pointSec, searchLimit);
+      mob._spawnCache = {
+        key: cacheKey,
+        result: result
+      };
+    }
+
+    if (result) {
+      nextConditionSpawnDate = new Date(result.start * 1000);
+      conditionWindowEnd = new Date(result.end * 1000);
+    }
+  }
+
+  return {
+    minRepop,
+    maxRepop,
+    nextMinRepopDate: new Date(minRepop * 1000),
+    nextConditionSpawnDate,
+    conditionWindowEnd
+  };
+}
+
+function calculateMobStatus(mob, maintenance) {
+  if (!mob.repopInfo || !mob.repopInfo.minRepop) {
+    console.warn(`calculateMobStatus: repopInfo missing for mob ${mob.No || 'unknown'}, performing fallback calculation`);
+    const heavyData = calculateNextCondition(mob, maintenance);
+    if (!heavyData) return baseResult("Unknown");
+    mob.repopInfo = { ...mob.repopInfo, ...heavyData };
+  }
+
+  const { minRepop, maxRepop, nextConditionSpawnDate, conditionWindowEnd } = mob.repopInfo;
+  if (!minRepop) return baseResult("Unknown");
 
   const now = Date.now() / 1000;
-  const mobNameEl = card.querySelector('.mob-name');
+  const maintInfo = parseMaintenance(maintenance);
+  const maintenanceStart = maintInfo ? maintInfo.start : 0;
+  const serverUp = maintInfo ? maintInfo.serverUp : 0;
 
-  const isBeforeMinRepop = now < mob.repopInfo.minRepop;
-  if (status === "Next" || (status === "NextCondition" && isBeforeMinRepop)) {
-    card.classList.add("opacity-60");
-    if (mobNameEl) {
-      mobNameEl.style.color = "#999";
+  let status = "Unknown";
+  let timeRemaining = "Unknown";
+  let conditionRemaining = null;
+  let elapsedPercent = 0;
+  let isInConditionWindow = false;
+
+  const hasCondition = !!(
+    mob.moonPhase ||
+    mob.timeRange ||
+    mob.timeRanges ||
+    mob.weatherSeedRange ||
+    mob.weatherSeedRanges ||
+    mob.conditions
+  );
+
+  if (hasCondition && nextConditionSpawnDate && conditionWindowEnd) {
+    const startSec = nextConditionSpawnDate.getTime() / 1000;
+    const endSec = conditionWindowEnd.getTime() / 1000;
+    isInConditionWindow = (now >= startSec && now < endSec);
+
+    if (isInConditionWindow) {
+      const remainingSec = endSec - now;
+      conditionRemaining = `残り ${Math.ceil(remainingSec / 60)}分`;
     }
+  }
+
+  if (now >= maxRepop) {
+    status = "MaxOver";
+    elapsedPercent = 100;
+    timeRemaining = `&thinsp;Time Over (100%)`;
+  } else if (now < minRepop) {
+    status = "Next";
+    timeRemaining = `🔜 ${formatDurationHM(minRepop - now)}`;
   } else {
-    card.classList.remove("opacity-60");
-    if (mobNameEl) {
-      mobNameEl.style.color = `var(--rank-${mob.Rank.toLowerCase()})`;
+    status = "PopWindow";
+    elapsedPercent = Math.min(((now - minRepop) / (maxRepop - minRepop)) * 100, 100);
+    timeRemaining = `⏰️ ${formatDurationHM(maxRepop - now)}`;
+  }
+
+  if (isInConditionWindow && now >= minRepop) {
+    if (status !== "MaxOver") {
+      status = "ConditionActive";
     }
+  } else if (
+    hasCondition &&
+    nextConditionSpawnDate &&
+    now < nextConditionSpawnDate.getTime() / 1000 &&
+    status !== "MaxOver"
+  ) {
+    status = "NextCondition";
   }
 
-  if (isBlockedByMaintenance) {
-    card.classList.add("grayscale", "opacity-50");
-  } else {
-    card.classList.remove("grayscale", "opacity-50");
+  let isBlockedByMaintenance = false;
+  const nextTime = nextConditionSpawnDate ? (nextConditionSpawnDate.getTime() / 1000) : minRepop;
+
+  if (maintenanceStart && nextTime >= maintenanceStart && now < maintenanceStart) {
+    isBlockedByMaintenance = true;
   }
 
-  let rightStr = "未確定";
-  let isNext = false;
+  const isMaintenanceStop = (maintenanceStart && serverUp && now >= maintenanceStart && now < serverUp);
 
-  let isSpecialCondition = false;
-
-  if (isInConditionWindow && mob.repopInfo.conditionRemaining) {
-    rightStr = mob.repopInfo.conditionRemaining;
-    isSpecialCondition = true;
-  } else if (nextConditionSpawnDate) {
-    try {
-      const dateStr = new Intl.DateTimeFormat("ja-JP", {
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: "Asia/Tokyo"
-      }).format(nextConditionSpawnDate);
-
-      rightStr = `🔔 ${dateStr}`;
-      isNext = true;
-      isSpecialCondition = true;
-    } catch {
-      rightStr = "未確定";
-    }
-  } else if (nextMinRepopDate) {
-    try {
-      const dateStr = new Intl.DateTimeFormat("ja-JP", {
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: "Asia/Tokyo"
-      }).format(nextMinRepopDate);
-
-      rightStr = `in ${dateStr}`;
-    } catch {
-      rightStr = "未確定";
-    }
-  }
-
-  let rightContent = `<span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span>`;
-
-  text.innerHTML = `
-<div class="w-full h-full grid grid-cols-2 items-center text-sm font-bold">
-<div class="pl-1 text-left truncate">${leftStr}${percentStr}</div>
-<div class="pr-2 text-right truncate">${rightContent}</div>
-</div>
-`;
-
-  if (status === "MaxOver") text.classList.add("max-over");
-  else text.classList.remove("max-over");
-
-  if (minRepop - nowSec >= 3600) text.classList.add("long-wait");
-  else text.classList.remove("long-wait");
-
-  if (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow)) {
-    card.classList.add("blink-border-white");
-  } else {
-    card.classList.remove("blink-border-white");
-  }
+  return {
+    ...mob.repopInfo,
+    elapsedPercent,
+    timeRemaining,
+    conditionRemaining,
+    status,
+    isInConditionWindow,
+    isMaintenanceStop,
+    isBlockedByMaintenance
+  };
 }
 
-function updateExpandablePanel(card, mob) {
-  const elNext = card.querySelector("[data-next-time]");
-  const elLast = card.querySelector("[data-last-kill]");
-  const elMemoInput = card.querySelector("input[data-action='save-memo']");
+function baseResult(status) {
+  return {
+    minRepop: null,
+    maxRepop: null,
+    elapsedPercent: 0,
+    timeRemaining: "未確定",
+    status,
+    nextMinRepopDate: null,
+    conditionWindowEnd: null,
+    isInConditionWindow: false,
+    isMaintenanceStop: false
+  };
+}
 
-  const lastStr = formatLastKillTime(mob.last_kill_time);
-  if (elLast) elLast.textContent = `前回: ${lastStr}`;
-
-  if (elMemoInput) {
-    if (document.activeElement !== elMemoInput) {
-      const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
-      const isMemoNewer = (mob.memo_updated_at || 0) > (mob.last_kill_time || 0);
-      const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
-      elMemoInput.value = shouldShowMemo ? (mob.memo_text || "") : "";
-    }
+function calculateRepop(mob, maintenance, options = {}) {
+  const heavy = calculateNextCondition(mob, maintenance, options);
+  if (heavy) {
+    mob.repopInfo = { ...mob.repopInfo, ...heavy };
   }
+  return calculateMobStatus(mob, maintenance);
 }
 
-function updateMemoIcon(card, mob) {
-  const memoIconContainer = card.querySelector('.memo-icon-container');
-  if (!memoIconContainer) return;
-
-  const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
-  const isMemoNewer = (mob.memo_updated_at || 0) > (mob.last_kill_time || 0);
-  const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
-
-  if (shouldShowMemo) {
-    const span = document.createElement('span');
-    span.style.fontSize = '0.875rem';
-    span.textContent = '📝';
-    span.setAttribute('data-tooltip', mob.memo_text);
-    memoIconContainer.innerHTML = '';
-    memoIconContainer.appendChild(span);
-  } else {
-    memoIconContainer.innerHTML = '';
-  }
-}
-
-function updateMobCount(card, mob) {
-  const countContainer = card.querySelector('.mob-count-container');
-  if (!countContainer) return;
-
-  const state = getState();
-  const mobLocationsData = state.mobLocations?.[mob.No];
-  const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
-
-  let displayCountText = "";
-
-  if (mob.Map && mob.spawn_points) {
-    const validSpawnPoints = (mob.spawn_points ?? []).filter(point => {
-      const isS_SpawnPoint = point.mob_ranks.includes("S");
-      if (!isS_SpawnPoint) return false;
-      const pointStatus = spawnCullStatus?.[point.id];
-      return !isCulled(pointStatus, mob.No);
-    });
-
-    const remainingCount = validSpawnPoints.length;
-
-    if (remainingCount === 1) {
-      const pointId = validSpawnPoints[0]?.id || "";
-      const pointNumber = parseInt(pointId.slice(-2), 10);
-      displayCountText = `<span class="text-sm text-yellow-400 font-bold text-glow">${pointNumber}&thinsp;番</span>`;
-    } else if (remainingCount > 1) {
-      displayCountText = `<span class="text-sm text-gray-400 relative -top-[0.12rem]">@</span><span class="text-base text-gray-400 font-bold text-glow relative top-[0.04rem]">&thinsp;${remainingCount}</span>`;
-    }
-
-    displayCountText = `<span class="text-sm">📍</span>${displayCountText}`;
-  }
-
-  countContainer.innerHTML = displayCountText;
-}
-
-function updateAreaInfo(card, mob) {
-  const areaInfoContainer = card.querySelector('.area-info-container');
-  if (!areaInfoContainer) return;
-
-  let areaInfoHtml = `<span class="flex items-center gap-1 font-normal"><span>${mob.Area}</span>
-<span class="opacity-50">|</span>
-<span class="flex items-center">${mob.Expansion}&thinsp;
-<span class="inline-flex items-center justify-center w-[13px] h-[13px] border 
-border-current rounded-[3px] text-[9px] leading-none relative">${mob.Rank}</span>`;
-
-  areaInfoHtml += `</span></span>`;
-  areaInfoContainer.innerHTML = areaInfoHtml;
-}
-
-function updateMapOverlay(card, mob) {
-  const mapContainer = card.querySelector('.map-container');
-  if (!mapContainer) return;
-  const mapOverlay = mapContainer.querySelector('.map-overlay');
-  if (!mapOverlay) return;
-
-  if (mob.Map && mob.Rank === 'S') {
-    const state = getState();
-    const mobLocationsData = state.mobLocations?.[mob.No];
-    const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
-
-    let isLastOne = false;
-    let validSpawnPoints = [];
-
-    validSpawnPoints = (mob.spawn_points ?? []).filter(point => {
-      const isS_SpawnPoint = point.mob_ranks.includes("S");
-      if (!isS_SpawnPoint) return false;
-      const pointStatus = spawnCullStatus?.[point.id];
-      return !isCulled(pointStatus, mob.No);
-    });
-
-    const remainingCount = validSpawnPoints.length;
-    isLastOne = remainingCount === 1;
-    const isS_LastOne = isLastOne;
-
-    const spawnPointsHtml = (mob.spawn_points ?? []).map(point => {
-      const isThisPointTheLastOne = isLastOne && point.id === validSpawnPoints[0]?.id;
-      return drawSpawnPoint(
-        point,
-        spawnCullStatus,
-        mob.No,
-        point.mob_ranks.includes("B2") ? "B2"
-          : point.mob_ranks.includes("B1") ? "B1"
-            : point.mob_ranks[0],
-        isThisPointTheLastOne,
-        isS_LastOne
-      );
-    }).join("");
-
-    mapOverlay.innerHTML = spawnPointsHtml;
-  }
-}
-
-function updateProgressBars() {
-  const state = getState();
-  const conditionMobs = [];
-  const now = Date.now() / 1000;
-
-  state.mobs.forEach((mob) => {
-    const statusUpdate = calculateMobStatus(mob, state.maintenance);
-    mob.repopInfo = { ...mob.repopInfo, ...statusUpdate };
-
-    if (mob.repopInfo.conditionWindowEnd) {
-      const endSec = mob.repopInfo.conditionWindowEnd.getTime() / 1000;
-      if (now > endSec) {
-        const nextCondition = calculateNextCondition(mob, state.maintenance);
-        if (nextCondition) {
-          mob.repopInfo = { ...mob.repopInfo, ...nextCondition };
-          const newStatus = calculateMobStatus(mob, state.maintenance);
-          mob.repopInfo = { ...mob.repopInfo, ...newStatus };
-        }
-      }
-    }
-
-    if (mob.repopInfo.nextConditionSpawnDate && mob.repopInfo.conditionWindowEnd) {
-      const spawnSec = mob.repopInfo.nextConditionSpawnDate.getTime() / 1000;
-      const endSec = mob.repopInfo.conditionWindowEnd.getTime() / 1000;
-
-      if (now >= (spawnSec - 900) && now <= endSec) {
-        conditionMobs.push(mob.Name);
-      }
-    }
-
-    const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
-    if (card) {
-      updateProgressText(card, mob);
-      updateProgressBar(card, mob);
-    }
-  });
-
-  if (DOM.statusMessageTemp) {
-    if (conditionMobs.length > 0) {
-      DOM.statusMessageTemp.textContent = `🔜 ${conditionMobs.join(" / ")}`;
-      DOM.statusMessageTemp.className = "text-cyan-300 font-bold animate-pulse";
-      DOM.statusMessageTemp.classList.remove("hidden");
-    } else {
-      DOM.statusMessageTemp.textContent = "";
-      DOM.statusMessageTemp.classList.add("hidden");
-    }
-  }
-}
-
-const sortAndRedistribute = debounce(() => filterAndRender(), 200);
-
-setInterval(() => {
-  updateProgressBars();
-}, EORZEA_MINUTE_MS);
-
-export {
-  filterAndRender, updateProgressText, updateProgressBar, createMobCard, DOM, sortAndRedistribute,
-  updateProgressBars, updateAreaInfo, updateMapOverlay, updateMobCount, showColumnContainer
-};
+export { calculateRepop, calculateNextCondition, calculateMobStatus, getEorzeaTime, formatDurationHM, debounce, formatLastKillTime };
