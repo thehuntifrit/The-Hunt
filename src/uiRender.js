@@ -269,9 +269,7 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     const mobNoStr = String(mob.No);
     let card = existingCards.get(mobNoStr);
 
-    if (card) {
-
-    } else {
+    if (!card) {
       card = createMobCard(mob);
       updateProgressText(card, mob);
       updateProgressBar(card, mob);
@@ -672,16 +670,7 @@ function onKillReportReceived(mobId, kill_time) {
   mob.last_kill_time = Number(kill_time);
   mob.repopInfo = calculateRepop(mob, getState().maintenance);
 
-  const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
-  if (card) {
-    updateProgressText(card, mob);
-    updateProgressBar(card, mob);
-    updateExpandablePanel(card, mob);
-    updateMemoIcon(card, mob);
-    updateAreaInfo(card, mob);
-    updateMobCount(card, mob);
-    updateMapOverlay(card, mob);
-  }
+  updateProgressBars();
 }
 
 setInterval(() => {
