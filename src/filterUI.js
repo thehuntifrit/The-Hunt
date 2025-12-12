@@ -196,7 +196,7 @@ const handleRankTabClick = (rank) => {
     clickStep
   }));
 
-  filterAndRender();
+  filterAndRender({ onlySort: true });
   updateFilterUI();
 };
 
@@ -228,7 +228,7 @@ function handleAreaFilterClick(e) {
       allRankSet: nextSet
     });
 
-    filterAndRender();
+    filterAndRender({ onlySort: true });
     renderAreaFilterPanel();
     return;
   }
@@ -263,7 +263,7 @@ function handleAreaFilterClick(e) {
     areaSets: nextAreaSets
   });
 
-  filterAndRender();
+  filterAndRender({ onlySort: true });
   renderAreaFilterPanel();
 }
 
