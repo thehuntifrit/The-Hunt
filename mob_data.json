@@ -110,7 +110,7 @@
       "locations": []
     },
       "12021": {"rank": "S", "name":"ケロゲロス", "area": "低地ラノシア",
-      "condition": "満月IN最初のET17:00にPOP地点を踏む//※ 以降は満月中のET 17:00 〜 3:00",
+      "condition": "満月中のET 17:00 〜 3:00にPOP地点を踏む",
       "repopSeconds": 180000, "maxRepopSeconds": 180000,
       "moonPhase": "満月",
       "timeRange": { "start": 17, "end": 3 },
@@ -177,7 +177,7 @@
       "locations": [] 
     },
       "12091": {"rank": "S", "name":"マインドフレア", "area": "南部森林",
-      "condition": "新月IN最初のET0:00以降にPOP地点を踏む//※ 以降は新月中のET 17:00 〜 3:00",
+      "condition": "新月入りした最初のET0:00以降にPOP地点を踏む//※ 以降は新月中のET 17:00 〜 3:00",
       "repopSeconds": 180000, "maxRepopSeconds": 180000,
       "moonPhase": "新月",
       "conditions": {"firstNight": { "timeRange": { "start": 0, "end": 3 } },"otherNights": { "timeRange": { "start": 17, "end": 3 } }},
@@ -1041,7 +1041,7 @@
       "mapImage": "",
       "locations": [] 
     },
-      "62011": {"rank": "S", "name":"厭忌のキーリーゲー1️⃣", "area": "オルコ・パチャ",
+      "62011": {"rank": "S", "name":"厭忌のキーリーゲー", "area": "オルコ・パチャ",
       "condition": "「新月」+「霧」+「ET 0:00 〜 6:00」の条件を満たした時にPOP地点を踏む",
       "repopSeconds": 302400, "maxRepopSeconds": 475200,
       "moonPhase": "新月",
@@ -1059,46 +1059,6 @@
         {"id":"UP_108", "x": 80.6, "y": 43.8, "mob_ranks": ["B2"]},
         {"id":"UP_109", "x": 49.8, "y": 38.0, "mob_ranks": ["B2"]},
         {"id":"UP_110", "x": 46.2, "y": 54.8, "mob_ranks": ["B1"]}
-      ]
-    },
-      "62012": {"rank": "S", "name":"厭忌のキーリーゲー2️⃣", "area": "オルコ・パチャ",
-      "condition": "「新月」+「霧」+「ET 0:00 〜 6:00」の条件を満たした時にPOP地点を踏む",
-      "repopSeconds": 302400, "maxRepopSeconds": 475200,
-      "moonPhase": "新月",
-      "weatherSeedRange": [70, 79], 
-      "timeRange": { "start": 0, "end": 6 },
-      "mapImage": "Urqopacha.webp",
-      "locations": [
-        {"id":"UP_201", "x": 67.6, "y": 20.0, "mob_ranks": ["S", "A", "B2"]},
-        {"id":"UP_202", "x": 43.0, "y": 31.6, "mob_ranks": ["S", "A", "B2"]},
-        {"id":"UP_203", "x": 24.2, "y": 17.6, "mob_ranks": ["S", "A", "B2"]},
-        {"id":"UP_204", "x": 66.2, "y": 52.2, "mob_ranks": ["S", "A", "B1"]},
-        {"id":"UP_205", "x": 49.2, "y": 47.4, "mob_ranks": ["S", "A", "B1"]},
-        {"id":"UP_206", "x": 37.2, "y": 56.0, "mob_ranks": ["S", "A", "B1"]},
-        {"id":"UP_207", "x": 16.4, "y": 60.2, "mob_ranks": ["S", "A", "B1"]},
-        {"id":"UP_208", "x": 80.6, "y": 43.8, "mob_ranks": ["B2"]},
-        {"id":"UP_209", "x": 49.8, "y": 38.0, "mob_ranks": ["B2"]},
-        {"id":"UP_210", "x": 46.2, "y": 54.8, "mob_ranks": ["B1"]}
-      ]
-    },
-      "62013": {"rank": "S", "name":"厭忌のキーリーゲー3️⃣", "area": "オルコ・パチャ",
-      "condition": "「新月」+「霧」+「ET 0:00 〜 6:00」の条件を満たした時にPOP地点を踏む",
-      "repopSeconds": 302400, "maxRepopSeconds": 475200,
-      "moonPhase": "新月",
-      "weatherSeedRange": [70, 79], 
-      "timeRange": { "start": 0, "end": 6 },
-      "mapImage": "Urqopacha.webp",
-      "locations": [
-        {"id":"UP_301", "x": 67.6, "y": 20.0, "mob_ranks": ["S", "A", "B2"]},
-        {"id":"UP_302", "x": 43.0, "y": 31.6, "mob_ranks": ["S", "A", "B2"]},
-        {"id":"UP_303", "x": 24.2, "y": 17.6, "mob_ranks": ["S", "A", "B2"]},
-        {"id":"UP_304", "x": 66.2, "y": 52.2, "mob_ranks": ["S", "A", "B1"]},
-        {"id":"UP_305", "x": 49.2, "y": 47.4, "mob_ranks": ["S", "A", "B1"]},
-        {"id":"UP_306", "x": 37.2, "y": 56.0, "mob_ranks": ["S", "A", "B1"]},
-        {"id":"UP_307", "x": 16.4, "y": 60.2, "mob_ranks": ["S", "A", "B1"]},
-        {"id":"UP_308", "x": 80.6, "y": 43.8, "mob_ranks": ["B2"]},
-        {"id":"UP_309", "x": 49.8, "y": 38.0, "mob_ranks": ["B2"]},
-        {"id":"UP_310", "x": 46.2, "y": 54.8, "mob_ranks": ["B1"]}
       ]
     },
       "62021": {"rank": "S", "name":"イヌショキー", "area": "コザマル・カ",
