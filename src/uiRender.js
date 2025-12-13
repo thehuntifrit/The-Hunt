@@ -645,7 +645,28 @@ function updateProgressBars() {
   const nowSec = Date.now() / 1000;
 
   state.mobs.forEach((mob) => {
-    mob.repopInfo = calculateRepop(mob, state.maintenance);
+    const hasCondition = !!(
+      mob.moonPhase ||
+      mob.timeRange ||
+      mob.timeRanges ||
+      mob.weatherSeedRange ||
+      mob.weatherSeedRanges ||
+      mob.conditions
+    );
+
+    if (hasCondition && mob.repopInfo) {
+      const wasInWindow = mob.repopInfo.isInConditionWindow;
+      const conditionStart = mob.repopInfo.nextConditionSpawnDate?.getTime() / 1000;
+      const conditionEnd = mob.repopInfo.conditionWindowEnd?.getTime() / 1000;
+
+      const shouldRecalculate =
+        (wasInWindow && conditionEnd && nowSec >= conditionEnd) ||
+        (!wasInWindow && conditionStart && nowSec >= conditionStart && conditionEnd && nowSec < conditionEnd);
+
+      if (shouldRecalculate) {
+        mob.repopInfo = calculateRepop(mob, state.maintenance);
+      }
+    }
 
     if (mob.repopInfo?.nextConditionSpawnDate && mob.repopInfo?.conditionWindowEnd) {
       const spawnSec = mob.repopInfo.nextConditionSpawnDate.getTime() / 1000;
@@ -703,6 +724,6 @@ setInterval(() => {
 }, EORZEA_MINUTE_MS);
 
 export {
-  filterAndRender, updateProgressText, updateProgressBar, createMobCard, DOM, sortAndRedistribute, onKillReportReceived, 
+  filterAndRender, updateProgressText, updateProgressBar, createMobCard, DOM, sortAndRedistribute, onKillReportReceived,
   updateProgressBars, updateAreaInfo, updateMapOverlay, updateMobCount, showColumnContainer, invalidateFilterCache
 };
