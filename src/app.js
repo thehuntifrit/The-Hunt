@@ -123,7 +123,7 @@ function attachGlobalEventListeners() {
             prevWidth = currentWidth;
             sortAndRedistribute();
         }
-    }, 200));
+    }, 100));
 
     document.addEventListener("click", (e) => {
         if (e.target.closest(".tab-button")) {
