@@ -2,7 +2,8 @@
 
 import { calculateRepop } from "./cal.js";
 import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos } from "./server.js";
-import { filterAndRender, updateProgressBars, invalidateFilterCache } from "./uiRender.js";
+import { filterAndRender, updateProgressBars, invalidateFilterCache, updateMobCount, updateMapOverlay } from "./uiRender.js";
+import { filterMobsByRankAndArea } from "./filterUI.js";
 
 const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
 
@@ -375,7 +376,15 @@ function startRealtime() {
             checkInitialLoadComplete();
         } else {
             setMobs([...current]);
-            updateProgressBars();
+            invalidateFilterCache();
+            const filtered = filterMobsByRankAndArea(current);
+            filtered.forEach(mob => {
+                const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
+                if (card) {
+                    updateMobCount(card, mob);
+                    updateMapOverlay(card, mob);
+                }
+            });
         }
     });
     unsubscribes.push(unsubLoc);
