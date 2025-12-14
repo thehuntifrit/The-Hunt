@@ -181,28 +181,16 @@ function parseMobIdParts(no) {
 function allTabComparator(a, b) {
   const aInfo = a.repopInfo || {};
   const bInfo = b.repopInfo || {};
-
   const aStatus = aInfo.status;
   const bStatus = bInfo.status;
 
   const isAMaxOver = aStatus === "MaxOver";
   const isBMaxOver = bStatus === "MaxOver";
 
-  const aMinRepop = aInfo.minRepop || 0;
-  const bMinRepop = bInfo.minRepop || 0;
-
-  const aConditionStart = aInfo.conditionStart || 0;
-  const bConditionStart = bInfo.conditionStart || 0;
-
-  const maintenanceTs = maintenanceStart || 0;
-
   const aIsAfterMaintenance =
-    (aMinRepop && aMinRepop >= maintenanceTs) ||
-    (aConditionStart && aConditionStart >= maintenanceTs);
-
+    aInfo.isMaintenanceStop || aInfo.isBlockedByMaintenance;
   const bIsAfterMaintenance =
-    (bMinRepop && bMinRepop >= maintenanceTs) ||
-    (bConditionStart && bConditionStart >= maintenanceTs);
+    bInfo.isMaintenanceStop || bInfo.isBlockedByMaintenance;
 
   if (aIsAfterMaintenance && !bIsAfterMaintenance) return 1;
   if (!aIsAfterMaintenance && bIsAfterMaintenance) return -1;
