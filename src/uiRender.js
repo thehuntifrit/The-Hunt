@@ -181,16 +181,33 @@ function parseMobIdParts(no) {
 function allTabComparator(a, b) {
   const aInfo = a.repopInfo || {};
   const bInfo = b.repopInfo || {};
+
   const aStatus = aInfo.status;
   const bStatus = bInfo.status;
+
   const isAMaxOver = aStatus === "MaxOver";
   const isBMaxOver = bStatus === "MaxOver";
-  const aHasCondition = aInfo.hasCondition;
-  const bHasCondition = bInfo.hasCondition;
-  const aEffectiveMaxOver = isAMaxOver && !aHasCondition;
-  const bEffectiveMaxOver = isBMaxOver && !bHasCondition;
 
-  if (aEffectiveMaxOver && bEffectiveMaxOver) {
+  const aMinRepop = aInfo.minRepop || 0;
+  const bMinRepop = bInfo.minRepop || 0;
+
+  const aConditionStart = aInfo.conditionStart || 0;
+  const bConditionStart = bInfo.conditionStart || 0;
+
+  const maintenanceTs = maintenanceStart || 0;
+
+  const aIsAfterMaintenance =
+    (aMinRepop && aMinRepop >= maintenanceTs) ||
+    (aConditionStart && aConditionStart >= maintenanceTs);
+
+  const bIsAfterMaintenance =
+    (bMinRepop && bMinRepop >= maintenanceTs) ||
+    (bConditionStart && bConditionStart >= maintenanceTs);
+
+  if (aIsAfterMaintenance && !bIsAfterMaintenance) return 1;
+  if (!aIsAfterMaintenance && bIsAfterMaintenance) return -1;
+
+  if (isAMaxOver && isBMaxOver) {
     const getMaxOverRankPriority = (r) => {
       if (r === 'S') return 0;
       if (r === 'F') return 1;
@@ -212,8 +229,8 @@ function allTabComparator(a, b) {
     return pa.instance - pb.instance;
   }
 
-  if (aEffectiveMaxOver && !bEffectiveMaxOver) return -1;
-  if (!aEffectiveMaxOver && bEffectiveMaxOver) return 1;
+  if (isAMaxOver && !isBMaxOver) return -1;
+  if (!isAMaxOver && isBMaxOver) return 1;
 
   const isAMaint = aInfo.isMaintenanceStop || aInfo.isBlockedByMaintenance;
   const isBMaint = bInfo.isMaintenanceStop || bInfo.isBlockedByMaintenance;
