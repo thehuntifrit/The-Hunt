@@ -27,6 +27,15 @@ const FIFTEEN_MINUTES_SEC = 15 * 60;
 let cachedFilterString = null;
 let cachedFilteredMobs = null;
 
+function getValidSpawnPoints(mob, spawnCullStatus) {
+  return (mob.spawn_points ?? []).filter(point => {
+    const isS_SpawnPoint = point.mob_ranks.includes("S");
+    if (!isS_SpawnPoint) return false;
+    const pointStatus = spawnCullStatus?.[point.id];
+    return !isCulled(pointStatus, mob.No);
+  });
+}
+
 function getFilteredMobs() {
   const state = getState();
   const filterString = JSON.stringify(state.filter);
@@ -88,7 +97,7 @@ function createMobCard(mob) {
     card.classList.add("opacity-50", "grayscale");
   }
 
-  // Rank Badge - Removed as requested
+  // Rank Badge
   const rankBadge = card.querySelector('.rank-badge');
   if (rankBadge) rankBadge.remove();
 
@@ -284,7 +293,6 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     existingCards.set(mobNo, card);
   });
 
-  // Determine column count
   const width = window.innerWidth;
   const md = 768;
   const lg = 1024;
@@ -345,7 +353,6 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     updateProgressBars();
   }
 
-  // Restore focus
   if (focusedMobNo) {
     const card = document.querySelector(`.mob-card[data-mob-no="${focusedMobNo}"]`);
     if (card) {
@@ -458,8 +465,11 @@ function updateProgressText(card, mob) {
   const now = Date.now() / 1000;
   const mobNameEl = card.querySelector('.mob-name');
 
-  const isBeforeMinRepop = now < mob.repopInfo.minRepop;
-  if (status === "Next" || (status === "NextCondition" && isBeforeMinRepop)) {
+  const shouldDimCard =
+    status === "Next" ||
+    (status === "NextCondition" && now < mob.repopInfo.minRepop);
+
+  if (shouldDimCard) {
     card.classList.add("opacity-60");
     if (mobNameEl) {
       mobNameEl.style.color = "#999";
@@ -588,13 +598,7 @@ function updateMobCount(card, mob) {
   let displayCountText = "";
 
   if (mob.Map && mob.spawn_points) {
-    const validSpawnPoints = (mob.spawn_points ?? []).filter(point => {
-      const isS_SpawnPoint = point.mob_ranks.includes("S");
-      if (!isS_SpawnPoint) return false;
-      const pointStatus = spawnCullStatus?.[point.id];
-      return !isCulled(pointStatus, mob.No);
-    });
-
+    const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
     const remainingCount = validSpawnPoints.length;
 
     if (remainingCount === 1) {
@@ -636,19 +640,9 @@ function updateMapOverlay(card, mob) {
     const mobLocationsData = state.mobLocations?.[mob.No];
     const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
 
-    let isLastOne = false;
-    let validSpawnPoints = [];
-
-    validSpawnPoints = (mob.spawn_points ?? []).filter(point => {
-      const isS_SpawnPoint = point.mob_ranks.includes("S");
-      if (!isS_SpawnPoint) return false;
-      const pointStatus = spawnCullStatus?.[point.id];
-      return !isCulled(pointStatus, mob.No);
-    });
-
+    const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
     const remainingCount = validSpawnPoints.length;
-    isLastOne = remainingCount === 1;
-    const isS_LastOne = isLastOne;
+    const isLastOne = remainingCount === 1;
 
     const spawnPointsHtml = (mob.spawn_points ?? []).map(point => {
       const isThisPointTheLastOne = isLastOne && point.id === validSpawnPoints[0]?.id;
@@ -660,7 +654,7 @@ function updateMapOverlay(card, mob) {
           : point.mob_ranks.includes("B1") ? "B1"
             : point.mob_ranks[0],
         isThisPointTheLastOne,
-        isS_LastOne
+        isLastOne
       );
     }).join("");
 
@@ -694,9 +688,7 @@ function updateProgressBars() {
         (wasInWindow && conditionEnd && nowSec >= conditionEnd) ||
         (!wasInWindow && conditionStart && nowSec >= conditionStart && conditionEnd && nowSec < conditionEnd);
 
-      if (mob.repopInfo.isInConditionWindow) {
-        mob.repopInfo = calculateRepop(mob, state.maintenance);
-      } else if (shouldRecalculate) {
+      if (shouldRecalculate) {
         mob.repopInfo = calculateRepop(mob, state.maintenance);
       }
     }
@@ -717,8 +709,13 @@ function updateProgressBars() {
   if (currentOrderStr !== lastRenderedOrderStr) {
     filterAndRender();
   } else {
+    const cards = new Map();
+    document.querySelectorAll('.mob-card').forEach(card => {
+      cards.set(card.dataset.mobNo, card);
+    });
+
     sorted.forEach(mob => {
-      const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
+      const card = cards.get(String(mob.No));
       if (card) {
         updateProgressText(card, mob);
         updateProgressBar(card, mob);
