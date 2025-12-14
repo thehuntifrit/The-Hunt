@@ -444,7 +444,9 @@ function updateProgressText(card, mob) {
 
   const nowSec = Date.now() / 1000;
   let leftStr = timeRemaining || "未確定";
-  const percentStr = ` (${Number(elapsedPercent || 0).toFixed(0)}%)`;
+  const percentStr = (status !== "MaxOver")
+    ? ` (${Number(elapsedPercent || 0).toFixed(0)}%)`
+    : "";
 
   const now = Date.now() / 1000;
   const mobNameEl = card.querySelector('.mob-name');
@@ -685,7 +687,9 @@ function updateProgressBars() {
         (wasInWindow && conditionEnd && nowSec >= conditionEnd) ||
         (!wasInWindow && conditionStart && nowSec >= conditionStart && conditionEnd && nowSec < conditionEnd);
 
-      if (shouldRecalculate) {
+      if (mob.repopInfo.isInConditionWindow) {
+        mob.repopInfo = calculateRepop(mob, state.maintenance);
+      } else if (shouldRecalculate) {
         mob.repopInfo = calculateRepop(mob, state.maintenance);
       }
     }
