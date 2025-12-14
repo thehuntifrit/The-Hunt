@@ -85,7 +85,7 @@ function createMobCard(mob) {
   card.dataset.mobNo = mob.No;
   card.dataset.rank = rank;
   if (mob.repopInfo?.isMaintenanceStop) {
-    card.classList.add("opacity-50", "grayscale", "pointer-events-none");
+    card.classList.add("opacity-50", "grayscale");
   }
 
   // Rank Badge - Removed as requested
@@ -185,8 +185,12 @@ function allTabComparator(a, b) {
   const bStatus = bInfo.status;
   const isAMaxOver = aStatus === "MaxOver";
   const isBMaxOver = bStatus === "MaxOver";
+  const aHasCondition = aInfo.hasCondition;
+  const bHasCondition = bInfo.hasCondition;
+  const aEffectiveMaxOver = isAMaxOver && !aHasCondition;
+  const bEffectiveMaxOver = isBMaxOver && !bHasCondition;
 
-  if (isAMaxOver && isBMaxOver) {
+  if (aEffectiveMaxOver && bEffectiveMaxOver) {
     const getMaxOverRankPriority = (r) => {
       if (r === 'S') return 0;
       if (r === 'F') return 1;
@@ -196,17 +200,20 @@ function allTabComparator(a, b) {
 
     const rankDiff = getMaxOverRankPriority(a.Rank) - getMaxOverRankPriority(b.Rank);
     if (rankDiff !== 0) return rankDiff;
+
     const expA = getExpansionPriority(a.Expansion);
     const expB = getExpansionPriority(b.Expansion);
     if (expA !== expB) return expB - expA;
+
     const pa = parseMobIdParts(a.No);
     const pb = parseMobIdParts(b.No);
     if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
+
     return pa.instance - pb.instance;
   }
 
-  if (isAMaxOver && !isBMaxOver) return -1;
-  if (!isAMaxOver && isBMaxOver) return 1;
+  if (aEffectiveMaxOver && !bEffectiveMaxOver) return -1;
+  if (!aEffectiveMaxOver && bEffectiveMaxOver) return 1;
 
   const isAMaint = aInfo.isMaintenanceStop || aInfo.isBlockedByMaintenance;
   const isBMaint = bInfo.isMaintenanceStop || bInfo.isBlockedByMaintenance;
@@ -226,14 +233,18 @@ function allTabComparator(a, b) {
     const bTime = bInfo.minRepop || 0;
     if (aTime !== bTime) return aTime - bTime;
   }
+
   const rankDiff = rankPriority(a.Rank) - rankPriority(b.Rank);
   if (rankDiff !== 0) return rankDiff;
+
   const expA = getExpansionPriority(a.Expansion);
   const expB = getExpansionPriority(b.Expansion);
   if (expA !== expB) return expB - expA;
+
   const pa = parseMobIdParts(a.No);
   const pb = parseMobIdParts(b.No);
   if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
+
   return pa.instance - pb.instance;
 }
 
@@ -441,9 +452,9 @@ function updateProgressText(card, mob) {
   }
 
   if (isBlockedByMaintenance || mob.repopInfo.isMaintenanceStop) {
-    card.classList.add("grayscale", "opacity-50", "pointer-events-none");
+    card.classList.add("grayscale", "opacity-50");
   } else {
-    card.classList.remove("grayscale", "opacity-50", "pointer-events-none");
+    card.classList.remove("grayscale", "opacity-50");
   }
 
   let rightStr = "未確定";
