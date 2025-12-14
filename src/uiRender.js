@@ -444,9 +444,7 @@ function updateProgressText(card, mob) {
 
   const nowSec = Date.now() / 1000;
   let leftStr = timeRemaining || "未確定";
-  const percentStr = (status === "PopWindow" || status === "ConditionActive")
-    ? ` (${Number(elapsedPercent || 0).toFixed(0)}%)`
-    : "";
+  const percentStr = ` (${Number(elapsedPercent || 0).toFixed(0)}%)`;
 
   const now = Date.now() / 1000;
   const mobNameEl = card.querySelector('.mob-name');
