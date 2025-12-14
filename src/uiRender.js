@@ -408,6 +408,14 @@ function updateProgressBar(card, mob) {
   );
   wrapper.classList.remove(PROGRESS_CLASSES.BLINK_WHITE);
 
+  if (elapsedPercent < 60) {
+    bar.classList.add(PROGRESS_CLASSES.P0_60);
+  } else if (elapsedPercent < 80) {
+    bar.classList.add(PROGRESS_CLASSES.P60_80);
+  } else if (elapsedPercent < 100) {
+    bar.classList.add(PROGRESS_CLASSES.P80_100);
+  }
+
   if (status === "PopWindow" || status === "ConditionActive") {
     if (elapsedPercent > 90) {
       wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
