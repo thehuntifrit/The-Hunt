@@ -293,6 +293,7 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     existingCards.set(mobNo, card);
   });
 
+  // Determine column count
   const width = window.innerWidth;
   const md = 768;
   const lg = 1024;
@@ -680,13 +681,12 @@ function updateProgressBars() {
     );
 
     if (hasCondition && mob.repopInfo) {
-      const wasInWindow = mob.repopInfo.isInConditionWindow;
       const conditionStart = mob.repopInfo.nextConditionSpawnDate?.getTime() / 1000;
       const conditionEnd = mob.repopInfo.conditionWindowEnd?.getTime() / 1000;
 
       const shouldRecalculate =
-        (wasInWindow && conditionEnd && nowSec >= conditionEnd) ||
-        (!wasInWindow && conditionStart && nowSec >= conditionStart && conditionEnd && nowSec < conditionEnd);
+        mob.repopInfo.isInConditionWindow ||
+        (!mob.repopInfo.isInConditionWindow && conditionStart && nowSec >= conditionStart && conditionEnd && nowSec < conditionEnd);
 
       if (shouldRecalculate) {
         mob.repopInfo = calculateRepop(mob, state.maintenance);
