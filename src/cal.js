@@ -499,7 +499,7 @@ function calculateRepop(mob, maintenance, options = {}) {
     if (status !== "MaxOver") {
       status = "ConditionActive";
     }
-  } else if (hasCondition && nextConditionSpawnDate && now < nextConditionSpawnDate.getTime() / 1000 && status !== "MaxOver") {
+  } else if (hasCondition && nextConditionSpawnDate && now >= minRepop && now < nextConditionSpawnDate.getTime() / 1000 && status !== "MaxOver") {
     status = "NextCondition";
   }
 
