@@ -420,7 +420,9 @@ function calculateRepop(mob, maintenance, options = {}) {
     maxRepop = lastKill + maxSec;
   }
 
-  const pointSec = Math.max(minRepop, now);
+  const isServerUpInitial = (lastKill === 0 || lastKill <= serverUp);
+  const pointSec = isServerUpInitial ? minRepop : Math.max(minRepop, now);
+
   const nextMinRepopDate = new Date(minRepop * 1000);
   const searchLimit = pointSec + LIMIT_DAYS * 24 * 3600;
 
@@ -454,6 +456,14 @@ function calculateRepop(mob, maintenance, options = {}) {
       }
     }
 
+    if (useCache && isServerUpInitial && mob._spawnCache && mob._spawnCache.result) {
+      const cachedStart = mob._spawnCache.result.start;
+      const cachedEnd = mob._spawnCache.result.end;
+      if (cachedEnd <= minRepop || cachedStart < minRepop) {
+        useCache = false;
+      }
+    }
+
     let result = null;
     if (useCache) {
       result = mob._spawnCache.result;
@@ -473,9 +483,17 @@ function calculateRepop(mob, maintenance, options = {}) {
 
       isInConditionWindow = (now >= start && now < end);
 
+      if (isServerUpInitial && now < minRepop) {
+        isInConditionWindow = false;
+      }
+
       if (isInConditionWindow) {
         const remainingSec = end - now;
         conditionRemaining = `残り ${Math.ceil(remainingSec / 60)}分`;
+      } else {
+        if (isServerUpInitial && now < minRepop) {
+          conditionRemaining = null;
+        }
       }
     }
   }
