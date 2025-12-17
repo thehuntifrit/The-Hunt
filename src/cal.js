@@ -411,7 +411,7 @@ function calculateRepop(mob, maintenance, options = {}) {
   const serverUp = new Date(maint.serverUp).getTime() / 1000;
   const maintenanceStart = new Date(maint.start).getTime() / 1000;
 
-  const isRankF = (mob.rank === "F");
+  const isRankF = (mob.Rank === "F" || mob.rank === "F");
 
   let minRepop, maxRepop;
   if (lastKill === 0 || lastKill <= serverUp) {
@@ -480,7 +480,7 @@ function calculateRepop(mob, maintenance, options = {}) {
         result: result
       };
     }
-
+    
     if (result) {
       const { start, end } = result;
 
