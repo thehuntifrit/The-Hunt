@@ -421,7 +421,7 @@ function calculateRepop(mob, maintenance, options = {}) {
   }
 
   const isServerUpInitial = (lastKill === 0 || lastKill <= serverUp);
-  const pointSec = isServerUpInitial ? minRepop : Math.max(minRepop, now);
+  const pointSec = Math.max(minRepop, now);
 
   const nextMinRepopDate = new Date(minRepop * 1000);
   const searchLimit = pointSec + LIMIT_DAYS * 24 * 3600;
@@ -456,10 +456,10 @@ function calculateRepop(mob, maintenance, options = {}) {
       }
     }
 
-    if (useCache && isServerUpInitial && mob._spawnCache && mob._spawnCache.result) {
+    if (useCache && mob._spawnCache && mob._spawnCache.result) {
       const cachedStart = mob._spawnCache.result.start;
       const cachedEnd = mob._spawnCache.result.end;
-      if (cachedEnd <= minRepop || cachedStart < minRepop) {
+      if (cachedEnd <= now || cachedStart < minRepop) {
         useCache = false;
       }
     }
@@ -473,27 +473,17 @@ function calculateRepop(mob, maintenance, options = {}) {
         key: cacheKey,
         result: result
       };
-    }
-
-    if (result) {
+    } if (result) {
       const { start, end } = result;
 
       nextConditionSpawnDate = new Date(start * 1000);
       conditionWindowEnd = new Date(end * 1000);
 
-      isInConditionWindow = (now >= start && now < end);
-
-      if (isServerUpInitial && now < minRepop) {
-        isInConditionWindow = false;
-      }
+      isInConditionWindow = (now >= start && now < end && now >= minRepop);
 
       if (isInConditionWindow) {
         const remainingSec = end - now;
         conditionRemaining = `残り ${Math.ceil(remainingSec / 60)}分`;
-      } else {
-        if (isServerUpInitial && now < minRepop) {
-          conditionRemaining = null;
-        }
       }
     }
   }
