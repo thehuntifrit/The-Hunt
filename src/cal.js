@@ -268,6 +268,7 @@ function* getValidWeatherIntervals(mob, windowStart, windowEnd) {
 
     let activeStart = null;
     while (cursor < windowEnd + WEATHER_CYCLE_SEC) {
+      if (loopSafety++ > MAX_SEARCH_ITERATIONS) break;
       const seed = getEorzeaWeatherSeed(new Date(cursor * 1000));
       if (checkWeatherInRange(mob, seed)) {
         activeStart = cursor;
@@ -289,7 +290,6 @@ function* getValidWeatherIntervals(mob, windowStart, windowEnd) {
 
       if (checkWeatherInRange(mob, seed)) {
         tempCursor = nextTime;
-        activeEnd = nextTime;
       } else {
         activeEnd = nextTime;
         break;
@@ -411,16 +411,22 @@ function calculateRepop(mob, maintenance, options = {}) {
   const serverUp = new Date(maint.serverUp).getTime() / 1000;
   const maintenanceStart = new Date(maint.start).getTime() / 1000;
 
+  const isRankF = (mob.rank === "F");
+
   let minRepop, maxRepop;
   if (lastKill === 0 || lastKill <= serverUp) {
-    minRepop = serverUp + repopSec * 0.6;
-    maxRepop = serverUp + maxSec * 0.6;
+    if (isRankF) {
+      minRepop = serverUp + repopSec;
+      maxRepop = serverUp + maxSec;
+    } else {
+      minRepop = serverUp + repopSec * 0.6;
+      maxRepop = serverUp + maxSec * 0.6;
+    }
   } else {
     minRepop = lastKill + repopSec;
     maxRepop = lastKill + maxSec;
   }
 
-  const isServerUpInitial = (lastKill === 0 || lastKill <= serverUp);
   const pointSec = Math.max(minRepop, now);
 
   const nextMinRepopDate = new Date(minRepop * 1000);
@@ -473,7 +479,9 @@ function calculateRepop(mob, maintenance, options = {}) {
         key: cacheKey,
         result: result
       };
-    } if (result) {
+    }
+
+    if (result) {
       const { start, end } = result;
 
       nextConditionSpawnDate = new Date(start * 1000);
