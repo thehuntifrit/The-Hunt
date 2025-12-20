@@ -193,9 +193,6 @@ function allTabComparator(a, b) {
   const aStatus = aInfo.status;
   const bStatus = bInfo.status;
 
-  const isAMaxOver = aStatus === "MaxOver";
-  const isBMaxOver = bStatus === "MaxOver";
-
   const aIsAfterMaintenance =
     aInfo.isMaintenanceStop || aInfo.isBlockedByMaintenance;
   const bIsAfterMaintenance =
@@ -204,7 +201,19 @@ function allTabComparator(a, b) {
   if (aIsAfterMaintenance && !bIsAfterMaintenance) return 1;
   if (!aIsAfterMaintenance && bIsAfterMaintenance) return -1;
 
+  const isAMaxOver = aStatus === "MaxOver";
+  const isBMaxOver = bStatus === "MaxOver";
+
+  if (isAMaxOver && !isBMaxOver) return -1;
+  if (!isAMaxOver && isBMaxOver) return 1;
+
   if (isAMaxOver && isBMaxOver) {
+    const aActive = aInfo.isInConditionWindow;
+    const bActive = bInfo.isInConditionWindow;
+
+    if (aActive && !bActive) return -1;
+    if (!aActive && bActive) return 1;
+
     const getMaxOverRankPriority = (r) => {
       if (r === 'S') return 0;
       if (r === 'F') return 1;
@@ -226,14 +235,11 @@ function allTabComparator(a, b) {
     return pa.instance - pb.instance;
   }
 
-  if (isAMaxOver && !isBMaxOver) return -1;
-  if (!isAMaxOver && isBMaxOver) return 1;
+  const isAConditionActive = aStatus === "ConditionActive";
+  const isBConditionActive = bStatus === "ConditionActive";
 
-  const isAMaint = aInfo.isMaintenanceStop || aInfo.isBlockedByMaintenance;
-  const isBMaint = bInfo.isMaintenanceStop || bInfo.isBlockedByMaintenance;
-
-  if (isAMaint && !isBMaint) return 1;
-  if (!isAMaint && isBMaint) return -1;
+  if (isAConditionActive && !isBConditionActive) return -1;
+  if (!isAConditionActive && isBConditionActive) return 1;
 
   const aPercent = aInfo.elapsedPercent || 0;
   const bPercent = bInfo.elapsedPercent || 0;
@@ -242,7 +248,7 @@ function allTabComparator(a, b) {
     return bPercent - aPercent;
   }
 
-  if (!isAMaint && !isBMaint) {
+  if (!aIsAfterMaintenance && !bIsAfterMaintenance) {
     const aTime = aInfo.minRepop || 0;
     const bTime = bInfo.minRepop || 0;
     if (aTime !== bTime) return aTime - bTime;
@@ -293,7 +299,6 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     existingCards.set(mobNo, card);
   });
 
-  // Determine column count
   const width = window.innerWidth;
   const md = 768;
   const lg = 1024;
