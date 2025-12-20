@@ -685,15 +685,19 @@ function updateProgressBars() {
       mob.conditions
     );
 
-    if (hasCondition && mob.repopInfo) {
-      const conditionStart = mob.repopInfo.nextConditionSpawnDate?.getTime() / 1000;
-      const conditionEnd = mob.repopInfo.conditionWindowEnd?.getTime() / 1000;
+    if (mob.repopInfo) {
+      if (hasCondition) {
+        const conditionStart = mob.repopInfo.nextConditionSpawnDate?.getTime() / 1000;
+        const conditionEnd = mob.repopInfo.conditionWindowEnd?.getTime() / 1000;
 
-      const shouldRecalculate =
-        mob.repopInfo.isInConditionWindow ||
-        (!mob.repopInfo.isInConditionWindow && conditionStart && nowSec >= conditionStart && conditionEnd && nowSec < conditionEnd);
+        const shouldRecalculate =
+          mob.repopInfo.isInConditionWindow ||
+          (!mob.repopInfo.isInConditionWindow && conditionStart && nowSec >= conditionStart && conditionEnd && nowSec < conditionEnd);
 
-      if (shouldRecalculate) {
+        if (shouldRecalculate) {
+          mob.repopInfo = calculateRepop(mob, state.maintenance);
+        }
+      } else {
         mob.repopInfo = calculateRepop(mob, state.maintenance);
       }
     }
