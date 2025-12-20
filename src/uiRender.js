@@ -76,7 +76,7 @@ function createMobCard(mob) {
 
   const rank = mob.Rank;
   const rankLabel = rank;
-  const isExpandable = rank === "S";
+  const isExpandable = true;
   const { openMobCardNo } = getState();
   const isOpen = isExpandable && mob.No === openMobCardNo;
 
@@ -133,18 +133,23 @@ function createMobCard(mob) {
     memoInput.value = shouldShowMemo ? (mob.memo_text || "") : "";
     memoInput.dataset.mobNo = mob.No;
 
-    // Condition
-    const conditionText = card.querySelector('.condition-text');
-    conditionText.innerHTML = processText(mob.Condition);
-
-    // Map
-    const mapContainer = card.querySelector('.map-container');
-    if (mob.Map && rank === 'S') {
-      const mapImg = mapContainer.querySelector('.mob-map-img');
-      mapImg.src = `./maps/${mob.Map}`;
-      mapImg.alt = `${mob.Area} Map`;
+    if (rank !== 'S') {
+      const conditionWrapper = card.querySelector('.condition-text')?.closest('.w-full.mt-2');
+      if (conditionWrapper) conditionWrapper.remove();
+      const mapContainer = card.querySelector('.map-container');
+      if (mapContainer) mapContainer.remove();
     } else {
-      mapContainer.remove();
+      const conditionText = card.querySelector('.condition-text');
+      if (conditionText) conditionText.innerHTML = processText(mob.Condition);
+
+      const mapContainer = card.querySelector('.map-container');
+      if (mob.Map) {
+        const mapImg = mapContainer.querySelector('.mob-map-img');
+        mapImg.src = `./maps/${mob.Map}`;
+        mapImg.alt = `${mob.Area} Map`;
+      } else if (mapContainer) {
+        mapContainer.remove();
+      }
     }
 
   } else {
@@ -730,6 +735,7 @@ function updateProgressBars() {
         updateProgressBar(card, mob);
         updateMobCount(card, mob);
         updateMapOverlay(card, mob);
+        updateExpandablePanel(card, mob);
       }
     });
   }
