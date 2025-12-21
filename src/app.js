@@ -155,9 +155,7 @@ function attachGlobalEventListeners() {
         }
 
         if (e.target.closest("[data-toggle='card-header']")) {
-            if (rank === "S") {
-                toggleCardExpand(card, mobNo);
-            }
+            toggleCardExpand(card, mobNo);
         }
     });
 
