@@ -45,6 +45,10 @@ async function initializeApp() {
             }, 300);
         }, { once: true });
 
+        window.addEventListener('maintenanceUpdated', () => {
+            renderMaintenanceStatus();
+        });
+
     } catch (e) {
         console.error("App initialization failed:", e);
         const overlay = document.getElementById("loading-overlay");
