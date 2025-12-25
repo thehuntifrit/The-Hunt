@@ -110,7 +110,7 @@ function renderMaintenanceStatus() {
         if (el) {
             el.innerHTML = `
            <div class="font-semibold text-yellow-300">
-            メンテナンス予定: ${formatDate(start)} ～ ${formatDate(end)}
+            メンテ日時: ${formatDate(start)} ～ ${formatDate(end)}
            </div>
           `;
             document.getElementById("status-message")?.classList.remove("hidden");
