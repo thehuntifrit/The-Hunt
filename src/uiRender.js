@@ -94,7 +94,9 @@ function createMobCard(mob) {
   card.dataset.mobNo = mob.No;
   card.dataset.rank = rank;
   if (mob.repopInfo?.isMaintenanceStop || mob.repopInfo?.isBlockedByMaintenance) {
-    card.classList.add("opacity-50", "grayscale");
+    card.classList.add("maintenance-gray-out");
+  } else {
+    card.classList.remove("maintenance-gray-out");
   }
 
   // Rank Badge
@@ -493,9 +495,9 @@ function updateProgressText(card, mob) {
   }
 
   if (mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop) {
-    card.classList.add("grayscale", "opacity-50");
+    card.classList.add("maintenance-gray-out");
   } else {
-    card.classList.remove("grayscale", "opacity-50");
+    card.classList.remove("maintenance-gray-out");
   }
 
   let rightStr = "未確定";
@@ -691,20 +693,7 @@ function updateProgressBars() {
     );
 
     if (mob.repopInfo) {
-      if (hasCondition) {
-        const conditionStart = mob.repopInfo.nextConditionSpawnDate?.getTime() / 1000;
-        const conditionEnd = mob.repopInfo.conditionWindowEnd?.getTime() / 1000;
-
-        const shouldRecalculate =
-          mob.repopInfo.isInConditionWindow ||
-          (!mob.repopInfo.isInConditionWindow && conditionStart && nowSec >= conditionStart && conditionEnd && nowSec < conditionEnd);
-
-        if (shouldRecalculate) {
-          mob.repopInfo = calculateRepop(mob, state.maintenance);
-        }
-      } else {
-        mob.repopInfo = calculateRepop(mob, state.maintenance);
-      }
+      mob.repopInfo = calculateRepop(mob, state.maintenance);
     }
 
     if (mob.repopInfo?.nextConditionSpawnDate && mob.repopInfo?.conditionWindowEnd) {
