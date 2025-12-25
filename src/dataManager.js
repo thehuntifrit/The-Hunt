@@ -171,7 +171,7 @@ function saveSpawnCache(cache) {
 }
 
 async function loadBaseMobData() {
-    const maintenance = await loadMaintenance();
+    const maintenance = null;
 
     const cachedDataStr = localStorage.getItem(MOB_DATA_CACHE_KEY);
     let cachedData = null;
@@ -266,11 +266,12 @@ let unsubscribes = [];
 const initialLoadState = {
     status: false,
     location: false,
-    memo: false
+    memo: false,
+    maintenance: false
 };
 
 function checkInitialLoadComplete() {
-    if (initialLoadState.status && initialLoadState.location && initialLoadState.memo) {
+    if (initialLoadState.status && initialLoadState.location && initialLoadState.memo && initialLoadState.maintenance) {
         if (!state.initialLoadComplete) {
             state.initialLoadComplete = true;
             console.log("All initial realtime data loaded. Calculating and rendering...");
@@ -314,6 +315,7 @@ function startRealtime() {
     initialLoadState.status = false;
     initialLoadState.location = false;
     initialLoadState.memo = false;
+    initialLoadState.maintenance = false;
 
     const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
         const current = state.mobs;
@@ -413,13 +415,24 @@ function startRealtime() {
     });
     unsubscribes.push(unsubMemo);
 
-    const unsubMaintenance = subscribeMaintenance(maintenanceData => {
-        if (!maintenanceData) return;
+    const unsubMaintenance = subscribeMaintenance(async maintenanceData => {
+        if (!state.initialLoadComplete) {
+            if (maintenanceData) {
+                state.maintenance = maintenanceData;
+            } else {
+                // Firestoreにデータがない場合、JSONファイルをフォールバックとして使用
+                const fallback = await loadMaintenance();
+                if (fallback) {
+                    state.maintenance = fallback;
+                    console.log("Using maintenance.json as fallback");
+                }
+            }
+            initialLoadState.maintenance = true;
+            checkInitialLoadComplete();
+        } else {
+            if (!maintenanceData) return;
+            state.maintenance = maintenanceData;
 
-        const oldMaintenance = state.maintenance;
-        state.maintenance = maintenanceData;
-
-        if (state.initialLoadComplete && oldMaintenance) {
             const current = state.mobs;
             current.forEach(mob => {
                 mob.repopInfo = calculateRepop(mob, maintenanceData);
