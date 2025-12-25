@@ -112,6 +112,11 @@ body {
     pointer-events: none;
 }
 
+.maintenance-gray-out {
+    opacity: 0.5 !important;
+    filter: grayscale(100%) !important;
+}
+
 .progress-bar-bg.max-over {
     background: linear-gradient(90deg, #7f1d1d, #b91c1c);
     box-shadow: 0 0 10px rgba(185, 28, 28, 0.7);
