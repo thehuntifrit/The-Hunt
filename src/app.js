@@ -40,6 +40,7 @@ async function initializeApp() {
         initHeaderObserver();
 
         window.addEventListener('allDataLoaded', () => {
+            renderMaintenanceStatus();
             setTimeout(() => {
                 showColumnContainer();
             }, 300);
@@ -89,16 +90,22 @@ function initHeaderObserver() {
 
 function renderMaintenanceStatus() {
     const maintenance = getState().maintenance;
+    console.log("renderMaintenanceStatus called. maintenance data:", maintenance);
     if (!maintenance) return;
 
     const start = new Date(maintenance.start);
     const end = new Date(maintenance.end);
     const now = new Date();
 
+    console.log("Time check:", { now, start, end });
+
     const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
     const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
 
-    if (now >= showFrom && now <= showUntil) {
+    const isShowing = (now >= showFrom && now <= showUntil);
+    console.log("Display range check:", { showFrom, showUntil, isShowing });
+
+    if (isShowing) {
         const el = document.getElementById("status-message-maintenance");
         if (el) {
             el.innerHTML = `
