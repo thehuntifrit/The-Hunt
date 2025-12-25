@@ -93,7 +93,7 @@ function createMobCard(mob) {
   // Card Attributes
   card.dataset.mobNo = mob.No;
   card.dataset.rank = rank;
-  if (mob.repopInfo?.isMaintenanceStop) {
+  if (mob.repopInfo?.isMaintenanceStop || mob.repopInfo?.isBlockedByMaintenance) {
     card.classList.add("opacity-50", "grayscale");
   }
 
@@ -492,7 +492,7 @@ function updateProgressText(card, mob) {
     }
   }
 
-  if (isBlockedByMaintenance || mob.repopInfo.isMaintenanceStop) {
+  if (mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop) {
     card.classList.add("grayscale", "opacity-50");
   } else {
     card.classList.remove("grayscale", "opacity-50");
