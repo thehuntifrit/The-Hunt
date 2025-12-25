@@ -9,6 +9,15 @@ const MAX_SEARCH_ITERATIONS = 5000;
 const LIMIT_DAYS = 20;
 export const EORZEA_MINUTE_MS = 2917;
 
+function parseDate(input) {
+  if (!input) return null;
+  if (input instanceof Date) return input;
+  if (typeof input === "object" && typeof input.toDate === "function") return input.toDate();
+  if (typeof input === "object" && input.seconds !== undefined) return new Date(input.seconds * 1000);
+  const d = new Date(input);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 function formatDurationHM(seconds) {
   if (seconds < 0) seconds = 0;
   const h = Math.floor(seconds / 3600);
@@ -406,10 +415,14 @@ function calculateRepop(mob, maintenance, options = {}) {
   if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
     maint = maint.maintenance;
   }
-  if (!maint || !maint.serverUp || !maint.start) return baseResult("Unknown");
+  if (!maint) return baseResult("Unknown");
 
-  const serverUp = new Date(maint.serverUp).getTime() / 1000;
-  const maintenanceStart = new Date(maint.start).getTime() / 1000;
+  const serverUpDate = parseDate(maint.serverUp);
+  const maintenanceStartDate = parseDate(maint.start);
+  if (!serverUpDate || !maintenanceStartDate) return baseResult("Unknown");
+
+  const serverUp = serverUpDate.getTime() / 1000;
+  const maintenanceStart = maintenanceStartDate.getTime() / 1000;
 
   const isRankF = (mob.Rank === "F" || mob.rank === "F");
 
