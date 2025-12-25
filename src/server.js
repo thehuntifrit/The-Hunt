@@ -63,6 +63,15 @@ function subscribeMobMemos(onUpdate) {
     return unsub;
 }
 
+function subscribeMaintenance(onUpdate) {
+    const maintenanceDocRef = doc(db, "shared_data", "maintenance");
+    const unsub = onSnapshot(maintenanceDocRef, snap => {
+        const data = snap.data() || null;
+        onUpdate(data);
+    });
+    return unsub;
+}
+
 function normalizePoints(data) {
     const result = {};
     for (const [key, value] of Object.entries(data)) {
@@ -292,5 +301,5 @@ const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
 
 export {
     initializeAuth, subscribeMobStatusDocs, subscribeMobLocations,
-    subscribeMobMemos, submitReport, submitMemo, toggleCrushStatus
+    subscribeMobMemos, subscribeMaintenance, submitReport, submitMemo, toggleCrushStatus
 };
