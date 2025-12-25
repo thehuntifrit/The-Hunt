@@ -1,7 +1,7 @@
 // dataManager.js
 
 import { calculateRepop } from "./cal.js";
-import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos } from "./server.js";
+import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos, subscribeMaintenance } from "./server.js";
 import { filterAndRender, updateProgressBars, invalidateFilterCache, updateMobCount, updateMapOverlay } from "./uiRender.js";
 import { filterMobsByRankAndArea } from "./filterUI.js";
 
@@ -412,6 +412,26 @@ function startRealtime() {
         }
     });
     unsubscribes.push(unsubMemo);
+
+    const unsubMaintenance = subscribeMaintenance(maintenanceData => {
+        if (!maintenanceData) return;
+
+        const oldMaintenance = state.maintenance;
+        state.maintenance = maintenanceData;
+
+        if (state.initialLoadComplete && oldMaintenance) {
+            const current = state.mobs;
+            current.forEach(mob => {
+                mob.repopInfo = calculateRepop(mob, maintenanceData);
+            });
+            setMobs([...current]);
+            invalidateFilterCache();
+            filterAndRender();
+            updateProgressBars();
+            window.dispatchEvent(new CustomEvent('maintenanceUpdated'));
+        }
+    });
+    unsubscribes.push(unsubMaintenance);
 }
 
 export { state, EXPANSION_MAP, getState, setUserId, loadBaseMobData, startRealtime, setFilter, setOpenMobCardNo, PROGRESS_CLASSES, recalculateMob };
