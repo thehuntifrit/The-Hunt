@@ -122,42 +122,31 @@
 
     <template id="mob-card-template">
         <div class="mob-card rounded-lg shadow-xl cursor-pointer">
-            <div class="mob-card-header space-y-1" data-toggle="card-header">
-                <div class="grid grid-cols-[auto_1fr_auto] items-center w-full gap-2">
-                    <!-- Rank Badge -->
-                    <span class="rank-badge w-6 h-6 flex items-center justify-center rounded-md text-white 
-                        text-sm mt-[2px]"></span>
-
-                    <div class="flex flex-col min-w-0">
-                        <div class="flex items-center min-w-0 mob-name-container">
-                            <span class="text-lg font-bold truncate text-gray-100 mob-name"></span>
-                            <span class="mob-count-container text-xs"></span>
-                            <span class="memo-icon-container ml-1 text-sm leading-none"></span>
+            <div class="mob-card-header grid grid-cols-[1fr_28px] p-0 overflow-hidden" data-toggle="card-header">
+                <!-- Left: Main Content -->
+                <div class="pl-2 py-1.5 flex flex-col justify-center min-w-0">
+                    <div class="flex items-center gap-1.5 min-w-0 mb-1">
+                        <span class="text-base font-bold truncate text-gray-100 mob-name"></span>
+                        <span class="mob-count-container text-[10px]"></span>
+                        <span class="memo-icon-container text-xs"></span>
+                        <span class="opacity-30 text-[10px]">|</span>
+                        <div
+                            class="area-info-container text-[10px] text-gray-400 truncate font-numeric tracking-tight flex items-center">
                         </div>
                     </div>
 
-                    <div class="flex-shrink-0 flex items-center justify-end">
-                        <button class="report-btn w-7 h-7 flex items-center justify-center rounded-md transition 
-                            text-center leading-tight hover:scale-110 active:scale-95">
-                            <img src="./icon/reports.webp" alt="報告する"
-                                class="report-icon w-7 h-7 object-contain filter drop-shadow-lg"
-                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            <span class="report-text w-7 h-7 flex items-center justify-center text-[10px] rounded 
-                            bg-green-600 hover:bg-green-500 text-white font-bold leading-tight whitespace-pre-line 
-                            shadow-lg" style="display:none;">報告</span>
-                        </button>
+                    <!-- Progress Bar -->
+                    <div class="progress-bar-wrapper rounded-sm relative overflow-hidden text-center h-5">
+                        <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-sm transition-all duration-100 ease-linear"
+                            style="width: 0%"></div>
+                        <div class="progress-text relative z-10 text-[11px] font-bold leading-5"></div>
                     </div>
                 </div>
 
-                <!-- Progress Bar -->
-                <div class="progress-bar-wrapper rounded relative overflow-hidden text-center">
-                    <div class="progress-bar-bg absolute left-0 top-0 h-full rounded transition-all duration-100 
-                    ease-linear" style="width: 0%"></div>
-                    <div class="progress-text relative z-10 text-xs font-bold"></div>
-                </div>
-
-                <div class="area-info-container text-xs text-gray-400 truncate font-numeric tracking-wide h-4 
-                    flex items-center pl-[1px]">
+                <!-- Right: Report Sidebar -->
+                <div class="report-side-bar w-full h-full flex items-center justify-center transition-colors duration-200"
+                    data-report-type="" data-mob-no="">
+                    <div class="w-1 h-6 rounded-full bg-white/20"></div>
                 </div>
             </div>
 
