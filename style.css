@@ -129,7 +129,6 @@ body {
 
 .mob-card-header {
     background: var(--bg-card);
-    min-height: 3.5rem;
 }
 
 .report-side-bar {
