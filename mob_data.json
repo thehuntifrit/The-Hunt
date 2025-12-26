@@ -939,25 +939,25 @@
       "mapImage": "",
       "locations": [] 
     },
-      "61111": {"rank": "A", "name":"サリー・ザ・スイーパー 1️⃣", "area": "リビング・メモリー",
+      "61111": {"rank": "A", "name":"1️⃣ サリー・ザ・スイーパー", "area": "リビング・メモリー",
       "condition": "",
       "repopSeconds": 14400, "maxRepopSeconds": 21600,
       "mapImage": "",
       "locations": [] 
     },
-      "61121": {"rank": "A", "name":"キャッツアイ 1️⃣", "area": "リビング・メモリー",
+      "61121": {"rank": "A", "name":"1️⃣ キャッツアイ", "area": "リビング・メモリー",
       "condition": "",
       "repopSeconds": 14400, "maxRepopSeconds": 21600,
       "mapImage": "",
       "locations": [] 
     },
-      "61112": {"rank": "A", "name":"サリー・ザ・スイーパー 2️⃣", "area": "リビング・メモリー",
+      "61112": {"rank": "A", "name":"2️⃣ サリー・ザ・スイーパー", "area": "リビング・メモリー",
       "condition": "",
       "repopSeconds": 14400, "maxRepopSeconds": 21600,
       "mapImage": "",
       "locations": [] 
     },
-      "61122": {"rank": "A", "name":"キャッツアイ 2️⃣", "area": "リビング・メモリー",
+      "61122": {"rank": "A", "name":"2️⃣ キャッツアイ", "area": "リビング・メモリー",
       "condition": "",
       "repopSeconds": 14400, "maxRepopSeconds": 21600,
       "mapImage": "",
@@ -1018,7 +1018,7 @@
       "mapImage": "",
       "locations": [] 
     },
-      "62061": {"rank": "S", "name": "ウェザーリポーター 1️⃣", "area": "リビング・メモリー",
+      "62061": {"rank": "S", "name": "1️⃣ ウェザーリポーター", "area": "リビング・メモリー",
       "condition": "青魔道士のスキル「猛吹雪」をPOP地点で使う",
       "repopSeconds": 302400, "maxRepopSeconds": 475200,
       "mapImage": "Living_Memory.webp",
@@ -1035,7 +1035,7 @@
         {"id":"LM_110", "x": 8.0, "y": 78.6, "mob_ranks": ["B1"]}
       ]
     },
-      "62062": {"rank": "S", "name": "ウェザーリポーター 2️⃣", "area": "リビング・メモリー",
+      "62062": {"rank": "S", "name": "2️⃣ ウェザーリポーター", "area": "リビング・メモリー",
       "condition": "青魔道士のスキル「猛吹雪」をPOP地点で使う",
       "repopSeconds": 302400, "maxRepopSeconds": 475200,
       "mapImage": "Living_Memory.webp",
@@ -1058,13 +1058,13 @@
       "mapImage": "",
       "locations": [] 
     },
-      "63021": {"rank": "F", "name":"マイカ・ザ・ムー：大団円 1️⃣", "area": "リビング・メモリー",
+      "63021": {"rank": "F", "name":"1️⃣ マイカ・ザ・ムー：大団円", "area": "リビング・メモリー",
       "condition": "",
       "repopSeconds": 129600, "maxRepopSeconds": 259200,
       "mapImage": "",
       "locations": [] 
     },
-      "63022": {"rank": "F", "name":"マイカ・ザ・ムー：大団円 2️⃣", "area": "リビング・メモリー",
+      "63022": {"rank": "F", "name":"2️⃣ マイカ・ザ・ムー：大団円", "area": "リビング・メモリー",
       "condition": "",
       "repopSeconds": 129600, "maxRepopSeconds": 259200,
       "mapImage": "",
