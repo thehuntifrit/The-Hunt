@@ -150,11 +150,15 @@ body {
 
 .mob-card-header {
     background: transparent;
-    overflow: hidden;
+    display: flex;
+    align-items: stretch;
+    position: relative;
+    overflow: visible;
 }
 
 .report-side-bar {
-    grid-column: 2;
+    width: 28px;
+    flex-shrink: 0;
     background: rgba(255, 255, 255, 0.03);
     border-left: 1px solid rgba(255, 255, 255, 0.1);
     cursor: pointer;
@@ -164,7 +168,8 @@ body {
     align-items: center;
     justify-content: center;
     position: relative;
-    align-self: stretch;
+    border-top-right-radius: 0.75rem;
+    border-bottom-right-radius: 0.75rem;
 }
 
 .report-side-bar::before {
