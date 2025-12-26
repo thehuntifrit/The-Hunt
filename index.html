@@ -122,9 +122,9 @@
 
     <template id="mob-card-template">
         <div class="mob-card rounded-lg shadow-xl cursor-pointer">
-            <div class="mob-card-header p-0" data-toggle="card-header">
+            <div class="mob-card-header p-0 relative" data-toggle="card-header">
                 <!-- Left: Main Content -->
-                <div class="pl-2 py-1.5 flex flex-col justify-center min-w-0 pr-1.5 flex-1">
+                <div class="pl-2 py-1.5 flex flex-col justify-center min-w-0 pr-[30px] flex-1">
                     <!-- Row 1: Name and Info -->
                     <div class="flex items-center justify-between gap-1.5 min-w-0 mb-1">
                         <div class="flex items-center gap-1 min-w-0 flex-1">
@@ -147,8 +147,7 @@
                 </div>
 
                 <!-- Right: Report Sidebar -->
-                <div class="report-side-bar w-full h-full transition-colors duration-200" data-report-type=""
-                    data-mob-no="">
+                <div class="report-side-bar transition-colors duration-200" data-report-type="" data-mob-no="">
                 </div>
             </div>
 
