@@ -162,6 +162,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    height: calc(100% + 2px);
 }
 
 .report-side-bar::before {
