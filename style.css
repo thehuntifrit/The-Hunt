@@ -46,20 +46,20 @@
 
 :root {
     --bg-dark: #0f172a;
-    --bg-card: rgba(41, 55, 79, 0.85);
-    --accent-cyan: #06b6d4;
-    --accent-gold: #ffca2d;
-    --accent-crimson: #ef4444;
-    --text-primary: #dddddd;
+    --bg-card: rgba(15, 23, 42, 0.35);
+    --accent-cyan: #22d3ee;
+    --accent-gold: #fbbf24;
+    --accent-crimson: #f87171;
+    --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
 
-    --rank-s: #ffb869;
-    --rank-a: #5ee9b5;
-    --rank-f: #a3b3ff;
+    --rank-s: #fbbf24;
+    --rank-a: #34d399;
+    --rank-f: #818cf8;
 
-    --progress-bg: rgba(0, 0, 0, 0.5);
-    --progress-fill: linear-gradient(90deg, #1e90ff, #2257ac);
-    --progress-max-over: linear-gradient(90deg, #2257ac, #2257ac);
+    --progress-bg: rgba(0, 0, 0, 0.4);
+    --progress-fill: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    --progress-max-over: linear-gradient(90deg, #1e3a8a, #1e40af);
 
     --color-b1: #4494f7;
     --color-b2: #fd5c5c;
@@ -79,28 +79,59 @@ body {
 
 
 .mob-card {
-    background: linear-gradient(135deg, rgba(41, 55, 79, 0.9), rgba(15, 23, 42, 0.8));
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 0.75rem;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.2));
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 1rem;
     box-shadow:
-        0 8px 32px 0 rgba(0, 0, 0, 0.37),
-        inset 0 0 10px rgba(255, 255, 255, 0.05);
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+        0 10px 30px -10px rgba(0, 0, 0, 0.5),
+        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
     transform: translateZ(0);
-    will-change: transform, box-shadow;
+    will-change: transform, box-shadow, border-color;
     display: flex;
     flex-direction: column;
     font-size: 0;
 }
 
+.mob-card[data-rank="S"] {
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.05);
+    border-color: rgba(251, 191, 36, 0.1);
+}
+
+.mob-card[data-rank="A"] {
+    box-shadow: 0 0 15px rgba(52, 211, 153, 0.05);
+    border-color: rgba(52, 211, 153, 0.1);
+}
+
+.mob-card[data-rank="F"] {
+    box-shadow: 0 0 15px rgba(129, 140, 248, 0.05);
+    border-color: rgba(129, 140, 248, 0.1);
+}
+
 .mob-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(6, 182, 212, 0.1);
-    border-color: rgba(6, 182, 212, 0.3);
+    transform: translateY(-4px) scale(1.01);
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.3));
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+}
+
+.mob-card[data-rank="S"]:hover {
+    border-color: rgba(251, 191, 36, 0.4);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.15);
+}
+
+.mob-card[data-rank="A"]:hover {
+    border-color: rgba(52, 211, 153, 0.4);
+    box-shadow: 0 0 20px rgba(52, 211, 153, 0.15);
+}
+
+.mob-card[data-rank="F"]:hover {
+    border-color: rgba(129, 140, 248, 0.4);
+    box-shadow: 0 0 20px rgba(129, 140, 248, 0.15);
 }
 
 .mob-card-disabled {
@@ -134,20 +165,18 @@ body {
 
 .report-side-bar {
     position: absolute;
-    top: -1.5px;
-    bottom: -1.5px;
-    right: -1.5px;
-    width: 25.5px;
-    background: rgba(255, 255, 255, 0.03);
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 28px;
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
     cursor: pointer;
     z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-top-right-radius: 0.75rem;
-    border-bottom-right-radius: 0.75rem;
-    padding-right: 2.5px;
+    transition: all 0.2s ease;
 }
 
 .report-side-bar::before {
@@ -173,37 +202,37 @@ body {
 }
 
 .report-side-bar.rank-s {
-    background: rgba(255, 184, 105, 0.2);
+    background: rgba(251, 191, 36, 0.1);
 }
 
 .report-side-bar.rank-a {
-    background: rgba(94, 233, 181, 0.2);
+    background: rgba(52, 211, 153, 0.1);
 }
 
 .report-side-bar.rank-f {
-    background: rgba(163, 179, 255, 0.2);
+    background: rgba(129, 140, 248, 0.1);
 }
 
 .report-side-bar.rank-s:hover {
-    background: rgba(255, 184, 105, 0.4);
+    background: rgba(251, 191, 36, 0.25);
 }
 
 .report-side-bar.rank-a:hover {
-    background: rgba(94, 233, 181, 0.4);
+    background: rgba(52, 211, 153, 0.25);
 }
 
 .report-side-bar.rank-f:hover {
-    background: rgba(163, 179, 255, 0.4);
+    background: rgba(129, 140, 248, 0.25);
 }
 
 .progress-text {
-    color: #dddddd;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    color: #f1f5f9;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
     font-size: 13px;
     font-family: 'Inter', sans-serif;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
-    letter-spacing: 0.02em;
+    letter-spacing: 0.03em;
 }
 
 .font-numeric {
