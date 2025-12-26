@@ -80,7 +80,6 @@ function createMobCard(mob) {
   const { openMobCardNo } = getState();
   const isOpen = isExpandable && mob.No === openMobCardNo;
 
-  const state = getState();
 
   const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
   const isMemoNewer = (mob.memo_updated_at || 0) > (mob.last_kill_time || 0);
