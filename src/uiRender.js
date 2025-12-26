@@ -99,17 +99,6 @@ function createMobCard(mob) {
     card.classList.remove("maintenance-gray-out");
   }
 
-  // Rank Badge
-  const rankBadge = card.querySelector('.rank-badge');
-  if (rankBadge) rankBadge.remove();
-
-  // Adjust grid layout
-  const headerGrid = card.querySelector('.mob-card-header > div');
-  if (headerGrid) {
-    headerGrid.classList.remove('grid-cols-[auto_1fr_auto]');
-    headerGrid.classList.add('grid-cols-[1fr_auto]');
-  }
-
   // Mob Name
   const mobNameEl = card.querySelector('.mob-name');
   mobNameEl.textContent = mob.Name;
