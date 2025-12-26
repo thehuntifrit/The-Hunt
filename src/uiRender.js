@@ -89,7 +89,6 @@ function createMobCard(mob) {
     ? ` <span data-tooltip="${mob.memo_text}" style="font-size: 1rem">📝</span>`
     : "";
 
-  // Card Attributes
   card.dataset.mobNo = mob.No;
   card.dataset.rank = rank;
   if (mob.repopInfo?.isMaintenanceStop || mob.repopInfo?.isBlockedByMaintenance) {
@@ -98,7 +97,6 @@ function createMobCard(mob) {
     card.classList.remove("maintenance-gray-out");
   }
 
-  // Mob Name
   const mobNameEl = card.querySelector('.mob-name');
   mobNameEl.textContent = mob.Name;
   mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
@@ -106,14 +104,12 @@ function createMobCard(mob) {
   const memoIconContainer = card.querySelector('.memo-icon-container');
   memoIconContainer.innerHTML = memoIcon;
 
-  // Report Sidebar
   const reportSidebar = card.querySelector('.report-side-bar');
   if (reportSidebar) {
     reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
     reportSidebar.dataset.mobNo = mob.No;
     reportSidebar.classList.add(`rank-${rank.toLowerCase()}`);
 
-    // Swipe Logic
     let touchStartX = 0;
     reportSidebar.addEventListener('touchstart', (e) => {
       touchStartX = e.changedTouches[0].screenX;
@@ -132,14 +128,12 @@ function createMobCard(mob) {
     }, { passive: true });
   }
 
-  // Expandable Panel
   const expandablePanel = card.querySelector('.expandable-panel');
   if (isExpandable) {
     if (isOpen) {
       expandablePanel.classList.add('open');
     }
 
-    // Memo Input
     const memoInput = card.querySelector('.memo-input');
     memoInput.value = shouldShowMemo ? (mob.memo_text || "") : "";
     memoInput.dataset.mobNo = mob.No;
@@ -491,13 +485,19 @@ function updateProgressText(card, mob) {
     status === "Next" ||
     (status === "NextCondition" && now < mob.repopInfo.minRepop);
 
+  const reportSidebar = card.querySelector('.report-side-bar');
+
   if (shouldDimCard) {
     card.classList.add("opacity-60");
+    card.classList.remove("is-active-neon");
+    if (reportSidebar) reportSidebar.classList.remove("is-active-neon");
     if (mobNameEl) {
       mobNameEl.style.color = "#999";
     }
   } else {
     card.classList.remove("opacity-60");
+    card.classList.add("is-active-neon");
+    if (reportSidebar) reportSidebar.classList.add("is-active-neon");
     if (mobNameEl) {
       mobNameEl.style.color = `var(--rank-${mob.Rank.toLowerCase()})`;
     }
@@ -768,3 +768,4 @@ export {
   filterAndRender, updateProgressText, updateProgressBar, createMobCard, DOM, sortAndRedistribute, onKillReportReceived,
   updateProgressBars, updateAreaInfo, updateMapOverlay, updateMobCount, showColumnContainer, invalidateFilterCache
 };
+
