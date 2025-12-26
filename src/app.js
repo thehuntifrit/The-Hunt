@@ -12,16 +12,11 @@ async function initializeApp() {
     try {
         initTooltip();
         await loadBaseMobData();
-        await loadBaseMobData();
-
-        // デバッグ用
-        window.getState = getState;
 
         const userId = await initializeAuth();
         if (userId) {
             setUserId(userId);
             startRealtime();
-        } else {
         }
 
         const storedUI = JSON.parse(localStorage.getItem("huntUIState")) || {};
