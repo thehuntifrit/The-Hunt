@@ -67,7 +67,11 @@ function subscribeMaintenance(onUpdate) {
     const maintenanceDocRef = doc(db, "shared_data", "maintenance");
     const unsub = onSnapshot(maintenanceDocRef, snap => {
         const data = snap.data() || null;
+        console.log("[Firestore] Maintenance data updated:", data);
         onUpdate(data);
+    }, err => {
+        console.error("[Firestore] Maintenance subscribe error:", err);
+        onUpdate(null);
     });
     return unsub;
 }
