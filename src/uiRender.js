@@ -122,12 +122,11 @@ function createMobCard(mob) {
 
     reportSidebar.addEventListener('touchend', (e) => {
       const touchEndX = e.changedTouches[0].screenX;
-      if (touchEndX - touchStartX > 30) { // Right swipe
+      if (touchEndX - touchStartX > 30) {
         const type = reportSidebar.dataset.reportType;
         if (type === 'modal') {
           import('./modal.js').then(m => m.openReportModal(mob.No));
         } else {
-          // Trigger instant report through app.js event delegation or direct call
           reportSidebar.click();
         }
       }
@@ -643,7 +642,7 @@ function updateAreaInfo(card, mob) {
   const areaInfoContainer = card.querySelector('.area-info-container');
   if (!areaInfoContainer) return;
 
-  let areaInfoHtml = `<div class="truncate text-gray-300 leading-none mb-[1px]">${mob.Area}</div>
+  let areaInfoHtml = `<div class="truncate text-gray-300 leading-none mb-[3px]">${mob.Area}</div>
 <div class="flex items-center justify-end gap-0.5 opacity-60 leading-none">
   <span>${mob.Expansion}</span>
   <span class="inline-flex items-center justify-center w-[11px] h-[11px] border border-current rounded-[1px] text-[7px] leading-none">${mob.Rank}</span>
