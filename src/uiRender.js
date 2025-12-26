@@ -153,7 +153,7 @@ function createMobCard(mob) {
       const conditionWrapper = card.querySelector('.condition-wrapper');
       const areaInfo = card.querySelector('.area-info-container');
       if (conditionWrapper && areaInfo) {
-        conditionWrapper.after(areaInfo);
+        conditionWrapper.before(areaInfo);
       }
 
       const mapContainer = card.querySelector('.map-container');
