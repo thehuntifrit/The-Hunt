@@ -118,10 +118,32 @@ function createMobCard(mob) {
   const memoIconContainer = card.querySelector('.memo-icon-container');
   memoIconContainer.innerHTML = memoIcon;
 
-  // Report Button
-  const reportBtn = card.querySelector('.report-btn');
-  reportBtn.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
-  reportBtn.dataset.mobNo = mob.No;
+  // Report Sidebar
+  const reportSidebar = card.querySelector('.report-side-bar');
+  if (reportSidebar) {
+    reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
+    reportSidebar.dataset.mobNo = mob.No;
+    reportSidebar.classList.add(`rank-${rank.toLowerCase()}`);
+
+    // Swipe Logic
+    let touchStartX = 0;
+    reportSidebar.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    reportSidebar.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX - touchStartX > 30) { // Right swipe
+        const type = reportSidebar.dataset.reportType;
+        if (type === 'modal') {
+          import('./modal.js').then(m => m.openReportModal(mob.No));
+        } else {
+          // Trigger instant report through app.js event delegation or direct call
+          reportSidebar.click();
+        }
+      }
+    }, { passive: true });
+  }
 
   // Expandable Panel
   const expandablePanel = card.querySelector('.expandable-panel');
@@ -543,9 +565,9 @@ function updateProgressText(card, mob) {
   let rightContent = `<span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span>`;
 
   text.innerHTML = `
-<div class="w-full h-full grid grid-cols-2 items-center text-sm font-bold">
-<div class="pl-1 text-left truncate">${leftStr}${percentStr}</div>
-<div class="pr-2 text-right truncate">${rightContent}</div>
+<div class="w-full h-full flex items-center justify-between text-[11px] font-bold px-1.5">
+<div class="truncate">${leftStr}${percentStr}</div>
+<div class="truncate">${rightContent}</div>
 </div>
 `;
 
