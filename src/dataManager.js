@@ -420,11 +420,9 @@ function startRealtime() {
             if (maintenanceData) {
                 state.maintenance = maintenanceData;
             } else {
-                // Firestoreにデータがない場合、JSONファイルをフォールバックとして使用
                 const fallback = await loadMaintenance();
                 if (fallback) {
                     state.maintenance = fallback;
-                    console.log("Using maintenance.json as fallback");
                 }
             }
             initialLoadState.maintenance = true;
