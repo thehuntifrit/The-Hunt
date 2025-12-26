@@ -654,13 +654,11 @@ function updateAreaInfo(card, mob) {
   const areaInfoContainer = card.querySelector('.area-info-container');
   if (!areaInfoContainer) return;
 
-  let areaInfoHtml = `<span class="flex items-center gap-1 font-normal"><span>${mob.Area}</span>
-<span class="opacity-50">|</span>
-<span class="flex items-center">${mob.Expansion}&thinsp;
-<span class="inline-flex items-center justify-center w-[13px] h-[13px] border 
-border-current rounded-[3px] text-[9px] leading-none relative">${mob.Rank}</span>`;
-
-  areaInfoHtml += `</span></span>`;
+  let areaInfoHtml = `<div class="truncate text-gray-300">${mob.Area}</div>
+<div class="flex items-center justify-end gap-1 opacity-60">
+  <span>${mob.Expansion}</span>
+  <span class="inline-flex items-center justify-center w-[12px] h-[12px] border border-current rounded-[2px] text-[8px] leading-none">${mob.Rank}</span>
+</div>`;
   areaInfoContainer.innerHTML = areaInfoHtml;
 }
 
