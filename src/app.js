@@ -12,18 +12,16 @@ async function initializeApp() {
     try {
         initTooltip();
         await loadBaseMobData();
-        console.log("Mob Data Loaded.");
+        await loadBaseMobData();
 
         // デバッグ用
         window.getState = getState;
 
         const userId = await initializeAuth();
         if (userId) {
-            console.log("Authenticated:", userId);
             setUserId(userId);
             startRealtime();
         } else {
-            console.warn("Authentication failed or anonymous.");
         }
 
         const storedUI = JSON.parse(localStorage.getItem("huntUIState")) || {};
@@ -90,20 +88,16 @@ function initHeaderObserver() {
 
 function renderMaintenanceStatus() {
     const maintenance = getState().maintenance;
-    console.log("renderMaintenanceStatus called. maintenance data:", maintenance);
     if (!maintenance) return;
 
     const start = new Date(maintenance.start);
     const end = new Date(maintenance.end);
     const now = new Date();
 
-    console.log("Time check:", { now, start, end });
-
     const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
     const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
 
     const isShowing = (now >= showFrom && now <= showUntil);
-    console.log("Display range check:", { showFrom, showUntil, isShowing });
 
     if (isShowing) {
         const el = document.getElementById("status-message-maintenance");
