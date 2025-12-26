@@ -77,12 +77,6 @@ body {
     background-attachment: fixed;
 }
 
-.glass-panel {
-    background: rgba(15, 23, 42, 0.6);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
 
 .mob-card {
     background: linear-gradient(135deg, rgba(41, 55, 79, 0.9), rgba(15, 23, 42, 0.8));
