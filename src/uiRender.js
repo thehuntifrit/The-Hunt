@@ -136,25 +136,13 @@ function createMobCard(mob) {
     memoInput.dataset.mobNo = mob.No;
 
     if (rank !== 'S') {
-      const conditionWrapper = card.querySelector('.condition-wrapper');
+      const conditionWrapper = card.querySelector('.condition-text')?.closest('.w-full.mt-2');
       if (conditionWrapper) conditionWrapper.remove();
       const mapContainer = card.querySelector('.map-container');
       if (mapContainer) mapContainer.remove();
-
-      const memoRow = card.querySelector('.mob-memo-row');
-      const areaInfo = card.querySelector('.area-info-container');
-      if (memoRow && areaInfo) {
-        memoRow.after(areaInfo);
-      }
     } else {
       const conditionText = card.querySelector('.condition-text');
       if (conditionText) conditionText.innerHTML = processText(mob.Condition);
-
-      const conditionWrapper = card.querySelector('.condition-wrapper');
-      const areaInfo = card.querySelector('.area-info-container');
-      if (conditionWrapper && areaInfo) {
-        conditionWrapper.before(areaInfo);
-      }
 
       const mapContainer = card.querySelector('.map-container');
       if (mob.Map) {
