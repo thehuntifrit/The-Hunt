@@ -163,6 +163,8 @@ body {
     align-items: center;
     justify-content: center;
     height: calc(100% + 2px);
+    width: calc(100% + 1px);
+    padding-right: 1px;
 }
 
 .report-side-bar::before {
