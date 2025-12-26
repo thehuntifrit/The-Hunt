@@ -517,7 +517,7 @@ function calculateRepop(mob, maintenance, options = {}) {
     timeRemaining = `&thinsp;Time Over (100%)`;
   } else if (now < minRepop) {
     status = "Next";
-    timeRemaining = `🔜 ${formatDurationHM(minRepop - now)}`;
+    timeRemaining = `⇒&thinsp;${formatDurationHM(minRepop - now)}`;
   } else {
     status = "PopWindow";
     elapsedPercent = Math.min(((now - minRepop) / (maxRepop - minRepop)) * 100, 100);
