@@ -152,7 +152,7 @@ body {
     top: -1.5px;
     bottom: -1.5px;
     right: -1.5px;
-    width: 29.5px;
+    width: 17.5px;
     background: rgba(255, 255, 255, 0.03);
     border-left: 1px solid rgba(255, 255, 255, 0.1);
     cursor: pointer;
@@ -162,7 +162,7 @@ body {
     justify-content: center;
     border-top-right-radius: 0.75rem;
     border-bottom-right-radius: 0.75rem;
-    padding-right: 1.5px;
+    padding-right: 2.5px;
 }
 
 .report-side-bar::before {
