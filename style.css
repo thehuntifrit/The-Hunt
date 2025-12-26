@@ -153,17 +153,20 @@ body {
 }
 
 .report-side-bar {
+    position: absolute;
+    right: -1px;
+    top: -1px;
+    bottom: -1px;
+    width: 29px;
     background: rgba(255, 255, 255, 0.03);
     border-left: 1px solid rgba(255, 255, 255, 0.1);
     cursor: pointer;
-    margin: -1px -1px -1px 0;
-    position: relative;
     z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: calc(100% + 2px);
-    width: calc(100% + 1px);
+    border-top-right-radius: inherit;
+    border-bottom-right-radius: inherit;
     padding-right: 1px;
 }
 
