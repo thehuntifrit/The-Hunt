@@ -366,27 +366,14 @@ body {
 .expandable-panel {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
-    background: var(--bg-card);
-}
-
-.expandable-panel.open {
-    max-height: 1000px;
-    padding-top: 2px !important;
-    padding-bottom: 0.25rem !important;
-}
-
-.expandable-panel {
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: transparent;
     display: none;
-    background: var(--bg-card);
-    overflow: hidden;
-    padding: 0 !important;
-    margin: 0;
 }
 
 .expandable-panel.open {
     display: block;
-    padding: 0 !important;
+    max-height: 1000px;
 }
 
 .expandable-panel>div {
