@@ -122,27 +122,28 @@
 
     <template id="mob-card-template">
         <div class="mob-card rounded-lg shadow-xl cursor-pointer">
-            <div class="mob-card-header grid grid-cols-[1fr_auto_28px] p-0 overflow-hidden gap-x-2"
-                data-toggle="card-header">
+            <div class="mob-card-header grid grid-cols-[1fr_28px] p-0 overflow-hidden" data-toggle="card-header">
                 <!-- Left: Main Content -->
-                <div class="pl-2 py-1.5 flex flex-col justify-center min-w-0">
-                    <div class="flex items-center gap-1.5 min-w-0 mb-1">
-                        <span class="text-base font-bold truncate text-gray-100 mob-name"></span>
-                        <span class="mob-count-container text-[10px]"></span>
-                        <span class="memo-icon-container text-xs"></span>
+                <div class="pl-2 py-1.5 flex flex-col justify-center min-w-0 pr-1.5">
+                    <!-- Row 1: Name and Info -->
+                    <div class="flex items-center justify-between gap-1.5 min-w-0 mb-1">
+                        <div class="flex items-center gap-1 min-w-0 flex-1">
+                            <span class="text-base font-bold truncate text-gray-100 mob-name"></span>
+                            <span class="mob-count-container text-[10px] whitespace-nowrap"></span>
+                            <span class="memo-icon-container text-xs"></span>
+                        </div>
+                        <!-- Area Info (2 lines) -->
+                        <div
+                            class="area-info-container flex flex-col justify-center text-right text-[9px] text-gray-400 font-numeric tracking-tighter leading-tight min-w-0">
+                        </div>
                     </div>
 
-                    <!-- Progress Bar -->
+                    <!-- Row 2: Progress Bar -->
                     <div class="progress-bar-wrapper rounded-sm relative overflow-hidden text-center h-5">
                         <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-sm transition-all duration-100 ease-linear"
                             style="width: 0%"></div>
-                        <div class="progress-text relative z-10 text-[11px] font-bold leading-5"></div>
+                        <div class="progress-text relative z-10 text-[13px] font-bold leading-5"></div>
                     </div>
-                </div>
-
-                <!-- Middle: Area Info -->
-                <div
-                    class="area-info-container flex flex-col justify-center text-right text-[10px] text-gray-400 font-numeric tracking-tight min-w-0 py-1.5 px-0.5">
                 </div>
 
                 <!-- Right: Report Sidebar -->
