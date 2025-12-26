@@ -110,7 +110,7 @@ function renderMaintenanceStatus() {
         if (el) {
             el.innerHTML = `
            <div class="font-semibold text-yellow-300">
-            メンテ日時: ${formatDate(start)} ～ ${formatDate(end)}
+            メンテ日時 ${formatDate(start)} ～ ${formatDate(end)}
            </div>
           `;
             document.getElementById("status-message")?.classList.remove("hidden");
@@ -153,7 +153,7 @@ function attachGlobalEventListeners() {
         const mobNo = parseInt(card.dataset.mobNo, 10);
         const rank = card.dataset.rank;
 
-        const reportBtn = e.target.closest("button[data-report-type]");
+        const reportBtn = e.target.closest(".report-side-bar");
         if (reportBtn) {
             e.stopPropagation();
             const type = reportBtn.dataset.reportType;
