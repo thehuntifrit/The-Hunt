@@ -283,7 +283,6 @@ body {
     box-shadow: 0 0 25px rgba(129, 140, 248, 0.4) !important;
 }
 
-
 .progress-text {
     color: #f1f5f9;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
@@ -311,7 +310,7 @@ body {
 
 .progress-text.max-over {
     color: #dadada;
-    animation: pulse-text 2s infinite;
+    animation: pulse-text 2s infinite ease-in-out;
 }
 
 @keyframes pulse-text {
@@ -321,7 +320,7 @@ body {
         opacity: 1;
     }
 
-    25% {
+    50% {
         opacity: 0.6;
     }
 }
@@ -332,7 +331,7 @@ body {
 }
 
 .progress-blink-white {
-    animation: neon-pulse 3s infinite alternate;
+    animation: neon-pulse 2s infinite alternate ease-in-out;
 }
 
 @keyframes neon-pulse {
@@ -346,7 +345,7 @@ body {
 }
 
 .blink-border-white {
-    animation: blink-white-border 2s infinite alternate;
+    animation: blink-white-border 2s infinite alternate ease-in-out;
     border-color: rgba(255, 255, 255, 1.0);
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
 }
