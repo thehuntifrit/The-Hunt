@@ -278,6 +278,47 @@ function allTabComparator(a, b) {
   return pa.instance - pb.instance;
 }
 
+const visibleCards = new Set();
+const cardObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    const mobNo = entry.target.dataset.mobNo;
+    if (entry.isIntersecting) {
+      visibleCards.add(mobNo);
+      const mob = getState().mobs.find(m => String(m.No) === mobNo);
+      if (mob) {
+        updateProgressText(entry.target, mob);
+        updateProgressBar(entry.target, mob);
+        updateMobCount(entry.target, mob);
+        updateMapOverlay(entry.target, mob);
+        updateExpandablePanel(entry.target, mob);
+        updateMemoIcon(entry.target, mob);
+      }
+    } else {
+      visibleCards.delete(mobNo);
+    }
+  });
+}, { threshold: 0 });
+
+function updateVisibleCards() {
+  const state = getState();
+  const sorted = getFilteredMobs().sort(allTabComparator);
+
+  visibleCards.forEach(mobNoStr => {
+    const card = document.querySelector(`.mob-card[data-mob-no="${mobNoStr}"]`);
+    if (card) {
+      const mob = sorted.find(m => String(m.No) === mobNoStr);
+      if (mob) {
+        updateProgressText(card, mob);
+        updateProgressBar(card, mob);
+        updateMobCount(card, mob);
+        updateMapOverlay(card, mob);
+        updateExpandablePanel(card, mob);
+        updateMemoIcon(card, mob);
+      }
+    }
+  });
+}
+
 function filterAndRender({ isInitialLoad = false } = {}) {
   const state = getState();
 
@@ -334,6 +375,7 @@ function filterAndRender({ isInitialLoad = false } = {}) {
 
     if (!card) {
       card = createMobCard(mob);
+      cardObserver.observe(card);
       updateProgressText(card, mob);
       updateProgressBar(card, mob);
       updateExpandablePanel(card, mob);
@@ -357,9 +399,18 @@ function filterAndRender({ isInitialLoad = false } = {}) {
   DOM.cols.forEach((col, idx) => {
     if (idx < numCols) {
       while (col.children.length > colPointers[idx]) {
-        col.removeChild(col.lastChild);
+        const cardToRemove = col.lastChild;
+        if (cardToRemove && cardToRemove.classList?.contains('mob-card')) {
+          cardObserver.unobserve(cardToRemove);
+          visibleCards.delete(cardToRemove.dataset.mobNo);
+        }
+        col.removeChild(cardToRemove);
       }
     } else {
+      col.querySelectorAll('.mob-card').forEach(c => {
+        cardObserver.unobserve(c);
+        visibleCards.delete(c.dataset.mobNo);
+      });
       col.innerHTML = "";
     }
   });
@@ -367,6 +418,8 @@ function filterAndRender({ isInitialLoad = false } = {}) {
   if (isInitialLoad) {
     attachLocationEvents();
     updateProgressBars();
+  } else {
+    updateVisibleCards();
   }
 
   if (focusedMobNo) {
@@ -725,25 +778,7 @@ function updateProgressBars() {
   if (currentOrderStr !== lastRenderedOrderStr) {
     filterAndRender();
   } else {
-    const cards = new Map();
-    document.querySelectorAll('.mob-card').forEach(card => {
-      cards.set(card.dataset.mobNo, card);
-    });
-
-    sorted.forEach(mob => {
-      const card = cards.get(String(mob.No));
-      if (card) {
-        updateProgressText(card, mob);
-        updateProgressBar(card, mob);
-        updateMobCount(card, mob);
-        updateMapOverlay(card, mob);
-        updateExpandablePanel(card, mob);
-        updateMemoIcon(card, mob);
-      }
-    });
-
-    if (currentOrderStr !== lastRenderedOrderStr) {
-    }
+    updateVisibleCards();
   }
 
   if (DOM.statusMessageTemp) {
