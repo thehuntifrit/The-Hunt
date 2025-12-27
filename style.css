@@ -332,18 +332,17 @@ body {
 
     0%,
     100% {
-        box-shadow: 0 0 5px var(--accent-crimson), 0 0 10px var(--accent-crimson);
+        box-shadow: 0 0 2px var(--accent-crimson), 0 0 5px var(--accent-crimson);
     }
 
     50% {
-        box-shadow: 0 0 15px var(--accent-crimson), 0 0 25px var(--accent-crimson);
+        box-shadow: 0 0 7px var(--accent-crimson), 0 0 12px var(--accent-crimson);
     }
 }
 
 .blink-border-white {
-    animation: blink-white-border-sync 2s infinite ease-in-out;
-    border-color: rgba(255, 255, 255, 1.0);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
 }
 
 @keyframes blink-white-border-sync {
