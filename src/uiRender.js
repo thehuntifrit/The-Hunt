@@ -700,7 +700,13 @@ function updateProgressBars() {
     );
 
     if (mob.repopInfo) {
-      mob.repopInfo = calculateRepop(mob, state.maintenance);
+      mob.repopInfo = calculateRepop(mob, state.maintenance, { skipConditionCalc: true });
+
+      if (mob.repopInfo.conditionWindowEnd && nowSec > mob.repopInfo.conditionWindowEnd.getTime() / 1000) {
+        setTimeout(() => {
+          import("./dataManager.js").then(m => m.recalculateMob(mob.No));
+        }, 0);
+      }
     }
 
     if (mob.repopInfo?.nextConditionSpawnDate && mob.repopInfo?.conditionWindowEnd) {
@@ -735,6 +741,9 @@ function updateProgressBars() {
         updateMemoIcon(card, mob);
       }
     });
+
+    if (currentOrderStr !== lastRenderedOrderStr) {
+    }
   }
 
   if (DOM.statusMessageTemp) {
