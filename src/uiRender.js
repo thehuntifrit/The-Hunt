@@ -760,14 +760,14 @@ function updateProgressBars() {
 
 const sortAndRedistribute = debounce(() => filterAndRender(), 200);
 
-function onKillReportReceived(mobId, kill_time) {
-  const mob = getState().mobs.find(m => m.No === mobId);
+async function onKillReportReceived(mobId, kill_time) {
+  const { getState, requestWorkerCalculation } = await import("./dataManager.js");
+  const state = getState();
+  const mob = state.mobs.find(m => m.No === mobId);
   if (!mob) return;
 
   mob.last_kill_time = Number(kill_time);
-  mob.repopInfo = calculateRepop(mob, getState().maintenance);
-
-  updateProgressBars();
+  requestWorkerCalculation(mob, state.maintenance, { forceRecalc: true });
 }
 
 setInterval(() => {
