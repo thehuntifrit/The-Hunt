@@ -15,6 +15,7 @@ const state = {
     maintenance: null,
     pendingInitialLoads: 0,
     initialLoadComplete: false,
+    worker: null,
 
     filter: JSON.parse(localStorage.getItem("huntFilterState")) || {
         rank: "ALL",
@@ -60,6 +61,48 @@ const getState = () => state;
 function setUserId(uid) {
     state.userId = uid;
     localStorage.setItem("user_uuid", uid);
+}
+
+function initWorker() {
+    if (state.worker) return;
+    state.worker = new Worker(new URL("./worker.js", import.meta.url), { type: "module" });
+    state.worker.onmessage = (e) => {
+        const { type, mobNo, repopInfo, spawnCache, error } = e.data;
+        if (type === "RESULT") {
+            const current = getState().mobs;
+            const idx = current.findIndex(m => m.No === mobNo);
+            if (idx !== -1) {
+                current[idx].repopInfo = repopInfo;
+                if (spawnCache) {
+                    current[idx]._spawnCache = spawnCache;
+                    const fullCache = loadSpawnCache();
+                    fullCache[mobNo] = spawnCache;
+                    saveSpawnCache(fullCache);
+                }
+                setMobs([...current]);
+
+                import("./uiRender.js").then(ui => {
+                    const card = document.querySelector(`.mob-card[data-mob-no="${mobNo}"]`);
+                    if (card) {
+                        ui.updateProgressText(card, current[idx]);
+                        ui.updateProgressBar(card, current[idx]);
+                    }
+                });
+            }
+        } else if (type === "ERROR") {
+            console.error(`Worker error calculating mob ${mobNo}:`, error);
+        }
+    };
+}
+
+function requestWorkerCalculation(mob, maintenance, options = {}) {
+    if (!state.worker) initWorker();
+    state.worker.postMessage({
+        type: "CALCULATE",
+        mob,
+        maintenance,
+        options
+    });
 }
 
 function setMobs(data) {
@@ -246,15 +289,8 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
     const newCache = { ...existingCache };
 
     conditionMobs.forEach(mob => {
-        mob.repopInfo = calculateRepop(mob, maintenance);
-
-        if (mob._spawnCache) {
-            newCache[mob.No] = mob._spawnCache;
-        }
-        updatedCount++;
+        requestWorkerCalculation(mob, maintenance);
     });
-
-    saveSpawnCache(newCache);
 
     setMobs([...state.baseMobData]);
 
@@ -297,18 +333,8 @@ function recalculateMob(mobNo) {
     if (mobIndex === -1) return;
 
     const mob = state.mobs[mobIndex];
-    mob.repopInfo = calculateRepop(mob, state.maintenance, { forceRecalc: true });
-
-    // キャッシュを更新
-    const spawnCache = loadSpawnCache();
-    if (mob._spawnCache) {
-        spawnCache[mob.No] = mob._spawnCache;
-        saveSpawnCache(spawnCache);
-    }
-
-    const newMobs = [...state.mobs];
-    newMobs[mobIndex] = mob;
-    setMobs(newMobs);
+    // 同期計算ではなく Worker へ要求
+    requestWorkerCalculation(mob, state.maintenance, { forceRecalc: true });
 
     return mob;
 }
@@ -356,14 +382,7 @@ function startRealtime() {
                     if (m.last_kill_time !== dyn.last_kill_time || m.prev_kill_time !== dyn.prev_kill_time) {
                         m.last_kill_time = dyn.last_kill_time;
                         m.prev_kill_time = dyn.prev_kill_time;
-                        m.repopInfo = calculateRepop(m, state.maintenance, { forceRecalc: true });
-
-                        const spawnCache = loadSpawnCache();
-                        if (m._spawnCache) {
-                            spawnCache[m.No] = m._spawnCache;
-                            saveSpawnCache(spawnCache);
-                        }
-
+                        requestWorkerCalculation(m, state.maintenance, { forceRecalc: true });
                         hasChanges = true;
                     }
                 }
