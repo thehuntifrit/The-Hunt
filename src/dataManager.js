@@ -242,6 +242,9 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
 
     if (conditionMobs.length === 0) return;
 
+    let updatedCount = 0;
+    const newCache = { ...existingCache };
+
     conditionMobs.forEach(mob => {
         mob.repopInfo = calculateRepop(mob, maintenance);
 
