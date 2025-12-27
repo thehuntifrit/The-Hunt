@@ -52,7 +52,7 @@
     --text-secondary: #94a3b8;
 
     --rank-s: #fbbf24;
-    --rank-a: #e2e8f0;
+    --rank-a: #e7e5e4;
     --rank-f: #818cf8;
 
     --progress-bg: rgba(0, 0, 0, 0.4);
@@ -237,14 +237,14 @@ body {
 }
 
 .report-side-bar.is-active-neon.rank-a {
-    background: rgba(226, 232, 240, 0.2) !important;
-    border-color: rgba(226, 232, 240, 0.6) !important;
-    box-shadow: 0 0 15px rgba(226, 232, 240, 0.3), inset 0 0 10px rgba(226, 232, 240, 0.2) !important;
+    background: rgba(231, 229, 228, 0.2) !important;
+    border-color: rgba(231, 229, 228, 0.6) !important;
+    box-shadow: 0 0 15px rgba(231, 229, 228, 0.3), inset 0 0 10px rgba(231, 229, 228, 0.2) !important;
 }
 
 .report-side-bar.is-active-neon.rank-a::before {
-    background: #e2e8f0 !important;
-    box-shadow: 0 0 12px #e2e8f0 !important;
+    background: #e7e5e4 !important;
+    box-shadow: 0 0 12px #e7e5e4 !important;
 }
 
 .report-side-bar.is-active-neon.rank-f {
@@ -274,8 +274,8 @@ body {
 }
 
 .report-side-bar.is-active-neon.rank-a:hover {
-    border-color: #e2e8f0 !important;
-    box-shadow: 0 0 25px rgba(226, 232, 240, 0.4) !important;
+    border-color: #e7e5e4 !important;
+    box-shadow: 0 0 25px rgba(231, 229, 228, 0.4) !important;
 }
 
 .report-side-bar.is-active-neon.rank-f:hover {
