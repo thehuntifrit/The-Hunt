@@ -29,7 +29,8 @@ const state = {
     },
     openMobCardNo: localStorage.getItem("openMobCardNo")
         ? parseInt(localStorage.getItem("openMobCardNo"), 10)
-        : null
+        : null,
+    pendingCalculationMobs: new Set()
 };
 
 if (state.filter.areaSets) {
@@ -71,6 +72,7 @@ function initWorker() {
         if (type === "RESULT") {
             const current = getState().mobs;
             const idx = current.findIndex(m => m.No === mobNo);
+            state.pendingCalculationMobs.delete(mobNo);
             if (idx !== -1) {
                 current[idx].repopInfo = repopInfo;
                 if (spawnCache) {
@@ -86,17 +88,22 @@ function initWorker() {
                     if (card) {
                         ui.updateProgressText(card, current[idx]);
                         ui.updateProgressBar(card, current[idx]);
+                        ui.updateMobCount(card, current[idx]);
+                        ui.updateMapOverlay(card, current[idx]);
                     }
                 });
             }
         } else if (type === "ERROR") {
+            state.pendingCalculationMobs.delete(mobNo);
             console.error(`Worker error calculating mob ${mobNo}:`, error);
         }
     };
 }
 
 function requestWorkerCalculation(mob, maintenance, options = {}) {
+    if (state.pendingCalculationMobs.has(mob.No)) return;
     if (!state.worker) initWorker();
+    state.pendingCalculationMobs.add(mob.No);
     state.worker.postMessage({
         type: "CALCULATE",
         mob,
@@ -290,6 +297,7 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
 
     conditionMobs.forEach(mob => {
         requestWorkerCalculation(mob, maintenance);
+        updatedCount++;
     });
 
     setMobs([...state.baseMobData]);
@@ -465,7 +473,7 @@ function startRealtime() {
 
             const current = state.mobs;
             current.forEach(mob => {
-                mob.repopInfo = calculateRepop(mob, maintenanceData);
+                requestWorkerCalculation(mob, maintenanceData);
             });
             setMobs([...current]);
             invalidateFilterCache();
