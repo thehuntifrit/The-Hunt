@@ -323,7 +323,6 @@ body {
     animation: pulse-sync 2s infinite ease-in-out;
 }
 
-
 .progress-max-over {
     background: var(--progress-max-over);
     box-shadow: none;
@@ -345,9 +344,9 @@ body {
     }
 }
 
-.blink-border-white {
-    border-color: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+.mob-card.blink-border-white {
+    border-color: rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6) !important;
 }
 
 @keyframes blink-white-border-sync {
