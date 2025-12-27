@@ -461,7 +461,7 @@ function calculateRepop(mob, maintenance, options = {}) {
     mob.conditions
   );
 
-  if (hasCondition && !skipConditionCalc) {
+  if (hasCondition) {
     const cacheKey = `${lastKill}_${maintenanceStart || 0}`;
     let useCache = false;
 
@@ -486,7 +486,7 @@ function calculateRepop(mob, maintenance, options = {}) {
     let result = null;
     if (useCache) {
       result = mob._spawnCache.result;
-    } else {
+    } else if (!skipConditionCalc || forceRecalc) {
       result = findNextSpawn(mob, pointSec, searchLimit);
       mob._spawnCache = {
         key: cacheKey,
@@ -556,20 +556,20 @@ function calculateRepop(mob, maintenance, options = {}) {
     isMaintenanceStop,
     isBlockedByMaintenance
   };
+}
 
-  function baseResult(status) {
-    return {
-      minRepop: null,
-      maxRepop: null,
-      elapsedPercent: 0,
-      timeRemaining: "未確定",
-      status,
-      nextMinRepopDate: null,
-      conditionWindowEnd: null,
-      isInConditionWindow: false,
-      isMaintenanceStop: false
-    };
-  }
+function baseResult(status) {
+  return {
+    minRepop: null,
+    maxRepop: null,
+    elapsedPercent: 0,
+    timeRemaining: "未確定",
+    status,
+    nextMinRepopDate: null,
+    conditionWindowEnd: null,
+    isInConditionWindow: false,
+    isMaintenanceStop: false
+  };
 }
 
 export { calculateRepop, getEorzeaTime, formatDurationHM, debounce, formatLastKillTime };
