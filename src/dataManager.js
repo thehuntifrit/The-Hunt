@@ -200,6 +200,11 @@ async function loadBaseMobData() {
     }
 
     try {
+        if (mob.repopInfo.conditionWindowEnd && nowSec > mob.repopInfo.conditionWindowEnd.getTime() / 1000) {
+            setTimeout(() => {
+                import("./dataManager.js").then(m => m.recalculateMob(mob.No));
+            }, 0);
+        }
         const mobRes = await fetch(MOB_DATA_URL);
         if (!mobRes.ok) throw new Error("Mob data failed to load.");
 
@@ -241,9 +246,6 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
     );
 
     if (conditionMobs.length === 0) return;
-
-    let updatedCount = 0;
-    const newCache = { ...existingCache };
 
     conditionMobs.forEach(mob => {
         mob.repopInfo = calculateRepop(mob, maintenance);
@@ -297,7 +299,14 @@ function recalculateMob(mobNo) {
     if (mobIndex === -1) return;
 
     const mob = state.mobs[mobIndex];
-    mob.repopInfo = calculateRepop(mob, state.maintenance);
+    mob.repopInfo = calculateRepop(mob, state.maintenance, { forceRecalc: true });
+
+    // キャッシュを更新
+    const spawnCache = loadSpawnCache();
+    if (mob._spawnCache) {
+        spawnCache[mob.No] = mob._spawnCache;
+        saveSpawnCache(spawnCache);
+    }
 
     const newMobs = [...state.mobs];
     newMobs[mobIndex] = mob;
@@ -348,9 +357,15 @@ function startRealtime() {
                 if (dyn) {
                     if (m.last_kill_time !== dyn.last_kill_time || m.prev_kill_time !== dyn.prev_kill_time) {
                         m.last_kill_time = dyn.last_kill_time;
-
                         m.prev_kill_time = dyn.prev_kill_time;
-                        m.repopInfo = calculateRepop(m, state.maintenance);
+                        m.repopInfo = calculateRepop(m, state.maintenance, { forceRecalc: true });
+
+                        const spawnCache = loadSpawnCache();
+                        if (m._spawnCache) {
+                            spawnCache[m.No] = m._spawnCache;
+                            saveSpawnCache(spawnCache);
+                        }
+
                         hasChanges = true;
                     }
                 }
