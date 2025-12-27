@@ -88,6 +88,7 @@ body {
     display: flex;
     flex-direction: column;
     font-size: 0;
+    user-select: none;
 }
 
 .mob-card,
@@ -414,6 +415,7 @@ body {
 }
 
 .memo-input {
+    user-select: text !important;
     cursor: text !important;
 }
 
