@@ -88,6 +88,11 @@ body {
     display: flex;
     flex-direction: column;
     font-size: 0;
+    cursor: pointer;
+}
+
+.mob-card :not(input):not(textarea) {
+    cursor: inherit;
 }
 
 @supports (content-visibility: auto) {
@@ -407,6 +412,10 @@ body {
 .expandable-panel.open {
     display: block;
     max-height: 1000px;
+}
+
+.memo-input {
+    cursor: text !important;
 }
 
 .expandable-panel>div {
