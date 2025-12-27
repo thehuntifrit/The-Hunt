@@ -200,11 +200,6 @@ async function loadBaseMobData() {
     }
 
     try {
-        if (mob.repopInfo.conditionWindowEnd && nowSec > mob.repopInfo.conditionWindowEnd.getTime() / 1000) {
-            setTimeout(() => {
-                import("./dataManager.js").then(m => m.recalculateMob(mob.No));
-            }, 0);
-        }
         const mobRes = await fetch(MOB_DATA_URL);
         if (!mobRes.ok) throw new Error("Mob data failed to load.");
 
