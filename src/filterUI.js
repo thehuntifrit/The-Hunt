@@ -30,7 +30,7 @@ const renderRankTabs = () => {
 
     btn.className =
       `tab-button px-2 py-1 text-sm rounded font-semibold text-center transition text-white ` +
-      (isSelected ? (rank === "A" ? "bg-slate-200 !text-slate-800" : "bg-green-500") : "bg-gray-500 hover:bg-gray-400");
+      (isSelected ? (rank === "A" ? "bg-gray-200 !text-gray-900" : "bg-green-500") : "bg-gray-500 hover:bg-gray-400");
 
     btn.addEventListener("click", () => {
       handleRankTabClick(rank);
@@ -140,14 +140,14 @@ const updateFilterUI = () => {
       "bg-rose-500", "bg-orange-500", "bg-emerald-500", "bg-indigo-500",
       "bg-gray-500", "hover:bg-gray-400", "bg-green-500", "bg-gray-800",
       "bg-rose-300", "bg-orange-300", "bg-emerald-300", "bg-indigo-300",
-      "bg-slate-200", "!text-slate-800", "!text-white"
+      "bg-gray-200", "!text-gray-900", "!text-white"
     );
 
     if (isCurrent) {
       btn.classList.add(
         btnRank === "ALL" ? "bg-rose-500"
           : btnRank === "S" ? "bg-orange-500"
-            : btnRank === "A" ? "bg-slate-200 !text-slate-800"
+            : btnRank === "A" ? "bg-gray-200 !text-gray-900"
               : btnRank === "FATE" ? "bg-indigo-500"
                 : "bg-gray-800"
       );
