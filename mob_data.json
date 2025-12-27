@@ -185,14 +185,14 @@
       "locations": []    
     },
       "12101": {"rank": "S", "name":"サウザンドキャスト・セダ", "area": "北部森林",
-      "condition": "フォールゴウド秋瓜湖畔で「ジャッジレイ」を釣り上げる （抽選） //※ ET 17:00 〜 21:00 餌: フェザントフライ",
+      "condition": "フォールゴウド秋瓜湖畔のヌシ「ジャッジレイ」を釣り上げる （抽選） //※ ET 17:00 〜 21:00 餌: フェザントフライ",
       "repopSeconds": 205200, "maxRepopSeconds": 230400,
       "timeRange": { "start": 17, "end": 21 },
       "mapImage": "",
       "locations": []
     },
       "12111": {"rank": "S", "name":"ゾーナ・シーカー", "area": "西ザナラーン",
-      "condition": "ノフィカの井戸で「銅鏡」を釣り上げる（抽選）//※「晴れ or 快晴」 餌: バターワーム",
+      "condition": "ノフィカの井戸のヌシ「銅鏡」を釣り上げる（抽選）//※「晴れ or 快晴」 餌: バターワーム",
       "repopSeconds": 205200, "maxRepopSeconds": 230400,
       "weatherSeedRange": [0, 59], 
       "mapImage": "",
@@ -247,7 +247,7 @@
       "locations": [] 
     },
       "12161": {"rank": "S", "name":"サファト", "area": "クルザス中央高地",
-      "condition": "高所から落下してHPが1になる （抽選）",
+      "condition": "落下ダメージでHPを1にする （抽選）",
       "repopSeconds": 216000, "maxRepopSeconds": 302400,
       "mapImage": "",
       "locations": [] 
