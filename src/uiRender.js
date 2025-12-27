@@ -82,7 +82,7 @@ function createMobCard(mob) {
 
 
   const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
-  const isMemoNewer = (mob.memo_updated_at || 0) > (mob.last_kill_time || 0);
+  const isMemoNewer = (mob.memo_updated_at || 0) >= (mob.last_kill_time || 0);
   const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
 
   const memoIcon = shouldShowMemo
@@ -582,7 +582,7 @@ function updateExpandablePanel(card, mob) {
   if (elMemoInput) {
     if (document.activeElement !== elMemoInput) {
       const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
-      const isMemoNewer = (mob.memo_updated_at || 0) > (mob.last_kill_time || 0);
+      const isMemoNewer = (mob.memo_updated_at || 0) >= (mob.last_kill_time || 0);
       const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
       elMemoInput.value = shouldShowMemo ? (mob.memo_text || "") : "";
     }
@@ -594,7 +594,7 @@ function updateMemoIcon(card, mob) {
   if (!memoIconContainer) return;
 
   const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
-  const isMemoNewer = (mob.memo_updated_at || 0) > (mob.last_kill_time || 0);
+  const isMemoNewer = (mob.memo_updated_at || 0) >= (mob.last_kill_time || 0);
   const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
 
   if (shouldShowMemo) {
@@ -732,6 +732,7 @@ function updateProgressBars() {
         updateMobCount(card, mob);
         updateMapOverlay(card, mob);
         updateExpandablePanel(card, mob);
+        updateMemoIcon(card, mob);
       }
     });
   }
@@ -768,4 +769,3 @@ export {
   filterAndRender, updateProgressText, updateProgressBar, createMobCard, DOM, sortAndRedistribute, onKillReportReceived,
   updateProgressBars, updateAreaInfo, updateMapOverlay, updateMobCount, showColumnContainer, invalidateFilterCache
 };
-
