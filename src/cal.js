@@ -405,7 +405,7 @@ function findNextSpawn(mob, pointSec, searchLimit) {
 }
 
 function calculateRepop(mob, maintenance, options = {}) {
-  const { skipConditionCalc = false } = options;
+  const { skipConditionCalc = false, forceRecalc = false } = options;
   const now = Date.now() / 1000;
   const lastKill = mob.last_kill_time || 0;
   const repopSec = mob.REPOP_s;
