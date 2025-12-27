@@ -88,11 +88,11 @@ body {
     display: flex;
     flex-direction: column;
     font-size: 0;
-    cursor: pointer;
 }
 
+.mob-card,
 .mob-card :not(input):not(textarea) {
-    cursor: inherit;
+    cursor: pointer !important;
 }
 
 @supports (content-visibility: auto) {
