@@ -237,6 +237,7 @@ async function loadBaseMobData() {
             processed.forEach(mob => {
                 if (persistedSpawnCache[mob.No]) {
                     mob._spawnCache = persistedSpawnCache[mob.No];
+                    mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
                 }
             });
 
@@ -265,6 +266,7 @@ async function loadBaseMobData() {
             processed.forEach(mob => {
                 if (persistedSpawnCache[mob.No]) {
                     mob._spawnCache = persistedSpawnCache[mob.No];
+                    mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
                 }
             });
 
