@@ -130,7 +130,7 @@ function createMobCard(mob) {
   if (reportSidebar) {
     reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
     reportSidebar.dataset.mobNo = mob.No;
-    reportSidebar.classList.add(`rank - ${rank.toLowerCase()} `);
+    reportSidebar.classList.add(`rank-${rank.toLowerCase()}`);
 
     let touchStartX = 0;
     reportSidebar.addEventListener('touchstart', (e) => {
