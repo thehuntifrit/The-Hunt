@@ -172,7 +172,7 @@ function createMobCard(mob) {
       const mapContainer = card.querySelector('.map-container');
       if (mob.Map) {
         const mapImg = mapContainer.querySelector('.mob-map-img');
-        mapImg.src = `./ maps / ${mob.Map} `;
+        mapImg.src = `./maps/${mob.Map}`;
         mapImg.alt = `${mob.Area} Map`;
       } else if (mapContainer) {
         mapContainer.remove();
@@ -327,7 +327,7 @@ function updateVisibleCards() {
   const mobMap = new Map(sorted.map(m => [String(m.No), m]));
 
   visibleCards.forEach(mobNoStr => {
-    const card = document.querySelector(`.mob - card[data - mob - no="${mobNoStr}"]`);
+    const card = document.querySelector(`.mob-card[data-mob-no="${mobNoStr}"]`);
     if (card) {
       const mob = mobMap.get(mobNoStr);
       if (mob) {
@@ -722,13 +722,13 @@ function updateMobCount(card, mob) {
     if (remainingCount === 1) {
       const pointId = validSpawnPoints[0]?.id || "";
       const pointNumber = parseInt(pointId.slice(-2), 10);
-      displayCountText = `< span class="text-sm text-yellow-400 font-bold text-glow" > ${pointNumber}& thinsp;番</span > `;
+      displayCountText = `<span class="text-sm text-yellow-400 font-bold text-glow">${pointNumber}&thinsp;番</span>`;
     } else if (remainingCount > 1) {
-      displayCountText = `< span class="text-sm text-gray-400 relative -top-[0.12rem]" > @</span > <span class="text-base text-gray-400 font-bold text-glow relative top-[0.04rem]">&thinsp;${remainingCount}</span>`;
+      displayCountText = `<span class="text-sm text-gray-400 relative -top-[0.12rem]">@</span><span class="text-base text-gray-400 font-bold text-glow relative top-[0.04rem]">&thinsp;${remainingCount}</span>`;
     }
 
     if (displayCountText) {
-      displayCountText = `< span class="text-sm" >📍</span > ${displayCountText} `;
+      displayCountText = `<span class="text-sm">📍</span>${displayCountText}`;
     }
   }
 
