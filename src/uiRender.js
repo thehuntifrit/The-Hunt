@@ -634,13 +634,13 @@ function updateProgressText(card, mob) {
     }
   }
 
-  let rightContent = `< span class="${isSpecialCondition ? 'label-next' : ''}" > ${rightStr}</span > `;
+  let rightContent = `<span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span>`;
 
   const newHTML = `
-  < div class="w-full h-full flex items-center justify-between text-[13px] font-bold px-1.5" >
+<div class="w-full h-full flex items-center justify-between text-[13px] font-bold px-1.5">
 <div class="truncate">${leftStr}${percentStr}</div>
 <div class="truncate">${rightContent}</div>
-</div >
+</div>
   `;
   if (text.innerHTML !== newHTML) {
     text.innerHTML = newHTML;
