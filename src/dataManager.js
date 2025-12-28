@@ -343,7 +343,6 @@ function recalculateMob(mobNo) {
     if (mobIndex === -1) return;
 
     const mob = state.mobs[mobIndex];
-    // 同期計算ではなく Worker へ要求
     requestWorkerCalculation(mob, state.maintenance, { forceRecalc: true });
 
     return mob;
@@ -487,4 +486,7 @@ function startRealtime() {
     unsubscribes.push(unsubMaintenance);
 }
 
-export { state, EXPANSION_MAP, getState, setUserId, loadBaseMobData, startRealtime, setFilter, setOpenMobCardNo, PROGRESS_CLASSES, recalculateMob };
+export {
+    state, EXPANSION_MAP, getState, setUserId, loadBaseMobData, startRealtime, setFilter,
+    setOpenMobCardNo, PROGRESS_CLASSES, recalculateMob, requestWorkerCalculation
+};
