@@ -80,7 +80,7 @@ function updateEorzeaTime() {
   const et = getEorzeaTime(new Date());
   const el = document.getElementById("eorzea-time");
   if (el) {
-    el.textContent = `ET ${et.hours}:${et.minutes} `;
+    el.textContent = `ET ${et.hours}:${et.minutes}`;
   }
 }
 updateEorzeaTime();
@@ -108,7 +108,7 @@ function createMobCard(mob) {
   const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
 
   const memoIcon = shouldShowMemo
-    ? ` < span data - tooltip="${mob.memo_text}" style = "font-size: 1rem" >📝</span > `
+    ? ` <span data-tooltip="${mob.memo_text}" style="font-size: 1rem">📝</span>`
     : "";
 
   card.dataset.mobNo = mob.No;
@@ -121,7 +121,7 @@ function createMobCard(mob) {
 
   const mobNameEl = card.querySelector('.mob-name');
   mobNameEl.textContent = mob.Name;
-  mobNameEl.style.color = `var(--rank - ${rank.toLowerCase()})`;
+  mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
 
   const memoIconContainer = card.querySelector('.memo-icon-container');
   memoIconContainer.innerHTML = memoIcon;
@@ -446,10 +446,10 @@ function filterAndRender({ isInitialLoad = false } = {}) {
   }
 
   if (focusedMobNo) {
-    const card = document.querySelector(`.mob - card[data - mob - no="${focusedMobNo}"]`);
+    const card = document.querySelector(`.mob-card[data-mob-no="${focusedMobNo}"]`);
     if (card) {
       if (focusedAction) {
-        const input = card.querySelector(`input[data - action= "${focusedAction}"]`);
+        const input = card.querySelector(`input[data-action="${focusedAction}"]`);
         if (input) {
           input.focus();
           if (selectionStart !== null && selectionEnd !== null) {
@@ -494,7 +494,7 @@ function updateProgressBar(card, mob) {
     } else {
       bar.style.transition = "width linear 60s";
     }
-    bar.style.width = `${elapsedPercent}% `;
+    bar.style.width = `${elapsedPercent}%`;
   }
 
   const currentStatus = card.dataset.lastStatus;
@@ -587,7 +587,7 @@ function updateProgressText(card, mob) {
     card.classList.add("is-active-neon");
     if (reportSidebar) reportSidebar.classList.add("is-active-neon");
     if (mobNameEl) {
-      mobNameEl.style.color = `var(--rank - ${mob.Rank.toLowerCase()})`;
+      mobNameEl.style.color = `var(--rank-${mob.Rank.toLowerCase()})`;
     }
   }
 
@@ -613,7 +613,7 @@ function updateProgressText(card, mob) {
         timeZone: "Asia/Tokyo"
       }).format(nextConditionSpawnDate);
 
-      rightStr = `🔔 ${dateStr} `;
+      rightStr = `🔔 ${dateStr}`;
       isSpecialCondition = true;
     } catch {
       rightStr = "未確定";
@@ -628,7 +628,7 @@ function updateProgressText(card, mob) {
         timeZone: "Asia/Tokyo"
       }).format(nextMinRepopDate);
 
-      rightStr = `in ${dateStr} `;
+      rightStr = `in ${dateStr}`;
     } catch {
       rightStr = "未確定";
     }
@@ -665,7 +665,7 @@ function updateExpandablePanel(card, mob) {
   const elMemoInput = card.querySelector("input[data-action='save-memo']");
 
   const lastStr = formatLastKillTime(mob.last_kill_time);
-  if (elLast) elLast.textContent = `前回: ${lastStr} `;
+  if (elLast) elLast.textContent = `前回: ${lastStr}`;
 
   if (elMemoInput) {
     if (document.activeElement !== elMemoInput) {
@@ -831,7 +831,7 @@ function updateProgressBars() {
 
   if (DOM.statusMessageTemp) {
     if (conditionMobs.length > 0) {
-      DOM.statusMessageTemp.textContent = `🔜 ${conditionMobs.join(" / ")} `;
+      DOM.statusMessageTemp.textContent = `🔜 ${conditionMobs.join(" / ")}`;
       DOM.statusMessageTemp.className = "text-cyan-300 font-bold animate-pulse";
       DOM.statusMessageTemp.classList.remove("hidden");
     } else {
