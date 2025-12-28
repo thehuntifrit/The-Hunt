@@ -465,12 +465,24 @@ function updateProgressBar(card, mob) {
   const { elapsedPercent, status } = mob.repopInfo;
 
   const currentWidth = parseFloat(bar.style.width) || 0;
-  if (elapsedPercent < currentWidth) {
-    bar.style.transition = "none";
-  } else {
-    bar.style.transition = "width linear 60s";
+  if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
+    if (elapsedPercent < currentWidth) {
+      bar.style.transition = "none";
+    } else {
+      bar.style.transition = "width linear 60s";
+    }
+    bar.style.width = `${elapsedPercent}%`;
   }
-  bar.style.width = `${elapsedPercent}%`;
+
+  const currentStatus = card.dataset.lastStatus;
+  const currentInCondition = card.dataset.lastInCondition === "true";
+  const isInCondition = !!mob.repopInfo.isInConditionWindow;
+
+  if (currentStatus === status && currentInCondition === isInCondition) {
+    return;
+  }
+  card.dataset.lastStatus = status;
+  card.dataset.lastInCondition = isInCondition;
 
   bar.classList.remove(
     PROGRESS_CLASSES.P0_60,
@@ -563,8 +575,6 @@ function updateProgressText(card, mob) {
   }
 
   let rightStr = "未確定";
-  let isNext = false;
-
   let isSpecialCondition = false;
 
   if (isInConditionWindow && mob.repopInfo.conditionRemaining) {
@@ -581,7 +591,6 @@ function updateProgressText(card, mob) {
       }).format(nextConditionSpawnDate);
 
       rightStr = `🔔 ${dateStr}`;
-      isNext = true;
       isSpecialCondition = true;
     } catch {
       rightStr = "未確定";
@@ -604,12 +613,15 @@ function updateProgressText(card, mob) {
 
   let rightContent = `<span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span>`;
 
-  text.innerHTML = `
+  const newHTML = `
 <div class="w-full h-full flex items-center justify-between text-[13px] font-bold px-1.5">
 <div class="truncate">${leftStr}${percentStr}</div>
 <div class="truncate">${rightContent}</div>
 </div>
 `;
+  if (text.innerHTML !== newHTML) {
+    text.innerHTML = newHTML;
+  }
 
   if (status === "MaxOver") text.classList.add("max-over");
   else text.classList.remove("max-over");
@@ -684,10 +696,14 @@ function updateMobCount(card, mob) {
       displayCountText = `<span class="text-sm text-gray-400 relative -top-[0.12rem]">@</span><span class="text-base text-gray-400 font-bold text-glow relative top-[0.04rem]">&thinsp;${remainingCount}</span>`;
     }
 
-    displayCountText = `<span class="text-sm">📍</span>${displayCountText}`;
+    if (displayCountText) {
+      displayCountText = `<span class="text-sm">📍</span>${displayCountText}`;
+    }
   }
 
-  countContainer.innerHTML = displayCountText;
+  if (countContainer.innerHTML !== displayCountText) {
+    countContainer.innerHTML = displayCountText;
+  }
 }
 
 function updateAreaInfo(card, mob) {
@@ -708,6 +724,7 @@ function updateMapOverlay(card, mob) {
   const mapOverlay = mapContainer.querySelector('.map-overlay');
   if (!mapOverlay) return;
 
+  let spawnPointsHtml = "";
   if (mob.Map && mob.Rank === 'S') {
     const state = getState();
     const mobLocationsData = state.mobLocations?.[mob.No];
@@ -717,7 +734,7 @@ function updateMapOverlay(card, mob) {
     const remainingCount = validSpawnPoints.length;
     const isLastOne = remainingCount === 1;
 
-    const spawnPointsHtml = (mob.spawn_points ?? []).map(point => {
+    spawnPointsHtml = (mob.spawn_points ?? []).map(point => {
       const isThisPointTheLastOne = isLastOne && point.id === validSpawnPoints[0]?.id;
       return drawSpawnPoint(
         point,
@@ -730,7 +747,9 @@ function updateMapOverlay(card, mob) {
         isLastOne
       );
     }).join("");
+  }
 
+  if (mapOverlay.innerHTML !== spawnPointsHtml) {
     mapOverlay.innerHTML = spawnPointsHtml;
   }
 }
