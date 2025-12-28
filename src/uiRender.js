@@ -796,7 +796,6 @@ function updateProgressBars() {
   const conditionMobs = [];
   const nowSec = Date.now() / 1000;
 
-  // 表示中のカードのmobのみ計算
   const visibleMobNos = new Set(visibleCards);
 
   state.mobs.forEach((mob) => {
@@ -804,7 +803,6 @@ function updateProgressBars() {
     const isVisible = visibleMobNos.has(mobNoStr);
 
     if (mob.repopInfo) {
-      // 表示中のカードのみrepopInfoを再計算
       if (isVisible) {
         mob.repopInfo = calculateRepop(mob, state.maintenance, { skipConditionCalc: true });
       }
