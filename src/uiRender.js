@@ -2,8 +2,9 @@
 
 import { calculateRepop, formatDurationHM, formatLastKillTime, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
 import { drawSpawnPoint, isCulled, attachLocationEvents } from "./location.js";
-import { getState, PROGRESS_CLASSES } from "./dataManager.js";
+import { getState, PROGRESS_CLASSES, recalculateMob, requestWorkerCalculation } from "./dataManager.js";
 import { filterMobsByRankAndArea } from "./filterUI.js";
+import { openReportModal } from "./modal.js";
 
 const DOM = {
   masterContainer: document.getElementById('master-mob-container'),
@@ -26,6 +27,10 @@ const FIFTEEN_MINUTES_SEC = 15 * 60;
 
 let cachedFilterString = null;
 let cachedFilteredMobs = null;
+let cachedSortedMobs = null;
+let sortCacheValid = false;
+
+const mobIdPartsCache = new Map();
 
 function getValidSpawnPoints(mob, spawnCullStatus) {
   return (mob.spawn_points ?? []).filter(point => {
@@ -46,19 +51,36 @@ function getFilteredMobs() {
 
   cachedFilterString = filterString;
   cachedFilteredMobs = filterMobsByRankAndArea(state.mobs);
+  sortCacheValid = false;
   return cachedFilteredMobs;
+}
+
+function getSortedFilteredMobs() {
+  if (sortCacheValid && cachedSortedMobs) {
+    return cachedSortedMobs;
+  }
+  cachedSortedMobs = getFilteredMobs().slice().sort(allTabComparator);
+  sortCacheValid = true;
+  return cachedSortedMobs;
 }
 
 function invalidateFilterCache() {
   cachedFilterString = null;
   cachedFilteredMobs = null;
+  cachedSortedMobs = null;
+  sortCacheValid = false;
+}
+
+function invalidateSortCache() {
+  sortCacheValid = false;
+  cachedSortedMobs = null;
 }
 
 function updateEorzeaTime() {
   const et = getEorzeaTime(new Date());
   const el = document.getElementById("eorzea-time");
   if (el) {
-    el.textContent = `ET ${et.hours}:${et.minutes}`;
+    el.textContent = `ET ${et.hours}:${et.minutes} `;
   }
 }
 updateEorzeaTime();
@@ -86,7 +108,7 @@ function createMobCard(mob) {
   const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
 
   const memoIcon = shouldShowMemo
-    ? ` <span data-tooltip="${mob.memo_text}" style="font-size: 1rem">📝</span>`
+    ? ` < span data - tooltip="${mob.memo_text}" style = "font-size: 1rem" >📝</span > `
     : "";
 
   card.dataset.mobNo = mob.No;
@@ -99,7 +121,7 @@ function createMobCard(mob) {
 
   const mobNameEl = card.querySelector('.mob-name');
   mobNameEl.textContent = mob.Name;
-  mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
+  mobNameEl.style.color = `var(--rank - ${rank.toLowerCase()})`;
 
   const memoIconContainer = card.querySelector('.memo-icon-container');
   memoIconContainer.innerHTML = memoIcon;
@@ -108,7 +130,7 @@ function createMobCard(mob) {
   if (reportSidebar) {
     reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
     reportSidebar.dataset.mobNo = mob.No;
-    reportSidebar.classList.add(`rank-${rank.toLowerCase()}`);
+    reportSidebar.classList.add(`rank - ${rank.toLowerCase()} `);
 
     let touchStartX = 0;
     reportSidebar.addEventListener('touchstart', (e) => {
@@ -120,7 +142,7 @@ function createMobCard(mob) {
       if (touchEndX - touchStartX > 30) {
         const type = reportSidebar.dataset.reportType;
         if (type === 'modal') {
-          import('./modal.js').then(m => m.openReportModal(mob.No));
+          openReportModal(mob.No);
         } else {
           reportSidebar.click();
         }
@@ -150,7 +172,7 @@ function createMobCard(mob) {
       const mapContainer = card.querySelector('.map-container');
       if (mob.Map) {
         const mapImg = mapContainer.querySelector('.mob-map-img');
-        mapImg.src = `./maps/${mob.Map}`;
+        mapImg.src = `./ maps / ${mob.Map} `;
         mapImg.alt = `${mob.Area} Map`;
       } else if (mapContainer) {
         mapContainer.remove();
@@ -177,24 +199,25 @@ function rankPriority(rank) {
   }
 }
 
+const EXPANSION_PRIORITY = {
+  "黄金": 6, "暁月": 5, "漆黒": 4, "紅蓮": 3, "蒼天": 2, "新生": 1
+};
+
 function getExpansionPriority(expansionName) {
-  switch (expansionName) {
-    case "黄金": return 6;
-    case "暁月": return 5;
-    case "漆黒": return 4;
-    case "紅蓮": return 3;
-    case "蒼天": return 2;
-    case "新生": return 1;
-    default: return 0;
-  }
+  return EXPANSION_PRIORITY[expansionName] ?? 0;
 }
 
 function parseMobIdParts(no) {
+  if (mobIdPartsCache.has(no)) {
+    return mobIdPartsCache.get(no);
+  }
   const str = String(no).padStart(5, "0");
-  return {
+  const result = {
     mobNo: parseInt(str.slice(2, 4), 10),
     instance: parseInt(str[4], 10),
   };
+  mobIdPartsCache.set(no, result);
+  return result;
 }
 
 function allTabComparator(a, b) {
@@ -300,13 +323,13 @@ const cardObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0 });
 
 function updateVisibleCards() {
-  const state = getState();
-  const sorted = getFilteredMobs().sort(allTabComparator);
+  const sorted = getSortedFilteredMobs();
+  const mobMap = new Map(sorted.map(m => [String(m.No), m]));
 
   visibleCards.forEach(mobNoStr => {
-    const card = document.querySelector(`.mob-card[data-mob-no="${mobNoStr}"]`);
+    const card = document.querySelector(`.mob - card[data - mob - no="${mobNoStr}"]`);
     if (card) {
-      const mob = sorted.find(m => String(m.No) === mobNoStr);
+      const mob = mobMap.get(mobNoStr);
       if (mob) {
         updateProgressText(card, mob);
         updateProgressBar(card, mob);
@@ -326,8 +349,8 @@ function filterAndRender({ isInitialLoad = false } = {}) {
     return;
   }
 
-  const filtered = getFilteredMobs();
-  const sortedMobs = filtered.sort(allTabComparator);
+  invalidateSortCache();
+  const sortedMobs = getSortedFilteredMobs();
 
   const activeElement = document.activeElement;
   let focusedMobNo = null;
@@ -423,10 +446,10 @@ function filterAndRender({ isInitialLoad = false } = {}) {
   }
 
   if (focusedMobNo) {
-    const card = document.querySelector(`.mob-card[data-mob-no="${focusedMobNo}"]`);
+    const card = document.querySelector(`.mob - card[data - mob - no="${focusedMobNo}"]`);
     if (card) {
       if (focusedAction) {
-        const input = card.querySelector(`input[data-action="${focusedAction}"]`);
+        const input = card.querySelector(`input[data - action= "${focusedAction}"]`);
         if (input) {
           input.focus();
           if (selectionStart !== null && selectionEnd !== null) {
@@ -471,7 +494,7 @@ function updateProgressBar(card, mob) {
     } else {
       bar.style.transition = "width linear 60s";
     }
-    bar.style.width = `${elapsedPercent}%`;
+    bar.style.width = `${elapsedPercent}% `;
   }
 
   const currentStatus = card.dataset.lastStatus;
@@ -564,7 +587,7 @@ function updateProgressText(card, mob) {
     card.classList.add("is-active-neon");
     if (reportSidebar) reportSidebar.classList.add("is-active-neon");
     if (mobNameEl) {
-      mobNameEl.style.color = `var(--rank-${mob.Rank.toLowerCase()})`;
+      mobNameEl.style.color = `var(--rank - ${mob.Rank.toLowerCase()})`;
     }
   }
 
@@ -590,7 +613,7 @@ function updateProgressText(card, mob) {
         timeZone: "Asia/Tokyo"
       }).format(nextConditionSpawnDate);
 
-      rightStr = `🔔 ${dateStr}`;
+      rightStr = `🔔 ${dateStr} `;
       isSpecialCondition = true;
     } catch {
       rightStr = "未確定";
@@ -605,20 +628,20 @@ function updateProgressText(card, mob) {
         timeZone: "Asia/Tokyo"
       }).format(nextMinRepopDate);
 
-      rightStr = `in ${dateStr}`;
+      rightStr = `in ${dateStr} `;
     } catch {
       rightStr = "未確定";
     }
   }
 
-  let rightContent = `<span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span>`;
+  let rightContent = `< span class="${isSpecialCondition ? 'label-next' : ''}" > ${rightStr}</span > `;
 
   const newHTML = `
-<div class="w-full h-full flex items-center justify-between text-[13px] font-bold px-1.5">
+  < div class="w-full h-full flex items-center justify-between text-[13px] font-bold px-1.5" >
 <div class="truncate">${leftStr}${percentStr}</div>
 <div class="truncate">${rightContent}</div>
-</div>
-`;
+</div >
+  `;
   if (text.innerHTML !== newHTML) {
     text.innerHTML = newHTML;
   }
@@ -642,7 +665,7 @@ function updateExpandablePanel(card, mob) {
   const elMemoInput = card.querySelector("input[data-action='save-memo']");
 
   const lastStr = formatLastKillTime(mob.last_kill_time);
-  if (elLast) elLast.textContent = `前回: ${lastStr}`;
+  if (elLast) elLast.textContent = `前回: ${lastStr} `;
 
   if (elMemoInput) {
     if (document.activeElement !== elMemoInput) {
@@ -662,13 +685,21 @@ function updateMemoIcon(card, mob) {
   const isMemoNewer = (mob.memo_updated_at || 0) >= (mob.last_kill_time || 0);
   const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
 
+  const prevState = memoIconContainer.dataset.memoState;
+  const newState = shouldShowMemo ? mob.memo_text : "";
+
+  if (prevState === newState) return;
+  memoIconContainer.dataset.memoState = newState;
+
   if (shouldShowMemo) {
-    const span = document.createElement('span');
-    span.style.fontSize = '0.875rem';
-    span.textContent = '📝';
+    let span = memoIconContainer.querySelector('span');
+    if (!span) {
+      span = document.createElement('span');
+      span.style.fontSize = '0.875rem';
+      span.textContent = '📝';
+      memoIconContainer.appendChild(span);
+    }
     span.setAttribute('data-tooltip', mob.memo_text);
-    memoIconContainer.innerHTML = '';
-    memoIconContainer.appendChild(span);
   } else {
     memoIconContainer.innerHTML = '';
   }
@@ -691,13 +722,14 @@ function updateMobCount(card, mob) {
     if (remainingCount === 1) {
       const pointId = validSpawnPoints[0]?.id || "";
       const pointNumber = parseInt(pointId.slice(-2), 10);
-      displayCountText = `<span class="text-sm text-yellow-400 font-bold text-glow">${pointNumber}&thinsp;番</span>`;
+      displayCountText = `< span class="text-sm text-yellow-400 font-bold text-glow" > ${pointNumber}& thinsp;番</span > `;
     } else if (remainingCount > 1) {
-      displayCountText = `<span class="text-sm text-gray-400 relative -top-[0.12rem]">@</span><span class="text-base text-gray-400 font-bold text-glow relative top-[0.04rem]">&thinsp;${remainingCount}</span>`;
+      displayCountText = `< span class="text-sm text-gray-400 relative -top-[0.12rem]" > @</span > 
+      <span class="text-base text-gray-400 font-bold text-glow relative top-[0.04rem]">&thinsp;${remainingCount}</span>`;
     }
 
     if (displayCountText) {
-      displayCountText = `<span class="text-sm">📍</span>${displayCountText}`;
+      displayCountText = `< span class="text-sm" >📍</span > ${displayCountText} `;
     }
   }
 
@@ -705,16 +737,19 @@ function updateMobCount(card, mob) {
     countContainer.innerHTML = displayCountText;
   }
 }
-
 function updateAreaInfo(card, mob) {
   const areaInfoContainer = card.querySelector('.area-info-container');
   if (!areaInfoContainer) return;
 
-  let areaInfoHtml = `<div class="truncate text-gray-300 leading-none mb-[3px]">${mob.Area}</div>
-<div class="flex items-center justify-end gap-0.5 opacity-60 leading-none">
-  <span>${mob.Expansion}</span>
-  <span class="inline-flex items-center justify-center w-[11px] h-[11px] border border-current rounded-[1px] text-[7px] leading-none">${mob.Rank}</span>
-</div>`;
+  if (areaInfoContainer.dataset.initialized === "true") return;
+  areaInfoContainer.dataset.initialized = "true";
+
+  const areaInfoHtml = `<div class="truncate text-gray-300 leading-none mb-[3px]">${mob.Area}</div>
+  <div class="flex items-center justify-end gap-0.5 opacity-60 leading-none">
+    <span>${mob.Expansion}</span>
+    <span class="inline-flex items-center justify-center w-[11px] h-[11px] border border-current rounded-[1px] text-[7px] 
+    leading-none">${mob.Rank}</span>
+  </div>`;
   areaInfoContainer.innerHTML = areaInfoHtml;
 }
 
@@ -761,23 +796,21 @@ function updateProgressBars() {
   const conditionMobs = [];
   const nowSec = Date.now() / 1000;
 
+  // 表示中のカードのmobのみ計算
+  const visibleMobNos = new Set(visibleCards);
+
   state.mobs.forEach((mob) => {
-    const hasCondition = !!(
-      mob.moonPhase ||
-      mob.timeRange ||
-      mob.timeRanges ||
-      mob.weatherSeedRange ||
-      mob.weatherSeedRanges ||
-      mob.conditions
-    );
+    const mobNoStr = String(mob.No);
+    const isVisible = visibleMobNos.has(mobNoStr);
 
     if (mob.repopInfo) {
-      mob.repopInfo = calculateRepop(mob, state.maintenance, { skipConditionCalc: true });
+      // 表示中のカードのみrepopInfoを再計算
+      if (isVisible) {
+        mob.repopInfo = calculateRepop(mob, state.maintenance, { skipConditionCalc: true });
+      }
 
       if (mob.repopInfo.conditionWindowEnd && nowSec > mob.repopInfo.conditionWindowEnd.getTime() / 1000) {
-        setTimeout(() => {
-          import("./dataManager.js").then(m => m.recalculateMob(mob.No));
-        }, 0);
+        recalculateMob(mob.No);
       }
     }
 
@@ -790,8 +823,8 @@ function updateProgressBars() {
     }
   });
 
-  const filtered = getFilteredMobs();
-  const sorted = filtered.sort(allTabComparator);
+  invalidateSortCache();
+  const sorted = getSortedFilteredMobs();
   const currentOrderStr = sorted.map(m => m.No).join(",");
 
   if (currentOrderStr !== lastRenderedOrderStr) {
@@ -802,7 +835,7 @@ function updateProgressBars() {
 
   if (DOM.statusMessageTemp) {
     if (conditionMobs.length > 0) {
-      DOM.statusMessageTemp.textContent = `🔜 ${conditionMobs.join(" / ")}`;
+      DOM.statusMessageTemp.textContent = `🔜 ${conditionMobs.join(" / ")} `;
       DOM.statusMessageTemp.className = "text-cyan-300 font-bold animate-pulse";
       DOM.statusMessageTemp.classList.remove("hidden");
     } else {
@@ -814,8 +847,7 @@ function updateProgressBars() {
 
 const sortAndRedistribute = debounce(() => filterAndRender(), 200);
 
-async function onKillReportReceived(mobId, kill_time) {
-  const { getState, requestWorkerCalculation } = await import("./dataManager.js");
+function onKillReportReceived(mobId, kill_time) {
   const state = getState();
   const mob = state.mobs.find(m => m.No === mobId);
   if (!mob) return;
