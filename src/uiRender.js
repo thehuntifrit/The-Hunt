@@ -724,8 +724,7 @@ function updateMobCount(card, mob) {
       const pointNumber = parseInt(pointId.slice(-2), 10);
       displayCountText = `< span class="text-sm text-yellow-400 font-bold text-glow" > ${pointNumber}& thinsp;番</span > `;
     } else if (remainingCount > 1) {
-      displayCountText = `< span class="text-sm text-gray-400 relative -top-[0.12rem]" > @</span > 
-      <span class="text-base text-gray-400 font-bold text-glow relative top-[0.04rem]">&thinsp;${remainingCount}</span>`;
+      displayCountText = `< span class="text-sm text-gray-400 relative -top-[0.12rem]" > @</span > <span class="text-base text-gray-400 font-bold text-glow relative top-[0.04rem]">&thinsp;${remainingCount}</span>`;
     }
 
     if (displayCountText) {
@@ -747,8 +746,7 @@ function updateAreaInfo(card, mob) {
   const areaInfoHtml = `<div class="truncate text-gray-300 leading-none mb-[3px]">${mob.Area}</div>
   <div class="flex items-center justify-end gap-0.5 opacity-60 leading-none">
     <span>${mob.Expansion}</span>
-    <span class="inline-flex items-center justify-center w-[11px] h-[11px] border border-current rounded-[1px] text-[7px] 
-    leading-none">${mob.Rank}</span>
+    <span class="inline-flex items-center justify-center w-[11px] h-[11px] border border-current rounded-[1px] text-[7px] leading-none">${mob.Rank}</span>
   </div>`;
   areaInfoContainer.innerHTML = areaInfoHtml;
 }
