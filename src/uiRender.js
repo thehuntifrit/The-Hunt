@@ -795,9 +795,13 @@ function updateProgressBars() {
   const nowSec = Date.now() / 1000;
 
   state.mobs.forEach((mob) => {
-    if (mob.repopInfo) {
-      mob.repopInfo = calculateRepop(mob, state.maintenance, { skipConditionCalc: true });
+    const mobNoStr = String(mob.No);
+    const isVisible = visibleCards.has(mobNoStr);
 
+    if (mob.repopInfo) {
+      mob.repopInfo = calculateRepop(mob, state.maintenance, {
+        skipConditionCalc: !isVisible
+      });
       if (mob.repopInfo.conditionWindowEnd && nowSec > mob.repopInfo.conditionWindowEnd.getTime() / 1000) {
         recalculateMob(mob.No);
       }
