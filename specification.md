@@ -2,148 +2,100 @@
 
 ## 1. プロジェクト概要
 
-FFXIVのモブハント情報をリアルタイムで管理・共有するWebアプリケーション。
-ユーザーはモブの湧き時間、討伐状況、湧き位置などを確認・報告できる。
+FFXIVのモブハント（S/A/Fランク）情報をリアルタイムで管理・共有するWebアプリケーション。
+高度な時間計算エンジンと並列処理により、精度の高い湧き予測と快適なUIレスポンスの両立を実現している。
 
 ### 技術スタック
 
-- **Frontend**: HTML5, CSS3 (Tailwind CSS + Custom CSS), Vanilla JavaScript (ES Modules)
-- **Backend**: Firebase (Firestore, Authentication, Cloud Functions)
-- **Hosting**: Firebase Hosting
+- **Frontend**: HTML5, Vanilla JavaScript (ES Modules)
+- **Styling**: CSS3 (Vanilla CSS + Tailwind CSS utilities)
+- **Backend**: Firebase (Firestore, Authentication)
+- **Optimization**: Web Worker (並列計算), IntersectionObserver (動的レンダリング)
 - **Libraries**:
-  - Tailwind CSS (CDN)
-  - Marked.js (Markdown parsing)
-  - Google Fonts (Inter)
+  - Marked.js (Markdown)
+  - Google Fonts (Inter, Outfit)
 
 ## 2. ディレクトリ構成
 
 ```text
 /
-├── index.html          # アプリケーションエントリーポイント
-├── style.css           # グローバルスタイル・カスタムCSS変数
-├── mob_data.json       # モブ基本データ（静的）
-├── maintenance.json    # メンテナンススケジュール情報
-├── icon/               # アセット：アイコン類
-├── maps/               # アセット：マップ画像
-└── src/                # ソースコード
-    ├── app.js          # 初期化、イベントリスナー設定
-    ├── dataManager.js  # 状態管理 (State)、データフェッチ
-    ├── server.js       # Firebase連携 (Firestore, Auth)
-    ├── uiRender.js     # DOM生成・更新、レンダリングロジック
-    ├── filterUI.js     # フィルタリング・ソートロジック
-    ├── cal.js          # 時間計算 (ET/LT)、湧き時間算出
-    ├── location.js     # マップ描画、湧き位置管理
-    ├── modal.js        # 報告モーダル制御
-    ├── tooltip.js      # ツールチップ表示制御
-    └── readme.js       # README表示制御
+├── index.html          # エントリーポイント
+├── style.css           # グローバルスタイル・アニメーション・デザインシステム
+├── mob_data.json       # 静的データ（ランク、基本間隔、湧き位置、特殊条件）
+├── maintenance.json    # メンテ情報（Subscribe失敗時のフォールバック）
+├── src/
+│   ├── app.js          # アプリ初期化、グローバルイベント、ライフサイクル管理
+│   ├── dataManager.js  # 状態管理 (State)、Firestore購読、Worker連携
+│   ├── worker.js       # 並列処理：重い計算（特殊条件・時間算出）を実行
+│   ├── uiRender.js     # 特化型レンダリング、差分更新、ソート、Observer
+│   ├── cal.js          # エオルゼア計算、共通計算ロジック、Debounce
+│   ├── server.js       # Firebase SDK連携（Auth, Direct Firestore CRUD）
+│   ├── filterUI.js     # フィルタリングパネル、タブ切り替え、状態永続化
+│   ├── location.js     # マップ描画、湧き位置（Cull）変換ロジック
+│   ├── modal.js        # 報告モーダル、バリデーション
+│   ├── tooltip.js      # 階層型ツールチップ
+│   └── readme.js       # Markdownビューワー
+└── maps/               # マップ画像アセット
 ```
 
 ## 3. データアーキテクチャ
 
-### 3.1 静的データ (`mob_data.json`)
+### 3.1 静的データ構造 (`mob_data.json`)
 
-モブIDをキーとしたオブジェクト。
+モブごとの定義。
 
-- `rank`: S, A, F
-- `name`: モブ名称
-- `area`: エリア名
-- `repopSeconds`: 最短湧き間隔 (秒)
-- `maxRepopSeconds`: 最長湧き間隔 (秒)
-- `condition`: 湧き条件テキスト
-- `locations`: 湧き候補地点リスト (id, x, y, mob_ranks)
+- `repopSeconds` / `maxRepopSeconds`: 基礎間隔。
+- `conditions`: 複雑な湧き条件（`moonPhase`, `weatherSeedRange`, `timeRange`, `weatherDuration` 等）。
+- `locations`: 湧きポイント座標。`mob_ranks` で "S" や "B1/B2"（湧き潰し優先度）を定義。
 
-### 3.2 動的データ (Firestore)
+### 3.2 状態管理 (`state`)
 
-- **`mob_status`**: 討伐情報
-  - `last_kill_time`: 最終討伐時刻 (Timestamp)
-  - `prev_kill_time`: 前回の討伐時刻
-- **`mob_locations`**: 湧き潰し情報
-  - モブIDごとのドキュメント。フィールドは `point_id: boolean` (true=culled)。
-- **`shared_data/memo`**: メモ情報
-  - `memo_text`: メモ内容
-  - `created_at`: 作成日時
+`dataManager.js` で一元管理され、`localStorage` で永続化される。
 
-### 3.3 状態管理 (`dataManager.js`)
+- `mobs`: 静的データと Firestore の動的データが結合された配列。
+- `filter`: ランク・エリアごとの Set。
+- `spawnConditionCache`: Workerによる計算結果（重い計算の再利用）。
 
-`state` オブジェクトで一元管理。
+## 4. コアロジックと最適化
 
-- `mobs`: 結合されたモブデータの配列
-- `maintenance`: メンテナンス情報
-- `filter`: フィルタ設定 (Rank, Area)
-- `mobLocations`: 湧き潰し状態のキャッシュ
+### 4.1 並列計算エンジン
 
-## 4. コアロジック
+計算負荷の高い特殊条件（月齢・天候・ETの複合検索）は **Web Worker (`worker.js`)** で実行される。
 
-### 4.1 湧き時間計算 (`cal.js`)
+- メインスレッドを止めず、バックグラウンドで将来の湧き窓を探索。
+- プロジェクト独自の `scheduleConditionCalculation` により、必要最小限の再計算を行う。
 
-- **通常時**: `last_kill_time` + `repopSeconds` = `minRepop`
-- **メンテナンス時**:
-  - メンテナンス開始〜終了(ServerUp)の間はカウント停止扱い。
-  - `ServerUp` + `repopSeconds * 0.6` = メンテナンス明けの短縮湧き時間。
-- **特殊条件**: 天候、ET、月齢などの条件を考慮し、`nextConditionSpawnDate` を算出。
+### 4.2 レンダリング最適化
 
-### 4.2 ステータス判定
+- **IntersectionObserver**: 画面内に見えている（Intersection）モブカードのみ、プログレスバーやテキストのリアルタイム更新（1秒毎）を実行する。
+- **差分レンダリング**: リスト更新時に全てのDOMを破壊せず、IDをキーに既存カードを再配置・再利用することでレイアウトシフトと負荷を抑制。
+- **2-step Animation**: `requestAnimationFrame` を重ねることで、初期ロード時のカクつきを防止。
 
-- **Next**: 湧き時間前
-- **PopWindow**: 湧き時間内 (MinRepop <= Now < MaxRepop)
-- **MaxOver**: 最長湧き時間超過 (Now >= MaxRepop)
-- **ConditionActive**: 特殊条件を満たしている期間
+### 4.3 メンテナンス影響計算
 
-### 4.3 ソートロジック (`uiRender.js`)
+- メンテ後、A/Sランクは `基礎間隔 * 0.6`、Fランクは `基礎間隔 * 1.0` で再開される（サーバーアップ時刻基準）。
+- メンテ中に湧き時間が到来するモブは `isMaintenanceStop` (停止中) または `isBlockedByMaintenance` (被り) として可視化される。
 
-1. **MaxOver優先**: MaxOver状態のモブを最優先 (S > F > A)。
-2. **進行度順**: 湧き時間の進行度 (`elapsedPercent`) が高い順。
-3. **時間順**: `minRepop` が早い順。
-4. **ランク順**: S > A > F。
-5. **拡張パッチ順**: 黄金 > 暁月 > 漆黒 > 紅蓮 > 蒼天 > 新生。
-6. **ID順**: 最終的な安定ソート用。
+## 5. 順序・ソート仕様 (`allTabComparator`)
 
-※メンテナンス影響下（停止中・被り）のモブは、リストの**一番下**に自動的に並び替えられる。
+以下の優先順位で厳密にソートされる：
 
-## 5. UIデザインシステム
+1. **メンテナンス非停止優先**: 稼働中のモブを上位へ。
+2. **MaxOver優先**: 最長時間を過ぎているものを最上位。
+3. **ConditionActive優先**: 特殊条件を満たしているものを優先。
+4. **進行度順**: 最短時間以降の経過率 (`elapsedPercent`) が高い順。
+5. **時間順**: 最短湧き時間が早い順。
+6. **ランク順**: S > A > F。
+7. **拡張順**: 最新パッチ（黄金）から順に。
+8. **安定ソート**: モブID・インスタンスによる最終決定。
 
-### 5.1 カラーパレット (`style.css`)
+## 6. UI/UX 仕様
 
-- **背景**: `--bg-dark` (#0f172a) + グラデーション
-- **カード背景**: `--bg-card` (rgba(41, 55, 79, 0.85)) + Glassmorphism
-- **アクセント**:
-  - Cyan: `#06b6d4` (The)
-  - Gold: `#ffca2d` (Hunt, Next Label)
-  - Crimson: `#ef4444` (Alert)
-- **ランクカラー**:
-  - S: `#ffb869`
-  - A: `#5ee9b5`
-  - F: `#a3b3ff`
-
-### 5.2 プログレスバー
-
-- **通常**: Cyan -> Blue グラデーション (`#06b6d4` -> `#3963bd`)
-- **MaxOver**: 赤系グラデーション
-- **ConditionActive**: 枠が白く点滅 (`blink-border-white`)
-
-### 5.3 背景エフェクト
-
-- 上部: `linear-gradient` (Cyan系, 上から下へフェード)
-- 右下: `radial-gradient` (Gold系)
-
-## 6. 機能仕様
-
-### 6.1 討伐報告
-
-- **Aランク**: ボタン押下で即時報告（現在時刻）。
-- **S/Fランク**: モーダル表示。日時指定可能。
-- **バリデーション**: 未来時間や、理論上あり得ない時間の報告時に警告・修正オプションを表示。
-
-### 6.2 マップ・湧き潰し
-
-- Sランクカード展開時にマップ表示。
-- 湧き候補地点 (`spawn-point`) をクリックでトグル（未確認/済）。
-- **スマホ対応**: 誤操作防止のためダブルタップでトグル。
-
-### 6.3 メンテナンス表示
-
-- **停止中**: カード全体がグレーアウト、操作無効。
-- **被り**: カードはグレーアウトするが、報告等の操作は可能。
+- **ネオンエフェクト**: 湧き時間内のモブはカード外枠がランク色のネオンで発光。
+- **インスタント報告**: Aランクはサイドバーの1タップで即時報告。S/Fは誤操作防止のためスワイプまたはボタンからモーダル経由。
+- **湧き潰しハイライト**: 湧きポイントが残り1箇所になると、ポイントが黄色く強調され、カード上に「●番」と表示される。
+- **リアルタイムメモ**: 入力と同時にFirestoreへ同期。他のユーザーにはツールチップとして即座に反映される。
+- **エオルゼア時計**: 上部に常駐。
 
 ---
-Last Updated: 2025-12-01
+Last Updated: 2025-12-30
