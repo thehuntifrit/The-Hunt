@@ -811,7 +811,12 @@ function updateProgressBars() {
       const spawnSec = mob.repopInfo.nextConditionSpawnDate.getTime() / 1000;
       const endSec = mob.repopInfo.conditionWindowEnd.getTime() / 1000;
       if (nowSec >= (spawnSec - FIFTEEN_MINUTES_SEC) && nowSec <= endSec) {
-        conditionMobs.push(mob.Name);
+        if (nowSec < spawnSec) {
+          const diffMin = Math.ceil((spawnSec - nowSec) / 60);
+          conditionMobs.push(`${mob.Name} (${diffMin}分前)`);
+        } else {
+          conditionMobs.push(mob.Name);
+        }
       }
     }
   });
