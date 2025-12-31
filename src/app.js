@@ -85,25 +85,47 @@ function renderMaintenanceStatus() {
     const maintenance = getState().maintenance;
     if (!maintenance) return;
 
-    const start = new Date(maintenance.start);
-    const end = new Date(maintenance.end);
+    const maintenanceEl = document.getElementById("status-message-maintenance");
+    const telopEl = document.getElementById("status-message-telop");
+    const container = document.getElementById("status-message");
+
+    if (!maintenanceEl || !container) return;
+
     const now = new Date();
+    let hasMaintenance = false;
+    let hasMessage = false;
 
-    const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
+    if (maintenance.start && maintenance.end) {
+        const start = new Date(maintenance.start);
+        const end = new Date(maintenance.end);
+        const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
 
-    const isShowing = (now >= showFrom && now <= showUntil);
-
-    if (isShowing) {
-        const el = document.getElementById("status-message-maintenance");
-        if (el) {
-            el.innerHTML = `
-           <div class="font-semibold text-yellow-300">
-            メンテ日時 ${formatDate(start)} ～ ${formatDate(end)}
-           </div>
-          `;
-            document.getElementById("status-message")?.classList.remove("hidden");
+        if (now >= showFrom && now <= showUntil) {
+            maintenanceEl.innerHTML = `
+                <div class="font-semibold text-yellow-300">
+                    メンテ日時 ${formatDate(start)} ～ ${formatDate(end)}
+                </div>
+            `;
+            hasMaintenance = true;
+        } else {
+            maintenanceEl.innerHTML = "";
         }
+    }
+
+    if (telopEl) {
+        if (maintenance.message && maintenance.message.trim() !== "") {
+            telopEl.textContent = maintenance.message;
+            hasMessage = true;
+        } else {
+            telopEl.textContent = "";
+        }
+    }
+
+    if (hasMaintenance || hasMessage) {
+        container.classList.remove("hidden");
+    } else {
+        container.classList.add("hidden");
     }
 }
 
