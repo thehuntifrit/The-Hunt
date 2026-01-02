@@ -25,7 +25,7 @@ FFXIVのS/A/Fランクモブの湧き時間をリアルタイムで管理・共�
 
 ```mermaid
 graph TD
-    User[User] -->|Report/Memo| UI[UI Layer (Main Thread)]
+    User[User] -->|Report/Memo| UI["UI Layer (Main Thread)"]
     UI -->|Render| DOM[DOM Updates]
     UI -->|Write| FS[Firestore]
     
