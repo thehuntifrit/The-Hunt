@@ -26,6 +26,7 @@ function closeReportModal() {
     UiDOM.reportModal.classList.remove("flex");
     UiDOM.modalTimeInput.value = "";
     UiDOM.modalStatus.textContent = "";
+    UiDOM.modalForceSubmit.checked = false;
 }
 
 function initModal() {
