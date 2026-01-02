@@ -78,24 +78,55 @@ graph TD
 
 シングルトンパターンの `state` オブジェクトによりメモリ内で状態を保持。
 
-**State Object Structure:**
+#### 2.2.1 Global State Object
 
 ```javascript
 const state = {
     userId: String | null,          // 匿名認証UID
-    baseMobData: Array,             // processMobData済みマスターデータ
-    mobs: Array,                    // 現在のRuntimeモブデータ配列
-    mobLocations: Object,           // 湧き潰し状態マップ
-    maintenance: Object | null,     // メンテナンス情報
+    baseMobData: Array<MasterMob>,  // processMobData済みマスターデータ
+    mobs: Array<RuntimeMob>,        // UI描画用データ配列
+    mobLocations: Object,           // 湧き潰し状態マップ { [mobNo]: { un_101: { culled_at: TS, ... } } }
+    maintenance: {                  // メンテナンス情報
+        start: String(ISO),
+        end: String(ISO),
+        message: String
+    } | null,
     initialLoadComplete: Boolean,   // 初回ロード完了フラグ
     worker: Worker,                 // 計算用Web Workerインスタンス
-    filter: {                       // フィルタ設定 (localStorage: 'huntFilterState')
-        rank: "ALL" | "S" | "A" | "F",
-        areaSets: { S: Set, A: Set, F: Set, ALL: Set }, // 表示エリア
-        allRankSet: Set
-    },
+    filter: FilterState,            // (See 5.4 LocalStorage)
     pendingCalculationMobs: Set     // 計算待ちモブID
 };
+```
+
+#### 2.2.2 Runtime Mob Object Structure (`state.mobs[i]`)
+
+マスターデータ、サーバーデータ、計算結果が統合されたオブジェクト。
+
+```javascript
+{
+    ...MasterMob, // (See 2.1)
+
+    // Server Synced Data
+    last_kill_time: Number (UnixTimestamp ms) | 0,
+    memo_text: String | "",
+    memo_updated_at: Number (UnixTimestamp ms) | 0,
+
+    // Calculated Properties (Updated by Worker/cal.js)
+    repopInfo: {
+        status: "MaxOver" | "ConditionActive" | "PopWindow" | "NextCondition" | "Next",
+        elapsedPercent: Number,       // 0.0 - 100.0 (プログレスバー用)
+        minRepop: Number (UnixTimestamp sec),
+        maxRepop: Number (UnixTimestamp sec),
+        timeRemaining: String,        // 表示用テキスト (e.g. "あと 10:00" / "未確定")
+        
+        isInConditionWindow: Boolean, // 現在時刻が特殊条件合致期間内か
+        conditionRemaining: String?,  // 条件期間の残り時間テキスト
+        nextConditionSpawnDate: Date?,// 次回条件合致開始日時
+        
+        isMaintenanceStop: Boolean,     // メンテにより停止中
+        isBlockedByMaintenance: Boolean // メンテ時間と被るため湧き不可
+    }
+}
 ```
 
 ---
@@ -208,29 +239,149 @@ maxRepop = lastKill + maxRepopSeconds; // 最長湧き時刻
 
 ---
 
-## 5. UI/UX 動作仕様
+## 5. クライアントサイド実装仕様
 
-### 5.1 ソート順序（優先度高→低）
+### 5.1 DOM構成とコンポーネント定義 (`uiRender.js`)
 
-1. **Maintenance Block**: メンテナンス停止していないもの
-2. **Status**: `MaxOver`
-3. **Status**: `ConditionActive`
-4. **Status**: `PopWindow` 内での経過率 (`elapsedPercent` 降順)
-5. **Status**: `NextCondition` (残り時間 昇順)
-6. **Status**: `Next` (残り時間 昇順)
+#### 5.1.1 Mob Card Component
+
+`createMobCard` 関数によって生成されるDOMの厳密な構造。
+
+```html
+<div class="mob-card rounded-lg shadow-xl cursor-pointer"
+     data-mob-no="{Mob.No}"
+     data-rank="{Mob.Rank}"
+     data-last-status="{Status}"
+     data-last-in-condition="{Boolean}">
+    
+    <!-- Header Section -->
+    <div class="mob-card-header" data-toggle="card-header">
+        <div class="content-area">
+            <!-- Row 1: Basic Info -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <span class="mob-name" style="color: var(--rank-{rank})">{Name}</span>
+                    <span class="mob-count-container">@{Count}</span>
+                    <span class="memo-icon-container">📝</span>
+                </div>
+                <div class="area-info-container">
+                    <!-- Area Name & Expansion/Rank Badges -->
+                </div>
+            </div>
+            
+            <!-- Row 2: Progress Bar -->
+            <div class="progress-bar-wrapper">
+                <div class="progress-bar-bg {P0_60|P60_80|P80_100|MAX_OVER}" style="width: {percent}%"></div>
+                <div class="progress-text {TEXT_NEXT|TEXT_POP}">
+                    <!-- Left: Time/Percent, Right: Repop/Date -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar: Report Button -->
+        <div class="report-side-bar {rank-s|rank-a|rank-f}" 
+             data-report-type="{modal|instant}" 
+             data-mob-no="{Mob.No}">
+             <!-- CSS based report icon -->
+        </div>
+    </div>
+
+    <!-- Expandable Panel (Toggled via .open class) -->
+    <div class="expandable-panel">
+        <div class="last-kill-time">前回: {YYYY/MM/DD HH:mm}</div>
+        <div class="mob-memo-row">
+            <input type="text" class="memo-input" data-action="save-memo" />
+        </div>
+        <!-- S-Rank Only: Condition & Map -->
+        <div class="condition-text">{Condition Description}</div>
+        <div class="map-container">
+            <img class="mob-map-img" src="./maps/{MapFile}" />
+            <div class="map-overlay">
+                <!-- SVG/HTML Spawn Points -->
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+#### 5.1.2 状態を表すCSSクラス
+
+コードロジックが参照・操作する重要なクラス名。
+
+| Class Name | Target | Trigger Logic | Description |
+| :--- | :--- | :--- | :--- |
+| `.maintenance-gray-out` | `.mob-card` | `isMaintenanceStop \|\| isBlockedByMaintenance` | メンテナンス中のグレーアウト表示 |
+| `.is-active-neon` | `.mob-card` | `!shouldDimCard` | 通常のアクティブ状態（ネオン発光） |
+| `.opacity-60` | `.mob-card` | `shouldDimCard` (Next状態など) | 非アクティブ時の減光 |
+| `.blink-border-white` | `.mob-card` | `ConditionActive \|\| (MaxOver && InWindow)` | 湧き条件合致時の白枠点滅 |
+| `.open` | `.expandable-panel` | User Click | パネル展開状態 |
+
+### 5.2 イベントハンドリングとフロー
+
+#### 5.2.1 グローバルイベント (`app.js`)
+
+- **`window:resize` (Debounced 100ms)**:
+  - `sortAndRedistribute()` を発火。カラム数（1/2/3）の再計算とカードの再配置を行う。
+- **`document:click` (Delegation)**:
+  - `.area-filter-btn`: エリアフィルタのトグル処理。
+  - `.mob-card`:
+    - `.report-side-bar` クリック: ランクに応じた報告処理（S/F: Modal, A: Instant）。
+    - その他の領域クリック: `toggleCardExpand` でパネル開閉。
+
+#### 5.2.2 報告サイドバーのスワイプ操作
+
+誤操作防止のため、スワイプ判定を実装。
+
+- **Events**: `touchstart` -> `touchend`
+- **Logic**: X座標の差分 (`touchEndX - touchStartX`) が **30px以上** の場合のみクリックイベントと同様の報告アクションを発火。
+
+### 5.3 フィルタリングとソートロジック (`uiRender.js`, `filterUI.js`)
+
+#### 5.3.1 Comparator (`allTabComparator`)
+
+以下の優先順位で厳密にソートされる。
+
+1. **Maintenance**: メンテナンス明け > 通常
+2. **Status(MaxOver)**: MaxOver状態 > 通常
+3. **Status(Combined)**: 両者MaxOverの場合
+    - `isInConditionWindow` (True > False)
+    - `Rank` (S > F > A)
+    - `Expansion` (黄金 > 暁月 ... > 新生)
+    - `MobNo` (昇順)
+4. **Status(Condition)**: ConditionActive > 通常
+5. **Progress**: 進捗率 (`elapsedPercent`) 降順
+6. **Repop Time**: 最短リポップ時刻 (`minRepop`) 昇順
 7. **Rank**: S > A > F
-8. **ID**: モブID昇順（安定ソート用）
+8. **Stable Sort**: Expansion 降順 > MobNo 昇順 > Instance 昇順
 
-### 5.2 湧き潰し (Cull)
+### 5.4 永続化データスキーマ (LocalStorage)
 
-- マップ上の地点をクリックすると `toggleCrushStatus` が発火。
-- `culled_at > uncull_at` の場合「済み」状態（半透明）。
-- 全候補地点数 - 済み地点数 = 1 の場合、残りの1点を黄色くハイライト（確定演出）。
+#### `huntUIState`
 
-### 5.3 報告モーダル
+UI操作の状態を保持。
 
-- **"修正する"**: 過去の報告時間を修正する場合に使用。`closeReportModal` 時に必ずチェックが外れること。
-- **バリデーション**: 未来時間（10分以上先）、湧き時間より前の報告（警告表示）を行う。
+```json
+{
+  "clickStep": Number, // フィルタ操作ステップ (1:Initial, 2:AreaSelect, 3:Done)
+  "rank": String       // 選択中ランクタブ ("ALL"|"S"|"A"|"FATE")
+}
+```
+
+#### `huntFilterState`
+
+フィルタリング設定の実体。
+
+```json
+{
+  "rank": "ALL" | "S" | "A" | "FATE",
+  "areaSets": {
+    "S": ["ExpansionName", ...],
+    "A": [],
+    "F": []
+  },
+  "allRankSet": ["S", "A", "F"] // ALLタブ時の表示対象ランク
+}
+```
 
 ---
 
