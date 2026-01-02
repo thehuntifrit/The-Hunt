@@ -52,9 +52,9 @@ FFXIVのモブハント（S/A/Fランク）情報をリアルタイムで管理�
 
 `dataManager.js` で一元管理され、`localStorage` で永続化される。
 
-- **mobs**: 静的データと Firestore の動的データが結合された配列。
-- **filter**: ランク・エリアごとの Set。
-- **spawnConditionCache**: Workerによる計算結果（重い計算の再利用）。
+- mobs: 静的データと Firestore の動的データが結合された配列。
+- filter: ランク・エリアごとの Set。
+- spawnConditionCache: Workerによる計算結果（重い計算の再利用）。
 
 ## 4. コアロジックと最適化
 
