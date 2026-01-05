@@ -158,13 +158,17 @@ body {
     box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 30px rgba(129, 140, 248, 0.4);
 }
 
-.mob-card-disabled {
+.mob-card.opacity-60 .mob-card-inner {
+    opacity: 0.6;
+}
+
+.mob-card-disabled .mob-card-inner {
     opacity: 0.6;
     filter: grayscale(0.8);
     pointer-events: none;
 }
 
-.maintenance-gray-out {
+.mob-card.maintenance-gray-out .mob-card-inner {
     opacity: 0.5 !important;
     filter: grayscale(100%) !important;
 }
@@ -534,7 +538,7 @@ body {
         padding-top: 0.25rem;
     }
 
-    .mob-card {
+    .mob-card-inner {
         background: rgba(15, 23, 42, 0.85);
     }
 }
