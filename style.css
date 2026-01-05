@@ -83,6 +83,7 @@ body {
     font-size: 0;
     user-select: none;
     cursor: pointer;
+    z-index: 1;
 }
 
 .mob-card-inner {
@@ -96,18 +97,12 @@ body {
     overflow: hidden;
     width: 100%;
     height: 100%;
+    will-change: transform;
 }
 
 .mob-card-inner,
 .mob-card-inner :not(input):not(textarea) {
     cursor: pointer !important;
-}
-
-@supports (content-visibility: auto) {
-    .mob-card {
-        content-visibility: auto;
-        contain-intrinsic-size: 1px 160px;
-    }
 }
 
 .mob-name {
@@ -140,6 +135,10 @@ body {
 
 .mob-card.is-active-neon[data-rank="F"] .mob-name {
     text-shadow: 0 0 12px rgba(129, 140, 248, 0.4);
+}
+
+.mob-card:hover {
+    z-index: 20;
 }
 
 .mob-card:hover .mob-card-inner {
