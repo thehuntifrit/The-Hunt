@@ -76,33 +76,30 @@ body {
 }
 
 .mob-card {
+    position: relative;
+    transform: translateZ(0);
+    display: flex;
+    flex-direction: column;
+    font-size: 0;
+    user-select: none;
+    cursor: pointer;
+}
+
+.mob-card-inner {
     background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.7));
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-top: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 1rem;
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease, background 0.4s ease;
-    position: relative;
-    transform: translateZ(0);
-    will-change: transform;
     display: flex;
     flex-direction: column;
-    font-size: 0;
-    user-select: none;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
 }
 
-.mob-card::after {
-    content: '';
-    position: absolute;
-    bottom: -15px;
-    left: 0;
-    right: 0;
-    height: 15px;
-    background: transparent;
-    z-index: 1;
-}
-
-.mob-card,
-.mob-card :not(input):not(textarea) {
+.mob-card-inner,
+.mob-card-inner :not(input):not(textarea) {
     cursor: pointer !important;
 }
 
@@ -118,7 +115,7 @@ body {
     transition: text-shadow 0.4s ease, color 0.4s ease;
 }
 
-.mob-card.is-active-neon[data-rank="S"] {
+.mob-card.is-active-neon[data-rank="S"] .mob-card-inner {
     box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(251, 191, 36, 0.25);
     border-color: rgba(251, 191, 36, 0.3);
 }
@@ -127,7 +124,7 @@ body {
     text-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
 }
 
-.mob-card.is-active-neon[data-rank="A"] {
+.mob-card.is-active-neon[data-rank="A"] .mob-card-inner {
     box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(226, 232, 240, 0.25);
     border-color: rgba(226, 232, 240, 0.3);
 }
@@ -136,7 +133,7 @@ body {
     text-shadow: 0 0 12px rgba(226, 232, 240, 0.4);
 }
 
-.mob-card.is-active-neon[data-rank="F"] {
+.mob-card.is-active-neon[data-rank="F"] .mob-card-inner {
     box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(129, 140, 248, 0.25);
     border-color: rgba(129, 140, 248, 0.3);
 }
@@ -145,20 +142,20 @@ body {
     text-shadow: 0 0 12px rgba(129, 140, 248, 0.4);
 }
 
-.mob-card:hover {
+.mob-card:hover .mob-card-inner {
     transform: translateY(-6px) scale(1.02) translateZ(0);
     background: linear-gradient(135deg, rgba(63, 76, 107, 0.5), rgba(15, 23, 42, 0.4));
 }
 
-.mob-card.is-active-neon[data-rank="S"]:hover {
+.mob-card.is-active-neon[data-rank="S"]:hover .mob-card-inner {
     box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 30px rgba(251, 191, 36, 0.4);
 }
 
-.mob-card.is-active-neon[data-rank="A"]:hover {
+.mob-card.is-active-neon[data-rank="A"]:hover .mob-card-inner {
     box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 30px rgba(226, 232, 240, 0.4);
 }
 
-.mob-card.is-active-neon[data-rank="F"]:hover {
+.mob-card.is-active-neon[data-rank="F"]:hover .mob-card-inner {
     box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 30px rgba(129, 140, 248, 0.4);
 }
 
@@ -409,11 +406,6 @@ body {
 #report-modal input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     filter: invert(1);
     cursor: pointer;
-}
-
-.map-container {
-    overflow: hidden;
-    border-radius: 0.5rem;
 }
 
 .expandable-panel {
