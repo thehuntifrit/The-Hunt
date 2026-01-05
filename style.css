@@ -351,7 +351,7 @@ body {
     }
 }
 
-.mob-card.blink-border-white {
+.mob-card.blink-border-white .mob-card-inner {
     border-color: rgba(255, 255, 255, 0.8) !important;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.6) !important;
 }
