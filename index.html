@@ -122,66 +122,68 @@
     </div>
 
     <template id="mob-card-template">
-        <div class="mob-card rounded-lg shadow-xl cursor-pointer">
-            <div class="mob-card-header p-0 relative" data-toggle="card-header">
-                <!-- Left: Main Content -->
-                <div class="pl-2 py-1.5 flex flex-col justify-center min-w-0 flex-1 content-area">
-                    <!-- Row 1: Name and Info -->
-                    <div class="flex items-center justify-between gap-1.5 min-w-0 mb-1">
-                        <div class="flex items-center gap-1 min-w-0 flex-1">
-                            <span class="text-base font-bold truncate text-gray-100 mob-name"></span>
-                            <span class="mob-count-container text-[10px] whitespace-nowrap"></span>
-                            <span class="memo-icon-container text-xs"></span>
-                        </div>
-                        <!-- Area Info (2 lines) -->
-                        <div
-                            class="area-info-container flex flex-col justify-center text-right text-[9px] text-gray-400 font-numeric tracking-tighter leading-tight min-w-0">
-                        </div>
-                    </div>
-
-                    <!-- Row 2: Progress Bar -->
-                    <div class="progress-bar-wrapper rounded-sm relative overflow-hidden text-center h-5">
-                        <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-sm transition-all duration-100 ease-linear"
-                            style="width: 0%"></div>
-                        <div class="progress-text relative z-10 text-[13px] font-bold leading-5"></div>
-                    </div>
-                </div>
-
-                <!-- Right: Report Sidebar -->
-                <div class="report-side-bar transition-colors duration-200" data-report-type="" data-mob-no="">
-                </div>
-            </div>
-
-            <div class="expandable-panel">
-                <div class="px-2 py-1 text-sm space-y-1">
-                    <div class="flex justify-between items-start flex-wrap gap-y-1">
-                        <div class="last-kill-time w-full text-right text-xs text-gray-400 font-mono" data-last-kill>
-                        </div>
-                        <div class="mob-memo-row w-full mt-1">
-                            <div class="flex items-center bg-gray-800/50 rounded px-2 py-1 border border-gray-700 
-                                hover:bg-gray-700/50 transition">
-                                <span class="mr-2 text-cyan-400 font-bold text-xs">Memo:</span>
-                                <input type="text" class="memo-input bg-transparent text-gray-200 text-sm w-full outline-none 
-                                    placeholder-gray-500 appearance-none" placeholder="メモを入力 (全角30文字)" maxlength="30"
-                                    autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off"
-                                    data-action="save-memo">
+        <div class="mob-card">
+            <div class="mob-card-inner">
+                <div class="mob-card-header p-0 relative" data-toggle="card-header">
+                    <!-- Left: Main Content -->
+                    <div class="pl-2 py-1.5 flex flex-col justify-center min-w-0 flex-1 content-area">
+                        <!-- Row 1: Name and Info -->
+                        <div class="flex items-center justify-between gap-1.5 min-w-0 mb-1">
+                            <div class="flex items-center gap-1 min-w-0 flex-1">
+                                <span class="text-base font-bold truncate text-gray-100 mob-name"></span>
+                                <span class="mob-count-container text-[10px] whitespace-nowrap"></span>
+                                <span class="memo-icon-container text-xs"></span>
                             </div>
-                        </div>
-
-                        <div class="w-full mt-2">
-                            <div class="font-semibold text-yellow-400 text-xs uppercase tracking-widest mb-1">Condition
-                            </div>
+                            <!-- Area Info (2 lines) -->
                             <div
-                                class="condition-text text-gray-300 text-xs leading-relaxed pl-2 border-l-2 border-yellow-600/50">
+                                class="area-info-container flex flex-col justify-center text-right text-[9px] text-gray-400 font-numeric tracking-tighter leading-tight min-w-0">
                             </div>
+                        </div>
+
+                        <!-- Row 2: Progress Bar -->
+                        <div class="progress-bar-wrapper rounded-sm relative overflow-hidden text-center h-5">
+                            <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-sm transition-all duration-100 ease-linear"
+                                style="width: 0%"></div>
+                            <div class="progress-text relative z-10 text-[13px] font-bold leading-5"></div>
                         </div>
                     </div>
 
-                    <div
-                        class="map-container map-content mt-2 flex justify-center relative rounded overflow-hidden border border-gray-600 shadow-lg">
-                        <img
-                            class="mob-map-img mob-crush-map w-full h-auto opacity-90 hover:opacity-100 transition-opacity">
-                        <div class="map-overlay absolute inset-0"></div>
+                    <!-- Right: Report Sidebar -->
+                    <div class="report-side-bar transition-colors duration-200" data-report-type="" data-mob-no="">
+                    </div>
+                </div>
+
+                <div class="expandable-panel">
+                    <div class="px-2 py-1 text-sm space-y-1">
+                        <div class="flex justify-between items-start flex-wrap gap-y-1">
+                            <div class="last-kill-time w-full text-right text-xs text-gray-400 font-mono" data-last-kill>
+                            </div>
+                            <div class="mob-memo-row w-full mt-1">
+                                <div class="flex items-center bg-gray-800/50 rounded px-2 py-1 border border-gray-700 
+                                    hover:bg-gray-700/50 transition">
+                                    <span class="mr-2 text-cyan-400 font-bold text-xs">Memo:</span>
+                                    <input type="text" class="memo-input bg-transparent text-gray-200 text-sm w-full outline-none 
+                                        placeholder-gray-500 appearance-none" placeholder="メモを入力 (全角30文字)" maxlength="30"
+                                        autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off"
+                                        data-action="save-memo">
+                                </div>
+                            </div>
+
+                            <div class="w-full mt-2">
+                                <div class="font-semibold text-yellow-400 text-xs uppercase tracking-widest mb-1">Condition
+                                </div>
+                                <div
+                                    class="condition-text text-gray-300 text-xs leading-relaxed pl-2 border-l-2 border-yellow-600/50">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="map-container map-content mt-2 flex justify-center relative rounded overflow-hidden border border-gray-600 shadow-lg">
+                            <img
+                                class="mob-map-img mob-crush-map w-full h-auto opacity-90 hover:opacity-100 transition-opacity">
+                            <div class="map-overlay absolute inset-0"></div>
+                        </div>
                     </div>
                 </div>
             </div>
