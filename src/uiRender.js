@@ -576,14 +576,12 @@ function updateProgressText(card, mob) {
   const reportSidebar = card.querySelector('.report-side-bar');
 
   if (shouldDimCard) {
-    card.classList.add("opacity-60");
     card.classList.remove("is-active-neon");
     if (reportSidebar) reportSidebar.classList.remove("is-active-neon");
     if (mobNameEl) {
       mobNameEl.style.color = "#999";
     }
   } else {
-    card.classList.remove("opacity-60");
     card.classList.add("is-active-neon");
     if (reportSidebar) reportSidebar.classList.add("is-active-neon");
     if (mobNameEl) {
@@ -743,7 +741,7 @@ function updateAreaInfo(card, mob) {
   areaInfoContainer.dataset.initialized = "true";
 
   const areaInfoHtml = `<div class="truncate text-gray-300 leading-none mb-[3px]">${mob.Area}</div>
-  <div class="flex items-center justify-end gap-0.5 opacity-60 leading-none">
+  <div class="flex items-center justify-end gap-0.5 leading-none">
     <span>${mob.Expansion}</span>
     <span class="inline-flex items-center justify-center w-[11px] h-[11px] border border-current rounded-[1px] text-[7px] leading-none">${mob.Rank}</span>
   </div>`;
