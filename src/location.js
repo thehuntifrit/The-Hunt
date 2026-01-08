@@ -128,10 +128,9 @@ function updateCrushUI(mobNo, locationId, isCulled) {
 
     const rank = marker.dataset.rank;
     const isInteractive = marker.dataset.isInteractive === "true";
-    const isLastOne = marker.dataset.isLastone === "true";
-    const isS_A_Cullable = isInteractive && !isLastOne;
 
-    if (isS_A_Cullable) {
+    // isInteractive が true の場合、isLastOne は必ず false（handleCrushToggle のガード条件より）
+    if (isInteractive) {
         if (isCulled) {
             marker.classList.remove("color-b1", "color-b2");
             marker.classList.add(rank === "B1" ? "color-b1-culled" : "color-b2-culled");
