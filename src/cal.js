@@ -521,7 +521,7 @@ function calculateRepop(mob, maintenance, options = {}) {
   } else {
     status = "PopWindow";
     elapsedPercent = Math.min(((now - minRepop) / (maxRepop - minRepop)) * 100, 100);
-    timeRemaining = `📶&thinsp;${formatDurationHM(maxRepop - now)}`;
+    timeRemaining = `⏳&thinsp;${formatDurationHM(maxRepop - now)}`;
   }
 
   if (isInConditionWindow && now >= minRepop) {
