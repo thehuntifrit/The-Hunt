@@ -158,10 +158,6 @@ body {
     box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 30px rgba(129, 140, 248, 0.4);
 }
 
-.mob-card.opacity-60 .mob-card-inner {
-    opacity: 1.0;
-}
-
 .mob-card-disabled .mob-card-inner {
     opacity: 0.6;
     filter: grayscale(0.8);
