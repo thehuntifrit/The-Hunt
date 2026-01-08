@@ -2,7 +2,7 @@
 
 import { calculateRepop } from "./cal.js";
 import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos, subscribeMaintenance } from "./server.js";
-import { filterAndRender, updateProgressBars, invalidateFilterCache, updateMobCount, updateMapOverlay } from "./uiRender.js";
+import { filterAndRender, updateProgressBars, invalidateFilterCache, updateMobCount, updateMapOverlay, updateProgressText, updateProgressBar } from "./uiRender.js";
 import { filterMobsByRankAndArea } from "./filterUI.js";
 
 const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
@@ -83,15 +83,13 @@ function initWorker() {
                 }
                 setMobs([...current]);
 
-                import("./uiRender.js").then(ui => {
-                    const card = document.querySelector(`.mob-card[data-mob-no="${mobNo}"]`);
-                    if (card) {
-                        ui.updateProgressText(card, current[idx]);
-                        ui.updateProgressBar(card, current[idx]);
-                        ui.updateMobCount(card, current[idx]);
-                        ui.updateMapOverlay(card, current[idx]);
-                    }
-                });
+                const card = document.querySelector(`.mob-card[data-mob-no="${mobNo}"]`);
+                if (card) {
+                    updateProgressText(card, current[idx]);
+                    updateProgressBar(card, current[idx]);
+                    updateMobCount(card, current[idx]);
+                    updateMapOverlay(card, current[idx]);
+                }
             }
         } else if (type === "ERROR") {
             state.pendingCalculationMobs.delete(mobNo);
