@@ -312,7 +312,6 @@ maxRepop = lastKill + maxRepopSeconds; // 最長湧き時刻
 | :--- | :--- | :--- | :--- |
 | `.maintenance-gray-out` | `.mob-card` | `isMaintenanceStop \|\| isBlockedByMaintenance` | メンテナンス中のグレーアウト表示 |
 | `.is-active-neon` | `.mob-card` | `!shouldDimCard` | 通常のアクティブ状態（ネオン発光） |
-| `.opacity-60` | `.mob-card` | `shouldDimCard` (Next状態など) | 非アクティブ時の減光 |
 | `.blink-border-white` | `.mob-card` | `ConditionActive \|\| (MaxOver && InWindow)` | 湧き条件合致時の白枠点滅 |
 | `.open` | `.expandable-panel` | User Click | パネル展開状態 |
 
