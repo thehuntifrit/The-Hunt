@@ -360,20 +360,6 @@ body {
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.6) !important;
 }
 
-@keyframes blink-white-border-sync {
-
-    0%,
-    100% {
-        border-color: rgba(255, 255, 255, 0.5);
-        box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
-    }
-
-    50% {
-        border-color: rgba(255, 255, 255, 1.0);
-        box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
-    }
-}
-
 .text-glow {
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
