@@ -791,7 +791,6 @@ function updateProgressBars() {
   const conditionMobs = [];
   const nowSec = Date.now() / 1000;
 
-  // 可視カードのモブのみ calculateRepop を呼び出す（パフォーマンス最適化）
   visibleCards.forEach((mobNoStr) => {
     const mob = state.mobs.find(m => String(m.No) === mobNoStr);
     if (!mob || !mob.repopInfo) return;
@@ -800,13 +799,11 @@ function updateProgressBars() {
       skipConditionCalc: false
     });
 
-    // 条件ウィンドウが終了した場合は Worker で再計算
     if (mob.repopInfo.conditionWindowEnd && nowSec > mob.repopInfo.conditionWindowEnd.getTime() / 1000) {
       recalculateMob(mob.No);
     }
   });
 
-  // 条件モブの通知メッセージ用（全モブをチェックするが、既存の repopInfo を使用）
   state.mobs.forEach((mob) => {
     if (mob.repopInfo?.nextConditionSpawnDate && mob.repopInfo?.conditionWindowEnd) {
       const spawnSec = mob.repopInfo.nextConditionSpawnDate.getTime() / 1000;
