@@ -580,7 +580,7 @@ function updateProgressText(card, mob) {
     card.classList.remove("is-active-neon");
     if (reportSidebar) reportSidebar.classList.remove("is-active-neon");
     if (mobNameEl) {
-      mobNameEl.style.color = "#bbb";
+      mobNameEl.style.color = "#999";
     }
   } else {
     card.classList.remove("opacity-60");
