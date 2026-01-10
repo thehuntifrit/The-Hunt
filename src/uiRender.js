@@ -172,11 +172,9 @@ function createMobCard(mob) {
       const mapContainer = card.querySelector('.map-container');
       if (mob.Map) {
         const mapImg = mapContainer.querySelector('.mob-map-img');
-        if (mapImg) {
-          mapImg.src = `./maps/${mob.Map}`;
-          mapImg.alt = `${mob.Area} Map`;
-          mapImg.dataset.mobMap = mob.Map; // 背景画像特定用
-        }
+        mapImg.src = `./maps/${mob.Map}`;
+        mapImg.alt = `${mob.Area} Map`;
+        mapImg.dataset.mobMap = mob.Map;
       } else if (mapContainer) {
         mapContainer.remove();
       }
@@ -192,53 +190,71 @@ function createMobCard(mob) {
   return card;
 }
 
-// Magnifier Global Logic
 (function initGlobalMagnifier() {
   if (window.magnifierInitialized) return;
   window.magnifierInitialized = true;
 
   const magnifier = document.getElementById('global-magnifier');
-  const lens = magnifier?.querySelector('.map-magnifier-lens');
-  if (!magnifier || !lens) return;
+  const wrapper = magnifier?.querySelector('.magnifier-content-wrapper');
+  if (!magnifier || !wrapper) return;
 
   let activeMapImg = null;
+  let activeMapContainer = null;
+  const ZOOM_SCALE = 3.5;
 
   const updateMagnifier = (e) => {
-    if (!activeMapImg) return;
+    if (!activeMapImg || !activeMapContainer) return;
 
     const rect = activeMapImg.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // マップ画像の外に出た場合は非表示
     if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
       magnifier.classList.add('hidden');
       activeMapImg = null;
+      activeMapContainer = null;
+      wrapper.innerHTML = '';
       return;
     }
 
     magnifier.style.left = `${e.clientX}px`;
     magnifier.style.top = `${e.clientY}px`;
 
-    const px = (x / rect.width) * 100;
-    const py = (y / rect.height) * 100;
+    const magRect = magnifier.getBoundingClientRect();
+    const centerX = magRect.width / 2;
+    const centerY = magRect.height / 2;
 
-    lens.style.backgroundPosition = `${px}% ${py}%`;
+    const translateX = centerX - (x * ZOOM_SCALE);
+    const translateY = centerY - (y * ZOOM_SCALE);
+
+    wrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${ZOOM_SCALE})`;
   };
 
   document.addEventListener('mousedown', (e) => {
-    if (e.button !== 2) return; // 右クリック以外は無視
+    if (e.button !== 2) return;
 
     const mapContainer = e.target.closest('.map-container');
     if (!mapContainer) return;
 
     const mapImg = mapContainer.querySelector('.mob-map-img');
-    if (!mapImg || !mapImg.dataset.mobMap) return;
+    if (!mapImg) return;
 
     e.preventDefault();
+    activeMapContainer = mapContainer;
     activeMapImg = mapImg;
 
-    lens.style.backgroundImage = `url('./maps/${mapImg.dataset.mobMap}')`;
+    wrapper.innerHTML = '';
+    const clone = mapContainer.cloneNode(true);
+
+    clone.style.margin = '0';
+    clone.style.border = 'none';
+    clone.style.boxShadow = 'none';
+    clone.classList.remove('cursor-crosshair', '!cursor-crosshair');
+
+    clone.style.width = `${mapContainer.offsetWidth}px`;
+    clone.style.height = `${mapContainer.offsetHeight}px`;
+
+    wrapper.appendChild(clone);
     magnifier.classList.remove('hidden');
     updateMagnifier(e);
   }, { capture: true });
@@ -253,6 +269,8 @@ function createMobCard(mob) {
     if (e.button === 2) {
       magnifier.classList.add('hidden');
       activeMapImg = null;
+      activeMapContainer = null;
+      wrapper.innerHTML = '';
     }
   });
 
