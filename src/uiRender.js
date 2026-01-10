@@ -279,6 +279,7 @@ function createMobCard(mob) {
   document.addEventListener('contextmenu', (e) => {
     if (e.target.closest('.map-container')) {
       e.preventDefault();
+      document.body.classList.add('magnifier-active');
     }
   });
 })();
