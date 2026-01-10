@@ -172,8 +172,54 @@ function createMobCard(mob) {
       const mapContainer = card.querySelector('.map-container');
       if (mob.Map) {
         const mapImg = mapContainer.querySelector('.mob-map-img');
+        const magnifier = mapContainer.querySelector('.map-magnifier');
+        const lens = mapContainer.querySelector('.map-magnifier-lens');
+
         mapImg.src = `./maps/${mob.Map}`;
         mapImg.alt = `${mob.Area} Map`;
+
+        if (window.matchMedia("(hover: hover)").matches) {
+          const updateMagnifier = (e) => {
+            const rect = mapImg.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+              magnifier.classList.add('hidden');
+              return;
+            }
+
+            magnifier.style.left = `${e.clientX}px`;
+            magnifier.style.top = `${e.clientY}px`;
+
+            const px = (x / rect.width) * 100;
+            const py = (y / rect.height) * 100;
+
+            lens.style.backgroundImage = `url('./maps/${mob.Map}')`;
+            lens.style.backgroundPosition = `${px}% ${py}%`;
+          };
+
+          mapContainer.addEventListener('mousedown', (e) => {
+            if (e.button === 2) { // Right Click
+              magnifier.classList.remove('hidden');
+              updateMagnifier(e);
+            }
+          });
+
+          window.addEventListener('mousemove', (e) => {
+            if (!magnifier.classList.contains('hidden')) {
+              updateMagnifier(e);
+            }
+          });
+
+          const hideMagnifier = () => {
+            magnifier.classList.add('hidden');
+          };
+
+          window.addEventListener('mouseup', hideMagnifier);
+          mapContainer.addEventListener('mouseleave', hideMagnifier);
+          mapContainer.addEventListener('contextmenu', (e) => e.preventDefault());
+        }
       } else if (mapContainer) {
         mapContainer.remove();
       }
