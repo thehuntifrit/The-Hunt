@@ -27,6 +27,11 @@
     pointer-events: none;
 }
 
+body.magnifier-active,
+body.magnifier-active * {
+    cursor: none !important;
+}
+
 .magnifier-content-wrapper {
     transform-origin: 0 0;
 }
