@@ -256,6 +256,7 @@ function createMobCard(mob) {
 
     wrapper.appendChild(clone);
     magnifier.classList.remove('hidden');
+    document.body.classList.add('magnifier-active');
     updateMagnifier(e);
   }, { capture: true });
 
@@ -268,6 +269,7 @@ function createMobCard(mob) {
   window.addEventListener('mouseup', (e) => {
     if (e.button === 2) {
       magnifier.classList.add('hidden');
+      document.body.classList.remove('magnifier-active');
       activeMapImg = null;
       activeMapContainer = null;
       wrapper.innerHTML = '';
