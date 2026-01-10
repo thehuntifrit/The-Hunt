@@ -24,8 +24,9 @@
         class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md">
 
         <!-- ステータスメッセージ / テロップ -->
-        <div id="status-message" class="text-center py-1 text-sm text-white bg-transparent flex flex-col items-center justify-center gap-0.5" role="status"
-            aria-live="polite">
+        <div id="status-message"
+            class="text-center py-1 text-sm text-white bg-transparent flex flex-col items-center justify-center gap-0.5"
+            role="status" aria-live="polite">
             <div id="status-message-maintenance"></div>
             <div id="status-message-telop" class="font-bold text-cyan-400"></div>
             <div id="status-message-temp"></div>
@@ -156,21 +157,23 @@
                 <div class="expandable-panel">
                     <div class="px-2 py-1 text-sm space-y-1">
                         <div class="flex justify-between items-start flex-wrap gap-y-1">
-                            <div class="last-kill-time w-full text-right text-xs text-gray-400 font-mono" data-last-kill>
+                            <div class="last-kill-time w-full text-right text-xs text-gray-400 font-mono"
+                                data-last-kill>
                             </div>
                             <div class="mob-memo-row w-full mt-1">
                                 <div class="flex items-center bg-gray-800/50 rounded px-2 py-1 border border-gray-700 
                                     hover:bg-gray-700/50 transition">
                                     <span class="mr-2 text-cyan-400 font-bold text-xs">Memo:</span>
                                     <input type="text" class="memo-input bg-transparent text-gray-200 text-sm w-full outline-none 
-                                        placeholder-gray-500 appearance-none" placeholder="メモを入力 (全角30文字)" maxlength="30"
-                                        autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off"
-                                        data-action="save-memo">
+                                        placeholder-gray-500 appearance-none" placeholder="メモを入力 (全角30文字)"
+                                        maxlength="30" autocomplete="off" spellcheck="false" autocorrect="off"
+                                        autocapitalize="off" data-action="save-memo">
                                 </div>
                             </div>
 
                             <div class="w-full mt-2">
-                                <div class="font-semibold text-yellow-400 text-xs uppercase tracking-widest mb-1">Condition
+                                <div class="font-semibold text-yellow-400 text-xs uppercase tracking-widest mb-1">
+                                    Condition
                                 </div>
                                 <div
                                     class="condition-text text-gray-300 text-xs leading-relaxed pl-2 border-l-2 border-yellow-600/50">
@@ -183,7 +186,8 @@
                             <img
                                 class="mob-map-img mob-crush-map w-full h-auto opacity-90 hover:opacity-100 transition-opacity">
                             <div class="map-overlay absolute inset-0"></div>
-                            <div class="map-magnifier fixed hidden pointer-events-none z-[9999] w-48 h-48 rounded-full border-4 border-cyan-500/50 shadow-[0_0_20px_rgba(0,0,0,0.5),0_0_10px_rgba(6,182,212,0.3)] overflow-hidden bg-slate-900">
+                            <div
+                                class="map-magnifier fixed hidden pointer-events-none z-[9999] w-48 h-48 rounded-full border-4 border-cyan-500/50 shadow-[0_0_20px_rgba(0,0,0,0.5),0_0_10px_rgba(6,182,212,0.3)] overflow-hidden bg-slate-900">
                                 <div class="map-magnifier-lens absolute w-full h-full bg-no-repeat"></div>
                             </div>
                         </div>
