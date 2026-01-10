@@ -169,11 +169,14 @@ function createMobCard(mob) {
       const conditionText = card.querySelector('.condition-text');
       if (conditionText) conditionText.innerHTML = processText(mob.Condition);
 
+      const mapContainer = card.querySelector('.map-container');
       if (mob.Map) {
         const mapImg = mapContainer.querySelector('.mob-map-img');
-        mapImg.src = `./maps/${mob.Map}`;
-        mapImg.alt = `${mob.Area} Map`;
-        mapImg.dataset.mobMap = mob.Map; // 背景画像特定用
+        if (mapImg) {
+          mapImg.src = `./maps/${mob.Map}`;
+          mapImg.alt = `${mob.Area} Map`;
+          mapImg.dataset.mobMap = mob.Map; // 背景画像特定用
+        }
       } else if (mapContainer) {
         mapContainer.remove();
       }
