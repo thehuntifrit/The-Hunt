@@ -211,6 +211,7 @@ function createMobCard(mob) {
 
     if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
       magnifier.classList.add('hidden');
+      document.body.classList.remove('magnifier-active');
       activeMapImg = null;
       activeMapContainer = null;
       wrapper.innerHTML = '';
@@ -279,7 +280,6 @@ function createMobCard(mob) {
   document.addEventListener('contextmenu', (e) => {
     if (e.target.closest('.map-container')) {
       e.preventDefault();
-      document.body.classList.add('magnifier-active');
     }
   });
 })();
