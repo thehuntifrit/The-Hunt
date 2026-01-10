@@ -169,62 +169,15 @@ function createMobCard(mob) {
       const conditionText = card.querySelector('.condition-text');
       if (conditionText) conditionText.innerHTML = processText(mob.Condition);
 
-      const mapContainer = card.querySelector('.map-container');
       if (mob.Map) {
         const mapImg = mapContainer.querySelector('.mob-map-img');
-        const magnifier = mapContainer.querySelector('.map-magnifier');
-        const lens = mapContainer.querySelector('.map-magnifier-lens');
-
         mapImg.src = `./maps/${mob.Map}`;
         mapImg.alt = `${mob.Area} Map`;
-
-        if (window.matchMedia("(hover: hover)").matches) {
-          const updateMagnifier = (e) => {
-            const rect = mapImg.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
-              magnifier.classList.add('hidden');
-              return;
-            }
-
-            magnifier.style.left = `${e.clientX}px`;
-            magnifier.style.top = `${e.clientY}px`;
-
-            const px = (x / rect.width) * 100;
-            const py = (y / rect.height) * 100;
-
-            lens.style.backgroundImage = `url('./maps/${mob.Map}')`;
-            lens.style.backgroundPosition = `${px}% ${py}%`;
-          };
-
-          mapContainer.addEventListener('mousedown', (e) => {
-            if (e.button === 2) { // Right Click
-              magnifier.classList.remove('hidden');
-              updateMagnifier(e);
-            }
-          });
-
-          window.addEventListener('mousemove', (e) => {
-            if (!magnifier.classList.contains('hidden')) {
-              updateMagnifier(e);
-            }
-          });
-
-          const hideMagnifier = () => {
-            magnifier.classList.add('hidden');
-          };
-
-          window.addEventListener('mouseup', hideMagnifier);
-          mapContainer.addEventListener('mouseleave', hideMagnifier);
-          mapContainer.addEventListener('contextmenu', (e) => e.preventDefault());
-        }
+        mapImg.dataset.mobMap = mob.Map; // 背景画像特定用
       } else if (mapContainer) {
         mapContainer.remove();
       }
     }
-
   } else {
     expandablePanel.remove();
   }
@@ -235,6 +188,77 @@ function createMobCard(mob) {
 
   return card;
 }
+
+// Magnifier Global Logic
+(function initGlobalMagnifier() {
+  if (window.magnifierInitialized) return;
+  window.magnifierInitialized = true;
+
+  const magnifier = document.getElementById('global-magnifier');
+  const lens = magnifier?.querySelector('.map-magnifier-lens');
+  if (!magnifier || !lens) return;
+
+  let activeMapImg = null;
+
+  const updateMagnifier = (e) => {
+    if (!activeMapImg) return;
+
+    const rect = activeMapImg.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // マップ画像の外に出た場合は非表示
+    if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+      magnifier.classList.add('hidden');
+      activeMapImg = null;
+      return;
+    }
+
+    magnifier.style.left = `${e.clientX}px`;
+    magnifier.style.top = `${e.clientY}px`;
+
+    const px = (x / rect.width) * 100;
+    const py = (y / rect.height) * 100;
+
+    lens.style.backgroundPosition = `${px}% ${py}%`;
+  };
+
+  document.addEventListener('mousedown', (e) => {
+    if (e.button !== 2) return; // 右クリック以外は無視
+
+    const mapContainer = e.target.closest('.map-container');
+    if (!mapContainer) return;
+
+    const mapImg = mapContainer.querySelector('.mob-map-img');
+    if (!mapImg || !mapImg.dataset.mobMap) return;
+
+    e.preventDefault();
+    activeMapImg = mapImg;
+
+    lens.style.backgroundImage = `url('./maps/${mapImg.dataset.mobMap}')`;
+    magnifier.classList.remove('hidden');
+    updateMagnifier(e);
+  }, { capture: true });
+
+  window.addEventListener('mousemove', (e) => {
+    if (activeMapImg) {
+      updateMagnifier(e);
+    }
+  });
+
+  window.addEventListener('mouseup', (e) => {
+    if (e.button === 2) {
+      magnifier.classList.add('hidden');
+      activeMapImg = null;
+    }
+  });
+
+  document.addEventListener('contextmenu', (e) => {
+    if (e.target.closest('.map-container')) {
+      e.preventDefault();
+    }
+  });
+})();
 
 function rankPriority(rank) {
   switch (rank) {
