@@ -200,7 +200,7 @@ function createMobCard(mob) {
 
   let activeMapImg = null;
   let activeMapContainer = null;
-  const ZOOM_SCALE = 2.5;
+  const ZOOM_SCALE = 2.0;
 
   const updateMagnifier = (e) => {
     if (!activeMapImg || !activeMapContainer) return;
