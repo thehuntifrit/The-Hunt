@@ -182,9 +182,29 @@ body {
     pointer-events: none;
 }
 
-.mob-card.maintenance-gray-out .mob-card-inner {
-    opacity: 0.5 !important;
+.mob-card.is-pre-repop .area-info-container,
+.mob-card.is-pre-repop .progress-bar-bg,
+.mob-card.is-pre-repop .progress-text>div>div:first-child,
+.mob-card.is-pre-repop .report-side-bar,
+.mob-card.is-pre-repop .memo-icon-container,
+.mob-name-count-sep {
+    opacity: 0.4;
+    filter: grayscale(100%);
+}
+
+.mob-card.maintenance-gray-out .area-info-container,
+.mob-card.maintenance-gray-out .progress-bar-bg,
+.mob-card.maintenance-gray-out .progress-text>div>div:first-child,
+.mob-card.maintenance-gray-out .report-side-bar,
+.mob-card.maintenance-gray-out .memo-icon-container {
+    opacity: 0.3 !important;
     filter: grayscale(100%) !important;
+}
+
+.mob-card.maintenance-gray-out .mob-name {
+    color: #fff !important;
+    opacity: 1 !important;
+    filter: none !important;
 }
 
 .progress-bar-bg {
