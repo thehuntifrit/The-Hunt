@@ -83,6 +83,18 @@
     --color-lastone: #34d399;
 }
 
+.bg-rank-s {
+    background-color: var(--rank-s) !important;
+}
+
+.bg-rank-a {
+    background-color: var(--rank-a) !important;
+}
+
+.bg-rank-f {
+    background-color: var(--rank-f) !important;
+}
+
 body {
     background-color: var(--bg-dark);
     color: var(--text-primary);
@@ -292,9 +304,9 @@ body {
 }
 
 .report-side-bar.is-active-neon.rank-a {
-    background: rgba(231, 229, 228, 0.2) !important;
-    border-color: rgba(231, 229, 228, 0.6) !important;
-    box-shadow: 0 0 15px rgba(231, 229, 228, 0.3), inset 0 0 10px rgba(231, 229, 228, 0.2) !important;
+    background: rgba(107, 163, 122, 0.2) !important;
+    border-color: rgba(107, 163, 122, 0.6) !important;
+    box-shadow: 0 0 15px rgba(107, 163, 122, 0.3), inset 0 0 10px rgba(107, 163, 122, 0.2) !important;
 }
 
 .report-side-bar.is-active-neon.rank-a::before {
@@ -329,8 +341,8 @@ body {
 }
 
 .report-side-bar.is-active-neon.rank-a:hover {
-    border-color: #e7e5e4 !important;
-    box-shadow: 0 0 25px rgba(231, 229, 228, 0.4) !important;
+    border-color: #6ba37a !important;
+    box-shadow: 0 0 25px rgba(107, 163, 122, 0.4) !important;
 }
 
 .report-side-bar.is-active-neon.rank-f:hover {
