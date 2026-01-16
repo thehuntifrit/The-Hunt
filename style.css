@@ -70,7 +70,7 @@
     --text-secondary: #94a3b8;
 
     --rank-s: #fbbf24;
-    --rank-a: #8da291;
+    --rank-a: #6ba37a;
     --rank-f: #818cf8;
 
     --progress-bg: rgba(0, 0, 0, 0.4);
@@ -138,12 +138,12 @@ body {
 }
 
 .mob-card.is-active-neon[data-rank="A"] .mob-card-inner {
-    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6), 0 0 12px rgba(141, 162, 145, 0.2);
-    border-color: rgba(141, 162, 145, 0.25);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6), 0 0 12px rgba(107, 163, 122, 0.25);
+    border-color: rgba(107, 163, 122, 0.3);
 }
 
 .mob-card.is-active-neon[data-rank="A"] .mob-name {
-    text-shadow: 0 0 8px rgba(141, 162, 145, 0.3);
+    text-shadow: 0 0 8px rgba(107, 163, 122, 0.35);
 }
 
 .mob-card.is-active-neon[data-rank="F"] .mob-card-inner {
@@ -169,7 +169,7 @@ body {
 }
 
 .mob-card.is-active-neon[data-rank="A"]:hover .mob-card-inner {
-    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 20px rgba(141, 162, 145, 0.3);
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 20px rgba(107, 163, 122, 0.35);
 }
 
 .mob-card.is-active-neon[data-rank="F"]:hover .mob-card-inner {
@@ -298,8 +298,8 @@ body {
 }
 
 .report-side-bar.is-active-neon.rank-a::before {
-    background: #8da291 !important;
-    box-shadow: 0 0 10px #8da291 !important;
+    background: #6ba37a !important;
+    box-shadow: 0 0 10px #6ba37a !important;
 }
 
 .report-side-bar.is-active-neon.rank-f {
