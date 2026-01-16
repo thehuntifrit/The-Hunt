@@ -95,6 +95,8 @@ window.addEventListener('mobUpdated', (e) => {
     updateProgressBar(card, mob);
     updateMobCount(card, mob);
     updateMapOverlay(card, mob);
+    updateExpandablePanel(card, mob);
+    updateMemoIcon(card, mob);
   }
 });
 
