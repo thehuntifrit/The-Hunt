@@ -63,11 +63,8 @@ const renderAreaFilterPanel = () => {
         : new Set();
     isAllSelected = items.length > 0 && currentSet.size === items.length;
 
-    items.sort((a, b) => {
-      const indexA = Object.values(EXPANSION_MAP).indexOf(a);
-      const indexB = Object.values(EXPANSION_MAP).indexOf(b);
-      return indexB - indexA;
-    });
+    const expansionEntries = Object.entries(EXPANSION_MAP).sort((a, b) => b[0] - a[0]);
+    items = expansionEntries.map(e => e[1]);
   }
 
   const createButton = (label, isAll, isSelected, isDesktop) => {
