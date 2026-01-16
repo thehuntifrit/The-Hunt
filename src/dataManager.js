@@ -2,10 +2,19 @@
 
 import { calculateRepop } from "./cal.js";
 import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos, subscribeMaintenance } from "./server.js";
-import { filterAndRender, updateProgressBars, invalidateFilterCache, updateMobCount, updateMapOverlay, updateProgressText, updateProgressBar } from "./uiRender.js";
 import { filterMobsByRankAndArea } from "./filterUI.js";
 
-const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
+export const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
+
+export const PROGRESS_CLASSES = {
+    P0_60: "progress-p0-60",
+    P60_80: "progress-p60-80",
+    P80_100: "progress-p80-100",
+    MAX_OVER: "progress-max-over",
+    TEXT_NEXT: "text-next",
+    TEXT_POP: "text-pop",
+    BLINK_WHITE: "progress-blink-white"
+};
 
 const state = {
     userId: localStorage.getItem("user_uuid") || null,
@@ -83,13 +92,7 @@ function initWorker() {
                 }
                 setMobs([...current]);
 
-                const card = document.querySelector(`.mob-card[data-mob-no="${mobNo}"]`);
-                if (card) {
-                    updateProgressText(card, current[idx]);
-                    updateProgressBar(card, current[idx]);
-                    updateMobCount(card, current[idx]);
-                    updateMapOverlay(card, current[idx]);
-                }
+                window.dispatchEvent(new CustomEvent('mobUpdated', { detail: { mobNo, mob: current[idx] } }));
             }
         } else if (type === "ERROR") {
             state.pendingCalculationMobs.delete(mobNo);
@@ -126,7 +129,7 @@ function setFilter(partial) {
         allRankSet: Array.from(state.filter.allRankSet || [])
     };
     localStorage.setItem("huntFilterState", JSON.stringify(serialized));
-    invalidateFilterCache();
+    window.dispatchEvent(new CustomEvent('filterChanged'));
 }
 
 function setOpenMobCardNo(no) {
@@ -137,16 +140,6 @@ function setOpenMobCardNo(no) {
         localStorage.setItem("openMobCardNo", no);
     }
 }
-
-const PROGRESS_CLASSES = {
-    P0_60: "progress-p0-60",
-    P60_80: "progress-p60-80",
-    P80_100: "progress-p80-100",
-    MAX_OVER: "progress-max-over",
-    TEXT_NEXT: "text-next",
-    TEXT_POP: "text-pop",
-    BLINK_WHITE: "progress-blink-white"
-};
 
 const MOB_DATA_URL = "./mob_data.json";
 const MAINTENANCE_URL = "./maintenance.json";
@@ -174,6 +167,7 @@ function processMobData(rawMobData, maintenance, options = {}) {
         Area: mob.area,
         Condition: mob.condition || "",
         Expansion: EXPANSION_MAP[Math.floor(no / 10000)] || "Unknown",
+        ExpansionId: Math.floor(no / 10000),
         REPOP_s: mob.repopSeconds,
         MAX_s: mob.maxRepopSeconds,
         moonPhase: mob.moonPhase || null,
@@ -328,9 +322,7 @@ function checkInitialLoadComplete() {
             });
             setMobs([...current]);
 
-            filterAndRender({ isInitialLoad: true });
-            updateProgressBars();
-            window.dispatchEvent(new CustomEvent('allDataLoaded'));
+            window.dispatchEvent(new CustomEvent('initialDataLoaded'));
         }
     }
 }
@@ -397,7 +389,7 @@ function startRealtime() {
 
             if (hasChanges) {
                 setMobs([...current]);
-                updateProgressBars();
+                window.dispatchEvent(new CustomEvent('mobsUpdated'));
             }
         }
     });
@@ -417,15 +409,7 @@ function startRealtime() {
             checkInitialLoadComplete();
         } else {
             setMobs([...current]);
-            invalidateFilterCache();
-            const filtered = filterMobsByRankAndArea(current);
-            filtered.forEach(mob => {
-                const card = document.querySelector(`.mob-card[data-mob-no="${mob.No}"]`);
-                if (card) {
-                    updateMobCount(card, mob);
-                    updateMapOverlay(card, mob);
-                }
-            });
+            window.dispatchEvent(new CustomEvent('locationsUpdated', { detail: { locationsMap } }));
         }
     });
     unsubscribes.push(unsubLoc);
@@ -449,7 +433,7 @@ function startRealtime() {
             checkInitialLoadComplete();
         } else {
             setMobs([...current]);
-            updateProgressBars();
+            window.dispatchEvent(new CustomEvent('mobsUpdated'));
         }
     });
     unsubscribes.push(unsubMemo);
@@ -475,9 +459,8 @@ function startRealtime() {
                 requestWorkerCalculation(mob, maintenanceData);
             });
             setMobs([...current]);
-            invalidateFilterCache();
-            filterAndRender();
-            updateProgressBars();
+            window.dispatchEvent(new CustomEvent('filterChanged'));
+            window.dispatchEvent(new CustomEvent('mobsUpdated'));
             window.dispatchEvent(new CustomEvent('maintenanceUpdated'));
         }
     });
@@ -485,6 +468,6 @@ function startRealtime() {
 }
 
 export {
-    state, EXPANSION_MAP, getState, setUserId, loadBaseMobData, startRealtime, setFilter,
-    setOpenMobCardNo, PROGRESS_CLASSES, recalculateMob, requestWorkerCalculation
+    state, getState, setUserId, loadBaseMobData, startRealtime, setFilter,
+    setOpenMobCardNo, recalculateMob, requestWorkerCalculation
 };
