@@ -70,7 +70,7 @@
     --text-secondary: #94a3b8;
 
     --rank-s: #fbbf24;
-    --rank-a: #e7e5e4;
+    --rank-a: #8da291;
     --rank-f: #818cf8;
 
     --progress-bg: rgba(0, 0, 0, 0.4);
@@ -138,12 +138,12 @@ body {
 }
 
 .mob-card.is-active-neon[data-rank="A"] .mob-card-inner {
-    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(226, 232, 240, 0.25);
-    border-color: rgba(226, 232, 240, 0.3);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6), 0 0 12px rgba(141, 162, 145, 0.2);
+    border-color: rgba(141, 162, 145, 0.25);
 }
 
 .mob-card.is-active-neon[data-rank="A"] .mob-name {
-    text-shadow: 0 0 12px rgba(226, 232, 240, 0.4);
+    text-shadow: 0 0 8px rgba(141, 162, 145, 0.3);
 }
 
 .mob-card.is-active-neon[data-rank="F"] .mob-card-inner {
@@ -169,7 +169,7 @@ body {
 }
 
 .mob-card.is-active-neon[data-rank="A"]:hover .mob-card-inner {
-    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 30px rgba(226, 232, 240, 0.4);
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 20px rgba(141, 162, 145, 0.3);
 }
 
 .mob-card.is-active-neon[data-rank="F"]:hover .mob-card-inner {
@@ -182,27 +182,27 @@ body {
     pointer-events: none;
 }
 
+/* 待機中・メンテナンス中：共通のグレーアウト設定 */
 .mob-card.is-pre-repop .area-info-container,
 .mob-card.is-pre-repop .progress-bar-bg,
 .mob-card.is-pre-repop .progress-text>div>div:first-child,
 .mob-card.is-pre-repop .report-side-bar,
 .mob-card.is-pre-repop .memo-icon-container,
-.mob-name-count-sep {
-    opacity: 0.4;
-    filter: grayscale(100%);
-}
-
 .mob-card.maintenance-gray-out .area-info-container,
 .mob-card.maintenance-gray-out .progress-bar-bg,
 .mob-card.maintenance-gray-out .progress-text>div>div:first-child,
 .mob-card.maintenance-gray-out .report-side-bar,
-.mob-card.maintenance-gray-out .memo-icon-container {
+.mob-card.maintenance-gray-out .memo-icon-container,
+.mob-name-count-sep {
     opacity: 0.3 !important;
     filter: grayscale(100%) !important;
 }
 
+/* 待機中・メンテナンス中のモブ名は白文字（発光なし）に統一 */
+.mob-card.is-pre-repop .mob-name,
 .mob-card.maintenance-gray-out .mob-name {
     color: #fff !important;
+    text-shadow: none !important;
     opacity: 1 !important;
     filter: none !important;
 }
@@ -298,8 +298,8 @@ body {
 }
 
 .report-side-bar.is-active-neon.rank-a::before {
-    background: #e7e5e4 !important;
-    box-shadow: 0 0 12px #e7e5e4 !important;
+    background: #8da291 !important;
+    box-shadow: 0 0 10px #8da291 !important;
 }
 
 .report-side-bar.is-active-neon.rank-f {
