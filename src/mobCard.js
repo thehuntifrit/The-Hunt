@@ -34,11 +34,6 @@ export function createMobCard(mob) {
     const { openMobCardNo } = getState();
     const isOpen = isExpandable && mob.No === openMobCardNo;
 
-    const shouldShowMemo = shouldDisplayMemo(mob);
-
-    const memoIcon = shouldShowMemo
-        ? ` <span data-tooltip="${mob.memo_text}" style="font-size: 1rem">📝</span>`
-        : "";
 
     card.dataset.mobNo = mob.No;
     card.dataset.rank = rank;
@@ -53,7 +48,6 @@ export function createMobCard(mob) {
     mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
 
     const memoIconContainer = card.querySelector('.memo-icon-container');
-    memoIconContainer.innerHTML = memoIcon;
 
     const reportSidebar = card.querySelector('.report-side-bar');
     if (reportSidebar) {
@@ -86,7 +80,6 @@ export function createMobCard(mob) {
         }
 
         const memoInput = card.querySelector('.memo-input');
-        memoInput.value = shouldShowMemo ? (mob.memo_text || "") : "";
         memoInput.dataset.mobNo = mob.No;
 
         if (rank !== 'S') {
@@ -115,6 +108,8 @@ export function createMobCard(mob) {
     updateAreaInfo(card, mob);
     updateMobCount(card, mob);
     updateMapOverlay(card, mob);
+    updateExpandablePanel(card, mob);
+    updateMemoIcon(card, mob);
 
     return card;
 }
@@ -310,7 +305,7 @@ export function updateMemoIcon(card, mob) {
         let span = memoIconContainer.querySelector('span');
         if (!span) {
             span = document.createElement('span');
-            span.style.fontSize = '0.875rem';
+            span.style.fontSize = '1rem';
             span.textContent = '📝';
             memoIconContainer.appendChild(span);
         }
