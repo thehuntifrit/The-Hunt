@@ -5,6 +5,20 @@ import { drawSpawnPoint, isCulled } from "./location.js";
 import { getState, PROGRESS_CLASSES, EXPANSION_MAP } from "./dataManager.js";
 import { openReportModal } from "./modal.js";
 
+const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Tokyo"
+});
+
+function shouldDisplayMemo(mob) {
+    const hasMemo = mob.memo_text?.trim();
+    const isMemoNewer = (mob.memo_updated_at || 0) >= (mob.last_kill_time || 0);
+    return hasMemo && (isMemoNewer || !mob.last_kill_time);
+}
+
 export function processText(text) {
     if (typeof text !== "string" || !text) return "";
     return text.replace(/\/\//g, "<br>");
@@ -20,9 +34,7 @@ export function createMobCard(mob) {
     const { openMobCardNo } = getState();
     const isOpen = isExpandable && mob.No === openMobCardNo;
 
-    const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
-    const isMemoNewer = (mob.memo_updated_at || 0) >= (mob.last_kill_time || 0);
-    const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
+    const shouldShowMemo = shouldDisplayMemo(mob);
 
     const memoIcon = shouldShowMemo
         ? ` <span data-tooltip="${mob.memo_text}" style="font-size: 1rem">📝</span>`
@@ -194,12 +206,11 @@ export function updateProgressText(card, mob) {
             ? ` (${Number(elapsedPercent || 0).toFixed(0)}%)`
             : "";
 
-    const now = Date.now() / 1000;
     const mobNameEl = card.querySelector('.mob-name');
 
     const shouldDimCard =
         status === "Next" ||
-        (status === "NextCondition" && now < mob.repopInfo.minRepop);
+        (status === "NextCondition" && nowSec < mob.repopInfo.minRepop);
 
     const reportSidebar = card.querySelector('.report-side-bar');
 
@@ -230,30 +241,14 @@ export function updateProgressText(card, mob) {
         isSpecialCondition = true;
     } else if (nextConditionSpawnDate) {
         try {
-            const dateStr = new Intl.DateTimeFormat("ja-JP", {
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                timeZone: "Asia/Tokyo"
-            }).format(nextConditionSpawnDate);
-
-            rightStr = `🔔 ${dateStr}`;
+            rightStr = `🔔 ${dateFormatter.format(nextConditionSpawnDate)}`;
             isSpecialCondition = true;
         } catch {
             rightStr = "未確定";
         }
     } else if (nextMinRepopDate) {
         try {
-            const dateStr = new Intl.DateTimeFormat("ja-JP", {
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                timeZone: "Asia/Tokyo"
-            }).format(nextMinRepopDate);
-
-            rightStr = `in ${dateStr}`;
+            rightStr = `in ${dateFormatter.format(nextMinRepopDate)}`;
         } catch {
             rightStr = "未確定";
         }
@@ -293,9 +288,7 @@ export function updateExpandablePanel(card, mob) {
 
     if (elMemoInput) {
         if (document.activeElement !== elMemoInput) {
-            const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
-            const isMemoNewer = (mob.memo_updated_at || 0) >= (mob.last_kill_time || 0);
-            const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
+            const shouldShowMemo = shouldDisplayMemo(mob);
             elMemoInput.value = shouldShowMemo ? (mob.memo_text || "") : "";
         }
     }
@@ -305,9 +298,7 @@ export function updateMemoIcon(card, mob) {
     const memoIconContainer = card.querySelector('.memo-icon-container');
     if (!memoIconContainer) return;
 
-    const hasMemo = mob.memo_text && mob.memo_text.trim() !== "";
-    const isMemoNewer = (mob.memo_updated_at || 0) >= (mob.last_kill_time || 0);
-    const shouldShowMemo = hasMemo && (isMemoNewer || (mob.last_kill_time || 0) === 0);
+    const shouldShowMemo = shouldDisplayMemo(mob);
 
     const prevState = memoIconContainer.dataset.memoState;
     const newState = shouldShowMemo ? mob.memo_text : "";
