@@ -673,9 +673,6 @@ function updateProgressText(card, mob) {
     card.classList.add("is-pre-repop");
     card.classList.remove("is-active-neon");
     if (reportSidebar) reportSidebar.classList.remove("is-active-neon");
-    if (mobNameEl) {
-      mobNameEl.style.color = "#fff";
-    }
   } else {
     card.classList.remove("is-pre-repop");
     card.classList.add("is-active-neon");
