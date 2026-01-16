@@ -8,6 +8,7 @@ import { DOM, sortAndRedistribute, showColumnContainer } from "./uiRender.js";
 import { debounce } from "./cal.js";
 import { initTooltip } from "./tooltip.js";
 import { initGlobalMagnifier } from "./magnifier.js";
+import "./readme.js";
 
 async function initializeApp() {
     try {
