@@ -7,10 +7,12 @@ import { renderRankTabs, handleAreaFilterClick, updateFilterUI } from "./filterU
 import { DOM, sortAndRedistribute, showColumnContainer } from "./uiRender.js";
 import { debounce } from "./cal.js";
 import { initTooltip } from "./tooltip.js";
+import { initGlobalMagnifier } from "./magnifier.js";
 
 async function initializeApp() {
     try {
         initTooltip();
+        initGlobalMagnifier();
         await loadBaseMobData();
 
         const userId = await initializeAuth();
@@ -32,7 +34,7 @@ async function initializeApp() {
         attachGlobalEventListeners();
         initHeaderObserver();
 
-        window.addEventListener('allDataLoaded', () => {
+        window.addEventListener('initialDataLoaded', () => {
             renderMaintenanceStatus();
             setTimeout(() => {
                 showColumnContainer();
