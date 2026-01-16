@@ -113,7 +113,7 @@ window.addEventListener('locationsUpdated', (e) => {
   const sorted = getSortedFilteredMobs();
   const mobMap = new Map(sorted.map(m => [String(m.No), m]));
 
-  visibleCards.forEach(mobNoStr => {
+  for (const mobNoStr of visibleCards) {
     const card = document.querySelector(`.mob-card[data-mob-no="${mobNoStr}"]`);
     if (card) {
       const mob = mobMap.get(mobNoStr);
@@ -122,16 +122,17 @@ window.addEventListener('locationsUpdated', (e) => {
         updateMapOverlay(card, mob);
       }
     }
-  });
+  }
 });
 
 const visibleCards = new Set();
 const cardObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
+  const mobMap = new Map(getState().mobs.map(m => [String(m.No), m]));
+  for (const entry of entries) {
     const mobNo = entry.target.dataset.mobNo;
     if (entry.isIntersecting) {
       visibleCards.add(mobNo);
-      const mob = getState().mobs.find(m => String(m.No) === mobNo);
+      const mob = mobMap.get(mobNo);
       if (mob) {
         updateProgressText(entry.target, mob);
         updateProgressBar(entry.target, mob);
@@ -143,14 +144,14 @@ const cardObserver = new IntersectionObserver((entries) => {
     } else {
       visibleCards.delete(mobNo);
     }
-  });
+  }
 }, { threshold: 0 });
 
 function updateVisibleCards() {
   const sorted = getSortedFilteredMobs();
   const mobMap = new Map(sorted.map(m => [String(m.No), m]));
 
-  visibleCards.forEach(mobNoStr => {
+  for (const mobNoStr of visibleCards) {
     const card = document.querySelector(`.mob-card[data-mob-no="${mobNoStr}"]`);
     if (card) {
       const mob = mobMap.get(mobNoStr);
@@ -163,7 +164,7 @@ function updateVisibleCards() {
         updateMemoIcon(card, mob);
       }
     }
-  });
+  }
 }
 
 function filterAndRender({ isInitialLoad = false } = {}) {
@@ -308,10 +309,11 @@ function updateProgressBars() {
   const state = getState();
   const conditionMobs = [];
   const nowSec = Date.now() / 1000;
+  const mobMap = new Map(state.mobs.map(m => [String(m.No), m]));
 
-  visibleCards.forEach((mobNoStr) => {
-    const mob = state.mobs.find(m => String(m.No) === mobNoStr);
-    if (!mob || !mob.repopInfo) return;
+  for (const mobNoStr of visibleCards) {
+    const mob = mobMap.get(mobNoStr);
+    if (!mob || !mob.repopInfo) continue;
 
     mob.repopInfo = calculateRepop(mob, state.maintenance, {
       skipConditionCalc: false
@@ -320,7 +322,7 @@ function updateProgressBars() {
     if (mob.repopInfo.conditionWindowEnd && nowSec > mob.repopInfo.conditionWindowEnd.getTime() / 1000) {
       recalculateMob(mob.No);
     }
-  });
+  }
 
   state.mobs.forEach((mob) => {
     if (mob.repopInfo?.nextConditionSpawnDate && mob.repopInfo?.conditionWindowEnd) {
