@@ -64,14 +64,14 @@
     --bg-dark: #0f172a;
     --bg-card: rgba(30, 41, 59, 0.45);
     --accent-cyan: #22d3ee;
-    --accent-gold: #d97706;  /* より濃いゴールド */
+    --accent-gold: #d97706;
     --accent-crimson: #f87171;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
 
-    --rank-s: #d97706;      /* より濃いゴールド */
-    --rank-a: #15803d;      /* より濃いグリーン */
-    --rank-f: #4338ca;      /* より濃いインディゴ */
+    --rank-s: #d97706;
+    --rank-a: #15803d;
+    --rank-f: #4338ca;
 
     --progress-bg: rgba(0, 0, 0, 0.4);
     --progress-fill: linear-gradient(90deg, #3b82f6, #1d4ed8);
@@ -84,15 +84,15 @@
 }
 
 .bg-rank-s {
-    background-color: var(--rank-s) !important;
+    background-color: var(--rank-s-tab) !important;
 }
 
 .bg-rank-a {
-    background-color: var(--rank-a) !important;
+    background-color: var(--rank-a-tab) !important;
 }
 
 .bg-rank-f {
-    background-color: var(--rank-f) !important;
+    background-color: var(--rank-f-tab) !important;
 }
 
 body {
@@ -188,13 +188,6 @@ body {
     box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 30px rgba(129, 140, 248, 0.4);
 }
 
-.mob-card-disabled .mob-card-inner {
-    opacity: 0.6;
-    filter: grayscale(0.8);
-    pointer-events: none;
-}
-
-/* 待機中・メンテナンス中：共通のグレーアウト設定 */
 .mob-card.is-pre-repop .area-info-container,
 .mob-card.is-pre-repop .progress-bar-bg,
 .mob-card.is-pre-repop .progress-text>div>div:first-child,
@@ -210,7 +203,6 @@ body {
     filter: grayscale(100%) !important;
 }
 
-/* 待機中・メンテナンス中のモブ名は白文字（発光なし）に統一 */
 .mob-card.is-pre-repop .mob-name,
 .mob-card.maintenance-gray-out .mob-name {
     color: #fff !important;
