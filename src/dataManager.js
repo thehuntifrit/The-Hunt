@@ -16,7 +16,7 @@ export const PROGRESS_CLASSES = {
     BLINK_WHITE: "progress-blink-white"
 };
 
-const state = {
+export const state = {
     userId: localStorage.getItem("user_uuid") || null,
     baseMobData: [],
     mobs: [],
@@ -66,9 +66,9 @@ if (Array.isArray(state.filter.allRankSet)) {
     state.filter.allRankSet = new Set();
 }
 
-const getState = () => state;
+export const getState = () => state;
 
-function setUserId(uid) {
+export function setUserId(uid) {
     state.userId = uid;
     localStorage.setItem("user_uuid", uid);
 }
@@ -101,7 +101,7 @@ function initWorker() {
     };
 }
 
-function requestWorkerCalculation(mob, maintenance, options = {}) {
+export function requestWorkerCalculation(mob, maintenance, options = {}) {
     if (state.pendingCalculationMobs.has(mob.No)) return;
     if (!state.worker) initWorker();
     state.pendingCalculationMobs.add(mob.No);
@@ -117,7 +117,7 @@ function setMobs(data) {
     state.mobs = data;
 }
 
-function setFilter(partial) {
+export function setFilter(partial) {
     state.filter = { ...state.filter, ...partial };
     const serialized = {
         ...state.filter,
@@ -132,7 +132,7 @@ function setFilter(partial) {
     window.dispatchEvent(new CustomEvent('filterChanged'));
 }
 
-function setOpenMobCardNo(no) {
+export function setOpenMobCardNo(no) {
     state.openMobCardNo = no;
     if (no === null) {
         localStorage.removeItem("openMobCardNo");
@@ -212,7 +212,7 @@ function saveSpawnCache(cache) {
     }
 }
 
-async function loadBaseMobData() {
+export async function loadBaseMobData() {
     const maintenance = null;
 
     const cachedDataStr = localStorage.getItem(MOB_DATA_CACHE_KEY);
@@ -327,7 +327,7 @@ function checkInitialLoadComplete() {
     }
 }
 
-function recalculateMob(mobNo) {
+export function recalculateMob(mobNo) {
     const state = getState();
     const mobIndex = state.mobs.findIndex(m => m.No === mobNo);
     if (mobIndex === -1) return;
@@ -338,11 +338,10 @@ function recalculateMob(mobNo) {
     return mob;
 }
 
-function startRealtime() {
+export function startRealtime() {
     unsubscribes.forEach(fn => fn && fn());
     unsubscribes = [];
 
-    // Reset load state
     state.initialLoadComplete = false;
     initialLoadState.status = false;
     initialLoadState.location = false;
@@ -466,8 +465,3 @@ function startRealtime() {
     });
     unsubscribes.push(unsubMaintenance);
 }
-
-export {
-    state, getState, setUserId, loadBaseMobData, startRealtime, setFilter,
-    setOpenMobCardNo, recalculateMob, requestWorkerCalculation
-};
