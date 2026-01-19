@@ -64,14 +64,14 @@
     --bg-dark: #0f172a;
     --bg-card: rgba(30, 41, 59, 0.45);
     --accent-cyan: #22d3ee;
-    --accent-gold: #fbbf24;
+    --accent-gold: #d97706;  /* より濃いゴールド */
     --accent-crimson: #f87171;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
 
-    --rank-s: #fbbf24;
-    --rank-a: #6ba37a;
-    --rank-f: #818cf8;
+    --rank-s: #d97706;      /* より濃いゴールド */
+    --rank-a: #15803d;      /* より濃いグリーン */
+    --rank-f: #4338ca;      /* より濃いインディゴ */
 
     --progress-bg: rgba(0, 0, 0, 0.4);
     --progress-fill: linear-gradient(90deg, #3b82f6, #1d4ed8);
