@@ -14,7 +14,7 @@ import {
 export const DOM = {
   masterContainer: document.getElementById('master-mob-container'),
   colContainer: document.getElementById('column-container'),
-  cols: [document.getElementById('column-1'), document.getElementById('column-2'), document.getElementById('column-3')],
+  cols: [],
   rankTabs: document.getElementById('rank-tabs'),
   areaFilterWrapper: document.getElementById('area-filter-wrapper'),
   areaFilterPanel: document.getElementById('area-filter-panel'),
@@ -27,6 +27,51 @@ export const DOM = {
   modalForceSubmit: document.getElementById('report-force-submit'),
   statusMessageTemp: document.getElementById('status-message-temp'),
 };
+
+const groupSectionCache = new Map();
+
+function getGroupKey(mob) {
+  const info = mob.repopInfo || {};
+  if (info.isMaintenanceStop || info.isBlockedByMaintenance) return "MAINTENANCE";
+  if (info.status === "MaxOver") return "MAX_OVER";
+  if (info.status === "PopWindow" || info.status === "ConditionActive") return "WINDOW";
+  return "NEXT";
+}
+
+const GROUP_LABELS = {
+  MAX_OVER: "最大時間越え",
+  WINDOW: "REPOP中",
+  NEXT: "最短REPOP前",
+  MAINTENANCE: "メンテナンス"
+};
+
+function getOrCreateGroupSection(groupKey) {
+  if (groupSectionCache.has(groupKey)) return groupSectionCache.get(groupKey);
+
+  const section = document.createElement("section");
+  section.className = "status-group w-full hidden";
+  section.innerHTML = `
+      <div class="status-group-separator">
+          <span class="status-group-label">${GROUP_LABELS[groupKey]}</span>
+      </div>
+      <div class="group-columns grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="col-1 flex flex-col gap-4"></div>
+          <div class="col-2 flex flex-col gap-4"></div>
+          <div class="col-3 flex flex-col gap-4"></div>
+      </div>
+  `;
+
+  const cols = [
+    section.querySelector(".col-1"),
+    section.querySelector(".col-2"),
+    section.querySelector(".col-3")
+  ];
+
+  const result = { section, cols };
+  groupSectionCache.set(groupKey, result);
+  DOM.colContainer.appendChild(section);
+  return result;
+}
 
 const FIFTEEN_MINUTES_SEC = 15 * 60;
 
@@ -81,7 +126,6 @@ function updateEorzeaTime() {
 updateEorzeaTime();
 setInterval(updateEorzeaTime, EORZEA_MINUTE_MS);
 
-// --- Event Listeners ---
 window.addEventListener('initialDataLoaded', () => {
   filterAndRender({ isInitialLoad: true });
   updateProgressBars();
@@ -204,51 +248,59 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   const md = 768;
   const lg = 1024;
   let numCols = 1;
-  if (width >= lg) {
-    numCols = 3;
-    DOM.cols[2].classList.remove("hidden");
-  } else if (width >= md) {
-    numCols = 2;
-    DOM.cols[2].classList.add("hidden");
-  } else {
-    numCols = 1;
-    DOM.cols[2].classList.add("hidden");
-  }
+  if (width >= lg) numCols = 3;
+  else if (width >= md) numCols = 2;
 
-  const colPointers = Array(numCols).fill(0);
+  const groups = {
+    MAX_OVER: [],
+    WINDOW: [],
+    NEXT: [],
+    MAINTENANCE: []
+  };
 
-  lastRenderedOrderStr = sortedMobs.map(m => m.No).join(",");
-
-  sortedMobs.forEach((mob, index) => {
-    const mobNoStr = String(mob.No);
-    let card = existingCards.get(mobNoStr);
-
-    if (!card) {
-      card = createMobCard(mob);
-      cardObserver.observe(card);
-      updateProgressText(card, mob);
-      updateProgressBar(card, mob);
-      updateExpandablePanel(card, mob);
-    }
-
-    if (card) {
-      const targetColIndex = index % numCols;
-      const targetCol = DOM.cols[targetColIndex];
-      const currentChild = targetCol.children[colPointers[targetColIndex]];
-      if (currentChild !== card) {
-        if (currentChild) {
-          targetCol.insertBefore(card, currentChild);
-        } else {
-          targetCol.appendChild(card);
-        }
-      }
-      colPointers[targetColIndex]++;
-    }
+  sortedMobs.forEach(mob => {
+    groups[getGroupKey(mob)].push(mob);
   });
 
-  DOM.cols.forEach((col, idx) => {
-    if (idx < numCols) {
-      while (col.children.length > colPointers[idx]) {
+  ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
+    const groupMobs = groups[key];
+    const { section, cols } = getOrCreateGroupSection(key);
+
+    if (groupMobs.length === 0) {
+      section.classList.add("hidden");
+      return;
+    }
+    section.classList.remove("hidden");
+
+    cols.forEach((col, idx) => {
+      if (idx >= numCols) col.classList.add("hidden");
+      else col.classList.remove("hidden");
+    });
+
+    const colPointers = Array(numCols).fill(0);
+    groupMobs.forEach((mob, index) => {
+      const colIdx = index % numCols;
+      const targetCol = cols[colIdx];
+      let card = existingCards.get(String(mob.No));
+
+      if (!card) {
+        card = createMobCard(mob);
+        cardObserver.observe(card);
+        updateProgressText(card, mob);
+        updateProgressBar(card, mob);
+        updateExpandablePanel(card, mob);
+      }
+
+      const currentAtPos = targetCol.children[colPointers[colIdx]];
+      if (currentAtPos !== card) {
+        targetCol.insertBefore(card, currentAtPos || null);
+      }
+      colPointers[colIdx]++;
+    });
+
+    cols.forEach((col, i) => {
+      const limit = (i < numCols) ? colPointers[i] : 0;
+      while (col.children.length > limit) {
         const cardToRemove = col.lastChild;
         if (cardToRemove && cardToRemove.classList?.contains('mob-card')) {
           cardObserver.unobserve(cardToRemove);
@@ -256,14 +308,10 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
         }
         col.removeChild(cardToRemove);
       }
-    } else {
-      col.querySelectorAll('.mob-card').forEach(c => {
-        cardObserver.unobserve(c);
-        visibleCards.delete(c.dataset.mobNo);
-      });
-      col.innerHTML = "";
-    }
+    });
   });
+
+  lastRenderedOrderStr = sortedMobs.map(m => m.No).join(",");
 
   if (isInitialLoad) {
     attachLocationEvents();
@@ -274,16 +322,12 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 
   if (focusedMobNo) {
     const card = document.querySelector(`.mob-card[data-mob-no="${focusedMobNo}"]`);
-    if (card) {
-      if (focusedAction) {
-        const input = card.querySelector(`input[data-action="${focusedAction}"]`);
-        if (input) {
-          input.focus();
-          if (selectionStart !== null && selectionEnd !== null) {
-            try {
-              input.setSelectionRange(selectionStart, selectionEnd);
-            } catch (e) { }
-          }
+    if (card && focusedAction) {
+      const input = card.querySelector(`input[data-action="${focusedAction}"]`);
+      if (input) {
+        input.focus();
+        if (selectionStart !== null && selectionEnd !== null) {
+          try { input.setSelectionRange(selectionStart, selectionEnd); } catch (e) { }
         }
       }
     }
