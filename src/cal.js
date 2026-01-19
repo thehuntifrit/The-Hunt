@@ -18,14 +18,14 @@ function parseDate(input) {
   return isNaN(d.getTime()) ? null : d;
 }
 
-function formatDurationHM(seconds) {
+export function formatDurationHM(seconds) {
   if (seconds < 0) seconds = 0;
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   return `${String(h).padStart(2, "0")}h${String(m).padStart(2, "0")}m`;
 }
 
-function debounce(func, wait) {
+export function debounce(func, wait) {
   let timeout;
   return function executed(...args) {
     clearTimeout(timeout);
@@ -33,7 +33,7 @@ function debounce(func, wait) {
   };
 }
 
-function formatLastKillTime(timestamp) {
+export function formatLastKillTime(timestamp) {
   if (timestamp === 0) return "未報告";
   const aligned = Math.floor(timestamp / 60) * 60;
   const killTimeMs = aligned * 1000;
@@ -57,7 +57,7 @@ function formatLastKillTime(timestamp) {
   return new Intl.DateTimeFormat("ja-JP", options).format(date);
 }
 
-function getEorzeaTime(date = new Date()) {
+export function getEorzeaTime(date = new Date()) {
   const unixMs = date.getTime();
   const REAL_MS_PER_ET_HOUR = ET_HOUR_SEC * 1000;
   const ET_HOURS_PER_DAY = 24;
@@ -404,7 +404,7 @@ function findNextSpawn(mob, pointSec, searchLimit) {
   return null;
 }
 
-function calculateRepop(mob, maintenance, options = {}) {
+export function calculateRepop(mob, maintenance, options = {}) {
   const { skipConditionCalc = false, forceRecalc = false } = options;
   const now = Date.now() / 1000;
   const lastKill = mob.last_kill_time || 0;
@@ -521,7 +521,7 @@ function calculateRepop(mob, maintenance, options = {}) {
   } else {
     status = "PopWindow";
     elapsedPercent = Math.min(((now - minRepop) / (maxRepop - minRepop)) * 100, 100);
-    timeRemaining = `⏳&thinsp;${formatDurationHM(maxRepop - now)}`;
+    timeRemaining = `⏳️&thinsp;${formatDurationHM(maxRepop - now)}`;
   }
 
   if (isInConditionWindow && now >= minRepop) {
@@ -571,5 +571,3 @@ function baseResult(status) {
     isMaintenanceStop: false
   };
 }
-
-export { calculateRepop, getEorzeaTime, formatDurationHM, debounce, formatLastKillTime };
