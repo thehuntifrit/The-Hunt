@@ -47,7 +47,7 @@ function handleCrushToggle(e) {
     toggleCrushStatus(mobNo, locationId, nextCulled);
 }
 
-function isCulled(pointStatus, mobNo) {
+export function isCulled(pointStatus, mobNo) {
     const state = getState();
     const mob = state.mobs.find(m => m.No === mobNo);
     const mobLastKillTime = mob?.last_kill_time || 0;
@@ -74,7 +74,7 @@ function isCulled(pointStatus, mobNo) {
     return false;
 }
 
-function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_LastOne) {
+export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_LastOne) {
 
     const pointStatus = spawnCullStatus?.[point.id];
     const isCulledFlag = isCulled(pointStatus, mobNo);
@@ -120,7 +120,7 @@ function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_Last
     `;
 }
 
-function updateCrushUI(mobNo, locationId, isCulled) {
+export function updateCrushUI(mobNo, locationId, isCulled) {
     const marker = document.querySelector(
         `.spawn-point[data-mob-no="${mobNo}"][data-location-id="${locationId}"]`
     );
@@ -129,7 +129,6 @@ function updateCrushUI(mobNo, locationId, isCulled) {
     const rank = marker.dataset.rank;
     const isInteractive = marker.dataset.isInteractive === "true";
 
-    // isInteractive が true の場合、isLastOne は必ず false（handleCrushToggle のガード条件より）
     if (isInteractive) {
         if (isCulled) {
             marker.classList.remove("color-b1", "color-b2");
@@ -148,7 +147,7 @@ function updateCrushUI(mobNo, locationId, isCulled) {
 
 let locationEventsAttached = false;
 
-function attachLocationEvents() {
+export function attachLocationEvents() {
     if (locationEventsAttached) return;
 
     const colContainer = document.getElementById("column-container");
@@ -157,5 +156,3 @@ function attachLocationEvents() {
     colContainer.addEventListener("click", handleCrushToggle, { capture: true });
     locationEventsAttached = true;
 }
-
-export { isCulled, drawSpawnPoint, updateCrushUI, attachLocationEvents };
