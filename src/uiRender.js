@@ -40,8 +40,8 @@ function getGroupKey(mob) {
 
 const GROUP_LABELS = {
   MAX_OVER: "Time Over",
-  WINDOW: "POP WINDOW",
-  NEXT: "Shortest REPOP",
+  WINDOW: "Pop Window",
+  NEXT: "Before Respawn",
   MAINTENANCE: "Maintenance"
 };
 
