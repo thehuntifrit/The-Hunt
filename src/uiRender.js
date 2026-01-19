@@ -398,7 +398,7 @@ function updateProgressBars() {
   if (DOM.statusMessageTemp) {
     if (conditionMobs.length > 0) {
       DOM.statusMessageTemp.textContent = `🔜 ${conditionMobs.join(" / ")}`;
-      DOM.statusMessageTemp.className = "text-cyan-300 font-bold animate-pulse";
+      DOM.statusMessageTemp.className = "text-amber-400 font-bold animate-pulse";
       DOM.statusMessageTemp.classList.remove("hidden");
     } else {
       DOM.statusMessageTemp.textContent = "";
