@@ -36,7 +36,7 @@ let cachedSortedMobs = null;
 let sortCacheValid = false;
 let lastRenderedOrderStr = "";
 
-export function getFilteredMobs() {
+function getFilteredMobs() {
   const state = getState();
   const filterString = JSON.stringify(state.filter);
 
@@ -50,7 +50,7 @@ export function getFilteredMobs() {
   return cachedFilteredMobs;
 }
 
-export function getSortedFilteredMobs() {
+function getSortedFilteredMobs() {
   if (sortCacheValid && cachedSortedMobs) {
     return cachedSortedMobs;
   }
@@ -59,19 +59,19 @@ export function getSortedFilteredMobs() {
   return cachedSortedMobs;
 }
 
-export function invalidateFilterCache() {
+function invalidateFilterCache() {
   cachedFilterString = null;
   cachedFilteredMobs = null;
   cachedSortedMobs = null;
   sortCacheValid = false;
 }
 
-export function invalidateSortCache() {
+function invalidateSortCache() {
   sortCacheValid = false;
   cachedSortedMobs = null;
 }
 
-export function updateEorzeaTime() {
+function updateEorzeaTime() {
   const et = getEorzeaTime(new Date());
   const el = document.getElementById("eorzea-time");
   if (el) {
@@ -149,7 +149,7 @@ const cardObserver = new IntersectionObserver((entries) => {
   }
 }, { threshold: 0 });
 
-export function updateVisibleCards() {
+function updateVisibleCards() {
   const sorted = getSortedFilteredMobs();
   const mobMap = new Map(sorted.map(m => [String(m.No), m]));
 
@@ -307,7 +307,7 @@ export function showColumnContainer() {
 }
 
 
-export function updateProgressBars() {
+function updateProgressBars() {
   const state = getState();
   const conditionMobs = [];
   const nowSec = Date.now() / 1000;
@@ -365,7 +365,7 @@ export function updateProgressBars() {
 
 export const sortAndRedistribute = debounce(() => filterAndRender(), 200);
 
-export function onKillReportReceived(mobId, kill_time) {
+function onKillReportReceived(mobId, kill_time) {
   const state = getState();
   const mob = state.mobs.find(m => m.No === mobId);
   if (!mob) return;
