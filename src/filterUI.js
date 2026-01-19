@@ -13,7 +13,7 @@ const getAllAreas = () => {
   return Array.from(new Set(Object.values(EXPANSION_MAP)));
 };
 
-const renderRankTabs = () => {
+export const renderRankTabs = () => {
   const state = getState();
   const rankList = ["ALL", "S", "A", "FATE"];
   const container = FilterDOM.rankTabs;
@@ -42,7 +42,7 @@ const renderRankTabs = () => {
   });
 };
 
-const renderAreaFilterPanel = () => {
+export const renderAreaFilterPanel = () => {
   const state = getState();
   const uiRank = state.filter.rank;
   const targetRankKey = uiRank === 'FATE' ? 'F' : uiRank;
@@ -122,7 +122,7 @@ const renderAreaFilterPanel = () => {
   }
 };
 
-const updateFilterUI = () => {
+export const updateFilterUI = () => {
   const state = getState();
   const rankTabs = FilterDOM.rankTabs;
   if (!rankTabs) return;
@@ -200,7 +200,7 @@ const handleRankTabClick = (rank) => {
   updateFilterUI();
 };
 
-function handleAreaFilterClick(e) {
+export function handleAreaFilterClick(e) {
   const btn = e.target.closest(".area-filter-btn");
   if (!btn) return;
 
@@ -267,7 +267,7 @@ function handleAreaFilterClick(e) {
   renderAreaFilterPanel();
 }
 
-function filterMobsByRankAndArea(mobs) {
+export function filterMobsByRankAndArea(mobs) {
   const filter = getState().filter;
   const uiRank = filter.rank;
   const areaSets = filter.areaSets;
@@ -322,5 +322,3 @@ function filterMobsByRankAndArea(mobs) {
     }
   });
 }
-
-export { renderRankTabs, renderAreaFilterPanel, updateFilterUI, handleAreaFilterClick, filterMobsByRankAndArea };
