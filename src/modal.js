@@ -4,7 +4,7 @@ import { DOM as UiDOM } from "./uiRender.js";
 import { getState } from "./dataManager.js";
 
 
-async function openReportModal(mobNo) {
+export async function openReportModal(mobNo) {
     const mob = getState().mobs.find(m => m.No === mobNo);
     if (!mob) return;
 
@@ -21,7 +21,7 @@ async function openReportModal(mobNo) {
     UiDOM.reportModal.classList.add("flex");
 }
 
-function closeReportModal() {
+export function closeReportModal() {
     UiDOM.reportModal.classList.add("hidden");
     UiDOM.reportModal.classList.remove("flex");
     UiDOM.modalTimeInput.value = "";
@@ -29,7 +29,7 @@ function closeReportModal() {
     UiDOM.modalForceSubmit.checked = false;
 }
 
-function initModal() {
+export function initModal() {
     const cancelReportBtn = document.getElementById("cancel-report");
     if (cancelReportBtn) {
         cancelReportBtn.addEventListener("click", closeReportModal);
@@ -46,5 +46,3 @@ function initModal() {
         }
     });
 }
-
-export { openReportModal, closeReportModal, initModal };
