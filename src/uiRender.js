@@ -34,15 +34,15 @@ function getGroupKey(mob) {
   const info = mob.repopInfo || {};
   if (info.isMaintenanceStop || info.isBlockedByMaintenance) return "MAINTENANCE";
   if (info.status === "MaxOver") return "MAX_OVER";
-  if (info.status === "PopWindow" || info.status === "ConditionActive") return "WINDOW";
+  if (info.status === "PopWindow" || info.status === "ConditionActive" || info.status === "NextCondition") return "WINDOW";
   return "NEXT";
 }
 
 const GROUP_LABELS = {
-  MAX_OVER: "最大時間越え",
-  WINDOW: "REPOP中",
-  NEXT: "最短REPOP前",
-  MAINTENANCE: "メンテナンス"
+  MAX_OVER: "Time Over",
+  WINDOW: "POP WINDOW",
+  NEXT: "Shortest REPOP",
+  MAINTENANCE: "Maintenance"
 };
 
 function getOrCreateGroupSection(groupKey) {
