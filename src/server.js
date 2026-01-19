@@ -76,7 +76,7 @@ export function subscribeMaintenance(onUpdate) {
     return unsub;
 }
 
-export function normalizePoints(data) {
+function normalizePoints(data) {
     const result = {};
     for (const [key, value] of Object.entries(data)) {
         if (key.startsWith("points.")) {
