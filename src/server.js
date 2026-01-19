@@ -21,7 +21,7 @@ const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-async function initializeAuth() {
+export async function initializeAuth() {
     return new Promise((resolve) => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             unsubscribe();
@@ -41,7 +41,7 @@ async function initializeAuth() {
     });
 }
 
-function subscribeMobStatusDocs(onUpdate) {
+export function subscribeMobStatusDocs(onUpdate) {
     const docIds = ["s_latest", "a_latest", "f_latest"];
     const mobStatusDataMap = {};
     const unsubs = docIds.map(id =>
@@ -54,7 +54,7 @@ function subscribeMobStatusDocs(onUpdate) {
     return () => unsubs.forEach(u => u());
 }
 
-function subscribeMobMemos(onUpdate) {
+export function subscribeMobMemos(onUpdate) {
     const memoDocRef = doc(db, "shared_data", "memo");
     const unsub = onSnapshot(memoDocRef, snap => {
         const data = snap.data() || {};
@@ -63,7 +63,7 @@ function subscribeMobMemos(onUpdate) {
     return unsub;
 }
 
-function subscribeMaintenance(onUpdate) {
+export function subscribeMaintenance(onUpdate) {
     const maintenanceDocRef = doc(db, "shared_data", "maintenance");
     const unsub = onSnapshot(maintenanceDocRef, snap => {
         const data = snap.data() || null;
@@ -76,7 +76,7 @@ function subscribeMaintenance(onUpdate) {
     return unsub;
 }
 
-function normalizePoints(data) {
+export function normalizePoints(data) {
     const result = {};
     for (const [key, value] of Object.entries(data)) {
         if (key.startsWith("points.")) {
@@ -94,7 +94,7 @@ function normalizePoints(data) {
     return result;
 }
 
-function subscribeMobLocations(onUpdate) {
+export function subscribeMobLocations(onUpdate) {
     const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
         const map = {};
         snapshot.forEach(docSnap => {
@@ -108,7 +108,7 @@ function subscribeMobLocations(onUpdate) {
     return unsub;
 }
 
-const submitReport = async (mobNo, timeISO) => {
+export const submitReport = async (mobNo, timeISO) => {
     const state = getState();
     const userId = state.userId;
     const mobs = state.mobs;
@@ -145,7 +145,6 @@ const submitReport = async (mobNo, timeISO) => {
     const modalStatusEl = document.querySelector("#modal-status");
     const forceSubmitEl = document.querySelector("#report-force-submit");
     const isForceSubmit = forceSubmitEl ? forceSubmitEl.checked : false;
-    // 未来時刻チェック (現在時刻 + 10分)
     const nowMs = Date.now();
     if (killTimeDate.getTime() > nowMs + 600000) {
         const msg = "現在時刻より10分以上未来の時刻は報告できません。";
@@ -225,7 +224,7 @@ const submitReport = async (mobNo, timeISO) => {
     }
 };
 
-const submitMemo = async (mobNo, memoText) => {
+export const submitMemo = async (mobNo, memoText) => {
     const state = getState();
     const userId = state.userId;
     const mobs = state.mobs;
@@ -269,7 +268,7 @@ const submitMemo = async (mobNo, memoText) => {
     }
 };
 
-const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
+export const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
     const state = getState();
     const userId = state.userId;
     const mobs = state.mobs;
@@ -301,9 +300,4 @@ const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
     } catch (error) {
         console.error("湧き潰し報告エラー:", error);
     }
-};
-
-export {
-    initializeAuth, subscribeMobStatusDocs, subscribeMobLocations,
-    subscribeMobMemos, subscribeMaintenance, submitReport, submitMemo, toggleCrushStatus
 };
