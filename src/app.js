@@ -106,7 +106,7 @@ function renderMaintenanceStatus() {
 
         if (now >= showFrom && now <= showUntil) {
             maintenanceEl.innerHTML = `
-                <div class="font-semibold text-yellow-300">
+                <div class="font-semibold text-red-500">
                     メンテ日時 ${formatDate(start)} ～ ${formatDate(end)}
                 </div>
             `;
