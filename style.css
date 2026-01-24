@@ -372,8 +372,7 @@ body {
 }
 
 .progress-text.max-over {
-    color: #dadada;
-    animation: pulse-sync 2s infinite ease-in-out;
+    color: var(--accent-crimson);
 }
 
 .progress-max-over {
