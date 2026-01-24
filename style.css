@@ -204,35 +204,17 @@ body {
 
 .mob-card.maintenance-gray-out .mob-card-inner {
     opacity: 0.3 !important;
-    filter: grayscale(100%) contrast(0.8) !important;
-    box-shadow: none !important;
-    border-color: rgba(255, 255, 255, 0.05) !important;
-    background: rgba(15, 23, 42, 0.9) !important;
+    filter: grayscale(100%) !important;
     pointer-events: none;
-}
-
-.mob-card.is-pre-repop .mob-name {
-    color: #fff !important;
-    text-shadow: none !important;
-    opacity: 1 !important;
-    filter: none !important;
+    box-shadow: none !important;
 }
 
 .mob-card.maintenance-gray-out .mob-name {
-    color: #94a3b8 !important;
+    color: #fff !important;
     text-shadow: none !important;
-    filter: grayscale(100%) !important;
-}
-
-.mob-card.maintenance-gray-out .report-side-bar {
-    background: rgba(255, 255, 255, 0.03) !important;
-    border-color: rgba(255, 255, 255, 0.1) !important;
-    box-shadow: none !important;
 }
 
 .mob-card.maintenance-gray-out .report-side-bar::before {
-    background: rgba(255, 255, 255, 0.15) !important;
-    box-shadow: none !important;
     animation: none !important;
 }
 
