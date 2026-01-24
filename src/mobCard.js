@@ -188,6 +188,7 @@ export function updateProgressText(card, mob) {
         status, isInConditionWindow, timeRemaining
     } = mob.repopInfo || {};
 
+    const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
     const nowSec = Date.now() / 1000;
     let leftStr = timeRemaining || "未確定";
     const percentStr =
@@ -200,10 +201,7 @@ export function updateProgressText(card, mob) {
         )
             ? ` (${Number(elapsedPercent || 0).toFixed(0)}%)`
             : "";
-
     const mobNameEl = card.querySelector('.mob-name');
-
-    const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
     const shouldDimCard =
         isMaint ||
         status === "Next" ||
