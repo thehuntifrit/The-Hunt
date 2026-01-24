@@ -218,6 +218,21 @@ body {
     animation: none !important;
 }
 
+.mob-card.is-pre-repop .mob-name {
+    color: #fff !important;
+    text-shadow: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+.progress-text .time-over {
+    color: var(--accent-crimson);
+}
+
+.progress-text .time-normal {
+    color: inherit;
+}
+
 .progress-bar-bg {
     background: var(--progress-fill);
     box-shadow: 0 0 15px rgba(30, 144, 255, 0.6);
