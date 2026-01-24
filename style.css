@@ -197,27 +197,31 @@ body {
 .mob-card.is-pre-repop .progress-text>div>div:first-child,
 .mob-card.is-pre-repop .report-side-bar,
 .mob-card.is-pre-repop .memo-icon-container,
-.mob-card.maintenance-gray-out .area-info-container,
-.mob-card.maintenance-gray-out .progress-bar-bg,
-.mob-card.maintenance-gray-out .progress-text>div>div:first-child,
-.mob-card.maintenance-gray-out .report-side-bar,
-.mob-card.maintenance-gray-out .memo-icon-container,
 .mob-name-count-sep {
     opacity: 0.3 !important;
     filter: grayscale(100%) !important;
 }
 
-.mob-card.is-pre-repop .mob-name,
-.mob-card.maintenance-gray-out .mob-name {
+.mob-card.maintenance-gray-out .mob-card-inner {
+    opacity: 0.3 !important;
+    filter: grayscale(100%) contrast(0.8) !important;
+    box-shadow: none !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    pointer-events: none;
+}
+
+.mob-card.is-pre-repop .mob-name {
     color: #fff !important;
     text-shadow: none !important;
     opacity: 1 !important;
     filter: none !important;
 }
 
-.mob-card.maintenance-gray-out .mob-card-inner {
-    box-shadow: none !important;
-    border-color: rgba(255, 255, 255, 0.1) !important;
+.mob-card.maintenance-gray-out .mob-name {
+    color: #94a3b8 !important;
+    text-shadow: none !important;
+    filter: grayscale(100%) !important;
 }
 
 .mob-card.maintenance-gray-out .report-side-bar {
