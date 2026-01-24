@@ -533,7 +533,7 @@ export function calculateRepop(mob, maintenance, options = {}) {
   }
 
   const isMaintenanceStop = (maintenanceStartDate &&
-    now >= maintenanceStart && (!serverUp || now < serverUp));
+    now >= maintenanceStart && ((serverUp > 0 && now < serverUp) || (serverUp === 0 && now < (parseDate(maint.end)?.getTime() / 1000 || 0))));
 
   let isBlockedByMaintenance = false;
   const nextTime = nextConditionSpawnDate ? (nextConditionSpawnDate.getTime() / 1000) : minRepop;
