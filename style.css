@@ -205,7 +205,6 @@ body {
 .mob-card.maintenance-gray-out .mob-card-inner {
     opacity: 0.3 !important;
     filter: grayscale(100%) !important;
-    pointer-events: none;
     box-shadow: none !important;
 }
 
