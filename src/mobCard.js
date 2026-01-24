@@ -253,7 +253,7 @@ export function updateProgressText(card, mob) {
 
     const newHTML = `
 <div class="w-full h-full flex items-center justify-between text-[13px] font-bold px-1.5">
-<div class="truncate">${leftStr}${percentStr}</div>
+<div class="truncate ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div>
 <div class="truncate">${rightContent}</div>
 </div>
   `;
