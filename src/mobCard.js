@@ -163,7 +163,7 @@ export function updateProgressBar(card, mob) {
     }
 
     if (status === "PopWindow" || status === "ConditionActive") {
-        if (elapsedPercent > 90) {
+        if (elapsedPercent > 90 && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) {
             wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
         }
         text.classList.add(PROGRESS_CLASSES.TEXT_POP);
@@ -172,7 +172,7 @@ export function updateProgressBar(card, mob) {
         bar.classList.add(PROGRESS_CLASSES.MAX_OVER);
         text.classList.add(PROGRESS_CLASSES.TEXT_POP);
 
-        if (mob.repopInfo.isInConditionWindow) {
+        if (mob.repopInfo.isInConditionWindow && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) {
             wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
         }
     } else {
@@ -203,7 +203,9 @@ export function updateProgressText(card, mob) {
 
     const mobNameEl = card.querySelector('.mob-name');
 
+    const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
     const shouldDimCard =
+        isMaint ||
         status === "Next" ||
         (status === "NextCondition" && nowSec < mob.repopInfo.minRepop);
 
@@ -267,7 +269,7 @@ export function updateProgressText(card, mob) {
     if (minRepop - nowSec >= 3600) text.classList.add("long-wait");
     else text.classList.remove("long-wait");
 
-    if (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow)) {
+    if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) {
         card.classList.add("blink-border-white");
     } else {
         card.classList.remove("blink-border-white");
