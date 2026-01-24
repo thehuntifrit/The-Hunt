@@ -415,19 +415,19 @@ export function calculateRepop(mob, maintenance, options = {}) {
   if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
     maint = maint.maintenance;
   }
-  if (!maint) return baseResult("Unknown");
+  if (!maint || !maint.start) return baseResult("Unknown");
 
-  const serverUpDate = parseDate(maint.serverUp);
+  const serverUpDate = parseDate(maint.serverUp || maint.end);
   const maintenanceStartDate = parseDate(maint.start);
-  if (!serverUpDate || !maintenanceStartDate) return baseResult("Unknown");
+  if (!maintenanceStartDate) return baseResult("Unknown");
 
-  const serverUp = serverUpDate.getTime() / 1000;
+  const serverUp = serverUpDate ? serverUpDate.getTime() / 1000 : 0;
   const maintenanceStart = maintenanceStartDate.getTime() / 1000;
 
   const isRankF = (mob.Rank === "F" || mob.rank === "F");
 
   let minRepop, maxRepop;
-  if (lastKill === 0 || lastKill <= serverUp) {
+  if (lastKill === 0 || (serverUp > 0 && lastKill <= serverUp)) {
     if (isRankF) {
       minRepop = serverUp + repopSec;
       maxRepop = serverUp + maxSec;
@@ -532,8 +532,8 @@ export function calculateRepop(mob, maintenance, options = {}) {
     status = "NextCondition";
   }
 
-  const isMaintenanceStop = (maintenanceStartDate && serverUpDate &&
-    now >= maintenanceStart && (serverUp < maintenanceStart || now < serverUp));
+  const isMaintenanceStop = (maintenanceStartDate &&
+    now >= maintenanceStart && (!serverUp || now < serverUp));
 
   let isBlockedByMaintenance = false;
   const nextTime = nextConditionSpawnDate ? (nextConditionSpawnDate.getTime() / 1000) : minRepop;
