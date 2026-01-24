@@ -215,6 +215,23 @@ body {
     filter: none !important;
 }
 
+.mob-card.maintenance-gray-out .mob-card-inner {
+    box-shadow: none !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.mob-card.maintenance-gray-out .report-side-bar {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: none !important;
+}
+
+.mob-card.maintenance-gray-out .report-side-bar::before {
+    background: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: none !important;
+    animation: none !important;
+}
+
 .progress-bar-bg {
     background: var(--progress-fill);
     box-shadow: 0 0 15px rgba(30, 144, 255, 0.6);
