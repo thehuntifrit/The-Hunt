@@ -633,7 +633,6 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .mob-card.is-floating-active {
-    position: fixed !important;
     z-index: 100 !important;
     max-width: 95vw;
 }
