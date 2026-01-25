@@ -228,15 +228,17 @@ function attachGlobalEventListeners() {
 }
 
 function closeActiveCard() {
-    const activeCard = document.querySelector(".mob-card.is-overlay-active");
-    if (activeCard) {
-        const panel = activeCard.querySelector(".expandable-panel");
-        if (panel) panel.classList.remove("open");
-        activeCard.classList.remove("is-overlay-active");
-        setOpenMobCardNo(null);
+    const isMobile = window.innerWidth < 1024;
+    if (isMobile) {
+
+        const openPanel = document.querySelector(".expandable-panel.open");
+        if (openPanel) {
+            openPanel.classList.remove("open");
+            setOpenMobCardNo(null);
+        }
+    } else {
+        closeCardPC();
     }
-    const backdrop = document.getElementById("card-overlay-backdrop");
-    backdrop?.classList.add("hidden");
 }
 
 function toggleCardExpand(card, mobNo) {
@@ -244,38 +246,129 @@ function toggleCardExpand(card, mobNo) {
     if (!panel) return;
 
     const isMobile = window.innerWidth < 1024;
-    const backdrop = document.getElementById("card-overlay-backdrop");
 
-    if (!panel.classList.contains("open")) {
-        // 他のパネルを閉じる
-        document.querySelectorAll(".expandable-panel.open").forEach(p => {
-            if (p.closest(".mob-card") !== card) {
-                p.classList.remove("open");
-                p.closest(".mob-card")?.classList.remove("is-overlay-active");
-            }
-        });
+    if (isMobile) {
+        if (!panel.classList.contains("open")) {
+            document.querySelectorAll(".expandable-panel.open").forEach(p => {
+                if (p.closest(".mob-card") !== card) {
+                    p.classList.remove("open");
+                }
+            });
+            panel.classList.add("open");
+            setOpenMobCardNo(mobNo);
 
-        panel.classList.add("open");
-        setOpenMobCardNo(mobNo);
-
-        if (isMobile) {
             requestAnimationFrame(() => {
                 card.scrollIntoView({ behavior: "smooth", block: "start" });
             });
         } else {
-            // PC: オーバーレイ表示してカードを最前面へ
-            card.classList.add("is-overlay-active");
-            backdrop?.classList.remove("hidden");
+            panel.classList.remove("open");
+            setOpenMobCardNo(null);
         }
     } else {
-        // 閉じる処理
-        panel.classList.remove("open");
-        setOpenMobCardNo(null);
 
-        if (!isMobile) {
-            card.classList.remove("is-overlay-active");
-            backdrop?.classList.add("hidden");
+        if (card.classList.contains("is-centered-active")) {
+            closeCardPC();
+        } else {
+            openCardPC(card, mobNo);
         }
+    }
+}
+
+function openCardPC(card, mobNo) {
+
+    const existing = document.querySelector(".mob-card.is-centered-active");
+    if (existing) {
+        closeCardPC(true);
+    }
+
+    const panel = card.querySelector(".expandable-panel");
+    const rect = card.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const top = rect.top;
+    const left = rect.left;
+
+    const placeholder = document.createElement("div");
+    placeholder.className = "mob-card-placeholder mob-card";
+    placeholder.style.width = `${width}px`;
+    placeholder.style.height = `${height}px`;
+    placeholder.style.margin = getComputedStyle(card).margin;
+
+    card.parentNode.insertBefore(placeholder, card);
+    card.dataset.placeholderId = "temp-" + Date.now();
+    placeholder.id = card.dataset.placeholderId;
+
+    card.style.position = "fixed";
+    card.style.top = `${top}px`;
+    card.style.left = `${left}px`;
+    card.style.width = `${width}px`;
+    card.style.zIndex = "100";
+    card.style.margin = "0";
+
+    requestAnimationFrame(() => {
+        card.classList.add("is-centered-active");
+
+        card.style.top = "50%";
+        card.style.left = "50%";
+        card.style.transform = "translate(-50%, -50%)";
+
+        panel.classList.add("open");
+        setOpenMobCardNo(mobNo);
+
+        const backdrop = document.getElementById("card-overlay-backdrop");
+        backdrop?.classList.remove("hidden");
+    });
+}
+
+function closeCardPC(immediate = false) {
+    const card = document.querySelector(".mob-card.is-centered-active");
+    if (!card) return;
+
+    const panel = card.querySelector(".expandable-panel");
+    const backdrop = document.getElementById("card-overlay-backdrop");
+    const placeholderId = card.dataset.placeholderId;
+    const placeholder = document.getElementById(placeholderId);
+
+    panel.classList.remove("open");
+    setOpenMobCardNo(null);
+    backdrop?.classList.add("hidden");
+
+    if (!placeholder) {
+
+        card.classList.remove("is-centered-active");
+        card.style = "";
+        return;
+    }
+
+    if (immediate) {
+        finishClose(card, placeholder);
+        return;
+    }
+
+    const rect = placeholder.getBoundingClientRect();
+    card.classList.remove("is-centered-active");
+    card.style.transform = "";
+    card.style.top = `${rect.top}px`;
+    card.style.left = `${rect.left}px`;
+    card.style.width = `${rect.width}px`;
+
+    card.addEventListener("transitionend", function handler() {
+        card.removeEventListener("transitionend", handler);
+        finishClose(card, placeholder);
+    }, { once: true });
+
+    setTimeout(() => finishClose(card, placeholder), 350);
+}
+
+function finishClose(card, placeholder) {
+    if (!card.parentElement) return;
+
+    card.style = "";
+    card.classList.remove("is-centered-active");
+    delete card.dataset.placeholderId;
+
+    if (placeholder && placeholder.parentElement) {
+        placeholder.parentElement.removeChild(placeholder);
     }
 }
 
