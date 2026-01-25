@@ -308,7 +308,7 @@ function openCardPC(card, mobNo) {
     requestAnimationFrame(() => {
         card.classList.add("is-centered-active");
 
-        card.style.top = "100px";
+        card.style.top = "160px";
         card.style.left = "50%";
         card.style.transform = "translateX(-50%)";
 
