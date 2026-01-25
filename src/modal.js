@@ -2,10 +2,6 @@
 
 import { DOM as UiDOM } from "./uiRender.js";
 import { getState } from "./dataManager.js";
-import { formatLastKillTime } from "./cal.js";
-import { processText, getValidSpawnPoints } from "./mobCard.js";
-import { drawSpawnPoint } from "./location.js";
-import { submitMemo } from "./server.js";
 
 
 export async function openReportModal(mobNo) {
