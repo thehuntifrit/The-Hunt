@@ -83,48 +83,6 @@
 
     <div id="card-overlay-backdrop" class="fixed inset-0 hidden z-40"></div>
 
-    <div id="card-detail-modal" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
-        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-md border border-gray-600 text-white 
-            relative overflow-hidden max-h-[85vh] overflow-y-auto">
-            <div id="card-detail-accent" class="absolute top-0 left-0 w-full h-1"></div>
-
-            <h2 id="card-detail-mob-name" class="text-xl font-bold mb-3 text-glow"></h2>
-
-            <div class="text-xs text-gray-400 mb-3 pb-2 border-b border-gray-700">
-                <span id="card-detail-area"></span> / <span id="card-detail-expansion"></span>
-            </div>
-
-            <div class="space-y-3">
-                <div id="card-detail-last-kill" class="text-sm text-gray-300"></div>
-
-                <div class="flex items-center bg-gray-900/50 rounded px-3 py-2 border border-gray-700">
-                    <span class="mr-2 text-cyan-400 font-bold text-xs whitespace-nowrap">メモ:</span>
-                    <input type="text" id="card-detail-memo" class="bg-transparent text-gray-200 text-sm w-full outline-none 
-                        placeholder-gray-500" placeholder="全角30文字まで" maxlength="30" autocomplete="off"
-                        spellcheck="false">
-                </div>
-
-                <div id="card-detail-condition-wrapper" class="hidden">
-                    <div class="font-semibold text-yellow-400 text-xs uppercase tracking-widest mb-1">trigger</div>
-                    <div id="card-detail-condition"
-                        class="text-gray-300 text-xs leading-relaxed pl-2 border-l-2 border-yellow-600/50"></div>
-                </div>
-
-                <div id="card-detail-map-wrapper" class="hidden">
-                    <div class="relative rounded overflow-hidden border border-gray-600 shadow-lg">
-                        <img id="card-detail-map-img" class="w-full h-auto opacity-90">
-                        <div id="card-detail-map-overlay" class="absolute inset-0"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex justify-end mt-4">
-                <button type="button" id="close-card-detail"
-                    class="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition text-white font-medium">閉じる</button>
-            </div>
-        </div>
-    </div>
-
     <div id="report-modal" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
         <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-md border border-gray-600 text-white 
             relative overflow-hidden">
