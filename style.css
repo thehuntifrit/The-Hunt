@@ -628,26 +628,3 @@ html body.magnifier-active .mob-card-inner * {
 .mob-card.is-overlay-active .mob-card-inner {
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 40px rgba(6, 182, 212, 0.3) !important;
 }
-
-#card-detail-modal {
-    background-color: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(4px);
-    z-index: 100;
-}
-
-#card-detail-modal .bg-gray-800 {
-    background: #1e293b;
-    border: 1px solid rgba(100, 116, 139, 0.5);
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
-}
-
-#card-detail-modal input {
-    background: #0f172a;
-    border: 1px solid #334155;
-    color: #f8fafc;
-}
-
-#card-detail-modal input:focus {
-    border-color: #22d3ee;
-    box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
-}
