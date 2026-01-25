@@ -3,7 +3,6 @@
 import { DOM as UiDOM } from "./uiRender.js";
 import { getState } from "./dataManager.js";
 
-
 export async function openReportModal(mobNo) {
     const mob = getState().mobs.find(m => m.No === mobNo);
     if (!mob) return;
