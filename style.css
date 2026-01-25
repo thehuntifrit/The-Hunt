@@ -225,7 +225,7 @@ body {
 }
 
 .progress-text .time-over {
-    color: var(--accent-crimson);
+    color: #fff1f2;
 }
 
 .progress-text .time-normal {
@@ -390,7 +390,7 @@ body {
 }
 
 .progress-text .time-over {
-    color: var(--accent-crimson);
+    color: #e98b91;
 }
 
 .progress-max-over {
