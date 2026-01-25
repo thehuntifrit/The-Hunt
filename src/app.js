@@ -266,7 +266,7 @@ function toggleCardExpand(card, mobNo) {
         }
     } else {
 
-        if (card.classList.contains("is-centered-active")) {
+        if (card.classList.contains("is-floating-active")) {
             closeCardPC();
         } else {
             openCardPC(card, mobNo);
@@ -276,7 +276,7 @@ function toggleCardExpand(card, mobNo) {
 
 function openCardPC(card, mobNo) {
 
-    const existing = document.querySelector(".mob-card.is-centered-active");
+    const existing = document.querySelector(".mob-card.is-floating-active");
     if (existing) {
         closeCardPC(true);
     }
@@ -306,11 +306,7 @@ function openCardPC(card, mobNo) {
     card.style.margin = "0";
 
     requestAnimationFrame(() => {
-        card.classList.add("is-centered-active");
-
-        card.style.top = "160px";
-        card.style.left = "50%";
-        card.style.transform = "translateX(-50%)";
+        card.classList.add("is-floating-active");
 
         panel.classList.add("open");
         setOpenMobCardNo(mobNo);
@@ -321,7 +317,7 @@ function openCardPC(card, mobNo) {
 }
 
 function closeCardPC(immediate = false) {
-    const card = document.querySelector(".mob-card.is-centered-active");
+    const card = document.querySelector(".mob-card.is-floating-active");
     if (!card) return;
 
     const panel = card.querySelector(".expandable-panel");
@@ -329,13 +325,12 @@ function closeCardPC(immediate = false) {
     const placeholderId = card.dataset.placeholderId;
     const placeholder = document.getElementById(placeholderId);
 
-    panel.classList.remove("open");
     setOpenMobCardNo(null);
     backdrop?.classList.add("hidden");
 
     if (!placeholder) {
 
-        card.classList.remove("is-centered-active");
+        card.classList.remove("is-floating-active");
         card.style = "";
         return;
     }
@@ -345,9 +340,10 @@ function closeCardPC(immediate = false) {
         return;
     }
 
+    panel.classList.remove("open");
+
     const rect = placeholder.getBoundingClientRect();
-    card.classList.remove("is-centered-active");
-    card.style.transform = "";
+    card.classList.remove("is-floating-active");
     card.style.top = `${rect.top}px`;
     card.style.left = `${rect.left}px`;
     card.style.width = `${rect.width}px`;
@@ -364,7 +360,7 @@ function finishClose(card, placeholder) {
     if (!card.parentElement) return;
 
     card.style = "";
-    card.classList.remove("is-centered-active");
+    card.classList.remove("is-floating-active");
     delete card.dataset.placeholderId;
 
     if (placeholder && placeholder.parentElement) {
