@@ -298,9 +298,12 @@ function openCardPC(card, mobNo) {
     card.dataset.placeholderId = "temp-" + Date.now();
     placeholder.id = card.dataset.placeholderId;
 
-    card.style.position = "fixed";
-    card.style.top = `${top}px`;
-    card.style.left = `${left}px`;
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+
+    card.style.position = "absolute";
+    card.style.top = `${top + scrollY}px`;
+    card.style.left = `${left + scrollX}px`;
     card.style.width = `${width}px`;
     card.style.zIndex = "100";
     card.style.margin = "0";
@@ -342,10 +345,12 @@ function closeCardPC(immediate = false) {
 
     panel.classList.remove("open");
 
-    const rect = placeholder.getBoundingClientRect();
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+
     card.classList.remove("is-floating-active");
-    card.style.top = `${rect.top}px`;
-    card.style.left = `${rect.left}px`;
+    card.style.top = `${rect.top + scrollY}px`;
+    card.style.left = `${rect.left + scrollX}px`;
     card.style.width = `${rect.width}px`;
 
     card.addEventListener("transitionend", function handler() {
