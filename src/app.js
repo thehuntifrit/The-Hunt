@@ -212,21 +212,63 @@ function attachGlobalEventListeners() {
             e.stopPropagation();
         }
     });
+
+    const backdrop = document.getElementById("card-overlay-backdrop");
+    if (backdrop) {
+        backdrop.addEventListener("click", () => {
+            closeActiveCard();
+        });
+    }
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            closeActiveCard();
+        }
+    });
+}
+
+function closeActiveCard() {
+    const activeCard = document.querySelector(".mob-card.is-overlay-active");
+    if (activeCard) {
+        const panel = activeCard.querySelector(".expandable-panel");
+        if (panel) panel.classList.remove("open");
+        activeCard.classList.remove("is-overlay-active");
+        setOpenMobCardNo(null);
+    }
+    const backdrop = document.getElementById("card-overlay-backdrop");
+    backdrop?.classList.add("hidden");
 }
 
 function toggleCardExpand(card, mobNo) {
     const panel = card.querySelector(".expandable-panel");
-    if (panel) {
-        if (!panel.classList.contains("open")) {
-            document.querySelectorAll(".expandable-panel.open").forEach(p => {
-                if (p.closest(".mob-card") !== card) p.classList.remove("open");
+    if (!panel) return;
+
+    const isMobile = window.innerWidth < 1024;
+    const backdrop = document.getElementById("card-overlay-backdrop");
+
+    if (!panel.classList.contains("open")) {
+        document.querySelectorAll(".expandable-panel.open").forEach(p => {
+            if (p.closest(".mob-card") !== card) {
+                p.classList.remove("open");
+                p.closest(".mob-card")?.classList.remove("is-overlay-active");
+            }
+        });
+        panel.classList.add("open");
+        setOpenMobCardNo(mobNo);
+
+        if (isMobile) {
+            requestAnimationFrame(() => {
+                card.scrollIntoView({ behavior: "smooth", block: "start" });
             });
-            panel.classList.add("open");
-            setOpenMobCardNo(mobNo);
         } else {
-            panel.classList.remove("open");
-            setOpenMobCardNo(null);
+            card.classList.add("is-overlay-active");
+            backdrop?.classList.remove("hidden");
         }
+    } else {
+        panel.classList.remove("open");
+        setOpenMobCardNo(null);
+        card.classList.remove("is-overlay-active");
+        backdrop?.classList.add("hidden");
     }
 }
 
