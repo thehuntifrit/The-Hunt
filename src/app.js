@@ -276,7 +276,7 @@ function toggleCardExpand(card, mobNo) {
 
 function openCardPC(card, mobNo) {
     document.querySelectorAll(".mob-card.is-floating-active").forEach(existing => {
-        closeCardPC(true);
+        closeCardPC(existing, true);
     });
 
     const panel = card.querySelector(".expandable-panel");
@@ -317,8 +317,8 @@ function openCardPC(card, mobNo) {
     });
 }
 
-function closeCardPC(immediate = false) {
-    const card = document.querySelector(".mob-card.is-floating-active");
+function closeCardPC(cardToClose = null, immediate = false) {
+    const card = cardToClose || document.querySelector(".mob-card.is-floating-active");
     if (!card) return;
 
     const panel = card.querySelector(".expandable-panel");
@@ -330,7 +330,6 @@ function closeCardPC(immediate = false) {
     backdrop?.classList.add("hidden");
 
     if (!placeholder) {
-
         card.classList.remove("is-floating-active");
         card.style = "";
         return;
@@ -343,6 +342,7 @@ function closeCardPC(immediate = false) {
 
     panel.classList.remove("open");
 
+    const rect = placeholder.getBoundingClientRect();
     const scrollY = window.pageYOffset || document.documentElement.scrollTop;
     const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
 
@@ -351,11 +351,11 @@ function closeCardPC(immediate = false) {
     card.style.left = `${rect.left + scrollX}px`;
     card.style.width = `${rect.width}px`;
 
-    card.addEventListener("transitionend", function handler() {
-        card.removeEventListener("transitionend", handler);
+    const onEnd = () => {
+        card.removeEventListener("transitionend", onEnd);
         finishClose(card, placeholder);
-    }, { once: true });
-
+    };
+    card.addEventListener("transitionend", onEnd, { once: true });
     setTimeout(() => finishClose(card, placeholder), 350);
 }
 
@@ -369,6 +369,12 @@ function finishClose(card, placeholder) {
     if (placeholder && placeholder.parentElement) {
         placeholder.parentElement.removeChild(placeholder);
     }
+
+    document.querySelectorAll(`.mob-card-placeholder[id^='temp-']`).forEach(p => {
+        if (!document.querySelector(`.mob-card[data-placeholder-id='${p.id}']`)) {
+            p.remove();
+        }
+    });
 }
 
 async function handleInstantReport(mobNo, rank) {
