@@ -14,7 +14,6 @@
 
 <body class="leading-relaxed">
 
-    <!-- ローディングオーバーレイ -->
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-spinner"></div>
         <div class="loading-text">Loading...</div>
@@ -23,7 +22,6 @@
     <header id="main-header"
         class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md">
 
-        <!-- ステータスメッセージ / テロップ -->
         <div id="status-message"
             class="text-center py-1 text-sm text-white bg-transparent flex flex-col items-center justify-center gap-0.5"
             role="status" aria-live="polite">
@@ -32,27 +30,22 @@
             <div id="status-message-temp"></div>
         </div>
 
-        <!-- 帯部分（タイトル＋ET＋ランクタブ） -->
         <div class="max-w-6xl mx-auto px-4 flex items-center justify-between min-h-16 sm:min-h-16 lg:min-h-20">
-            <!-- 左：タイトル -->
             <h1 class="flex flex-col text-3xl font-bold font-stretch-condensed leading-[0.8] text-glow">
                 <span class="text-cyan-400">The</span>
                 <span class="text-yellow-400">Hunt</span>
             </h1>
 
-            <!-- 右：ET（上）＋ランクタブ（下） -->
             <div class="flex flex-col items-end justify-center gap-1">
                 <span id="eorzea-time" class="text-sm text-gray-300"></span>
                 <div id="rank-tabs" class="flex justify-end gap-2"></div>
             </div>
         </div>
 
-        <!-- エリアパネル（スマホ） -->
         <div id="area-filter-panel-mobile"
             class="max-w-6xl mx-auto flex flex-wrap justify-end px-4 py-2 block lg:hidden">
             <div class="grid grid-cols-2 gap-2 w-full sm:w-auto"></div>
         </div>
-        <!-- エリアパネル（デスクトップ） -->
         <div id="area-filter-panel-desktop" class="max-w-6xl mx-auto flex flex-wrap justify-end px-4 py-2 hidden">
             <div class="flex flex-wrap gap-2 justify-end w-full"></div>
         </div>
