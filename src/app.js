@@ -303,7 +303,7 @@ function openCardPC(card, mobNo) {
     card.style.top = `${top + scrollY}px`;
     card.style.left = `${left + scrollX}px`;
     card.style.width = `${width}px`;
-    card.style.zIndex = "100";
+    card.style.zIndex = "45";
     card.style.margin = "0";
 
     requestAnimationFrame(() => {
