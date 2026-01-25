@@ -118,6 +118,7 @@ body {
     user-select: none;
     cursor: pointer;
     z-index: 1;
+    scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 16px);
 }
 
 .mob-card-inner {
