@@ -275,11 +275,9 @@ function toggleCardExpand(card, mobNo) {
 }
 
 function openCardPC(card, mobNo) {
-
-    const existing = document.querySelector(".mob-card.is-floating-active");
-    if (existing) {
+    document.querySelectorAll(".mob-card.is-floating-active").forEach(existing => {
         closeCardPC(true);
-    }
+    });
 
     const panel = card.querySelector(".expandable-panel");
     const rect = card.getBoundingClientRect();
