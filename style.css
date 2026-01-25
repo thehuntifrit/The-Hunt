@@ -632,21 +632,20 @@ html body.magnifier-active .mob-card-inner * {
     pointer-events: none;
 }
 
-.mob-card.is-centered-active {
+.mob-card.is-floating-active {
     position: fixed !important;
     z-index: 100 !important;
-    max-width: 90vw;
-    width: 420px !important;
+    max-width: 95vw;
 }
 
-.mob-card.is-centered-active .mob-card-inner {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.9));
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 40px rgba(6, 182, 212, 0.3) !important;
+.mob-card.is-floating-active .mob-card-inner {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 1), rgba(15, 23, 42, 1));
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15), 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 40px rgba(6, 182, 212, 0.4) !important;
     height: auto !important;
-    max-height: calc(100vh - 180px);
+    max-height: 85vh;
     overflow-y: auto;
 }
 
-.mob-card.is-centered-active .expandable-panel {
+.mob-card.is-floating-active .expandable-panel {
     max-height: none !important;
 }
