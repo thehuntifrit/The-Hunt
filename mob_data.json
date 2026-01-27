@@ -939,25 +939,13 @@
       "mapImage": "",
       "locations": [] 
     },
-      "61111": {"rank": "A", "name":"1️⃣ サリー・ザ・スイーパー", "area": "リビング・メモリー",
+      "61111": {"rank": "A", "name":"サリー・ザ・スイーパー", "area": "リビング・メモリー",
       "condition": "",
       "repopSeconds": 14400, "maxRepopSeconds": 21600,
       "mapImage": "",
       "locations": [] 
     },
-      "61121": {"rank": "A", "name":"1️⃣ キャッツアイ", "area": "リビング・メモリー",
-      "condition": "",
-      "repopSeconds": 14400, "maxRepopSeconds": 21600,
-      "mapImage": "",
-      "locations": [] 
-    },
-      "61112": {"rank": "A", "name":"2️⃣ サリー・ザ・スイーパー", "area": "リビング・メモリー",
-      "condition": "",
-      "repopSeconds": 14400, "maxRepopSeconds": 21600,
-      "mapImage": "",
-      "locations": [] 
-    },
-      "61122": {"rank": "A", "name":"2️⃣ キャッツアイ", "area": "リビング・メモリー",
+      "61121": {"rank": "A", "name":"キャッツアイ", "area": "リビング・メモリー",
       "condition": "",
       "repopSeconds": 14400, "maxRepopSeconds": 21600,
       "mapImage": "",
@@ -1018,24 +1006,7 @@
       "mapImage": "",
       "locations": [] 
     },
-      "62061": {"rank": "S", "name": "1️⃣ ウェザーリポーター", "area": "リビング・メモリー",
-      "condition": "青魔道士のスキル「猛吹雪」をPOP地点で使う",
-      "repopSeconds": 302400, "maxRepopSeconds": 475200,
-      "mapImage": "Living_Memory.webp",
-      "locations": [
-        {"id":"LM_101", "x": 9.6, "y": 28.6, "mob_ranks": ["S", "A", "B2"]},
-        {"id":"LM_102", "x": 44.0, "y": 47.4, "mob_ranks": ["S", "A", "B2"]},
-        {"id":"LM_103", "x": 28.8, "y": 64.8, "mob_ranks": ["S", "A", "B2"]},
-        {"id":"LM_104", "x": 7.5, "y": 68.8, "mob_ranks": ["S", "A", "B1"]},
-        {"id":"LM_105", "x": 27.5, "y": 89.8, "mob_ranks": ["S", "A", "B1"]},
-        {"id":"LM_106", "x": 62.6, "y": 73.6, "mob_ranks": ["S", "A", "B1"]},
-        {"id":"LM_107", "x": 78.2, "y": 48.6, "mob_ranks": ["B2"]},
-        {"id":"LM_108", "x": 89.0, "y": 43.0, "mob_ranks": ["B2"]},
-        {"id":"LM_109", "x": 92.6, "y": 71.0, "mob_ranks": ["B1"]},
-        {"id":"LM_110", "x": 8.0, "y": 78.6, "mob_ranks": ["B1"]}
-      ]
-    },
-      "62062": {"rank": "S", "name": "2️⃣ ウェザーリポーター", "area": "リビング・メモリー",
+      "62061": {"rank": "S", "name": "ウェザーリポーター", "area": "リビング・メモリー",
       "condition": "青魔道士のスキル「猛吹雪」をPOP地点で使う",
       "repopSeconds": 302400, "maxRepopSeconds": 475200,
       "mapImage": "Living_Memory.webp",
@@ -1058,13 +1029,7 @@
       "mapImage": "",
       "locations": [] 
     },
-      "63021": {"rank": "F", "name":"1️⃣ マイカ・ザ・ムー：大団円", "area": "リビング・メモリー",
-      "condition": "",
-      "repopSeconds": 129600, "maxRepopSeconds": 259200,
-      "mapImage": "",
-      "locations": [] 
-    },
-      "63022": {"rank": "F", "name":"2️⃣ マイカ・ザ・ムー：大団円", "area": "リビング・メモリー",
+      "63021": {"rank": "F", "name":"マイカ・ザ・ムー：大団円", "area": "リビング・メモリー",
       "condition": "",
       "repopSeconds": 129600, "maxRepopSeconds": 259200,
       "mapImage": "",
