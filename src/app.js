@@ -1,7 +1,7 @@
 // app.js
 
 import { loadBaseMobData, startRealtime, setOpenMobCardNo, getState, setUserId } from "./dataManager.js";
-import { initializeAuth, submitReport, submitMemo } from "./server.js";
+import { initializeAuth, getUserData, submitReport, submitMemo } from "./server.js";
 import { openReportModal, initModal, openAuthModal } from "./modal.js";
 import { renderRankTabs, handleAreaFilterClick, updateFilterUI } from "./filterUI.js";
 import { DOM, sortAndRedistribute, showColumnContainer } from "./uiRender.js";
@@ -19,6 +19,13 @@ async function initializeApp() {
         const userId = await initializeAuth();
         if (userId) {
             setUserId(userId);
+
+            const userData = await getUserData(userId);
+            if (userData && userData.lodestone_id) {
+                setLodestoneId(userData.lodestone_id);
+                setVerified(true);
+            }
+
             startRealtime();
         }
 
