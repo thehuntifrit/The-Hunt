@@ -3,6 +3,7 @@
 import { toggleCrushStatus } from "./server.js";
 import { getState } from "./dataManager.js";
 import { hideTooltip } from "./tooltip.js";
+import { openAuthModal } from "./modal.js";
 
 let lastClickTime = 0;
 let lastClickLocationId = null;
@@ -10,6 +11,12 @@ let lastClickLocationId = null;
 function handleCrushToggle(e) {
     const point = e.target.closest(".spawn-point");
     if (!point) return;
+
+    if (!getState().isVerified) {
+        openAuthModal();
+        return;
+    }
+
     if (point.dataset.isInteractive !== "true") return;
     if (point.dataset.isLastone === "true") return;
 
