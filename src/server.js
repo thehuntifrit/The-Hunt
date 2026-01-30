@@ -1,7 +1,7 @@
 // server.js
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, getDoc, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
 import { getState } from "./dataManager.js";
@@ -39,6 +39,19 @@ export async function initializeAuth() {
             }
         });
     });
+}
+
+export async function getUserData(uid) {
+    try {
+        const userDocRef = doc(db, "users", uid);
+        const userSnap = await getDoc(userDocRef);
+        if (userSnap.exists()) {
+            return userSnap.data();
+        }
+    } catch (error) {
+        console.error("ユーザー情報の取得に失敗しました:", error);
+    }
+    return null;
 }
 
 export function subscribeMobStatusDocs(onUpdate) {
