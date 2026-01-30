@@ -26,6 +26,10 @@ export const DOM = {
   modalTimeInput: document.getElementById('report-datetime'),
   modalForceSubmit: document.getElementById('report-force-submit'),
   statusMessageTemp: document.getElementById('status-message-temp'),
+  authModal: document.getElementById('auth-modal'),
+  authLodestoneId: document.getElementById('auth-lodestone-id'),
+  authVCode: document.getElementById('auth-v-code'),
+  authStatus: document.getElementById('auth-modal-status'),
 };
 
 const groupSectionCache = new Map();
