@@ -111,7 +111,13 @@ export function subscribeMobLocations(onUpdate) {
 export const submitReport = async (mobNo, timeISO) => {
     const state = getState();
     const userId = state.userId;
+    const lodestoneId = state.lodestoneId;
     const mobs = state.mobs;
+
+    if (!state.isVerified) {
+        console.error("認証が完了していません。");
+        return;
+    }
 
     if (!userId) {
         console.error("認証が完了していません。ページをリロードしてください。");
@@ -210,7 +216,8 @@ export const submitReport = async (mobNo, timeISO) => {
         const newData = {
             [mobNo]: {
                 last_kill_time: Timestamp.fromDate(killTimeDate),
-                prev_kill_time: prevTimestamp
+                prev_kill_time: prevTimestamp,
+                reporter_id: lodestoneId
             }
         };
 
@@ -227,7 +234,13 @@ export const submitReport = async (mobNo, timeISO) => {
 export const submitMemo = async (mobNo, memoText) => {
     const state = getState();
     const userId = state.userId;
+    const lodestoneId = state.lodestoneId;
     const mobs = state.mobs;
+
+    if (!state.isVerified) {
+        console.error("認証が完了していません。");
+        return { success: false, error: "認証エラー" };
+    }
 
     if (!userId) {
         console.error("認証が完了していません。");
@@ -252,7 +265,8 @@ export const submitMemo = async (mobNo, memoText) => {
 
         const memoData = {
             memo_text: memoText,
-            created_at: Timestamp.now()
+            created_at: Timestamp.now(),
+            reporter_id: lodestoneId
         };
 
         await setDoc(docRef, {
@@ -271,7 +285,13 @@ export const submitMemo = async (mobNo, memoText) => {
 export const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
     const state = getState();
     const userId = state.userId;
+    const lodestoneId = state.lodestoneId;
     const mobs = state.mobs;
+
+    if (!state.isVerified) {
+        console.error("認証が完了していません。");
+        return;
+    }
 
     if (!userId) {
         console.error("認証が完了していません。");
@@ -290,7 +310,8 @@ export const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
         const updateKey = `points.${locationId}.${fieldName}`;
 
         const updatePayload = {
-            [updateKey]: Timestamp.now()
+            [updateKey]: Timestamp.now(),
+            [`points.${locationId}.reporter_id`]: lodestoneId
         };
 
         await setDoc(docRef, updatePayload, { merge: true });
@@ -301,3 +322,51 @@ export const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
         console.error("湧き潰し報告エラー:", error);
     }
 };
+
+export async function registerUserToFirestore(lodestoneId, characterName) {
+    try {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const userDocRef = doc(db, "users", user.uid);
+        await setDoc(userDocRef, {
+            lodestone_id: lodestoneId,
+            character_name: characterName,
+            updated_at: Timestamp.now()
+        }, { merge: true });
+
+        console.log(`[Auth] User linked: ${lodestoneId} (${characterName})`);
+    } catch (error) {
+        console.error("ユーザー登録エラー:", error);
+    }
+}
+
+export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
+    try {
+        const url = `https://xivapi.com/character/${lodestoneId}`;
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            if (response.status === 404) {
+                return { success: false, error: "キャラクターが見つかりませんでした。IDを確認してください。" };
+            }
+            if (response.status === 429) {
+                return { success: false, error: "APIの制限を超えました。少し時間を置いてから再度お試しください。" };
+            }
+            throw new Error(`XIVAPI error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const bio = data.Character?.Biography || "";
+        const name = data.Character?.Name || "Unknown";
+
+        if (bio.includes(verificationCode)) {
+            return { success: true, characterName: name };
+        } else {
+            return { success: false, error: "検証コードが自己紹介文に見つかりませんでした。" };
+        }
+    } catch (error) {
+        console.error("XIVAPI verification error:", error);
+        return { success: false, error: "通信エラーが発生しました。" };
+    }
+}
