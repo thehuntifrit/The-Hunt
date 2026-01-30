@@ -393,6 +393,17 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
 
             const data = await response.json();
 
+            if (data.Error || data.Subject === "XIVAPI ERROR") {
+                console.error("[XIVAPI] Internal Error:", data);
+                if (data.Message && data.Message.includes("403")) {
+                    return { success: false, error: "現在、Lodestone側のアクセス制限によりAPIがデータを取得できません。(403 Forbidden)。\n時間を置いて再試行してください。" };
+                }
+                if (data.Message && data.Message.includes("Maintenance")) {
+                    return { success: false, error: "LodestoneまたはXIVAPIがメンテナンス中です。" };
+                }
+                throw new Error(data.Message || "XIVAPI Error");
+            }
+
             if (data.Info?.Character?.State === 2) {
                 if (attempt < maxRetries) {
                     console.log("[XIVAPI] Character data is currently parsing (State 2). Retrying...");
