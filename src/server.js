@@ -347,8 +347,6 @@ export async function registerUserToFirestore(lodestoneId, characterName) {
             character_name: characterName,
             updated_at: Timestamp.now()
         }, { merge: true });
-
-        console.log(`[Auth] User linked: ${lodestoneId} (${characterName})`);
     } catch (error) {
         console.error("ユーザー登録エラー:", error);
     }
@@ -361,7 +359,6 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
             if (attempt > 0) {
-                console.log(`[XIVAPI] Retry attempt ${attempt}...`);
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
 
@@ -370,45 +367,39 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
                 const url = `https://xivapi.com/character/${lodestoneId}`;
                 response = await fetch(url, { mode: 'cors' });
             } catch (directError) {
-                console.warn("[XIVAPI] Direct fetch failed, trying proxy...", directError);
                 const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://xivapi.com/character/${lodestoneId}`)}`;
                 response = await fetch(proxyUrl);
             }
 
+            let data = null;
+            try {
+                if (response) data = await response.json();
+            } catch (parseError) { }
+
             if (!response || !response.ok) {
+                if (data && (data.Error || data.Subject === "XIVAPI ERROR")) {
+                    if (data.Message && data.Message.includes("403")) {
+                        return { success: false, error: "現在、Lodestone側のアクセス制限によりAPIがデータを取得できません。(403 Forbidden)。\n時間を置いて再試行してください。" };
+                    }
+                }
+
                 const status = response ? response.status : "Network Error";
+                if (status === 404) return { success: false, error: "キャラクターが見つかりませんでした。" };
+                if (status === 429) return { success: false, error: "APIの制限を超えました。少しお待ちください。" };
 
-                if (status === 404) {
-                    return { success: false, error: "キャラクターが見つかりませんでした。IDを確認してください。" };
-                }
-                if (status === 429) {
-                    return { success: false, error: "APIの制限を超えました。少し時間を置いてから再度お試しください。" };
-                }
-
-                if ((!response || status >= 500) && attempt < maxRetries) {
-                    continue;
-                }
-                throw new Error(`XIVAPI error: ${status}`);
+                if ((!response || status >= 500) && attempt < maxRetries) continue;
+                throw new Error(data?.Message || `XIVAPI error: ${status}`);
             }
 
-            const data = await response.json();
-
-            if (data.Error || data.Subject === "XIVAPI ERROR") {
-                console.error("[XIVAPI] Internal Error:", data);
+            if (data && (data.Error || data.Subject === "XIVAPI ERROR")) {
                 if (data.Message && data.Message.includes("403")) {
                     return { success: false, error: "現在、Lodestone側のアクセス制限によりAPIがデータを取得できません。(403 Forbidden)。\n時間を置いて再試行してください。" };
-                }
-                if (data.Message && data.Message.includes("Maintenance")) {
-                    return { success: false, error: "LodestoneまたはXIVAPIがメンテナンス中です。" };
                 }
                 throw new Error(data.Message || "XIVAPI Error");
             }
 
             if (data.Info?.Character?.State === 2) {
-                if (attempt < maxRetries) {
-                    console.log("[XIVAPI] Character data is currently parsing (State 2). Retrying...");
-                    continue;
-                }
+                if (attempt < maxRetries) continue;
                 return { success: false, error: "現在キャラクターデータを同期中です。数十秒待ってから再度お試しください。" };
             }
 
@@ -421,7 +412,6 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
                 return { success: false, error: "検証コードが自己紹介文に見つかりませんでした。保存されているか確認してください。" };
             }
         } catch (error) {
-            console.error(`XIVAPI attempt ${attempt} failed:`, error);
             lastError = error;
             if (attempt < maxRetries) continue;
         }
