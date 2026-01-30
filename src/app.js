@@ -2,7 +2,7 @@
 
 import { loadBaseMobData, startRealtime, setOpenMobCardNo, getState, setUserId } from "./dataManager.js";
 import { initializeAuth, submitReport, submitMemo } from "./server.js";
-import { openReportModal, initModal } from "./modal.js";
+import { openReportModal, initModal, openAuthModal } from "./modal.js";
 import { renderRankTabs, handleAreaFilterClick, updateFilterUI } from "./filterUI.js";
 import { DOM, sortAndRedistribute, showColumnContainer } from "./uiRender.js";
 import { debounce } from "./cal.js";
@@ -170,6 +170,10 @@ function attachGlobalEventListeners() {
         const reportBtn = e.target.closest(".report-side-bar");
         if (reportBtn) {
             e.stopPropagation();
+            if (!getState().isVerified) {
+                openAuthModal();
+                return;
+            }
             const type = reportBtn.dataset.reportType;
             if (type === "modal") {
                 openReportModal(mobNo);
@@ -193,6 +197,12 @@ function attachGlobalEventListeners() {
             const input = e.target;
             const mobNo = parseInt(input.dataset.mobNo, 10);
             const text = input.value;
+
+            if (!getState().isVerified) {
+                input.value = ""; // Reset or show error?
+                openAuthModal();
+                return;
+            }
 
             await submitMemo(mobNo, text);
         }
