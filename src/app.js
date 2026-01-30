@@ -1,6 +1,6 @@
 // app.js
 
-import { loadBaseMobData, startRealtime, setOpenMobCardNo, getState, setUserId } from "./dataManager.js";
+import { loadBaseMobData, startRealtime, setOpenMobCardNo, getState, setUserId, setLodestoneId, setVerified } from "./dataManager.js";
 import { initializeAuth, getUserData, submitReport, submitMemo } from "./server.js";
 import { openReportModal, initModal, openAuthModal } from "./modal.js";
 import { renderRankTabs, handleAreaFilterClick, updateFilterUI } from "./filterUI.js";
@@ -206,7 +206,7 @@ function attachGlobalEventListeners() {
             const text = input.value;
 
             if (!getState().isVerified) {
-                input.value = ""; // Reset or show error?
+                input.value = "";
                 openAuthModal();
                 return;
             }
