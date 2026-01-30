@@ -355,34 +355,61 @@ export async function registerUserToFirestore(lodestoneId, characterName) {
 }
 
 export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
-    try {
-        const url = `https://xivapi.com/character/${lodestoneId}?columns=Character.Biography,Character.Name&t=${Date.now()}`;
-        const response = await fetch(url, {
-            mode: 'cors',
-            cache: 'no-cache'
-        });
+    const maxRetries = 2;
+    let lastError = null;
 
-        if (!response.ok) {
-            if (response.status === 404) {
-                return { success: false, error: "キャラクターが見つかりませんでした。IDを確認してください。" };
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            if (attempt > 0) {
+                console.log(`[XIVAPI] Retry attempt ${attempt}...`);
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
-            if (response.status === 429) {
-                return { success: false, error: "APIの制限を超えました。少し時間を置いてから再度お試しください。" };
+
+            const url = `https://xivapi.com/character/${lodestoneId}?data=CH&t=${Date.now()}`;
+            const response = await fetch(url, {
+                mode: 'cors',
+                cache: 'no-cache'
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    return { success: false, error: "キャラクターが見つかりませんでした。IDを確認してください。" };
+                }
+                if (response.status === 429) {
+                    return { success: false, error: "APIの制限を超えました。少し時間を置いてから再度お試しください。" };
+                }
+                if (response.status >= 500 && attempt < maxRetries) {
+                    continue;
+                }
+                throw new Error(`XIVAPI error: ${response.status}`);
             }
-            throw new Error(`XIVAPI error: ${response.status}`);
-        }
 
-        const data = await response.json();
-        const bio = data.Character?.Biography || "";
-        const name = data.Character?.Name || "Unknown";
+            const data = await response.json();
+            if (data.Info?.Character?.State === 2) {
+                if (attempt < maxRetries) {
+                    console.log("[XIVAPI] Character data is currently parsing (State 2). Retrying...");
+                    continue;
+                }
+                return { success: false, error: "現在キャラクターデータを同期中です。数十秒待ってから再度お試しください。" };
+            }
 
-        if (bio.includes(verificationCode)) {
-            return { success: true, characterName: name };
-        } else {
-            return { success: false, error: "検証コードが自己紹介文に見つかりませんでした。" };
+            const bio = data.Character?.Biography || "";
+            const name = data.Character?.Name || "Unknown";
+
+            if (bio.includes(verificationCode)) {
+                return { success: true, characterName: name };
+            } else {
+                return { success: false, error: "検証コードが自己紹介文に見つかりませんでした。保存されているか確認してください。" };
+            }
+        } catch (error) {
+            console.error(`XIVAPI attempt ${attempt} failed:`, error);
+            lastError = error;
+            if (attempt < maxRetries) continue;
         }
-    } catch (error) {
-        console.error("XIVAPI verification error:", error);
-        return { success: false, error: `通信エラーが発生しました。詳細はコンソールを確認してください。(${error.message})` };
     }
+
+    return {
+        success: false,
+        error: `外部API(XIVAPI)でエラーが発生しました。時間をおいて再試行するか、IDが正しいか確認してください。(Error: ${lastError?.message || "Unknown"})`
+    };
 }
