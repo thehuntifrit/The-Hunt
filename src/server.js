@@ -356,8 +356,11 @@ export async function registerUserToFirestore(lodestoneId, characterName) {
 
 export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
     try {
-        const url = `https://xivapi.com/character/${lodestoneId}`;
-        const response = await fetch(url);
+        const url = `https://xivapi.com/character/${lodestoneId}?data=CH&t=${Date.now()}`;
+        const response = await fetch(url, {
+            mode: 'cors',
+            cache: 'no-cache'
+        });
 
         if (!response.ok) {
             if (response.status === 404) {
@@ -380,6 +383,6 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
         }
     } catch (error) {
         console.error("XIVAPI verification error:", error);
-        return { success: false, error: "通信エラーが発生しました。" };
+        return { success: false, error: `通信エラーが発生しました。詳細はコンソールを確認してください。(${error.message})` };
     }
 }
