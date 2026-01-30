@@ -356,7 +356,7 @@ export async function registerUserToFirestore(lodestoneId, characterName) {
 
 export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
     try {
-        const url = `https://xivapi.com/character/${lodestoneId}?data=CH&t=${Date.now()}`;
+        const url = `https://xivapi.com/character/${lodestoneId}?columns=Character.Biography,Character.Name&t=${Date.now()}`;
         const response = await fetch(url, {
             mode: 'cors',
             cache: 'no-cache'
