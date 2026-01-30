@@ -61,11 +61,6 @@ export function initModal() {
     if (cancelAuthBtn) {
         cancelAuthBtn.addEventListener("click", closeAuthModal);
     }
-    UiDOM.authModal.addEventListener("click", (e) => {
-        if (e.target === UiDOM.authModal) {
-            closeAuthModal();
-        }
-    });
 
     const copyCodeBtn = document.getElementById("auth-copy-code");
     if (copyCodeBtn) {
@@ -125,7 +120,6 @@ export function initModal() {
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
             if (!UiDOM.reportModal.classList.contains("hidden")) closeReportModal();
-            if (!UiDOM.authModal.classList.contains("hidden")) closeAuthModal();
         }
     });
 }
