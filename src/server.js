@@ -365,10 +365,9 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
 
-            const url = `https://xivapi.com/character/${lodestoneId}?data=CH&t=${Date.now()}`;
+            const url = `https://xivapi.com/character/${lodestoneId}`;
             const response = await fetch(url, {
-                mode: 'cors',
-                cache: 'no-cache'
+                mode: 'cors'
             });
 
             if (!response.ok) {
