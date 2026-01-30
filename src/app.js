@@ -177,10 +177,10 @@ function attachGlobalEventListeners() {
         const reportBtn = e.target.closest(".report-side-bar");
         if (reportBtn) {
             e.stopPropagation();
-            if (!getState().isVerified) {
-                openAuthModal();
-                return;
-            }
+            // if (!getState().isVerified) {
+            //     openAuthModal();
+            //     return;
+            // }
             const type = reportBtn.dataset.reportType;
             if (type === "modal") {
                 openReportModal(mobNo);
@@ -205,11 +205,11 @@ function attachGlobalEventListeners() {
             const mobNo = parseInt(input.dataset.mobNo, 10);
             const text = input.value;
 
-            if (!getState().isVerified) {
-                input.value = "";
-                openAuthModal();
-                return;
-            }
+            // if (!getState().isVerified) {
+            //     input.value = "";
+            //     openAuthModal();
+            //     return;
+            // }
 
             await submitMemo(mobNo, text);
         }
