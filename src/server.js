@@ -365,25 +365,34 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
 
-            const url = `https://xivapi.com/character/${lodestoneId}`;
-            const response = await fetch(url, {
-                mode: 'cors'
-            });
+            let response;
+            try {
+                const url = `https://xivapi.com/character/${lodestoneId}`;
+                response = await fetch(url, { mode: 'cors' });
+            } catch (directError) {
+                console.warn("[XIVAPI] Direct fetch failed, trying proxy...", directError);
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://xivapi.com/character/${lodestoneId}`)}`;
+                response = await fetch(proxyUrl);
+            }
 
-            if (!response.ok) {
-                if (response.status === 404) {
+            if (!response || !response.ok) {
+                const status = response ? response.status : "Network Error";
+
+                if (status === 404) {
                     return { success: false, error: "キャラクターが見つかりませんでした。IDを確認してください。" };
                 }
-                if (response.status === 429) {
+                if (status === 429) {
                     return { success: false, error: "APIの制限を超えました。少し時間を置いてから再度お試しください。" };
                 }
-                if (response.status >= 500 && attempt < maxRetries) {
+
+                if ((!response || status >= 500) && attempt < maxRetries) {
                     continue;
                 }
-                throw new Error(`XIVAPI error: ${response.status}`);
+                throw new Error(`XIVAPI error: ${status}`);
             }
 
             const data = await response.json();
+
             if (data.Info?.Character?.State === 2) {
                 if (attempt < maxRetries) {
                     console.log("[XIVAPI] Character data is currently parsing (State 2). Retrying...");
