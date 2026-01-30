@@ -10,7 +10,7 @@ import { initTooltip } from "./tooltip.js";
 import { initGlobalMagnifier } from "./magnifier.js";
 import "./readme.js";
 
-async function initializeApp() {
+async function initApp() {
     try {
         initTooltip();
         initGlobalMagnifier();
@@ -445,4 +445,4 @@ async function handleReportSubmit(e) {
     await submitReport(mobNo, timeISO);
 }
 
-document.addEventListener('DOMContentLoaded', initializeApp);
+document.addEventListener('DOMContentLoaded', initApp);
