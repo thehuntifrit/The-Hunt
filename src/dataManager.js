@@ -1,20 +1,8 @@
-// dataManager.js
+//dataManager.js
 
 import { calculateRepop } from "./cal.js";
 import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos, subscribeMaintenance } from "./server.js";
 import { filterMobsByRankAndArea } from "./filterUI.js";
-
-export const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
-
-export const PROGRESS_CLASSES = {
-    P0_60: "progress-p0-60",
-    P60_80: "progress-p60-80",
-    P80_100: "progress-p80-100",
-    MAX_OVER: "progress-max-over",
-    TEXT_NEXT: "text-next",
-    TEXT_POP: "text-pop",
-    BLINK_WHITE: "progress-blink-white"
-};
 
 export const state = {
     userId: localStorage.getItem("user_uuid") || null,
@@ -43,6 +31,18 @@ export const state = {
         ? parseInt(localStorage.getItem("openMobCardNo"), 10)
         : null,
     pendingCalculationMobs: new Set()
+};
+
+export const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
+
+export const PROGRESS_CLASSES = {
+    P0_60: "progress-p0-60",
+    P60_80: "progress-p60-80",
+    P80_100: "progress-p80-100",
+    MAX_OVER: "progress-max-over",
+    TEXT_NEXT: "text-next",
+    TEXT_POP: "text-pop",
+    BLINK_WHITE: "progress-blink-white"
 };
 
 if (state.filter.areaSets) {
