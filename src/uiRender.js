@@ -136,9 +136,9 @@ export function updateHeaderTime() {
       <div class="flex flex-col items-end w-full">
         ${welcomeHtml}
         <div class="flex items-center justify-end text-gray-300 leading-tight">
-          <span class="bg-gray-200 text-slate-950 text-[9px] px-0.5 py-[1px] rounded-[1px] font-bold mr-1 leading-none shadow-sm">LT</span>
-          <span class="inline-block w-[3rem] font-mono tabular-nums text-right mr-2">${ltHours}:${ltMinutes}</span>
-          <span class="bg-gray-200 text-slate-950 text-[9px] px-0.5 py-[1px] rounded-[1px] font-bold mr-1 leading-none shadow-sm">ET</span>
+          <span class="bg-gray-200 text-slate-950 text-[9px] px-1 py-[1.5px] rounded-[1px] font-mono font-bold mr-1.5 leading-none shadow-sm inline-flex justify-center w-[1.4rem]">LT</span>
+          <span class="inline-block w-[3rem] font-mono tabular-nums text-right mr-3">${ltHours}:${ltMinutes}</span>
+          <span class="bg-gray-200 text-slate-950 text-[9px] px-1 py-[1.5px] rounded-[1px] font-mono font-bold mr-1.5 leading-none shadow-sm inline-flex justify-center w-[1.4rem]">ET</span>
           <span class="inline-block w-[3rem] font-mono tabular-nums text-right">${et.hours}:${et.minutes}</span>
         </div>
       </div>
