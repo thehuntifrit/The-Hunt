@@ -121,15 +121,25 @@ function invalidateSortCache() {
   cachedSortedMobs = null;
 }
 
-function updateEorzeaTime() {
-  const et = getEorzeaTime(new Date());
+function updateHeaderTime() {
+  const now = new Date();
+  const et = getEorzeaTime(now);
+  const ltHours = String(now.getHours()).padStart(2, "0");
+  const ltMinutes = String(now.getMinutes()).padStart(2, "0");
+  const state = getState();
+  const name = state.characterName || "";
+
   const el = document.getElementById("eorzea-time");
   if (el) {
-    el.textContent = `ET ${et.hours}:${et.minutes}`;
+    el.innerHTML = `
+      <span class="text-cyan-400 mr-2 font-bold">${name}</span>
+      <span class="text-xs text-gray-500 mr-0.5">LT</span><span class="mr-2">${ltHours}:${ltMinutes}</span>
+      <span class="text-xs text-gray-500 mr-0.5">ET</span><span>${et.hours}:${et.minutes}</span>
+    `;
   }
 }
-updateEorzeaTime();
-setInterval(updateEorzeaTime, EORZEA_MINUTE_MS);
+updateHeaderTime();
+setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
 
 window.addEventListener('initialDataLoaded', () => {
   filterAndRender({ isInitialLoad: true });
