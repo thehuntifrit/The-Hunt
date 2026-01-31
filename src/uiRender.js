@@ -121,7 +121,7 @@ function invalidateSortCache() {
   cachedSortedMobs = null;
 }
 
-function updateHeaderTime() {
+export function updateHeaderTime() {
   const now = new Date();
   const et = getEorzeaTime(now);
   const ltHours = String(now.getHours()).padStart(2, "0");
@@ -138,10 +138,10 @@ function updateHeaderTime() {
     `;
   }
 }
-updateHeaderTime();
-setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
 
 window.addEventListener('initialDataLoaded', () => {
+  updateHeaderTime();
+  setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
   filterAndRender({ isInitialLoad: true });
   updateProgressBars();
 });
