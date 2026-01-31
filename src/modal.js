@@ -1,7 +1,7 @@
 // modal.js
 
 import { DOM as UiDOM } from "./uiRender.js";
-import { getState, setLodestoneId, setVerified } from "./dataManager.js";
+import { getState, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
 import { verifyLodestoneCharacter, registerUserToFirestore } from "./server.js";
 
 export async function openReportModal(mobNo) {
@@ -103,6 +103,7 @@ export function initModal() {
 
                 await registerUserToFirestore(lodestoneId, result.characterName);
                 setLodestoneId(lodestoneId);
+                setCharacterName(result.characterName);
                 setVerified(true);
 
                 setTimeout(() => {
