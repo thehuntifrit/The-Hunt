@@ -92,6 +92,7 @@ export function setCharacterName(name) {
     } else {
         localStorage.removeItem("character_name");
     }
+    window.dispatchEvent(new CustomEvent('characterNameSet'));
 }
 
 export function setVerified(verified) {
