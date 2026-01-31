@@ -128,14 +128,14 @@ export function updateHeaderTime() {
 
   const el = document.getElementById("eorzea-time");
   if (el) {
-    const welcomeHtml = name ? `<div class="text-gray-200 text-[13px] leading-tight text-right w-full mb-[1px] whitespace-nowrap">ようこそ！${name} さん</div>` : "";
+    const welcomeHtml = name ? `<div class="text-gray-200 text-[13px] leading-tight text-right w-full pb-0.5 whitespace-nowrap">ようこそ！${name} さん</div>` : "";
     el.innerHTML = `
-      <div class="flex flex-col items-end w-full">
+      <div class="flex flex-col items-end w-full py-1">
         ${welcomeHtml}
         <div class="flex items-center justify-end text-gray-300 leading-tight">
-          <span class="bg-gray-200 text-slate-950 text-[9px] px-1.5 py-[1px] rounded-full font-mono font-bold mr-0.5 leading-none shadow-sm inline-flex justify-center">L</span>
-          <span class="inline-block w-[2.7rem] font-mono tabular-nums text-right mr-1.5">${ltHours}:${ltMinutes}</span>
-          <span class="bg-gray-200 text-slate-950 text-[9px] px-1.5 py-[1px] rounded-full font-mono font-bold mr-0.5 leading-none shadow-sm inline-flex justify-center">E</span>
+          <span class="bg-gray-200 text-slate-950 text-[9px] px-1 py-[1.5px] rounded-md font-mono font-bold mr-0.5 leading-none shadow-sm inline-flex justify-center w-[1.4rem]">LT</span>
+          <span class="inline-block w-[2.7rem] font-mono tabular-nums text-right mr-2">${ltHours}:${ltMinutes}</span>
+          <span class="bg-gray-200 text-slate-950 text-[9px] px-1 py-[1.5px] rounded-md font-mono font-bold mr-0.5 leading-none shadow-sm inline-flex justify-center w-[1.4rem]">ET</span>
           <span class="inline-block w-[2.7rem] font-mono tabular-nums text-right">${et.hours}:${et.minutes}</span>
         </div>
       </div>
