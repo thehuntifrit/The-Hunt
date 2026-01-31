@@ -648,3 +648,82 @@ html body.magnifier-active .mob-card-inner * {
 .mob-card.is-floating-active .expandable-panel {
     max-height: none !important;
 }
+
+.header-info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+    z-index: 50;
+}
+
+.header-greeting {
+    color: #f1f5f9;
+    font-size: 13px;
+    line-height: 1;
+    text-align: right;
+    white-space: nowrap;
+    display: none;
+}
+
+.header-greeting:not(:empty) {
+    display: block;
+}
+
+.header-clock-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    line-height: 1;
+    user-select: none;
+}
+
+.header-label {
+    background-color: #d6c9b0;
+    color: #5a4a3a;
+    border: 1px solid #5a4a3a;
+    font-size: 10px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: bold;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    height: 15px;
+    margin-right: 4px;
+}
+
+.header-time-val {
+    color: #e2d7c5;
+    font-family: 'Inter', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    width: 2.8rem;
+}
+
+.header-clock-group {
+    display: flex;
+    align-items: center;
+}
+
+.header-clock-group:not(:last-child) {
+    margin-right: 12px;
+}
+
+@media (max-width: 1023px) {
+    .header-info-container {
+        justify-content: flex-end;
+        gap: 2px;
+    }
+
+    .header-greeting {
+        font-size: 12px;
+    }
+
+    .header-time-val {
+        font-size: 13px;
+        width: 2.6rem;
+    }
+}
