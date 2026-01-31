@@ -127,10 +127,10 @@ export const submitReport = async (mobNo, timeISO) => {
     const lodestoneId = state.lodestoneId;
     const mobs = state.mobs;
 
-    // if (!state.isVerified) {
-    //     console.error("認証が完了していません。");
-    //     return;
-    // }
+    if (!state.isVerified) {
+        console.error("認証が完了していません。");
+        return;
+    }
 
     if (!userId) {
         console.error("認証が完了していません。ページをリロードしてください。");
@@ -301,10 +301,10 @@ export const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
     const lodestoneId = state.lodestoneId;
     const mobs = state.mobs;
 
-    // if (!state.isVerified) {
-    //     console.error("認証が完了していません。");
-    //     return;
-    // }
+    if (!state.isVerified) {
+        console.error("認証が完了していません。");
+        return;
+    }
 
     if (!userId) {
         console.error("認証が完了していません。");
