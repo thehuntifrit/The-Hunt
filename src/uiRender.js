@@ -125,11 +125,6 @@ export function updateHeaderTime() {
   const ltMinutes = String(now.getMinutes()).padStart(2, "0");
   const state = getState();
   const name = state.characterName || "";
-
-  /* 
-   * Header time and greeting update
-   * Structure is now controlled via index.html, only text content is updated here.
-   */
   const elLT = document.getElementById("header-time-lt");
   const elET = document.getElementById("header-time-et");
   const elWelcome = document.getElementById("header-welcome-message");
@@ -140,18 +135,19 @@ export function updateHeaderTime() {
   }
 
   if (elWelcome) {
-    if (name) {
-      elWelcome.textContent = `ようこそ！${name} さん`;
-      elWelcome.classList.remove("hidden");
-    } else {
-      elWelcome.classList.add("hidden");
-    }
+    elWelcome.textContent = name ? `ようこそ {name} さん` : "";
   }
 }
 
+updateHeaderTime();
+setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
+
+window.addEventListener('characterNameSet', () => {
+  updateHeaderTime();
+});
+
 window.addEventListener('initialDataLoaded', () => {
   updateHeaderTime();
-  setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
   filterAndRender({ isInitialLoad: true });
   updateProgressBars();
 });
