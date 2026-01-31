@@ -131,7 +131,7 @@ export function updateHeaderTime() {
 
   const el = document.getElementById("eorzea-time");
   if (el) {
-    const welcomeHtml = name ? `<div class="text-cyan-400 font-bold text-[13px] leading-tight text-right w-full">ようこそ！${name} さん</div>` : "";
+    const welcomeHtml = name ? `<div class="text-gray-200 text-[13px] leading-tight text-right w-full">ようこそ！${name} さん</div>` : "";
     el.innerHTML = `
       <div class="flex flex-col items-end w-full">
         ${welcomeHtml}
