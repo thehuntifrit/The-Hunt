@@ -1,6 +1,6 @@
 // app.js
 
-import { loadBaseMobData, startRealtime, setOpenMobCardNo, getState, setUserId, setLodestoneId, setVerified } from "./dataManager.js";
+import { loadBaseMobData, startRealtime, setOpenMobCardNo, getState, setUserId, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
 import { initializeAuth, getUserData, submitReport, submitMemo } from "./server.js";
 import { openReportModal, initModal, openAuthModal } from "./modal.js";
 import { renderRankTabs, handleAreaFilterClick, updateFilterUI } from "./filterUI.js";
@@ -23,6 +23,7 @@ async function initApp() {
             const userData = await getUserData(userId);
             if (userData && userData.lodestone_id) {
                 setLodestoneId(userData.lodestone_id);
+                if (userData.character_name) setCharacterName(userData.character_name);
                 setVerified(true);
             }
 
