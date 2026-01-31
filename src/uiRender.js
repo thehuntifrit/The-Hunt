@@ -131,12 +131,14 @@ export function updateHeaderTime() {
 
   const el = document.getElementById("eorzea-time");
   if (el) {
-    const welcomeHtml = name ? `<div class="text-cyan-400 font-bold text-[11px] mb-0.5">ようこそ！${name} さん</div>` : "";
+    const welcomeHtml = name ? `<div class="text-cyan-400 font-bold text-[13px] leading-tight text-right w-full">ようこそ！${name} さん</div>` : "";
     el.innerHTML = `
-      ${welcomeHtml}
-      <div class="flex items-center justify-end text-gray-300">
-        <span class="text-[10px] text-gray-500 mr-0.5">LT</span><span class="inline-block w-[3rem] font-mono tabular-nums text-right mr-2">${ltHours}:${ltMinutes}</span>
-        <span class="text-[10px] text-gray-500 mr-0.5">ET</span><span class="inline-block w-[3rem] font-mono tabular-nums text-right">${et.hours}:${et.minutes}</span>
+      <div class="flex flex-col items-end w-full">
+        ${welcomeHtml}
+        <div class="flex items-center justify-end text-gray-300 leading-tight">
+          <span class="text-[10px] text-gray-500 mr-0.5">LT</span><span class="inline-block w-[3rem] font-mono tabular-nums text-right mr-2">${ltHours}:${ltMinutes}</span>
+          <span class="text-[10px] text-gray-500 mr-0.5">ET</span><span class="inline-block w-[3rem] font-mono tabular-nums text-right">${et.hours}:${et.minutes}</span>
+        </div>
       </div>
     `;
   }
