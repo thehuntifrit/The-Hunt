@@ -654,7 +654,7 @@ html body.magnifier-active .mob-card-inner * {
     flex-direction: column;
     align-items: flex-end;
     justify-content: center;
-    gap: 1px;
+    gap: 3px;
     z-index: 50;
 }
 
@@ -715,7 +715,7 @@ html body.magnifier-active .mob-card-inner * {
 @media (max-width: 1023px) {
     .header-info-container {
         justify-content: flex-end;
-        gap: 1px;
+        gap: 2px;
     }
 
     .header-greeting {
