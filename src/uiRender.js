@@ -135,11 +135,11 @@ export function updateHeaderTime() {
   }
 
   if (elWelcome) {
-    elWelcome.textContent = name ? `ようこそ {name} さん` : "";
+    elWelcome.textContent = name ? `ようこそ ${name} さん` : "";
   }
 }
 
-updateHeaderTime();
+setTimeout(updateHeaderTime, 0);
 setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
 
 window.addEventListener('characterNameSet', () => {
