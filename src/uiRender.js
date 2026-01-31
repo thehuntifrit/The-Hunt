@@ -6,6 +6,7 @@ import { getState, recalculateMob, requestWorkerCalculation, PROGRESS_CLASSES } 
 import { filterMobsByRankAndArea } from "./filterUI.js";
 import { openReportModal } from "./modal.js";
 import { allTabComparator } from "./mobSorter.js";
+import { updateStatusContainerVisibility } from "./app.js";
 import {
   createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel,
   updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay
@@ -408,6 +409,7 @@ function updateProgressBars() {
       DOM.statusMessageTemp.textContent = "";
       DOM.statusMessageTemp.classList.add("hidden");
     }
+    updateStatusContainerVisibility();
   }
 }
 
