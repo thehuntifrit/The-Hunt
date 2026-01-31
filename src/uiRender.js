@@ -7,10 +7,7 @@ import { filterMobsByRankAndArea } from "./filterUI.js";
 import { openReportModal } from "./modal.js";
 import { allTabComparator } from "./mobSorter.js";
 import { updateStatusContainerVisibility } from "./app.js";
-import {
-  createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel,
-  updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay
-} from "./mobCard.js";
+import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay } from "./mobCard.js";
 
 export const DOM = {
   masterContainer: document.getElementById('master-mob-container'),
@@ -131,14 +128,14 @@ export function updateHeaderTime() {
 
   const el = document.getElementById("eorzea-time");
   if (el) {
-    const welcomeHtml = name ? `<div class="text-gray-200 text-[13px] leading-tight text-right w-full">ようこそ！${name} さん</div>` : "";
+    const welcomeHtml = name ? `<div class="text-gray-200 text-[13px] leading-tight text-right w-full mb-[1px]">ようこそ！${name} さん</div>` : "";
     el.innerHTML = `
       <div class="flex flex-col items-end w-full">
         ${welcomeHtml}
         <div class="flex items-center justify-end text-gray-300 leading-tight">
-          <span class="bg-gray-200 text-slate-950 text-[9px] px-1 py-[1.5px] rounded-[1px] font-mono font-bold mr-1.5 leading-none shadow-sm inline-flex justify-center w-[1.4rem]">LT</span>
+          <span class="bg-gray-200 text-slate-950 text-[9px] px-1 py-[1.5px] rounded-sm font-mono font-bold mr-1.5 leading-none shadow-sm inline-flex justify-center w-[1.4rem]">LT</span>
           <span class="inline-block w-[3rem] font-mono tabular-nums text-right mr-3">${ltHours}:${ltMinutes}</span>
-          <span class="bg-gray-200 text-slate-950 text-[9px] px-1 py-[1.5px] rounded-[1px] font-mono font-bold mr-1.5 leading-none shadow-sm inline-flex justify-center w-[1.4rem]">ET</span>
+          <span class="bg-gray-200 text-slate-950 text-[9px] px-1 py-[1.5px] rounded-sm font-mono font-bold mr-1.5 leading-none shadow-sm inline-flex justify-center w-[1.4rem]">ET</span>
           <span class="inline-block w-[3rem] font-mono tabular-nums text-right">${et.hours}:${et.minutes}</span>
         </div>
       </div>
