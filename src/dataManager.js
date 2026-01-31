@@ -69,7 +69,9 @@ if (Array.isArray(state.filter.allRankSet)) {
     state.filter.allRankSet = new Set();
 }
 
-export const getState = () => state;
+export function getState() {
+    return state;
+}
 
 export function setUserId(uid) {
     state.userId = uid;
