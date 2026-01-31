@@ -126,20 +126,26 @@ export function updateHeaderTime() {
   const state = getState();
   const name = state.characterName || "";
 
-  const el = document.getElementById("eorzea-time");
-  if (el) {
-    const welcomeHtml = name ? `<div class="text-gray-100 text-[13px] leading-none text-right w-full pb-1 whitespace-nowrap z-[100] relative">ようこそ！${name} さん</div>` : "";
-    el.innerHTML = `
-      <div class="flex flex-col items-end justify-end w-full py-2 overflow-visible">
-        ${welcomeHtml}
-        <div class="flex items-center justify-end leading-none">
-          <span class="bg-[#d6c9b0] text-[#5a4a3a] border border-[#5a4a3a] text-[10px] px-1 py-[0.5px] rounded-[3px] font-bold mr-1 leading-none inline-flex justify-center items-center">LT</span>
-          <span class="text-[#e2d7c5] font-mono tabular-nums text-right mr-3 text-[14px]">${ltHours}:${ltMinutes}</span>
-          <span class="bg-[#d6c9b0] text-[#5a4a3a] border border-[#5a4a3a] text-[10px] px-1 py-[0.5px] rounded-[3px] font-bold mr-1 leading-none inline-flex justify-center items-center">ET</span>
-          <span class="text-[#e2d7c5] font-mono tabular-nums text-right text-[14px]">${et.hours}:${et.minutes}</span>
-        </div>
-      </div>
-    `;
+  /* 
+   * Header time and greeting update
+   * Structure is now controlled via index.html, only text content is updated here.
+   */
+  const elLT = document.getElementById("header-time-lt");
+  const elET = document.getElementById("header-time-et");
+  const elWelcome = document.getElementById("header-welcome-message");
+
+  if (elLT && elET) {
+    elLT.textContent = `${ltHours}:${ltMinutes}`;
+    elET.textContent = `${et.hours}:${et.minutes}`;
+  }
+
+  if (elWelcome) {
+    if (name) {
+      elWelcome.textContent = `ようこそ！${name} さん`;
+      elWelcome.classList.remove("hidden");
+    } else {
+      elWelcome.classList.add("hidden");
+    }
   }
 }
 
