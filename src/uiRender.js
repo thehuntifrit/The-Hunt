@@ -135,11 +135,17 @@ export function updateHeaderTime() {
   }
 
   if (elWelcome) {
-    elWelcome.textContent = name ? `ようこそ ${name} さん` : "";
+    if (name) {
+      elWelcome.textContent = `ようこそ ${name} さん`;
+      elWelcome.classList.remove("hidden");
+    } else {
+      elWelcome.textContent = "";
+      elWelcome.classList.add("hidden");
+    }
   }
 }
 
-setTimeout(updateHeaderTime, 0);
+updateHeaderTime();
 setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
 
 window.addEventListener('characterNameSet', () => {
