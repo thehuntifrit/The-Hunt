@@ -250,10 +250,10 @@ export const submitMemo = async (mobNo, memoText) => {
     const lodestoneId = state.lodestoneId;
     const mobs = state.mobs;
 
-    // if (!state.isVerified) {
-    //     console.error("認証が完了していません。");
-    //     return { success: false, error: "認証エラー" };
-    // }
+    if (!state.isVerified) {
+        console.error("認証が完了していません。");
+        return { success: false, error: "認証エラー" };
+    }
 
     if (!userId) {
         console.error("認証が完了していません。");
@@ -352,73 +352,48 @@ export async function registerUserToFirestore(lodestoneId, characterName) {
     }
 }
 
+const VERIFICATION_PROXY_URL = "https://icy-resonance-2526.the-hunt-ifrit.workers.dev/";
+
 export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
-    const maxRetries = 2;
-    let lastError = null;
-
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-            if (attempt > 0) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-
-            let response;
-            try {
-                const url = `https://xivapi.com/character/${lodestoneId}`;
-                response = await fetch(url, { mode: 'cors' });
-            } catch (directError) {
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://xivapi.com/character/${lodestoneId}`)}`;
-                response = await fetch(proxyUrl);
-            }
-
-            let data = null;
-            try {
-                if (response) data = await response.json();
-            } catch (parseError) { }
-
-            if (!response || !response.ok) {
-                if (data && (data.Error || data.Subject === "XIVAPI ERROR")) {
-                    if (data.Message && data.Message.includes("403")) {
-                        return { success: false, error: "現在、Lodestone側のアクセス制限によりAPIがデータを取得できません。(403 Forbidden)。\n時間を置いて再試行してください。" };
-                    }
-                }
-
-                const status = response ? response.status : "Network Error";
-                if (status === 404) return { success: false, error: "キャラクターが見つかりませんでした。" };
-                if (status === 429) return { success: false, error: "APIの制限を超えました。少しお待ちください。" };
-
-                if ((!response || status >= 500) && attempt < maxRetries) continue;
-                throw new Error(data?.Message || `XIVAPI error: ${status}`);
-            }
-
-            if (data && (data.Error || data.Subject === "XIVAPI ERROR")) {
-                if (data.Message && data.Message.includes("403")) {
-                    return { success: false, error: "現在、Lodestone側のアクセス制限によりAPIがデータを取得できません。(403 Forbidden)。\n時間を置いて再試行してください。" };
-                }
-                throw new Error(data.Message || "XIVAPI Error");
-            }
-
-            if (data.Info?.Character?.State === 2) {
-                if (attempt < maxRetries) continue;
-                return { success: false, error: "現在キャラクターデータを同期中です。数十秒待ってから再度お試しください。" };
-            }
-
-            const bio = data.Character?.Biography || "";
-            const name = data.Character?.Name || "Unknown";
-
-            if (bio.includes(verificationCode)) {
-                return { success: true, characterName: name };
-            } else {
-                return { success: false, error: "検証コードが自己紹介文に見つかりませんでした。保存されているか確認してください。" };
-            }
-        } catch (error) {
-            lastError = error;
-            if (attempt < maxRetries) continue;
-        }
+    if (!VERIFICATION_PROXY_URL) {
+        return {
+            success: false,
+            error: "認証プロキシのURLが設定されていません。管理者に連絡してください。"
+        };
     }
 
-    return {
-        success: false,
-        error: `外部API(XIVAPI)でエラーが発生しました。時間をおいて再試行するか、IDが正しいか確認してください。(Error: ${lastError?.message || "Unknown"})`
-    };
+    try {
+        const lodestoneUrl = `https://jp.finalfantasyxiv.com/lodestone/character/${lodestoneId}/`;
+        const fetchUrl = `${VERIFICATION_PROXY_URL}?url=${encodeURIComponent(lodestoneUrl)}`;
+
+        const response = await fetch(fetchUrl);
+        if (!response.ok) {
+            if (response.status === 404) {
+                return { success: false, error: "キャラクターが見つかりませんでした。" };
+            }
+            throw new Error(`Proxy error: ${response.status}`);
+        }
+
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+
+        const bioEl = doc.querySelector(".character__selfintroduction");
+        const nameEl = doc.querySelector(".frame__chara__box .frame__chara__name");
+
+        const bio = bioEl?.textContent?.trim() || "";
+        const name = nameEl?.textContent?.trim() || "Unknown";
+
+        if (bio.includes(verificationCode)) {
+            return { success: true, characterName: name };
+        } else {
+            return { success: false, error: "検証コードが自己紹介文に見つかりませんでした。保存されているか確認してください。" };
+        }
+    } catch (error) {
+        console.error("Verification error:", error);
+        return {
+            success: false,
+            error: `認証に失敗しました。時間をおいて再試行してください。(Error: ${error.message})`
+        };
+    }
 }
