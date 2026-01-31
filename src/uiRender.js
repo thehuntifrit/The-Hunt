@@ -119,11 +119,13 @@ function invalidateSortCache() {
 }
 
 export function updateHeaderTime() {
+  const state = getState();
+  if (!state) return;
+
   const now = new Date();
   const et = getEorzeaTime(now);
   const ltHours = String(now.getHours()).padStart(2, "0");
   const ltMinutes = String(now.getMinutes()).padStart(2, "0");
-  const state = getState();
   const name = state.characterName || "";
   const elLT = document.getElementById("header-time-lt");
   const elET = document.getElementById("header-time-et");
@@ -145,7 +147,6 @@ export function updateHeaderTime() {
   }
 }
 
-updateHeaderTime();
 setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
 
 window.addEventListener('characterNameSet', () => {
