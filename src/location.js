@@ -12,10 +12,10 @@ function handleCrushToggle(e) {
     const point = e.target.closest(".spawn-point");
     if (!point) return;
 
-    if (!getState().isVerified) {
-        openAuthModal();
-        return;
-    }
+    // if (!getState().isVerified) {
+    //     openAuthModal();
+    //     return;
+    // }
 
     if (point.dataset.isInteractive !== "true") return;
     if (point.dataset.isLastone === "true") return;
