@@ -133,8 +133,8 @@ export function updateHeaderTime() {
   if (el) {
     el.innerHTML = `
       <span class="text-cyan-400 mr-2 font-bold">${name}</span>
-      <span class="text-xs text-gray-500 mr-0.5">LT</span><span class="mr-2">${ltHours}:${ltMinutes}</span>
-      <span class="text-xs text-gray-500 mr-0.5">ET</span><span>${et.hours}:${et.minutes}</span>
+      <span class="text-xs text-gray-500 mr-0.5">LT</span><span class="inline-block w-[3rem] font-mono tabular-nums text-right mr-1">${ltHours}:${ltMinutes}</span>
+      <span class="text-xs text-gray-500 mr-0.5">ET</span><span class="inline-block w-[3rem] font-mono tabular-nums text-right">${et.hours}:${et.minutes}</span>
     `;
   }
 }
