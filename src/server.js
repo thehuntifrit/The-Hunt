@@ -250,10 +250,10 @@ export const submitMemo = async (mobNo, memoText) => {
     const lodestoneId = state.lodestoneId;
     const mobs = state.mobs;
 
-    if (!state.isVerified) {
-        console.error("認証が完了していません。");
-        return { success: false, error: "認証エラー" };
-    }
+    // if (!state.isVerified) {
+    //     console.error("認証が完了していません。");
+    //     return { success: false, error: "認証エラー" };
+    // }
 
     if (!userId) {
         console.error("認証が完了していません。");
@@ -364,10 +364,10 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
 
             let response;
             try {
-                const url = `https://xivapi.com/character/${lodestoneId}?columns=Character.Name,Character.Biography`;
+                const url = `https://xivapi.com/character/${lodestoneId}`;
                 response = await fetch(url, { mode: 'cors' });
             } catch (directError) {
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://xivapi.com/character/${lodestoneId}?columns=Character.Name,Character.Biography`)}`;
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://xivapi.com/character/${lodestoneId}`)}`;
                 response = await fetch(proxyUrl);
             }
 
