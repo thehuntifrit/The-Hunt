@@ -250,10 +250,10 @@ export const submitMemo = async (mobNo, memoText) => {
     const lodestoneId = state.lodestoneId;
     const mobs = state.mobs;
 
-    if (!state.isVerified) {
-        console.error("認証が完了していません。");
-        return { success: false, error: "認証エラー" };
-    }
+    // if (!state.isVerified) {
+    //     console.error("認証が完了していません。");
+    //     return { success: false, error: "認証エラー" };
+    // }
 
     if (!userId) {
         console.error("認証が完了していません。");
@@ -355,7 +355,6 @@ export async function registerUserToFirestore(lodestoneId, characterName) {
 export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
     const maxRetries = 2;
     let lastError = null;
-    let xivapiBlocked = false;
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
@@ -365,10 +364,10 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
 
             let response;
             try {
-                const url = `https://xivapi.com/character/${lodestoneId}?columns=Character.Name,Character.Biography`;
+                const url = `https://xivapi.com/character/${lodestoneId}`;
                 response = await fetch(url, { mode: 'cors' });
             } catch (directError) {
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://xivapi.com/character/${lodestoneId}?columns=Character.Name,Character.Biography`)}`;
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://xivapi.com/character/${lodestoneId}`)}`;
                 response = await fetch(proxyUrl);
             }
 
@@ -380,8 +379,7 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
             if (!response || !response.ok) {
                 if (data && (data.Error || data.Subject === "XIVAPI ERROR")) {
                     if (data.Message && data.Message.includes("403")) {
-                        xivapiBlocked = true;
-                        break;
+                        return { success: false, error: "現在、Lodestone側のアクセス制限によりAPIがデータを取得できません。(403 Forbidden)。\n時間を置いて再試行してください。" };
                     }
                 }
 
@@ -395,8 +393,7 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
 
             if (data && (data.Error || data.Subject === "XIVAPI ERROR")) {
                 if (data.Message && data.Message.includes("403")) {
-                    xivapiBlocked = true;
-                    break;
+                    return { success: false, error: "現在、Lodestone側のアクセス制限によりAPIがデータを取得できません。(403 Forbidden)。\n時間を置いて再試行してください。" };
                 }
                 throw new Error(data.Message || "XIVAPI Error");
             }
@@ -417,42 +414,6 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
         } catch (error) {
             lastError = error;
             if (attempt < maxRetries) continue;
-        }
-    }
-
-    if (xivapiBlocked) {
-        try {
-            const lodestoneUrl = `https://jp.finalfantasyxiv.com/lodestone/character/${lodestoneId}/`;
-            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(lodestoneUrl)}`;
-            const response = await fetch(proxyUrl);
-
-            if (!response.ok) {
-                if (response.status === 404) {
-                    return { success: false, error: "キャラクターが見つかりませんでした。" };
-                }
-                throw new Error(`Lodestone fetch failed: ${response.status}`);
-            }
-
-            const html = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, "text/html");
-
-            const bioEl = doc.querySelector(".character__selfintroduction");
-            const nameEl = doc.querySelector(".frame__chara__box .frame__chara__name");
-
-            const bio = bioEl?.textContent?.trim() || "";
-            const name = nameEl?.textContent?.trim() || "Unknown";
-
-            if (bio.includes(verificationCode)) {
-                return { success: true, characterName: name };
-            } else {
-                return { success: false, error: "検証コードが自己紹介文に見つかりませんでした。保存されているか確認してください。" };
-            }
-        } catch (fallbackError) {
-            return {
-                success: false,
-                error: `Lodestone直接取得にも失敗しました。時間をおいて再試行してください。(Error: ${fallbackError?.message || "Unknown"})`
-            };
         }
     }
 
