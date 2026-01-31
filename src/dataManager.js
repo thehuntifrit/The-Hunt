@@ -19,6 +19,7 @@ export const PROGRESS_CLASSES = {
 export const state = {
     userId: localStorage.getItem("user_uuid") || null,
     lodestoneId: localStorage.getItem("lodestone_id") || null,
+    characterName: localStorage.getItem("character_name") || null,
     isVerified: localStorage.getItem("is_verified") === "true",
     baseMobData: [],
     mobs: [],
@@ -81,6 +82,15 @@ export function setLodestoneId(id) {
         localStorage.setItem("lodestone_id", id);
     } else {
         localStorage.removeItem("lodestone_id");
+    }
+}
+
+export function setCharacterName(name) {
+    state.characterName = name;
+    if (name) {
+        localStorage.setItem("character_name", name);
+    } else {
+        localStorage.removeItem("character_name");
     }
 }
 
