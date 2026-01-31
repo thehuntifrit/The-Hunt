@@ -128,15 +128,15 @@ export function updateHeaderTime() {
 
   const el = document.getElementById("eorzea-time");
   if (el) {
-    const welcomeHtml = name ? `<div class="text-gray-200 text-[13px] leading-tight text-right w-full pb-0.5 whitespace-nowrap">ようこそ！${name} さん</div>` : "";
+    const welcomeHtml = name ? `<div class="text-gray-100 text-[13px] leading-none text-right w-full pb-1 whitespace-nowrap z-[100] relative">ようこそ！${name} さん</div>` : "";
     el.innerHTML = `
-      <div class="flex flex-col items-end w-full py-1">
+      <div class="flex flex-col items-end justify-end w-full py-2 overflow-visible">
         ${welcomeHtml}
-        <div class="flex items-center justify-end text-gray-300 leading-tight">
-          <span class="bg-gray-200 text-slate-950 text-[9px] px-1 py-[1.5px] rounded-md font-mono font-bold mr-0.5 leading-none shadow-sm inline-flex justify-center w-[1.4rem]">LT</span>
-          <span class="inline-block w-[2.7rem] font-mono tabular-nums text-right mr-2">${ltHours}:${ltMinutes}</span>
-          <span class="bg-gray-200 text-slate-950 text-[9px] px-1 py-[1.5px] rounded-md font-mono font-bold mr-0.5 leading-none shadow-sm inline-flex justify-center w-[1.4rem]">ET</span>
-          <span class="inline-block w-[2.7rem] font-mono tabular-nums text-right">${et.hours}:${et.minutes}</span>
+        <div class="flex items-center justify-end leading-none">
+          <span class="bg-[#d6c9b0] text-[#5a4a3a] border border-[#5a4a3a] text-[10px] px-1 py-[0.5px] rounded-[3px] font-bold mr-1 leading-none inline-flex justify-center items-center">LT</span>
+          <span class="text-[#e2d7c5] font-mono tabular-nums text-right mr-3 text-[14px]">${ltHours}:${ltMinutes}</span>
+          <span class="bg-[#d6c9b0] text-[#5a4a3a] border border-[#5a4a3a] text-[10px] px-1 py-[0.5px] rounded-[3px] font-bold mr-1 leading-none inline-flex justify-center items-center">ET</span>
+          <span class="text-[#e2d7c5] font-mono tabular-nums text-right text-[14px]">${et.hours}:${et.minutes}</span>
         </div>
       </div>
     `;
