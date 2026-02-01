@@ -449,7 +449,16 @@ function finishClose(card, placeholder) {
 async function handleInstantReport(mobNo, rank) {
     const now = new Date();
     const iso = now.toISOString();
-    await submitReport(mobNo, iso);
+    const result = await submitReport(mobNo, iso);
+
+    if (!result.success) {
+        if (result.code === "permission-denied" || (result.error && result.error.includes("permission"))) {
+            alert("認証情報の同期エラーが発生しました。\nお手数ですが、再度認証を行ってください。");
+            openAuthModal();
+        } else {
+            alert("レポート送信エラー: " + result.error);
+        }
+    }
 }
 
 async function handleReportSubmit(e) {
@@ -458,7 +467,18 @@ async function handleReportSubmit(e) {
     const mobNo = parseInt(form.dataset.mobNo, 10);
     const timeISO = form.elements["kill-time"].value;
 
-    await submitReport(mobNo, timeISO);
+    const result = await submitReport(mobNo, timeISO);
+
+    if (!result.success) {
+        if (result.code === "permission-denied" || (result.error && result.error.includes("permission"))) {
+            alert("認証情報の同期エラーが発生しました。\nお手数ですが、再度認証を行ってください。");
+            openAuthModal();
+        } else {
+            alert("レポート送信エラー: " + result.error);
+        }
+    } else {
+        closeReportModal();
+    }
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
