@@ -709,27 +709,39 @@ html body.magnifier-active .mob-card-inner * {
 
 @media (max-width: 1023px) {
     .header-info-container {
-        justify-content: flex-end;
-        gap: 2px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 4px;
     }
 
     .header-greeting {
-        font-size: 13px;
+        font-size: 12px;
+        order: 1;
+    }
+
+    .header-clock-row {
+        order: 2;
+    }
+
+    #rank-tabs {
+        order: 3;
     }
 
     .header-label {
-        margin-right: 2px !important;
+        margin-right: 2px;
         font-size: 10px;
         padding: 1px 3px;
     }
 
     .header-time-val {
-        font-size: 15px;
-        width: auto !important;
+        font-size: 14px;
+        width: auto;
         min-width: 0;
     }
 
     .header-clock-group:not(:last-child) {
-        margin-right: 8px !important;
+        margin-right: 6px;
     }
 }
