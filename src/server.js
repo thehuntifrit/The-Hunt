@@ -237,10 +237,15 @@ export const submitReport = async (mobNo, timeISO) => {
         await updateDoc(docRef, newData);
 
         console.log(`[Report] Success: Mob ${mobNo}`);
+        return { success: true };
 
     } catch (error) {
         console.error("レポート送信エラー:", error);
-        alert("レポート送信エラー: " + (error.message || "通信失敗"));
+        return {
+            success: false,
+            error: error.message || "通信失敗",
+            code: error.code || (error.message.includes("permission") ? "permission-denied" : "unknown")
+        };
     }
 };
 
