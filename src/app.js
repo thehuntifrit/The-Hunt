@@ -4,7 +4,7 @@ import { loadBaseMobData, startRealtime, setOpenMobCardNo, getState, setUserId, 
 import { initializeAuth, getUserData, submitReport, submitMemo } from "./server.js";
 import { openReportModal, initModal, openAuthModal } from "./modal.js";
 import { renderRankTabs, handleAreaFilterClick, updateFilterUI } from "./filterUI.js";
-import { DOM, sortAndRedistribute, showColumnContainer } from "./uiRender.js";
+import { DOM, sortAndRedistribute, showColumnContainer, updateHeaderTime } from "./uiRender.js";
 import { debounce } from "./cal.js";
 import { initTooltip } from "./tooltip.js";
 import { initGlobalMagnifier } from "./magnifier.js";
@@ -40,6 +40,7 @@ async function initApp() {
         updateFilterUI();
         initModal();
         renderMaintenanceStatus();
+        updateHeaderTime();
         attachGlobalEventListeners();
         initHeaderObserver();
 
