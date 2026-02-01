@@ -683,7 +683,7 @@ html body.magnifier-active .mob-card-inner * {
     background-color: #d6c9b0;
     color: #5a4a3a;
     border: 1px solid #5a4a3a;
-    font-size: 10px;
+    font-size: 11px;
     padding: 1px 4px;
     border-radius: 3px;
     font-weight: bold;
@@ -691,16 +691,16 @@ html body.magnifier-active .mob-card-inner * {
     justify-content: center;
     align-items: center;
     height: 15px;
-    margin-right: 4px;
+    margin-right: 2px;
 }
 
 .header-time-val {
     color: #e2d7c5;
     font-family: 'Inter', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-size: 14px;
+    font-size: 16px;
     font-variant-numeric: tabular-nums;
     text-align: right;
-    width: 2.8rem;
+    width: 3.2rem;
 }
 
 .header-clock-group {
@@ -723,7 +723,7 @@ html body.magnifier-active .mob-card-inner * {
     }
 
     .header-time-val {
-        font-size: 13px;
-        width: 2.6rem;
+        font-size: 15px;
+        width: 3.0rem;
     }
 }
