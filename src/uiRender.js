@@ -139,10 +139,8 @@ export function updateHeaderTime() {
   if (elWelcome) {
     if (name) {
       elWelcome.textContent = `ようこそ ${name} さん`;
-      elWelcome.classList.remove("hidden");
     } else {
       elWelcome.textContent = "";
-      elWelcome.classList.add("hidden");
     }
   }
 }
