@@ -667,6 +667,7 @@ html body.magnifier-active .mob-card-inner * {
     text-align: right;
     white-space: nowrap;
     min-height: 1em;
+    width: 100%;
 }
 
 .header-clock-row {
