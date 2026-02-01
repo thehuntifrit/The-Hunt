@@ -138,16 +138,9 @@
                 <p>Lodestoneキャラクターとの紐付けが必要です。</p>
 
                 <div class="bg-slate-900/50 p-4 rounded-lg border border-gray-700 space-y-4">
+                    <!-- Step 1: Code Copy -->
                     <div>
-                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 1: 自身のLodestone
-                            IDまたはURLを入力</label>
-                        <input type="text" id="auth-lodestone-id"
-                            placeholder="例: https://jp.finalfantasyxiv.com/lodestone/character/12345/"
-                            class="w-full p-2 rounded bg-gray-900 border border-gray-700 text-sm focus:ring-1 focus:ring-yellow-500 outline-none transition-all">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 2:
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 1:
                             検証コードをコピー</label>
                         <div class="flex gap-2">
                             <code id="auth-v-code"
@@ -157,13 +150,31 @@
                         </div>
                     </div>
 
-                    <div class="text-[11px] leading-relaxed text-gray-400 italic">
-                        ※Step 3: 上記コードをロードストーンの「自己紹介(Biography)」に貼り付けて保存してください。<br>
-                        <a href="https://jp.finalfantasyxiv.com/lodestone/my/setting/profile/" target="_blank"
-                            rel="noopener noreferrer"
-                            class="text-cyan-400 hover:underline inline-flex items-center gap-1 mt-1">
-                            プロフィール編集画面を開く 🔗
-                        </a>
+                    <!-- Step 2: Profile Update -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 2:
+                            Lodestoneプロフィールに貼り付け</label>
+                        <div class="text-sm text-gray-300 space-y-2 leading-relaxed">
+                            <p>自己紹介欄に認証コードを貼り付けて保存</p>
+                            <a href="https://jp.finalfantasyxiv.com/lodestone/my/setting/profile/" target="_blank"
+                                rel="noopener noreferrer"
+                                class="text-cyan-400 hover:underline inline-flex items-center gap-1 font-bold">
+                                プロフィール編集画面を開く 🔗
+                            </a>
+                            <div class="text-xs text-gray-400 space-y-1 pl-2 border-l-2 border-gray-600">
+                                <p>※Lodestoneのログイン必須</p>
+                                <p>編集画面で認証コードを入力し、「確認」→「設定」を押して保存してください</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Input ID -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 3:
+                            自キャラのLodestoneのURL、もしくはURL末尾の数字を入力</label>
+                        <input type="text" id="auth-lodestone-id"
+                            placeholder="例: https://jp.finalfantasyxiv.com/lodestone/character/12345/"
+                            class="w-full p-2 rounded bg-gray-900 border border-gray-700 text-sm focus:ring-1 focus:ring-yellow-500 outline-none transition-all">
                     </div>
                 </div>
             </div>
