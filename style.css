@@ -722,8 +722,19 @@ html body.magnifier-active .mob-card-inner * {
         font-size: 12px;
     }
 
+    .header-label {
+        margin-right: 2px !important;
+        font-size: 10px;
+        padding: 1px 3px;
+    }
+
     .header-time-val {
         font-size: 15px;
-        width: 3.0rem;
+        width: auto !important;
+        min-width: 0;
+    }
+
+    .header-clock-group:not(:last-child) {
+        margin-right: 8px !important;
     }
 }
