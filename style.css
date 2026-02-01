@@ -664,11 +664,6 @@ html body.magnifier-active .mob-card-inner * {
     line-height: 1;
     text-align: right;
     white-space: nowrap;
-    display: none;
-}
-
-.header-greeting:not(:empty) {
-    display: block;
 }
 
 .header-clock-row {
@@ -719,7 +714,7 @@ html body.magnifier-active .mob-card-inner * {
     }
 
     .header-greeting {
-        font-size: 12px;
+        font-size: 13px;
     }
 
     .header-label {
