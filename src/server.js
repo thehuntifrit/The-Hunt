@@ -127,8 +127,8 @@ export const submitReport = async (mobNo, timeISO) => {
     const lodestoneId = state.lodestoneId;
     const mobs = state.mobs;
 
-    if (!state.isVerified) {
-        console.error("認証が完了していません。");
+    if (!state.isVerified || !lodestoneId) {
+        console.error("認証が完了していないか、Lodestone IDが見つかりません。");
         return;
     }
 
@@ -250,8 +250,8 @@ export const submitMemo = async (mobNo, memoText) => {
     const lodestoneId = state.lodestoneId;
     const mobs = state.mobs;
 
-    if (!state.isVerified) {
-        console.error("認証が完了していません。");
+    if (!state.isVerified || !lodestoneId) {
+        console.error("認証が完了していないか、Lodestone IDが見つかりません。");
         return { success: false, error: "認証エラー" };
     }
 
@@ -301,8 +301,8 @@ export const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
     const lodestoneId = state.lodestoneId;
     const mobs = state.mobs;
 
-    if (!state.isVerified) {
-        console.error("認証が完了していません。");
+    if (!state.isVerified || !lodestoneId) {
+        console.error("認証が完了していないか、Lodestone IDが見つかりません。");
         return;
     }
 
