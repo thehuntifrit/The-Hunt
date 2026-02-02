@@ -691,6 +691,7 @@ html body.magnifier-active .mob-card-inner * {
     align-items: center;
     height: 15px;
     margin-right: 2px;
+    width: 24px;
 }
 
 .header-time-val {
@@ -737,6 +738,7 @@ html body.magnifier-active .mob-card-inner * {
         margin-right: 2px;
         font-size: 10px;
         padding: 1px 3px;
+        width: 22px;
     }
 
     .header-time-val {
