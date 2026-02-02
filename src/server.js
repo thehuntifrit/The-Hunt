@@ -368,10 +368,14 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
     }
 
     try {
-        const lodestoneUrl = `https://jp.finalfantasyxiv.com/lodestone/character/${lodestoneId}/`;
-        const fetchUrl = `${VERIFICATION_PROXY_URL}?url=${encodeURIComponent(lodestoneUrl)}`;
+        const token = await auth.currentUser.getIdToken();
+        const fetchUrl = `${VERIFICATION_PROXY_URL}?lodestoneId=${lodestoneId}`;
 
-        const response = await fetch(fetchUrl);
+        const response = await fetch(fetchUrl, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
         if (!response.ok) {
             if (response.status === 404) {
                 return { success: false, error: "キャラクターが見つかりませんでした。" };
