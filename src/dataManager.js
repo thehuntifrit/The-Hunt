@@ -2,7 +2,6 @@
 
 import { calculateRepop } from "./cal.js";
 import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos, subscribeMaintenance } from "./server.js";
-import { filterMobsByRankAndArea } from "./filterUI.js";
 
 export const state = {
     userId: localStorage.getItem("user_uuid") || null,
