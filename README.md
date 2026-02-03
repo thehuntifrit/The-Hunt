@@ -11,6 +11,9 @@
 
 ### 認証の流れ
 
+<!-- markdownlint-disable-next-line MD033 -->
+<div id="readme-auth-session"></div>
+
 報告を行おうとすると、初回のみ認証画面が開きます。
 
 1. 画面上の認証ボタンから、検証用コード（例: `HUNT-XXXXXX`）をコピーします。
