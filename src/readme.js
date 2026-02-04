@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!toggleBtn || !container) return;
 
-    // Globally expose function to open manual
     window.openUserManual = async (options = {}) => {
         const { scroll = true } = options;
         container.classList.remove('hidden');
@@ -23,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) throw new Error('Failed to load README');
 
                 const text = await response.text();
+                marked.setOptions({ breaks: true });
                 container.innerHTML = marked.parse(text);
                 isLoaded = true;
                 updateAuthUI();
