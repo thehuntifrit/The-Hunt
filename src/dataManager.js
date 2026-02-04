@@ -337,11 +337,10 @@ const initialLoadState = {
 };
 
 function checkInitialLoadComplete() {
-    if (initialLoadState.status && initialLoadState.location && initialLoadState.memo && initialLoadState.maintenance) {
+    if (initialLoadState.status) {
         if (!state.initialLoadComplete) {
             state.initialLoadComplete = true;
-            console.log("All initial realtime data loaded. Calculating and rendering...");
-
+            console.log("Critical data (Status) loaded. Rendering UI...");
 
             const current = state.mobs;
             const maintenance = state.maintenance;
@@ -433,11 +432,11 @@ export function startRealtime() {
 
         if (!state.initialLoadComplete) {
             initialLoadState.location = true;
-            checkInitialLoadComplete();
-        } else {
-            setMobs([...current]);
-            window.dispatchEvent(new CustomEvent('locationsUpdated', { detail: { locationsMap } }));
+            // Background load - don't block, but update if ready later
         }
+        // Always dispatch update for locations
+        setMobs([...current]);
+        window.dispatchEvent(new CustomEvent('locationsUpdated', { detail: { locationsMap } }));
     });
     unsubscribes.push(unsubLoc);
 
@@ -457,11 +456,11 @@ export function startRealtime() {
 
         if (!state.initialLoadComplete) {
             initialLoadState.memo = true;
-            checkInitialLoadComplete();
-        } else {
-            setMobs([...current]);
-            window.dispatchEvent(new CustomEvent('mobsUpdated'));
+            // Background load
         }
+        // Always dispatch update
+        setMobs([...current]);
+        window.dispatchEvent(new CustomEvent('mobsUpdated'));
     });
     unsubscribes.push(unsubMemo);
 
@@ -476,7 +475,7 @@ export function startRealtime() {
                 }
             }
             initialLoadState.maintenance = true;
-            checkInitialLoadComplete();
+            // Background load
         } else {
             if (!maintenanceData) return;
             state.maintenance = maintenanceData;
