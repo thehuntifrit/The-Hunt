@@ -10,28 +10,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!toggleBtn || !container) return;
 
+    // Globally expose function to open manual
+    window.openUserManual = async (options = {}) => {
+        const { scroll = true } = options;
+        container.classList.remove('hidden');
+        toggleBtn.innerHTML = '<span>📖</span> ユーザーマニュアルを閉じる';
+
+        if (!isLoaded) {
+            try {
+                container.innerHTML = '<p class="text-center text-gray-400 animate-pulse">読み込み中...</p>';
+                const response = await fetch('./README.md');
+                if (!response.ok) throw new Error('Failed to load README');
+
+                const text = await response.text();
+                container.innerHTML = marked.parse(text);
+                isLoaded = true;
+                updateAuthUI();
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = '<p class="text-red-400 text-center">マニュアルの読み込みに失敗しました。</p>';
+            }
+        }
+
+        if (scroll) {
+            setTimeout(() => {
+                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+    };
+
     toggleBtn.addEventListener('click', async () => {
         const isHidden = container.classList.contains('hidden');
 
         if (isHidden) {
-            container.classList.remove('hidden');
-            toggleBtn.innerHTML = '<span>📖</span> ユーザーマニュアルを閉じる';
-
-            if (!isLoaded) {
-                try {
-                    container.innerHTML = '<p class="text-center text-gray-400 animate-pulse">読み込み中...</p>';
-                    const response = await fetch('./README.md');
-                    if (!response.ok) throw new Error('Failed to load README');
-
-                    const text = await response.text();
-                    container.innerHTML = marked.parse(text);
-                    isLoaded = true;
-                    updateAuthUI();
-                } catch (error) {
-                    console.error(error);
-                    container.innerHTML = '<p class="text-red-400 text-center">マニュアルの読み込みに失敗しました。</p>';
-                }
-            }
+            await window.openUserManual({ scroll: false });
         } else {
             container.classList.add('hidden');
             toggleBtn.innerHTML = '<span>📖</span> ユーザーマニュアルを表示';
