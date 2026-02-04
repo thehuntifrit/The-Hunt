@@ -337,7 +337,7 @@ const initialLoadState = {
 };
 
 function checkInitialLoadComplete() {
-    if (initialLoadState.status) {
+    if (initialLoadState.status && initialLoadState.maintenance) {
         if (!state.initialLoadComplete) {
             state.initialLoadComplete = true;
             console.log("Critical data (Status) loaded. Rendering UI...");
@@ -432,9 +432,7 @@ export function startRealtime() {
 
         if (!state.initialLoadComplete) {
             initialLoadState.location = true;
-            // Background load - don't block, but update if ready later
         }
-        // Always dispatch update for locations
         setMobs([...current]);
         window.dispatchEvent(new CustomEvent('locationsUpdated', { detail: { locationsMap } }));
     });
@@ -456,9 +454,7 @@ export function startRealtime() {
 
         if (!state.initialLoadComplete) {
             initialLoadState.memo = true;
-            // Background load
         }
-        // Always dispatch update
         setMobs([...current]);
         window.dispatchEvent(new CustomEvent('mobsUpdated'));
     });
@@ -475,7 +471,7 @@ export function startRealtime() {
                 }
             }
             initialLoadState.maintenance = true;
-            // Background load
+            checkInitialLoadComplete();
         } else {
             if (!maintenanceData) return;
             state.maintenance = maintenanceData;
