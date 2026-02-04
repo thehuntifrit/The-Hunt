@@ -1,4 +1,10 @@
+<!-- markdownlint-disable MD033 MD041 -->
+<div align="center">
+
 # The Hunt 利用ガイド
+
+</div>
+<!-- markdownlint-enable MD033 -->
 
 このサイトは、ユーザーによる情報共有で成り立っています。
 円滑な運用のため、以下のガイドラインをご確認ください。
