@@ -14,12 +14,14 @@ async function initApp() {
     try {
         initTooltip();
         initGlobalMagnifier();
-        await loadBaseMobData();
 
-        const userId = await initializeAuth();
+        const [_, userId] = await Promise.all([
+            loadBaseMobData(),
+            initializeAuth()
+        ]);
+
         if (userId) {
             setUserId(userId);
-
             const userData = await getUserData(userId);
             if (userData && userData.lodestone_id) {
                 setLodestoneId(userData.lodestone_id);
