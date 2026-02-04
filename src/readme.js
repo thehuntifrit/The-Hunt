@@ -22,7 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) throw new Error('Failed to load README');
 
                 const text = await response.text();
-                marked.setOptions({ breaks: true });
+                marked.setOptions({
+                    breaks: true,
+                    gfm: true
+                });
                 container.innerHTML = marked.parse(text);
                 isLoaded = true;
                 updateAuthUI();
