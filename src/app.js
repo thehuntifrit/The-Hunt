@@ -50,6 +50,14 @@ async function initApp() {
             renderMaintenanceStatus();
             setTimeout(() => {
                 showColumnContainer();
+
+                const isFirstVisit = !localStorage.getItem("has_visited");
+                if (isFirstVisit) {
+                    localStorage.setItem("has_visited", "true");
+                    if (window.openUserManual) {
+                        window.openUserManual();
+                    }
+                }
             }, 300);
         }, { once: true });
 
