@@ -179,6 +179,10 @@ window.addEventListener('mobsUpdated', () => {
   updateProgressBars();
 });
 
+window.addEventListener('locationDataReady', () => {
+  updateVisibleCards();
+});
+
 window.addEventListener('locationsUpdated', (e) => {
   const { locationsMap } = e.detail;
   invalidateFilterCache();
