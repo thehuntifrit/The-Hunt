@@ -378,7 +378,7 @@ function applyPendingRealtimeData() {
 
     const maintenance = state.maintenance;
     current.forEach(mob => {
-        mob.repopInfo = calculateRepop(mob, maintenance);
+        mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
     });
 
     setMobs([...current]);
@@ -405,7 +405,7 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
         updatedCount++;
     });
 
-    setMobs([...state.baseMobData]);
+    setMobs([...state.mobs]);
 
     console.log(`Condition calculation completed for ${updatedCount} mobs`);
 }
@@ -430,11 +430,13 @@ function checkInitialLoadComplete() {
             const current = state.mobs;
             const maintenance = state.maintenance;
             current.forEach(mob => {
-                mob.repopInfo = calculateRepop(mob, maintenance);
+                mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
             });
             setMobs([...current]);
 
             window.dispatchEvent(new CustomEvent('initialDataLoaded'));
+
+            scheduleConditionCalculation(current, maintenance);
         }
     }
 }
