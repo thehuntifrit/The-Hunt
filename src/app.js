@@ -14,23 +14,23 @@ async function initApp() {
     try {
         initTooltip();
         initGlobalMagnifier();
+        loadBaseMobData();
 
-        const [_, userId] = await Promise.all([
-            loadBaseMobData(),
-            initializeAuth()
-        ]);
+        initializeAuth().then(async (userId) => {
+            if (userId) {
+                setUserId(userId);
+                const userData = await getUserData(userId);
+                if (userData && userData.lodestone_id) {
+                    setLodestoneId(userData.lodestone_id);
+                    if (userData.character_name) setCharacterName(userData.character_name);
+                    setVerified(true);
+                }
 
-        if (userId) {
-            setUserId(userId);
-            const userData = await getUserData(userId);
-            if (userData && userData.lodestone_id) {
-                setLodestoneId(userData.lodestone_id);
-                if (userData.character_name) setCharacterName(userData.character_name);
-                setVerified(true);
+                startRealtime();
             }
-
-            startRealtime();
-        }
+        }).catch(err => {
+            console.error("Auth initialization error:", err);
+        });
 
         const storedUI = JSON.parse(localStorage.getItem("huntUIState")) || {};
         if (storedUI.clickStep !== 1) {
