@@ -29,7 +29,11 @@ export const state = {
     openMobCardNo: localStorage.getItem("openMobCardNo")
         ? parseInt(localStorage.getItem("openMobCardNo"), 10)
         : null,
-    pendingCalculationMobs: new Set()
+    pendingCalculationMobs: new Set(),
+    pendingStatusMap: null,
+    pendingMaintenanceData: null,
+    pendingLocationsMap: null,
+    pendingMemoData: null
 };
 
 export const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
@@ -304,6 +308,85 @@ export async function loadBaseMobData() {
             console.error("データの読み込みに失敗しました。");
         }
     }
+
+
+    if (state.baseMobData.length > 0) {
+        applyPendingRealtimeData();
+    }
+}
+
+function applyPendingRealtimeData() {
+    const current = state.mobs;
+    let hasChanges = false;
+
+    if (state.pendingMaintenanceData !== undefined) {
+        const maintenanceData = state.pendingMaintenanceData;
+        if (maintenanceData) {
+            state.maintenance = maintenanceData;
+        }
+        initialLoadState.maintenance = true;
+    }
+
+    if (state.pendingStatusMap) {
+        const map = new Map();
+        Object.values(state.pendingStatusMap).forEach(docData => {
+            Object.entries(docData).forEach(([mobId, mobData]) => {
+                const mobNo = parseInt(mobId, 10);
+                map.set(mobNo, {
+                    last_kill_time: mobData.last_kill_time?.seconds || 0,
+                    prev_kill_time: mobData.prev_kill_time?.seconds || 0,
+                });
+            });
+        });
+
+        current.forEach(m => {
+            const dyn = map.get(m.No);
+            if (dyn) {
+                m.last_kill_time = dyn.last_kill_time;
+                m.prev_kill_time = dyn.prev_kill_time;
+            }
+        });
+        initialLoadState.status = true;
+        state.pendingStatusMap = null;
+    }
+
+    if (state.pendingLocationsMap) {
+        state.mobLocations = state.pendingLocationsMap;
+        current.forEach(m => {
+            const dyn = state.pendingLocationsMap[m.No];
+            m.spawn_cull_status = dyn || {};
+        });
+        initialLoadState.location = true;
+        state.pendingLocationsMap = null;
+    }
+
+    if (state.pendingMemoData) {
+        const memoData = state.pendingMemoData;
+        current.forEach(m => {
+            const memos = memoData[m.No] || [];
+            const latest = memos[0];
+            if (latest) {
+                m.memo_text = latest.memo_text;
+                m.memo_updated_at = latest.created_at?.seconds || 0;
+            } else {
+                m.memo_text = "";
+            }
+        });
+        initialLoadState.memo = true;
+        state.pendingMemoData = null;
+    }
+
+    const maintenance = state.maintenance;
+    current.forEach(mob => {
+        mob.repopInfo = calculateRepop(mob, maintenance);
+    });
+
+    setMobs([...current]);
+
+    if (state.pendingMaintenanceData === undefined && !initialLoadState.maintenance) {
+    } else {
+        checkInitialLoadComplete();
+    }
 }
 
 function scheduleConditionCalculation(mobs, maintenance, existingCache) {
@@ -337,6 +420,8 @@ const initialLoadState = {
 };
 
 function checkInitialLoadComplete() {
+    if (state.mobs.length === 0) return;
+
     if (initialLoadState.status && initialLoadState.maintenance) {
         if (!state.initialLoadComplete) {
             state.initialLoadComplete = true;
@@ -376,6 +461,11 @@ export function startRealtime() {
     initialLoadState.maintenance = false;
 
     const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
+        if (state.mobs.length === 0) {
+            state.pendingStatusMap = mobStatusDataMap;
+            return;
+        }
+
         const current = state.mobs;
         const map = new Map();
 
@@ -422,6 +512,11 @@ export function startRealtime() {
     unsubscribes.push(unsubStatus);
 
     const unsubLoc = subscribeMobLocations(locationsMap => {
+        if (state.mobs.length === 0) {
+            state.pendingLocationsMap = locationsMap;
+            return;
+        }
+
         const current = state.mobs;
         state.mobLocations = locationsMap;
 
@@ -439,6 +534,11 @@ export function startRealtime() {
     unsubscribes.push(unsubLoc);
 
     const unsubMemo = subscribeMobMemos(memoData => {
+        if (state.mobs.length === 0) {
+            state.pendingMemoData = memoData;
+            return;
+        }
+
         const current = state.mobs;
 
         current.forEach(m => {
@@ -461,6 +561,17 @@ export function startRealtime() {
     unsubscribes.push(unsubMemo);
 
     const unsubMaintenance = subscribeMaintenance(async maintenanceData => {
+        if (state.mobs.length === 0) {
+            state.pendingMaintenanceData = maintenanceData;
+            if (!maintenanceData) {
+                const fallback = await loadMaintenance();
+                if (fallback) {
+                    state.pendingMaintenanceData = fallback;
+                }
+            }
+            return;
+        }
+
         if (!state.initialLoadComplete) {
             if (maintenanceData) {
                 state.maintenance = maintenanceData;
