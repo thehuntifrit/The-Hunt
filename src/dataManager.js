@@ -428,6 +428,31 @@ const initialLoadState = {
     maintenance: false
 };
 
+async function loadLocationData() {
+    try {
+        const res = await fetch(MOB_LOCATIONS_URL);
+        if (!res.ok) throw new Error("Location data failed to load.");
+        const locationsData = await res.json();
+
+        state.mobs.forEach(mob => {
+            const locInfo = locationsData[mob.No];
+            if (locInfo) {
+                mob.locations = locInfo.locations || [];
+                mob.mapImage = locInfo.mapImage || "";
+            } else {
+                mob.locations = [];
+                mob.mapImage = "";
+            }
+        });
+
+        console.log("Location data loaded lazily");
+        window.dispatchEvent(new CustomEvent('locationDataReady'));
+
+    } catch (e) {
+        console.warn("Lazy location load failed:", e);
+    }
+}
+
 function checkInitialLoadComplete() {
     if (state.mobs.length === 0) return;
 
