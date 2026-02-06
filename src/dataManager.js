@@ -437,11 +437,11 @@ async function loadLocationData() {
         state.mobs.forEach(mob => {
             const locInfo = locationsData[mob.No];
             if (locInfo) {
-                mob.locations = locInfo.locations || [];
-                mob.mapImage = locInfo.mapImage || "";
+                mob.spawn_points = locInfo.locations || [];
+                mob.Map = locInfo.mapImage || "";
             } else {
-                mob.locations = [];
-                mob.mapImage = "";
+                mob.spawn_points = [];
+                mob.Map = "";
             }
         });
 
