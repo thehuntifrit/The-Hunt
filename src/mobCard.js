@@ -92,13 +92,16 @@ export function createMobCard(mob) {
             if (conditionText) conditionText.innerHTML = processText(mob.Condition);
 
             const mapContainer = card.querySelector('.map-container');
-            if (mob.Map) {
+            if (mapContainer) {
                 const mapImg = mapContainer.querySelector('.mob-map-img');
-                mapImg.src = `./maps/${mob.Map}`;
-                mapImg.alt = `${mob.Area} Map`;
-                mapImg.dataset.mobMap = mob.Map;
-            } else if (mapContainer) {
-                mapContainer.remove();
+                if (mob.Map) {
+                    mapImg.src = `./maps/${mob.Map}`;
+                    mapImg.alt = `${mob.Area} Map`;
+                    mapImg.dataset.mobMap = mob.Map;
+                } else {
+                    mapImg.src = "";
+                    mapImg.alt = "Loading map...";
+                }
             }
         }
     } else {
@@ -374,6 +377,14 @@ export function updateAreaInfo(card, mob) {
 export function updateMapOverlay(card, mob) {
     const mapContainer = card.querySelector('.map-container');
     if (!mapContainer) return;
+
+    const mapImg = mapContainer.querySelector('.mob-map-img');
+    if (mapImg && mob.Map && mapImg.dataset.mobMap !== mob.Map) {
+        mapImg.src = `./maps/${mob.Map}`;
+        mapImg.alt = `${mob.Area} Map`;
+        mapImg.dataset.mobMap = mob.Map;
+    }
+
     const mapOverlay = mapContainer.querySelector('.map-overlay');
     if (!mapOverlay) return;
 
