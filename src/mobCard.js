@@ -93,14 +93,15 @@ export function createMobCard(mob) {
 
             const mapContainer = card.querySelector('.map-container');
             if (mapContainer) {
-                const mapImg = mapContainer.querySelector('.mob-map-img');
                 if (mob.Map) {
+                    const mapImg = mapContainer.querySelector('.mob-map-img');
                     mapImg.src = `./maps/${mob.Map}`;
                     mapImg.alt = `${mob.Area} Map`;
                     mapImg.dataset.mobMap = mob.Map;
+                    mapContainer.classList.remove('hidden');
                 } else {
-                    mapImg.src = "";
-                    mapImg.alt = "Loading map...";
+                    mapContainer.classList.add('hidden');
+                    mapContainer.dataset.locationLoading = "true";
                 }
             }
         }
@@ -383,7 +384,11 @@ export function updateMapOverlay(card, mob) {
         mapImg.src = `./maps/${mob.Map}`;
         mapImg.alt = `${mob.Area} Map`;
         mapImg.dataset.mobMap = mob.Map;
+        mapContainer.classList.remove('hidden');
+        delete mapContainer.dataset.locationLoading;
     }
+
+    if (mapContainer.classList.contains('hidden')) return;
 
     const mapOverlay = mapContainer.querySelector('.map-overlay');
     if (!mapOverlay) return;
