@@ -173,8 +173,9 @@ export function setOpenMobCardNo(no) {
     }
 }
 
-const MOB_DATA_URL = "./mob_data.json";
-const MAINTENANCE_URL = "./maintenance.json";
+const MOB_DATA_URL = "./mob_data.json?v=" + new Date().getTime();
+const MOB_LOCATIONS_URL = "./mob_locations.json?v=" + new Date().getTime();
+const MAINTENANCE_URL = "./maintenance.json?v=" + new Date().getTime();
 const MOB_DATA_CACHE_KEY = "mobDataCache";
 
 async function loadMaintenance() {
@@ -302,6 +303,14 @@ export async function loadBaseMobData() {
             console.log("Mob data is up to date");
         }
 
+        loadLocationData();
+
+        if (Object.keys(state.pendingStatusMap || {}).length > 0 ||
+            state.pendingLocationsMap ||
+            state.pendingMemoData ||
+            state.pendingMaintenanceData !== undefined) {
+            applyPendingRealtimeData();
+        }
     } catch (e) {
         console.error("Failed to load base data from network:", e);
         if (!cachedData) {
