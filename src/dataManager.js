@@ -439,9 +439,6 @@ async function loadLocationData() {
             if (locInfo) {
                 mob.spawn_points = locInfo.locations || [];
                 mob.Map = locInfo.mapImage || "";
-            } else {
-                mob.spawn_points = [];
-                mob.Map = "";
             }
         });
 
