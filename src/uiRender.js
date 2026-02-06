@@ -440,15 +440,6 @@ function updateProgressBars() {
 
 export const sortAndRedistribute = debounce(() => filterAndRender(), 200);
 
-function onKillReportReceived(mobId, kill_time) {
-  const state = getState();
-  const mob = state.mobs.find(m => m.No === mobId);
-  if (!mob) return;
-
-  mob.last_kill_time = Number(kill_time);
-  requestWorkerCalculation(mob, state.maintenance, { forceRecalc: true });
-}
-
 setInterval(() => {
   updateProgressBars();
 }, EORZEA_MINUTE_MS);
