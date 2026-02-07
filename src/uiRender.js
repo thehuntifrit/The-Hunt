@@ -380,27 +380,21 @@ export function showColumnContainer() {
   }, 100);
 }
 
-
 function updateProgressBars() {
   const state = getState();
   const conditionMobs = [];
   const nowSec = Date.now() / 1000;
   const mobMap = new Map(state.mobs.map(m => [String(m.No), m]));
 
-  for (const mobNoStr of visibleCards) {
-    const mob = mobMap.get(mobNoStr);
-    if (!mob || !mob.repopInfo) continue;
-
-    mob.repopInfo = calculateRepop(mob, state.maintenance, {
-      skipConditionCalc: false
-    });
-
-    if (mob.repopInfo.conditionWindowEnd && nowSec > mob.repopInfo.conditionWindowEnd.getTime() / 1000) {
+  state.mobs.forEach(mob => {
+    if (mob.repopInfo?.conditionWindowEnd && nowSec > mob.repopInfo.conditionWindowEnd.getTime() / 1000) {
       recalculateMob(mob.No);
     }
-  }
 
-  state.mobs.forEach((mob) => {
+    mob.repopInfo = calculateRepop(mob, state.maintenance, {
+      skipConditionCalc: true
+    });
+
     if (mob.repopInfo?.nextConditionSpawnDate && mob.repopInfo?.conditionWindowEnd) {
       const spawnSec = mob.repopInfo.nextConditionSpawnDate.getTime() / 1000;
       const endSec = mob.repopInfo.conditionWindowEnd.getTime() / 1000;
