@@ -189,16 +189,14 @@ window.addEventListener('locationsUpdated', (e) => {
   const sorted = getSortedFilteredMobs();
   const mobMap = new Map(sorted.map(m => [String(m.No), m]));
 
-  for (const mobNoStr of visibleCards) {
-    const card = document.querySelector(`.mob-card[data-mob-no="${mobNoStr}"]`);
-    if (card) {
-      const mob = mobMap.get(mobNoStr);
-      if (mob) {
-        updateMobCount(card, mob);
-        updateMapOverlay(card, mob);
-      }
+  document.querySelectorAll('.mob-card').forEach(card => {
+    const mobNoStr = card.dataset.mobNo;
+    const mob = mobMap.get(mobNoStr);
+    if (mob) {
+      updateMobCount(card, mob);
+      updateMapOverlay(card, mob);
     }
-  }
+  });
 });
 
 const visibleCards = new Set();
@@ -316,10 +314,14 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       if (!card) {
         card = createMobCard(mob);
         cardObserver.observe(card);
-        updateProgressText(card, mob);
-        updateProgressBar(card, mob);
-        updateExpandablePanel(card, mob);
       }
+
+      updateProgressText(card, mob);
+      updateProgressBar(card, mob);
+      updateMobCount(card, mob);
+      updateMapOverlay(card, mob);
+      updateExpandablePanel(card, mob);
+      updateMemoIcon(card, mob);
 
       const currentAtPos = targetCol.children[colPointers[colIdx]];
       if (currentAtPos !== card) {
