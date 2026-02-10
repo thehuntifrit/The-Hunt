@@ -143,10 +143,10 @@ function checkEtCondition(mob, realSec) {
 
   if (mob.conditions) {
     const { firstNight, otherNights } = mob.conditions;
-    if (firstNight?.timeRange && (isFirstNightPhase(phase) || mob.moonPhase === "新月")) {
+    if (firstNight?.timeRange && isFirstNightPhase(phase)) {
       return checkTimeRange(firstNight.timeRange, realSec);
     }
-    if (otherNights?.timeRange && (isOtherNightsPhase(phase) || mob.moonPhase === "満月")) {
+    if (otherNights?.timeRange && isOtherNightsPhase(phase)) {
       return checkTimeRange(otherNights.timeRange, realSec);
     }
     return false;
