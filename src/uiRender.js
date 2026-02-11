@@ -82,6 +82,7 @@ let cachedFilteredMobs = null;
 let cachedSortedMobs = null;
 let sortCacheValid = false;
 let lastRenderedOrderStr = "";
+let lastRenderedGroupStr = "";
 
 function getFilteredMobs() {
   const state = getState();
@@ -167,6 +168,8 @@ window.addEventListener('mobUpdated', (e) => {
     updateMapOverlay(card, mob);
     updateExpandablePanel(card, mob);
     updateMemoIcon(card, mob);
+    invalidateSortCache();
+    sortAndRedistribute();
   }
 });
 
@@ -344,6 +347,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   });
 
   lastRenderedOrderStr = sortedMobs.map(m => m.No).join(",");
+  lastRenderedGroupStr = sortedMobs.map(m => getGroupKey(m)).join(",");
 
   if (isInitialLoad) {
     attachLocationEvents();
@@ -414,8 +418,9 @@ function updateProgressBars() {
   invalidateSortCache();
   const sorted = getSortedFilteredMobs();
   const currentOrderStr = sorted.map(m => m.No).join(",");
+  const currentGroupStr = sorted.map(m => getGroupKey(m)).join(",");
 
-  if (currentOrderStr !== lastRenderedOrderStr) {
+  if (currentOrderStr !== lastRenderedOrderStr || currentGroupStr !== lastRenderedGroupStr) {
     filterAndRender();
   } else {
     updateVisibleCards();
