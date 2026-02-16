@@ -718,9 +718,10 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 #rank-tabs {
-    display: flex !important;
-    justify-content: flex-end !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
     gap: 0.5rem !important;
+    width: 100%;
     order: 4;
 }
 
