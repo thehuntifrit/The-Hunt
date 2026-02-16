@@ -28,7 +28,7 @@ export const renderRankTabs = () => {
     btn.textContent = rank;
 
     btn.className =
-      `tab-button px-2 py-0.5 text-sm rounded font-semibold text-white text-center transition ` +
+      `tab-button py-0.5 text-sm rounded font-semibold text-white text-center transition ` +
       (isSelected
         ? (rank === "ALL" ? "bg-rose-500" : rank === "S" ? "bg-rank-s" : rank === "A" ? "bg-rank-a" : rank === "FATE" ? "bg-rank-f" : "bg-green-500")
         : "bg-gray-500 hover:bg-gray-400");
