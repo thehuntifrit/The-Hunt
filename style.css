@@ -730,8 +730,12 @@ html body.magnifier-active .mob-card-inner * {
         order: 2;
     }
 
-    #rank-tabs {
+    .header-notification-row {
         order: 3;
+    }
+
+    #rank-tabs {
+        order: 4;
     }
 
     .header-label {
