@@ -668,6 +668,7 @@ html body.magnifier-active .mob-card-inner * {
     white-space: nowrap;
     min-height: 1em;
     width: 100%;
+    order: 1;
 }
 
 .header-clock-row {
@@ -676,6 +677,15 @@ html body.magnifier-active .mob-card-inner * {
     justify-content: flex-end;
     line-height: 1;
     user-select: none;
+    order: 2;
+}
+
+.header-notification-row {
+    order: 3;
+}
+
+#rank-tabs {
+    order: 4;
 }
 
 .header-label {
@@ -723,19 +733,6 @@ html body.magnifier-active .mob-card-inner * {
 
     .header-greeting {
         font-size: 12px;
-        order: 1;
-    }
-
-    .header-clock-row {
-        order: 2;
-    }
-
-    .header-notification-row {
-        order: 3;
-    }
-
-    #rank-tabs {
-        order: 4;
     }
 
     .header-label {
