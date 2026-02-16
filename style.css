@@ -657,17 +657,14 @@ html body.magnifier-active .mob-card-inner * {
     gap: 2px;
 }
 
-.header-grid-container {
-    display: grid !important;
-    grid-template-columns: 1fr 180px !important;
-    grid-template-rows: auto auto auto !important;
-    align-items: end !important;
-    gap: 8px 16px !important;
+.header-info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
 }
 
 .header-clock-row-right {
-    grid-column: 2;
-    grid-row: 2;
     display: flex !important;
     justify-content: flex-end !important;
     gap: 8px !important;
@@ -693,8 +690,6 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .header-notification-row {
-    grid-column: 2;
-    grid-row: 1;
     display: flex !important;
     align-items: center !important;
     justify-content: flex-end !important;
@@ -713,8 +708,6 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 #rank-tabs {
-    grid-column: 2;
-    grid-row: 3;
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
     gap: 2px !important;
