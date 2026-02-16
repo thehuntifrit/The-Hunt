@@ -27,6 +27,7 @@ export const state = {
         allRankSet: new Set()
     },
     openMobCardNo: null,
+    notificationEnabled: localStorage.getItem("huntNotificationEnabled") === "true",
     pendingCalculationMobs: new Set(),
     pendingStatusMap: null,
     pendingMaintenanceData: null,
@@ -145,6 +146,18 @@ export function requestWorkerCalculation(mob, maintenance, options = {}) {
 
 function setMobs(data) {
     state.mobs = data;
+}
+
+export function setNotificationEnabled(enabled) {
+    state.notificationEnabled = enabled;
+    localStorage.setItem("huntNotificationEnabled", enabled ? "true" : "false");
+    window.dispatchEvent(new CustomEvent('notificationSettingChanged', { detail: { enabled } }));
+}
+
+export function setNotificationEnabled(enabled) {
+    state.notificationEnabled = enabled;
+    localStorage.setItem("huntNotificationEnabled", enabled ? "true" : "false");
+    window.dispatchEvent(new CustomEvent('notificationSettingChanged', { detail: { enabled } }));
 }
 
 export function setFilter(partial) {
