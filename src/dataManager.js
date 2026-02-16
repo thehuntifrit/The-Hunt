@@ -154,12 +154,6 @@ export function setNotificationEnabled(enabled) {
     window.dispatchEvent(new CustomEvent('notificationSettingChanged', { detail: { enabled } }));
 }
 
-export function setNotificationEnabled(enabled) {
-    state.notificationEnabled = enabled;
-    localStorage.setItem("huntNotificationEnabled", enabled ? "true" : "false");
-    window.dispatchEvent(new CustomEvent('notificationSettingChanged', { detail: { enabled } }));
-}
-
 export function setFilter(partial) {
     state.filter = { ...state.filter, ...partial };
     const serialized = {
