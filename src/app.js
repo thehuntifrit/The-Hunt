@@ -10,8 +10,11 @@ import { initTooltip } from "./tooltip.js";
 import { initGlobalMagnifier } from "./magnifier.js";
 import "./readme.js";
 
+import { initNotification } from "./notificationManager.js";
+
 async function initApp() {
     try {
+        initNotification();
         initTooltip();
         initGlobalMagnifier();
         loadBaseMobData();
