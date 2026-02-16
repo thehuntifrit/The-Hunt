@@ -652,11 +652,12 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .header-info-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 4px !important;
     z-index: 50;
+    margin-top: 2px;
 }
 
 .header-greeting-left {
@@ -691,11 +692,35 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .header-notification-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
     order: 3;
     margin-bottom: 2px;
 }
 
+.notification-volume-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: 0.5rem;
+}
+
+.test-sound-btn {
+    font-size: 0.75rem;
+    padding: 0.25rem;
+    color: #64748b;
+    transition: color 0.2s;
+}
+
+.test-sound-btn:hover {
+    color: #22d3ee;
+}
+
 #rank-tabs {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 0.5rem !important;
     order: 4;
 }
 
@@ -730,7 +755,7 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .header-clock-group:not(:last-child) {
-    margin-right: 12px;
+    margin-right: 4px;
 }
 
 @media (max-width: 1023px) {
