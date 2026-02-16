@@ -4,6 +4,7 @@ import { getState } from "./dataManager.js";
 
 const SOUND_FILE = "./sound/01 FFXIV_Linkshell_Transmission.mp3";
 let audio = null;
+const notifiedCycles = new Set();
 
 export function initNotification() {
     audio = new Audio(SOUND_FILE);
@@ -86,18 +87,27 @@ export function checkAndNotify(mob) {
     if (!state.notificationEnabled) return;
 
     const info = mob.repopInfo;
-    if (!info) return;
+    if (!info || !info.nextConditionSpawnDate || !info.conditionWindowEnd) return;
 
-    if (info.status === "ConditionActive" && info.isInConditionWindow) {
-        const now = Date.now();
-        const lastTime = lastNotifiedMap.get(mob.No) || 0;
-        if (now - lastTime > 3600000) {
-            const title = `【出現確定】${mob.Name}`;
-            const body = `${mob.Area} (${mob.Rank})：特殊条件が満たされました！`;
+    const now = Date.now();
+    const spawnTime = info.nextConditionSpawnDate.getTime();
+    const endTime = info.conditionWindowEnd.getTime();
+    const oneMinBefore = spawnTime - 60000;
 
-            sendBrowserNotification(title, body);
-            playNotificationSound();
-            lastNotifiedMap.set(mob.No, now);
-        }
+    const cycleKey = `${mob.No}-${spawnTime}`;
+
+    const isConditionMet = (info.status === "ConditionActive" && info.isInConditionWindow);
+
+    const shouldNotify = (now >= oneMinBefore && now <= endTime) && (isConditionMet || now >= oneMinBefore);
+
+    if (shouldNotify && !notifiedCycles.has(cycleKey)) {
+        const title = `【出現予告・確定】${mob.Name}`;
+        const body = (now < spawnTime)
+            ? `${mob.Area}：まもなく出現条件が満たされます（約1分前）`
+            : `${mob.Area}：出現条件が満たされています！`;
+
+        sendBrowserNotification(title, body);
+        playNotificationSound();
+        notifiedCycles.add(cycleKey);
     }
 }
