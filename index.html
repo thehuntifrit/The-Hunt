@@ -1,285 +1,757 @@
-<!DOCTYPE html>
-<html lang="ja">
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-dark, #0f172a);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="./icon/The_Hunt.png">
-    <title>The Hunt</title>
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
+.loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
 
-<body class="leading-relaxed">
+.map-magnifier {
+    position: fixed;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(6, 182, 212, 0.4), inset 0 0 15px rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    pointer-events: none;
+}
 
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Loading...</div>
-    </div>
+.magnifier-content-wrapper {
+    transform-origin: 0 0;
+}
 
-    <header id="main-header"
-        class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md">
+.map-container,
+.mob-map-img,
+.map-overlay {
+    cursor: crosshair !important;
+}
 
-        <div id="status-message"
-            class="text-center py-1 text-sm text-white bg-transparent flex flex-col items-center justify-center gap-0.5"
-            role="status" aria-live="polite">
-            <div id="status-message-maintenance"></div>
-            <div id="status-message-telop" class="font-bold text-cyan-400"></div>
-            <div id="status-message-temp"></div>
-        </div>
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(6, 182, 212, 0.2);
+    border-top-color: var(--accent-cyan, #06b6d4);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
 
-        <div class="max-w-6xl mx-auto px-4 flex items-center justify-between py-2">
-            <h1 class="flex flex-col text-3xl font-bold font-stretch-condensed leading-[0.8] text-glow">
-                <span class="text-cyan-400">The</span>
-                <span class="text-yellow-400">Hunt</span>
-            </h1>
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
 
-            <div class="header-info-container">
-                <div id="header-welcome-message" class="header-greeting"></div>
+.loading-text {
+    margin-top: 1rem;
+    color: var(--text-secondary, #94a3b8);
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+}
 
-                <div class="header-clock-row">
-                    <div class="header-clock-group">
-                        <span class="header-label">LT</span>
-                        <span id="header-time-lt" class="header-time-val">--:--</span>
-                    </div>
-                    <div class="header-clock-group">
-                        <span class="header-label">ET</span>
-                        <span id="header-time-et" class="header-time-val">--:--</span>
-                    </div>
-                </div>
+:root {
+    --bg-dark: #0f172a;
+    --bg-card: rgba(30, 41, 59, 0.45);
+    --accent-cyan: #22d3ee;
+    --accent-gold: #fbbf24;
+    --accent-crimson: #f87171;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
 
-                <div class="header-notification-row flex items-center justify-end">
-                    <label class="relative inline-flex items-center cursor-pointer group">
-                        <input type="checkbox" id="notification-toggle" class="sr-only peer">
-                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer 
-                            peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] 
-                            after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 
-                            after:border after:rounded-full after:h-5 after:w-5 after:transition-all 
-                            peer-checked:bg-cyan-600 border border-gray-600"></div>
-                        <span
-                            class="ml-2 text-xs font-bold text-gray-400 peer-checked:text-cyan-400 select-none">通知</span>
-                    </label>
-                    <div class="flex items-center gap-1 ml-2">
-                        <input type="range" id="notification-volume" min="0" max="1" step="0.05"
-                            class="w-16 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-600"
-                            title="通知音量">
-                    </div>
-                    <button id="test-sound-btn" class="text-xs p-1 text-gray-500 hover:text-cyan-400 transition"
-                        title="音声をテスト再生">🔊</button>
-                </div>
+    --rank-s: #fbbf24;
+    --rank-a: #6ba37a;
+    --rank-f: #818cf8;
 
-                <div id="rank-tabs" class="flex justify-end gap-2"></div>
-            </div>
-        </div>
+    --rank-s-tab: #d97706;
+    --rank-a-tab: #15803d;
+    --rank-f-tab: #4338ca;
 
-        <div id="area-filter-wrapper" class="hidden">
-            <div id="area-filter-panel"></div>
-        </div>
+    --progress-bg: rgba(0, 0, 0, 0.4);
+    --progress-fill: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    --progress-max-over: linear-gradient(90deg, #1e3a8a, #1e40af);
 
-        <div id="area-filter-panel-mobile"
-            class="max-w-6xl mx-auto flex flex-wrap justify-end px-4 py-2 block lg:hidden">
-            <div class="grid grid-cols-2 gap-2 w-full sm:w-auto"></div>
-        </div>
-        <div id="area-filter-panel-desktop" class="max-w-6xl mx-auto flex flex-wrap justify-end px-4 py-2 hidden">
-            <div class="flex flex-wrap gap-2 justify-end w-full"></div>
-        </div>
-    </header>
+    --color-b1: #4494f7;
+    --color-b2: #fd5c5c;
+    --color-culled: #dadada;
+    --color-lastone: #34d399;
+}
 
-    <main class="mx-auto px-2 py-2 sm:px-4 pb-10 pt-24">
-        <div id="master-mob-container" class="hidden"></div>
-        <div id="column-container"
-            class="flex flex-col gap-8 max-w-6xl mx-auto opacity-0 transition-opacity duration-300"
-            data-breakpoint-md="768" data-breakpoint-lg="1024">
-        </div>
-    </main>
+.bg-rank-s {
+    background-color: var(--rank-s-tab) !important;
+}
 
-    <footer class="max-w-6xl mx-auto px-4 py-8 text-center">
-        <button id="toggle-readme-btn" class="text-gray-400 hover:text-cyan-400 transition text-sm font-semibold flex items-center 
-            justify-center mx-auto gap-2">
-            <span>📖</span> ユーザーマニュアルを表示
-        </button>
+.bg-rank-a {
+    background-color: var(--rank-a-tab) !important;
+}
 
-        <div id="readme-container" class="hidden mt-8 text-left bg-slate-900/80 p-6 rounded-xl border border-gray-700 shadow-2xl 
-            prose prose-invert prose-sm max-w-none">
-        </div>
+.bg-rank-f {
+    background-color: var(--rank-f-tab) !important;
+}
 
-        <div class="mt-8 text-xs text-gray-600">
-            &copy; 2025 The Hunt
-        </div>
-    </footer>
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    background-image:
+        linear-gradient(to bottom, rgba(6, 182, 212, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 90% 80%, rgba(234, 179, 8, 0.05) 0%, transparent 20%);
+    background-attachment: fixed;
+}
 
-    <div id="card-overlay-backdrop" class="fixed inset-0 hidden z-40"></div>
+.mob-card {
+    position: relative;
+    transform: translateZ(0);
+    display: flex;
+    flex-direction: column;
+    font-size: 0;
+    user-select: none;
+    cursor: pointer;
+    z-index: 1;
+    scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 16px);
+}
 
-    <div id="report-modal" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
-        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-md border border-gray-600 text-white 
-            relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-600"></div>
+.mob-card-inner {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.7));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 0.5rem;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease, background 0.4s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    will-change: transform;
+}
 
-            <h2 class="text-xl font-bold mb-4 text-cyan-400 text-glow">討伐報告</h2>
-            <p id="modal-mob-name" class="text-base mb-4 font-semibold text-gray-200 border-b border-gray-700 pb-2"></p>
+.mob-card-inner,
+.mob-card-inner :not(input):not(textarea) {
+    cursor: pointer !important;
+}
 
-            <form id="report-form" data-mob-no="">
-                <div class="mb-4">
-                    <label for="report-datetime" class="block text-sm font-medium mb-1 text-gray-400">討伐日時 (JST)</label>
-                    <input type="datetime-local" id="report-datetime" name="kill-time" required class="w-full p-2 rounded bg-gray-900 border 
-                        border-gray-700 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent 
-                        outline-none transition-all">
-                </div>
+.mob-name {
+    text-shadow: none;
+    transition: text-shadow 0.4s ease, color 0.4s ease;
+}
 
-                <div id="modal-status" class="text-sm text-center my-3 text-red-400 font-bold"></div>
+.mob-card.is-active-neon[data-rank="S"] .mob-card-inner {
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(251, 191, 36, 0.25);
+    border-color: rgba(251, 191, 36, 0.3);
+}
 
-                <div class="flex justify-between items-center mt-6">
-                    <div class="flex items-center gap-2">
-                        <input type="checkbox" id="report-force-submit" class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded 
-                            focus:ring-blue-600 ring-offset-gray-800">
-                        <label for="report-force-submit" class="text-sm text-gray-300 select-none">修正する</label>
-                    </div>
-                    <div class="flex gap-2">
-                        <button type="button" id="cancel-report" class="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition text-white 
-                            font-medium">キャンセル</button>
-                        <button type="submit" class="px-6 py-2 rounded bg-gradient-to-r from-cyan-600 to-blue-600 
-                        hover:from-cyan-500 hover:to-blue-500 transition font-bold text-white shadow-lg 
-                        shadow-cyan-500/30">送信</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+.mob-card.is-active-neon[data-rank="S"] .mob-name {
+    text-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+}
 
-    <div id="auth-modal" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
-        <div
-            class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-lg border border-gray-600 text-white relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-orange-600"></div>
+.mob-card.is-active-neon[data-rank="A"] .mob-card-inner {
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6), 0 0 12px rgba(107, 163, 122, 0.25);
+    border-color: rgba(107, 163, 122, 0.3);
+}
 
-            <h2 class="text-xl font-bold mb-4 text-yellow-400 text-glow">ユーザー認証 (キャラクター登録)</h2>
-            <div class="text-sm text-gray-300 space-y-4 mb-6">
-                <p>Lodestoneキャラクターとの紐付けが必要です。</p>
+.mob-card.is-active-neon[data-rank="A"] .mob-name {
+    text-shadow: 0 0 8px rgba(107, 163, 122, 0.35);
+}
 
-                <div class="bg-slate-900/50 p-4 rounded-lg border border-gray-700 space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 1:
-                            検証コードをコピー</label>
-                        <div class="flex gap-2">
-                            <code id="auth-v-code"
-                                class="flex-1 p-2 bg-gray-950 rounded border border-gray-800 text-center font-mono text-yellow-500 font-bold select-all tracking-widest text-lg">----</code>
-                            <button id="auth-copy-code"
-                                class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs transition">Copy</button>
-                        </div>
-                    </div>
+.mob-card.is-active-neon[data-rank="F"] .mob-card-inner {
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(129, 140, 248, 0.25);
+    border-color: rgba(129, 140, 248, 0.3);
+}
 
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 2:
-                            Lodestoneプロフィールに貼り付け</label>
-                        <div class="text-sm text-gray-300 space-y-2 leading-relaxed">
-                            <p>自己紹介欄に認証コードを貼り付けて保存</p>
-                            <a href="https://jp.finalfantasyxiv.com/lodestone/my/setting/profile/" target="_blank"
-                                rel="noopener noreferrer"
-                                class="text-cyan-400 underline inline-flex items-center gap-1 font-bold">
-                                プロフィール編集画面を開く 🔗
-                            </a>
-                            <div class="text-xs text-gray-400 space-y-1 pl-2 border-l-2 border-gray-600">
-                                <p>※Lodestoneのログイン必須</p>
-                                <p>編集画面で認証コードを入力し、「確認」→「設定」を押して保存後、「自己紹介を確認する」を押してください</p>
-                            </div>
-                        </div>
-                    </div>
+.mob-card.is-active-neon[data-rank="F"] .mob-name {
+    text-shadow: 0 0 12px rgba(129, 140, 248, 0.4);
+}
 
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 3:
-                            認証コードが正しく表示されるか確認し、開いているキャラクターページのURL、もしくはURL末尾の数字をコピーして貼り付け</label>
-                        <input type="text" id="auth-lodestone-id"
-                            placeholder="例: https://jp.finalfantasyxiv.com/lodestone/character/12345/"
-                            class="w-full p-2 rounded bg-gray-900 border border-gray-700 text-sm focus:ring-1 focus:ring-yellow-500 outline-none transition-all">
-                    </div>
-                </div>
-            </div>
+.mob-card:hover {
+    z-index: 20;
+}
 
-            <div id="auth-modal-status" class="text-sm text-center mb-4 min-h-[1.25rem]"></div>
+.mob-card:hover .mob-card-inner {
+    transform: translateY(-6px) scale(1.02) translateZ(0);
+    background: linear-gradient(135deg, rgba(63, 76, 107, 0.5), rgba(15, 23, 42, 0.4));
+}
 
-            <div class="flex justify-end gap-3">
-                <button type="button" id="auth-cancel"
-                    class="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition text-sm">キャンセル</button>
-                <button type="button" id="auth-verify"
-                    class="px-6 py-2 rounded bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 transition font-bold shadow-lg shadow-orange-500/20">登録</button>
-            </div>
-        </div>
-    </div>
+.mob-card.is-active-neon[data-rank="S"]:hover .mob-card-inner {
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 30px rgba(251, 191, 36, 0.4);
+}
 
-    <template id="mob-card-template">
-        <div class="mob-card">
-            <div class="mob-card-inner">
-                <div class="mob-card-header p-0 relative" data-toggle="card-header">
-                    <div class="pl-2 py-1.5 flex flex-col justify-center min-w-0 flex-1 content-area">
-                        <div class="flex items-center justify-between gap-1.5 min-w-0 mb-1">
-                            <div class="flex items-center gap-1 min-w-0 flex-1">
-                                <span class="text-base font-bold truncate text-gray-100 mob-name"></span>
-                                <span class="mob-count-container text-[10px] whitespace-nowrap"></span>
-                                <span class="memo-icon-container text-xs"></span>
-                            </div>
-                            <div
-                                class="area-info-container flex flex-col justify-center text-right text-[9px] text-gray-400 font-numeric tracking-tighter leading-tight min-w-0">
-                            </div>
-                        </div>
+.mob-card.is-active-neon[data-rank="A"]:hover .mob-card-inner {
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 20px rgba(107, 163, 122, 0.35);
+}
 
-                        <div class="progress-bar-wrapper rounded-sm relative overflow-hidden text-center h-5">
-                            <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-sm transition-all duration-100 ease-linear"
-                                style="width: 0%"></div>
-                            <div class="progress-text relative z-10 text-[13px] font-bold leading-5"></div>
-                        </div>
-                    </div>
+.mob-card.is-active-neon[data-rank="F"]:hover .mob-card-inner {
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 30px rgba(129, 140, 248, 0.4);
+}
 
-                    <div class="report-side-bar transition-colors duration-200" data-report-type="" data-mob-no="">
-                    </div>
-                </div>
+.mob-card.is-pre-repop .area-info-container,
+.mob-card.is-pre-repop .progress-bar-bg,
+.mob-card.is-pre-repop .progress-text>div>div:first-child,
+.mob-card.is-pre-repop .report-side-bar,
+.mob-card.is-pre-repop .memo-icon-container,
+.mob-name-count-sep {
+    opacity: 0.3 !important;
+    filter: grayscale(100%) !important;
+}
 
-                <div class="expandable-panel">
-                    <div class="px-2 py-1 text-sm space-y-1">
-                        <div class="flex justify-between items-start flex-wrap gap-y-1">
-                            <div class="last-kill-time w-full text-right text-xs text-gray-400 font-mono"
-                                data-last-kill>
-                            </div>
-                            <div class="mob-memo-row w-full mt-1">
-                                <div class="flex items-center bg-gray-800/50 rounded px-2 py-1 border border-gray-700 
-                                    hover:bg-gray-700/50 transition">
-                                    <span class="mr-2 text-cyan-400 font-bold text-xs whitespace-nowrap">メモ:</span>
-                                    <input type="text" class="memo-input bg-transparent text-gray-200 text-sm w-full outline-none 
-                                        placeholder-gray-500 appearance-none" placeholder="全角30文字まで" maxlength="30"
-                                        autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off"
-                                        data-action="save-memo">
-                                </div>
-                            </div>
+.mob-card.maintenance-gray-out .mob-card-inner {
+    opacity: 0.7 !important;
+    filter: grayscale(100%) !important;
+    box-shadow: none !important;
+}
 
-                            <div class="w-full mt-2">
-                                <div class="font-semibold text-yellow-400 text-xs uppercase tracking-widest mb-1">
-                                    trigger
-                                </div>
-                                <div
-                                    class="condition-text text-gray-300 text-xs leading-relaxed pl-2 border-l-2 border-yellow-600/50">
-                                </div>
-                            </div>
-                        </div>
+.mob-card.maintenance-gray-out .mob-name {
+    color: #fff !important;
+    text-shadow: none !important;
+}
 
-                        <div
-                            class="map-container map-content mt-2 flex justify-center relative rounded overflow-hidden border border-gray-600 shadow-lg !cursor-crosshair">
-                            <img
-                                class="mob-map-img mob-crush-map w-full h-auto opacity-90 hover:opacity-100 transition-opacity">
-                            <div class="map-overlay absolute inset-0"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </template>
+.mob-card.maintenance-gray-out .report-side-bar::before {
+    animation: none !important;
+}
 
-    <div id="global-magnifier"
-        class="map-magnifier fixed hidden pointer-events-none z-[10000] w-48 h-48 rounded-full border-4 border-cyan-500 shadow-[0_0_40px_rgba(0,0,0,0.8),0_0_20px_rgba(6,182,212,0.4)] overflow-hidden bg-slate-950">
-        <div class="magnifier-content-wrapper absolute w-full h-full"></div>
-    </div>
+.mob-card.is-pre-repop .mob-name {
+    color: #fff !important;
+    text-shadow: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+}
 
-    <script type="module" src="./src/app.js"></script>
+.progress-text .time-over {
+    color: #fff1f2;
+}
 
-</body>
+.progress-text .time-normal {
+    color: inherit;
+}
 
-</html>
+.progress-bar-bg {
+    background: var(--progress-fill);
+    box-shadow: 0 0 15px rgba(30, 144, 255, 0.6);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.progress-bar-wrapper {
+    background: var(--progress-bg);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.content-area {
+    padding-right: 48px !important;
+}
+
+.mob-card-header {
+    background: transparent;
+    position: relative;
+    transform: translateZ(0);
+}
+
+@keyframes pulse-sync {
+
+    0%,
+    100% {
+        opacity: 0.7;
+        filter: brightness(1);
+    }
+
+    50% {
+        opacity: 1;
+        filter: brightness(1.3);
+    }
+}
+
+.report-side-bar {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    right: 8px;
+    width: 32px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+.report-side-bar::before {
+    content: '';
+    width: 5px;
+    height: 55%;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+    transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+    animation: pulse-sync 2s infinite ease-in-out;
+}
+
+.report-side-bar:hover::before {
+    transform: scaleY(1.2) translateZ(0);
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.report-side-bar.is-active-neon.rank-s {
+    background: rgba(251, 191, 36, 0.2) !important;
+    border-color: rgba(251, 191, 36, 0.6) !important;
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.3), inset 0 0 10px rgba(251, 191, 36, 0.2) !important;
+}
+
+.report-side-bar.is-active-neon.rank-s::before {
+    background: #fbbf24 !important;
+    box-shadow: 0 0 12px #fbbf24 !important;
+}
+
+.report-side-bar.is-active-neon.rank-a {
+    background: rgba(107, 163, 122, 0.2) !important;
+    border-color: rgba(107, 163, 122, 0.6) !important;
+    box-shadow: 0 0 15px rgba(107, 163, 122, 0.3), inset 0 0 10px rgba(107, 163, 122, 0.2) !important;
+}
+
+.report-side-bar.is-active-neon.rank-a::before {
+    background: #6ba37a !important;
+    box-shadow: 0 0 10px #6ba37a !important;
+}
+
+.report-side-bar.is-active-neon.rank-f {
+    background: rgba(129, 140, 248, 0.2) !important;
+    border-color: rgba(129, 140, 248, 0.6) !important;
+    box-shadow: 0 0 15px rgba(129, 140, 248, 0.3), inset 0 0 10px rgba(129, 140, 248, 0.2) !important;
+}
+
+.report-side-bar.is-active-neon.rank-f::before {
+    background: #818cf8 !important;
+    box-shadow: 0 0 12px #818cf8 !important;
+}
+
+.report-side-bar:hover {
+    transform: scale(1.1) translateZ(0);
+    filter: brightness(1.2);
+}
+
+.report-side-bar:active {
+    transform: scale(0.9) translateZ(0) !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.report-side-bar.is-active-neon.rank-s:hover {
+    border-color: #fbbf24 !important;
+    box-shadow: 0 0 25px rgba(251, 191, 36, 0.4) !important;
+}
+
+.report-side-bar.is-active-neon.rank-a:hover {
+    border-color: #6ba37a !important;
+    box-shadow: 0 0 25px rgba(107, 163, 122, 0.4) !important;
+}
+
+.report-side-bar.is-active-neon.rank-f:hover {
+    border-color: #818cf8 !important;
+    box-shadow: 0 0 25px rgba(129, 140, 248, 0.4) !important;
+}
+
+.progress-text {
+    color: #f1f5f9;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    letter-spacing: 0.03em;
+}
+
+.font-numeric {
+    font-family: 'Inter', sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    letter-spacing: 0.02em;
+}
+
+.progress-text.text-pop {
+    color: #dadada;
+}
+
+.progress-text.text-next,
+.progress-text .time-next {
+    color: #dadada;
+}
+
+.progress-text .time-over {
+    color: #e98b91;
+}
+
+.progress-max-over {
+    background: var(--progress-max-over);
+    box-shadow: none;
+}
+
+.progress-blink-white {
+    animation: neon-pulse-sync 2s infinite ease-in-out;
+}
+
+@keyframes neon-pulse-sync {
+
+    0%,
+    100% {
+        box-shadow: 0 0 2px var(--accent-crimson), 0 0 5px var(--accent-crimson);
+    }
+
+    50% {
+        box-shadow: 0 0 7px var(--accent-crimson), 0 0 12px var(--accent-crimson);
+    }
+}
+
+.mob-card.blink-border-white .mob-card-inner {
+    border-color: rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6) !important;
+}
+
+.text-glow {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.label-next {
+    color: var(--accent-gold);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(234, 179, 8, 0.5);
+}
+
+#report-modal {
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+}
+
+#report-modal .bg-gray-800 {
+    background: #1e293b;
+    border: 1px solid var(--accent-cyan);
+    box-shadow: 0 0 30px rgba(6, 182, 212, 0.2);
+}
+
+#report-modal input {
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: var(--text-primary);
+}
+
+#report-modal input:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
+}
+
+#report-modal input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+.expandable-panel {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: transparent;
+    display: none;
+}
+
+.expandable-panel.open {
+    display: block;
+    max-height: 1000px;
+}
+
+.memo-input {
+    user-select: text !important;
+    cursor: text !important;
+}
+
+.expandable-panel>div {
+    min-height: 0;
+    padding: 0.5rem;
+    opacity: 0;
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+.spawn-point {
+    position: absolute;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px;
+    height: 14px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.color-b1 {
+    background-color: var(--color-b1);
+    border: 2px solid #fff;
+}
+
+.color-b2 {
+    background-color: var(--color-b2);
+    border: 2px solid #fff;
+}
+
+.color-b1-culled {
+    background-color: var(--color-culled);
+    border: 2px solid var(--color-b1);
+    opacity: 0.7;
+}
+
+.color-b2-culled {
+    background-color: var(--color-culled);
+    border: 2px solid var(--color-b2);
+    opacity: 0.7;
+}
+
+.color-lastone {
+    background-color: var(--color-lastone);
+    border: 2px solid #fff;
+    box-shadow: 0 0 10px var(--color-lastone);
+}
+
+.color-b1-only {
+    background-color: var(--color-culled);
+    border: 2px solid var(--color-b1);
+    width: 10px;
+    height: 10px;
+    opacity: 0.6;
+}
+
+.color-b2-only {
+    background-color: var(--color-culled);
+    border: 2px solid var(--color-b2);
+    width: 10px;
+    height: 10px;
+    opacity: 0.6;
+}
+
+.spawn-point:hover {
+    transform: translate(-50%, -50%) scale(1.5);
+    z-index: 20;
+}
+
+.custom-tooltip {
+    position: fixed;
+    z-index: 9999;
+    background: rgba(15, 23, 42, 0.95);
+    color: #fff;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transform: translate(-50%, -100%);
+    transition: opacity 0.1s ease;
+}
+
+.custom-tooltip.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+@media (max-width: 1023px) {
+    #main-header {
+        top: auto;
+        bottom: 0;
+        min-height: 70px;
+        padding-top: 8px;
+        padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: none;
+        box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    #main-header #status-message {
+        padding-bottom: 0;
+        padding-top: 0.25rem;
+    }
+
+    .mob-card-inner {
+        background: rgba(15, 23, 42, 0.85);
+    }
+}
+
+#status-message-telop {
+    text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+    animation: telopFadeIn 0.8s ease-out;
+}
+
+@keyframes telopFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+html body.magnifier-active,
+html body.magnifier-active *,
+html body.magnifier-active .mob-card-inner,
+html body.magnifier-active .mob-card-inner * {
+    cursor: none !important;
+}
+
+#card-overlay-backdrop {
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 40;
+    cursor: pointer;
+}
+
+.mob-card {
+    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+        width 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+        top 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+        left 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mob-card-placeholder {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.mob-card.is-floating-active {
+    z-index: 45 !important;
+    max-width: 95vw;
+}
+
+.mob-card.is-floating-active .mob-card-inner {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 1), rgba(15, 23, 42, 1));
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15), 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 40px rgba(6, 182, 212, 0.4) !important;
+    height: auto !important;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.mob-card.is-floating-active .expandable-panel {
+    max-height: none !important;
+}
+
+.header-info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 3px;
+    z-index: 50;
+}
+
+.header-greeting-left {
+    color: #94a3b8;
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+.header-clock-row-left {
+    user-select: none;
+    color: #e2d7c5;
+}
+
+.header-label-mini {
+    background-color: #d6c9b0;
+    color: #5a4a3a;
+    border: 1px solid #5a4a3a;
+    font-size: 10px;
+    padding: 0px 3px;
+    border-radius: 2px;
+    font-weight: bold;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    height: 14px;
+}
+
+.header-time-val-mini {
+    font-family: 'Inter', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+}
+
+.header-label {
+    background-color: #d6c9b0;
+    color: #5a4a3a;
+    border: 1px solid #5a4a3a;
+    font-size: 11px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: bold;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    height: 15px;
+    margin-right: 2px;
+    width: 24px;
+}
+
+.header-time-val {
+    color: #e2d7c5;
+    font-family: 'Inter', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    width: 3.2rem;
+}
+
+.header-clock-group {
+    display: flex;
+    align-items: center;
+}
+
+.header-clock-group:not(:last-child) {
+    margin-right: 12px;
+}
+
+@media (max-width: 1023px) {
+    .header-info-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 4px;
+    }
+
+    .header-greeting-left {
+        font-size: 11px;
+    }
+
+    .header-label {
+        margin-right: 2px;
+        font-size: 10px;
+        padding: 1px 3px;
+        width: 22px;
+    }
+
+    .header-time-val {
+        font-size: 14px;
+        width: auto;
+        min-width: 0;
+    }
+
+    .header-clock-group:not(:last-child) {
+        margin-right: 6px;
+    }
+}
