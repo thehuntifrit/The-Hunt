@@ -50,18 +50,24 @@ async function initApp() {
         initHeaderObserver();
 
         window.addEventListener('initialDataLoaded', () => {
-            renderMaintenanceStatus();
-            setTimeout(() => {
-                showColumnContainer();
+            try {
+                renderMaintenanceStatus();
+                setTimeout(() => {
+                    showColumnContainer();
 
-                const isFirstVisit = !localStorage.getItem("has_visited");
-                if (isFirstVisit) {
-                    localStorage.setItem("has_visited", "true");
-                    if (window.openUserManual) {
-                        window.openUserManual();
+                    const isFirstVisit = !localStorage.getItem("has_visited");
+                    if (isFirstVisit) {
+                        localStorage.setItem("has_visited", "true");
+                        if (window.openUserManual) {
+                            window.openUserManual();
+                        }
                     }
-                }
-            }, 300);
+                }, 300);
+            } catch (e) {
+                console.error("Initial render failed:", e);
+                const overlay = document.getElementById("loading-overlay");
+                if (overlay) overlay.classList.add("hidden");
+            }
         }, { once: true });
 
         window.addEventListener('maintenanceUpdated', () => {
