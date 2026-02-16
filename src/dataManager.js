@@ -26,9 +26,7 @@ export const state = {
         },
         allRankSet: new Set()
     },
-    openMobCardNo: localStorage.getItem("openMobCardNo")
-        ? parseInt(localStorage.getItem("openMobCardNo"), 10)
-        : null,
+    openMobCardNo: null,
     pendingCalculationMobs: new Set(),
     pendingStatusMap: null,
     pendingMaintenanceData: null,
@@ -166,11 +164,6 @@ export function setFilter(partial) {
 
 export function setOpenMobCardNo(no) {
     state.openMobCardNo = no;
-    if (no === null) {
-        localStorage.removeItem("openMobCardNo");
-    } else {
-        localStorage.setItem("openMobCardNo", no);
-    }
 }
 
 const MOB_DATA_URL = "./mob_data.json?v=" + new Date().getTime();
