@@ -30,35 +30,24 @@
             <div id="status-message-temp"></div>
         </div>
 
-        <div class="max-w-6xl mx-auto px-4 flex items-start justify-between py-2">
-            <div class="header-left-side">
-                <h1 class="flex flex-col text-3xl font-bold font-stretch-condensed leading-[0.8] text-glow mb-1">
-                    <span class="text-cyan-400">The</span>
-                    <span class="text-yellow-400">Hunt</span>
-                </h1>
-                <div id="header-welcome-message" class="header-greeting-left"></div>
-            </div>
-
-            <div class="header-info-container">
-                <div class="header-notification-row">
-                    <div class="flex flex-col items-center gap-0.5">
-                        <span class="notification-label-text">通知</span>
-                        <label class="notification-toggle-label">
-                            <input type="checkbox" id="notification-toggle" class="sr-only peer" aria-label="通知の有効化">
-                            <div class="notification-switch-ui"></div>
-                        </label>
-                    </div>
-                    <div class="notification-volume-wrapper">
-                        <input type="range" id="notification-volume" min="0" max="1" step="0.05" class="volume-slider"
-                            title="通知音量">
-                    </div>
-                    <button id="test-sound-btn" class="test-sound-btn" title="音声をテスト再生">🔊</button>
-                </div>
-
-                <div class="header-clock-row-right">
+        <div class="max-w-6xl mx-auto px-4 py-2">
+            <div class="header-final-grid">
+                <div class="header-right-row-1">
+                    <label class="notification-toggle-label">
+                        <input type="checkbox" id="notification-toggle" class="sr-only peer" aria-label="通知の有効化">
+                        <div class="notification-switch-ui"></div>
+                    </label>
                     <div class="header-clock-group">
                         <span class="header-label-mini">LT</span>
                         <span id="header-time-lt" class="header-time-val-mini">--:--</span>
+                    </div>
+                </div>
+
+                <div class="header-right-row-2">
+                    <div class="notification-volume-wrapper">
+                        <input type="range" id="notification-volume" min="0" max="1" step="0.05" class="volume-slider"
+                            title="通知音量">
+                        <button id="test-sound-btn" class="test-sound-btn" title="音声をテスト再生">🔊</button>
                     </div>
                     <div class="header-clock-group">
                         <span class="header-label-mini">ET</span>
@@ -67,6 +56,14 @@
                 </div>
 
                 <div id="rank-tabs"></div>
+
+                <div class="header-title-area">
+                    <h1 class="flex flex-col text-3xl font-bold font-stretch-condensed leading-[0.8] text-glow">
+                        <span class="text-cyan-400">The</span>
+                        <span class="text-yellow-400">Hunt</span>
+                    </h1>
+                </div>
+                <div id="header-welcome-message" class="header-greeting-left"></div>
             </div>
         </div>
 
