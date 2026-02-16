@@ -665,15 +665,15 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .header-clock-row-right {
-    display: flex !important;
-    justify-content: flex-end !important;
-    gap: 8px !important;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 .header-clock-group {
-    display: flex !important;
-    align-items: center !important;
-    gap: 4px !important;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .header-time-val-mini {
@@ -684,35 +684,31 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .header-title-area {
-    grid-column: 1;
-    grid-row: 2;
-    align-self: end !important;
+    align-self: flex-end;
 }
 
 .header-notification-row {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-    gap: 4px !important;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
 }
 
 .header-greeting-left {
-    grid-column: 1;
-    grid-row: 3;
     color: #94a3b8;
     font-size: 11px;
     font-weight: bold;
     line-height: 1;
     padding-top: 4px;
-    align-self: end !important;
+    align-self: flex-end;
 }
 
 #rank-tabs {
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 2px !important;
-    width: 100% !important;
-    margin-top: 4px !important;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    width: 100%;
+    margin-top: 4px;
 }
 
 #rank-tabs .tab-button {
