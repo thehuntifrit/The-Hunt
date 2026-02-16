@@ -268,7 +268,6 @@ export async function loadBaseMobData() {
     if (cachedDataStr) {
         try {
             cachedData = JSON.parse(cachedDataStr);
-            console.log("Using cached mob data");
             const processed = processMobData(cachedData, maintenance, { skipConditionCalc: true });
 
             processed.forEach(mob => {
@@ -295,7 +294,6 @@ export async function loadBaseMobData() {
 
         const freshDataStr = JSON.stringify(freshData);
         if (freshDataStr !== cachedDataStr) {
-            console.log("Updating mob data from network");
             localStorage.setItem(MOB_DATA_CACHE_KEY, freshDataStr);
 
             const processed = processMobData(freshData, maintenance, { skipConditionCalc: true });
@@ -312,7 +310,6 @@ export async function loadBaseMobData() {
 
             scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
         } else {
-            console.log("Mob data is up to date");
         }
 
         loadLocationData();
@@ -427,8 +424,6 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
     });
 
     setMobs([...state.mobs]);
-
-    console.log(`Condition calculation completed for ${updatedCount} mobs`);
 }
 
 let unsubscribes = [];
@@ -454,9 +449,7 @@ async function loadLocationData() {
             }
         });
 
-        console.log("Location data loaded lazily");
         window.dispatchEvent(new CustomEvent('locationDataReady'));
-
     } catch (e) {
         console.warn("Lazy location load failed:", e);
     }
@@ -468,7 +461,6 @@ function checkInitialLoadComplete() {
     if (initialLoadState.status && initialLoadState.maintenance) {
         if (!state.initialLoadComplete) {
             state.initialLoadComplete = true;
-            console.log("Critical data (Status) loaded. Rendering UI...");
 
             const current = state.mobs;
             const maintenance = state.maintenance;
