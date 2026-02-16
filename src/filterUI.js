@@ -20,7 +20,6 @@ export const renderRankTabs = () => {
   if (!container) return;
 
   container.innerHTML = "";
-  container.className = "grid grid-cols-4 gap-2";
 
   rankList.forEach(rank => {
     const isSelected = state.filter.rank === rank;
