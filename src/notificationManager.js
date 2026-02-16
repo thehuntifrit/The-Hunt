@@ -10,6 +10,7 @@ export function initNotification() {
     audio.load();
 
     const toggle = document.getElementById('notification-toggle');
+    const volumeSlider = document.getElementById('notification-volume');
     const testBtn = document.getElementById('test-sound-btn');
 
     if (toggle) {
@@ -22,6 +23,15 @@ export function initNotification() {
                 requestNotificationPermission();
                 playNotificationSound(true);
             }
+        });
+    }
+
+    if (volumeSlider) {
+        const state = getState();
+        volumeSlider.value = state.notificationVolume;
+        volumeSlider.addEventListener('input', (e) => {
+            const vol = parseFloat(e.target.value);
+            import("./dataManager.js").then(m => m.setNotificationVolume(vol));
         });
     }
 
@@ -44,14 +54,16 @@ export function playNotificationSound(isSilent = false) {
     if (!audio) return;
 
     audio.currentTime = 0;
+    const currentVolume = getState().notificationVolume;
+
     if (isSilent) {
-        const originalVolume = audio.volume;
         audio.volume = 0;
         audio.play().then(() => {
             audio.pause();
-            audio.volume = originalVolume;
+            audio.volume = currentVolume;
         }).catch(err => console.warn("Audio unlock failed:", err));
     } else {
+        audio.volume = currentVolume;
         audio.play().catch(err => console.warn("Audio play failed:", err));
     }
 }
