@@ -784,7 +784,7 @@ html body.magnifier-active .mob-card-inner * {
     font-weight: bold !important;
     color: #94a3b8 !important;
     line-height: normal !important;
-    margin-left: 16px !important;
+    margin-left: 12px !important;
 }
 
 #notification-toggle:checked~.notification-label-text {
@@ -839,6 +839,7 @@ html body.magnifier-active .mob-card-inner * {
     display: inline-flex;
     justify-content: center;
     align-items: center;
+    width: 17px;
     height: 13px;
     margin-bottom: 1px;
 }
