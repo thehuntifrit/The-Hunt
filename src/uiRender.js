@@ -8,6 +8,7 @@ import { openReportModal } from "./modal.js";
 import { allTabComparator } from "./mobSorter.js";
 import { updateStatusContainerVisibility } from "./app.js";
 import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay } from "./mobCard.js";
+import { checkAndNotify } from "./notificationManager.js";
 
 export const DOM = {
   masterContainer: document.getElementById('master-mob-container'),
@@ -160,6 +161,7 @@ window.addEventListener('initialDataLoaded', () => {
 
 window.addEventListener('mobUpdated', (e) => {
   const { mobNo, mob } = e.detail;
+  checkAndNotify(mob);
   const card = document.querySelector(`.mob-card[data-mob-no="${mobNo}"]`);
   if (card) {
     updateProgressText(card, mob);
