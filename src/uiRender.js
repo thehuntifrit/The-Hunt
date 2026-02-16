@@ -140,7 +140,7 @@ export function updateHeaderTime() {
 
   if (elWelcome) {
     if (name) {
-      elWelcome.textContent = `ようこそ ${name} さん`;
+      elWelcome.textContent = `ようこそ ${name}`;
     } else {
       elWelcome.textContent = "";
     }
