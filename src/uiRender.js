@@ -162,7 +162,7 @@ window.addEventListener('initialDataLoaded', () => {
 window.addEventListener('mobUpdated', (e) => {
   const { mobNo, mob } = e.detail;
   checkAndNotify(mob);
-  const card = document.querySelector(`.mob-card[data-mob-no="${mobNo}"]`);
+  const card = cardCache.get(String(mobNo));
   if (card) {
     updateProgressText(card, mob);
     updateProgressBar(card, mob);
@@ -194,8 +194,7 @@ window.addEventListener('locationsUpdated', (e) => {
   const sorted = getSortedFilteredMobs();
   const mobMap = new Map(sorted.map(m => [String(m.No), m]));
 
-  document.querySelectorAll('.mob-card').forEach(card => {
-    const mobNoStr = card.dataset.mobNo;
+  cardCache.forEach((card, mobNoStr) => {
     const mob = mobMap.get(mobNoStr);
     if (mob) {
       updateMobCount(card, mob);
@@ -231,7 +230,7 @@ function updateVisibleCards() {
   const mobMap = new Map(sorted.map(m => [String(m.No), m]));
 
   for (const mobNoStr of visibleCards) {
-    const card = document.querySelector(`.mob-card[data-mob-no="${mobNoStr}"]`);
+    const card = cardCache.get(mobNoStr);
     if (card) {
       const mob = mobMap.get(mobNoStr);
       if (mob) {
@@ -245,6 +244,8 @@ function updateVisibleCards() {
     }
   }
 }
+
+const cardCache = new Map();
 
 export function filterAndRender({ isInitialLoad = false } = {}) {
   const state = getState();
@@ -270,12 +271,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       selectionEnd = activeElement.selectionEnd;
     }
   }
-
-  const existingCards = new Map();
-  document.querySelectorAll('.mob-card').forEach(card => {
-    const mobNo = card.getAttribute('data-mob-no');
-    existingCards.set(mobNo, card);
-  });
 
   const width = window.innerWidth;
   const md = 768;
@@ -314,10 +309,11 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     groupMobs.forEach((mob, index) => {
       const colIdx = index % numCols;
       const targetCol = cols[colIdx];
-      let card = existingCards.get(String(mob.No));
+      let card = cardCache.get(String(mob.No));
 
       if (!card) {
         card = createMobCard(mob);
+        cardCache.set(String(mob.No), card);
         cardObserver.observe(card);
       }
 
@@ -340,7 +336,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       while (col.children.length > limit) {
         const cardToRemove = col.lastChild;
         if (cardToRemove && cardToRemove.classList?.contains('mob-card')) {
-          cardObserver.unobserve(cardToRemove);
+          // Keep in cache, just remove from view
           visibleCards.delete(cardToRemove.dataset.mobNo);
         }
         col.removeChild(cardToRemove);
@@ -359,7 +355,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   }
 
   if (focusedMobNo) {
-    const card = document.querySelector(`.mob-card[data-mob-no="${focusedMobNo}"]`);
+    const card = cardCache.get(String(focusedMobNo)); // Use cache here too
     if (card && focusedAction) {
       const input = card.querySelector(`input[data-action="${focusedAction}"]`);
       if (input) {
