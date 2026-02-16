@@ -662,7 +662,7 @@ html body.magnifier-active .mob-card-inner * {
     grid-template-columns: 1fr 180px !important;
     grid-template-rows: auto auto auto !important;
     align-items: end !important;
-    gap: 4px 16px !important;
+    gap: 8px 16px !important;
 }
 
 .header-clock-row-right {
@@ -707,6 +707,7 @@ html body.magnifier-active .mob-card-inner * {
     font-size: 11px;
     font-weight: bold;
     line-height: 1;
+    padding-top: 4px;
 }
 
 #rank-tabs {
@@ -716,11 +717,12 @@ html body.magnifier-active .mob-card-inner * {
     grid-template-columns: repeat(4, 1fr) !important;
     gap: 2px !important;
     width: 100% !important;
+    margin-top: 4px !important;
 }
 
 #rank-tabs .tab-button {
-    padding: 2px 0px !important;
-    font-size: 11px !important;
+    padding: 2px 2px !important;
+    font-size: 13px !important;
     min-width: 0 !important;
     text-align: center !important;
 }
