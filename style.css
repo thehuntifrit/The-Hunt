@@ -667,7 +667,7 @@ html body.magnifier-active .mob-card-inner * {
 
 .header-clock-row-right {
     grid-column: 2;
-    grid-row: 1;
+    grid-row: 2;
     display: flex !important;
     justify-content: flex-end !important;
     gap: 8px !important;
@@ -694,7 +694,7 @@ html body.magnifier-active .mob-card-inner * {
 
 .header-notification-row {
     grid-column: 2;
-    grid-row: 2;
+    grid-row: 1;
     display: flex !important;
     align-items: center !important;
     justify-content: flex-end !important;
