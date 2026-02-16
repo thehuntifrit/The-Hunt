@@ -31,40 +31,34 @@
         </div>
 
         <div class="max-w-6xl mx-auto px-4 flex items-start justify-between py-2">
-            <div class="flex flex-col gap-0.5">
-                <div id="header-welcome-message"
-                    class="header-greeting-left text-[11px] text-gray-500 font-bold leading-none mb-1"></div>
-                <h1 class="flex flex-col text-3xl font-bold font-stretch-condensed leading-[0.8] text-glow mb-2">
+            <div class="header-left-side">
+                <h1 class="flex flex-col text-3xl font-bold font-stretch-condensed leading-[0.8] text-glow mb-1">
                     <span class="text-cyan-400">The</span>
                     <span class="text-yellow-400">Hunt</span>
                 </h1>
-                <div class="header-clock-row-left flex gap-1 text-sm">
-                    <div class="header-clock-group flex items-center">
-                        <span class="header-label-mini mr-1">LT</span>
-                        <span id="header-time-lt" class="header-time-val-mini">--:--</span>
-                    </div>
-                    <div class="header-clock-group flex items-center">
-                        <span class="header-label-mini mr-1">ET</span>
-                        <span id="header-time-et" class="header-time-val-mini">--:--</span>
-                    </div>
-                </div>
+                <div id="header-welcome-message" class="header-greeting-left"></div>
             </div>
 
             <div class="header-info-container">
+                <div class="header-clock-row-right">
+                    <div class="header-clock-group">
+                        <span class="header-label-mini">LT</span>
+                        <span id="header-time-lt" class="header-time-val-mini">--:--</span>
+                    </div>
+                    <div class="header-clock-group">
+                        <span class="header-label-mini">ET</span>
+                        <span id="header-time-et" class="header-time-val-mini">--:--</span>
+                    </div>
+                </div>
+
                 <div class="header-notification-row">
-                    <label class="relative inline-flex items-center cursor-pointer group">
+                    <label class="notification-toggle-label">
                         <input type="checkbox" id="notification-toggle" class="sr-only peer">
-                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer 
-                            peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] 
-                            after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 
-                            after:border after:rounded-full after:h-5 after:w-5 after:transition-all 
-                            peer-checked:bg-cyan-600 border border-gray-600"></div>
-                        <span
-                            class="ml-2 text-xs font-bold text-gray-400 peer-checked:text-cyan-400 select-none">通知</span>
+                        <div class="notification-switch-ui"></div>
+                        <span class="notification-label-text">通知</span>
                     </label>
                     <div class="notification-volume-wrapper">
-                        <input type="range" id="notification-volume" min="0" max="1" step="0.05"
-                            class="w-16 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-600"
+                        <input type="range" id="notification-volume" min="0" max="1" step="0.05" class="volume-slider"
                             title="通知音量">
                     </div>
                     <button id="test-sound-btn" class="test-sound-btn" title="音声をテスト再生">🔊</button>
