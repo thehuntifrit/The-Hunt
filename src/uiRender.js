@@ -415,6 +415,7 @@ function updateProgressBars() {
         }
       }
     }
+    checkAndNotify(mob);
   });
 
   invalidateSortCache();
