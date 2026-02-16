@@ -655,8 +655,7 @@ html body.magnifier-active .mob-card-inner * {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    justify-content: center;
-    gap: 3px;
+    gap: 8px;
     z-index: 50;
 }
 
