@@ -788,7 +788,7 @@ html body.magnifier-active .mob-card-inner * {
 #rank-tabs {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
-    gap: 4px !important;
+    gap: 2px !important;
     width: 100% !important;
     order: 3;
 }
@@ -797,6 +797,7 @@ html body.magnifier-active .mob-card-inner * {
     padding: 2px 2px !important;
     font-size: 11px !important;
     min-width: 0 !important;
+    text-align: center !important;
 }
 
 .header-label-mini {
