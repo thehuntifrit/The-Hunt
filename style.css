@@ -654,10 +654,10 @@ html body.magnifier-active .mob-card-inner * {
 .header-info-container {
     display: flex !important;
     flex-direction: column !important;
-    align-items: flex-end !important;
-    gap: 4px !important;
+    align-items: stretch !important;
+    gap: 3px !important;
     z-index: 50;
-    margin-top: 2px;
+    width: 200px;
 }
 
 .header-greeting-left {
@@ -666,36 +666,18 @@ html body.magnifier-active .mob-card-inner * {
     line-height: 1.2;
 }
 
-.header-clock-row-left {
-    user-select: none;
-    color: #e2d7c5;
-}
-
-.header-label-mini {
-    background-color: #d6c9b0;
-    color: #5a4a3a;
-    border: 1px solid #5a4a3a;
-    font-size: 10px;
-    padding: 0px 3px;
-    border-radius: 2px;
-    font-weight: bold;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    height: 14px;
-}
-
-.header-time-val-mini {
-    font-family: 'Inter', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-size: 14px;
-    font-variant-numeric: tabular-nums;
+.header-clock-row-right {
+    display: flex !important;
+    justify-content: space-between !important;
+    order: 1;
+    margin-bottom: 2px;
 }
 
 .header-notification-row {
     display: flex !important;
     align-items: center !important;
-    justify-content: flex-end !important;
-    order: 3;
+    justify-content: space-between !important;
+    order: 2;
     margin-bottom: 2px;
 }
 
@@ -703,12 +685,11 @@ html body.magnifier-active .mob-card-inner * {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    margin-left: 0.5rem;
 }
 
 .test-sound-btn {
     font-size: 0.75rem;
-    padding: 0.25rem;
+    padding: 0px 4px;
     color: #64748b;
     transition: color 0.2s;
 }
@@ -720,9 +701,30 @@ html body.magnifier-active .mob-card-inner * {
 #rank-tabs {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
-    gap: 0.5rem !important;
-    width: 100%;
-    order: 4;
+    gap: 4px !important;
+    width: 100% !important;
+    order: 3;
+}
+
+/* タブボタンのパディング削減 */
+#rank-tabs .tab-button {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+}
+
+.header-label-mini {
+    background-color: #d6c9b0;
+    color: #5a4a3a;
+    border: 1px solid #5a4a3a;
+    font-size: 10px;
+    padding: 0px 2px;
+    border-radius: 2px;
+    font-weight: bold;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    height: 14px;
+    margin-right: 2px;
 }
 
 .header-label {
@@ -756,7 +758,7 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .header-clock-group:not(:last-child) {
-    margin-right: 4px;
+    margin-right: 0;
 }
 
 @media (max-width: 1023px) {
