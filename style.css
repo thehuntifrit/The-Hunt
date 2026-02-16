@@ -218,6 +218,26 @@ body {
     animation: none !important;
 }
 
+.mob-card.is-pre-repop .header-grid-container {
+    display: none;
+}
+
+.header-right-row-1 {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.header-right-row-2 {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
 .mob-card.is-pre-repop .mob-name {
     color: #fff !important;
     text-shadow: none !important;
@@ -651,26 +671,13 @@ html body.magnifier-active .mob-card-inner * {
     max-height: none !important;
 }
 
-.header-left-side {
-    display: flex;
-    flex-direction: column;
-    gap: 0px;
-    padding-top: 20px;
-}
-
-.header-info-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    width: 170px;
-}
-
-.header-clock-row-right {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    line-height: 1;
+.header-final-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 180px !important;
+    grid-template-rows: auto auto auto !important;
+    align-items: end !important;
+    gap: 4px 16px !important;
+    width: 100%;
 }
 
 .header-clock-group {
@@ -687,29 +694,20 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .header-title-area {
-    align-self: flex-end;
-}
-
-.header-notification-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 2px;
-}
-
-.volume-slider {
-    width: 60px !important;
+    grid-column: 1;
+    grid-row: 2;
+    align-self: end !important;
 }
 
 .header-greeting-left {
+    grid-column: 1;
+    grid-row: 3;
     color: #94a3b8;
     font-size: 11px;
     font-weight: bold;
     line-height: 1;
-    padding-top: 0px;
-    margin-top: -2px;
-    align-self: center;
+    padding-top: 4px;
+    align-self: end !important;
 }
 
 #rank-tabs {
@@ -783,7 +781,7 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .volume-slider {
-    width: 4rem;
+    width: 3.5rem !important;
     height: 0.25rem;
     background-color: #334155;
     border-radius: 9999px;
