@@ -39,37 +39,35 @@
             <div class="header-info-container">
                 <div id="header-welcome-message" class="header-greeting"></div>
 
-                <div class="flex flex-col lg:flex-row lg:items-center items-end gap-1 lg:gap-4">
-                    <div class="header-clock-row">
-                        <div class="header-clock-group">
-                            <span class="header-label">LT</span>
-                            <span id="header-time-lt" class="header-time-val">--:--</span>
-                        </div>
-                        <div class="header-clock-group">
-                            <span class="header-label">ET</span>
-                            <span id="header-time-et" class="header-time-val">--:--</span>
-                        </div>
+                <div class="header-clock-row">
+                    <div class="header-clock-group">
+                        <span class="header-label">LT</span>
+                        <span id="header-time-lt" class="header-time-val">--:--</span>
                     </div>
+                    <div class="header-clock-group">
+                        <span class="header-label">ET</span>
+                        <span id="header-time-et" class="header-time-val">--:--</span>
+                    </div>
+                </div>
 
-                    <div class="header-notification-row flex items-center justify-end">
-                        <label class="relative inline-flex items-center cursor-pointer group">
-                            <input type="checkbox" id="notification-toggle" class="sr-only peer">
-                            <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer 
-                                peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] 
-                                after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 
-                                after:border after:rounded-full after:h-5 after:w-5 after:transition-all 
-                                peer-checked:bg-cyan-600 border border-gray-600"></div>
-                            <span
-                                class="ml-2 text-xs font-bold text-gray-400 peer-checked:text-cyan-400 select-none">通知</span>
-                        </label>
-                        <div class="flex items-center gap-1 ml-2">
-                            <input type="range" id="notification-volume" min="0" max="1" step="0.05"
-                                class="w-16 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-600"
-                                title="通知音量">
-                        </div>
-                        <button id="test-sound-btn" class="text-xs p-1 text-gray-500 hover:text-cyan-400 transition"
-                            title="音声をテスト再生">🔊</button>
+                <div class="header-notification-row flex items-center justify-end">
+                    <label class="relative inline-flex items-center cursor-pointer group">
+                        <input type="checkbox" id="notification-toggle" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer 
+                            peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] 
+                            after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 
+                            after:border after:rounded-full after:h-5 after:w-5 after:transition-all 
+                            peer-checked:bg-cyan-600 border border-gray-600"></div>
+                        <span
+                            class="ml-2 text-xs font-bold text-gray-400 peer-checked:text-cyan-400 select-none">通知</span>
+                    </label>
+                    <div class="flex items-center gap-1 ml-2">
+                        <input type="range" id="notification-volume" min="0" max="1" step="0.05"
+                            class="w-16 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-600"
+                            title="通知音量">
                     </div>
+                    <button id="test-sound-btn" class="text-xs p-1 text-gray-500 hover:text-cyan-400 transition"
+                        title="音声をテスト再生">🔊</button>
                 </div>
 
                 <div id="rank-tabs" class="flex justify-end gap-2"></div>
