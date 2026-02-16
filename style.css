@@ -676,7 +676,7 @@ html body.magnifier-active .mob-card-inner * {
     display: flex !important;
     align-items: center !important;
     gap: 6px !important;
-    margin-left: 8px !important;
+    margin-left: 12px !important;
 }
 
 .header-right-row-2 {
