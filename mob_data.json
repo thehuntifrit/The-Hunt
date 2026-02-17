@@ -84,7 +84,7 @@
     "11111": {
       "rank": "A",
       "name": "アレクトリオン",
-      "area": "中央ザナラーン",
+      "area": "西ザナラーン",
       "condition": "",
       "repopSeconds": 12600,
       "maxRepopSeconds": 16200
@@ -92,7 +92,7 @@
     "11121": {
       "rank": "A",
       "name": "サボテンダー・バイラリーナ",
-      "area": "西ザナラーン",
+      "area": "中央ザナラーン",
       "condition": "",
       "repopSeconds": 14400,
       "maxRepopSeconds": 18000
