@@ -750,8 +750,8 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .notification-switch-ui {
-    width: 2.2rem !important;
-    height: 1.1rem !important;
+    width: 34px !important;
+    height: 18px !important;
     background-color: #334155 !important;
     border: 1px solid #475569 !important;
     border-radius: 9999px !important;
@@ -768,15 +768,15 @@ html body.magnifier-active .mob-card-inner * {
     position: absolute !important;
     top: 1px !important;
     left: 1px !important;
-    width: 0.9rem !important;
-    height: 0.9rem !important;
+    width: 14px !important;
+    height: 14px !important;
     background-color: white !important;
     border-radius: 50% !important;
     transition: transform 0.2s !important;
 }
 
 #notification-toggle:checked+.notification-switch-ui::after {
-    transform: translateX(1.1rem) !important;
+    transform: translateX(16px) !important;
 }
 
 .notification-label-text {
