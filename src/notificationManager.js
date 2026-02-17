@@ -101,9 +101,9 @@ export function checkAndNotify(mob) {
     const shouldNotify = (now >= oneMinBefore && now <= endTime) && (isConditionMet || now >= oneMinBefore);
 
     if (shouldNotify && !notifiedCycles.has(cycleKey)) {
-        const title = `【POP info】&thinsp;${mob.Name}`;
+        const title = `【POP info】 ${mob.Name}`;
         const body = (now < spawnTime)
-            ? `${mob.Area}：まもなく時間IN（2分前）`
+            ? `${mob.Area}：まもなく時間（2分前）`
             : `${mob.Area}：時間INなう！`;
 
         sendBrowserNotification(title, body);
