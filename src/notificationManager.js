@@ -92,7 +92,7 @@ export function checkAndNotify(mob) {
     const now = Date.now();
     const spawnTime = info.nextConditionSpawnDate.getTime();
     const endTime = info.conditionWindowEnd.getTime();
-    const oneMinBefore = spawnTime - 60000;
+    const oneMinBefore = spawnTime - 120000;
 
     const cycleKey = `${mob.No}-${spawnTime}`;
 
@@ -101,10 +101,10 @@ export function checkAndNotify(mob) {
     const shouldNotify = (now >= oneMinBefore && now <= endTime) && (isConditionMet || now >= oneMinBefore);
 
     if (shouldNotify && !notifiedCycles.has(cycleKey)) {
-        const title = `【出現予告・確定】${mob.Name}`;
+        const title = `【POP info】${mob.Name}`;
         const body = (now < spawnTime)
-            ? `${mob.Area}：まもなく出現条件が満たされます（約1分前）`
-            : `${mob.Area}：出現条件が満たされています！`;
+            ? `${mob.Area}：まもなく時間IN（約2分前）`
+            : `${mob.Area}：時間INなう！`;
 
         sendBrowserNotification(title, body);
         playNotificationSound();
