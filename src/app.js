@@ -36,10 +36,22 @@ async function initApp() {
         });
 
         const storedUI = JSON.parse(localStorage.getItem("huntUIState")) || {};
+        let uiDirty = false;
+
         if (storedUI.clickStep !== 1) {
             storedUI.clickStep = 1;
+            uiDirty = true;
+        }
+
+        if (storedUI.openMobCardNo !== undefined) {
+            delete storedUI.openMobCardNo;
+            uiDirty = true;
+        }
+
+        if (uiDirty) {
             localStorage.setItem("huntUIState", JSON.stringify(storedUI));
         }
+        setOpenMobCardNo(null);
 
         renderRankTabs();
         updateFilterUI();
