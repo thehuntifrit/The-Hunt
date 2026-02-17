@@ -103,8 +103,8 @@ export function checkAndNotify(mob) {
     if (shouldNotify && !notifiedCycles.has(cycleKey)) {
         const title = `【POP info】 ${mob.Name}`;
         const body = (now < spawnTime)
-            ? `${mob.Area}：まもなく時間（2分前）`
-            : `${mob.Area}：時間INなう！`;
+            ? `まもなく時間（2分前）`
+            : `時間INなう！`;
 
         sendBrowserNotification(title, body);
         playNotificationSound();
