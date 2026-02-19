@@ -68,19 +68,16 @@
                 </div>
                 <div id="header-welcome-message" class="header-greeting-left"></div>
             </div>
+
+            <!-- 拡張タブを同じコンテナ（px-4内）へ移動 -->
+            <div id="area-filter-panel-mobile" class="mt-1 block lg:hidden">
+                <div class="grid grid-cols-2 gap-[2px] justify-items-end"></div>
+            </div>
+            <div id="area-filter-panel-desktop" class="mt-1 hidden">
+                <div class="flex flex-wrap gap-[2px] justify-end"></div>
+            </div>
         </div>
 
-        <div id="area-filter-wrapper" class="hidden">
-            <div id="area-filter-panel"></div>
-        </div>
-
-        <div id="area-filter-panel-mobile"
-            class="max-w-6xl mx-auto flex flex-wrap justify-end px-4 py-2 block lg:hidden">
-            <div class="grid grid-cols-2 gap-[2px] w-full sm:w-auto"></div>
-        </div>
-        <div id="area-filter-panel-desktop" class="max-w-6xl mx-auto flex flex-wrap justify-end px-4 py-2 hidden">
-            <div class="flex flex-wrap gap-[2px] justify-end w-full"></div>
-        </div>
     </header>
 
     <main class="mx-auto px-2 py-2 sm:px-4 pb-10 pt-24">
