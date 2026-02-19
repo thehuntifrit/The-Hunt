@@ -2,7 +2,7 @@
 
 import { loadBaseMobData, startRealtime, setOpenMobCardNo, getState, setUserId, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
 import { initializeAuth, getUserData, submitReport, submitMemo } from "./server.js";
-import { openReportModal, initModal, openAuthModal } from "./modal.js";
+import { openReportModal, closeReportModal, initModal, openAuthModal } from "./modal.js";
 import { renderRankTabs, handleAreaFilterClick, updateFilterUI } from "./filterUI.js";
 import { DOM, sortAndRedistribute, showColumnContainer, updateHeaderTime } from "./uiRender.js";
 import { debounce } from "./cal.js";
@@ -38,15 +38,8 @@ async function initApp() {
         const storedUI = JSON.parse(localStorage.getItem("huntUIState")) || {};
 
         if (storedUI.openMobCardNo !== undefined) {
-            const newUIState = { ...storedUI };
-            delete newUIState.openMobCardNo;
-            localStorage.setItem("huntUIState", JSON.stringify(newUIState));
-        } else {
-        }
-        const cleanUI = { ...storedUI };
-        if ('openMobCardNo' in cleanUI) {
-            delete cleanUI.openMobCardNo;
-            localStorage.setItem("huntUIState", JSON.stringify(cleanUI));
+            delete storedUI.openMobCardNo;
+            localStorage.setItem("huntUIState", JSON.stringify(storedUI));
         }
         setOpenMobCardNo(null);
 
