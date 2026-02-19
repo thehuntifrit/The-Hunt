@@ -737,18 +737,24 @@ html body.magnifier-active .mob-card-inner * {
     align-self: center !important;
 }
 
+.filter-tab-base,
 #rank-tabs .tab-button {
-    padding: 0px 0px !important;
+    height: 18px !important;
     font-size: 11px !important;
     font-weight: 700 !important;
     line-height: normal !important;
-    min-width: 0 !important;
-    text-align: center !important;
-    height: 18px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     border-radius: 3px !important;
+    min-width: 0 !important;
+    text-align: center !important;
+    transition: all 0.2s ease !important;
+    padding: 0 4px !important;
+}
+
+#rank-tabs .tab-button {
+    padding: 0px 0px !important;
 }
 
 .notification-toggle-label {
