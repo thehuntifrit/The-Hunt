@@ -667,7 +667,7 @@ html body.magnifier-active .mob-card-inner * {
 
 .header-final-grid {
     display: grid !important;
-    grid-template-columns: 1fr 180px !important;
+    grid-template-columns: 1fr 182px !important;
     grid-template-rows: 24px 24px 22px !important;
     align-items: center !important;
     gap: 2px 16px !important;
@@ -865,7 +865,7 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 @media (max-width: 1023px) {
-    .header-grid-container {
-        grid-template-columns: 1fr 180px !important;
+    .header-final-grid {
+        grid-template-columns: 1fr 182px !important;
     }
 }
