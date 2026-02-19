@@ -73,11 +73,11 @@ export const renderAreaFilterPanel = () => {
     let btnClass = 'filter-tab-base text-white transition';
 
     if (uiRank === 'ALL' && !isAll) {
-      if (isDesktop) btnClass += ' w-12';
+      btnClass += '';
     }
 
     if (isAll) {
-      btn.className = `area-filter-btn ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
+      btn.className = `area-filter-btn px-1 ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
       btn.dataset.value = "ALL";
     } else {
       btn.className = `area-filter-btn ${btnClass} ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
