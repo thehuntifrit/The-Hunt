@@ -54,9 +54,11 @@ function handleCrushToggle(e) {
     toggleCrushStatus(mobNo, locationId, nextCulled);
 }
 
-export function isCulled(pointStatus, mobNo) {
+export function isCulled(pointStatus, mobNo, mob = null) {
     const state = getState();
-    const mob = state.mobs.find(m => m.No === mobNo);
+    if (!mob) {
+        mob = state.mobs.find(m => m.No === mobNo);
+    }
     const mobLastKillTime = mob?.last_kill_time || 0;
     const serverUpSec = state.maintenance?.serverUp
         ? new Date(state.maintenance.serverUp).getTime()
