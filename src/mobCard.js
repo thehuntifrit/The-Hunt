@@ -128,7 +128,7 @@ export function updateProgressBar(card, mob) {
 
     const currentWidth = parseFloat(bar.style.width) || 0;
     if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
-        if (elapsedPercent < currentWidth) {
+        if (currentWidth === 0 || elapsedPercent < currentWidth) {
             bar.style.transition = "none";
         } else {
             bar.style.transition = "width linear 60s";
