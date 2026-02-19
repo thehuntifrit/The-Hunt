@@ -739,18 +739,19 @@ html body.magnifier-active .mob-card-inner * {
 
 .filter-tab-base,
 #rank-tabs .tab-button {
-    height: 18px !important;
-    font-size: 11px !important;
+    height: 22px !important;
+    font-size: 12px !important;
     font-weight: 700 !important;
-    line-height: normal !important;
+    line-height: 1 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     border-radius: 3px !important;
-    min-width: 0 !important;
+    min-width: 44px !important;
     text-align: center !important;
     transition: all 0.2s ease !important;
     padding: 0 4px !important;
+    box-sizing: border-box !important;
 }
 
 #rank-tabs .tab-button {
