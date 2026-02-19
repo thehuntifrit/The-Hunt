@@ -77,7 +77,7 @@ export const renderAreaFilterPanel = () => {
     }
 
     if (isAll) {
-      btn.className = `area-filter-btn px-1 ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
+      btn.className = `area-filter-btn ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"}`;
       btn.dataset.value = "ALL";
     } else {
       btn.className = `area-filter-btn ${btnClass} ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"}`;
