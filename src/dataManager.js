@@ -38,7 +38,8 @@ export const state = {
     pendingStatusMap: null,
     pendingMaintenanceData: null,
     pendingLocationsMap: null,
-    pendingMemoData: null
+    pendingMemoData: null,
+    _filterVersion: 0
 };
 
 export const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
@@ -168,6 +169,7 @@ export function setNotificationVolume(volume) {
 
 export function setFilter(partial) {
     state.filter = { ...state.filter, ...partial };
+    state._filterVersion++;
     const serialized = {
         ...state.filter,
         areaSets: Object.keys(state.filter.areaSets).reduce((acc, key) => {
@@ -422,8 +424,6 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
         requestWorkerCalculation(mob, maintenance);
         updatedCount++;
     });
-
-    setMobs([...state.mobs]);
 }
 
 let unsubscribes = [];
