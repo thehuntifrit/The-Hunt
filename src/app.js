@@ -36,20 +36,11 @@ async function initApp() {
         });
 
         const storedUI = JSON.parse(localStorage.getItem("huntUIState")) || {};
-        let uiDirty = false;
-
-        if (storedUI.clickStep !== 1) {
-            storedUI.clickStep = 1;
-            uiDirty = true;
-        }
 
         if (storedUI.openMobCardNo !== undefined) {
-            delete storedUI.openMobCardNo;
-            uiDirty = true;
-        }
-
-        if (uiDirty) {
-            localStorage.setItem("huntUIState", JSON.stringify(storedUI));
+            const newUIState = { ...storedUI };
+            delete newUIState.openMobCardNo;
+            localStorage.setItem("huntUIState", JSON.stringify(newUIState));
         }
         setOpenMobCardNo(null);
 
@@ -59,6 +50,17 @@ async function initApp() {
         renderMaintenanceStatus();
         updateHeaderTime();
         attachGlobalEventListeners();
+        window.addEventListener('beforeunload', () => {
+            try {
+                const currentUI = JSON.parse(localStorage.getItem("huntUIState")) || {};
+                if (currentUI.openMobCardNo !== undefined) {
+                    delete currentUI.openMobCardNo;
+                    localStorage.setItem("huntUIState", JSON.stringify(currentUI));
+                }
+            } catch (e) {
+            }
+        });
+
         initHeaderObserver();
 
         window.addEventListener('initialDataLoaded', () => {
