@@ -41,6 +41,12 @@ async function initApp() {
             const newUIState = { ...storedUI };
             delete newUIState.openMobCardNo;
             localStorage.setItem("huntUIState", JSON.stringify(newUIState));
+        } else {
+        }
+        const cleanUI = { ...storedUI };
+        if ('openMobCardNo' in cleanUI) {
+            delete cleanUI.openMobCardNo;
+            localStorage.setItem("huntUIState", JSON.stringify(cleanUI));
         }
         setOpenMobCardNo(null);
 
@@ -58,6 +64,13 @@ async function initApp() {
                     localStorage.setItem("huntUIState", JSON.stringify(currentUI));
                 }
             } catch (e) {
+            }
+        });
+
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                setOpenMobCardNo(null);
+                document.querySelectorAll('.expandable-panel.open').forEach(el => el.classList.remove('open'));
             }
         });
 
@@ -491,6 +504,9 @@ async function handleInstantReport(mobNo, rank) {
         } else {
             alert("レポート送信エラー: " + result.error);
         }
+    } else {
+        setOpenMobCardNo(null);
+        document.querySelectorAll('.expandable-panel.open').forEach(el => el.classList.remove("open"));
     }
 }
 
@@ -510,6 +526,8 @@ async function handleReportSubmit(e) {
             alert("レポート送信エラー: " + result.error);
         }
     } else {
+        setOpenMobCardNo(null);
+        document.querySelectorAll('.expandable-panel.open').forEach(el => el.classList.remove("open"));
         closeReportModal();
     }
 }
