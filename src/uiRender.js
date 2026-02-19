@@ -78,22 +78,25 @@ function getOrCreateGroupSection(groupKey) {
 
 const FIFTEEN_MINUTES_SEC = 15 * 60;
 
-let cachedFilterString = null;
+let filterCacheVersion = -1;
 let cachedFilteredMobs = null;
 let cachedSortedMobs = null;
 let sortCacheValid = false;
 let lastRenderedOrderStr = "";
 let lastRenderedGroupStr = "";
+let cachedMobMap = null;
+let mobMapVersion = -1;
+let currentMobsRef = null;
 
 function getFilteredMobs() {
   const state = getState();
-  const filterString = JSON.stringify(state.filter);
+  const version = state._filterVersion || 0;
 
-  if (cachedFilterString === filterString && cachedFilteredMobs) {
+  if (filterCacheVersion === version && cachedFilteredMobs) {
     return cachedFilteredMobs;
   }
 
-  cachedFilterString = filterString;
+  filterCacheVersion = version;
   cachedFilteredMobs = filterMobsByRankAndArea(state.mobs);
   sortCacheValid = false;
   return cachedFilteredMobs;
@@ -109,10 +112,18 @@ function getSortedFilteredMobs() {
 }
 
 function invalidateFilterCache() {
-  cachedFilterString = null;
+  filterCacheVersion = -1;
   cachedFilteredMobs = null;
   cachedSortedMobs = null;
   sortCacheValid = false;
+}
+
+function getMobMap() {
+  const mobs = getState().mobs;
+  if (mobs === currentMobsRef && cachedMobMap) return cachedMobMap;
+  currentMobsRef = mobs;
+  cachedMobMap = new Map(mobs.map(m => [String(m.No), m]));
+  return cachedMobMap;
 }
 
 function invalidateSortCache() {
@@ -205,7 +216,7 @@ window.addEventListener('locationsUpdated', (e) => {
 
 const visibleCards = new Set();
 const cardObserver = new IntersectionObserver((entries) => {
-  const mobMap = new Map(getState().mobs.map(m => [String(m.No), m]));
+  const mobMap = getMobMap();
   for (const entry of entries) {
     const mobNo = entry.target.dataset.mobNo;
     if (entry.isIntersecting) {
@@ -226,8 +237,7 @@ const cardObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0 });
 
 function updateVisibleCards() {
-  const sorted = getSortedFilteredMobs();
-  const mobMap = new Map(sorted.map(m => [String(m.No), m]));
+  const mobMap = getMobMap();
 
   for (const mobNoStr of visibleCards) {
     const card = cardCache.get(mobNoStr);
@@ -317,13 +327,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
         cardObserver.observe(card);
       }
 
-      updateProgressText(card, mob);
-      updateProgressBar(card, mob);
-      updateMobCount(card, mob);
-      updateMapOverlay(card, mob);
-      updateExpandablePanel(card, mob);
-      updateMemoIcon(card, mob);
-
       const currentAtPos = targetCol.children[colPointers[colIdx]];
       if (currentAtPos !== card) {
         targetCol.insertBefore(card, currentAtPos || null);
@@ -336,7 +339,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       while (col.children.length > limit) {
         const cardToRemove = col.lastChild;
         if (cardToRemove && cardToRemove.classList?.contains('mob-card')) {
-          // Keep in cache, just remove from view
           visibleCards.delete(cardToRemove.dataset.mobNo);
         }
         col.removeChild(cardToRemove);
@@ -349,13 +351,12 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 
   if (isInitialLoad) {
     attachLocationEvents();
-    updateProgressBars();
-  } else {
-    updateVisibleCards();
   }
+  updateVisibleCards();
+  updateProgressBars();
 
   if (focusedMobNo) {
-    const card = cardCache.get(String(focusedMobNo)); // Use cache here too
+    const card = cardCache.get(String(focusedMobNo));
     if (card && focusedAction) {
       const input = card.querySelector(`input[data-action="${focusedAction}"]`);
       if (input) {
@@ -388,7 +389,7 @@ function updateProgressBars() {
   const state = getState();
   const conditionMobs = [];
   const nowSec = Date.now() / 1000;
-  const mobMap = new Map(state.mobs.map(m => [String(m.No), m]));
+  const mobMap = getMobMap();
 
   state.mobs.forEach(mob => {
     if (mob.repopInfo?.conditionWindowEnd && nowSec > mob.repopInfo.conditionWindowEnd.getTime() / 1000) {
@@ -411,8 +412,17 @@ function updateProgressBars() {
         }
       }
     }
-    checkAndNotify(mob);
   });
+
+  for (const mobNoStr of visibleCards) {
+    const card = cardCache.get(mobNoStr);
+    const mob = mobMap.get(mobNoStr);
+    if (card && mob) {
+      checkAndNotify(mob);
+      updateProgressText(card, mob);
+      updateProgressBar(card, mob);
+    }
+  }
 
   invalidateSortCache();
   const sorted = getSortedFilteredMobs();
@@ -421,8 +431,6 @@ function updateProgressBars() {
 
   if (currentOrderStr !== lastRenderedOrderStr || currentGroupStr !== lastRenderedGroupStr) {
     filterAndRender();
-  } else {
-    updateVisibleCards();
   }
 
   if (DOM.statusMessageTemp) {
