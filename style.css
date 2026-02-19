@@ -739,7 +739,7 @@ html body.magnifier-active .mob-card-inner * {
 
 .filter-tab-base,
 #rank-tabs .tab-button {
-    height: 22px !important;
+    height: 18px !important;
     font-size: 12px !important;
     font-weight: 700 !important;
     line-height: 1 !important;
@@ -748,10 +748,12 @@ html body.magnifier-active .mob-card-inner * {
     justify-content: center !important;
     border-radius: 3px !important;
     min-width: 44px !important;
+    max-width: 44px !important;
     text-align: center !important;
     transition: all 0.2s ease !important;
-    padding: 0 4px !important;
+    padding: 0 !important;
     box-sizing: border-box !important;
+    overflow: hidden !important;
 }
 
 #rank-tabs .tab-button {
