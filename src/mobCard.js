@@ -261,7 +261,9 @@ export function updateProgressText(card, mob) {
 <div class="truncate">${rightContent}</div>
 </div>
   `;
-    if (text.innerHTML !== newHTML) {
+    const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}`;
+    if (text.dataset.cacheKey !== cacheKey) {
+        text.dataset.cacheKey = cacheKey;
         text.innerHTML = newHTML;
     }
 
@@ -324,7 +326,7 @@ export function getValidSpawnPoints(mob, spawnCullStatus) {
         const isS_SpawnPoint = point.mob_ranks.includes("S");
         if (!isS_SpawnPoint) return false;
         const pointStatus = spawnCullStatus?.[point.id];
-        return !isCulled(pointStatus, mob.No);
+        return !isCulled(pointStatus, mob.No, mob);
     });
 }
 
@@ -355,7 +357,8 @@ export function updateMobCount(card, mob) {
         }
     }
 
-    if (countContainer.innerHTML !== displayCountText) {
+    if (countContainer.dataset.cacheKey !== displayCountText) {
+        countContainer.dataset.cacheKey = displayCountText;
         countContainer.innerHTML = displayCountText;
     }
 }
