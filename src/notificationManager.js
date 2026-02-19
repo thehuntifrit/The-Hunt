@@ -80,7 +80,6 @@ export function sendBrowserNotification(title, body) {
     }
 }
 
-const lastNotifiedMap = new Map();
 
 export function checkAndNotify(mob) {
     const state = getState();
@@ -109,5 +108,9 @@ export function checkAndNotify(mob) {
         sendBrowserNotification(title, body);
         playNotificationSound();
         notifiedCycles.add(cycleKey);
+    }
+
+    if (now > endTime && notifiedCycles.has(cycleKey)) {
+        notifiedCycles.delete(cycleKey);
     }
 }
