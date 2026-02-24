@@ -261,7 +261,9 @@ export const sortAndRedistribute = debounce(() => {
   filterAndRender();
   if (isInitialLoading) {
     isInitialLoading = false;
-    window.dispatchEvent(new CustomEvent('initialSortComplete'));
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new CustomEvent('initialSortComplete'));
+    });
   }
 }, 200);
 
@@ -379,7 +381,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     setTimeout(() => {
       isInitialSortingSuppressed = false;
       sortAndRedistribute();
-    }, 10);
+    }, 100);
 
     setTimeout(() => {
       isInitialSortingSuppressed = false;
