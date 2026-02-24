@@ -478,7 +478,7 @@ body::before {
 .expandable-panel {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     background: transparent;
 }
 
@@ -605,6 +605,10 @@ body::before {
 
     .mob-card-inner {
         background: rgba(15, 23, 42, 0.85);
+    }
+
+    #area-filter-panel-mobile .flex-wrap {
+        gap: 2px !important;
     }
 }
 

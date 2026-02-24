@@ -382,7 +382,7 @@ function toggleCardExpand(card, mobNo) {
                 const headerHeight = header ? header.offsetHeight : 0;
 
                 const rect = card.getBoundingClientRect();
-                const targetY = window.pageYOffset + rect.top - headerHeight - 12;
+                const targetY = window.pageYOffset + rect.top - headerHeight - 8;
 
                 window.scrollTo({
                     top: Math.max(0, targetY),
@@ -392,7 +392,7 @@ function toggleCardExpand(card, mobNo) {
                 setTimeout(() => {
                     delete card.dataset.isTransitioning;
                 }, 400);
-            }, 300);
+            }, 150);
         } else {
             panel.classList.remove("open");
             setOpenMobCardNo(null);
