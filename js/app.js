@@ -113,7 +113,7 @@ async function initApp() {
             }
         }, { once: true });
 
-        window.addEventListener('renderComplete', () => {
+        window.addEventListener('initialSortComplete', () => {
             try {
                 setTimeout(() => {
                     showColumnContainer();

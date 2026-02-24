@@ -257,8 +257,10 @@ export function updateProgressText(card, mob) {
     let rightContent = `<span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span>`;
 
     const newHTML = `
-<div class="truncate min-w-0 ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div>
-<div class="truncate min-w-0 text-right">${rightContent}</div>
+<div class="flex flex-col w-full h-full justify-between">
+    <div class="truncate min-w-0 ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div>
+    <div class="truncate min-w-0 text-right">${rightContent}</div>
+</div>
   `;
     const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}`;
     if (text.dataset.cacheKey !== cacheKey) {

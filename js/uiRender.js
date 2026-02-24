@@ -257,11 +257,25 @@ function updateVisibleCards() {
 
 const cardCache = new Map();
 
+export const sortAndRedistribute = debounce(() => {
+  filterAndRender();
+  if (isInitialLoading) {
+    isInitialLoading = false;
+    window.dispatchEvent(new CustomEvent('initialSortComplete'));
+  }
+}, 200);
+
+let isInitialLoading = false;
+
 export function filterAndRender({ isInitialLoad = false } = {}) {
   const state = getState();
 
   if (!state.initialLoadComplete && !isInitialLoad) {
     return;
+  }
+
+  if (isInitialLoad) {
+    isInitialLoading = true;
   }
 
   invalidateSortCache();
@@ -361,7 +375,11 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   if (isInitialLoad) {
     isInitialSortingSuppressed = true;
     attachLocationEvents();
-    window.dispatchEvent(new CustomEvent('renderComplete'));
+
+    setTimeout(() => {
+      isInitialSortingSuppressed = false;
+      sortAndRedistribute();
+    }, 10);
 
     setTimeout(() => {
       isInitialSortingSuppressed = false;
@@ -468,8 +486,6 @@ function updateProgressBars() {
     updateStatusContainerVisibility();
   }
 }
-
-export const sortAndRedistribute = debounce(() => filterAndRender(), 200);
 
 setInterval(() => {
   updateProgressBars();
