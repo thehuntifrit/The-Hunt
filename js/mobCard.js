@@ -88,25 +88,27 @@ export function createMobCard(mob) {
             memoInput.dataset.mobNo = mob.No;
         }
 
+        const conditionWrapper = card.querySelector('.condition-text')?.closest('.w-full.mt-2');
+        const mapContainer = card.querySelector('.map-container');
+
         if (rank !== 'S') {
-            const conditionWrapper = card.querySelector('.condition-text')?.closest('.w-full.mt-2');
-            if (conditionWrapper) conditionWrapper.remove();
-            const mapContainer = card.querySelector('.map-container');
-            if (mapContainer) mapContainer.remove();
+            if (conditionWrapper) conditionWrapper.classList.add('hidden');
+            if (mapContainer) mapContainer.classList.add('hidden');
         } else {
             const conditionText = card.querySelector('.condition-text');
             if (conditionText) {
                 conditionText.innerHTML = processText(mob.Condition);
-                conditionText.closest('.w-full.mt-2')?.classList.remove('hidden');
+                if (conditionWrapper) conditionWrapper.classList.remove('hidden');
             }
 
-            const mapContainer = card.querySelector('.map-container');
             if (mapContainer) {
                 if (mob.Map) {
                     const mapImg = mapContainer.querySelector('.mob-map-img');
-                    mapImg.src = `./maps/${mob.Map}`;
-                    mapImg.alt = `${mob.Area} Map`;
-                    mapImg.dataset.mobMap = mob.Map;
+                    if (mapImg) {
+                        mapImg.src = `./maps/${mob.Map}`;
+                        mapImg.alt = `${mob.Area} Map`;
+                        mapImg.dataset.mobMap = mob.Map;
+                    }
                     mapContainer.classList.remove('hidden');
                     delete mapContainer.dataset.locationLoading;
                 } else {
