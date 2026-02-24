@@ -207,9 +207,9 @@ export function setOpenMobCardNo(no) {
     state.openMobCardNo = no;
 }
 
-const MOB_DATA_URL = "../json/mob_data.json";
-const MOB_LOCATIONS_URL = "../json/mob_locations.json";
-const MAINTENANCE_URL = "../json/maintenance.json";
+const MOB_DATA_URL = "./json/mob_data.json";
+const MOB_LOCATIONS_URL = "./json/mob_locations.json";
+const MAINTENANCE_URL = "./json/maintenance.json";
 const MOB_DATA_CACHE_KEY = "mobDataCache";
 
 async function loadMaintenance() {
