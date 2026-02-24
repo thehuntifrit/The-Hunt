@@ -283,12 +283,17 @@ export function updateExpandablePanel(card, mob) {
     const elMemoInput = card.querySelector("input[data-action='save-memo']");
 
     const lastStr = formatLastKillTime(mob.last_kill_time);
-    if (elLast) elLast.textContent = `前回: ${lastStr}`;
+    if (elLast && elLast.textContent !== `前回: ${lastStr}`) {
+        elLast.textContent = `前回: ${lastStr}`;
+    }
 
     if (elMemoInput) {
         if (document.activeElement !== elMemoInput) {
             const shouldShowMemo = shouldDisplayMemo(mob);
-            elMemoInput.value = shouldShowMemo ? (mob.memo_text || "") : "";
+            const newValue = shouldShowMemo ? (mob.memo_text || "") : "";
+            if (elMemoInput.value !== newValue) {
+                elMemoInput.value = newValue;
+            }
         }
     }
 }
@@ -298,11 +303,9 @@ export function updateMemoIcon(card, mob) {
     if (!memoIconContainer) return;
 
     const shouldShowMemo = shouldDisplayMemo(mob);
-
-    const prevState = memoIconContainer.dataset.memoState;
     const newState = shouldShowMemo ? mob.memo_text : "";
 
-    if (prevState === newState) return;
+    if (memoIconContainer.dataset.memoState === newState) return;
     memoIconContainer.dataset.memoState = newState;
 
     if (shouldShowMemo) {
@@ -313,7 +316,9 @@ export function updateMemoIcon(card, mob) {
             span.textContent = '📝';
             memoIconContainer.appendChild(span);
         }
-        span.setAttribute('data-tooltip', mob.memo_text);
+        if (span.getAttribute('data-tooltip') !== mob.memo_text) {
+            span.setAttribute('data-tooltip', mob.memo_text);
+        }
     } else {
         memoIconContainer.innerHTML = '';
     }

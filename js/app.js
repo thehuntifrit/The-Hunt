@@ -108,6 +108,13 @@ async function initApp() {
         window.addEventListener('initialDataLoaded', () => {
             try {
                 renderMaintenanceStatus();
+            } catch (e) {
+                console.error("Initial maintenance render failed:", e);
+            }
+        }, { once: true });
+
+        window.addEventListener('renderComplete', () => {
+            try {
                 setTimeout(() => {
                     showColumnContainer();
 
@@ -118,9 +125,9 @@ async function initApp() {
                             window.openUserManual();
                         }
                     }
-                }, 300);
+                }, 100);
             } catch (e) {
-                console.error("Initial render failed:", e);
+                console.error("Initial render show failed:", e);
                 const overlay = document.getElementById("loading-overlay");
                 if (overlay) overlay.classList.add("hidden");
             }

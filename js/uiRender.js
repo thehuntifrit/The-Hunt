@@ -300,7 +300,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     groups[getGroupKey(mob)].push(mob);
   });
 
-  ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
+  const renderPromises = ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].map(key => {
     const groupMobs = groups[key];
     const { section, cols } = getOrCreateGroupSection(key);
 
@@ -333,13 +333,14 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       }
       colPointers[colIdx]++;
 
-      // 💥 CRITICAL: Update content immediately during render to avoid stale cards
-      updateProgressText(card, mob);
-      updateProgressBar(card, mob);
-      updateMobCount(card, mob);
-      updateMapOverlay(card, mob);
-      updateExpandablePanel(card, mob);
-      updateMemoIcon(card, mob);
+      if (isInitialLoad || visibleCards.has(String(mob.No))) {
+        updateProgressText(card, mob);
+        updateProgressBar(card, mob);
+        updateMobCount(card, mob);
+        updateMapOverlay(card, mob);
+        updateExpandablePanel(card, mob);
+        updateMemoIcon(card, mob);
+      }
     });
 
     cols.forEach((col, i) => {
@@ -359,9 +360,11 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 
   if (isInitialLoad) {
     attachLocationEvents();
+    window.dispatchEvent(new CustomEvent('renderComplete'));
   }
+
   updateVisibleCards();
-  // DO NOT call updateProgressBars() here - it creates a circular dependency
+
   if (focusedMobNo) {
     const card = cardCache.get(String(focusedMobNo));
     if (card && focusedAction) {
@@ -377,19 +380,18 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 }
 
 export function showColumnContainer() {
-  setTimeout(() => {
+  if (!DOM.colContainer) return;
+
+  requestAnimationFrame(() => {
+    DOM.colContainer.classList.remove("opacity-0");
+
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (DOM.colContainer) {
-          DOM.colContainer.classList.remove("opacity-0");
-        }
-        const overlay = document.getElementById("loading-overlay");
-        if (overlay) {
-          overlay.classList.add("hidden");
-        }
-      });
+      const overlay = document.getElementById("loading-overlay");
+      if (overlay) {
+        overlay.classList.add("hidden");
+      }
     });
-  }, 100);
+  });
 }
 
 function updateProgressBars() {
@@ -437,17 +439,22 @@ function updateProgressBars() {
   const currentGroupStr = sorted.map(m => getGroupKey(m)).join(",");
 
   if (currentOrderStr !== lastRenderedOrderStr || currentGroupStr !== lastRenderedGroupStr) {
-    sortAndRedistribute(); // Use debounced version instead of immediate filterAndRender
+    sortAndRedistribute();
   }
 
   if (DOM.statusMessageTemp) {
     if (conditionMobs.length > 0) {
-      DOM.statusMessageTemp.textContent = `🔜 ${conditionMobs.join(" / ")}`;
-      DOM.statusMessageTemp.className = "text-amber-400 font-bold animate-pulse";
-      DOM.statusMessageTemp.classList.remove("hidden");
+      const newText = `🔜 ${conditionMobs.join(" / ")}`;
+      if (DOM.statusMessageTemp.textContent !== newText) {
+        DOM.statusMessageTemp.textContent = newText;
+        DOM.statusMessageTemp.className = "text-amber-400 font-bold animate-pulse";
+        DOM.statusMessageTemp.classList.remove("hidden");
+      }
     } else {
-      DOM.statusMessageTemp.textContent = "";
-      DOM.statusMessageTemp.classList.add("hidden");
+      if (!DOM.statusMessageTemp.classList.contains("hidden")) {
+        DOM.statusMessageTemp.textContent = "";
+        DOM.statusMessageTemp.classList.add("hidden");
+      }
     }
     updateStatusContainerVisibility();
   }
@@ -458,3 +465,4 @@ export const sortAndRedistribute = debounce(() => filterAndRender(), 200);
 setInterval(() => {
   updateProgressBars();
 }, EORZEA_MINUTE_MS);
+
