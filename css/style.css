@@ -205,7 +205,7 @@ body::before {
 
 .mob-card.is-pre-repop .area-info-container,
 .mob-card.is-pre-repop .progress-bar-bg,
-.mob-card.is-pre-repop .progress-text>div>div:first-child,
+.mob-card.is-pre-repop .progress-text > div,
 .mob-card.is-pre-repop .report-side-bar,
 .mob-card.is-pre-repop .memo-icon-container,
 .mob-name-count-sep {
