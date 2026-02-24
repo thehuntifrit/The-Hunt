@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="./icon/The_Hunt.png">
+    <title>The Hunt</title>
+    <link rel="stylesheet" href="css/tailwind.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="leading-relaxed">
+
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading...</div>
+    </div>
+
+    <header id="main-header"
+        class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md">
+
+        <div id="status-message"
+            class="text-center py-1 text-sm text-white bg-transparent flex flex-col items-center justify-center gap-0.5"
+            role="status" aria-live="polite">
+            <div id="status-message-maintenance"></div>
+            <div id="status-message-telop" class="font-bold text-cyan-400"></div>
+            <div id="status-message-temp"></div>
+        </div>
+
+        <div class="max-w-6xl mx-auto px-4 pt-2 pb-3">
+            <div class="header-final-grid">
+                <div class="header-right-row-1">
+                    <div class="notification-toggle-wrapper">
+                        <label class="notification-toggle-label">
+                            <input type="checkbox" id="notification-toggle" class="sr-only peer" aria-label="通知の有効化">
+                            <div class="notification-switch-ui"></div>
+                        </label>
+                        <span class="notification-label-text">通知</span>
+                    </div>
+                    <div class="header-clock-group">
+                        <span class="header-label-mini">LT</span>
+                        <span id="header-time-lt" class="header-time-val-mini">--:--</span>
+                    </div>
+                </div>
+
+                <div class="header-right-row-2">
+                    <div class="notification-volume-wrapper">
+                        <input type="range" id="notification-volume" min="0" max="1" step="0.05" class="volume-slider"
+                            title="通知音量">
+                        <button id="test-sound-btn" class="test-sound-btn" title="音声をテスト再生">🔊</button>
+                    </div>
+                    <div class="header-clock-group">
+                        <span class="header-label-mini">ET</span>
+                        <span id="header-time-et" class="header-time-val-mini">--:--</span>
+                    </div>
+                </div>
+
+                <div id="rank-tabs"></div>
+
+                <div class="header-title-area">
+                    <h1 class="flex flex-col text-3xl font-bold font-stretch-condensed leading-[0.8] text-glow">
+                        <span class="text-cyan-400">The</span>
+                        <span class="text-yellow-400">Hunt</span>
+                    </h1>
+                </div>
+                <div id="header-welcome-message" class="header-greeting-left"></div>
+            </div>
+
+            <div id="area-filter-panel-mobile" class="mt-0 block lg:hidden">
+                <div class="flex justify-end">
+                    <div class="grid grid-cols-2 gap-[2px]"></div>
+                </div>
+            </div>
+            <div id="area-filter-panel-desktop" class="mt-0 flex-col items-end hidden">
+                <div class="flex flex-wrap gap-[2px] justify-end"></div>
+            </div>
+        </div>
+
+    </header>
+
+    <main class="mx-auto px-2 py-2 sm:px-4 pb-10 pt-24">
+        <div id="master-mob-container" class="hidden"></div>
+        <div id="column-container"
+            class="flex flex-col gap-8 max-w-6xl mx-auto opacity-0 transition-opacity duration-300"
+            data-breakpoint-md="768" data-breakpoint-lg="1024">
+        </div>
+    </main>
+
+    <footer class="max-w-6xl mx-auto px-4 py-8 text-center">
+        <button id="toggle-readme-btn" class="text-gray-400 hover:text-cyan-400 transition text-sm font-semibold flex items-center 
+            justify-center mx-auto gap-2">
+            <span>📖</span> ユーザーマニュアルを表示
+        </button>
+
+        <div id="readme-container" class="hidden mt-8 text-left bg-slate-900/80 p-6 rounded-xl border border-gray-700 shadow-2xl 
+            prose prose-invert prose-sm max-w-none">
+        </div>
+
+        <div class="mt-8 text-xs text-gray-600">
+            &copy; 2025 The Hunt
+        </div>
+    </footer>
+
+    <div id="card-overlay-backdrop" class="fixed inset-0 hidden z-40"></div>
+
+    <div id="report-modal" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
+        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-md border border-gray-600 text-white 
+            relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-600"></div>
+
+            <h2 class="text-xl font-bold mb-4 text-cyan-400 text-glow">討伐報告</h2>
+            <p id="modal-mob-name" class="text-base mb-4 font-semibold text-gray-200 border-b border-gray-700 pb-2"></p>
+
+            <form id="report-form" data-mob-no="">
+                <div class="mb-4">
+                    <label for="report-datetime" class="block text-sm font-medium mb-1 text-gray-400">討伐日時 (JST)</label>
+                    <input type="datetime-local" id="report-datetime" name="kill-time" required class="w-full p-2 rounded bg-gray-900 border 
+                        border-gray-700 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent 
+                        outline-none transition-all">
+                </div>
+
+                <div id="modal-status" class="text-sm text-center my-3 text-red-400 font-bold"></div>
+
+                <div class="flex justify-between items-center mt-6">
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="report-force-submit" class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded 
+                            focus:ring-blue-600 ring-offset-gray-800">
+                        <label for="report-force-submit" class="text-sm text-gray-300 select-none">修正する</label>
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="button" id="cancel-report" class="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition text-white 
+                            font-medium">キャンセル</button>
+                        <button type="submit" class="px-6 py-2 rounded bg-gradient-to-r from-cyan-600 to-blue-600 
+                        hover:from-cyan-500 hover:to-blue-500 transition font-bold text-white shadow-lg 
+                        shadow-cyan-500/30">送信</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="auth-modal" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
+        <div
+            class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-lg border border-gray-600 text-white relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-orange-600"></div>
+
+            <h2 class="text-xl font-bold mb-4 text-yellow-400 text-glow">ユーザー認証 (キャラクター登録)</h2>
+            <div class="text-sm text-gray-300 space-y-4 mb-6">
+                <p>Lodestoneキャラクターとの紐付けが必要です。</p>
+
+                <div class="bg-slate-900/50 p-4 rounded-lg border border-gray-700 space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 1:
+                            検証コードをコピー</label>
+                        <div class="flex gap-2">
+                            <code id="auth-v-code"
+                                class="flex-1 p-2 bg-gray-950 rounded border border-gray-800 text-center font-mono text-yellow-500 font-bold select-all tracking-widest text-lg">----</code>
+                            <button id="auth-copy-code"
+                                class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs transition">Copy</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 2:
+                            Lodestoneプロフィールに貼り付け</label>
+                        <div class="text-sm text-gray-300 space-y-2 leading-relaxed">
+                            <p>自己紹介欄に認証コードを貼り付けて保存</p>
+                            <a href="https://jp.finalfantasyxiv.com/lodestone/my/setting/profile/" target="_blank"
+                                rel="noopener noreferrer"
+                                class="text-cyan-400 underline inline-flex items-center gap-1 font-bold">
+                                プロフィール編集画面を開く 🔗
+                            </a>
+                            <div class="text-xs text-gray-400 space-y-1 pl-2 border-l-2 border-gray-600">
+                                <p>※Lodestoneのログイン必須</p>
+                                <p>編集画面で認証コードを入力し、「確認」→「設定」を押して保存後、「自己紹介を確認する」を押してください</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 3:
+                            認証コードが正しく表示されるか確認し、開いているキャラクターページのURL、もしくはURL末尾の数字をコピーして貼り付け</label>
+                        <input type="text" id="auth-lodestone-id" aria-label="LodestoneキャラクターページのURL、またはキャラクターIDを入力"
+                            class="w-full p-2 rounded bg-gray-900 border border-gray-700 text-sm focus:ring-1 focus:ring-yellow-500 outline-none transition-all">
+                    </div>
+                </div>
+            </div>
+
+            <div id="auth-modal-status" class="text-sm text-center mb-4 min-h-[1.25rem]"></div>
+
+            <div class="flex justify-end gap-3">
+                <button type="button" id="auth-cancel"
+                    class="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition text-sm">キャンセル</button>
+                <button type="button" id="auth-verify"
+                    class="px-6 py-2 rounded bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 transition font-bold shadow-lg shadow-orange-500/20">登録</button>
+            </div>
+        </div>
+    </div>
+
+    <template id="mob-card-template">
+        <div class="mob-card">
+            <div class="mob-card-inner">
+                <div class="mob-card-header p-0 relative" data-toggle="card-header">
+                    <div class="pl-2 py-1.5 flex flex-col justify-center min-w-0 flex-1 content-area">
+                        <div class="flex items-center justify-between gap-1.5 min-w-0 mb-1">
+                            <div class="flex items-center gap-1 min-w-0 flex-1">
+                                <span class="text-base font-bold truncate text-gray-100 mob-name"></span>
+                                <span class="mob-count-container text-[10px] whitespace-nowrap"></span>
+                                <span class="memo-icon-container text-xs"></span>
+                            </div>
+                            <div
+                                class="area-info-container flex flex-col justify-center text-right text-[9px] text-gray-400 font-numeric tracking-tighter leading-tight min-w-0">
+                            </div>
+                        </div>
+
+                        <div class="progress-bar-wrapper rounded-sm relative overflow-hidden text-center h-5">
+                            <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-sm transition-all duration-100 ease-linear"
+                                style="width: 0%"></div>
+                            <div
+                                class="progress-text absolute inset-0 z-10 flex items-center justify-between text-[13px] font-bold leading-5 px-1.5 pointer-events-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-side-bar transition-colors duration-200" data-report-type="" data-mob-no="">
+                    </div>
+                </div>
+
+                <div class="expandable-panel">
+                    <div class="px-2 py-1 text-sm space-y-1">
+                        <div class="flex justify-between items-start flex-wrap gap-y-1">
+                            <div class="last-kill-time w-full text-right text-xs text-gray-400 font-mono"
+                                data-last-kill>
+                            </div>
+                            <div class="mob-memo-row w-full mt-1">
+                                <div class="flex items-center bg-gray-800/50 rounded px-2 py-1 border border-gray-700 
+                                    hover:bg-gray-700/50 transition">
+                                    <span class="mr-2 text-cyan-400 font-bold text-xs whitespace-nowrap">メモ:</span>
+                                    <input type="text" class="memo-input bg-transparent text-gray-200 text-sm w-full outline-none 
+                                        placeholder-gray-500 appearance-none" placeholder="全角30文字まで" maxlength="30"
+                                        autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off"
+                                        aria-label="メモ入力" data-action="save-memo">
+                                </div>
+                            </div>
+
+                            <div class="w-full mt-2">
+                                <div class="font-semibold text-yellow-400 text-xs uppercase tracking-widest mb-1">
+                                    trigger
+                                </div>
+                                <div
+                                    class="condition-text text-gray-300 text-xs leading-relaxed pl-2 border-l-2 border-yellow-600/50">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="map-container map-content mt-2 flex justify-center relative rounded overflow-hidden border border-gray-600 shadow-lg !cursor-crosshair">
+                            <img
+                                class="mob-map-img mob-crush-map w-full h-auto opacity-90 hover:opacity-100 transition-opacity">
+                            <div class="map-overlay absolute inset-0"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <div id="global-magnifier"
+        class="map-magnifier fixed hidden pointer-events-none z-[10000] w-48 h-48 rounded-full border-4 border-cyan-500 shadow-[0_0_40px_rgba(0,0,0,0.8),0_0_20px_rgba(6,182,212,0.4)] overflow-hidden bg-slate-950">
+        <div class="magnifier-content-wrapper absolute w-full h-full"></div>
+    </div>
+
+    <script type="module" src="./js/app.js"></script>
+
+</body>
+
+</html>

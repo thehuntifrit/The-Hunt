@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper: Checks if the user has a registered lodestone_id
+    function isVerified() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.lodestone_id != null;
+    }
+    // User profiles: Private to the owner
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    // Mob status/reports: Verified users only
+    match /mob_status/{docId} {
+      allow read: if true;
+      allow write: if isVerified();
+    }
+    
+    // Mob locations/crush: Verified users only
+    match /mob_locations/{mobId} {
+      allow read: if true;
+      allow write: if isVerified();
+    }
+    
+    // Maintenance: Public read
+    match /shared_data/maintenance {
+      allow read: if true;
+    }
+    
+    // Memos: Verified users only
+    match /shared_data/memo {
+      allow read: if true;
+      allow write: if isVerified();
+    }
+  }
+}
