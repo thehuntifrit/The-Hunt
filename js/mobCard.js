@@ -41,6 +41,10 @@ export function createMobCard(mob) {
         card.classList.add("maintenance-gray-out");
     } else {
         card.classList.remove("maintenance-gray-out");
+        const memoInput = card.querySelector('.memo-input');
+        if (memoInput) {
+            memoInput.dataset.mobNo = mob.No;
+        }
     }
 
     const mobNameEl = card.querySelector('.mob-name');
@@ -79,6 +83,11 @@ export function createMobCard(mob) {
             expandablePanel.classList.add('open');
         }
 
+        const memoInput = card.querySelector('.memo-input');
+        if (memoInput) {
+            memoInput.dataset.mobNo = mob.No;
+        }
+
         if (rank !== 'S') {
             const conditionWrapper = card.querySelector('.condition-text')?.closest('.w-full.mt-2');
             if (conditionWrapper) conditionWrapper.remove();
@@ -107,7 +116,7 @@ export function createMobCard(mob) {
             }
         }
     } else {
-        expandablePanel.remove();
+        if (expandablePanel) expandablePanel.remove();
     }
 
     updateAreaInfo(card, mob);

@@ -618,6 +618,7 @@ export function startRealtime() {
 
         if (!state.initialLoadComplete) {
             initialLoadState.location = true;
+            checkInitialLoadComplete();
         }
         setMobs([...current]);
         window.dispatchEvent(new CustomEvent('locationsUpdated', { detail: { locationsMap } }));
@@ -645,6 +646,7 @@ export function startRealtime() {
 
         if (!state.initialLoadComplete) {
             initialLoadState.memo = true;
+            checkInitialLoadComplete();
         }
         setMobs([...current]);
         window.dispatchEvent(new CustomEvent('mobsUpdated'));
