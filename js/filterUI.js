@@ -72,15 +72,11 @@ export const renderAreaFilterPanel = () => {
 
     let btnClass = 'filter-tab-base text-white transition';
 
-    if (uiRank === 'ALL' && !isAll) {
-      btnClass += '';
-    }
-
     if (isAll) {
-      btn.className = `area-filter-btn ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"} ${isDesktop ? '' : 'w-[75px]'}`;
+      btn.className = `area-filter-btn ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"} ${isDesktop ? '' : 'w-[44px]'}`;
       btn.dataset.value = "ALL";
     } else {
-      btn.className = `area-filter-btn ${btnClass} ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"} ${isDesktop ? '' : 'w-[75px]'}`;
+      btn.className = `area-filter-btn ${btnClass} ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"} ${isDesktop ? '' : 'w-[44px]'}`;
       btn.dataset.value = label;
     }
     return btn;
@@ -88,19 +84,14 @@ export const renderAreaFilterPanel = () => {
 
   const createPanelContent = (isDesktop) => {
     const panel = document.createDocumentFragment();
-    const allBtn = createButton(isAllSelected ? "全解除" : "全選択", true, false, isDesktop);
-    panel.appendChild(allBtn);
-
-    if (!isDesktop) {
-      const dummy = document.createElement("div");
-      dummy.className = "w-full";
-      panel.appendChild(dummy);
-    }
 
     items.forEach(item => {
       const isSelected = currentSet.has(item);
       panel.appendChild(createButton(item, false, isSelected, isDesktop));
     });
+
+    const allBtn = createButton(isAllSelected ? "解除" : "全選", true, false, isDesktop);
+    panel.appendChild(allBtn);
 
     return panel;
   };

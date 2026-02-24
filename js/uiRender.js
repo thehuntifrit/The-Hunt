@@ -359,8 +359,13 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   lastRenderedGroupStr = sortedMobs.map(m => getGroupKey(m)).join(",");
 
   if (isInitialLoad) {
+    isInitialSortingSuppressed = true;
     attachLocationEvents();
     window.dispatchEvent(new CustomEvent('renderComplete'));
+
+    setTimeout(() => {
+      isInitialSortingSuppressed = false;
+    }, 3000);
   }
 
   updateVisibleCards();
@@ -393,6 +398,8 @@ export function showColumnContainer() {
     });
   });
 }
+
+let isInitialSortingSuppressed = false;
 
 function updateProgressBars() {
   const state = getState();
@@ -438,8 +445,10 @@ function updateProgressBars() {
   const currentOrderStr = sorted.map(m => m.No).join(",");
   const currentGroupStr = sorted.map(m => getGroupKey(m)).join(",");
 
-  if (currentOrderStr !== lastRenderedOrderStr || currentGroupStr !== lastRenderedGroupStr) {
-    sortAndRedistribute();
+  if (!isInitialSortingSuppressed) {
+    if (currentOrderStr !== lastRenderedOrderStr || currentGroupStr !== lastRenderedGroupStr) {
+      sortAndRedistribute();
+    }
   }
 
   if (DOM.statusMessageTemp) {
