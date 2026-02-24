@@ -344,8 +344,8 @@ export async function loadBaseMobData() {
         if (!mobRes.ok) throw new Error("Mob data failed to load.");
 
         const freshData = await mobRes.json();
-
         const freshDataStr = JSON.stringify(freshData);
+
         if (freshDataStr !== cachedDataStr) {
             await idb.set(MOB_DATA_CACHE_KEY, freshDataStr);
 
@@ -360,17 +360,12 @@ export async function loadBaseMobData() {
 
             state.baseMobData = processed;
             setMobs([...processed]);
-
             scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
-        } else {
         }
 
-        loadLocationData();
+        await loadLocationData();
 
-        if (Object.keys(state.pendingStatusMap || {}).length > 0 ||
-            state.pendingLocationsMap ||
-            state.pendingMemoData ||
-            state.pendingMaintenanceData !== undefined) {
+        if (state.baseMobData.length > 0) {
             applyPendingRealtimeData();
         }
     } catch (e) {
@@ -491,6 +486,14 @@ async function loadLocationData() {
         const res = await fetch(MOB_LOCATIONS_URL);
         if (!res.ok) throw new Error("Location data failed to load.");
         const locationsData = await res.json();
+
+        state.baseMobData.forEach(mob => {
+            const locInfo = locationsData[mob.No];
+            if (locInfo) {
+                mob.spawn_points = locInfo.locations || [];
+                mob.Map = locInfo.mapImage || "";
+            }
+        });
 
         state.mobs.forEach(mob => {
             const locInfo = locationsData[mob.No];
