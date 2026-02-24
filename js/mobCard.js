@@ -79,31 +79,31 @@ export function createMobCard(mob) {
             expandablePanel.classList.add('open');
         }
 
-        const memoInput = card.querySelector('.memo-input');
-        if (memoInput) memoInput.dataset.mobNo = mob.No;
-
-        const conditionText = card.querySelector('.condition-text');
-        if (conditionText) {
-            if (rank === 'S') {
+        if (rank !== 'S') {
+            const conditionWrapper = card.querySelector('.condition-text')?.closest('.w-full.mt-2');
+            if (conditionWrapper) conditionWrapper.remove();
+            const mapContainer = card.querySelector('.map-container');
+            if (mapContainer) mapContainer.remove();
+        } else {
+            const conditionText = card.querySelector('.condition-text');
+            if (conditionText) {
                 conditionText.innerHTML = processText(mob.Condition);
                 conditionText.closest('.w-full.mt-2')?.classList.remove('hidden');
-            } else {
-                conditionText.closest('.w-full.mt-2')?.classList.add('hidden');
             }
-        }
 
-        const mapContainer = card.querySelector('.map-container');
-        if (mapContainer) {
-            if (mob.Map) {
-                const mapImg = mapContainer.querySelector('.mob-map-img');
-                mapImg.src = `./maps/${mob.Map}`;
-                mapImg.alt = `${mob.Area} Map`;
-                mapImg.dataset.mobMap = mob.Map;
-                mapContainer.classList.remove('hidden');
-                delete mapContainer.dataset.locationLoading;
-            } else {
-                mapContainer.classList.add('hidden');
-                mapContainer.dataset.locationLoading = "true";
+            const mapContainer = card.querySelector('.map-container');
+            if (mapContainer) {
+                if (mob.Map) {
+                    const mapImg = mapContainer.querySelector('.mob-map-img');
+                    mapImg.src = `./maps/${mob.Map}`;
+                    mapImg.alt = `${mob.Area} Map`;
+                    mapImg.dataset.mobMap = mob.Map;
+                    mapContainer.classList.remove('hidden');
+                    delete mapContainer.dataset.locationLoading;
+                } else {
+                    mapContainer.classList.add('hidden');
+                    mapContainer.dataset.locationLoading = "true";
+                }
             }
         }
     } else {
@@ -327,6 +327,8 @@ export function updateMemoIcon(card, mob) {
 
 export function getValidSpawnPoints(mob, spawnCullStatus) {
     return (mob.spawn_points ?? []).filter(point => {
+        const isS_SpawnPoint = point.mob_ranks.includes("S");
+        if (!isS_SpawnPoint) return false;
         const pointStatus = spawnCullStatus?.[point.id];
         return !isCulled(pointStatus, mob.No, mob);
     });
@@ -399,7 +401,7 @@ export function updateMapOverlay(card, mob) {
     if (!mapOverlay) return;
 
     let spawnPointsHtml = "";
-    if (mob.Map) {
+    if (mob.Map && mob.Rank === 'S') {
         const state = getState();
         const mobLocationsData = state.mobLocations?.[mob.No];
         const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
