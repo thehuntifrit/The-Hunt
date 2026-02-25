@@ -115,17 +115,15 @@ async function initApp() {
 
         window.addEventListener('initialSortComplete', () => {
             try {
-                setTimeout(() => {
-                    showColumnContainer();
+                showColumnContainer();
 
-                    const isFirstVisit = !localStorage.getItem("has_visited");
-                    if (isFirstVisit) {
-                        localStorage.setItem("has_visited", "true");
-                        if (window.openUserManual) {
-                            window.openUserManual();
-                        }
+                const isFirstVisit = !localStorage.getItem("has_visited");
+                if (isFirstVisit) {
+                    localStorage.setItem("has_visited", "true");
+                    if (window.openUserManual) {
+                        window.openUserManual();
                     }
-                }, 100);
+                }
             } catch (e) {
                 console.error("Initial render show failed:", e);
                 const overlay = document.getElementById("loading-overlay");

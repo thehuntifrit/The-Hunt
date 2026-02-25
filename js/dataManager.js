@@ -150,6 +150,10 @@ function initWorker() {
                     saveSpawnCacheDebounced(memorySpawnCache);
                 }
 
+                if (!state.initialLoadComplete && state.pendingCalculationMobs.size === 0 && initialCalculationStarted) {
+                    checkInitialLoadComplete();
+                }
+
                 window.dispatchEvent(new CustomEvent('mobUpdated', { detail: { mobNo, mob: current[idx] } }));
             }
         } else if (type === "ERROR") {
@@ -509,23 +513,36 @@ async function loadLocationData() {
     }
 }
 
+let initialCalculationStarted = false;
+
 function checkInitialLoadComplete() {
     if (state.mobs.length === 0) return;
 
     if (initialLoadState.status && initialLoadState.maintenance) {
         if (!state.initialLoadComplete) {
-            state.initialLoadComplete = true;
-
             const current = state.mobs;
             const maintenance = state.maintenance;
+
+            if (!initialCalculationStarted) {
+                initialCalculationStarted = true;
+                scheduleConditionCalculation(current, maintenance);
+                if (state.pendingCalculationMobs.size > 0) {
+                    return;
+                }
+            }
+
+            if (state.pendingCalculationMobs.size > 0) {
+                return;
+            }
+
+            state.initialLoadComplete = true;
+
             current.forEach(mob => {
                 mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
             });
             setMobs([...current]);
 
             window.dispatchEvent(new CustomEvent('initialDataLoaded'));
-
-            scheduleConditionCalculation(current, maintenance);
         }
     }
 }

@@ -167,6 +167,7 @@ window.addEventListener('characterNameSet', () => {
 window.addEventListener('initialDataLoaded', () => {
   updateHeaderTime();
   filterAndRender({ isInitialLoad: true });
+  sortAndRedistribute({ immediate: true });
   updateProgressBars();
 });
 
@@ -257,14 +258,30 @@ function updateVisibleCards() {
 
 const cardCache = new Map();
 
-export const sortAndRedistribute = debounce(() => {
-  filterAndRender();
-  if (isInitialLoading) {
-    isInitialLoading = false;
-    requestAnimationFrame(() => {
-      window.dispatchEvent(new CustomEvent('initialSortComplete'));
-    });
+export const sortAndRedistribute = (options = {}) => {
+  const { immediate = false } = options;
+  const run = () => {
+    filterAndRender();
+    if (isInitialLoading) {
+      isInitialLoading = false;
+      // Double rAF to ensure browser has flushed DOM changes to the screen
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.dispatchEvent(new CustomEvent('initialSortComplete'));
+        });
+      });
+    }
+  };
+
+  if (immediate) {
+    run();
+  } else {
+    debouncedSortAndRedistribute();
   }
+};
+
+const debouncedSortAndRedistribute = debounce(() => {
+  sortAndRedistribute({ immediate: true });
 }, 200);
 
 let isInitialLoading = false;
