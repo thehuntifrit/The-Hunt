@@ -460,8 +460,6 @@ function updateProgressBars() {
         if (nowSec < spawnSec) {
           const diffMin = Math.ceil((spawnSec - nowSec) / 60);
           conditionMobs.push(`${mob.Name} (${diffMin}分前)`);
-        } else {
-          conditionMobs.push(mob.Name);
         }
       }
     }
