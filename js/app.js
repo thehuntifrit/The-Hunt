@@ -55,10 +55,20 @@ async function initApp() {
                     setLodestoneId(userData.lodestone_id);
                     if (userData.character_name) setCharacterName(userData.character_name);
                     setVerified(true);
+                } else {
+                    setVerified(false);
+                    setLodestoneId(null);
+                    setCharacterName(null);
                 }
+            } else {
+                setVerified(false);
+                setUserId(null);
+                setLodestoneId(null);
+                setCharacterName(null);
             }
         }).catch(err => {
             console.error("Auth initialization error:", err);
+            setVerified(false);
         });
 
         startRealtime();
