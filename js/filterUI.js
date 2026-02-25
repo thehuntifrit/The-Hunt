@@ -96,8 +96,8 @@ export const renderAreaFilterPanel = () => {
     return panel;
   };
 
-  const mobilePanel = FilterDOM.areaFilterPanelMobile?.querySelector('div');
-  const desktopPanel = FilterDOM.areaFilterPanelDesktop?.querySelector('div');
+  const mobilePanel = FilterDOM.areaFilterPanelMobile?.querySelector('.flex-wrap');
+  const desktopPanel = FilterDOM.areaFilterPanelDesktop?.querySelector('.flex-wrap');
 
   if (mobilePanel) {
     mobilePanel.innerHTML = "";
