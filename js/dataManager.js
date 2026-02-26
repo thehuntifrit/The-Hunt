@@ -538,7 +538,7 @@ function checkInitialLoadComplete() {
             state.initialLoadComplete = true;
 
             current.forEach(mob => {
-                mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
+                mob.repopInfo = calculateRepop(mob, maintenance);
             });
             setMobs([...current]);
 
