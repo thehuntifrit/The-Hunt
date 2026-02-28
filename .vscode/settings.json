@@ -1,5 +1,6 @@
 {
     "css.lint.unknownAtRules": "ignore",
     "css.lint.compatibleVendorPrefixes": "ignore",
-    "css.lint.vendorPrefix": "ignore"
+    "css.lint.vendorPrefix": "ignore",
+    "livePreview.defaultPreviewPath": "/index.html"
 }
