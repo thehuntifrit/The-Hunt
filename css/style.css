@@ -731,8 +731,7 @@ html body.magnifier-active .mob-card-inner * {
     font-size: 11px;
     font-weight: bold;
     line-height: 1;
-    padding-top: 4px;
-    align-self: end !important;
+    align-self: center !important;
 }
 
 #rank-tabs {
