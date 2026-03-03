@@ -350,7 +350,7 @@ function attachGlobalEventListeners() {
     });
 }
 
-function closeActiveCard() {
+export function closeActiveCard() {
     const isMobile = window.innerWidth < 1024;
     if (isMobile) {
         const openPanel = document.querySelector(".expandable-panel.open");

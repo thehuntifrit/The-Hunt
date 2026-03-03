@@ -6,7 +6,7 @@ import { getState, recalculateMob, requestWorkerCalculation, PROGRESS_CLASSES } 
 import { filterMobsByRankAndArea } from "./filterUI.js";
 import { openReportModal } from "./modal.js";
 import { allTabComparator } from "./mobSorter.js";
-import { updateStatusContainerVisibility } from "./app.js";
+import { updateStatusContainerVisibility, closeActiveCard } from "./app.js";
 import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay } from "./mobCard.js";
 import { checkAndNotify } from "./notificationManager.js";
 
@@ -295,6 +295,8 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 
   if (isInitialLoad) {
     isInitialLoading = true;
+  } else {
+    closeActiveCard();
   }
 
   invalidateSortCache();
