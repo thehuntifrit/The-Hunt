@@ -6,7 +6,7 @@ import { getState, recalculateMob, requestWorkerCalculation, PROGRESS_CLASSES } 
 import { filterMobsByRankAndArea } from "./filterUI.js";
 import { openReportModal } from "./modal.js";
 import { allTabComparator } from "./mobSorter.js";
-import { updateStatusContainerVisibility, closeActiveCard } from "./app.js";
+import { updateStatusContainerVisibility } from "./app.js";
 import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay } from "./mobCard.js";
 import { checkAndNotify } from "./notificationManager.js";
 
@@ -295,8 +295,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 
   if (isInitialLoad) {
     isInitialLoading = true;
-  } else {
-    closeActiveCard();
   }
 
   invalidateSortCache();
@@ -362,11 +360,20 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
         cardObserver.observe(card);
       }
 
-      const currentAtPos = targetCol.children[colPointers[colIdx]];
-      if (currentAtPos !== card) {
-        targetCol.insertBefore(card, currentAtPos || null);
+      const isFloating = card.classList.contains("is-floating-active");
+
+      if (isFloating) {
+        colPointers[colIdx]++;
+      } else {
+        while (targetCol.children[colPointers[colIdx]]?.classList.contains("mob-card-placeholder")) {
+          colPointers[colIdx]++;
+        }
+        const currentAtPos = targetCol.children[colPointers[colIdx]];
+        if (currentAtPos !== card) {
+          targetCol.insertBefore(card, currentAtPos || null);
+        }
+        colPointers[colIdx]++;
       }
-      colPointers[colIdx]++;
 
       if (isInitialLoad || visibleCards.has(String(mob.No))) {
         updateProgressText(card, mob);
@@ -381,11 +388,12 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     cols.forEach((col, i) => {
       const limit = (i < numCols) ? colPointers[i] : 0;
       while (col.children.length > limit) {
-        const cardToRemove = col.lastChild;
-        if (cardToRemove && cardToRemove.classList?.contains('mob-card')) {
-          visibleCards.delete(cardToRemove.dataset.mobNo);
+        const child = col.lastChild;
+        if (child?.classList.contains("mob-card-placeholder")) break;
+        if (child?.classList.contains('mob-card')) {
+          visibleCards.delete(child.dataset.mobNo);
         }
-        col.removeChild(cardToRemove);
+        col.removeChild(child);
       }
     });
   });
