@@ -363,7 +363,26 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       const isFloating = card.classList.contains("is-floating-active");
 
       if (isFloating) {
-        colPointers[colIdx]++;
+        const placeholderId = card.dataset.placeholderId;
+        const placeholder = placeholderId ? document.getElementById(placeholderId) : null;
+        if (placeholder) {
+          const currentAtPos = targetCol.children[colPointers[colIdx]];
+          if (currentAtPos !== placeholder) {
+            targetCol.insertBefore(placeholder, currentAtPos || null);
+          }
+          colPointers[colIdx]++;
+
+          if (placeholder.nextSibling !== card) {
+            targetCol.insertBefore(card, placeholder.nextSibling || null);
+          }
+          colPointers[colIdx]++;
+        } else {
+          const currentAtPos = targetCol.children[colPointers[colIdx]];
+          if (currentAtPos !== card) {
+            targetCol.insertBefore(card, currentAtPos || null);
+          }
+          colPointers[colIdx]++;
+        }
       } else {
         while (targetCol.children[colPointers[colIdx]]?.classList.contains("mob-card-placeholder")) {
           colPointers[colIdx]++;
