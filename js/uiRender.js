@@ -461,6 +461,14 @@ function updateProgressBars() {
       needsWorkerRecalc = true;
     }
 
+    if (!needsWorkerRecalc && mob.repopInfo?.nextConditionSpawnDate && mob.repopInfo?.minRepop) {
+      const spawnSec = mob.repopInfo.nextConditionSpawnDate.getTime() / 1000;
+      if (nowSec >= mob.repopInfo.minRepop && spawnSec > nowSec) {
+        recalculateMob(mob.No);
+        needsWorkerRecalc = true;
+      }
+    }
+
     if (!needsWorkerRecalc) {
       mob.repopInfo = calculateRepop(mob, state.maintenance, {
         skipConditionCalc: true

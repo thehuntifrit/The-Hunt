@@ -481,6 +481,9 @@ export function calculateRepop(mob, maintenance, options = {}) {
       if (cachedEnd <= now || cachedStart < minRepop) {
         useCache = false;
       }
+      if (useCache && pointSec < cachedStart && now >= minRepop) {
+        useCache = false;
+      }
     }
 
     let result = null;
