@@ -455,13 +455,17 @@ function updateProgressBars() {
   const mobMap = getMobMap();
 
   state.mobs.forEach(mob => {
+    let needsWorkerRecalc = false;
     if (mob.repopInfo?.conditionWindowEnd && nowSec > mob.repopInfo.conditionWindowEnd.getTime() / 1000) {
       recalculateMob(mob.No);
+      needsWorkerRecalc = true;
     }
 
-    mob.repopInfo = calculateRepop(mob, state.maintenance, {
-      skipConditionCalc: true
-    });
+    if (!needsWorkerRecalc) {
+      mob.repopInfo = calculateRepop(mob, state.maintenance, {
+        skipConditionCalc: true
+      });
+    }
 
     if (mob.repopInfo?.nextConditionSpawnDate && mob.repopInfo?.conditionWindowEnd) {
       const spawnSec = mob.repopInfo.nextConditionSpawnDate.getTime() / 1000;

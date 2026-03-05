@@ -484,6 +484,7 @@ export function calculateRepop(mob, maintenance, options = {}) {
     }
 
     let result = null;
+    let staleCache = null;
     if (useCache) {
       result = mob._spawnCache.result;
     } else if (!skipConditionCalc || forceRecalc) {
@@ -492,10 +493,13 @@ export function calculateRepop(mob, maintenance, options = {}) {
         key: cacheKey,
         result: result
       };
+    } else if (mob._spawnCache?.result) {
+      staleCache = mob._spawnCache.result;
     }
 
-    if (result) {
-      const { start, end } = result;
+    const effective = result || staleCache;
+    if (effective) {
+      const { start, end } = effective;
 
       nextConditionSpawnDate = new Date(start * 1000);
       conditionWindowEnd = new Date(end * 1000);
