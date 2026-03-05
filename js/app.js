@@ -561,8 +561,6 @@ async function handleInstantReport(mobNo, rank) {
         }
     } else {
         showToast("討伐報告を送信しました", "success");
-        setOpenMobCardNo(null);
-        document.querySelectorAll('.expandable-panel.open').forEach(el => el.classList.remove("open"));
     }
 }
 
@@ -583,8 +581,6 @@ async function handleReportSubmit(e) {
         }
     } else {
         showToast("討伐報告を送信しました", "success");
-        setOpenMobCardNo(null);
-        document.querySelectorAll('.expandable-panel.open').forEach(el => el.classList.remove("open"));
         closeReportModal();
     }
 }

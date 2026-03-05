@@ -387,13 +387,23 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 
     cols.forEach((col, i) => {
       const limit = (i < numCols) ? colPointers[i] : 0;
-      while (col.children.length > limit) {
-        const child = col.lastChild;
-        if (child?.classList.contains("mob-card-placeholder")) break;
+      let j = col.children.length - 1;
+      while (j >= limit) {
+        const child = col.children[j];
+        if (child?.classList.contains("mob-card-placeholder")) {
+          j--;
+          continue;
+        }
+        if (child?.classList.contains("is-floating-active")) {
+          j--;
+          continue;
+        }
+
         if (child?.classList.contains('mob-card')) {
           visibleCards.delete(child.dataset.mobNo);
         }
         col.removeChild(child);
+        j--;
       }
     });
   });
