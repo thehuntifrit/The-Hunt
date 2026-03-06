@@ -514,6 +514,7 @@ async function loadLocationData() {
 }
 
 let initialCalculationStarted = false;
+let initialLoadTimer = null;
 
 function checkInitialLoadComplete() {
     if (state.mobs.length === 0) return;
@@ -536,6 +537,10 @@ function checkInitialLoadComplete() {
             }
 
             state.initialLoadComplete = true;
+            if (initialLoadTimer) {
+                clearTimeout(initialLoadTimer);
+                initialLoadTimer = null;
+            }
 
             current.forEach(mob => {
                 mob.repopInfo = calculateRepop(mob, maintenance);
@@ -567,6 +572,23 @@ export function startRealtime() {
     initialLoadState.location = false;
     initialLoadState.memo = false;
     initialLoadState.maintenance = false;
+
+    if (initialLoadTimer) clearTimeout(initialLoadTimer);
+    initialLoadTimer = setTimeout(() => {
+        if (!state.initialLoadComplete) {
+            console.warn("Firestore initial load timed out. Forcing completion with available data.");
+            if (!initialLoadState.status) initialLoadState.status = true;
+            if (!initialLoadState.maintenance) {
+                initialLoadState.maintenance = true;
+                if (!state.maintenance) {
+                    loadMaintenance().then(fallback => {
+                        if (fallback) state.maintenance = fallback;
+                    });
+                }
+            }
+            checkInitialLoadComplete();
+        }
+    }, 8000);
 
     const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
         if (state.mobs.length === 0) {
