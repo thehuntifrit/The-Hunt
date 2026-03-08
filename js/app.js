@@ -455,6 +455,12 @@ function openCardPC(card, mobNo) {
         panel.classList.add("open");
         setOpenMobCardNo(mobNo);
 
+        const targetLeft = scrollX + (window.innerWidth - width) / 2;
+        const targetTop = scrollY + (window.innerHeight * 0.15);
+
+        card.style.left = `${targetLeft}px`;
+        card.style.top = `${targetTop}px`;
+
         const backdrop = document.getElementById("card-overlay-backdrop");
         backdrop?.classList.remove("hidden");
 
