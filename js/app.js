@@ -455,9 +455,10 @@ function openCardPC(card, mobNo) {
         panel.classList.add("open");
         setOpenMobCardNo(mobNo);
 
-        const targetLeft = scrollX + (window.innerWidth - width) / 2;
-        const targetTop = scrollY + (window.innerHeight * 0.15);
+        const targetLeft = (window.innerWidth - width) / 2;
+        const targetTop = window.innerHeight * 0.15;
 
+        card.style.position = "fixed";
         card.style.left = `${targetLeft}px`;
         card.style.top = `${targetTop}px`;
 
@@ -499,6 +500,8 @@ function closeCardPC(cardToClose = null, immediate = false) {
     panel.classList.remove("open");
 
     const rect = placeholder.getBoundingClientRect();
+
+    card.style.position = "absolute";
     const scrollY = window.pageYOffset || document.documentElement.scrollTop;
     const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
 
