@@ -410,7 +410,7 @@ function openCard(card, mobNo) {
         const headerHeight = header ? header.offsetHeight : 0;
 
         const isMobile = window.innerWidth < 1024;
-        const targetTop = isMobile ? headerHeight + 8 : headerHeight + 24;
+        const targetTop = isMobile ? 12 : headerHeight + 24;
 
         card.style.position = "fixed";
         card.style.left = `${targetLeft}px`;
