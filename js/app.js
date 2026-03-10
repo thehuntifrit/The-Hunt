@@ -351,74 +351,24 @@ function attachGlobalEventListeners() {
 }
 
 export function closeActiveCard() {
-    const isMobile = window.innerWidth < 1024;
-    if (isMobile) {
-        const openPanel = document.querySelector(".expandable-panel.open");
-        if (openPanel) {
-            const card = openPanel.closest(".mob-card");
-            if (card && card.dataset.isTransitioning === "true") return;
-            openPanel.classList.remove("open");
-            setOpenMobCardNo(null);
-        }
-    } else {
-        closeCardPC();
-    }
+    closeCard();
 }
 
 function toggleCardExpand(card, mobNo) {
     if (card.dataset.isTransitioning === "true") return;
 
-    const panel = card.querySelector(".expandable-panel");
-    if (!panel) return;
-
-    const isMobile = window.innerWidth < 1024;
-
-    if (isMobile) {
-        if (!panel.classList.contains("open")) {
-            document.querySelectorAll(".expandable-panel.open").forEach(p => {
-                if (p.closest(".mob-card") !== card) {
-                    p.classList.remove("open");
-                }
-            });
-            panel.classList.add("open");
-            setOpenMobCardNo(mobNo);
-
-            card.dataset.isTransitioning = "true";
-
-            setTimeout(() => {
-                const header = document.getElementById("main-header");
-                const headerHeight = header ? header.offsetHeight : 0;
-
-                const rect = card.getBoundingClientRect();
-                const targetY = window.pageYOffset + rect.top - headerHeight;
-
-                window.scrollTo({
-                    top: Math.max(0, targetY),
-                    behavior: "smooth"
-                });
-
-                setTimeout(() => {
-                    delete card.dataset.isTransitioning;
-                }, 400);
-            }, 150);
-        } else {
-            panel.classList.remove("open");
-            setOpenMobCardNo(null);
-        }
+    if (card.classList.contains("is-floating-active")) {
+        closeCard();
     } else {
-        if (card.classList.contains("is-floating-active")) {
-            closeCardPC();
-        } else {
-            openCardPC(card, mobNo);
-        }
+        openCard(card, mobNo);
     }
 }
 
-function openCardPC(card, mobNo) {
+function openCard(card, mobNo) {
     if (card.dataset.isTransitioning === "true") return;
 
     document.querySelectorAll(".mob-card.is-floating-active").forEach(existing => {
-        closeCardPC(existing, true);
+        closeCard(existing, true);
     });
 
     const panel = card.querySelector(".expandable-panel");
@@ -458,7 +408,9 @@ function openCardPC(card, mobNo) {
         const targetLeft = (window.innerWidth - width) / 2;
         const header = document.getElementById("main-header");
         const headerHeight = header ? header.offsetHeight : 0;
-        const targetTop = headerHeight + 24;
+
+        const isMobile = window.innerWidth < 1024;
+        const targetTop = isMobile ? headerHeight + 8 : headerHeight + 24;
 
         card.style.position = "fixed";
         card.style.left = `${targetLeft}px`;
@@ -473,7 +425,7 @@ function openCardPC(card, mobNo) {
     });
 }
 
-function closeCardPC(cardToClose = null, immediate = false) {
+function closeCard(cardToClose = null, immediate = false) {
     const card = cardToClose || document.querySelector(".mob-card.is-floating-active");
     if (!card) return;
     if (!immediate && card.dataset.isTransitioning === "true") return;
