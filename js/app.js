@@ -456,7 +456,9 @@ function openCardPC(card, mobNo) {
         setOpenMobCardNo(mobNo);
 
         const targetLeft = (window.innerWidth - width) / 2;
-        const targetTop = window.innerHeight * 0.15;
+        const header = document.getElementById("main-header");
+        const headerHeight = header ? header.offsetHeight : 0;
+        const targetTop = headerHeight + 24;
 
         card.style.position = "fixed";
         card.style.left = `${targetLeft}px`;
