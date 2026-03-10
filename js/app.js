@@ -390,7 +390,7 @@ function toggleCardExpand(card, mobNo) {
                 const headerHeight = header ? header.offsetHeight : 0;
 
                 const rect = card.getBoundingClientRect();
-                const targetY = window.pageYOffset + rect.top - headerHeight - 8;
+                const targetY = window.pageYOffset + rect.top - headerHeight;
 
                 window.scrollTo({
                     top: Math.max(0, targetY),
