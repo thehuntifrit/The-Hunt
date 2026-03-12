@@ -895,8 +895,8 @@ html body.magnifier-active .mob-card-inner * {
     display: flex !important;
     align-items: center !important;
     justify-content: flex-start !important;
-    padding: 0 8px !important;
-    width: 100% !important;
+    padding: 0 !important;
+    width: 70px !important;
 }
 
 .volume-slider {
@@ -917,13 +917,12 @@ html body.magnifier-active .mob-card-inner * {
     background: linear-gradient(to right, 
         #22d3ee 0%, #22d3ee var(--volume-percent), 
         #334155 var(--volume-percent), #334155 100%) !important;
-    /* 段階的なバーを表現するためのマスク */
     -webkit-mask-image: linear-gradient(to right, 
-        #000 0%, #000 70%, transparent 70%, transparent 100%) !important;
-    -webkit-mask-size: 5px 100% !important;
+        #000 0px, #000 5px, transparent 5px, transparent 7px) !important;
+    -webkit-mask-size: 7px 100% !important;
     mask-image: linear-gradient(to right, 
-        #000 0%, #000 70%, transparent 70%, transparent 100%) !important;
-    mask-size: 5px 100% !important;
+        #000 0px, #000 5px, transparent 5px, transparent 7px) !important;
+    mask-size: 7px 100% !important;
     clip-path: polygon(0 100%, 100% 0, 100% 100%) !important;
 }
 
@@ -946,11 +945,11 @@ html body.magnifier-active .mob-card-inner * {
         #22d3ee 0%, #22d3ee var(--volume-percent), 
         #334155 var(--volume-percent), #334155 100%) !important;
     -webkit-mask-image: linear-gradient(to right, 
-        #000 0%, #000 70%, transparent 70%, transparent 100%) !important;
-    -webkit-mask-size: 5px 100% !important;
+        #000 0px, #000 5px, transparent 5px, transparent 7px) !important;
+    -webkit-mask-size: 7px 100% !important;
     mask-image: linear-gradient(to right, 
-        #000 0%, #000 70%, transparent 70%, transparent 100%) !important;
-    mask-size: 5px 100% !important;
+        #000 0px, #000 5px, transparent 5px, transparent 7px) !important;
+    mask-size: 7px 100% !important;
     clip-path: polygon(0 100%, 100% 0, 100% 100%) !important;
 }
 
@@ -961,7 +960,6 @@ html body.magnifier-active .mob-card-inner * {
     border: none !important;
     cursor: pointer !important;
 }
-
 
 .header-label-mini {
     background-color: #d6c9b0;
