@@ -800,11 +800,44 @@ html body.magnifier-active .mob-card-inner * {
     height: 14px !important;
     background-color: white !important;
     border-radius: 50% !important;
-    transition: transform 0.2s !important;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
 }
 
 #notification-toggle:checked+.notification-switch-ui::after {
     transform: translateX(16px) !important;
+    background-color: #fff !important;
+}
+
+/* チェックマークの描画 */
+.notification-switch-ui::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 23px !important;
+    width: 6px !important;
+    height: 10px !important;
+    border: solid #0891b2 !important;
+    border-width: 0 2px 2px 0 !important;
+    transform: translateY(-60%) rotate(45deg) scale(0) !important;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.5) !important;
+    z-index: 1 !important;
+}
+
+#notification-toggle:checked+.notification-switch-ui::before {
+    transform: translateY(-60%) rotate(45deg) scale(1) !important;
+}
+
+/* クリック時の弾むアニメーション */
+.notification-toggle-label:active .notification-switch-ui {
+    transform: scale(0.9) !important;
+}
+
+.notification-switch-ui {
+    transition: background-color 0.3s, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
 }
 
 .notification-label-text {
