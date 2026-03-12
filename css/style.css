@@ -893,64 +893,56 @@ html body.magnifier-active .mob-card-inner * {
 .notification-volume-wrapper {
     display: flex !important;
     align-items: center !important;
-    gap: 6px !important;
+    gap: 0 !important;
     margin-left: 0 !important;
 }
 
 .volume-slider {
-    width: 54px !important;
-    height: 4px !important;
-    background-color: #1e293b !important;
-    border-radius: 2px !important;
-    appearance: none;
+    width: 60px !important;
+    height: 14px !important;
+    background: transparent !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
     cursor: pointer;
-    border: 1px solid #334155 !important;
+    border: none !important;
+    outline: none !important;
+}
+
+.volume-slider::-webkit-slider-runnable-track {
+    height: 14px;
+    background: #334155;
+    border-radius: 2px;
+    clip-path: polygon(0 85%, 100% 15%, 100% 85%);
+}
+
+.volume-slider::-moz-range-track {
+    height: 14px;
+    background: #334155;
+    border-radius: 2px;
+    clip-path: polygon(0 85%, 100% 15%, 100% 85%);
 }
 
 .volume-slider::-webkit-slider-thumb {
-    appearance: none;
-    width: 12px;
-    height: 12px;
-    background-color: #94a3b8;
-    border-radius: 50%;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-    transition: background-color 0.2s;
-}
-
-.volume-slider:hover::-webkit-slider-thumb {
-    background-color: #fff;
-}
-
-.volume-slider {
-    width: 3.5rem !important;
-    height: 0.25rem;
-    background-color: #334155;
-    border-radius: 9999px;
-    appearance: none;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 10px;
+    height: 14px;
+    background-color: #22d3ee;
+    border-radius: 2px;
     cursor: pointer;
+    box-shadow: 0 0 3px rgba(0,0,0,0.4);
 }
 
-.volume-slider::-webkit-slider-thumb {
-    appearance: none;
-    width: 0.75rem;
-    height: 0.75rem;
-    background-color: #0891b2;
-    border-radius: 50%;
-}
-
-.test-sound-btn {
-    font-size: 0.75rem;
-    padding: 0px 4px;
-    color: #64748b;
-    background: none;
+.volume-slider::-moz-range-thumb {
+    width: 10px;
+    height: 14px;
+    background-color: #22d3ee;
+    border-radius: 2px;
     border: none;
     cursor: pointer;
-    transition: color 0.2s;
+    box-shadow: 0 0 3px rgba(0,0,0,0.4);
 }
 
-.test-sound-btn:hover {
-    color: #22d3ee;
-}
 
 .header-label-mini {
     background-color: #d6c9b0;
