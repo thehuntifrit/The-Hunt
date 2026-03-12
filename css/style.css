@@ -910,14 +910,14 @@ html body.magnifier-active .mob-card-inner * {
 
 .volume-slider::-webkit-slider-runnable-track {
     height: 14px;
-    background: #334155;
+    background: linear-gradient(to right, #22d3ee var(--volume-percent), #334155 var(--volume-percent)) !important;
     border-radius: 2px;
     clip-path: polygon(0 85%, 100% 15%, 100% 85%);
 }
 
 .volume-slider::-moz-range-track {
     height: 14px;
-    background: #334155;
+    background: linear-gradient(to right, #22d3ee var(--volume-percent), #334155 var(--volume-percent)) !important;
     border-radius: 2px;
     clip-path: polygon(0 85%, 100% 15%, 100% 85%);
 }
@@ -925,12 +925,13 @@ html body.magnifier-active .mob-card-inner * {
 .volume-slider::-webkit-slider-thumb {
     -webkit-appearance: none !important;
     appearance: none !important;
-    width: 10px;
+    width: 6px;
     height: 14px;
-    background-color: #22d3ee;
-    border-radius: 2px;
+    background-color: #fff;
+    border-radius: 1px;
     cursor: pointer;
-    box-shadow: 0 0 3px rgba(0,0,0,0.4);
+    box-shadow: 0 0 2px rgba(0,0,0,0.5);
+    margin-top: 0;
 }
 
 .volume-slider::-moz-range-thumb {

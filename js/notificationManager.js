@@ -12,7 +12,6 @@ export function initNotification() {
 
     const toggle = document.getElementById('notification-toggle');
     const volumeSlider = document.getElementById('notification-volume');
-    const testBtn = document.getElementById('test-sound-btn');
 
     if (toggle) {
         toggle.checked = getState().notificationEnabled;
@@ -30,17 +29,20 @@ export function initNotification() {
     if (volumeSlider) {
         const state = getState();
         volumeSlider.value = state.notificationVolume;
+        updateVolumeSliderBackground(volumeSlider);
+        
         volumeSlider.addEventListener('input', (e) => {
             const vol = parseFloat(e.target.value);
             import("./dataManager.js").then(m => m.setNotificationVolume(vol));
+            updateVolumeSliderBackground(e.target);
         });
     }
+}
 
-    if (testBtn) {
-        testBtn.addEventListener('click', () => {
-            playNotificationSound();
-        });
-    }
+function updateVolumeSliderBackground(slider) {
+    const val = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+    // clip-pathの形状に合わせてグラデーションを適用
+    slider.style.setProperty('--volume-percent', val + '%');
 }
 
 async function requestNotificationPermission() {
