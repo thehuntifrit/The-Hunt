@@ -739,7 +739,8 @@ html body.magnifier-active .mob-card-inner * {
     grid-column: 2;
     grid-row: 3;
     display: flex !important;
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 6px;
     padding: 2px;
     position: relative;
@@ -748,6 +749,7 @@ html body.magnifier-active .mob-card-inner * {
     height: 22px !important;
     align-self: center !important;
     overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .tab-indicator {
@@ -757,7 +759,7 @@ html body.magnifier-active .mob-card-inner * {
     left: 2px;
     border-radius: 4px;
     z-index: 1;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 #rank-tabs .tab-button {
@@ -765,7 +767,7 @@ html body.magnifier-active .mob-card-inner * {
     height: 100% !important;
     font-size: 11px !important;
     font-weight: 800 !important;
-    background: transparent !important;
+    background: rgba(255, 255, 255, 0.03) !important;
     border: none !important;
     color: #94a3b8;
     position: relative;
@@ -776,12 +778,17 @@ html body.magnifier-active .mob-card-inner * {
     justify-content: center;
     padding: 0 !important;
     min-width: 0 !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+#rank-tabs .tab-button:last-child {
+    border-right: none;
 }
 
 .notification-toggle-wrapper {
     display: flex !important;
     align-items: center !important;
-    margin-left: auto !important;
+    margin-left: 0 !important;
 }
 
 .notification-toggle-label {
@@ -794,11 +801,11 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .notification-switch-ui {
-    width: 82px !important;
-    height: 24px !important;
+    width: 76px !important; /* 少しコンパクトに */
+    height: 20px !important; /* 高さを抑えてボリューム行と合わせる */
     background-color: #1e293b !important;
     border: 1px solid #334155 !important;
-    border-radius: 12px !important;
+    border-radius: 10px !important;
     position: relative !important;
     transition: background-color 0.3s, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
     display: flex !important;
@@ -810,8 +817,8 @@ html body.magnifier-active .mob-card-inner * {
 .notification-switch-ui::before {
     content: '通知OFF' !important;
     position: absolute !important;
-    right: 8px !important;
-    font-size: 10px !important;
+    right: 6px !important;
+    font-size: 9px !important;
     font-weight: 900 !important;
     color: #64748b !important;
     transition: opacity 0.2s, transform 0.3s !important;
@@ -819,12 +826,12 @@ html body.magnifier-active .mob-card-inner * {
     z-index: 1 !important;
 }
 
-/* ON テキスト (隠しておく) */
+/* ON テキスト */
 .notification-switch-ui::after {
     content: '通知ON' !important;
     position: absolute !important;
-    left: 8px !important;
-    font-size: 10px !important;
+    left: 6px !important;
+    font-size: 9px !important;
     font-weight: 900 !important;
     color: #fff !important;
     opacity: 0 !important;
@@ -839,18 +846,18 @@ html body.magnifier-active .mob-card-inner * {
     position: absolute !important;
     top: 2px !important;
     left: 2px !important;
-    width: 20px !important;
-    height: 20px !important;
+    width: 16px !important;
+    height: 16px !important;
     background-color: #94a3b8 !important;
     border-radius: 50% !important;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s !important;
     z-index: 2 !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.4) !important;
 }
 
 #notification-toggle:checked + .notification-switch-ui {
     background-color: #0891b2 !important;
-    border-color: #06b6d4 !important;
+    border-color: #22d3ee !important;
 }
 
 #notification-toggle:checked + .notification-switch-ui::before {
@@ -864,7 +871,7 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 #notification-toggle:checked + .notification-switch-ui .switch-knob {
-    transform: translateX(58px) !important;
+    transform: translateX(56px) !important; /* 76 - 16 - 4 */
     background-color: #fff !important;
 }
 
@@ -876,7 +883,31 @@ html body.magnifier-active .mob-card-inner * {
     display: flex !important;
     align-items: center !important;
     gap: 6px !important;
-    margin-left: 6px !important;
+    margin-left: 0 !important; /* 左寄せ */
+}
+
+.volume-slider {
+    width: 54px !important; /* 通知ボタンの幅感と合わせる */
+    height: 4px !important;
+    background-color: #1e293b !important;
+    border-radius: 2px !important;
+    appearance: none;
+    cursor: pointer;
+    border: 1px solid #334155 !important;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background-color: #94a3b8;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    transition: background-color 0.2s;
+}
+
+.volume-slider:hover::-webkit-slider-thumb {
+    background-color: #fff;
 }
 
 .volume-slider {
