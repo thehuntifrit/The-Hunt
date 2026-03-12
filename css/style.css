@@ -690,6 +690,7 @@ html body.magnifier-active .mob-card-inner * {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
+    padding: 0 8px !important;
 }
 
 .notification-toggle-wrapper {
@@ -705,6 +706,7 @@ html body.magnifier-active .mob-card-inner * {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
+    padding: 0 8px !important;
 }
 
 .header-clock-group {
@@ -802,7 +804,7 @@ html body.magnifier-active .mob-card-inner * {
 
 .notification-switch-ui {
     box-sizing: border-box !important;
-    width: 76px !important;
+    width: 70px !important;
     height: 20px !important;
     background-color: #1e293b !important;
     border: 1px solid #334155 !important;
@@ -836,14 +838,14 @@ html body.magnifier-active .mob-card-inner * {
 .notification-switch-ui::before {
     content: '🔔 OFF' !important;
     right: 0 !important;
-    width: 56px !important;
+    width: 50px !important;
     color: #475569 !important;
 }
 
 .notification-switch-ui::after {
     content: '🔔 ON' !important;
     left: 0 !important;
-    width: 56px !important;
+    width: 50px !important;
     color: #fff !important;
     opacity: 0 !important;
     transform: translateX(-10px) !important;
@@ -879,7 +881,7 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 #notification-toggle:checked + .notification-switch-ui .switch-knob {
-    transform: translateX(56px) !important;
+    transform: translateX(50px) !important;
     background-color: #fff !important;
 }
 
