@@ -41,7 +41,6 @@ export function initNotification() {
 
 function updateVolumeSliderBackground(slider) {
     const val = (slider.value - slider.min) / (slider.max - slider.min) * 100;
-    // clip-pathの形状に合わせてグラデーションを適用
     slider.style.setProperty('--volume-percent', val + '%');
 }
 
@@ -108,8 +107,8 @@ export function checkAndNotify(mob) {
     if (shouldNotify && !notifiedCycles.has(cycleKey)) {
         const title = `【POP info】 ${mob.Name}`;
         const body = (now < spawnTime)
-            ? `まもなく時間（2分前）`
-            : `時間INなう！`;
+            ? `まもなく（2分前）`
+            : `時間なう！`;
 
         sendBrowserNotification(title, body);
         playNotificationSound();

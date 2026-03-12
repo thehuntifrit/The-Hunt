@@ -891,57 +891,75 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .notification-volume-wrapper {
+    box-sizing: border-box !important;
     display: flex !important;
     align-items: center !important;
-    gap: 0 !important;
-    margin-left: 0 !important;
+    justify-content: flex-start !important;
+    padding: 0 8px !important;
+    width: 100% !important;
 }
 
 .volume-slider {
-    width: 60px !important;
-    height: 14px !important;
-    background: transparent !important;
     -webkit-appearance: none !important;
     appearance: none !important;
+    width: 70px !important;
+    height: 16px !important;
+    background: transparent !important;
     cursor: pointer;
     border: none !important;
     outline: none !important;
+    margin: 0 !important;
 }
 
 .volume-slider::-webkit-slider-runnable-track {
-    height: 14px;
-    background: linear-gradient(to right, #22d3ee var(--volume-percent), #334155 var(--volume-percent)) !important;
-    border-radius: 2px;
-    clip-path: polygon(0 85%, 100% 15%, 100% 85%);
-}
-
-.volume-slider::-moz-range-track {
-    height: 14px;
-    background: linear-gradient(to right, #22d3ee var(--volume-percent), #334155 var(--volume-percent)) !important;
-    border-radius: 2px;
-    clip-path: polygon(0 85%, 100% 15%, 100% 85%);
+    width: 100% !important;
+    height: 14px !important;
+    background: linear-gradient(to right, 
+        #22d3ee 0%, #22d3ee var(--volume-percent), 
+        #334155 var(--volume-percent), #334155 100%) !important;
+    /* 段階的なバーを表現するためのマスク */
+    -webkit-mask-image: linear-gradient(to right, 
+        #000 0%, #000 70%, transparent 70%, transparent 100%) !important;
+    -webkit-mask-size: 5px 100% !important;
+    mask-image: linear-gradient(to right, 
+        #000 0%, #000 70%, transparent 70%, transparent 100%) !important;
+    mask-size: 5px 100% !important;
+    clip-path: polygon(0 100%, 100% 0, 100% 100%) !important;
 }
 
 .volume-slider::-webkit-slider-thumb {
     -webkit-appearance: none !important;
     appearance: none !important;
-    width: 6px;
-    height: 14px;
-    background-color: #fff;
-    border-radius: 1px;
-    cursor: pointer;
-    box-shadow: 0 0 2px rgba(0,0,0,0.5);
-    margin-top: 0;
+    width: 2px !important;
+    height: 16px !important;
+    background-color: #fff !important;
+    cursor: pointer !important;
+    box-shadow: 0 0 4px rgba(0,0,0,0.6) !important;
+    margin-top: -1px !important;
+    z-index: 2 !important;
+}
+
+.volume-slider::-moz-range-track {
+    width: 100% !important;
+    height: 14px !important;
+    background: linear-gradient(to right, 
+        #22d3ee 0%, #22d3ee var(--volume-percent), 
+        #334155 var(--volume-percent), #334155 100%) !important;
+    -webkit-mask-image: linear-gradient(to right, 
+        #000 0%, #000 70%, transparent 70%, transparent 100%) !important;
+    -webkit-mask-size: 5px 100% !important;
+    mask-image: linear-gradient(to right, 
+        #000 0%, #000 70%, transparent 70%, transparent 100%) !important;
+    mask-size: 5px 100% !important;
+    clip-path: polygon(0 100%, 100% 0, 100% 100%) !important;
 }
 
 .volume-slider::-moz-range-thumb {
-    width: 10px;
-    height: 14px;
-    background-color: #22d3ee;
-    border-radius: 2px;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 0 3px rgba(0,0,0,0.4);
+    width: 2px !important;
+    height: 16px !important;
+    background-color: #fff !important;
+    border: none !important;
+    cursor: pointer !important;
 }
 
 
