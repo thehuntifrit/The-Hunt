@@ -801,7 +801,7 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .notification-switch-ui {
-    width: 74px !important;
+    width: 82px !important;
     height: 20px !important;
     background-color: #1e293b !important;
     border: 1px solid #334155 !important;
@@ -813,7 +813,6 @@ html body.magnifier-active .mob-card-inner * {
     overflow: hidden !important;
 }
 
-/* 共通テキストスタイル (Flexboxで中央寄せ) */
 .notification-switch-ui::before,
 .notification-switch-ui::after {
     position: absolute !important;
@@ -822,41 +821,38 @@ html body.magnifier-active .mob-card-inner * {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    font-size: 9px !important;
+    font-size: 11px !important;
     font-weight: 900 !important;
     letter-spacing: 0.02em !important;
     transition: opacity 0.2s, transform 0.3s !important;
     pointer-events: none !important;
     z-index: 1 !important;
     white-space: nowrap !important;
-    line-height: 1 !important;
+    line-height: normal !important;
 }
 
-/* OFF状態: 右側のエリア(幅約54px)の中央に配置 */
 .notification-switch-ui::before {
     content: '🔔 OFF' !important;
     right: 0 !important;
-    width: 56px !important;
+    width: 62px !important;
     color: #475569 !important;
 }
 
-/* ON状態: 左側のエリア(幅約54px)の中央に配置 */
 .notification-switch-ui::after {
     content: '🔔 ON' !important;
     left: 0 !important;
-    width: 56px !important;
+    width: 62px !important;
     color: #fff !important;
     opacity: 0 !important;
     transform: translateX(-10px) !important;
 }
 
-/* ノブ: 外枠20pxに対し、上下2pxずつの余白で16pxを中央配置 */
 #notification-toggle + .notification-switch-ui .switch-knob {
     position: absolute !important;
     top: 2px !important; 
     left: 2px !important;
-    width: 14px !important; /* 少し小さくして余白を強調 */
-    height: 14px !important;
+    width: 16px !important;
+    height: 16px !important;
     background-color: #64748b !important;
     border-radius: 50% !important;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s !important;
@@ -880,12 +876,9 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 #notification-toggle:checked + .notification-switch-ui .switch-knob {
-    transform: translateX(54px) !important; /* 74-14-4-2 */
+    transform: translateX(62px) !important;
     background-color: #fff !important;
 }
-
-
-
 
 .notification-toggle-label:active .notification-switch-ui {
     transform: scale(0.96) !important;
@@ -895,11 +888,11 @@ html body.magnifier-active .mob-card-inner * {
     display: flex !important;
     align-items: center !important;
     gap: 6px !important;
-    margin-left: 0 !important; /* 左寄せ */
+    margin-left: 0 !important;
 }
 
 .volume-slider {
-    width: 54px !important; /* 通知ボタンの幅感と合わせる */
+    width: 54px !important;
     height: 4px !important;
     background-color: #1e293b !important;
     border-radius: 2px !important;
