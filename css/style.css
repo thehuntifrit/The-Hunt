@@ -738,34 +738,50 @@ html body.magnifier-active .mob-card-inner * {
 #rank-tabs {
     grid-column: 2;
     grid-row: 3;
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 2px !important;
-    width: 100% !important;
+    display: flex !important;
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 6px;
+    padding: 2px;
+    position: relative;
+    gap: 0;
+    width: 182px !important;
+    height: 22px !important;
     align-self: center !important;
+    overflow: hidden;
 }
 
-.filter-tab-base,
+.tab-indicator {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    left: 2px;
+    border-radius: 4px;
+    z-index: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 #rank-tabs .tab-button {
-    height: 18px !important;
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    line-height: 1 !important;
+    flex: 1;
+    height: 100% !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    background: transparent !important;
+    border: none !important;
+    color: #94a3b8;
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    min-width: 0 !important;
+}
+
+.notification-toggle-wrapper {
     display: flex !important;
     align-items: center !important;
-    justify-content: center !important;
-    border-radius: 3px !important;
-    min-width: 44px !important;
-    max-width: 44px !important;
-    text-align: center !important;
-    transition: all 0.2s ease !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important;
-}
-
-#rank-tabs .tab-button {
-    padding: 0px 0px !important;
+    margin-left: auto !important;
 }
 
 .notification-toggle-label {
@@ -778,78 +794,82 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .notification-switch-ui {
-    width: 34px !important;
-    height: 18px !important;
-    background-color: #334155 !important;
-    border: 1px solid #475569 !important;
-    border-radius: 9999px !important;
+    width: 82px !important;
+    height: 24px !important;
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+    border-radius: 12px !important;
     position: relative !important;
-    transition: background-color 0.2s !important;
-}
-
-#notification-toggle:checked+.notification-switch-ui {
-    background-color: #0891b2 !important;
-}
-
-.notification-switch-ui::after {
-    content: '' !important;
-    position: absolute !important;
-    top: 1px !important;
-    left: 1px !important;
-    width: 14px !important;
-    height: 14px !important;
-    background-color: white !important;
-    border-radius: 50% !important;
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s !important;
+    transition: background-color 0.3s, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
     display: flex !important;
     align-items: center !important;
-    justify-content: center !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
+    overflow: hidden !important;
 }
 
-#notification-toggle:checked+.notification-switch-ui::after {
-    transform: translateX(16px) !important;
-    background-color: #fff !important;
-}
-
-/* チェックマークの描画 */
+/* OFF テキスト */
 .notification-switch-ui::before {
-    content: '' !important;
+    content: '通知OFF' !important;
     position: absolute !important;
-    top: 50% !important;
-    left: 23px !important;
-    width: 6px !important;
-    height: 10px !important;
-    border: solid #0891b2 !important;
-    border-width: 0 2px 2px 0 !important;
-    transform: translateY(-60%) rotate(45deg) scale(0) !important;
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.5) !important;
+    right: 8px !important;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    color: #64748b !important;
+    transition: opacity 0.2s, transform 0.3s !important;
+    pointer-events: none !important;
     z-index: 1 !important;
 }
 
-#notification-toggle:checked+.notification-switch-ui::before {
-    transform: translateY(-60%) rotate(45deg) scale(1) !important;
+/* ON テキスト (隠しておく) */
+.notification-switch-ui::after {
+    content: '通知ON' !important;
+    position: absolute !important;
+    left: 8px !important;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    color: #fff !important;
+    opacity: 0 !important;
+    transform: translateX(-10px) !important;
+    transition: opacity 0.2s, transform 0.3s !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
 }
 
-/* クリック時の弾むアニメーション */
+/* つまみ (Knob) */
+#notification-toggle + .notification-switch-ui .switch-knob {
+    position: absolute !important;
+    top: 2px !important;
+    left: 2px !important;
+    width: 20px !important;
+    height: 20px !important;
+    background-color: #94a3b8 !important;
+    border-radius: 50% !important;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s !important;
+    z-index: 2 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
+}
+
+#notification-toggle:checked + .notification-switch-ui {
+    background-color: #0891b2 !important;
+    border-color: #06b6d4 !important;
+}
+
+#notification-toggle:checked + .notification-switch-ui::before {
+    opacity: 0 !important;
+    transform: translateX(10px) !important;
+}
+
+#notification-toggle:checked + .notification-switch-ui::after {
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+}
+
+#notification-toggle:checked + .notification-switch-ui .switch-knob {
+    transform: translateX(58px) !important;
+    background-color: #fff !important;
+}
+
 .notification-toggle-label:active .notification-switch-ui {
-    transform: scale(0.9) !important;
-}
-
-.notification-switch-ui {
-    transition: background-color 0.3s, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-}
-
-.notification-label-text {
-    font-size: 11px !important;
-    font-weight: bold !important;
-    color: #94a3b8 !important;
-    line-height: normal !important;
-    margin-left: 12px !important;
-}
-
-#notification-toggle:checked~.notification-label-text {
-    color: #06b6d4 !important;
+    transform: scale(0.96) !important;
 }
 
 .notification-volume-wrapper {

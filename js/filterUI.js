@@ -21,17 +21,15 @@ export const renderRankTabs = () => {
 
   container.innerHTML = "";
 
+  const indicator = document.createElement("div");
+  indicator.className = "tab-indicator";
+  container.appendChild(indicator);
+
   rankList.forEach(rank => {
-    const isSelected = state.filter.rank === rank;
     const btn = document.createElement("button");
     btn.dataset.rank = rank;
     btn.textContent = rank;
-
-    btn.className =
-      `tab-button filter-tab-base text-white transition ` +
-      (isSelected
-        ? (rank === "ALL" ? "bg-rose-500" : rank === "S" ? "bg-rank-s" : rank === "A" ? "bg-rank-a" : rank === "FATE" ? "bg-rank-f" : "bg-green-500")
-        : "bg-gray-500 hover:bg-gray-400");
+    btn.className = "tab-button filter-tab-base transition-colors duration-300";
 
     btn.addEventListener("click", () => {
       handleRankTabClick(rank);
@@ -39,6 +37,8 @@ export const renderRankTabs = () => {
 
     container.appendChild(btn);
   });
+
+  updateFilterUI();
 };
 
 export const renderAreaFilterPanel = () => {
@@ -114,27 +114,35 @@ export const updateFilterUI = () => {
   const rankTabs = FilterDOM.rankTabs;
   if (!rankTabs) return;
 
+  const indicator = rankTabs.querySelector(".tab-indicator");
+  const buttons = Array.from(rankTabs.querySelectorAll(".tab-button"));
   const stored = JSON.parse(localStorage.getItem("huntUIState")) || {};
   const clickStep = stored.clickStep || 1;
   const isMobile = window.matchMedia("(max-width: 1023px)").matches;
 
-  rankTabs.querySelectorAll(".tab-button").forEach(btn => {
+  buttons.forEach((btn, idx) => {
     const btnRank = btn.dataset.rank;
     const isCurrent = btnRank === state.filter.rank;
 
-    btn.classList.remove(
-      "bg-gray-500", "hover:bg-gray-400",
-      "bg-rose-500", "bg-rank-s", "bg-rank-a", "bg-rank-f"
-    );
-
     if (isCurrent) {
-      btn.classList.add(
-        btnRank === "ALL" ? "bg-rose-500"
-          : btnRank === "S" ? "bg-rank-s"
-            : btnRank === "A" ? "bg-rank-a"
-              : btnRank === "FATE" ? "bg-rank-f"
-                : "bg-gray-800"
-      );
+      btn.style.color = "#fff";
+      btn.style.zIndex = "2";
+
+      if (indicator) {
+        const rect = btn.getBoundingClientRect();
+        const parentRect = rankTabs.getBoundingClientRect();
+        indicator.style.width = `${rect.width}px`;
+        indicator.style.left = `${rect.left - parentRect.left}px`;
+        
+        // ランクに応じたインジケーターの色
+        const colorClass = btnRank === "ALL" ? "bg-rose-500"
+                         : btnRank === "S" ? "bg-rank-s"
+                         : btnRank === "A" ? "bg-rank-a"
+                         : btnRank === "FATE" ? "bg-rank-f"
+                         : "bg-cyan-600";
+        
+        indicator.className = `tab-indicator ${colorClass} transition-all duration-300 ease-out`;
+      }
 
       const panels = [FilterDOM.areaFilterPanelMobile, FilterDOM.areaFilterPanelDesktop];
       if (clickStep === 1 || clickStep === 3) {
@@ -157,7 +165,8 @@ export const updateFilterUI = () => {
         }
       }
     } else {
-      btn.classList.add("bg-gray-500", "hover:bg-gray-400");
+      btn.style.color = "#94a3b8";
+      btn.style.zIndex = "1";
     }
   });
 };
