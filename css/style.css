@@ -677,10 +677,11 @@ html body.magnifier-active .mob-card-inner * {
 .header-final-grid {
     display: grid !important;
     grid-template-columns: 1fr 182px !important;
-    grid-template-rows: 24px 24px 22px !important;
+    grid-template-rows: 24px 24px 24px !important;
     align-items: center !important;
     gap: 2px 16px !important;
     width: 100%;
+    padding-bottom: 2px !important;
 }
 
 .header-right-row-1 {
@@ -740,7 +741,7 @@ html body.magnifier-active .mob-card-inner * {
     grid-row: 3;
     display: flex !important;
     background: rgba(30, 41, 59, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: none;
     border-radius: 6px;
     padding: 2px;
     position: relative;
@@ -749,7 +750,6 @@ html body.magnifier-active .mob-card-inner * {
     height: 22px !important;
     align-self: center !important;
     overflow: hidden;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .tab-indicator {
@@ -801,8 +801,8 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .notification-switch-ui {
-    width: 76px !important; /* 少しコンパクトに */
-    height: 20px !important; /* 高さを抑えてボリューム行と合わせる */
+    width: 62px !important;
+    height: 20px !important;
     background-color: #1e293b !important;
     border: 1px solid #334155 !important;
     border-radius: 10px !important;
@@ -813,42 +813,46 @@ html body.magnifier-active .mob-card-inner * {
     overflow: hidden !important;
 }
 
-/* OFF テキスト */
 .notification-switch-ui::before {
-    content: '通知OFF' !important;
+    content: 'OFF' !important;
     position: absolute !important;
-    right: 6px !important;
+    right: 5px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
     font-size: 9px !important;
     font-weight: 900 !important;
-    color: #64748b !important;
+    color: #475569 !important;
+    letter-spacing: 0.02em !important;
     transition: opacity 0.2s, transform 0.3s !important;
     pointer-events: none !important;
     z-index: 1 !important;
+    line-height: 1 !important;
 }
 
-/* ON テキスト */
 .notification-switch-ui::after {
-    content: '通知ON' !important;
+    content: 'ON' !important;
     position: absolute !important;
-    left: 6px !important;
+    left: 5px !important;
+    top: 50% !important;
+    transform: translateY(-50%) translateX(-8px) !important;
     font-size: 9px !important;
     font-weight: 900 !important;
     color: #fff !important;
+    letter-spacing: 0.02em !important;
     opacity: 0 !important;
-    transform: translateX(-10px) !important;
     transition: opacity 0.2s, transform 0.3s !important;
     pointer-events: none !important;
     z-index: 1 !important;
+    line-height: 1 !important;
 }
 
-/* つまみ (Knob) */
 #notification-toggle + .notification-switch-ui .switch-knob {
     position: absolute !important;
     top: 2px !important;
     left: 2px !important;
     width: 16px !important;
     height: 16px !important;
-    background-color: #94a3b8 !important;
+    background-color: #64748b !important;
     border-radius: 50% !important;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s !important;
     z-index: 2 !important;
@@ -862,16 +866,16 @@ html body.magnifier-active .mob-card-inner * {
 
 #notification-toggle:checked + .notification-switch-ui::before {
     opacity: 0 !important;
-    transform: translateX(10px) !important;
+    transform: translateY(-50%) translateX(8px) !important;
 }
 
 #notification-toggle:checked + .notification-switch-ui::after {
     opacity: 1 !important;
-    transform: translateX(0) !important;
+    transform: translateY(-50%) translateX(0) !important;
 }
 
 #notification-toggle:checked + .notification-switch-ui .switch-knob {
-    transform: translateX(56px) !important; /* 76 - 16 - 4 */
+    transform: translateX(42px) !important;
     background-color: #fff !important;
 }
 
