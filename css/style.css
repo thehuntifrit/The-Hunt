@@ -801,7 +801,7 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .notification-switch-ui {
-    width: 62px !important;
+    width: 74px !important;
     height: 20px !important;
     background-color: #1e293b !important;
     border: 1px solid #334155 !important;
@@ -814,9 +814,9 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .notification-switch-ui::before {
-    content: 'OFF' !important;
+    content: '🔔 OFF' !important;
     position: absolute !important;
-    right: 5px !important;
+    right: 6px !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
     font-size: 9px !important;
@@ -827,12 +827,13 @@ html body.magnifier-active .mob-card-inner * {
     pointer-events: none !important;
     z-index: 1 !important;
     line-height: 1 !important;
+    white-space: nowrap !important;
 }
 
 .notification-switch-ui::after {
-    content: 'ON' !important;
+    content: '🔔 ON' !important;
     position: absolute !important;
-    left: 5px !important;
+    left: 6px !important;
     top: 50% !important;
     transform: translateY(-50%) translateX(-8px) !important;
     font-size: 9px !important;
@@ -844,11 +845,12 @@ html body.magnifier-active .mob-card-inner * {
     pointer-events: none !important;
     z-index: 1 !important;
     line-height: 1 !important;
+    white-space: nowrap !important;
 }
 
 #notification-toggle + .notification-switch-ui .switch-knob {
     position: absolute !important;
-    top: 2px !important;
+    top: 1px !important; /* 2pxから1pxに修正して中央寄せ */
     left: 2px !important;
     width: 16px !important;
     height: 16px !important;
@@ -875,9 +877,10 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 #notification-toggle:checked + .notification-switch-ui .switch-knob {
-    transform: translateX(42px) !important;
+    transform: translateX(54px) !important; /* 74 - 16 - 4 */
     background-color: #fff !important;
 }
+
 
 .notification-toggle-label:active .notification-switch-ui {
     transform: scale(0.96) !important;
