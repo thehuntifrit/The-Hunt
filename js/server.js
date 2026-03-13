@@ -165,7 +165,7 @@ export const submitReport = async (mobNo, timeISO) => {
     }
 
     if (!isForceSubmit && mob.last_kill_time) {
-        let maintenance = state.maintenance;
+        let maintenance = getState().maintenance;
         if (maintenance && maintenance.maintenance) {
             maintenance = maintenance.maintenance;
         }
