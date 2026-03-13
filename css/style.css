@@ -677,7 +677,7 @@ html body.magnifier-active .mob-card-inner * {
 .header-final-grid {
     display: grid !important;
     grid-template-columns: 1fr 182px !important;
-    grid-template-rows: 24px 24px 24px !important;
+    grid-template-rows: 24px 24px 24px auto !important;
     align-items: center !important;
     gap: 2px 16px !important;
     width: 100%;
@@ -785,6 +785,48 @@ html body.magnifier-active .mob-card-inner * {
 
 #rank-tabs .tab-button:last-child {
     border-right: none;
+}
+
+#area-filter-panel-desktop,
+#area-filter-panel-mobile {
+    grid-column: 2;
+    grid-row: 4;
+    width: 182px !important;
+    margin-top: 2px;
+}
+
+#area-filter-panel-desktop .flex-wrap,
+#area-filter-panel-mobile .flex-wrap {
+    display: flex !important;
+    background: rgba(30, 41, 59, 0.7);
+    border-radius: 6px;
+    padding: 2px;
+    gap: 0;
+    width: 182px !important;
+    height: 22px !important;
+    overflow: hidden;
+    box-sizing: border-box !important;
+}
+
+.area-filter-btn {
+    flex: 1;
+    height: 100% !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    border: none !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+    color: #fff;
+    cursor: pointer;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    min-width: 0 !important;
+    transition: background 0.2s ease !important;
+}
+
+.area-filter-btn:last-child {
+    border-right: none !important;
 }
 
 .notification-toggle-wrapper {
@@ -903,12 +945,14 @@ html body.magnifier-active .mob-card-inner * {
     -webkit-appearance: none !important;
     appearance: none !important;
     width: 70px !important;
-    height: 16px !important;
+    height: 14px !important;
     background: transparent !important;
     cursor: pointer;
     border: none !important;
     outline: none !important;
     margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
 }
 
 .volume-slider::-webkit-slider-runnable-track {
@@ -930,12 +974,14 @@ html body.magnifier-active .mob-card-inner * {
     -webkit-appearance: none !important;
     appearance: none !important;
     width: 2px !important;
-    height: 16px !important;
+    height: 14px !important;
     background-color: #fff !important;
     cursor: pointer !important;
     box-shadow: 0 0 4px rgba(0,0,0,0.6) !important;
-    margin-top: -1px !important;
+    margin-top: 0 !important;
     z-index: 2 !important;
+    /* つまみをセグメントの右端（ゲージの内側）に寄せるための調整 */
+    transform: translateX(-2px) !important;
 }
 
 .volume-slider::-moz-range-track {
@@ -955,10 +1001,11 @@ html body.magnifier-active .mob-card-inner * {
 
 .volume-slider::-moz-range-thumb {
     width: 2px !important;
-    height: 16px !important;
+    height: 14px !important;
     background-color: #fff !important;
     border: none !important;
     cursor: pointer !important;
+    transform: translateX(-2px) !important;
 }
 
 .header-label-mini {

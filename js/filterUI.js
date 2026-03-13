@@ -66,31 +66,29 @@ export const renderAreaFilterPanel = () => {
     items = expansionEntries.map(e => e[1]);
   }
 
-  const createButton = (label, isAll, isSelected, isDesktop) => {
+  const createButton = (label, isAll, isSelected) => {
     const btn = document.createElement("button");
     btn.textContent = label;
 
-    let btnClass = 'filter-tab-base text-white transition';
-
     if (isAll) {
-      btn.className = `area-filter-btn ${btnClass} ${isAllSelected ? "bg-red-500" : "bg-gray-500 hover:bg-gray-400"} ${isDesktop ? '' : 'w-[44px]'}`;
+      btn.className = `area-filter-btn ${isAllSelected ? "bg-rose-600" : "bg-white/5 hover:bg-white/10"}`;
       btn.dataset.value = "ALL";
     } else {
-      btn.className = `area-filter-btn ${btnClass} ${isSelected ? "bg-green-500" : "bg-gray-500 hover:bg-gray-400"} ${isDesktop ? '' : 'w-[44px]'}`;
+      btn.className = `area-filter-btn ${isSelected ? "bg-emerald-600" : "bg-transparent hover:bg-white/5"}`;
       btn.dataset.value = label;
     }
     return btn;
   };
 
-  const createPanelContent = (isDesktop) => {
+  const createPanelContent = () => {
     const panel = document.createDocumentFragment();
 
     items.forEach(item => {
       const isSelected = currentSet.has(item);
-      panel.appendChild(createButton(item, false, isSelected, isDesktop));
+      panel.appendChild(createButton(item, false, isSelected));
     });
 
-    const allBtn = createButton(isAllSelected ? "解除" : "全選", true, false, isDesktop);
+    const allBtn = createButton(isAllSelected ? "解除" : "全選", true, false);
     panel.appendChild(allBtn);
 
     return panel;
@@ -101,11 +99,11 @@ export const renderAreaFilterPanel = () => {
 
   if (mobilePanel) {
     mobilePanel.innerHTML = "";
-    mobilePanel.appendChild(createPanelContent(false));
+    mobilePanel.appendChild(createPanelContent());
   }
   if (desktopPanel) {
     desktopPanel.innerHTML = "";
-    desktopPanel.appendChild(createPanelContent(true));
+    desktopPanel.appendChild(createPanelContent());
   }
 };
 
