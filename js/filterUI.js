@@ -74,11 +74,9 @@ export const renderAreaFilterPanel = () => {
     if (isAll) {
       btn.dataset.value = "ALL";
       if (isAllSelected) btn.classList.add("is-selected");
-      else btn.classList.add("bg-white/5", "hover:bg-white/10");
     } else {
       btn.dataset.value = label;
       if (isSelected) btn.classList.add("is-selected");
-      else btn.classList.add("bg-transparent", "hover:bg-white/5");
     }
     return btn;
   };

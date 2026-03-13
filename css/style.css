@@ -792,49 +792,51 @@ html body.magnifier-active .mob-card-inner * {
     grid-column: 2;
     grid-row: 4;
     width: 182px !important;
-    margin-top: 2px;
+    margin-top: 4px;
 }
 
 #area-filter-panel-desktop .flex-wrap,
 #area-filter-panel-mobile .flex-wrap {
     display: flex !important;
+    flex-wrap: wrap !important;
     background: rgba(30, 41, 59, 0.7);
     border-radius: 6px;
     padding: 2px;
     gap: 0;
     width: 182px !important;
-    height: 22px !important;
-    overflow: hidden;
     box-sizing: border-box !important;
 }
 
 .area-filter-btn {
-    flex: 1;
-    height: 100% !important;
+    width: 44.5px !important;
+    height: 18px !important;
     font-size: 10px !important;
     font-weight: 800 !important;
     border: none !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
-    color: #fff;
+    color: #94a3b8;
     cursor: pointer;
     display: flex !important;
     align-items: center;
     justify-content: center;
     padding: 0 !important;
-    min-width: 0 !important;
-    transition: background 0.2s ease !important;
-}
-
-.area-filter-btn:last-child {
-    border-right: none !important;
+    border-radius: 4px;
+    transition: all 0.2s ease !important;
+    background: transparent !important;
 }
 
 .area-filter-btn.is-selected {
+    color: #fff !important;
     background-color: #10b981 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .area-filter-btn[data-value="ALL"].is-selected {
     background-color: #e11d48 !important;
+}
+
+.area-filter-btn:hover:not(.is-selected) {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #fff;
 }
 
 .notification-toggle-wrapper {
