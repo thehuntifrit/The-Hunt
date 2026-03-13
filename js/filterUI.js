@@ -69,13 +69,16 @@ export const renderAreaFilterPanel = () => {
   const createButton = (label, isAll, isSelected) => {
     const btn = document.createElement("button");
     btn.textContent = label;
+    btn.className = "area-filter-btn";
 
     if (isAll) {
-      btn.className = `area-filter-btn ${isAllSelected ? "bg-rose-600" : "bg-white/5 hover:bg-white/10"}`;
       btn.dataset.value = "ALL";
+      if (isAllSelected) btn.classList.add("is-selected");
+      else btn.classList.add("bg-white/5", "hover:bg-white/10");
     } else {
-      btn.className = `area-filter-btn ${isSelected ? "bg-emerald-600" : "bg-transparent hover:bg-white/5"}`;
       btn.dataset.value = label;
+      if (isSelected) btn.classList.add("is-selected");
+      else btn.classList.add("bg-transparent", "hover:bg-white/5");
     }
     return btn;
   };

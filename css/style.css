@@ -829,6 +829,14 @@ html body.magnifier-active .mob-card-inner * {
     border-right: none !important;
 }
 
+.area-filter-btn.is-selected {
+    background-color: #10b981 !important;
+}
+
+.area-filter-btn[data-value="ALL"].is-selected {
+    background-color: #e11d48 !important;
+}
+
 .notification-toggle-wrapper {
     display: flex !important;
     align-items: center !important;
