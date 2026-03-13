@@ -99,9 +99,7 @@ export function checkAndNotify(mob) {
 
     const cycleKey = `${mob.No}-${spawnTime}`;
 
-    const isConditionMet = (info.status === "ConditionActive" && info.isInConditionWindow);
-
-    const shouldNotify = (now >= oneMinBefore && now <= endTime) && (isConditionMet || now >= oneMinBefore);
+    const shouldNotify = (now >= oneMinBefore && now <= endTime);
 
     if (shouldNotify && !notifiedCycles.has(cycleKey)) {
         const title = `【POP info】 ${mob.Name}`;

@@ -3,7 +3,6 @@
 import { calculateRepop, formatLastKillTime } from "./cal.js";
 import { drawSpawnPoint, isCulled } from "./location.js";
 import { getState, PROGRESS_CLASSES, EXPANSION_MAP } from "./dataManager.js";
-import { openReportModal } from "./modal.js";
 
 const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
     month: "2-digit",
@@ -30,9 +29,8 @@ export function createMobCard(mob) {
     const card = clone.querySelector('.mob-card');
 
     const rank = mob.Rank;
-    const isExpandable = true;
     const { openMobCardNo } = getState();
-    const isOpen = isExpandable && mob.No === openMobCardNo;
+    const isOpen = mob.No === openMobCardNo;
 
 
     card.dataset.mobNo = mob.No;
@@ -78,47 +76,43 @@ export function createMobCard(mob) {
     }
 
     const expandablePanel = card.querySelector('.expandable-panel');
-    if (isExpandable) {
-        if (isOpen) {
-            expandablePanel.classList.add('open');
-        }
+    if (isOpen) {
+        expandablePanel.classList.add('open');
+    }
 
-        const memoInput = card.querySelector('.memo-input');
-        if (memoInput) {
-            memoInput.dataset.mobNo = mob.No;
-        }
+    const memoInput = card.querySelector('.memo-input');
+    if (memoInput) {
+        memoInput.dataset.mobNo = mob.No;
+    }
 
-        const conditionWrapper = card.querySelector('.condition-text')?.closest('.w-full.mt-2');
-        const mapContainer = card.querySelector('.map-container');
+    const conditionWrapper = card.querySelector('.condition-text')?.closest('.w-full.mt-2');
+    const mapContainer = card.querySelector('.map-container');
 
-        if (rank !== 'S') {
-            if (conditionWrapper) conditionWrapper.classList.add('hidden');
-            if (mapContainer) mapContainer.classList.add('hidden');
-        } else {
-            const conditionText = card.querySelector('.condition-text');
-            if (conditionText) {
-                conditionText.innerHTML = processText(mob.Condition);
-                if (conditionWrapper) conditionWrapper.classList.remove('hidden');
-            }
-
-            if (mapContainer) {
-                if (mob.Map) {
-                    const mapImg = mapContainer.querySelector('.mob-map-img');
-                    if (mapImg) {
-                        mapImg.src = `./maps/${mob.Map}`;
-                        mapImg.alt = `${mob.Area} Map`;
-                        mapImg.dataset.mobMap = mob.Map;
-                    }
-                    mapContainer.classList.remove('hidden');
-                    delete mapContainer.dataset.locationLoading;
-                } else {
-                    mapContainer.classList.add('hidden');
-                    mapContainer.dataset.locationLoading = "true";
-                }
-            }
-        }
+    if (rank !== 'S') {
+        if (conditionWrapper) conditionWrapper.classList.add('hidden');
+        if (mapContainer) mapContainer.classList.add('hidden');
     } else {
-        if (expandablePanel) expandablePanel.remove();
+        const conditionText = card.querySelector('.condition-text');
+        if (conditionText) {
+            conditionText.innerHTML = processText(mob.Condition);
+            if (conditionWrapper) conditionWrapper.classList.remove('hidden');
+        }
+
+        if (mapContainer) {
+            if (mob.Map) {
+                const mapImg = mapContainer.querySelector('.mob-map-img');
+                if (mapImg) {
+                    mapImg.src = `./maps/${mob.Map}`;
+                    mapImg.alt = `${mob.Area} Map`;
+                    mapImg.dataset.mobMap = mob.Map;
+                }
+                mapContainer.classList.remove('hidden');
+                delete mapContainer.dataset.locationLoading;
+            } else {
+                mapContainer.classList.add('hidden');
+                mapContainer.dataset.locationLoading = "true";
+            }
+        }
     }
 
     updateAreaInfo(card, mob);

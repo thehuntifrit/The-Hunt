@@ -94,17 +94,6 @@ async function initApp() {
         renderMaintenanceStatus();
         updateHeaderTime();
         attachGlobalEventListeners();
-        window.addEventListener('beforeunload', () => {
-            try {
-                let currentUI = {};
-                try { currentUI = JSON.parse(localStorage.getItem("huntUIState")) || {}; } catch (e) { }
-                if (currentUI.openMobCardNo !== undefined) {
-                    delete currentUI.openMobCardNo;
-                    localStorage.setItem("huntUIState", JSON.stringify(currentUI));
-                }
-            } catch (e) {
-            }
-        });
 
         window.addEventListener('pageshow', (event) => {
             if (event.persisted) {
@@ -350,7 +339,7 @@ function attachGlobalEventListeners() {
     });
 }
 
-export function closeActiveCard() {
+function closeActiveCard() {
     closeCard();
 }
 
@@ -510,11 +499,7 @@ function finishClose(card, placeholder) {
     }
 }
 
-async function handleInstantReport(mobNo, rank) {
-    const now = new Date();
-    const iso = now.toISOString();
-    const result = await submitReport(mobNo, iso);
-
+function handleReportResult(result) {
     if (!result.success) {
         if (result.code === "permission-denied" || (result.error && result.error.includes("permission"))) {
             showToast("認証情報の同期エラーが発生しました。\nお手数ですが、再度認証を行ってください。", "error");
@@ -527,25 +512,19 @@ async function handleInstantReport(mobNo, rank) {
     }
 }
 
+async function handleInstantReport(mobNo, rank) {
+    const result = await submitReport(mobNo, new Date().toISOString());
+    handleReportResult(result);
+}
+
 async function handleReportSubmit(e) {
     e.preventDefault();
     const form = e.target;
     const mobNo = parseInt(form.dataset.mobNo, 10);
     const timeISO = form.elements["kill-time"].value;
-
     const result = await submitReport(mobNo, timeISO);
-
-    if (!result.success) {
-        if (result.code === "permission-denied" || (result.error && result.error.includes("permission"))) {
-            showToast("認証情報の同期エラーが発生しました。\nお手数ですが、再度認証を行ってください。", "error");
-            openAuthModal();
-        } else {
-            showToast("レポート送信エラー: " + result.error, "error");
-        }
-    } else {
-        showToast("討伐報告を送信しました", "success");
-        closeReportModal();
-    }
+    handleReportResult(result);
+    if (result.success) closeReportModal();
 }
 
 document.addEventListener('DOMContentLoaded', initApp);

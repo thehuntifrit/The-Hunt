@@ -320,7 +320,6 @@ export async function loadBaseMobData() {
     let cachedData = null;
 
     memorySpawnCache = await idb.get(SPAWN_CACHE_KEY) || {};
-    const persistedSpawnCache = memorySpawnCache;
 
     if (cachedDataStr) {
         try {
@@ -328,8 +327,8 @@ export async function loadBaseMobData() {
             const processed = processMobData(cachedData, maintenance, { skipConditionCalc: true });
 
             processed.forEach(mob => {
-                if (persistedSpawnCache[mob.No]) {
-                    mob._spawnCache = persistedSpawnCache[mob.No];
+                if (memorySpawnCache[mob.No]) {
+                    mob._spawnCache = memorySpawnCache[mob.No];
                     mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
                 }
             });
@@ -337,7 +336,7 @@ export async function loadBaseMobData() {
             state.baseMobData = processed;
             setMobs([...processed]);
 
-            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
+            scheduleConditionCalculation(processed, maintenance, memorySpawnCache);
         } catch (e) {
             console.warn("Cache parse error:", e);
         }
@@ -356,15 +355,15 @@ export async function loadBaseMobData() {
             const processed = processMobData(freshData, maintenance, { skipConditionCalc: true });
 
             processed.forEach(mob => {
-                if (persistedSpawnCache[mob.No]) {
-                    mob._spawnCache = persistedSpawnCache[mob.No];
+                if (memorySpawnCache[mob.No]) {
+                    mob._spawnCache = memorySpawnCache[mob.No];
                     mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
                 }
             });
 
             state.baseMobData = processed;
             setMobs([...processed]);
-            scheduleConditionCalculation(processed, maintenance, persistedSpawnCache);
+            scheduleConditionCalculation(processed, maintenance, memorySpawnCache);
         }
 
         await loadLocationData();
@@ -378,16 +377,10 @@ export async function loadBaseMobData() {
             console.error("データの読み込みに失敗しました。");
         }
     }
-
-
-    if (state.baseMobData.length > 0) {
-        applyPendingRealtimeData();
-    }
 }
 
 function applyPendingRealtimeData() {
     const current = state.mobs;
-    let hasChanges = false;
 
     if (state.pendingMaintenanceData !== undefined) {
         const maintenanceData = state.pendingMaintenanceData;
@@ -453,8 +446,7 @@ function applyPendingRealtimeData() {
 
     setMobs([...current]);
 
-    if (state.pendingMaintenanceData === undefined && !initialLoadState.maintenance) {
-    } else {
+    if (state.pendingMaintenanceData !== undefined || initialLoadState.maintenance) {
         checkInitialLoadComplete();
     }
 }
@@ -467,12 +459,8 @@ function scheduleConditionCalculation(mobs, maintenance, existingCache) {
 
     if (conditionMobs.length === 0) return;
 
-    let updatedCount = 0;
-    const newCache = { ...existingCache };
-
     conditionMobs.forEach(mob => {
         requestWorkerCalculation(mob, maintenance);
-        updatedCount++;
     });
 }
 

@@ -118,27 +118,19 @@ export function subscribeMobLocations(onUpdate) {
     return unsub;
 }
 
+function ensureAuth() {
+    const { isVerified, lodestoneId, userId, mobs } = getState();
+    if (!isVerified || !lodestoneId || !userId) return null;
+    return { lodestoneId, userId, mobs };
+}
+
 export const submitReport = async (mobNo, timeISO) => {
-    const state = getState();
-    const userId = state.userId;
-    const lodestoneId = state.lodestoneId;
-    const mobs = state.mobs;
+    const authData = ensureAuth();
+    if (!authData) return;
 
-    if (!state.isVerified || !lodestoneId) {
-        console.error("認証が完了していないか、Lodestone IDが見つかりません。");
-        return;
-    }
-
-    if (!userId) {
-        console.error("認証が完了していません。ページをリロードしてください。");
-        return;
-    }
-
+    const { lodestoneId, mobs } = authData;
     const mob = mobs.find(m => m.No === mobNo);
-    if (!mob) {
-        console.error("モブデータが見つかりません。");
-        return;
-    }
+    if (!mob) return;
 
     let killTimeDate;
     if (timeISO && typeof timeISO === "string") {
@@ -247,26 +239,12 @@ export const submitReport = async (mobNo, timeISO) => {
 };
 
 export const submitMemo = async (mobNo, memoText) => {
-    const state = getState();
-    const userId = state.userId;
-    const lodestoneId = state.lodestoneId;
-    const mobs = state.mobs;
+    const authData = ensureAuth();
+    if (!authData) return { success: false, error: "認証エラー" };
 
-    if (!state.isVerified || !lodestoneId) {
-        console.error("認証が完了していないか、Lodestone IDが見つかりません。");
-        return { success: false, error: "認証エラー" };
-    }
-
-    if (!userId) {
-        console.error("認証が完了していません。");
-        return { success: false, error: "認証エラー" };
-    }
-
+    const { lodestoneId, mobs } = authData;
     const mob = mobs.find(m => m.No === mobNo);
-    if (!mob) {
-        console.error("モブデータが見つかりません。");
-        return { success: false, error: "Mobデータエラー" };
-    }
+    if (!mob) return { success: false, error: "Mobデータエラー" };
 
     try {
         const docRef = doc(db, "shared_data", "memo");
@@ -298,30 +276,16 @@ export const submitMemo = async (mobNo, memoText) => {
 };
 
 export const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
-    const state = getState();
-    const userId = state.userId;
-    const lodestoneId = state.lodestoneId;
-    const mobs = state.mobs;
+    const authData = ensureAuth();
+    if (!authData) return;
 
-    if (!state.isVerified || !lodestoneId) {
-        console.error("認証が完了していないか、Lodestone IDが見つかりません。");
-        return;
-    }
-
-    if (!userId) {
-        console.error("認証が完了していません。");
-        return;
-    }
-
+    const { lodestoneId, mobs } = authData;
     const mob = mobs.find(m => m.No === mobNo);
     if (!mob) return;
 
     try {
         const docRef = doc(db, "mob_locations", mobNo.toString());
-
-        const action = nextCulled ? "CULL" : "UNCULL";
-        const fieldName = action === "CULL" ? "culled_at" : "uncull_at";
-
+        const fieldName = nextCulled ? "culled_at" : "uncull_at";
         const updateKey = `points.${locationId}.${fieldName}`;
 
         const updatePayload = {

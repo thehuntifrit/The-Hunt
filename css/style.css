@@ -981,16 +981,39 @@ html body.magnifier-active .mob-card-inner * {
 .volume-slider::-webkit-slider-runnable-track {
     width: 100% !important;
     height: 14px !important;
-    background: linear-gradient(to right, 
-        #22d3ee 0%, #22d3ee var(--volume-percent), 
-        #334155 var(--volume-percent), #334155 100%) !important;
-    -webkit-mask-image: linear-gradient(to right, 
-        #000 0px, #000 5px, transparent 5px, transparent 7px) !important;
-    -webkit-mask-size: 7px 100% !important;
-    mask-image: linear-gradient(to right, 
-        #000 0px, #000 5px, transparent 5px, transparent 7px) !important;
-    mask-size: 7px 100% !important;
-    clip-path: polygon(0 100%, 100% 0, 100% 100%) !important;
+    background: #334155 !important;
+    background-image: linear-gradient(to right, #22d3ee var(--volume-percent), transparent var(--volume-percent)) !important;
+    -webkit-mask-image: 
+        linear-gradient(to bottom, transparent 90%, #000 90%),
+        linear-gradient(to bottom, transparent 80%, #000 80%),
+        linear-gradient(to bottom, transparent 70%, #000 70%),
+        linear-gradient(to bottom, transparent 60%, #000 60%),
+        linear-gradient(to bottom, transparent 50%, #000 50%),
+        linear-gradient(to bottom, transparent 40%, #000 40%),
+        linear-gradient(to bottom, transparent 30%, #000 30%),
+        linear-gradient(to bottom, transparent 20%, #000 20%),
+        linear-gradient(to bottom, transparent 10%, #000 10%),
+        linear-gradient(to bottom, transparent 0%, #000 0%);
+    -webkit-mask-size: 5px 100%;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: 
+        0px 0, 7px 0, 14px 0, 21px 0, 28px 0, 35px 0, 42px 0, 49px 0, 56px 0, 63px 0;
+    mask-image: 
+        linear-gradient(to bottom, transparent 90%, #000 90%),
+        linear-gradient(to bottom, transparent 80%, #000 80%),
+        linear-gradient(to bottom, transparent 70%, #000 70%),
+        linear-gradient(to bottom, transparent 60%, #000 60%),
+        linear-gradient(to bottom, transparent 50%, #000 50%),
+        linear-gradient(to bottom, transparent 40%, #000 40%),
+        linear-gradient(to bottom, transparent 30%, #000 30%),
+        linear-gradient(to bottom, transparent 20%, #000 20%),
+        linear-gradient(to bottom, transparent 10%, #000 10%),
+        linear-gradient(to bottom, transparent 0%, #000 0%);
+    mask-size: 5px 100%;
+    mask-repeat: no-repeat;
+    mask-position: 
+        0px 0, 7px 0, 14px 0, 21px 0, 28px 0, 35px 0, 42px 0, 49px 0, 56px 0, 63px 0;
+    clip-path: none !important;
 }
 
 .volume-slider::-webkit-slider-thumb {
@@ -1003,23 +1026,45 @@ html body.magnifier-active .mob-card-inner * {
     box-shadow: 0 0 4px rgba(0,0,0,0.6) !important;
     margin-top: 0 !important;
     z-index: 2 !important;
-    /* つまみをセグメントの右端（ゲージの内側）に寄せるための調整 */
     transform: translateX(-2px) !important;
 }
 
 .volume-slider::-moz-range-track {
     width: 100% !important;
     height: 14px !important;
-    background: linear-gradient(to right, 
-        #22d3ee 0%, #22d3ee var(--volume-percent), 
-        #334155 var(--volume-percent), #334155 100%) !important;
-    -webkit-mask-image: linear-gradient(to right, 
-        #000 0px, #000 5px, transparent 5px, transparent 7px) !important;
-    -webkit-mask-size: 7px 100% !important;
-    mask-image: linear-gradient(to right, 
-        #000 0px, #000 5px, transparent 5px, transparent 7px) !important;
-    mask-size: 7px 100% !important;
-    clip-path: polygon(0 100%, 100% 0, 100% 100%) !important;
+    background: #334155 !important;
+    background-image: linear-gradient(to right, #22d3ee var(--volume-percent), transparent var(--volume-percent)) !important;
+    -webkit-mask-image: 
+        linear-gradient(to bottom, transparent 90%, #000 90%),
+        linear-gradient(to bottom, transparent 80%, #000 80%),
+        linear-gradient(to bottom, transparent 70%, #000 70%),
+        linear-gradient(to bottom, transparent 60%, #000 60%),
+        linear-gradient(to bottom, transparent 50%, #000 50%),
+        linear-gradient(to bottom, transparent 40%, #000 40%),
+        linear-gradient(to bottom, transparent 30%, #000 30%),
+        linear-gradient(to bottom, transparent 20%, #000 20%),
+        linear-gradient(to bottom, transparent 10%, #000 10%),
+        linear-gradient(to bottom, transparent 0%, #000 0%);
+    -webkit-mask-size: 5px 100%;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: 
+        0px 0, 7px 0, 14px 0, 21px 0, 28px 0, 35px 0, 42px 0, 49px 0, 56px 0, 63px 0;
+    mask-image: 
+        linear-gradient(to bottom, transparent 90%, #000 90%),
+        linear-gradient(to bottom, transparent 80%, #000 80%),
+        linear-gradient(to bottom, transparent 70%, #000 70%),
+        linear-gradient(to bottom, transparent 60%, #000 60%),
+        linear-gradient(to bottom, transparent 50%, #000 50%),
+        linear-gradient(to bottom, transparent 40%, #000 40%),
+        linear-gradient(to bottom, transparent 30%, #000 30%),
+        linear-gradient(to bottom, transparent 20%, #000 20%),
+        linear-gradient(to bottom, transparent 10%, #000 10%),
+        linear-gradient(to bottom, transparent 0%, #000 0%);
+    mask-size: 5px 100%;
+    mask-repeat: no-repeat;
+    mask-position: 
+        0px 0, 7px 0, 14px 0, 21px 0, 28px 0, 35px 0, 42px 0, 49px 0, 56px 0, 63px 0;
+    clip-path: none !important;
 }
 
 .volume-slider::-moz-range-thumb {

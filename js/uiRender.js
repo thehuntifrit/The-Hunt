@@ -176,12 +176,7 @@ window.addEventListener('mobUpdated', (e) => {
   checkAndNotify(mob);
   const card = cardCache.get(String(mobNo));
   if (card) {
-    updateProgressText(card, mob);
-    updateProgressBar(card, mob);
-    updateMobCount(card, mob);
-    updateMapOverlay(card, mob);
-    updateExpandablePanel(card, mob);
-    updateMemoIcon(card, mob);
+    updateCardFull(card, mob);
     invalidateSortCache();
     sortAndRedistribute();
   }
@@ -200,11 +195,9 @@ window.addEventListener('locationDataReady', () => {
   updateVisibleCards();
 });
 
-window.addEventListener('locationsUpdated', (e) => {
-  const { locationsMap } = e.detail;
+window.addEventListener('locationsUpdated', () => {
   invalidateFilterCache();
-  const sorted = getSortedFilteredMobs();
-  const mobMap = new Map(sorted.map(m => [String(m.No), m]));
+  const mobMap = getMobMap();
 
   cardCache.forEach((card, mobNoStr) => {
     const mob = mobMap.get(mobNoStr);
@@ -223,36 +216,28 @@ const cardObserver = new IntersectionObserver((entries) => {
     if (entry.isIntersecting) {
       visibleCards.add(mobNo);
       const mob = mobMap.get(mobNo);
-      if (mob) {
-        updateProgressText(entry.target, mob);
-        updateProgressBar(entry.target, mob);
-        updateMobCount(entry.target, mob);
-        updateMapOverlay(entry.target, mob);
-        updateExpandablePanel(entry.target, mob);
-        updateMemoIcon(entry.target, mob);
-      }
+      if (mob) updateCardFull(entry.target, mob);
     } else {
       visibleCards.delete(mobNo);
     }
   }
 }, { threshold: 0 });
 
+function updateCardFull(card, mob) {
+  updateProgressText(card, mob);
+  updateProgressBar(card, mob);
+  updateMobCount(card, mob);
+  updateMapOverlay(card, mob);
+  updateExpandablePanel(card, mob);
+  updateMemoIcon(card, mob);
+}
+
 function updateVisibleCards() {
   const mobMap = getMobMap();
-
   for (const mobNoStr of visibleCards) {
     const card = cardCache.get(mobNoStr);
-    if (card) {
-      const mob = mobMap.get(mobNoStr);
-      if (mob) {
-        updateProgressText(card, mob);
-        updateProgressBar(card, mob);
-        updateMobCount(card, mob);
-        updateMapOverlay(card, mob);
-        updateExpandablePanel(card, mob);
-        updateMemoIcon(card, mob);
-      }
-    }
+    const mob = mobMap.get(mobNoStr);
+    if (card && mob) updateCardFull(card, mob);
   }
 }
 
@@ -395,12 +380,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       }
 
       if (isInitialLoad || visibleCards.has(String(mob.No))) {
-        updateProgressText(card, mob);
-        updateProgressBar(card, mob);
-        updateMobCount(card, mob);
-        updateMapOverlay(card, mob);
-        updateExpandablePanel(card, mob);
-        updateMemoIcon(card, mob);
+        updateCardFull(card, mob);
       }
     });
 

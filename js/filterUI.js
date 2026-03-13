@@ -55,15 +55,13 @@ export const renderAreaFilterPanel = () => {
     currentSet = state.filter.allRankSet instanceof Set ? state.filter.allRankSet : new Set();
     isAllSelected = items.length > 0 && currentSet.size === items.length;
   } else {
-    items = getAllAreas();
+    const expansionEntries = Object.entries(EXPANSION_MAP).sort((a, b) => b[0] - a[0]);
+    items = expansionEntries.map(e => e[1]);
     currentSet =
       state.filter.areaSets[targetRankKey] instanceof Set
         ? state.filter.areaSets[targetRankKey]
         : new Set();
     isAllSelected = items.length > 0 && currentSet.size === items.length;
-
-    const expansionEntries = Object.entries(EXPANSION_MAP).sort((a, b) => b[0] - a[0]);
-    items = expansionEntries.map(e => e[1]);
   }
 
   const createButton = (label, isAll, isSelected) => {
