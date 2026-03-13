@@ -608,7 +608,9 @@ body::before {
     }
 
     #area-filter-panel-mobile .flex-wrap {
-        gap: 2px !important;
+        gap: 0 !important;
+        width: 182px !important;
+        height: auto !important;
     }
 }
 
@@ -1048,5 +1050,13 @@ html body.magnifier-active .mob-card-inner * {
 @media (max-width: 1023px) {
     .header-final-grid {
         grid-template-columns: 1fr 182px !important;
+    }
+
+    #rank-tabs,
+    #area-filter-panel-desktop,
+    #area-filter-panel-mobile,
+    #area-filter-panel-mobile .flex-wrap,
+    #area-filter-panel-desktop .flex-wrap {
+        width: 182px !important;
     }
 }
