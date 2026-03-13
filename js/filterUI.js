@@ -84,13 +84,13 @@ export const renderAreaFilterPanel = () => {
   const createPanelContent = () => {
     const panel = document.createDocumentFragment();
 
+    const allBtn = createButton(isAllSelected ? "解除" : "全選", true, false);
+    panel.appendChild(allBtn);
+
     items.forEach(item => {
       const isSelected = currentSet.has(item);
       panel.appendChild(createButton(item, false, isSelected));
     });
-
-    const allBtn = createButton(isAllSelected ? "解除" : "全選", true, false);
-    panel.appendChild(allBtn);
 
     return panel;
   };
@@ -133,7 +133,6 @@ export const updateFilterUI = () => {
         indicator.style.width = `${rect.width}px`;
         indicator.style.left = `${rect.left - parentRect.left}px`;
         
-        // ランクに応じたインジケーターの色
         const colorClass = btnRank === "ALL" ? "bg-rose-500"
                          : btnRank === "S" ? "bg-rank-s"
                          : btnRank === "A" ? "bg-rank-a"

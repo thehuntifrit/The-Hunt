@@ -822,12 +822,23 @@ html body.magnifier-active .mob-card-inner * {
     border-radius: 4px;
     transition: all 0.2s ease !important;
     background: transparent !important;
+    box-sizing: border-box !important;
+}
+
+.area-filter-btn:first-child {
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #e2e8f0 !important;
+}
+
+.area-filter-btn:nth-child(2) {
+    margin-left: auto !important;
 }
 
 .area-filter-btn.is-selected {
     color: #fff !important;
     background-color: #10b981 !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    border: none !important;
 }
 
 .area-filter-btn[data-value="ALL"].is-selected {

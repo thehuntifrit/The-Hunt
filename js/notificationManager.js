@@ -85,7 +85,6 @@ export function sendBrowserNotification(title, body) {
     }
 }
 
-
 export function checkAndNotify(mob) {
     const state = getState();
     if (!state.notificationEnabled) return;
