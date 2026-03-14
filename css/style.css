@@ -188,8 +188,12 @@ body::before {
 
 .mob-card:hover .mob-card-inner {
     will-change: transform;
-    transform: translateY(-3px) scale(1.01) translateZ(0);
+    transform: translateY(-3px) translateZ(0);
     background: linear-gradient(135deg, rgba(63, 76, 107, 0.5), rgba(15, 23, 42, 0.4));
+}
+
+.mob-card.is-floating-active:hover .mob-card-inner {
+    transform: none;
 }
 
 .mob-card.is-active-neon[data-rank="S"]:hover .mob-card-inner {
