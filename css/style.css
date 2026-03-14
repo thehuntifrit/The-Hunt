@@ -187,7 +187,6 @@ body::before {
 }
 
 .mob-card:hover .mob-card-inner {
-    will-change: transform;
     transform: translateY(-3px) translateZ(0);
     background: linear-gradient(135deg, rgba(63, 76, 107, 0.5), rgba(15, 23, 42, 0.4));
 }
@@ -651,10 +650,9 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .mob-card {
-    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
-        width 0.15s cubic-bezier(0.16, 1, 0.3, 1),
-        top 0.15s cubic-bezier(0.16, 1, 0.3, 1),
-        left 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        top 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mob-card-placeholder {
