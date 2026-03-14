@@ -377,39 +377,41 @@ function openCard(card, mobNo) {
     card.dataset.placeholderId = "temp-" + Date.now();
     placeholder.id = card.dataset.placeholderId;
 
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+    const targetLeft = (window.innerWidth - width) / 2;
+    const header = document.getElementById("main-header");
+    const headerHeight = header ? header.offsetHeight : 0;
+    const isMobile = window.innerWidth < 1024;
+    const targetTop = isMobile ? 12 : headerHeight + 24;
 
-    card.style.position = "absolute";
-    card.style.top = `${top + scrollY}px`;
-    card.style.left = `${left + scrollX}px`;
+    card.classList.add("is-floating-active");
+    card.style.position = "fixed";
+    card.style.top = `${targetTop}px`;
+    card.style.left = `${targetLeft}px`;
     card.style.width = `${width}px`;
     card.style.zIndex = "45";
     card.style.margin = "0";
     card.dataset.isTransitioning = "true";
 
-    requestAnimationFrame(() => {
-        card.classList.add("is-floating-active");
+    const dx = left - targetLeft;
+    const dy = top - targetTop;
 
+    card.style.transition = "none";
+    card.style.transform = `translate(${dx}px, ${dy}px)`;
+
+    void card.offsetWidth;
+
+    requestAnimationFrame(() => {
         panel.classList.add("open");
         setOpenMobCardNo(mobNo);
-
-        const targetLeft = (window.innerWidth - width) / 2;
-        const header = document.getElementById("main-header");
-        const headerHeight = header ? header.offsetHeight : 0;
-
-        const isMobile = window.innerWidth < 1024;
-        const targetTop = isMobile ? 12 : headerHeight + 24;
-
-        card.style.position = "fixed";
-        card.style.left = `${targetLeft}px`;
-        card.style.top = `${targetTop}px`;
-
         const backdrop = document.getElementById("card-overlay-backdrop");
         backdrop?.classList.remove("hidden");
 
+        card.style.transition = "";
+        card.style.transform = `translate(0, 0)`;
+
         setTimeout(() => {
             delete card.dataset.isTransitioning;
+            card.style.transform = "";
         }, 500);
     });
 }
@@ -443,15 +445,27 @@ function closeCard(cardToClose = null, immediate = false) {
     panel.classList.remove("open");
 
     const rect = placeholder.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
 
-    card.style.position = "absolute";
     const scrollY = window.pageYOffset || document.documentElement.scrollTop;
     const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
 
     card.classList.remove("is-floating-active");
+    card.style.position = "absolute";
     card.style.top = `${rect.top + scrollY}px`;
     card.style.left = `${rect.left + scrollX}px`;
     card.style.width = `${rect.width}px`;
+
+    const dx = cardRect.left - rect.left;
+    const dy = cardRect.top - rect.top;
+
+    card.style.transition = "none";
+    card.style.transform = `translate(${dx}px, ${dy}px)`;
+
+    void card.offsetWidth;
+
+    card.style.transition = "";
+    card.style.transform = "translate(0, 0)";
 
     let finished = false;
     const timer = setTimeout(() => {
@@ -459,10 +473,10 @@ function closeCard(cardToClose = null, immediate = false) {
             finished = true;
             finishClose(card, placeholder);
         }
-    }, 400);
+    }, 450);
 
     const onEnd = (e) => {
-        if (e.propertyName === 'top' || e.propertyName === 'left' || e.propertyName === 'width') {
+        if (e.propertyName === 'transform') {
             if (!finished) {
                 finished = true;
                 clearTimeout(timer);
