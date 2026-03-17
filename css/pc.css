@@ -32,26 +32,45 @@
     .pc-list-item {
         display: flex;
         align-items: center;
-        background: rgba(30, 41, 59, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 4px;
-        padding: 4px 8px;
+        background: rgba(30, 41, 59, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        border-radius: 6px;
+        padding: 0 12px;
         cursor: pointer;
-        transition: background 0.2s, border-color 0.2s, transform 0.1s;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         -webkit-user-select: none;
         user-select: none;
-        height: 32px; /* very compact 1 line */
+        height: 36px;
+        margin-bottom: 2px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .pc-list-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: transparent;
+        transition: background 0.2s;
     }
 
     .pc-list-item:hover {
-        background: rgba(63, 76, 107, 0.5);
-        border-color: rgba(255, 255, 255, 0.2);
+        background: rgba(51, 65, 85, 0.6);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateX(4px);
     }
 
     .pc-list-item.selected {
-        background: rgba(15, 23, 42, 0.9);
-        border-color: rgba(6, 182, 212, 0.5);
-        box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+        background: rgba(15, 23, 42, 0.8);
+        border-color: rgba(6, 182, 212, 0.4);
+        box-shadow: inset 0 0 10px rgba(6, 182, 212, 0.1);
+    }
+    
+    .pc-list-item.selected::before {
+        background: var(--accent-cyan);
     }
 
     .pc-list-name {
@@ -64,49 +83,66 @@
     }
 
     .pc-list-time {
-        flex: 0 0 110px;
+        flex: 0 0 100px;
         font-family: 'Inter', ui-monospace, SFMono-Regular, monospace;
         font-size: 11px;
+        font-weight: 500;
         font-variant-numeric: tabular-nums;
-        color: #e2d7c5;
+        color: rgba(226, 215, 197, 0.8);
         white-space: nowrap;
         text-align: right;
-        padding-right: 8px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        line-height: 1.2;
     }
 
     .pc-list-time .label-next {
         color: var(--accent-gold);
     }
     .pc-list-time .time-over {
-        color: #e98b91;
+        color: #ffb1b6;
+        font-weight: bold;
+        text-shadow: 0 0 8px rgba(233, 139, 145, 0.4);
     }
 
     .pc-list-progress-container {
-        flex: 0 0 120px;
-        min-width: 60px;
+        flex: 0 0 110px;
         height: 6px;
-        background: var(--progress-bg);
-        border-radius: 3px;
+        background: rgba(15, 23, 42, 0.6);
+        border-radius: 4px;
         overflow: hidden;
-        margin: 0 8px;
-        box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+        margin: 0 12px;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .pc-list-progress-bar {
         height: 100%;
-        background: var(--progress-fill);
-        border-radius: 3px;
-        transition: width linear 60s;
+        background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        border-radius: 4px;
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        transition: width 0.5s ease-out;
     }
 
     .pc-list-percent {
         flex: 0 0 45px;
         font-family: 'Inter', ui-monospace, SFMono-Regular, monospace;
-        font-size: 12px;
-        font-weight: bold;
-        color: #f1f5f9;
+        font-size: 13px;
+        font-weight: 800;
+        color: #f8fafc;
         text-align: right;
         font-variant-numeric: tabular-nums;
+    }
+
+    /* Condition Blinking */
+    @keyframes pc-blink-bg {
+        0%, 100% { background-color: rgba(30, 41, 59, 0.4); }
+        50% { background-color: rgba(220, 38, 38, 0.2); }
+    }
+    .pc-list-item.blink-active {
+        animation: pc-blink-bg 2s infinite ease-in-out;
+        border-color: rgba(239, 68, 68, 0.5);
     }
 
     /* Add rank color glow support to lists */

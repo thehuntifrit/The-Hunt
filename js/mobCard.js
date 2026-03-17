@@ -53,8 +53,12 @@ export function updateSimpleMobItem(item, mob) {
     // Request: Before minRepop => time until minRepop, after minRepop => time until maxRepop
     if (minRepop && now < minRepop) {
         timeStr = "次回" + formatDurationHM(minRepop - now);
-    } else if (maxRepop) {
+    } else if (maxRepop && now < maxRepop) {
         timeStr = "残り" + formatDurationHM(maxRepop - now);
+    } else if (maxRepop) {
+        // Show how long it has been in Time Over
+        timeStr = "超過" + formatDurationHM(now - maxRepop);
+        isTimeOver = true;
     }
 
     if (timeEl) {
@@ -103,13 +107,12 @@ export function updateSimpleMobItem(item, mob) {
         item.style.filter = "none";
     }
 
-    // Blink border for condition
-    if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) {
-        item.classList.add("blink-border-white");
-        item.style.boxShadow = "0 0 5px var(--accent-crimson)";
+    // Blink and Glow for active condition
+    const isActuallyActive = !isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow));
+    if (isActuallyActive) {
+        item.classList.add("blink-active");
     } else {
-        item.classList.remove("blink-border-white");
-        item.style.boxShadow = "none";
+        item.classList.remove("blink-active");
     }
 }
 
