@@ -7,7 +7,7 @@ import { filterMobsByRankAndArea } from "./filterUI.js";
 import { openReportModal } from "./modal.js";
 import { allTabComparator } from "./mobSorter.js";
 import { updateStatusContainerVisibility } from "./app.js";
-import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay } from "./mobCard.js";
+import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem } from "./mobCard.js";
 import { checkAndNotify } from "./notificationManager.js";
 
 const FIFTEEN_MINUTES_SEC = 15 * 60;
@@ -31,6 +31,8 @@ export const DOM = {
   authLodestoneId: document.getElementById('auth-lodestone-id'),
   authVCode: document.getElementById('auth-v-code'),
   authStatus: document.getElementById('auth-modal-status'),
+  pcLeftList: document.getElementById('pc-left-list'),
+  pcRightDetail: document.getElementById('pc-right-detail'),
 };
 
 const groupSectionCache = new Map();
@@ -59,10 +61,10 @@ function getOrCreateGroupSection(groupKey) {
       <div class="status-group-separator">
           <span class="status-group-label">${GROUP_LABELS[groupKey]}</span>
       </div>
-      <div class="group-columns grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1.5">
-          <div class="col-1 flex flex-col gap-1.5"></div>
-          <div class="col-2 flex-col gap-1.5 hidden"></div>
-          <div class="col-3 flex-col gap-1.5 hidden"></div>
+      <div class="group-columns grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="col-1 flex flex-col gap-4"></div>
+          <div class="col-2 flex flex-col gap-4"></div>
+          <div class="col-3 flex flex-col gap-4"></div>
       </div>
   `;
 
@@ -230,125 +232,6 @@ function updateCardFull(card, mob) {
   updateMapOverlay(card, mob);
   updateExpandablePanel(card, mob);
   updateMemoIcon(card, mob);
-
-  // If this card is currently selected for the detail pane, update the detail pane too
-  if (card.classList.contains("selected-for-detail") && window.innerWidth >= 1024) {
-      updateDetailPane(mob);
-  }
-}
-
-export function updateDetailPane(mob) {
-    const placeholder = document.getElementById("detail-placeholder");
-    const content = document.getElementById("detail-content");
-    if (!placeholder || !content) return;
-
-    // Show content, hide placeholder
-    placeholder.style.display = "none";
-    content.style.display = "flex";
-
-    document.getElementById("detail-mob-name").textContent = mob.Name;
-    document.getElementById("detail-mob-name").style.color = `var(--rank-${mob.Rank.toLowerCase()})`;
-    
-    document.getElementById("detail-area-info").textContent = `${mob.Area} - ${mob.Expansion}`;
-    
-    document.getElementById("detail-rank-badge").textContent = mob.Rank;
-    document.getElementById("detail-rank-badge").style.color = `var(--rank-${mob.Rank.toLowerCase()})`;
-    document.getElementById("detail-rank-badge").style.borderColor = `var(--rank-${mob.Rank.toLowerCase()})`;
-
-    const reportBtn = document.getElementById("detail-report-btn");
-    reportBtn.dataset.mobNo = mob.No;
-    reportBtn.onclick = () => {
-        if (!getState().isVerified) {
-            import("./modal.js").then(m => m.openAuthModal());
-            return;
-        }
-        if (mob.Rank === 'A') {
-            import("./app.js").then(a => a.handleInstantReport(mob.No, mob.Rank));
-        } else {
-            import("./modal.js").then(m => m.openReportModal(mob.No));
-        }
-    };
-
-    const statusEl = document.getElementById("detail-status");
-    let leftStr = mob.repopInfo?.timeRemaining || "未確定";
-    statusEl.innerHTML = `<span class="${mob.repopInfo?.status === 'MaxOver' ? 'text-red-400' : 'text-slate-200'}">${leftStr}</span>`;
-
-    const timeEl = document.getElementById("detail-time");
-    let rightStr = "未確定";
-    if (mob.repopInfo?.isInConditionWindow && mob.repopInfo?.conditionRemaining) {
-        rightStr = `<span class="text-yellow-400">${mob.repopInfo.conditionRemaining}</span>`;
-    } else if (mob.repopInfo?.nextConditionSpawnDate) {
-        try { rightStr = `<span class="text-yellow-400">🔔 ${new Intl.DateTimeFormat("ja-JP", { hour: "2-digit", minute: "2-digit" }).format(mob.repopInfo.nextConditionSpawnDate)}</span>`; } catch {}
-    } else if (mob.repopInfo?.nextMinRepopDate) {
-        try { rightStr = `in ${new Intl.DateTimeFormat("ja-JP", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).format(mob.repopInfo.nextMinRepopDate)}`; } catch {}
-    }
-    timeEl.innerHTML = rightStr;
-
-    const progressText = document.getElementById("detail-progress-text");
-    const progressBar = document.getElementById("detail-progress-bar");
-    const percent = mob.repopInfo?.elapsedPercent || 0;
-    progressText.textContent = `${Number(percent).toFixed(1)}%`;
-    progressBar.style.width = `${percent}%`;
-    
-    if (percent < 60) progressBar.className = "detail-progress-bar detail-pb-blue";
-    else if (percent < 80) progressBar.className = "detail-progress-bar detail-pb-cyan";
-    else if (percent < 100) progressBar.className = "detail-progress-bar detail-pb-yellow";
-    else progressBar.className = "detail-progress-bar detail-pb-red animate-pulse";
-
-    const memoInput = document.getElementById("detail-memo-input");
-    memoInput.dataset.mobNo = mob.No;
-    const hasMemo = mob.memo_text?.trim();
-    const isMemoNewer = (mob.memo_updated_at || 0) >= (mob.last_kill_time || 0);
-    memoInput.value = (hasMemo && (isMemoNewer || !mob.last_kill_time)) ? mob.memo_text : "";
-
-    const lastKill = document.getElementById("detail-last-kill");
-    lastKill.textContent = `前回討伐: ${formatLastKillTime(mob.last_kill_time)}`;
-
-    const triggerContainer = document.getElementById("detail-trigger-container");
-    const triggerText = document.getElementById("detail-trigger-text");
-    if (mob.Rank === 'S' && mob.Condition) {
-        triggerContainer.style.display = "block";
-        import("./mobCard.js").then(m => {
-            triggerText.innerHTML = m.processText(mob.Condition);
-        });
-    } else {
-        triggerContainer.style.display = "none";
-    }
-
-    const mapContainer = document.getElementById("detail-map-container");
-    const mapImg = document.getElementById("detail-map-img");
-    const mapOverlay = document.getElementById("detail-map-overlay");
-    
-    if (mob.Rank === 'S' && mob.Map) {
-        mapContainer.style.display = "flex";
-        mapImg.src = `./maps/${mob.Map}`;
-        
-        const state = getState();
-        const mobLocationsData = state.mobLocations?.[mob.No];
-        const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
-        
-        import("./mobCard.js").then(m => {
-            const validSpawnPoints = m.getValidSpawnPoints(mob, spawnCullStatus);
-            const remainingCount = validSpawnPoints.length;
-            const isLastOne = remainingCount === 1;
-
-            mapOverlay.innerHTML = (mob.spawn_points ?? []).map(point => {
-                const isThisPointTheLastOne = isLastOne && point.id === validSpawnPoints[0]?.id;
-                return drawSpawnPoint(
-                    point,
-                    spawnCullStatus,
-                    mob.No,
-                    point.mob_ranks.includes("B2") ? "B2"
-                        : point.mob_ranks.includes("B1") ? "B1"
-                            : point.mob_ranks[0],
-                    isThisPointTheLastOne,
-                    isLastOne
-                );
-            }).join("");
-        });
-    } else {
-        mapContainer.style.display = "none";
-    }
 }
 
 function updateVisibleCards() {
@@ -361,6 +244,7 @@ function updateVisibleCards() {
 }
 
 const cardCache = new Map();
+const simpleItemCache = new Map();
 
 export const sortAndRedistribute = (options = {}) => {
   const { immediate = false } = options;
@@ -423,7 +307,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   const md = 768;
   const lg = 1024;
   let numCols = 1;
-  if (width >= lg) numCols = 1; // PC is now 1-column for the master list
+  if (width >= lg) numCols = 3;
   else if (width >= md) numCols = 2;
 
   const groups = {
@@ -448,13 +332,8 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     section.classList.remove("hidden");
 
     cols.forEach((col, idx) => {
-      if (idx >= numCols) {
-        col.classList.add("hidden");
-        col.classList.remove("flex");
-      } else {
-        col.classList.remove("hidden");
-        col.classList.add("flex");
-      }
+      if (idx >= numCols) col.classList.add("hidden");
+      else col.classList.remove("hidden");
     });
 
     const colPointers = Array(numCols).fill(0);
@@ -530,6 +409,79 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       }
     });
   });
+
+  // PC Layout specific rendering
+  if (DOM.pcLeftList) {
+    const pcFrag = document.createDocumentFragment();
+    
+    // Group rendering for PC list
+    ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
+      const groupMobs = groups[key];
+      if (groupMobs.length === 0) return;
+      
+      const header = document.createElement("div");
+      header.className = "text-xs font-bold text-gray-500 uppercase mt-4 mb-1 border-b border-gray-700/50 pb-1 pl-1";
+      header.textContent = GROUP_LABELS[key];
+      pcFrag.appendChild(header);
+
+      groupMobs.forEach(mob => {
+        let item = simpleItemCache.get(String(mob.No));
+        if (!item) {
+          item = createSimpleMobItem(mob);
+          simpleItemCache.set(String(mob.No), item);
+        } else {
+          updateSimpleMobItem(item, mob);
+        }
+        
+        // Highlight logic
+        const state = getState();
+        if (state.openMobCardNo === mob.No) {
+          item.classList.add("selected");
+        } else {
+          item.classList.remove("selected");
+        }
+        
+        pcFrag.appendChild(item);
+      });
+    });
+    
+    DOM.pcLeftList.innerHTML = '';
+    DOM.pcLeftList.appendChild(pcFrag);
+    
+    // PC detail view logic
+    if (DOM.pcRightDetail) {
+      const state = getState();
+      if (state.openMobCardNo) {
+        const openedCard = cardCache.get(String(state.openMobCardNo));
+        if (openedCard && openedCard.parentNode !== DOM.pcRightDetail) {
+            // Need a fresh copy to not disrupt the mobile layout, since the elements are shared between different branches.
+            // But wait, mobile is display NONE. If we move elements around, they won't be in mobile view anymore.
+            // Let's create a separate cardCache specifically for PC detail view if needed, or clone. 
+            // It's probably easier to just move the existing card to the right pane if PC, but what if they resize the window?
+            // Since we're separating completely, let's clone the card or maintain a dedicated detail card.
+            // For now, let's just make sure the DOM updates work correctly.
+            // Actually, simply moving the card to pcRightDetail is fine since on resize we sortAndRedistribute which re-adds to columns.
+            
+            // To be safe, we can just let `cardCache` remain where it is and create a single detail-view card.
+            let detailCard = DOM.pcRightDetail.querySelector('.mob-card');
+            const targetMob = getState().mobs.find(m => m.No === state.openMobCardNo);
+            if (targetMob) {
+                if (!detailCard || detailCard.dataset.mobNo !== String(targetMob.No)) {
+                    detailCard = createMobCard(targetMob);
+                    DOM.pcRightDetail.innerHTML = '';
+                    DOM.pcRightDetail.appendChild(detailCard);
+                }
+                updateCardFull(detailCard, targetMob);
+                // forcefully expand
+                const panel = detailCard.querySelector(".expandable-panel");
+                if (panel) panel.classList.add("open");
+            }
+        }
+      } else {
+         DOM.pcRightDetail.innerHTML = '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>';
+      }
+    }
+  }
 
   lastRenderedOrderStr = sortedMobs.map(m => m.No).join(",");
   lastRenderedGroupStr = sortedMobs.map(m => getGroupKey(m)).join(",");
@@ -662,4 +614,3 @@ function updateProgressBars() {
 setInterval(() => {
   updateProgressBars();
 }, EORZEA_MINUTE_MS);
-

@@ -262,6 +262,49 @@ function attachGlobalEventListeners() {
         }
     });
 
+    if (DOM.pcLeftList) {
+        DOM.pcLeftList.addEventListener("click", (e) => {
+            const item = e.target.closest(".pc-list-item");
+            if (!item) return;
+
+            const mobNo = parseInt(item.dataset.mobNo, 10);
+            const { openMobCardNo } = getState();
+
+            if (openMobCardNo === mobNo) {
+                setOpenMobCardNo(null);
+            } else {
+                setOpenMobCardNo(mobNo);
+            }
+            sortAndRedistribute();
+        });
+    }
+
+    if (DOM.pcRightDetail) {
+        DOM.pcRightDetail.addEventListener("click", (e) => {
+            const card = e.target.closest(".mob-card");
+            if (!card) return;
+
+            const mobNo = parseInt(card.dataset.mobNo, 10);
+            const rank = card.dataset.rank;
+
+            const reportBtn = e.target.closest(".report-side-bar");
+            if (reportBtn) {
+                e.stopPropagation();
+                if (!getState().isVerified) {
+                    openAuthModal();
+                    return;
+                }
+                const type = reportBtn.dataset.reportType;
+                if (type === "modal") {
+                    openReportModal(mobNo);
+                } else if (type === "instant") {
+                    handleInstantReport(mobNo, rank);
+                }
+                return;
+            }
+        });
+    }
+
     DOM.colContainer.addEventListener("click", (e) => {
         const card = e.target.closest(".mob-card");
         if (!card) return;
@@ -285,22 +328,8 @@ function attachGlobalEventListeners() {
             return;
         }
 
-        // On mobile, expand the card. On PC, update the detail pane
-        const isMobile = window.innerWidth < 1024;
-        if (isMobile) {
-            if (e.target.closest("[data-toggle='card-header']")) {
-                toggleCardExpand(card, mobNo);
-            }
-        } else {
-            // PC: Master-Detail Selection
-            const allCards = DOM.colContainer.querySelectorAll(".mob-card");
-            allCards.forEach(c => c.classList.remove("selected-for-detail"));
-            card.classList.add("selected-for-detail");
-            
-            import("./uiRender.js").then(module => {
-                const mob = getState().mobs.find(m => m.No === mobNo);
-                if (mob) module.updateDetailPane(mob);
-            });
+        if (e.target.closest("[data-toggle='card-header']")) {
+            toggleCardExpand(card, mobNo);
         }
     });
 

@@ -1,0 +1,145 @@
+@media (min-width: 1024px) {
+    #mobile-layout {
+        display: none !important;
+    }
+
+    #pc-layout {
+        display: flex !important;
+        flex-direction: row;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        gap: 1.5rem;
+    }
+
+    /* Left pane (3/5) */
+    #pc-left-list {
+        width: 60%;
+        display: flex;
+        flex-direction: column;
+        gap: 2px; /* tight spacing for list */
+    }
+
+    /* Right pane (2/5) */
+    #pc-right-detail {
+        width: 40%;
+        align-self: flex-start;
+        position: sticky;
+        top: 6rem; /* below header */
+    }
+
+    /* PC Simple List Item Styles */
+    .pc-list-item {
+        display: flex;
+        align-items: center;
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+        padding: 4px 8px;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s, transform 0.1s;
+        -webkit-user-select: none;
+        user-select: none;
+        height: 32px; /* very compact 1 line */
+    }
+
+    .pc-list-item:hover {
+        background: rgba(63, 76, 107, 0.5);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .pc-list-item.selected {
+        background: rgba(15, 23, 42, 0.9);
+        border-color: rgba(6, 182, 212, 0.5);
+        box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+    }
+
+    .pc-list-name {
+        flex: 0 0 120px;
+        font-weight: bold;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .pc-list-time {
+        flex: 0 0 100px;
+        font-family: 'Inter', ui-monospace, SFMono-Regular, monospace;
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+        color: #e2d7c5;
+        white-space: nowrap;
+        text-align: right;
+        padding-right: 8px;
+    }
+
+    .pc-list-time .label-next {
+        color: var(--accent-gold);
+    }
+    .pc-list-time .time-over {
+        color: #e98b91;
+    }
+
+    .pc-list-progress-container {
+        flex: 1;
+        min-width: 60px;
+        height: 6px;
+        background: var(--progress-bg);
+        border-radius: 3px;
+        overflow: hidden;
+        margin: 0 8px;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .pc-list-progress-bar {
+        height: 100%;
+        background: var(--progress-fill);
+        border-radius: 3px;
+        transition: width linear 60s;
+    }
+
+    .pc-list-percent {
+        flex: 0 0 40px;
+        font-family: 'Inter', ui-monospace, SFMono-Regular, monospace;
+        font-size: 11px;
+        font-weight: bold;
+        color: #f1f5f9;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Add rank color glow support to lists */
+    .pc-list-item[data-rank="S"] .pc-list-name { color: var(--rank-s); }
+    .pc-list-item[data-rank="A"] .pc-list-name { color: var(--rank-a); }
+    .pc-list-item[data-rank="F"] .pc-list-name { color: var(--rank-f); }
+
+    /* Override standard mob card in the detail view to use full width and height naturally */
+    #pc-right-detail .mob-card {
+        width: 100%;
+        margin: 0 !important;
+        cursor: default;
+    }
+    
+    #pc-right-detail .mob-card-inner {
+        cursor: default !important;
+    }
+    
+    #pc-right-detail .mob-card:hover {
+        transform: none;
+    }
+    
+    #pc-right-detail .mob-card:hover .mob-card-inner {
+        transform: none;
+    }
+    
+    #pc-right-detail .expandable-panel {
+        max-height: none !important;
+        opacity: 1;
+    }
+    
+    #pc-right-detail .expandable-panel > div {
+        opacity: 1;
+        animation: none;
+    }
+}

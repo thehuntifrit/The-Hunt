@@ -12,6 +12,108 @@ const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
     timeZone: "Asia/Tokyo"
 });
 
+export function createSimpleMobItem(mob) {
+    const item = document.createElement('div');
+    item.className = `pc-list-item rank-${mob.Rank.toLowerCase()}`;
+    item.dataset.mobNo = mob.No;
+    item.dataset.rank = mob.Rank;
+    
+    item.innerHTML = `
+        <div class="pc-list-name"></div>
+        <div class="pc-list-progress-container">
+            <div class="pc-list-progress-bar" style="width: 0%"></div>
+        </div>
+        <div class="pc-list-time"></div>
+        <div class="pc-list-percent">0%</div>
+    `;
+
+    const nameEl = item.querySelector('.pc-list-name');
+    nameEl.textContent = mob.Name;
+
+    updateSimpleMobItem(item, mob);
+    
+    return item;
+}
+
+export function updateSimpleMobItem(item, mob) {
+    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, minRepop, status, isInConditionWindow, timeRemaining } = mob.repopInfo || {};
+    
+    const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
+    const nowSec = Date.now() / 1000;
+    
+    const timeEl = item.querySelector('.pc-list-time');
+    const progressEl = item.querySelector('.pc-list-progress-bar');
+    const percentEl = item.querySelector('.pc-list-percent');
+
+    // Time
+    let timeStr = "未確定";
+    let isSpecialCondition = false;
+    let isTimeOver = status === "MaxOver";
+
+    if (isInConditionWindow && mob.repopInfo.conditionRemaining) {
+        timeStr = mob.repopInfo.conditionRemaining;
+        isSpecialCondition = true;
+    } else if (nextConditionSpawnDate) {
+        try {
+            timeStr = `🔔 ${dateFormatter.format(nextConditionSpawnDate)}`;
+            isSpecialCondition = true;
+        } catch { }
+    } else if (nextMinRepopDate) {
+        try {
+            timeStr = `in ${dateFormatter.format(nextMinRepopDate)}`;
+        } catch { }
+    }
+
+    if (timeEl) {
+        timeEl.innerHTML = `<span class="${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeStr}</span>`;
+    }
+
+    // Progress bar width
+    if (progressEl) {
+        const currentWidth = parseFloat(progressEl.style.width) || 0;
+        if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
+            if (currentWidth === 0 || elapsedPercent < currentWidth) {
+                progressEl.style.transition = "none";
+            } else {
+                progressEl.style.transition = "width linear 60s";
+            }
+            progressEl.style.width = `${elapsedPercent}%`;
+        }
+        
+        // Setup colors based on progress
+        progressEl.style.background = isTimeOver ? "var(--progress-max-over)" : "var(--progress-fill)";
+    }
+
+    // Percent text
+    if (percentEl) {
+        let percentStr = "";
+        let showPercent = status !== "MaxOver" && ((minRepop && nowSec >= minRepop) || status === "PopWindow" || status === "ConditionActive");
+        if (showPercent) {
+            percentStr = `${Number(elapsedPercent || 0).toFixed(0)}%`;
+        }
+        percentEl.textContent = percentStr;
+    }
+
+    // Dimming
+    const shouldDimCard = isMaint || status === "Next" || (status === "NextCondition" && nowSec < mob.repopInfo.minRepop);
+    if (shouldDimCard) {
+        item.style.opacity = "0.4";
+        item.style.filter = "grayscale(1)";
+    } else {
+        item.style.opacity = "1";
+        item.style.filter = "none";
+    }
+
+    // Blink border for condition
+    if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) {
+        item.classList.add("blink-border-white");
+        item.style.boxShadow = "0 0 5px var(--accent-crimson)";
+    } else {
+        item.classList.remove("blink-border-white");
+        item.style.boxShadow = "none";
+    }
+}
+
 function shouldDisplayMemo(mob) {
     const hasMemo = mob.memo_text?.trim();
     const isMemoNewer = (mob.memo_updated_at || 0) >= (mob.last_kill_time || 0);
@@ -32,21 +134,27 @@ export function createMobCard(mob) {
     const { openMobCardNo } = getState();
     const isOpen = mob.No === openMobCardNo;
 
+
     card.dataset.mobNo = mob.No;
     card.dataset.rank = rank;
     if (mob.repopInfo?.isMaintenanceStop || mob.repopInfo?.isBlockedByMaintenance) {
         card.classList.add("maintenance-gray-out");
     } else {
         card.classList.remove("maintenance-gray-out");
+        const memoInput = card.querySelector('.memo-input');
+        if (memoInput) {
+            memoInput.dataset.mobNo = mob.No;
+        }
     }
 
     const mobNameEl = card.querySelector('.mob-name');
     mobNameEl.textContent = mob.Name;
     mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
 
+    const memoIconContainer = card.querySelector('.memo-icon-container');
+
     const reportSidebar = card.querySelector('.report-side-bar');
     if (reportSidebar) {
-        // Mobile fallback for fast reporting if they still swipe
         reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
         reportSidebar.dataset.mobNo = mob.No;
         reportSidebar.classList.add(`rank-${rank.toLowerCase()}`);
@@ -61,7 +169,7 @@ export function createMobCard(mob) {
             if (touchEndX - touchStartX > 30) {
                 const type = reportSidebar.dataset.reportType;
                 if (type === 'modal') {
-                    import("./modal.js").then(m => m.openReportModal(mob.No));
+                    openReportModal(mob.No);
                 } else {
                     reportSidebar.click();
                 }
@@ -70,11 +178,8 @@ export function createMobCard(mob) {
     }
 
     const expandablePanel = card.querySelector('.expandable-panel');
-    if (expandablePanel) {
-        // On PC, this panel is hidden via CSS (we'll add lg:hidden to it in index.html).
-        if (isOpen) {
-            expandablePanel.classList.add('open');
-        }
+    if (isOpen) {
+        expandablePanel.classList.add('open');
     }
 
     const memoInput = card.querySelector('.memo-input');
@@ -110,12 +215,6 @@ export function createMobCard(mob) {
                 mapContainer.dataset.locationLoading = "true";
             }
         }
-    }
-
-    // PC view optimization: keep it lightweight
-    if (window.innerWidth >= 1024) {
-        // We can skip some heavy mobile-only listeners or complex structures here if needed,
-        // but for now we rely on CSS to hide them.
     }
 
     updateAreaInfo(card, mob);
@@ -265,11 +364,10 @@ export function updateProgressText(card, mob) {
     let rightContent = `<span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span>`;
 
     const newHTML = `
-        <div class="truncate min-w-0 ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div>
-        <div class="truncate min-w-0 text-right">${rightContent}</div>
-    `;
-
-    const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}|${window.innerWidth >= 1024}`;
+<div class="truncate min-w-0 ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div>
+<div class="truncate min-w-0 text-right">${rightContent}</div>
+  `;
+    const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}`;
     if (text.dataset.cacheKey !== cacheKey) {
         text.dataset.cacheKey = cacheKey;
         text.innerHTML = newHTML;
@@ -380,13 +478,14 @@ export function updateAreaInfo(card, mob) {
     const areaInfoContainer = card.querySelector('.area-info-container');
     if (!areaInfoContainer) return;
 
-    const areaInfoHtml = `
-      <div class="truncate text-gray-400 flex items-center gap-1.5">
-        <span>${mob.Expansion}</span>
-        <span class="inline-flex items-center justify-center w-[11px] h-[11px] border border-current rounded-[1px] text-[7px] leading-none">${mob.Rank}</span>
-        <span class="text-slate-500">${mob.Area}</span>
-      </div>
-    `;
+    if (areaInfoContainer.dataset.initialized === "true") return;
+    areaInfoContainer.dataset.initialized = "true";
+
+    const areaInfoHtml = `<div class="truncate text-gray-300 leading-none mb-[3px]">${mob.Area}</div>
+  <div class="flex items-center justify-end gap-0.5 leading-none">
+    <span>${mob.Expansion}</span>
+    <span class="inline-flex items-center justify-center w-[11px] h-[11px] border border-current rounded-[1px] text-[7px] leading-none">${mob.Rank}</span>
+  </div>`;
     areaInfoContainer.innerHTML = areaInfoHtml;
 }
 

@@ -1,0 +1,47 @@
+@media (max-width: 1023px) {
+    #main-header {
+        top: auto;
+        bottom: 0;
+        min-height: 70px;
+        padding-top: 8px;
+        padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: none;
+        box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    #main-header #status-message {
+        padding-bottom: 0;
+        padding-top: 0.25rem;
+    }
+
+    .mob-card-inner {
+        background: rgba(15, 23, 42, 0.85);
+    }
+
+    #area-filter-panel-mobile .flex-wrap {
+        gap: 0 !important;
+        width: 182px !important;
+        height: auto !important;
+    }
+
+    .header-final-grid {
+        grid-template-columns: 1fr 182px !important;
+    }
+
+    #rank-tabs,
+    #area-filter-panel-desktop,
+    #area-filter-panel-mobile,
+    #area-filter-panel-mobile .flex-wrap,
+    #area-filter-panel-desktop .flex-wrap {
+        width: 182px !important;
+    }
+
+    #pc-layout {
+        display: none !important;
+    }
+
+    #mobile-layout {
+        display: block !important;
+    }
+}
