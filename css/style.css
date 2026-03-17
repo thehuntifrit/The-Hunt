@@ -750,6 +750,161 @@ body::before {
     }
 }
 
+/* --- PC Detail Pane Styles (Vanilla CSS replacement) --- */
+.right-detail-pane {
+    display: none;
+}
+
+.detail-placeholder {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    border: 2px dashed #1e293b;
+    border-radius: 0.75rem;
+    background: rgba(15, 23, 42, 0.3);
+}
+
+.detail-content {
+    height: 100%;
+    display: none; /* Flex via JS */
+    flex-direction: column;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 0.75rem;
+    border: 1px solid #334155;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    overflow: hidden;
+}
+
+.detail-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid #334155;
+    background: rgba(15, 23, 42, 0.5);
+}
+
+.detail-rank-badge {
+    padding: 0.125rem 0.5rem;
+    border: 1px solid currentColor;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.detail-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem;
+}
+
+.detail-progress-track {
+    height: 0.75rem;
+    background: #0f172a;
+    border-radius: 9999px;
+    overflow: hidden;
+    border: 1px solid #334155;
+}
+
+.detail-progress-bar {
+    height: 100%;
+    transition: all 0.3s;
+}
+.detail-pb-blue { background-color: #3b82f6; }
+.detail-pb-cyan { background-color: #06b6d4; }
+.detail-pb-yellow { background-color: #eab308; }
+.detail-pb-red { background-color: #ef4444; }
+
+.detail-report-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(to right, #0891b2, #2563eb);
+    color: white;
+    font-weight: 700;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.2);
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+}
+.detail-report-btn:hover { background: linear-gradient(to right, #06b6d4, #3b82f6); }
+.detail-report-btn:active { transform: scale(0.95); }
+
+.detail-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+}
+
+.detail-trigger-box {
+    font-size: 0.875rem;
+    color: #cbd5e1;
+    line-height: 1.625;
+    background: rgba(15, 23, 42, 0.5);
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    border-left: 2px solid rgba(234, 179, 8, 0.5);
+}
+
+.detail-map-wrapper {
+    display: none; /* Flex via JS */
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 300px;
+}
+
+.detail-map-inner {
+    position: relative;
+    flex: 1;
+    background: #0f172a;
+    border-radius: 0.25rem;
+    border: 1px solid #334155;
+    overflow: hidden;
+}
+
+.detail-memo-input {
+    width: 100%;
+    height: 6rem;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid #334155;
+    border-radius: 0.25rem;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    color: #e2e8f0;
+    transition: all 0.2s;
+    resize: none;
+}
+.detail-memo-input:focus { border-color: #06b6d4; outline: none; }
+
+.detail-footer {
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.3);
+    border-top: 1px solid #334155;
+    font-size: 10px;
+    text-align: center;
+    color: #64748b;
+}
+
+@media (min-width: 1024px) {
+    .pc-split-layout {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 1.5rem;
+        max-width: 1600px;
+    }
+    .right-detail-pane {
+        display: block;
+        position: sticky;
+        top: 6rem;
+        height: calc(100vh - 8rem);
+    }
+}
+
 #status-message-telop {
     text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
     animation: telopFadeIn 0.8s ease-out;

@@ -243,9 +243,8 @@ export function updateDetailPane(mob) {
     if (!placeholder || !content) return;
 
     // Show content, hide placeholder
-    placeholder.classList.add("hidden");
-    content.classList.remove("hidden");
-    content.classList.add("flex");
+    placeholder.style.display = "none";
+    content.style.display = "flex";
 
     document.getElementById("detail-mob-name").textContent = mob.Name;
     document.getElementById("detail-mob-name").style.color = `var(--rank-${mob.Rank.toLowerCase()})`;
@@ -291,10 +290,10 @@ export function updateDetailPane(mob) {
     progressText.textContent = `${Number(percent).toFixed(1)}%`;
     progressBar.style.width = `${percent}%`;
     
-    if (percent < 60) progressBar.className = "h-full transition-all duration-300 bg-blue-500";
-    else if (percent < 80) progressBar.className = "h-full transition-all duration-300 bg-cyan-500";
-    else if (percent < 100) progressBar.className = "h-full transition-all duration-300 bg-yellow-500";
-    else progressBar.className = "h-full transition-all duration-300 bg-red-500 animate-pulse";
+    if (percent < 60) progressBar.className = "detail-progress-bar detail-pb-blue";
+    else if (percent < 80) progressBar.className = "detail-progress-bar detail-pb-cyan";
+    else if (percent < 100) progressBar.className = "detail-progress-bar detail-pb-yellow";
+    else progressBar.className = "detail-progress-bar detail-pb-red animate-pulse";
 
     const memoInput = document.getElementById("detail-memo-input");
     memoInput.dataset.mobNo = mob.No;
@@ -308,10 +307,10 @@ export function updateDetailPane(mob) {
     const triggerContainer = document.getElementById("detail-trigger-container");
     const triggerText = document.getElementById("detail-trigger-text");
     if (mob.Rank === 'S' && mob.Condition) {
-        triggerContainer.classList.remove("hidden");
+        triggerContainer.style.display = "block";
         triggerText.innerHTML = import("./mobCard.js").then(m => m.processText(mob.Condition));
     } else {
-        triggerContainer.classList.add("hidden");
+        triggerContainer.style.display = "none";
     }
 
     const mapContainer = document.getElementById("detail-map-container");
@@ -319,8 +318,7 @@ export function updateDetailPane(mob) {
     const mapOverlay = document.getElementById("detail-map-overlay");
     
     if (mob.Rank === 'S' && mob.Map) {
-        mapContainer.classList.remove("hidden");
-        mapContainer.classList.add("flex");
+        mapContainer.style.display = "flex";
         mapImg.src = `./maps/${mob.Map}`;
         
         const state = getState();
@@ -347,8 +345,7 @@ export function updateDetailPane(mob) {
             }).join("");
         });
     } else {
-        mapContainer.classList.add("hidden");
-        mapContainer.classList.remove("flex");
+        mapContainer.style.display = "none";
     }
 }
 
