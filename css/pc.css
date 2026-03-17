@@ -25,7 +25,7 @@
         width: 40%;
         align-self: flex-start;
         position: sticky;
-        top: 9.8rem; /* lowered to align with first list item */
+        top: 11.6rem; /* lowered to align with first list item after "TIME OVER" header */
     }
 
     .pc-list-item {
@@ -85,18 +85,18 @@
     }
 
     .pc-list-time {
-        flex: 0 0 100px;
-        font-family: 'Inter', ui-monospace, SFMono-Regular, monospace;
-        font-size: 11px;
+        flex: 0 0 110px;
+        font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
+        font-size: 14px;
         font-weight: 500;
         font-variant-numeric: tabular-nums;
-        color: rgba(226, 215, 197, 0.8);
-        white-space: nowrap;
+        color: rgba(226, 215, 197, 0.9);
+        white-space: pre; /* Essential to preserve the space padding for hour alignment */
         text-align: right;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        line-height: 1.2;
+        letter-spacing: -0.01em;
     }
 
     .pc-list-time .label-next {
