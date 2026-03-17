@@ -51,6 +51,11 @@ export function allTabComparator(a, b) {
         if (aActive && !bActive) return -1;
         if (!aActive && bActive) return 1;
 
+        // Sort by elapsed time: oldest (smallest maxRepop) first
+        const at = aInfo.maxRepop || 0;
+        const bt = bInfo.maxRepop || 0;
+        if (at !== bt) return at - bt;
+
         const getMaxOverRankPriority = (r) => {
             if (r === 'S') return 0;
             if (r === 'F') return 1;

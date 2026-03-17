@@ -50,13 +50,19 @@ export function updateSimpleMobItem(item, mob) {
     let isSpecialCondition = false;
     let isTimeOver = status === "MaxOver";
 
-    // Request: Before minRepop => time until minRepop, after minRepop => time until maxRepop
-    if (minRepop && now < minRepop) {
+    // Timer priority: Active Condition Window > Next Condition Window > standard Repop Window
+    if (isInConditionWindow && conditionWindowEnd) {
+        const remainingConditionSec = (conditionWindowEnd.getTime() / 1000) - now;
+        timeStr = "残り" + formatDurationHM(remainingConditionSec);
+        isSpecialCondition = true;
+    } else if (nextConditionSpawnDate && now >= minRepop) {
+        const nextConditionSec = (nextConditionSpawnDate.getTime() / 1000) - now;
+        timeStr = "次回" + formatDurationHM(nextConditionSec);
+    } else if (minRepop && now < minRepop) {
         timeStr = "次回" + formatDurationHM(minRepop - now);
     } else if (maxRepop && now < maxRepop) {
         timeStr = "残り" + formatDurationHM(maxRepop - now);
     } else if (maxRepop) {
-        // Show how long it has been in Time Over
         timeStr = "超過" + formatDurationHM(now - maxRepop);
         isTimeOver = true;
     }
