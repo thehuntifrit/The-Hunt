@@ -39,7 +39,7 @@ export function updateSimpleMobItem(item, mob) {
     const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, minRepop, status, isInConditionWindow, timeRemaining } = mob.repopInfo || {};
     
     const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
-    const nowSec = Date.now() / 1000;
+    const now = Date.now() / 1000;
     
     const timeEl = item.querySelector('.pc-list-time');
     const progressEl = item.querySelector('.pc-list-progress-bar');
@@ -94,7 +94,7 @@ export function updateSimpleMobItem(item, mob) {
     }
 
     // Dimming
-    const shouldDimCard = isMaint || status === "Next" || (status === "NextCondition" && nowSec < mob.repopInfo.minRepop);
+    const shouldDimCard = isMaint || status === "Next" || (status === "NextCondition" && now < mob.repopInfo.minRepop);
     if (shouldDimCard) {
         item.style.opacity = "0.4";
         item.style.filter = "grayscale(1)";
