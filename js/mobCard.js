@@ -36,7 +36,7 @@ export function createSimpleMobItem(mob) {
 }
 
 export function updateSimpleMobItem(item, mob) {
-    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, minRepop, maxRepop, status, isInConditionWindow, timeRemaining } = mob.repopInfo || {};
+    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, conditionWindowEnd, minRepop, maxRepop, status, isInConditionWindow, timeRemaining } = mob.repopInfo || {};
     
     const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
     const now = Date.now() / 1000;
@@ -58,6 +58,7 @@ export function updateSimpleMobItem(item, mob) {
     } else if (nextConditionSpawnDate && now >= minRepop) {
         const nextConditionSec = (nextConditionSpawnDate.getTime() / 1000) - now;
         timeStr = "次回" + formatDurationHM(nextConditionSec);
+        isSpecialCondition = true; // Make timed-mob 'Next' gold as requested
     } else if (minRepop && now < minRepop) {
         timeStr = "次回" + formatDurationHM(minRepop - now);
     } else if (maxRepop && now < maxRepop) {

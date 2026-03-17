@@ -453,16 +453,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       const state = getState();
       if (state.openMobCardNo) {
         const openedCard = cardCache.get(String(state.openMobCardNo));
-        if (openedCard && openedCard.parentNode !== DOM.pcRightDetail) {
-            // Need a fresh copy to not disrupt the mobile layout, since the elements are shared between different branches.
-            // But wait, mobile is display NONE. If we move elements around, they won't be in mobile view anymore.
-            // Let's create a separate cardCache specifically for PC detail view if needed, or clone. 
-            // It's probably easier to just move the existing card to the right pane if PC, but what if they resize the window?
-            // Since we're separating completely, let's clone the card or maintain a dedicated detail card.
-            // For now, let's just make sure the DOM updates work correctly.
-            // Actually, simply moving the card to pcRightDetail is fine since on resize we sortAndRedistribute which re-adds to columns.
-            
-            // To be safe, we can just let `cardCache` remain where it is and create a single detail-view card.
+        if (openedCard) {
             let detailCard = DOM.pcRightDetail.querySelector('.mob-card');
             const targetMob = getState().mobs.find(m => m.No === state.openMobCardNo);
             if (targetMob) {

@@ -25,7 +25,7 @@
         width: 40%;
         align-self: flex-start;
         position: sticky;
-        top: 6rem; /* below header */
+        top: 7.75rem; /* below header, aligned with list content (~6rem + h2/group header height) */
     }
 
     .pc-list-item {
