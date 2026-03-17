@@ -292,8 +292,9 @@ function attachGlobalEventListeners() {
                 toggleCardExpand(card, mobNo);
             }
         } else {
-            // PC
-            document.querySelectorAll(".mob-card.selected-for-detail").forEach(c => c.classList.remove("selected-for-detail"));
+            // PC: Master-Detail Selection
+            const allCards = DOM.colContainer.querySelectorAll(".mob-card");
+            allCards.forEach(c => c.classList.remove("selected-for-detail"));
             card.classList.add("selected-for-detail");
             
             import("./uiRender.js").then(module => {

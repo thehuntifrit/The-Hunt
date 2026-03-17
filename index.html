@@ -81,73 +81,83 @@
 
     <main class="mx-auto px-2 py-2 sm:px-4 pb-10 pt-24">
         <div id="master-mob-container" class="hidden"></div>
-        <div class="pc-split-layout mx-auto">
+        <div class="pc-split-layout mx-auto px-4 max-w-7xl">
             <!-- Left Pane: Master List -->
             <div id="column-container"
-                class="flex flex-col gap-8 opacity-0 transition-opacity duration-300"
+                class="flex flex-col gap-3 opacity-0 transition-opacity duration-300"
                 data-breakpoint-md="768" data-breakpoint-lg="1024">
             </div>
 
             <!-- Right Pane: Detail View (PC only) -->
-            <div id="detail-container" class="right-detail-pane">
-                <div id="detail-placeholder" class="detail-placeholder">
-                    <span class="text-4xl mb-4">🔍</span>
-                    <p class="text-sm font-bold uppercase tracking-widest">Select a mob to see details</p>
+            <div id="detail-container" class="right-detail-pane sticky top-24 self-start">
+                <div id="detail-placeholder" class="detail-placeholder border-2 border-dashed border-slate-800 rounded-2xl bg-slate-900/20">
+                    <div class="text-center p-8">
+                        <span class="text-6xl mb-6 block drop-shadow-lg">👾</span>
+                        <p class="text-sm font-bold uppercase tracking-[0.2em] text-slate-500">Select a mob to view details</p>
+                    </div>
                 </div>
 
-                <div id="detail-content" class="detail-content hidden">
+                <div id="detail-content" class="detail-content hidden flex-col">
                     <!-- Detail Header -->
-                    <div class="detail-header">
-                        <div class="flex justify-between items-start mb-2">
-                            <h2 id="detail-mob-name" class="text-2xl font-bold text-glow"></h2>
-                            <span id="detail-rank-badge" class="detail-rank-badge"></span>
+                    <div class="detail-header p-6 bg-slate-900/60 border-b border-slate-700/50 backdrop-blur-md">
+                        <div class="flex justify-between items-start mb-3">
+                            <h2 id="detail-mob-name" class="text-3xl font-extrabold tracking-tight text-white drop-shadow-md"></h2>
+                            <span id="detail-rank-badge" class="detail-rank-badge px-3 py-1 rounded-md text-xs font-black uppercase tracking-widest border"></span>
                         </div>
-                        <p id="detail-area-info" class="text-slate-400 text-sm"></p>
+                        <p id="detail-area-info" class="text-slate-400 text-sm font-medium flex items-center gap-2">
+                        </p>
                     </div>
 
                     <!-- Scrollable Content -->
-                    <div class="detail-scroll-area space-y-6">
+                    <div class="detail-scroll-area p-6 space-y-8 overflow-y-auto">
                         <!-- Progress Section -->
-                        <div class="space-y-3">
-                            <div class="flex justify-between text-sm font-bold">
-                                <span id="detail-status"></span>
-                                <span id="detail-time" class="text-slate-400"></span>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-end text-sm font-bold uppercase tracking-wider">
+                                <span id="detail-status" class="text-slate-200"></span>
+                                <span id="detail-time" class="text-slate-400 font-mono"></span>
                             </div>
-                            <div class="detail-progress-track">
-                                <div id="detail-progress-bar" class="detail-progress-bar"></div>
+                            <div class="detail-progress-track h-3 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800 shadow-inner">
+                                <div id="detail-progress-bar" class="detail-progress-bar h-full rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(34,211,238,0.3)]"></div>
                             </div>
-                            <div class="text-right text-[10px] text-slate-500 font-bold" id="detail-progress-text"></div>
+                            <div class="text-right text-[10px] text-slate-500 font-black tracking-widest italic" id="detail-progress-text"></div>
                         </div>
 
                         <!-- Report Section -->
-                        <button id="detail-report-btn" class="detail-report-btn">
-                            Report Kill
-                        </button>
+                        <div class="pt-2">
+                            <button id="detail-report-btn" class="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-black uppercase tracking-[0.1em] shadow-lg shadow-cyan-900/20 active:scale-[0.98] transition-all duration-200 group flex items-center justify-center gap-3">
+                                <span>Report Kill</span>
+                                <span class="group-hover:translate-x-1 transition-transform">⚔️</span>
+                            </button>
+                        </div>
 
                         <!-- Trigger Section -->
-                        <div id="detail-trigger-container" class="hidden space-y-2">
-                            <h3 class="detail-section-title text-yellow-400">Spawn Conditions</h3>
-                            <div id="detail-trigger-text" class="detail-trigger-box"></div>
+                        <div id="detail-trigger-container" class="hidden space-y-3 bg-slate-950/40 p-4 rounded-xl border border-yellow-500/20">
+                            <h3 class="detail-section-title text-xs font-black uppercase tracking-[0.2em] text-yellow-500/80">Spawn Conditions</h3>
+                            <div id="detail-trigger-text" class="detail-trigger-box text-sm leading-relaxed text-slate-200"></div>
                         </div>
 
                         <!-- Map Section -->
-                        <div id="detail-map-container" class="detail-map-wrapper hidden">
-                            <h3 class="detail-section-title text-cyan-400">Location Map</h3>
-                            <div class="detail-map-inner cursor-crosshair">
-                                <img id="detail-map-img" class="w-full h-auto opacity-90" alt="Mob Location Map">
+                        <div id="detail-map-container" class="detail-map-wrapper hidden flex-col gap-3">
+                            <h3 class="detail-section-title text-xs font-black uppercase tracking-[0.2em] text-cyan-500/80">Active Locations</h3>
+                            <div class="detail-map-inner relative rounded-xl overflow-hidden border border-slate-700/50 shadow-2xl cursor-crosshair group">
+                                <img id="detail-map-img" class="w-full h-auto opacity-80 group-hover:opacity-100 transition-opacity duration-500" alt="Mob Location Map">
                                 <div id="detail-map-overlay" class="absolute inset-0"></div>
                             </div>
                         </div>
 
                         <!-- Memo Section -->
-                        <div class="space-y-2">
-                            <h3 class="detail-section-title text-slate-400">Private Memo</h3>
-                            <textarea id="detail-memo-input" data-action="save-memo" class="detail-memo-input" placeholder="Type your private notes here..."></textarea>
+                        <div class="space-y-3">
+                            <h3 class="detail-section-title text-xs font-black uppercase tracking-[0.2em] text-slate-500">Private Memo</h3>
+                            <div class="relative">
+                                <textarea id="detail-memo-input" data-action="save-memo" class="w-full h-24 p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-slate-200 text-sm focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500/50 outline-none transition-all resize-none placeholder-slate-600" placeholder="Type your private notes here..."></textarea>
+                                <div class="absolute bottom-3 right-3 text-[10px] text-slate-600 font-bold uppercase pointer-events-none">Auto-saving</div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Footer Info -->
-                    <div class="detail-footer" id="detail-last-kill"></div>
+                    <div class="p-4 bg-slate-950/40 border-t border-slate-800/50 text-[10px] font-bold uppercase tracking-widest text-slate-600 flex justify-center items-center gap-2" id="detail-last-kill">
+                    </div>
                 </div>
             </div>
         </div>

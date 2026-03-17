@@ -112,6 +112,12 @@ export function createMobCard(mob) {
         }
     }
 
+    // PC view optimization: keep it lightweight
+    if (window.innerWidth >= 1024) {
+        // We can skip some heavy mobile-only listeners or complex structures here if needed,
+        // but for now we rely on CSS to hide them.
+    }
+
     updateAreaInfo(card, mob);
     updateMobCount(card, mob);
     updateMapOverlay(card, mob);

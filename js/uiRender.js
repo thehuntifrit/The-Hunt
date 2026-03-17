@@ -308,7 +308,9 @@ export function updateDetailPane(mob) {
     const triggerText = document.getElementById("detail-trigger-text");
     if (mob.Rank === 'S' && mob.Condition) {
         triggerContainer.style.display = "block";
-        triggerText.innerHTML = import("./mobCard.js").then(m => m.processText(mob.Condition));
+        import("./mobCard.js").then(m => {
+            triggerText.innerHTML = m.processText(mob.Condition);
+        });
     } else {
         triggerContainer.style.display = "none";
     }

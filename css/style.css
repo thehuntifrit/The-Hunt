@@ -268,22 +268,25 @@ body::before {
     padding-right: 48px !important;
 }
 
-/* PC Split Screen adjustments */
+/* PC Split Screen adjustments (List View) */
 @media (min-width: 1024px) {
     .mob-card-inner {
         flex-direction: row;
         align-items: center;
-        padding: 4px 8px;
-        min-height: 40px;
-        background: rgba(15, 23, 42, 0.4);
+        padding: 6px 14px; /* Slightly taller for better clickability but still high-density */
+        min-height: 48px;
+        background: rgba(15, 23, 42, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .mob-card-header {
         display: flex;
         flex: 1;
         align-items: center;
-        gap: 12px;
+        gap: 16px;
         padding: 0 !important;
+        background: transparent !important;
     }
 
     .content-area {
@@ -293,70 +296,71 @@ body::before {
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        padding-left: 0 !important;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
+        padding: 0 !important;
     }
 
+    /* Column-like layout for the simplified list */
     .mob-card .flex.items-center.justify-between.gap-1\.5.min-w-0.mb-1 {
         margin-bottom: 0;
-        width: auto;
+        width: 180px; /* Aligns names */
         flex-shrink: 0;
+    }
+
+    .mob-name {
+        font-size: 1.05rem !important;
+        font-weight: 600;
+        letter-spacing: -0.01em;
     }
     
     .mob-card .progress-bar-wrapper {
-        height: 4px; /* Ultra thin progress bar for list */
+        height: 4px; /* Ultra-thin line for the list */
         flex: 1;
-        max-width: 200px;
-        margin-top: 2px;
+        max-width: 250px;
+        margin-top: 0;
         border-radius: 2px;
-        overflow: visible;
-        background: rgba(0,0,0,0.5);
+        background: rgba(0,0,0,0.6);
+        box-shadow: none;
     }
 
     .mob-card .progress-text {
         position: static;
         font-size: 11px;
-        max-width: 150px;
         text-align: right;
         display: flex;
-        gap: 8px;
-        pointer-events: auto;
+        gap: 12px;
+        min-width: 130px;
+        justify-content: flex-end;
         color: #94a3b8;
+        font-weight: 500;
     }
     
     .mob-card .progress-text > div {
         white-space: nowrap;
     }
 
-    .mob-card .report-side-bar {
-        display: none !important; /* Managed by right pane */
-    }
-
-    .mob-card .memo-icon-container {
-        display: none !important;
-    }
-
-    .mob-card .area-info-container {
-        display: none !important;
-    }
-
+    /* Elements to hide in PC List View */
+    .mob-card .report-side-bar,
+    .mob-card .memo-icon-container,
+    .mob-card .area-info-container,
     .expandable-panel {
-        display: none !important; /* Handled by right pane */
+        display: none !important;
     }
 
+    /* Hover & Selected States */
     .mob-card:hover .mob-card-inner {
-        transform: scale(1.02);
-        box-shadow: inset 0 0 10px rgba(6, 182, 212, 0.2);
-        border-color: rgba(6, 182, 212, 0.5);
-        background: rgba(30, 41, 59, 0.8);
+        transform: translateX(4px);
+        background: rgba(30, 41, 59, 0.85);
+        border-color: rgba(6, 182, 212, 0.4);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
     .mob-card.selected-for-detail .mob-card-inner {
+        background: rgba(15, 23, 42, 0.95);
         border-color: var(--accent-cyan);
-        box-shadow: 0 0 15px rgba(6, 182, 212, 0.4), inset 0 0 10px rgba(6, 182, 212, 0.2);
-        background: rgba(15, 23, 42, 0.9);
-        transform: scale(1.03);
+        box-shadow: inset 0 0 10px rgba(6, 182, 212, 0.2), 0 0 15px rgba(6, 182, 212, 0.2);
+        transform: translateX(8px);
+        z-index: 10;
+        position: relative;
     }
 }
 
@@ -685,68 +689,73 @@ body::before {
     #main-header {
         top: auto;
         bottom: 0;
-        min-height: 54px; /* Slightly slimmer header */
-        padding-top: 4px;
-        padding-bottom: calc(env(safe-area-inset-bottom) + 4px);
+        min-height: 60px;
+        padding-top: 8px;
+        padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
+        background: rgba(15, 23, 42, 0.95);
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
         border-top: 1px solid rgba(255, 255, 255, 0.1);
         border-bottom: none;
-        box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.5);
     }
 
-    #main-header #status-message {
-        padding-bottom: 0;
-        padding-top: 2px;
-        font-size: 0.75rem;
+    #main-header .max-w-6xl {
+        padding-bottom: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    /* Compact Mobile Cards */
+    .mob-card {
+        margin-bottom: 0.5rem;
     }
 
     .mob-card-inner {
-        background: rgba(15, 23, 42, 0.85);
-        border-radius: 0.4rem; /* Tighter rounding */
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.8));
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    /* Compact Mobile Layout */
     .mob-card-header {
-        padding-top: 4px;
-        padding-bottom: 4px;
-    }
-    
-    .mob-card .pl-2.py-1\.5 {
-        padding-top: 2px !important;
-        padding-bottom: 2px !important;
+        padding: 8px 12px;
     }
     
     .mob-name {
-        font-size: 1.05rem !important; /* Slightly larger name, less space */
-        line-height: 1.2;
+        font-size: 1.1rem !important;
+        font-weight: 700;
+        letter-spacing: -0.02em;
     }
 
     .mob-card .progress-bar-wrapper {
-        height: 16px; /* Thinner progress bar */
-        border-radius: 4px;
-        margin-top: 2px;
+        height: 18px; /* Slightly taller for mobile visibility */
+        border-radius: 6px;
+        margin-top: 4px;
+        background: rgba(0, 0, 0, 0.5);
     }
     
     .progress-text {
         font-size: 11px;
+        font-weight: 800;
+        padding: 0 8px;
     }
 
     .report-side-bar {
-        width: 36px; /* Slightly larger hit area for fingers but taking up less general space */
-        right: 4px;
-        top: 4px;
-        bottom: 4px;
+        width: 44px; /* Better for thumbs */
+        right: 0;
+        top: 0;
+        bottom: 0;
+        border-radius: 0 10px 10px 0;
+        border: none;
+        background: rgba(255, 255, 255, 0.05);
     }
 
-    /* Make map container more compact */
-    .map-container {
-        min-height: 120px;
-        margin-top: 6px !important;
+    .content-area {
+        padding-right: 52px !important;
     }
 
-    #area-filter-panel-mobile .flex-wrap {
-        gap: 0 !important;
-        width: 182px !important;
-        height: auto !important;
+    /* Expandable panel refinements */
+    .expandable-panel {
+        background: rgba(0, 0, 0, 0.2);
     }
 }
 
