@@ -32,21 +32,27 @@ export function createMobCard(mob) {
     const { openMobCardNo } = getState();
     const isOpen = mob.No === openMobCardNo;
 
+
     card.dataset.mobNo = mob.No;
     card.dataset.rank = rank;
     if (mob.repopInfo?.isMaintenanceStop || mob.repopInfo?.isBlockedByMaintenance) {
         card.classList.add("maintenance-gray-out");
     } else {
         card.classList.remove("maintenance-gray-out");
+        const memoInput = card.querySelector('.memo-input');
+        if (memoInput) {
+            memoInput.dataset.mobNo = mob.No;
+        }
     }
 
     const mobNameEl = card.querySelector('.mob-name');
     mobNameEl.textContent = mob.Name;
     mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
 
+    const memoIconContainer = card.querySelector('.memo-icon-container');
+
     const reportSidebar = card.querySelector('.report-side-bar');
     if (reportSidebar) {
-        // Mobile fallback for fast reporting if they still swipe
         reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
         reportSidebar.dataset.mobNo = mob.No;
         reportSidebar.classList.add(`rank-${rank.toLowerCase()}`);
@@ -61,7 +67,7 @@ export function createMobCard(mob) {
             if (touchEndX - touchStartX > 30) {
                 const type = reportSidebar.dataset.reportType;
                 if (type === 'modal') {
-                    import("./modal.js").then(m => m.openReportModal(mob.No));
+                    openReportModal(mob.No);
                 } else {
                     reportSidebar.click();
                 }
@@ -70,11 +76,8 @@ export function createMobCard(mob) {
     }
 
     const expandablePanel = card.querySelector('.expandable-panel');
-    if (expandablePanel) {
-        // On PC, this panel is hidden via CSS (we'll add lg:hidden to it in index.html).
-        if (isOpen) {
-            expandablePanel.classList.add('open');
-        }
+    if (isOpen) {
+        expandablePanel.classList.add('open');
     }
 
     const memoInput = card.querySelector('.memo-input');
