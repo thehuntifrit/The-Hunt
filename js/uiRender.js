@@ -61,8 +61,8 @@ function getOrCreateGroupSection(groupKey) {
       </div>
       <div class="group-columns grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1.5">
           <div class="col-1 flex flex-col gap-1.5"></div>
-          <div class="col-2 flex flex-col gap-1.5 hidden"></div>
-          <div class="col-3 flex flex-col gap-1.5 hidden"></div>
+          <div class="col-2 flex-col gap-1.5 hidden"></div>
+          <div class="col-3 flex-col gap-1.5 hidden"></div>
       </div>
   `;
 
@@ -448,8 +448,13 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     section.classList.remove("hidden");
 
     cols.forEach((col, idx) => {
-      if (idx >= numCols) col.classList.add("hidden");
-      else col.classList.remove("hidden");
+      if (idx >= numCols) {
+        col.classList.add("hidden");
+        col.classList.remove("flex");
+      } else {
+        col.classList.remove("hidden");
+        col.classList.add("flex");
+      }
     });
 
     const colPointers = Array(numCols).fill(0);
