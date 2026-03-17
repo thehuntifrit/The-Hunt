@@ -265,104 +265,85 @@ body::before {
 }
 
 .content-area {
-    padding-right: 48px !important;
+    padding-right: 40px !important;
 }
 
 /* PC Split Screen adjustments (List View) */
 @media (min-width: 1024px) {
     .mob-card-inner {
-        flex-direction: row;
-        align-items: center;
-        padding: 6px 14px; /* Slightly taller for better clickability but still high-density */
-        min-height: 48px;
-        background: rgba(15, 23, 42, 0.45);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        flex-direction: column;
+        padding: 0;
+        min-height: auto;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.7));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
     }
     
     .mob-card-header {
-        display: flex;
-        flex: 1;
-        align-items: center;
-        gap: 16px;
+        display: block;
+        flex: none;
+        align-items: stretch;
+        gap: 0;
         padding: 0 !important;
-        background: transparent !important;
     }
 
     .content-area {
-        padding-right: 0 !important;
+        padding-right: 40px !important;
         display: flex;
         flex: 1;
         align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        padding: 0 !important;
-    }
-
-    /* Column-like layout for the simplified list (1-column row) */
-    .mob-card .flex.items-center.justify-between.gap-1\.5.min-w-0.mb-1 {
-        margin-bottom: 0;
-        width: 220px; /* Name column */
-        flex-shrink: 0;
+        justify-content: flex-start;
+        gap: 0.75rem;
     }
 
     .mob-name {
-        font-size: 1.0rem !important;
+        font-size: 0.875rem !important;
         font-weight: 700;
-        letter-spacing: -0.01em;
     }
     
     .mob-card .progress-bar-wrapper {
-        height: 6px; /* Slightly more visible bar */
+        height: 1rem;
         flex: 1;
-        max-width: none; /* Let it fill space */
         margin-top: 0;
-        border-radius: 3px;
-        background: rgba(0,0,0,0.6);
-        box-shadow: none;
-        order: 2; /* Position after name/pop time */
+        border-radius: 0.125rem;
+        background: var(--progress-bg);
+        order: 0;
     }
 
     .mob-card .progress-text {
-        position: static;
+        position: absolute;
+        inset: 0;
         font-size: 11px;
-        text-align: right;
         display: flex;
-        gap: 16px;
-        min-width: 180px;
-        justify-content: flex-end;
-        color: #e2e8f0;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 0.375rem;
+        color: #f1f5f9;
         font-weight: 700;
-        order: 3; /* Position after bar */
+        order: 0;
     }
     
-    .mob-card .progress-text > div {
-        white-space: nowrap;
-    }
-
-    /* Elements to hide in PC List View */
+    /* Re-enable elements that were hidden in the old PC view */
     .mob-card .report-side-bar,
     .mob-card .memo-icon-container,
-    .mob-card .area-info-container,
+    .mob-card .area-info-container {
+        display: flex !important;
+    }
+
     .expandable-panel {
-        display: none !important;
+        display: block !important;
     }
 
     /* Hover & Selected States */
     .mob-card:hover .mob-card-inner {
-        transform: translateX(4px);
-        background: rgba(30, 41, 59, 0.85);
-        border-color: rgba(6, 182, 212, 0.4);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        transform: translateY(-3px) translateZ(0);
+        background: linear-gradient(135deg, rgba(63, 76, 107, 0.5), rgba(15, 23, 42, 0.4));
     }
 
     .mob-card.selected-for-detail .mob-card-inner {
-        background: rgba(15, 23, 42, 0.95);
         border-color: var(--accent-cyan);
-        box-shadow: inset 0 0 10px rgba(6, 182, 212, 0.2), 0 0 15px rgba(6, 182, 212, 0.2);
-        transform: translateX(8px);
-        z-index: 10;
-        position: relative;
+        box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+        transform: translateY(-3px) translateZ(0);
     }
 }
 

@@ -264,11 +264,7 @@ export function updateProgressText(card, mob) {
 
     let rightContent = `<span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span>`;
 
-    const isPC = window.innerWidth >= 1024;
-    const newHTML = isPC ? `
-        <div class="truncate min-w-0 mr-4 ${status === "MaxOver" ? 'text-red-400' : 'text-slate-300'} font-bold whitespace-nowrap">${leftStr}</div>
-        <div class="truncate min-w-0 text-right font-black text-cyan-400 whitespace-nowrap">${Number(elapsedPercent || 0).toFixed(0)}%</div>
-    ` : `
+    const newHTML = `
         <div class="truncate min-w-0 ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div>
         <div class="truncate min-w-0 text-right">${rightContent}</div>
     `;
@@ -277,26 +273,6 @@ export function updateProgressText(card, mob) {
     if (text.dataset.cacheKey !== cacheKey) {
         text.dataset.cacheKey = cacheKey;
         text.innerHTML = newHTML;
-    }
-
-    if (isPC) {
-        const popTimeEl = card.querySelector('.pc-pop-time-container');
-        if (popTimeEl) {
-            popTimeEl.textContent = rightStr;
-            popTimeEl.classList.remove('hidden');
-        }
-        // Ensure no text exists inside the bar wrapper on PC
-        const progressInner = card.querySelector('.progress-text');
-        if (progressInner && progressInner.parentElement === card.querySelector('.progress-bar-wrapper')) {
-            progressInner.classList.add('lg:hidden'); 
-        }
-    }
-
-    if (isPC) {
-        const popTimeEl = card.querySelector('.pc-pop-time-container');
-        if (popTimeEl) {
-            popTimeEl.textContent = rightStr;
-        }
     }
 
     if (status === "MaxOver") text.classList.add("max-over");
@@ -400,20 +376,12 @@ export function updateMobCount(card, mob) {
     }
 }
 
-export function updateAreaInfo(card, mob) {
-    const areaInfoContainer = card.querySelector('.area-info-container');
-    if (!areaInfoContainer) return;
-
-    if (areaInfoContainer.dataset.initialized === "true") return;
-    areaInfoContainer.dataset.initialized = "true";
-
-    const areaInfoHtml = `<div class="truncate text-gray-300 leading-none mb-[3px]">${mob.Area}</div>
-  <div class="flex items-center justify-end gap-0.5 leading-none">
+    const areaInfoHtml = `<div class="truncate text-gray-400 flex items-center gap-1.5">
     <span>${mob.Expansion}</span>
     <span class="inline-flex items-center justify-center w-[11px] h-[11px] border border-current rounded-[1px] text-[7px] leading-none">${mob.Rank}</span>
+    <span class="text-slate-500">${mob.Area}</span>
   </div>`;
     areaInfoContainer.innerHTML = areaInfoHtml;
-}
 
 export function updateMapOverlay(card, mob) {
     const mapContainer = card.querySelector('.map-container');
