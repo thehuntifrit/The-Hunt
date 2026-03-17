@@ -420,7 +420,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       if (groupMobs.length === 0) return;
       
       const header = document.createElement("div");
-      header.className = "text-xs font-bold text-gray-500 uppercase mt-4 mb-1 border-b border-gray-700/50 pb-1 pl-1";
+      header.className = "text-xs font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
       header.textContent = GROUP_LABELS[key];
       pcFrag.appendChild(header);
 

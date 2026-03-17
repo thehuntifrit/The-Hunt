@@ -40,12 +40,11 @@
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         -webkit-user-select: none;
         user-select: none;
-        height: 38px;
-        margin-bottom: 3px;
+        height: 28px;
+        margin-bottom: 1px;
         position: relative;
         overflow: hidden;
         width: 100%;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
     .pc-list-item::before {
@@ -76,7 +75,7 @@
     }
 
     .pc-list-name {
-        flex: 0 0 180px;
+        flex: 1; /* Prioritize the name: take all available space */
         min-width: 0;
         font-weight: 700;
         font-size: 16px;
@@ -112,12 +111,13 @@
     }
 
     .pc-list-progress-container {
-        flex: 1; /* This fills the remaining space */
+        flex: 0 0 80px; /* Compact bar (approx 2/3 of initial 120px) */
         height: 8px;
         background: rgba(15, 23, 42, 0.8);
         border-radius: 4px;
         overflow: hidden;
-        margin: 0 16px;
+        margin-left: 12px;
+        margin-right: 12px;
         box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
         border: 1px solid rgba(255, 255, 255, 0.08);
     }
