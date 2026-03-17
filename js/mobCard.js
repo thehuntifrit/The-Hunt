@@ -20,10 +20,10 @@ export function createSimpleMobItem(mob) {
     
     item.innerHTML = `
         <div class="pc-list-name"></div>
+        <div class="pc-list-time"></div>
         <div class="pc-list-progress-container">
             <div class="pc-list-progress-bar" style="width: 0%"></div>
         </div>
-        <div class="pc-list-time"></div>
         <div class="pc-list-percent">0%</div>
     `;
 
@@ -50,18 +50,11 @@ export function updateSimpleMobItem(item, mob) {
     let isSpecialCondition = false;
     let isTimeOver = status === "MaxOver";
 
-    if (isInConditionWindow && mob.repopInfo.conditionRemaining) {
-        timeStr = mob.repopInfo.conditionRemaining;
-        isSpecialCondition = true;
-    } else if (nextConditionSpawnDate) {
-        try {
-            timeStr = `🔔 ${dateFormatter.format(nextConditionSpawnDate)}`;
-            isSpecialCondition = true;
-        } catch { }
-    } else if (nextMinRepopDate) {
-        try {
-            timeStr = `in ${dateFormatter.format(nextMinRepopDate)}`;
-        } catch { }
+    // Request: Before minRepop => time until minRepop, after minRepop => time until maxRepop
+    if (now < minRepop) {
+        timeStr = formatDurationHM(minRepop - now);
+    } else {
+        timeStr = formatDurationHM(maxRepop - now);
     }
 
     if (timeEl) {
@@ -87,9 +80,15 @@ export function updateSimpleMobItem(item, mob) {
     // Percent text
     if (percentEl) {
         let percentStr = "";
-        let showPercent = status !== "MaxOver" && ((minRepop && nowSec >= minRepop) || status === "PopWindow" || status === "ConditionActive");
-        if (showPercent) {
-            percentStr = `${Number(elapsedPercent || 0).toFixed(0)}%`;
+        if (status === "MaxOver") {
+            percentStr = "100%";
+        } else {
+            let showPercent = (minRepop && now >= minRepop) || status === "PopWindow" || status === "ConditionActive";
+            if (showPercent) {
+                percentStr = `${Number(elapsedPercent || 0).toFixed(0)}%`;
+            } else {
+                percentStr = "0%";
+            }
         }
         percentEl.textContent = percentStr;
     }

@@ -55,16 +55,16 @@
     }
 
     .pc-list-name {
-        flex: 0 0 120px;
+        flex: 0 0 150px;
         font-weight: bold;
-        font-size: 13px;
+        font-size: 15px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
     .pc-list-time {
-        flex: 0 0 100px;
+        flex: 0 0 110px;
         font-family: 'Inter', ui-monospace, SFMono-Regular, monospace;
         font-size: 11px;
         font-variant-numeric: tabular-nums;
@@ -82,7 +82,7 @@
     }
 
     .pc-list-progress-container {
-        flex: 1;
+        flex: 0 0 120px;
         min-width: 60px;
         height: 6px;
         background: var(--progress-bg);
@@ -100,9 +100,9 @@
     }
 
     .pc-list-percent {
-        flex: 0 0 40px;
+        flex: 0 0 45px;
         font-family: 'Inter', ui-monospace, SFMono-Regular, monospace;
-        font-size: 11px;
+        font-size: 12px;
         font-weight: bold;
         color: #f1f5f9;
         text-align: right;
