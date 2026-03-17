@@ -269,7 +269,7 @@ export function updateProgressText(card, mob) {
         <div class="truncate min-w-0 text-right">${rightContent}</div>
     `;
 
-    const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}|${isPC}`;
+    const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}|${window.innerWidth >= 1024}`;
     if (text.dataset.cacheKey !== cacheKey) {
         text.dataset.cacheKey = cacheKey;
         text.innerHTML = newHTML;
