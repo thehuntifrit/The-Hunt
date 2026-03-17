@@ -1,6 +1,6 @@
 // mobCard.js
 
-import { calculateRepop, formatLastKillTime, formatDurationHM } from "./cal.js";
+import { calculateRepop, formatLastKillTime, formatDurationHM, formatDurationColon, formatDurationM } from "./cal.js";
 import { drawSpawnPoint, isCulled } from "./location.js";
 import { getState, PROGRESS_CLASSES, EXPANSION_MAP } from "./dataManager.js";
 
@@ -53,18 +53,22 @@ export function updateSimpleMobItem(item, mob) {
     // Timer priority: Active Condition Window > Next Condition Window > standard Repop Window
     if (isInConditionWindow && conditionWindowEnd) {
         const remainingConditionSec = (conditionWindowEnd.getTime() / 1000) - now;
-        timeStr = "残り" + formatDurationHM(remainingConditionSec);
+        timeStr = "残り" + formatDurationM(remainingConditionSec);
         isSpecialCondition = true;
     } else if (nextConditionSpawnDate && now >= minRepop) {
         const nextConditionSec = (nextConditionSpawnDate.getTime() / 1000) - now;
-        timeStr = "次回" + formatDurationHM(nextConditionSec);
+        timeStr = "次回" + formatDurationColon(nextConditionSec);
         isSpecialCondition = true; // Make timed-mob 'Next' gold as requested
     } else if (minRepop && now < minRepop) {
-        timeStr = "次回" + formatDurationHM(minRepop - now);
+        timeStr = "次回" + formatDurationColon(minRepop - now);
     } else if (maxRepop && now < maxRepop) {
-        timeStr = "残り" + formatDurationHM(maxRepop - now);
+        timeStr = "残り" + formatDurationM(maxRepop - now);
     } else if (maxRepop) {
-        timeStr = "超過" + formatDurationHM(now - maxRepop);
+        timeStr = "超過" + formatDurationM(now - maxRepop);
+        // Request: Timed mobs remain gold even in MaxOver
+        if (mob.repopInfo?.isInConditionWindow || mob.repopInfo?.nextConditionSpawnDate) {
+            isSpecialCondition = true;
+        }
         isTimeOver = true;
     }
 

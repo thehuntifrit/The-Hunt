@@ -25,6 +25,19 @@ export function formatDurationHM(seconds) {
   return `${String(h).padStart(2, "0")}h${String(m).padStart(2, "0")}m`;
 }
 
+export function formatDurationColon(seconds) {
+  if (seconds < 0) seconds = 0;
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+export function formatDurationM(seconds) {
+  if (seconds < 0) seconds = 0;
+  const m = Math.ceil(seconds / 60);
+  return `${m}分`;
+}
+
 export function debounce(func, wait) {
   let timeout;
   return function executed(...args) {

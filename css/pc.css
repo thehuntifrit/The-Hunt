@@ -25,7 +25,7 @@
         width: 40%;
         align-self: flex-start;
         position: sticky;
-        top: 7.75rem; /* below header, aligned with list content (~6rem + h2/group header height) */
+        top: 8.5rem; /* lowered by ~40px to align with list content */
     }
 
     .pc-list-item {
@@ -139,14 +139,14 @@
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     }
 
-    /* Condition Blinking */
-    @keyframes pc-blink-bg {
-        0%, 100% { background-color: rgba(30, 41, 59, 0.4); }
-        50% { background-color: rgba(220, 38, 38, 0.2); }
+    /* Condition Glowing (White) */
+    @keyframes pc-glow-bg {
+        0%, 100% { background-color: rgba(30, 41, 59, 0.4); box-shadow: none; }
+        50% { background-color: rgba(255, 255, 255, 0.1); box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
     }
     .pc-list-item.blink-active {
-        animation: pc-blink-bg 2s infinite ease-in-out;
-        border-color: rgba(239, 68, 68, 0.5);
+        animation: pc-glow-bg 3s infinite ease-in-out;
+        border-color: rgba(255, 255, 255, 0.3);
     }
 
     /* Add rank color glow support to lists */

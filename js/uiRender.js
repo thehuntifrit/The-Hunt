@@ -410,43 +410,63 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     });
   });
 
-  // PC Layout specific rendering
-  if (DOM.pcLeftList) {
-    const pcFrag = document.createDocumentFragment();
-    
-    // Group rendering for PC list
-    ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
-      const groupMobs = groups[key];
-      if (groupMobs.length === 0) return;
-      
-      const header = document.createElement("div");
-      header.className = "text-xs font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
-      header.textContent = GROUP_LABELS[key];
-      pcFrag.appendChild(header);
-
-      groupMobs.forEach(mob => {
-        let item = simpleItemCache.get(String(mob.No));
-        if (!item) {
-          item = createSimpleMobItem(mob);
-          simpleItemCache.set(String(mob.No), item);
-        } else {
-          updateSimpleMobItem(item, mob);
-        }
-        
-        // Highlight logic
-        const state = getState();
-        if (state.openMobCardNo === mob.No) {
-          item.classList.add("selected");
-        } else {
-          item.classList.remove("selected");
-        }
-        
-        pcFrag.appendChild(item);
+    // PC Layout specific rendering: Surgical update to prevent animation reset
+    if (DOM.pcLeftList) {
+      // Collect the current DOM nodes and their identifiers
+      const currentNodes = Array.from(DOM.pcLeftList.children);
+      const currentMap = new Map();
+      currentNodes.forEach(node => {
+          if (node.dataset.mobNo) currentMap.set(`mob-${node.dataset.mobNo}`, node);
+          else if (node.textContent) currentMap.set(`header-${node.textContent}`, node);
       });
-    });
-    
-    DOM.pcLeftList.innerHTML = '';
-    DOM.pcLeftList.appendChild(pcFrag);
+
+      // Prepare the intended child list
+      const nextChildren = [];
+      ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
+        const groupMobs = groups[key];
+        if (groupMobs.length === 0) return;
+        
+        const headerText = GROUP_LABELS[key];
+        const headerKey = `header-${headerText}`;
+        let header = currentMap.get(headerKey);
+        if (!header) {
+          header = document.createElement("div");
+          header.className = "text-xs font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
+          header.textContent = headerText;
+        }
+        nextChildren.push(header);
+
+        groupMobs.forEach(mob => {
+          const mobKey = `mob-${mob.No}`;
+          let item = currentMap.get(mobKey);
+          if (!item) {
+            item = createSimpleMobItem(mob);
+          } else {
+            updateSimpleMobItem(item, mob);
+          }
+          
+          // Highlight logic
+          const state = getState();
+          if (state.openMobCardNo === mob.No) {
+            item.classList.add("selected");
+          } else {
+            item.classList.remove("selected");
+          }
+          nextChildren.push(item);
+        });
+      });
+
+      // Synchronize DOM.pcLeftList with nextChildren
+      nextChildren.forEach((child, index) => {
+        if (DOM.pcLeftList.children[index] !== child) {
+          DOM.pcLeftList.insertBefore(child, DOM.pcLeftList.children[index] || null);
+        }
+      });
+
+      // Remove excess children
+      while (DOM.pcLeftList.children.length > nextChildren.length) {
+        DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
+      }
     
     // PC detail view logic
     if (DOM.pcRightDetail) {
