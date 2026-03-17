@@ -25,7 +25,7 @@
         width: 40%;
         align-self: flex-start;
         position: sticky;
-        top: 8.5rem; /* lowered by ~40px to align with list content */
+        top: 9.8rem; /* lowered to align with first list item */
     }
 
     .pc-list-item {

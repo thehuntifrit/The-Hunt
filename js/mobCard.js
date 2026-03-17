@@ -51,6 +51,8 @@ export function updateSimpleMobItem(item, mob) {
     let isTimeOver = status === "MaxOver";
 
     // Timer priority: Active Condition Window > Next Condition Window > standard Repop Window
+    const isTimedMob = !!(mob.repopInfo?.isInConditionWindow || mob.repopInfo?.nextConditionSpawnDate);
+
     if (isInConditionWindow && conditionWindowEnd) {
         const remainingConditionSec = (conditionWindowEnd.getTime() / 1000) - now;
         timeStr = "残り" + formatDurationM(remainingConditionSec);
@@ -58,16 +60,26 @@ export function updateSimpleMobItem(item, mob) {
     } else if (nextConditionSpawnDate && now >= minRepop) {
         const nextConditionSec = (nextConditionSpawnDate.getTime() / 1000) - now;
         timeStr = "次回" + formatDurationColon(nextConditionSec);
-        isSpecialCondition = true; // Make timed-mob 'Next' gold as requested
+        isSpecialCondition = true;
     } else if (minRepop && now < minRepop) {
+        // "次回" is always space-padded colon format
         timeStr = "次回" + formatDurationColon(minRepop - now);
+        if (isTimedMob) isSpecialCondition = true;
     } else if (maxRepop && now < maxRepop) {
-        timeStr = "残り" + formatDurationM(maxRepop - now);
-    } else if (maxRepop) {
-        timeStr = "超過" + formatDurationM(now - maxRepop);
-        // Request: Timed mobs remain gold even in MaxOver
-        if (mob.repopInfo?.isInConditionWindow || mob.repopInfo?.nextConditionSpawnDate) {
+        // "残り" is 'n分' for timed mobs, 'HH:mm' for normal mobs
+        if (isTimedMob) {
+            timeStr = "残り" + formatDurationM(maxRepop - now);
             isSpecialCondition = true;
+        } else {
+            timeStr = "残り" + formatDurationColon(maxRepop - now);
+        }
+    } else if (maxRepop) {
+        // "超過" is 'n分' for timed mobs, 'HH:mm' for normal mobs
+        if (isTimedMob) {
+            timeStr = "超過" + formatDurationM(now - maxRepop);
+            isSpecialCondition = true;
+        } else {
+            timeStr = "超過" + formatDurationColon(now - maxRepop);
         }
         isTimeOver = true;
     }
