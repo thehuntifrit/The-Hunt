@@ -299,27 +299,28 @@ body::before {
         padding: 0 !important;
     }
 
-    /* Column-like layout for the simplified list */
+    /* Column-like layout for the simplified list (1-column row) */
     .mob-card .flex.items-center.justify-between.gap-1\.5.min-w-0.mb-1 {
         margin-bottom: 0;
-        width: 180px; /* Aligns names */
+        width: 220px; /* Name column */
         flex-shrink: 0;
     }
 
     .mob-name {
-        font-size: 1.05rem !important;
-        font-weight: 600;
+        font-size: 1.0rem !important;
+        font-weight: 700;
         letter-spacing: -0.01em;
     }
     
     .mob-card .progress-bar-wrapper {
-        height: 4px; /* Ultra-thin line for the list */
+        height: 6px; /* Slightly more visible bar */
         flex: 1;
-        max-width: 250px;
+        max-width: none; /* Let it fill space */
         margin-top: 0;
-        border-radius: 2px;
+        border-radius: 3px;
         background: rgba(0,0,0,0.6);
         box-shadow: none;
+        order: 2; /* Position after name/pop time */
     }
 
     .mob-card .progress-text {
@@ -327,11 +328,12 @@ body::before {
         font-size: 11px;
         text-align: right;
         display: flex;
-        gap: 12px;
-        min-width: 130px;
+        gap: 16px;
+        min-width: 180px;
         justify-content: flex-end;
-        color: #94a3b8;
-        font-weight: 500;
+        color: #e2e8f0;
+        font-weight: 700;
+        order: 3; /* Position after bar */
     }
     
     .mob-card .progress-text > div {

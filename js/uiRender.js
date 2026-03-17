@@ -59,10 +59,10 @@ function getOrCreateGroupSection(groupKey) {
       <div class="status-group-separator">
           <span class="status-group-label">${GROUP_LABELS[groupKey]}</span>
       </div>
-      <div class="group-columns grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div class="col-1 flex flex-col gap-4"></div>
-          <div class="col-2 flex flex-col gap-4"></div>
-          <div class="col-3 flex flex-col gap-4"></div>
+      <div class="group-columns grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1.5">
+          <div class="col-1 flex flex-col gap-1.5"></div>
+          <div class="col-2 flex flex-col gap-1.5 hidden"></div>
+          <div class="col-3 flex flex-col gap-1.5 hidden"></div>
       </div>
   `;
 
@@ -423,7 +423,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   const md = 768;
   const lg = 1024;
   let numCols = 1;
-  if (width >= lg) numCols = 3;
+  if (width >= lg) numCols = 1; // PC is now 1-column for the master list
   else if (width >= md) numCols = 2;
 
   const groups = {

@@ -264,14 +264,26 @@ export function updateProgressText(card, mob) {
 
     let rightContent = `<span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span>`;
 
-    const newHTML = `
-<div class="truncate min-w-0 ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div>
-<div class="truncate min-w-0 text-right">${rightContent}</div>
-  `;
-    const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}`;
+    const isPC = window.innerWidth >= 1024;
+    const newHTML = isPC ? `
+        <div class="truncate min-w-0 mr-4 ${status === "MaxOver" ? 'text-red-400' : 'text-slate-300'} font-bold">${leftStr}</div>
+        <div class="truncate min-w-0 text-right font-black text-cyan-400">${Number(elapsedPercent || 0).toFixed(0)}%</div>
+    ` : `
+        <div class="truncate min-w-0 ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div>
+        <div class="truncate min-w-0 text-right">${rightContent}</div>
+    `;
+
+    const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}|${isPC}`;
     if (text.dataset.cacheKey !== cacheKey) {
         text.dataset.cacheKey = cacheKey;
         text.innerHTML = newHTML;
+    }
+
+    if (isPC) {
+        const popTimeEl = card.querySelector('.pc-pop-time-container');
+        if (popTimeEl) {
+            popTimeEl.textContent = rightStr;
+        }
     }
 
     if (status === "MaxOver") text.classList.add("max-over");
