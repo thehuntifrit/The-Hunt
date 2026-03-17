@@ -36,7 +36,7 @@ export function createSimpleMobItem(mob) {
 }
 
 export function updateSimpleMobItem(item, mob) {
-    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, minRepop, status, isInConditionWindow, timeRemaining } = mob.repopInfo || {};
+    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, minRepop, maxRepop, status, isInConditionWindow, timeRemaining } = mob.repopInfo || {};
     
     const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
     const now = Date.now() / 1000;
@@ -51,10 +51,10 @@ export function updateSimpleMobItem(item, mob) {
     let isTimeOver = status === "MaxOver";
 
     // Request: Before minRepop => time until minRepop, after minRepop => time until maxRepop
-    if (now < minRepop) {
-        timeStr = formatDurationHM(minRepop - now);
-    } else {
-        timeStr = formatDurationHM(maxRepop - now);
+    if (minRepop && now < minRepop) {
+        timeStr = "次回" + formatDurationHM(minRepop - now);
+    } else if (maxRepop) {
+        timeStr = "残り" + formatDurationHM(maxRepop - now);
     }
 
     if (timeEl) {
@@ -94,7 +94,7 @@ export function updateSimpleMobItem(item, mob) {
     }
 
     // Dimming
-    const shouldDimCard = isMaint || status === "Next" || (status === "NextCondition" && now < mob.repopInfo.minRepop);
+    const shouldDimCard = isMaint || status === "Next" || (status === "NextCondition" && now < (mob.repopInfo?.minRepop || 0));
     if (shouldDimCard) {
         item.style.opacity = "0.4";
         item.style.filter = "grayscale(1)";
