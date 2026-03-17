@@ -1,6 +1,6 @@
 // mobCard.js
 
-import { calculateRepop, formatLastKillTime } from "./cal.js";
+import { calculateRepop, formatLastKillTime, formatDurationHM } from "./cal.js";
 import { drawSpawnPoint, isCulled } from "./location.js";
 import { getState, PROGRESS_CLASSES, EXPANSION_MAP } from "./dataManager.js";
 
