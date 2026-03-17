@@ -230,6 +230,126 @@ function updateCardFull(card, mob) {
   updateMapOverlay(card, mob);
   updateExpandablePanel(card, mob);
   updateMemoIcon(card, mob);
+
+  // If this card is currently selected for the detail pane, update the detail pane too
+  if (card.classList.contains("selected-for-detail") && window.innerWidth >= 1024) {
+      updateDetailPane(mob);
+  }
+}
+
+export function updateDetailPane(mob) {
+    const placeholder = document.getElementById("detail-placeholder");
+    const content = document.getElementById("detail-content");
+    if (!placeholder || !content) return;
+
+    // Show content, hide placeholder
+    placeholder.classList.add("hidden");
+    content.classList.remove("hidden");
+    content.classList.add("flex");
+
+    document.getElementById("detail-mob-name").textContent = mob.Name;
+    document.getElementById("detail-mob-name").style.color = `var(--rank-${mob.Rank.toLowerCase()})`;
+    
+    document.getElementById("detail-area-info").textContent = `${mob.Area} - ${mob.Expansion}`;
+    
+    document.getElementById("detail-rank-badge").textContent = mob.Rank;
+    document.getElementById("detail-rank-badge").style.color = `var(--rank-${mob.Rank.toLowerCase()})`;
+    document.getElementById("detail-rank-badge").style.borderColor = `var(--rank-${mob.Rank.toLowerCase()})`;
+
+    const reportBtn = document.getElementById("detail-report-btn");
+    reportBtn.dataset.mobNo = mob.No;
+    reportBtn.onclick = () => {
+        if (!getState().isVerified) {
+            import("./modal.js").then(m => m.openAuthModal());
+            return;
+        }
+        if (mob.Rank === 'A') {
+            import("./app.js").then(a => a.handleInstantReport(mob.No, mob.Rank));
+        } else {
+            import("./modal.js").then(m => m.openReportModal(mob.No));
+        }
+    };
+
+    const statusEl = document.getElementById("detail-status");
+    let leftStr = mob.repopInfo?.timeRemaining || "未確定";
+    statusEl.innerHTML = `<span class="${mob.repopInfo?.status === 'MaxOver' ? 'text-red-400' : 'text-slate-200'}">${leftStr}</span>`;
+
+    const timeEl = document.getElementById("detail-time");
+    let rightStr = "未確定";
+    if (mob.repopInfo?.isInConditionWindow && mob.repopInfo?.conditionRemaining) {
+        rightStr = `<span class="text-yellow-400">${mob.repopInfo.conditionRemaining}</span>`;
+    } else if (mob.repopInfo?.nextConditionSpawnDate) {
+        try { rightStr = `<span class="text-yellow-400">🔔 ${new Intl.DateTimeFormat("ja-JP", { hour: "2-digit", minute: "2-digit" }).format(mob.repopInfo.nextConditionSpawnDate)}</span>`; } catch {}
+    } else if (mob.repopInfo?.nextMinRepopDate) {
+        try { rightStr = `in ${new Intl.DateTimeFormat("ja-JP", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).format(mob.repopInfo.nextMinRepopDate)}`; } catch {}
+    }
+    timeEl.innerHTML = rightStr;
+
+    const progressText = document.getElementById("detail-progress-text");
+    const progressBar = document.getElementById("detail-progress-bar");
+    const percent = mob.repopInfo?.elapsedPercent || 0;
+    progressText.textContent = `${Number(percent).toFixed(1)}%`;
+    progressBar.style.width = `${percent}%`;
+    
+    if (percent < 60) progressBar.className = "h-full transition-all duration-300 bg-blue-500";
+    else if (percent < 80) progressBar.className = "h-full transition-all duration-300 bg-cyan-500";
+    else if (percent < 100) progressBar.className = "h-full transition-all duration-300 bg-yellow-500";
+    else progressBar.className = "h-full transition-all duration-300 bg-red-500 animate-pulse";
+
+    const memoInput = document.getElementById("detail-memo-input");
+    memoInput.dataset.mobNo = mob.No;
+    const hasMemo = mob.memo_text?.trim();
+    const isMemoNewer = (mob.memo_updated_at || 0) >= (mob.last_kill_time || 0);
+    memoInput.value = (hasMemo && (isMemoNewer || !mob.last_kill_time)) ? mob.memo_text : "";
+
+    const lastKill = document.getElementById("detail-last-kill");
+    lastKill.textContent = `前回討伐: ${formatLastKillTime(mob.last_kill_time)}`;
+
+    const triggerContainer = document.getElementById("detail-trigger-container");
+    const triggerText = document.getElementById("detail-trigger-text");
+    if (mob.Rank === 'S' && mob.Condition) {
+        triggerContainer.classList.remove("hidden");
+        triggerText.innerHTML = import("./mobCard.js").then(m => m.processText(mob.Condition));
+    } else {
+        triggerContainer.classList.add("hidden");
+    }
+
+    const mapContainer = document.getElementById("detail-map-container");
+    const mapImg = document.getElementById("detail-map-img");
+    const mapOverlay = document.getElementById("detail-map-overlay");
+    
+    if (mob.Rank === 'S' && mob.Map) {
+        mapContainer.classList.remove("hidden");
+        mapContainer.classList.add("flex");
+        mapImg.src = `./maps/${mob.Map}`;
+        
+        const state = getState();
+        const mobLocationsData = state.mobLocations?.[mob.No];
+        const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
+        
+        import("./mobCard.js").then(m => {
+            const validSpawnPoints = m.getValidSpawnPoints(mob, spawnCullStatus);
+            const remainingCount = validSpawnPoints.length;
+            const isLastOne = remainingCount === 1;
+
+            mapOverlay.innerHTML = (mob.spawn_points ?? []).map(point => {
+                const isThisPointTheLastOne = isLastOne && point.id === validSpawnPoints[0]?.id;
+                return drawSpawnPoint(
+                    point,
+                    spawnCullStatus,
+                    mob.No,
+                    point.mob_ranks.includes("B2") ? "B2"
+                        : point.mob_ranks.includes("B1") ? "B1"
+                            : point.mob_ranks[0],
+                    isThisPointTheLastOne,
+                    isLastOne
+                );
+            }).join("");
+        });
+    } else {
+        mapContainer.classList.add("hidden");
+        mapContainer.classList.remove("flex");
+    }
 }
 
 function updateVisibleCards() {

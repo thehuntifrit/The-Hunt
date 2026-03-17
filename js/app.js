@@ -285,8 +285,21 @@ function attachGlobalEventListeners() {
             return;
         }
 
-        if (e.target.closest("[data-toggle='card-header']")) {
-            toggleCardExpand(card, mobNo);
+        // On mobile, expand the card. On PC, update the detail pane
+        const isMobile = window.innerWidth < 1024;
+        if (isMobile) {
+            if (e.target.closest("[data-toggle='card-header']")) {
+                toggleCardExpand(card, mobNo);
+            }
+        } else {
+            // PC
+            document.querySelectorAll(".mob-card.selected-for-detail").forEach(c => c.classList.remove("selected-for-detail"));
+            card.classList.add("selected-for-detail");
+            
+            import("./uiRender.js").then(module => {
+                const mob = getState().mobs.find(m => m.No === mobNo);
+                if (mob) module.updateDetailPane(mob);
+            });
         }
     });
 
