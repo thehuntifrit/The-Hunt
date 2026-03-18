@@ -23,7 +23,8 @@
         width: 40%;
         align-self: flex-start;
         position: sticky;
-        top: 15.1rem; /* align with the first list item under the header */
+        top: 8rem; /* align correctly with the header/list */
+        z-index: 10;
     }
 
     .pc-list-item {

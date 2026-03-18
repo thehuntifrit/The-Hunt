@@ -33,6 +33,8 @@ export const DOM = {
   authStatus: document.getElementById('auth-modal-status'),
   pcLeftList: document.getElementById('pc-left-list'),
   pcRightDetail: document.getElementById('pc-right-detail'),
+  pcLayout: document.getElementById('pc-layout'),
+  mobileLayout: document.getElementById('mobile-layout'),
 };
 
 const groupSectionCache = new Map();
@@ -307,14 +309,20 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   const lg = 1024;
   const isPC = width >= lg;
 
-  const pcLayout = document.getElementById("pc-layout");
-  const mobileLayout = document.getElementById("mobile-layout");
+  const pcLayout = DOM.pcLayout || document.getElementById("pc-layout");
+  const mobileLayout = DOM.mobileLayout || document.getElementById("mobile-layout");
 
   if (isPC) {
-    if (pcLayout) pcLayout.classList.remove("hidden");
+    if (pcLayout) {
+        pcLayout.classList.remove("hidden");
+        pcLayout.style.display = "flex"; // Force display
+    }
     if (mobileLayout) mobileLayout.classList.add("hidden");
   } else {
-    if (pcLayout) pcLayout.classList.add("hidden");
+    if (pcLayout) {
+        pcLayout.classList.add("hidden");
+        pcLayout.style.display = "none";
+    }
     if (mobileLayout) mobileLayout.classList.remove("hidden");
   }
 

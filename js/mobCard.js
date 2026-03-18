@@ -28,17 +28,6 @@ export function createSimpleMobItem(mob) {
         <button class="pc-list-report-btn">REPORT</button>
     `;
 
-    const reportBtn = item.querySelector('.pc-list-report-btn');
-    reportBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const { isVerified } = getState();
-        if (!isVerified) {
-            import("./modal.js").then(m => m.openAuthModal());
-            return;
-        }
-        import("./modal.js").then(m => m.openReportModal(mob.No));
-    });
-
     const nameEl = item.querySelector('.pc-list-name');
     nameEl.textContent = mob.Name;
 

@@ -264,10 +264,27 @@ function attachGlobalEventListeners() {
 
     if (DOM.pcLeftList) {
         DOM.pcLeftList.addEventListener("click", (e) => {
+            const reportBtn = e.target.closest(".pc-list-report-btn");
             const item = e.target.closest(".pc-list-item");
             if (!item) return;
 
             const mobNo = parseInt(item.dataset.mobNo, 10);
+            const rank = item.dataset.rank;
+
+            if (reportBtn) {
+                e.stopPropagation();
+                if (!getState().isVerified) {
+                    openAuthModal();
+                    return;
+                }
+                if (rank === 'A') {
+                    handleInstantReport(mobNo, rank);
+                } else {
+                    openReportModal(mobNo);
+                }
+                return;
+            }
+
             const { openMobCardNo } = getState();
 
             if (openMobCardNo === mobNo) {
@@ -556,7 +573,7 @@ function finishClose(card, placeholder) {
     }
 }
 
-function handleReportResult(result) {
+export function handleReportResult(result) {
     if (!result.success) {
         if (result.code === "permission-denied" || (result.error && result.error.includes("permission"))) {
             showToast("認証情報の同期エラーが発生しました。\nお手数ですが、再度認証を行ってください。", "error");
@@ -569,7 +586,7 @@ function handleReportResult(result) {
     }
 }
 
-async function handleInstantReport(mobNo, rank) {
+export async function handleInstantReport(mobNo, rank) {
     const result = await submitReport(mobNo, new Date().toISOString());
     handleReportResult(result);
 }
