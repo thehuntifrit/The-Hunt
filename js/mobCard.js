@@ -45,50 +45,50 @@ export function updateSimpleMobItem(item, mob) {
     const progressEl = item.querySelector('.pc-list-progress-bar');
     const percentEl = item.querySelector('.pc-list-percent');
 
-    // Time
-    let timeStr = "未確定";
-    let isSpecialCondition = false;
-    let isTimeOver = status === "MaxOver";
-
-    // Timer priority: Active Condition Window > Next Condition Window > standard Repop Window
     const isTimedMob = !!(mob.repopInfo?.isInConditionWindow || mob.repopInfo?.nextConditionSpawnDate);
+    let label = "未確定";
+    let timeValue = "";
 
     if (isInConditionWindow && conditionWindowEnd) {
         const remainingConditionSec = (conditionWindowEnd.getTime() / 1000) - now;
-        timeStr = "残り" + formatDurationM(remainingConditionSec);
+        label = "残り";
+        timeValue = formatDurationM(remainingConditionSec);
         isSpecialCondition = true;
     } else if (nextConditionSpawnDate && now >= minRepop) {
         const nextConditionSec = (nextConditionSpawnDate.getTime() / 1000) - now;
-        timeStr = "次回" + formatDurationColon(nextConditionSec);
+        label = "次回";
+        timeValue = formatDurationColon(nextConditionSec);
         isSpecialCondition = true;
     } else if (minRepop && now < minRepop) {
-        // "次回" is always space-padded colon format
-        timeStr = "次回" + formatDurationColon(minRepop - now);
+        label = "次回";
+        timeValue = formatDurationColon(minRepop - now);
         if (isTimedMob) isSpecialCondition = true;
     } else if (maxRepop && now < maxRepop) {
-        // "残り" is 'n分' for timed mobs, 'HH:mm' for normal mobs
+        label = "残り";
         if (isTimedMob) {
-            timeStr = "残り" + formatDurationM(maxRepop - now);
+            timeValue = formatDurationM(maxRepop - now);
             isSpecialCondition = true;
         } else {
-            timeStr = "残り" + formatDurationColon(maxRepop - now);
+            timeValue = formatDurationColon(maxRepop - now);
         }
     } else if (maxRepop) {
-        // "超過" is 'n分' for timed mobs, 'HH:mm' for normal mobs
+        label = "超過";
         if (isTimedMob) {
-            timeStr = "超過" + formatDurationM(now - maxRepop);
+            timeValue = formatDurationM(now - maxRepop);
             isSpecialCondition = true;
         } else {
-            timeStr = "超過" + formatDurationColon(now - maxRepop);
+            timeValue = formatDurationColon(now - maxRepop);
         }
         isTimeOver = true;
     }
 
     if (timeEl) {
-        timeEl.innerHTML = `<span class="${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeStr}</span>`;
+        timeEl.innerHTML = `
+            <span class="timer-label">${label}</span>
+            <span class="timer-value ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
+        `;
     }
 
-    // Progress bar width
     if (progressEl) {
         const currentWidth = parseFloat(progressEl.style.width) || 0;
         if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
@@ -100,11 +100,9 @@ export function updateSimpleMobItem(item, mob) {
             progressEl.style.width = `${elapsedPercent}%`;
         }
         
-        // Setup colors based on progress
         progressEl.style.background = isTimeOver ? "var(--progress-max-over)" : "var(--progress-fill)";
     }
 
-    // Percent text
     if (percentEl) {
         let percentStr = "";
         if (status === "MaxOver") {
@@ -120,7 +118,6 @@ export function updateSimpleMobItem(item, mob) {
         percentEl.textContent = percentStr;
     }
 
-    // Dimming
     const shouldDimCard = isMaint || status === "Next" || (status === "NextCondition" && now < (mob.repopInfo?.minRepop || 0));
     if (shouldDimCard) {
         item.style.opacity = "0.4";
@@ -130,7 +127,6 @@ export function updateSimpleMobItem(item, mob) {
         item.style.filter = "none";
     }
 
-    // Blink and Glow for active condition
     const isActuallyActive = !isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow));
     if (isActuallyActive) {
         item.classList.add("blink-active");

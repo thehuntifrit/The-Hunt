@@ -12,20 +12,18 @@
         gap: 1.5rem;
     }
 
-    /* Left pane (3/5) */
     #pc-left-list {
         width: 60%;
         display: flex;
         flex-direction: column;
-        gap: 2px; /* tight spacing for list */
+        gap: 2px;
     }
 
-    /* Right pane (2/5) */
     #pc-right-detail {
         width: 40%;
         align-self: flex-start;
         position: sticky;
-        top: 11.6rem; /* lowered to align with first list item after "TIME OVER" header */
+        top: 13.35rem;
     }
 
     .pc-list-item {
@@ -73,7 +71,7 @@
     }
 
     .pc-list-name {
-        flex: 1; /* Prioritize the name: take all available space */
+        flex: 1;
         min-width: 0;
         font-weight: 700;
         font-size: 16px;
@@ -85,22 +83,35 @@
     }
 
     .pc-list-time {
-        flex: 0 0 110px;
+        flex: 0 0 115px;
         font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
         font-size: 14px;
         font-weight: 500;
-        font-variant-numeric: tabular-nums;
-        color: rgba(226, 215, 197, 0.9);
-        white-space: pre; /* Essential to preserve the space padding for hour alignment */
-        text-align: right;
         display: flex;
-        flex-direction: column;
-        justify-content: center;
-        letter-spacing: -0.01em;
+        align-items: center;
+        justify-content: flex-end;
+        white-space: pre;
     }
 
+    .pc-list-time .timer-label {
+        flex: 0 0 32px;
+        text-align: left;
+        color: rgba(226, 215, 197, 0.6);
+        font-size: 11px;
+        font-weight: bold;
+    }
+
+    .pc-list-time .timer-value {
+        flex: 1;
+        text-align: right;
+        color: rgba(226, 215, 197, 0.9);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Color Priority: label-next (Gold) always wins for timed mobs */
     .pc-list-time .label-next {
-        color: var(--accent-gold);
+        color: var(--accent-gold) !important;
+        text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
     }
     .pc-list-time .time-over {
         color: #ffb1b6;
@@ -109,7 +120,7 @@
     }
 
     .pc-list-progress-container {
-        flex: 0 0 80px; /* Compact bar (approx 2/3 of initial 120px) */
+        flex: 0 0 80px;
         height: 8px;
         background: rgba(15, 23, 42, 0.8);
         border-radius: 4px;
@@ -139,7 +150,6 @@
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     }
 
-    /* Condition Glowing (White) */
     @keyframes pc-glow-bg {
         0%, 100% { background-color: rgba(30, 41, 59, 0.4); box-shadow: none; }
         50% { background-color: rgba(255, 255, 255, 0.1); box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
@@ -149,12 +159,9 @@
         border-color: rgba(255, 255, 255, 0.3);
     }
 
-    /* Add rank color glow support to lists */
     .pc-list-item[data-rank="S"] .pc-list-name { color: var(--rank-s); }
     .pc-list-item[data-rank="A"] .pc-list-name { color: var(--rank-a); }
     .pc-list-item[data-rank="F"] .pc-list-name { color: var(--rank-f); }
-
-    /* Override standard mob card in the detail view to use full width and height naturally */
     #pc-right-detail .mob-card {
         width: 100%;
         margin: 0 !important;
