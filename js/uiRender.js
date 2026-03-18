@@ -304,8 +304,21 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   }
 
   const width = window.innerWidth;
-  const md = 768;
   const lg = 1024;
+  const isPC = width >= lg;
+
+  const pcLayout = document.getElementById("pc-layout");
+  const mobileLayout = document.getElementById("mobile-layout");
+
+  if (isPC) {
+    if (pcLayout) pcLayout.classList.remove("hidden");
+    if (mobileLayout) mobileLayout.classList.add("hidden");
+  } else {
+    if (pcLayout) pcLayout.classList.add("hidden");
+    if (mobileLayout) mobileLayout.classList.remove("hidden");
+  }
+
+  const md = 768;
   let numCols = 1;
   if (width >= lg) numCols = 3;
   else if (width >= md) numCols = 2;
@@ -478,15 +491,22 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       });
     }
 
-    if (DOM.pcRightDetail) {
+    const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
+    if (rightPane) {
       const state = getState();
       if (state.openMobCardNo) {
-        const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
-        if (targetMob) {
-            updateCardFull(DOM.pcRightDetail, targetMob);
+        if (rightPane.dataset.renderedMobNo !== String(state.openMobCardNo)) {
+          const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
+          if (targetMob) {
+              updateCardFull(rightPane, targetMob);
+              rightPane.dataset.renderedMobNo = String(state.openMobCardNo);
+          }
         }
       } else {
-        DOM.pcRightDetail.innerHTML = '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>';
+        if (rightPane.dataset.renderedMobNo !== "none") {
+          rightPane.innerHTML = '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>';
+          rightPane.dataset.renderedMobNo = "none";
+        }
       }
     }
     

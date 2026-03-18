@@ -25,7 +25,7 @@ export function createSimpleMobItem(mob) {
             <div class="pc-list-progress-bar" style="width: 0%"></div>
         </div>
         <div class="pc-list-percent">0%</div>
-        <button class="pc-list-report-btn" title="討伐報告">📝</button>
+        <button class="pc-list-report-btn">REPORT</button>
     `;
 
     const reportBtn = item.querySelector('.pc-list-report-btn');
