@@ -1,6 +1,6 @@
 // mobCard.js
 
-import { calculateRepop, formatLastKillTime, formatDurationHM, formatDurationColon, formatDurationM } from "./cal.js";
+import { calculateRepop, formatLastKillTime, formatDurationHM, formatDurationColon, formatDurationM, formatMMDDHHmm } from "./cal.js";
 import { drawSpawnPoint, isCulled } from "./location.js";
 import { getState, PROGRESS_CLASSES, EXPANSION_MAP } from "./dataManager.js";
 
@@ -157,7 +157,6 @@ export function createMobCard(mob) {
     const { openMobCardNo } = getState();
     const isOpen = mob.No === openMobCardNo;
 
-
     card.dataset.mobNo = mob.No;
     card.dataset.rank = rank;
     if (mob.repopInfo?.isMaintenanceStop || mob.repopInfo?.isBlockedByMaintenance) {
@@ -173,8 +172,6 @@ export function createMobCard(mob) {
     const mobNameEl = card.querySelector('.mob-name');
     mobNameEl.textContent = mob.Name;
     mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
-
-    const memoIconContainer = card.querySelector('.memo-icon-container');
 
     const reportSidebar = card.querySelector('.report-side-bar');
     if (reportSidebar) {
@@ -247,6 +244,108 @@ export function createMobCard(mob) {
     updateMemoIcon(card, mob);
 
     return card;
+}
+
+export function updateCardFull(container, mob) {
+    const { elapsedPercent, minRepop, maxRepop, nextConditionSpawnDate, status, isInConditionWindow } = mob.repopInfo || {};
+    const rank = mob.Rank.toLowerCase();
+    const isS = mob.Rank === 'S';
+
+    container.innerHTML = `
+        <div class="pc-detail-card rank-${rank}">
+            <div class="pc-detail-header">
+                <div class="pc-detail-name-row">
+                    <h2 class="pc-detail-name">${mob.Name}</h2>
+                    <span class="pc-detail-rank">${mob.Rank}</span>
+                </div>
+                <div class="pc-detail-area-row">
+                    <span class="pc-detail-area">${mob.Area}</span>
+                    <span class="pc-detail-expansion">${mob.Expansion}</span>
+                </div>
+            </div>
+
+            <div class="pc-detail-grid">
+                <div class="pc-detail-info-item">
+                    <span class="label">最短POP</span>
+                    <span class="value">${formatMMDDHHmm(minRepop)}</span>
+                </div>
+                <div class="pc-detail-info-item">
+                    <span class="label">最大POP</span>
+                    <span class="value">${formatMMDDHHmm(maxRepop)}</span>
+                </div>
+                ${isS ? `
+                <div class="pc-detail-info-item highlight">
+                    <span class="label">次回POP可能</span>
+                    <span class="value">${formatMMDDHHmm(nextConditionSpawnDate)}</span>
+                </div>
+                ` : ''}
+                <div class="pc-detail-info-item">
+                    <span class="label">前回討伐</span>
+                    <span class="value">${formatMMDDHHmm(mob.last_kill_time)}</span>
+                </div>
+            </div>
+
+            <div class="pc-detail-progress-section">
+                <div class="pc-detail-progress-text">
+                    <span>進捗状況</span>
+                    <span class="percent">${Math.floor(elapsedPercent || 0)}%</span>
+                </div>
+                <div class="pc-detail-progress-container">
+                    <div class="pc-detail-progress-bar" style="width: ${elapsedPercent || 0}%"></div>
+                </div>
+            </div>
+
+            <div class="pc-detail-extra">
+                ${mob.memo_text ? `
+                <div class="pc-detail-section">
+                    <h3 class="section-label">メモ</h3>
+                    <div class="section-content memo">${processText(mob.memo_text)}</div>
+                </div>
+                ` : ''}
+                
+                ${isS && mob.Condition ? `
+                <div class="pc-detail-section">
+                    <h3 class="section-label">出現条件</h3>
+                    <div class="section-content condition">${processText(mob.Condition)}</div>
+                </div>
+                ` : ''}
+
+                ${isS && mob.Map ? `
+                <div class="pc-detail-section">
+                    <h3 class="section-label">出現マップ</h3>
+                    <div class="pc-detail-map-container">
+                        <img src="./maps/${mob.Map}" alt="Map" class="pc-detail-map">
+                        <div class="pc-detail-map-overlay"></div>
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+
+    // Map overlay updates if needed
+    if (isS && mob.Map) {
+        const overlay = container.querySelector('.pc-detail-map-overlay');
+        if (overlay) {
+            const state = getState();
+            const mobLocationsData = state.mobLocations?.[mob.No];
+            const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
+            const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
+            const isLastOne = validSpawnPoints.length === 1;
+
+            overlay.innerHTML = (mob.spawn_points ?? []).map(point => {
+                const isThisPointTheLastOne = isLastOne && point.id === validSpawnPoints[0]?.id;
+                return drawSpawnPoint(
+                    point,
+                    spawnCullStatus,
+                    mob.No,
+                    point.mob_ranks.includes("B2") ? "B2" : (point.mob_ranks.includes("B1") ? "B1" : point.mob_ranks[0]),
+                    isThisPointTheLastOne,
+                    isLastOne
+                );
+            }).join("");
+        }
+    }
 }
 
 export function updateProgressBar(card, mob) {

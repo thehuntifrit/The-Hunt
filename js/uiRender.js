@@ -445,7 +445,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
             updateSimpleMobItem(item, mob);
           }
           
-          // Highlight logic
           const state = getState();
           if (state.openMobCardNo === mob.No) {
             item.classList.add("selected");
@@ -456,44 +455,36 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
         });
       });
 
-      // Synchronize DOM.pcLeftList with nextChildren
       nextChildren.forEach((child, index) => {
         if (DOM.pcLeftList.children[index] !== child) {
           DOM.pcLeftList.insertBefore(child, DOM.pcLeftList.children[index] || null);
         }
       });
 
-      // Remove excess children
       while (DOM.pcLeftList.children.length > nextChildren.length) {
         DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
       }
-    
-    // PC detail view logic
+    }
+
     if (DOM.pcRightDetail) {
       const state = getState();
       if (state.openMobCardNo) {
-        const openedCard = cardCache.get(String(state.openMobCardNo));
-        if (openedCard) {
-            let detailCard = DOM.pcRightDetail.querySelector('.mob-card');
-            const targetMob = getState().mobs.find(m => m.No === state.openMobCardNo);
-            if (targetMob) {
-                if (!detailCard || detailCard.dataset.mobNo !== String(targetMob.No)) {
-                    detailCard = createMobCard(targetMob);
-                    DOM.pcRightDetail.innerHTML = '';
-                    DOM.pcRightDetail.appendChild(detailCard);
-                }
-                updateCardFull(detailCard, targetMob);
-                // forcefully expand
-                const panel = detailCard.querySelector(".expandable-panel");
-                if (panel) panel.classList.add("open");
-            }
+        const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
+        if (targetMob) {
+            updateCardFull(DOM.pcRightDetail, targetMob);
         }
       } else {
-         DOM.pcRightDetail.innerHTML = '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>';
+        DOM.pcRightDetail.innerHTML = '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>';
       }
     }
-  }
-
+    
+    if (navigator.userAgent.includes("Safari") && !navigator.userAgent.includes("Chrome")) {
+      const headers = DOM.pcLeftList.querySelectorAll(".text-xs");
+      headers.forEach(header => {
+        header.style.transform = "translateZ(0)";
+      });
+    }
+  
   lastRenderedOrderStr = sortedMobs.map(m => m.No).join(",");
   lastRenderedGroupStr = sortedMobs.map(m => getGroupKey(m)).join(",");
 
