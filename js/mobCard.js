@@ -25,7 +25,19 @@ export function createSimpleMobItem(mob) {
             <div class="pc-list-progress-bar" style="width: 0%"></div>
         </div>
         <div class="pc-list-percent">0%</div>
+        <button class="pc-list-report-btn" title="討伐報告">📝</button>
     `;
+
+    const reportBtn = item.querySelector('.pc-list-report-btn');
+    reportBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const { isVerified } = getState();
+        if (!isVerified) {
+            import("./modal.js").then(m => m.openAuthModal());
+            return;
+        }
+        import("./modal.js").then(m => m.openReportModal(mob.No));
+    });
 
     const nameEl = item.querySelector('.pc-list-name');
     nameEl.textContent = mob.Name;

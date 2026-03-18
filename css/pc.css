@@ -160,9 +160,34 @@
         border-color: rgba(255, 255, 255, 0.3);
     }
 
-    .pc-list-item[data-rank="S"] .pc-list-name { color: var(--rank-s); }
-    .pc-list-item[data-rank="A"] .pc-list-name { color: var(--rank-a); }
     .pc-list-item[data-rank="F"] .pc-list-name { color: var(--rank-f); }
+
+    .pc-list-report-btn {
+        flex: 0 0 32px;
+        height: 28px;
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-left: 8px;
+    }
+
+    .pc-list-report-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--accent-cyan);
+        box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);
+        transform: translateY(-1px);
+    }
+
+    .pc-list-item.selected .pc-list-report-btn {
+        border-color: rgba(255, 255, 255, 0.2);
+    }
 
     .pc-detail-card {
         background: rgba(15, 23, 42, 0.85);

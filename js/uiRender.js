@@ -464,6 +464,18 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       while (DOM.pcLeftList.children.length > nextChildren.length) {
         DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
       }
+
+      // Sync selected state even if order didn't change
+      const state = getState();
+      Array.from(DOM.pcLeftList.children).forEach(child => {
+          if (child.dataset.mobNo) {
+              if (parseInt(child.dataset.mobNo, 10) === state.openMobCardNo) {
+                  child.classList.add("selected");
+              } else {
+                  child.classList.remove("selected");
+              }
+          }
+      });
     }
 
     if (DOM.pcRightDetail) {
