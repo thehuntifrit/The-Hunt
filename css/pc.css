@@ -23,7 +23,7 @@
         width: 40%;
         align-self: flex-start;
         position: sticky;
-        top: 13.35rem;
+        top: 15.1rem; /* align with the first list item under the header */
     }
 
     .pc-list-item {
@@ -109,9 +109,10 @@
     }
 
     /* Color Priority: label-next (Gold) always wins for timed mobs */
-    .pc-list-time .label-next {
+    .pc-list-time .timer-value.label-next {
         color: var(--accent-gold) !important;
-        text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+        text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+        font-weight: 600;
     }
     .pc-list-time .time-over {
         color: #ffb1b6;

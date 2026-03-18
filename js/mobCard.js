@@ -48,6 +48,8 @@ export function updateSimpleMobItem(item, mob) {
     const isTimedMob = !!(mob.repopInfo?.isInConditionWindow || mob.repopInfo?.nextConditionSpawnDate);
     let label = "未確定";
     let timeValue = "";
+    let isSpecialCondition = isTimedMob;
+    let isTimeOver = status === "MaxOver";
 
     if (isInConditionWindow && conditionWindowEnd) {
         const remainingConditionSec = (conditionWindowEnd.getTime() / 1000) - now;
