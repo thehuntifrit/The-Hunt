@@ -51,11 +51,8 @@ export function initSidebar() {
     renderSidebarRankTabs();
     renderSidebarAreaFilter();
     updateSidebarClocks();
-    updateSidebarWelcome();
 
     setInterval(updateSidebarClocks, EORZEA_MINUTE_MS);
-
-    window.addEventListener("characterNameSet", updateSidebarWelcome);
 
     setupSidebarNotification();
     initAlertMirroring();
@@ -159,13 +156,6 @@ function updateSidebarClocks() {
     const etEl = document.getElementById("sidebar-et-persistent");
     if (ltEl) ltEl.textContent = `${ltH}:${ltM}`;
     if (etEl) etEl.textContent = `${et.hours}:${et.minutes}`;
-}
-
-function updateSidebarWelcome() {
-    const el = document.getElementById("sidebar-welcome-persistent");
-    if (!el) return;
-    const name = getState().characterName || "";
-    el.textContent = name ? name : "Questing...";
 }
 
 function setupSidebarNotification() {
