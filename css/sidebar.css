@@ -105,46 +105,6 @@
     }
 
 
-    .sidebar-clocks-persistent {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-        margin-bottom: 20px;
-    }
-
-    .sidebar-clock-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 2px;
-        padding: 8px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    }
-    .sidebar-clock-item:last-child {
-        border-bottom: none;
-    }
-
-    .sidebar-clock-label {
-        background-color: #d6c9b0;
-        color: #5a4a3a;
-        border: 1px solid #5a4a3a;
-        font-size: 8px;
-        font-weight: 800;
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        width: 17px;
-        height: 12px;
-        border-radius: 2px;
-    }
-
-    .sidebar-clock-value {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 11px;
-        color: #e2d7c5;
-        font-weight: 700;
-        text-align: center;
-    }
 
     .sidebar-bottom {
         padding-bottom: 20px;
@@ -189,31 +149,11 @@
     }
 
     .sidebar-volume {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        padding: 4px 0;
+        display: none;
     }
 
     .vertical-slider {
-        -webkit-appearance: none;
-        width: 60px;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
-        transform: rotate(-90deg);
-        margin: 28px 0;
-        cursor: pointer;
-    }
-
-    .vertical-slider::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 10px;
-        height: 10px;
-        background: var(--accent-gold);
-        border-radius: 50%;
-        border: none;
-        box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        display: none;
     }
 
     .sidebar-icon-btn {

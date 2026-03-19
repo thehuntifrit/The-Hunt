@@ -28,12 +28,25 @@
         gap: 2px;
     }
 
-    #pc-right-detail {
+    #pc-right-pane {
         width: 40%;
         align-self: flex-start;
         position: sticky;
         top: 3.2rem;
         z-index: 10;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .pc-clocks-header {
+        display: flex;
+        gap: 12px;
+        padding: 4px 8px;
+        background: rgba(10, 15, 30, 0.4);
+        border-radius: 6px;
+        width: fit-content;
+        margin-bottom: 4px;
     }
 
     .pc-list-item {

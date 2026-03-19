@@ -30,16 +30,6 @@
                     <div class="sidebar-logo">
                         <span class="logo-the">The</span><br><span class="logo-hunt">Hunt</span>
                     </div>
-                    <div class="sidebar-clocks-persistent">
-                        <div class="sidebar-clock-item">
-                            <div class="sidebar-clock-label">ET</div>
-                            <div id="sidebar-et-persistent" class="sidebar-clock-value">--:--</div>
-                        </div>
-                        <div class="sidebar-clock-item">
-                            <div class="sidebar-clock-label">LT</div>
-                            <div id="sidebar-lt-persistent" class="sidebar-clock-value">--:--</div>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="sidebar-icon-col">
@@ -56,9 +46,6 @@
                                 <input type="checkbox" id="sidebar-notification-toggle">
                                 <span class="sidebar-notification-label">🔔</span>
                             </label>
-                        </div>
-                        <div class="sidebar-volume">
-                            <input type="range" id="sidebar-notification-volume" min="0" max="1" step="0.1" class="volume-slider vertical-slider" title="音量">
                         </div>
                     </div>
                 </div>
@@ -158,7 +145,19 @@
         <!-- PC Layout (3/5 and 2/5 split pane) -->
         <div id="pc-layout" class="hidden h-full">
             <div id="pc-left-list"></div>
-            <div id="pc-right-detail"></div>
+            <div id="pc-right-pane">
+                <div id="pc-clocks-header" class="pc-clocks-header">
+                    <div class="header-clock-group">
+                        <span class="header-label-mini">ET</span>
+                        <span id="pc-time-et" class="header-time-val-mini">--:--</span>
+                    </div>
+                    <div class="header-clock-group">
+                        <span class="header-label-mini">LT</span>
+                        <span id="pc-time-lt" class="header-time-val-mini">--:--</span>
+                    </div>
+                </div>
+                <div id="pc-right-detail"></div>
+            </div>
         </div>
 
         <!-- Mobile Layout (Original column structure) -->

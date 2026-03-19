@@ -151,19 +151,23 @@ function updateSidebarClocks() {
     const et = getEorzeaTime(now);
     const ltH = String(now.getHours()).padStart(2, "0");
     const ltM = String(now.getMinutes()).padStart(2, "0");
+    const ltStr = `${ltH}:${ltM}`;
+    const etStr = `${et.hours}:${et.minutes}`;
 
-    const ltEl = document.getElementById("sidebar-lt-persistent");
-    const etEl = document.getElementById("sidebar-et-persistent");
-    if (ltEl) ltEl.textContent = `${ltH}:${ltM}`;
-    if (etEl) etEl.textContent = `${et.hours}:${et.minutes}`;
+    ["sidebar-lt-persistent", "pc-time-lt", "header-time-lt"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = ltStr;
+    });
+    ["sidebar-et-persistent", "pc-time-et", "header-time-et"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = etStr;
+    });
 }
 
 function setupSidebarNotification() {
     const origToggle = document.getElementById("notification-toggle");
     const origVolume = document.getElementById("notification-volume");
     const sidebarToggle = document.getElementById("sidebar-notification-toggle");
-    const sidebarVolume = document.getElementById("sidebar-notification-volume");
-
     if (sidebarToggle && origToggle) {
         sidebarToggle.checked = origToggle.checked;
         sidebarToggle.addEventListener("change", () => {
@@ -172,14 +176,6 @@ function setupSidebarNotification() {
         });
         origToggle.addEventListener("change", () => {
             sidebarToggle.checked = origToggle.checked;
-        });
-    }
-
-    if (sidebarVolume && origVolume) {
-        sidebarVolume.value = origVolume.value;
-        sidebarVolume.addEventListener("input", () => {
-            origVolume.value = sidebarVolume.value;
-            origVolume.dispatchEvent(new Event("input"));
         });
     }
 }
