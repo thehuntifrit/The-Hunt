@@ -3,7 +3,7 @@ import { getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
 
 let currentPanel = null;
 
-const PANELS = ["clock", "notification", "rank", "area", "user"];
+const PANELS = ["telop", "maintenance", "clock", "notification", "rank", "area", "user"];
 
 function getStoredState() {
     try {
@@ -58,23 +58,55 @@ export function initSidebar() {
     window.addEventListener("characterNameSet", updateSidebarWelcome);
 
     setupSidebarNotification();
-    initStatusBarMirror();
+    initAlertMirroring();
 }
 
-function initStatusBarMirror() {
-    const source = document.getElementById("status-message");
-    const target = document.getElementById("sidebar-status-bar");
-    if (!source || !target) return;
+function initAlertMirroring() {
+    const maintenanceSource = document.getElementById("status-message-maintenance");
+    const telopSource = document.getElementById("status-message-telop");
+    
+    const maintenanceTarget = document.getElementById("sidebar-maintenance-content");
+    const telopTarget = document.getElementById("sidebar-telop-content");
+    
+    const maintenanceBtn = document.querySelector('.sidebar-icon-btn[data-panel="maintenance"]');
+    const telopBtn = document.querySelector('.sidebar-icon-btn[data-panel="telop"]');
 
-    function sync() {
-        const html = source.innerHTML.trim();
-        target.innerHTML = html;
-        target.style.display = html ? "" : "none";
+    function syncMaintenance() {
+        if (!maintenanceSource || !maintenanceTarget) return;
+        const html = maintenanceSource.innerHTML.trim();
+        const hasContent = html !== "";
+        maintenanceTarget.innerHTML = html;
+        maintenanceBtn?.classList.toggle("has-alert", hasContent);
+
+        // Add a badge to the title if has content
+        const title = document.querySelector('#sidebar-panel-maintenance .sidebar-section-title');
+        if (title) {
+            title.innerHTML = `MAINTENANCE ${hasContent ? '<span class="sidebar-new-badge">NEW</span>' : ''}`;
+        }
     }
 
-    const observer = new MutationObserver(sync);
-    observer.observe(source, { childList: true, subtree: true, characterData: true });
-    sync();
+    function syncTelop() {
+        if (!telopSource || !telopTarget) return;
+        const text = telopSource.textContent.trim();
+        const hasContent = text !== "";
+        telopTarget.textContent = text;
+        telopBtn?.classList.toggle("has-alert", hasContent);
+        
+        // Add a badge to the title if has content
+        const title = document.querySelector('#sidebar-panel-telop .sidebar-section-title');
+        if (title) {
+            title.innerHTML = `ANNOUNCEMENT ${hasContent ? '<span class="sidebar-new-badge">NEW</span>' : ''}`;
+        }
+    }
+
+    if (maintenanceSource) {
+        new MutationObserver(syncMaintenance).observe(maintenanceSource, { childList: true, subtree: true, characterData: true });
+        syncMaintenance();
+    }
+    if (telopSource) {
+        new MutationObserver(syncTelop).observe(telopSource, { childList: true, subtree: true, characterData: true });
+        syncTelop();
+    }
 }
 
 function togglePanel(panelName) {

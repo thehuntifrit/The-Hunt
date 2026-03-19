@@ -30,6 +30,8 @@
                     <span class="logo-the">The</span><br><span class="logo-hunt">Hunt</span>
                 </div>
                 <div class="sidebar-divider"></div>
+                <button class="sidebar-icon-btn" data-panel="telop" title="告知">📢</button>
+                <button class="sidebar-icon-btn" data-panel="maintenance" title="メンテ">🛠️</button>
                 <button class="sidebar-icon-btn" data-panel="clock" title="時計">⏱</button>
                 <button class="sidebar-icon-btn" data-panel="notification" title="通知">🔔</button>
                 <button class="sidebar-icon-btn" data-panel="rank" title="ランク">🏷️</button>
@@ -37,6 +39,18 @@
                 <button class="sidebar-icon-btn" data-panel="user" title="ユーザー">👤</button>
             </div>
             <div class="sidebar-panel">
+                <div id="sidebar-panel-telop" class="sidebar-panel-content hidden">
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">ANNOUNCEMENT</div>
+                        <div id="sidebar-telop-content" class="sidebar-alert-content"></div>
+                    </div>
+                </div>
+                <div id="sidebar-panel-maintenance" class="sidebar-panel-content hidden">
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">MAINTENANCE</div>
+                        <div id="sidebar-maintenance-content" class="sidebar-alert-content"></div>
+                    </div>
+                </div>
                 <div id="sidebar-panel-clock" class="sidebar-panel-content hidden">
                     <div class="sidebar-section">
                         <div class="sidebar-section-title">CLOCKS</div>
