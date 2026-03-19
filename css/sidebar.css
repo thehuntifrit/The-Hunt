@@ -69,7 +69,7 @@
     }
 
     #app-sidebar.expanded .sidebar-main-nav {
-        width: 120px;
+        width: 56px;
     }
 
     .sidebar-top {
@@ -361,7 +361,13 @@
     }
 
     #app-sidebar.expanded~#sidebar-status-bar {
-        left: 120px;
+        left: 56px;
+    }
+    
+    #app-sidebar.expanded .sidebar-panel {
+        display: block;
+        width: 260px;
+        border-left: 1px solid rgba(255, 255, 255, 0.06);
     }
 
     #sidebar-status-bar:empty {
@@ -375,7 +381,7 @@
     }
 
     body.has-sidebar.sidebar-expanded main.main-content-area {
-        margin-left: 120px;
+        margin-left: calc(56px + 260px); 
     }
 }
 
