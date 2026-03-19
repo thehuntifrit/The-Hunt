@@ -54,20 +54,20 @@ export function updateSimpleMobItem(item, mob) {
 
     if (isInConditionWindow && conditionWindowEnd) {
         const remainingConditionSec = (conditionWindowEnd.getTime() / 1000) - now;
-        label = "残り";
+        label = "⏳";
         timeValue = formatDurationM(remainingConditionSec);
         isSpecialCondition = true;
     } else if (nextConditionSpawnDate && now >= minRepop) {
         const nextConditionSec = (nextConditionSpawnDate.getTime() / 1000) - now;
-        label = "次回";
+        label = "🔜";
         timeValue = formatDurationColon(nextConditionSec);
         isSpecialCondition = true;
     } else if (minRepop && now < minRepop) {
-        label = "次回";
+        label = "🔜";
         timeValue = formatDurationColon(minRepop - now);
         if (isTimedMob) isSpecialCondition = true;
     } else if (maxRepop && now < maxRepop) {
-        label = "残り";
+        label = "⏳";
         if (isTimedMob) {
             timeValue = formatDurationM(maxRepop - now);
             isSpecialCondition = true;
@@ -75,7 +75,7 @@ export function updateSimpleMobItem(item, mob) {
             timeValue = formatDurationColon(maxRepop - now);
         }
     } else if (maxRepop) {
-        label = "超過";
+        label = "💯";
         if (isTimedMob) {
             timeValue = formatDurationM(now - maxRepop);
             isSpecialCondition = true;
@@ -265,6 +265,15 @@ export function updateCardFull(container, mob) {
                 </div>
             </div>
 
+            <div class="pc-detail-progress-section">
+                <div class="pc-detail-progress-text">
+                    <span>${Math.floor(elapsedPercent || 0)}%</span>
+                </div>
+                <div class="pc-detail-progress-container">
+                    <div class="pc-detail-progress-bar" style="width: ${elapsedPercent || 0}%"></div>
+                </div>
+            </div>
+
             <div class="pc-detail-grid">
                 <div class="pc-detail-info-item">
                     <span class="label">最短POP</span>
@@ -283,16 +292,6 @@ export function updateCardFull(container, mob) {
                 <div class="pc-detail-info-item">
                     <span class="label">前回討伐</span>
                     <span class="value">${formatMMDDHHmm(mob.last_kill_time)}</span>
-                </div>
-            </div>
-
-            <div class="pc-detail-progress-section">
-                <div class="pc-detail-progress-text">
-                    <span>進捗状況</span>
-                    <span class="percent">${Math.floor(elapsedPercent || 0)}%</span>
-                </div>
-                <div class="pc-detail-progress-container">
-                    <div class="pc-detail-progress-bar" style="width: ${elapsedPercent || 0}%"></div>
                 </div>
             </div>
 
