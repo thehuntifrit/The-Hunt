@@ -5,6 +5,16 @@ let currentPanel = null;
 
 const PANELS = ["telop", "maintenance", "rank"];
 
+function highlightDateTime(isoStr) {
+    if (!isoStr) return "";
+    const d = new Date(isoStr);
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${m}/${day} ${h}:${min}`;
+}
+
 function getStoredState() {
     try {
         return JSON.parse(localStorage.getItem("sidebarState")) || {};

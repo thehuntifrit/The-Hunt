@@ -43,12 +43,39 @@
 
     .pc-clocks-header {
         display: flex;
-        gap: 12px;
-        padding: 4px 8px;
-        background: rgba(10, 15, 30, 0.4);
-        border-radius: 6px;
+        flex-direction: row;
+        align-items: center;
+        gap: 20px;
+        padding: 6px 0;
         width: fit-content;
+        align-self: flex-end;
+        margin-right: 8px;
         margin-bottom: 4px;
+        background: transparent;
+    }
+
+    .header-clock-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .header-label-mini {
+        font-size: 10px;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.08);
+        padding: 1px 4px;
+        border-radius: 3px;
+        line-height: 1;
+    }
+
+    .header-time-val-mini {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--accent-gold);
+        line-height: 1;
     }
 
     .pc-list-item {
@@ -446,5 +473,9 @@
         position: absolute;
         inset: 0;
         pointer-events: none;
+    }
+
+    .pc-detail-map-overlay .spawn-point {
+        pointer-events: auto;
     }
 }

@@ -53,7 +53,7 @@
 
     #app-sidebar.expanded .sidebar-panel {
         display: block;
-        width: 200px; /* even narrower */
+        width: 200px;
         border-left: 1px solid rgba(255, 255, 255, 0.06);
     }
 
@@ -104,27 +104,6 @@
     }
 
 
-
-    .sidebar-notification-toggle {
-        margin-top: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 44px;
-        height: 44px;
-        cursor: pointer;
-    }
-
-    .sidebar-notification-toggle input {
-        display: none;
-    }
-
-    .sidebar-notification-label {
-        font-size: 16px;
-        line-height: 1;
-        opacity: 0.35;
-        transition: all 0.2s ease;
-    }
 
     .sidebar-notification-toggle input:checked + .sidebar-notification-label {
         opacity: 1;
@@ -273,15 +252,29 @@
     }
 
     .sidebar-notification-toggle {
+        width: 36px;
+        height: 36px;
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 4px 0;
+        justify-content: center;
+        cursor: pointer;
+        margin-top: 4px;
+    }
+
+    .sidebar-notification-toggle input {
+        display: none;
     }
 
     .sidebar-notification-label {
-        font-size: 11px;
-        color: rgba(255, 255, 255, 0.5);
+        font-size: 16px;
+        opacity: 0.35;
+        transition: opacity 0.2s;
+    }
+
+    .sidebar-notification-toggle input:checked + .sidebar-notification-label {
+        opacity: 1;
+        color: var(--accent-gold);
+        text-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
     }
 
     #sidebar-rank-tabs {
@@ -381,11 +374,6 @@
         left: 56px;
     }
     
-    #app-sidebar.expanded .sidebar-panel {
-        display: block;
-        width: 260px;
-        border-left: 1px solid rgba(255, 255, 255, 0.06);
-    }
 
     #sidebar-status-bar:empty {
         display: none;
