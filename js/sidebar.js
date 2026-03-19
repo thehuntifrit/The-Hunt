@@ -164,8 +164,8 @@ function showPanel(panelName) {
         target.classList.remove("hidden");
         // Ensure filters render if opening rank panel
         if (panelName === "rank") {
-            renderSidebarRankTabs();
-            renderSidebarAreaFilter();
+            if (typeof renderSidebarRankTabs === "function") renderSidebarRankTabs();
+            if (typeof renderSidebarAreaFilter === "function") renderSidebarAreaFilter();
         }
     }
 }
