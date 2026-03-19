@@ -18,9 +18,8 @@
     }
 
     #app-sidebar.expanded {
-        width: calc(220px + 220px);
+        min-width: 56px;
         width: auto;
-        min-width: 220px;
     }
 
     #app-sidebar .sidebar-icon-col {
@@ -54,6 +53,8 @@
 
     #app-sidebar.expanded .sidebar-panel {
         display: block;
+        width: 260px; /* narrowed from flex:1 */
+        border-left: 1px solid rgba(255, 255, 255, 0.06);
     }
 
     .sidebar-main-nav {
@@ -68,7 +69,7 @@
     }
 
     #app-sidebar.expanded .sidebar-main-nav {
-        width: 220px;
+        width: 120px;
     }
 
     .sidebar-top {
@@ -360,7 +361,7 @@
     }
 
     #app-sidebar.expanded~#sidebar-status-bar {
-        left: 220px;
+        left: 120px;
     }
 
     #sidebar-status-bar:empty {
@@ -374,7 +375,7 @@
     }
 
     body.has-sidebar.sidebar-expanded main.main-content-area {
-        margin-left: 220px;
+        margin-left: 120px;
     }
 }
 
