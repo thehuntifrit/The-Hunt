@@ -3,7 +3,7 @@ import { getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
 
 let currentPanel = null;
 
-const PANELS = ["telop", "maintenance", "clock", "notification", "rank", "area", "user"];
+const PANELS = ["telop", "maintenance", "notification", "rank", "area"];
 
 function getStoredState() {
     try {
@@ -155,17 +155,17 @@ function updateSidebarClocks() {
     const ltH = String(now.getHours()).padStart(2, "0");
     const ltM = String(now.getMinutes()).padStart(2, "0");
 
-    const ltEl = document.getElementById("sidebar-lt");
-    const etEl = document.getElementById("sidebar-et");
+    const ltEl = document.getElementById("sidebar-lt-persistent");
+    const etEl = document.getElementById("sidebar-et-persistent");
     if (ltEl) ltEl.textContent = `${ltH}:${ltM}`;
     if (etEl) etEl.textContent = `${et.hours}:${et.minutes}`;
 }
 
 function updateSidebarWelcome() {
-    const el = document.getElementById("sidebar-welcome");
+    const el = document.getElementById("sidebar-welcome-persistent");
     if (!el) return;
     const name = getState().characterName || "";
-    el.textContent = name ? `ようこそ ${name}` : "";
+    el.textContent = name ? name : "Questing...";
 }
 
 function setupSidebarNotification() {

@@ -4,11 +4,13 @@
         left: 0;
         top: 0;
         bottom: 0;
-        width: 48px;
+        width: auto;
+        min-width: 48px;
         background: rgba(10, 15, 30, 0.95);
-        -webkit-backdrop-filter: blur(16px);
-        backdrop-filter: blur(16px);
-        border-right: 1px solid rgba(255, 255, 255, 0.06);
+        -webkit-backdrop-filter: blur(24px);
+        backdrop-filter: blur(24px);
+        /* shadow for separation */
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
         display: flex;
         flex-direction: column;
         z-index: 100;
@@ -17,17 +19,23 @@
     }
 
     #app-sidebar.expanded {
-        width: 220px;
+        width: calc(220px + 220px); /* Main Nav (220) + Panel (220) if panel open? No, let's keep it simple. */
+        width: auto; /* Allow content to define width */
+        min-width: 220px;
     }
 
     #app-sidebar .sidebar-icon-col {
-        width: 48px;
-        min-width: 48px;
+        width: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 4px;
         padding-top: 12px;
+    }
+
+    #app-sidebar.expanded .sidebar-icon-col {
+        align-items: flex-start;
+        padding-left: 12px;
     }
 
     #app-sidebar .sidebar-inner {
@@ -47,6 +55,114 @@
 
     #app-sidebar.expanded .sidebar-panel {
         display: block;
+    }
+
+    .sidebar-main-nav {
+        width: 48px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        border-right: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(10, 15, 30, 0.4);
+        transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-x: hidden;
+    }
+
+    #app-sidebar.expanded .sidebar-main-nav {
+        width: 220px;
+    }
+
+    /* Persistent Top Section */
+    .sidebar-top {
+        display: none;
+        flex-direction: column;
+        padding: 20px 16px 12px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    #app-sidebar.expanded .sidebar-top {
+        display: flex;
+    }
+
+    .sidebar-logo {
+        font-size: 24px;
+        font-weight: 900;
+        line-height: 0.9;
+        letter-spacing: -0.05em;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        cursor: default;
+    }
+
+    .sidebar-logo .logo-the { color: var(--accent-cyan); }
+    .sidebar-logo .logo-hunt { color: var(--accent-gold); }
+
+    .sidebar-logo-compact {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 900;
+        margin-bottom: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+    }
+
+    #app-sidebar.expanded .sidebar-logo-compact {
+        display: none;
+    }
+
+    .sidebar-user-info {
+        margin-bottom: 16px;
+    }
+
+    .sidebar-user-label {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.3);
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+
+    .sidebar-username {
+        font-size: 13px;
+        color: #fff;
+        font-weight: 700;
+        word-break: break-all;
+    }
+
+    .sidebar-clocks-persistent {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 20px;
+    }
+
+    .sidebar-clock-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 8px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .sidebar-clock-label {
+        font-size: 10px;
+        font-weight: 900;
+        color: rgba(255, 255, 255, 0.25);
+        width: 16px;
+    }
+
+    .sidebar-clock-value {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        color: var(--accent-gold);
+        font-weight: 700;
     }
 
     .sidebar-icon-btn {
@@ -126,23 +242,6 @@
         color: rgba(255, 255, 255, 0.2);
         font-style: italic;
     }
-
-    .sidebar-logo {
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 8px;
-        font-size: 11px;
-        font-weight: 900;
-        line-height: 0.9;
-        text-align: center;
-        cursor: pointer;
-    }
-
-    .sidebar-logo .logo-the { color: var(--accent-cyan); }
-    .sidebar-logo .logo-hunt { color: var(--accent-gold); }
 
     .sidebar-section {
         margin-bottom: 16px;
