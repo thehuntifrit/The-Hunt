@@ -160,8 +160,14 @@ export function attachLocationEvents() {
     if (locationEventsAttached) return;
 
     const colContainer = document.getElementById("column-container");
-    if (!colContainer) return;
+    if (colContainer) {
+        colContainer.addEventListener("click", handleCrushToggle, { capture: true });
+    }
 
-    colContainer.addEventListener("click", handleCrushToggle, { capture: true });
+    const pcRightPane = document.getElementById("pc-right-pane");
+    if (pcRightPane) {
+        pcRightPane.addEventListener("click", handleCrushToggle, { capture: true });
+    }
+
     locationEventsAttached = true;
 }

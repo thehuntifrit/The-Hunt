@@ -61,18 +61,35 @@ export function initSidebar() {
 function initAlertMirroring() {
     const maintenanceSource = document.getElementById("status-message-maintenance");
     const telopSource = document.getElementById("status-message-telop");
-    
+
     const maintenanceTarget = document.getElementById("sidebar-maintenance-content");
     const telopTarget = document.getElementById("sidebar-telop-content");
-    
+
     const maintenanceBtn = document.querySelector('.sidebar-icon-btn[data-panel="maintenance"]');
     const telopBtn = document.querySelector('.sidebar-icon-btn[data-panel="telop"]');
 
     function syncMaintenance() {
-        if (!maintenanceSource || !maintenanceTarget) return;
-        const html = maintenanceSource.innerHTML.trim();
-        const hasContent = html !== "";
-        maintenanceTarget.innerHTML = html;
+        const state = getState();
+        const maintContainer = maintenanceTarget; // Use the existing target
+        if (!maintContainer) return;
+
+        let hasContent = false;
+        if (state.maintenance && state.maintenance.start && state.maintenance.end) {
+            const start = highlightDateTime(state.maintenance.start);
+            const end = highlightDateTime(state.maintenance.end);
+            maintContainer.innerHTML = `
+                <div class="maintenance-box">
+                    <div class="time-label">開始日時</div>
+                    <div class="time-val">${start}</div>
+                    <div class="time-sep">～</div>
+                    <div class="time-label">終了日時</div>
+                    <div class="time-val">${end}</div>
+                </div>
+            `;
+            hasContent = true;
+        } else {
+            maintContainer.textContent = "現在予定されているメンテナンスはありません。";
+        }
         maintenanceBtn?.classList.toggle("has-alert", hasContent);
 
         // Add a badge to the title if has content
@@ -88,7 +105,7 @@ function initAlertMirroring() {
         const hasContent = text !== "";
         telopTarget.textContent = text;
         telopBtn?.classList.toggle("has-alert", hasContent);
-        
+
         // Add a badge to the title if has content
         const title = document.querySelector('#sidebar-panel-telop .sidebar-section-title');
         if (title) {
@@ -143,7 +160,14 @@ function closePanel() {
 function showPanel(panelName) {
     document.querySelectorAll(".sidebar-panel-content").forEach(p => p.classList.add("hidden"));
     const target = document.getElementById(`sidebar-panel-${panelName}`);
-    if (target) target.classList.remove("hidden");
+    if (target) {
+        target.classList.remove("hidden");
+        // Ensure filters render if opening rank panel
+        if (panelName === "rank") {
+            renderSidebarRankTabs();
+            renderSidebarAreaFilter();
+        }
+    }
 }
 
 function updateSidebarClocks() {
