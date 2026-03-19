@@ -5,11 +5,10 @@
         top: 0;
         bottom: 0;
         width: auto;
-        min-width: 48px;
+        min-width: 100px;
         background: rgba(10, 15, 30, 0.95);
         -webkit-backdrop-filter: blur(24px);
         backdrop-filter: blur(24px);
-        /* shadow for separation */
         box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
         display: flex;
         flex-direction: column;
@@ -19,8 +18,8 @@
     }
 
     #app-sidebar.expanded {
-        width: calc(220px + 220px); /* Main Nav (220) + Panel (220) if panel open? No, let's keep it simple. */
-        width: auto; /* Allow content to define width */
+        width: calc(220px + 220px);
+        width: auto;
         min-width: 220px;
     }
 
@@ -58,7 +57,7 @@
     }
 
     .sidebar-main-nav {
-        width: 48px;
+        width: 100px;
         display: flex;
         flex-direction: column;
         height: 100%;
@@ -72,17 +71,13 @@
         width: 220px;
     }
 
-    /* Persistent Top Section */
+    /* Persistent Top Section */    
     .sidebar-top {
-        display: none;
+        display: flex;
         flex-direction: column;
-        padding: 20px 16px 12px;
+        padding: 20px 10px 12px;
         width: 100%;
         box-sizing: border-box;
-    }
-
-    #app-sidebar.expanded .sidebar-top {
-        display: flex;
     }
 
     .sidebar-logo {
@@ -99,19 +94,6 @@
     .sidebar-logo .logo-hunt { color: var(--accent-gold); }
 
     .sidebar-logo-compact {
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        font-weight: 900;
-        margin-bottom: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-    }
-
-    #app-sidebar.expanded .sidebar-logo-compact {
         display: none;
     }
 
@@ -144,24 +126,29 @@
     .sidebar-clock-item {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 4px 8px;
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 6px;
-        border: 1px solid rgba(255, 255, 255, 0.03);
+        gap: 6px;
+        padding: 2px 0;
     }
 
     .sidebar-clock-label {
-        font-size: 10px;
-        font-weight: 900;
-        color: rgba(255, 255, 255, 0.25);
-        width: 16px;
+        background-color: #d6c9b0;
+        color: #5a4a3a;
+        border: 1px solid #5a4a3a;
+        font-size: 8px;
+        font-weight: 800;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        width: 17px;
+        height: 12px;
+        border-radius: 2px;
+        margin-right: 2px;
     }
 
     .sidebar-clock-value {
         font-family: 'JetBrains Mono', monospace;
         font-size: 13px;
-        color: var(--accent-gold);
+        color: #e2d7c5;
         font-weight: 700;
     }
 
@@ -255,28 +242,6 @@
         letter-spacing: 0.1em;
         margin-bottom: 6px;
         padding-left: 2px;
-    }
-
-    .sidebar-clock-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 4px 0;
-    }
-
-    .sidebar-clock-label {
-        font-size: 10px;
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.35);
-        width: 18px;
-    }
-
-    .sidebar-clock-value {
-        font-family: 'JetBrains Mono', 'Inter', monospace;
-        font-size: 14px;
-        font-weight: 600;
-        color: #e2d7c5;
-        font-variant-numeric: tabular-nums;
     }
 
     .sidebar-volume {
@@ -402,7 +367,7 @@
     }
 
     body.has-sidebar main.main-content-area {
-        margin-left: 48px;
+        margin-left: 100px;
         padding-top: 32px !important;
         transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
