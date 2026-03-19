@@ -29,14 +29,16 @@
     }
 
     #pc-right-pane {
-        width: 40%;
+        width: 450px;
+        flex-shrink: 0;
         align-self: flex-start;
         position: sticky;
-        top: 3.2rem;
+        top: 1.8rem;
         z-index: 10;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 12px;
+        padding-left: 12px;
     }
 
     .pc-clocks-header {
@@ -88,7 +90,7 @@
         border-color: rgba(6, 182, 212, 0.4);
         box-shadow: inset 0 0 10px rgba(6, 182, 212, 0.1);
     }
-    
+
     .pc-list-item.selected::before {
         background: var(--accent-cyan);
     }
@@ -136,6 +138,7 @@
         text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
         font-weight: 600;
     }
+
     .pc-list-time .time-over {
         color: #ffb1b6;
         font-weight: bold;
@@ -150,7 +153,7 @@
         overflow: hidden;
         margin-left: 12px;
         margin-right: 6px;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
         border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
@@ -174,15 +177,27 @@
     }
 
     @keyframes pc-glow-bg {
-        0%, 100% { background-color: rgba(30, 41, 59, 0.4); box-shadow: none; }
-        50% { background-color: rgba(255, 255, 255, 0.1); box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
+
+        0%,
+        100% {
+            background-color: rgba(30, 41, 59, 0.4);
+            box-shadow: none;
+        }
+
+        50% {
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
     }
+
     .pc-list-item.blink-active {
         animation: pc-glow-bg 3s infinite ease-in-out;
         border-color: rgba(255, 255, 255, 0.3);
     }
 
-    .pc-list-item[data-rank="F"] .pc-list-name { color: var(--rank-f); }
+    .pc-list-item[data-rank="F"] .pc-list-name {
+        color: var(--rank-f);
+    }
 
     .pc-list-report-btn {
         flex: 0 0 64px;
@@ -231,46 +246,205 @@
     .pc-detail-card::before {
         content: '';
         position: absolute;
-        top: 0; left: 0; right: 0; height: 2px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
     }
 
-    .pc-detail-card.rank-s { border-color: rgba(251, 191, 36, 0.4); box-shadow: 0 0 20px rgba(251, 191, 36, 0.1); }
-    .pc-detail-card.rank-a { border-color: rgba(107, 163, 122, 0.4); box-shadow: 0 0 20px rgba(107, 163, 122, 0.1); }
-    .pc-detail-card.rank-f { border-color: rgba(129, 140, 248, 0.4); box-shadow: 0 0 20px rgba(129, 140, 248, 0.1); }
+    .pc-detail-card.rank-s {
+        border-color: rgba(251, 191, 36, 0.4);
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.1);
+    }
 
-    .pc-detail-header { margin-bottom: 0.4rem; }
-    .pc-detail-name-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0; }
-    .pc-detail-name { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em; margin: 0; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
-    .pc-detail-rank { font-size: 0.9rem; font-weight: 900; padding: 1px 6px; border-radius: 4px; border: 1px solid currentColor; line-height: 1; }
-    
-    .pc-detail-card.rank-s .pc-detail-rank { color: var(--rank-s); }
-    .pc-detail-card.rank-a .pc-detail-rank { color: var(--rank-a); }
-    .pc-detail-card.rank-f .pc-detail-rank { color: var(--rank-f); }
+    .pc-detail-card.rank-a {
+        border-color: rgba(107, 163, 122, 0.4);
+        box-shadow: 0 0 20px rgba(107, 163, 122, 0.1);
+    }
 
-    .pc-detail-area-row { display: flex; gap: 0.5rem; font-size: 0.8rem; color: rgba(251, 191, 36, 0.8); font-weight: 600; }
-    .pc-detail-expansion { opacity: 0.6; font-weight: 400; }
+    .pc-detail-card.rank-f {
+        border-color: rgba(129, 140, 248, 0.4);
+        box-shadow: 0 0 20px rgba(129, 140, 248, 0.1);
+    }
 
-    .pc-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.2rem 0.5rem; margin-bottom: 0.4rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.4rem; }
-    .pc-detail-info-item { display: flex; flex-direction: column; gap: 0; }
-    .pc-detail-info-item .label { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.3; }
-    .pc-detail-info-item .value { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #e2e8f0; line-height: 1.3; }
-    .pc-detail-info-item.highlight .value { color: var(--accent-gold); font-weight: bold; text-shadow: 0 0 8px rgba(251, 191, 36, 0.3); }
+    .pc-detail-header {
+        margin-bottom: 0.4rem;
+    }
 
-    .pc-detail-progress-section { margin-bottom: 0.4rem; }
-    .pc-detail-progress-text { display: flex; justify-content: flex-end; align-items: baseline; font-size: 0.85rem; font-weight: 900; color: #fff; margin-bottom: 0.2rem; }
-    .pc-detail-progress-text .percent { font-size: 1rem; color: #fff; }
+    .pc-detail-name-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 0;
+    }
 
-    .pc-detail-progress-container { height: 10px; background: rgba(0,0,0,0.4); border-radius: 5px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
-    .pc-detail-progress-bar { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); transition: width 0.5s ease; }
+    .pc-detail-name {
+        font-size: 1.1rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin: 0;
+        color: #fff;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
 
-    .pc-detail-section { margin-top: 0.4rem; }
-    .section-label { font-size: 0.65rem; font-weight: 800; color: rgba(255,255,255,0.3); margin-bottom: 0.15rem; text-transform: uppercase; border-left: 2px solid rgba(255,255,255,0.1); padding-left: 8px; line-height: 1.3; }
-    .section-content { font-size: 0.8rem; line-height: 1.4; color: #cbd5e1; background: rgba(255,255,255,0.03); padding: 0.35rem 0.5rem; border-radius: 6px; }
-    .section-content.memo { color: #94a3b8; border-left: 2px solid #334155; }
-    .section-content.condition { color: #fef08a; border-left: 2px solid #ca8a04; }
+    .pc-detail-rank {
+        font-size: 0.9rem;
+        font-weight: 900;
+        padding: 1px 6px;
+        border-radius: 4px;
+        border: 1px solid currentColor;
+        line-height: 1;
+    }
 
-    .pc-detail-map-container { position: relative; width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
-    .pc-detail-map { width: 100%; height: 100%; object-fit: cover; }
-    .pc-detail-map-overlay { position: absolute; inset: 0; pointer-events: none; }
+    .pc-detail-card.rank-s .pc-detail-rank {
+        color: var(--rank-s);
+    }
+
+    .pc-detail-card.rank-a .pc-detail-rank {
+        color: var(--rank-a);
+    }
+
+    .pc-detail-card.rank-f .pc-detail-rank {
+        color: var(--rank-f);
+    }
+
+    .pc-detail-area-row {
+        display: flex;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: rgba(251, 191, 36, 0.8);
+        font-weight: 600;
+    }
+
+    .pc-detail-expansion {
+        opacity: 0.6;
+        font-weight: 400;
+    }
+
+    .pc-detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.2rem 0.5rem;
+        margin-bottom: 0.4rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding-top: 0.4rem;
+    }
+
+    .pc-detail-info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .pc-detail-info-item .label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        line-height: 1.3;
+    }
+
+    .pc-detail-info-item .value {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.8rem;
+        color: #e2e8f0;
+        line-height: 1.3;
+    }
+
+    .pc-detail-info-item.highlight .value {
+        color: var(--accent-gold);
+        font-weight: bold;
+        text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+    }
+
+    .pc-detail-progress-section {
+        margin-bottom: 0.4rem;
+    }
+
+    .pc-detail-progress-text {
+        display: flex;
+        justify-content: flex-end;
+        align-items: baseline;
+        font-size: 0.85rem;
+        font-weight: 900;
+        color: #fff;
+        margin-bottom: 0.2rem;
+    }
+
+    .pc-detail-progress-text .percent {
+        font-size: 1rem;
+        color: #fff;
+    }
+
+    .pc-detail-progress-container {
+        height: 10px;
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 5px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .pc-detail-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        transition: width 0.5s ease;
+    }
+
+    .pc-detail-section {
+        margin-top: 0.4rem;
+    }
+
+    .section-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.3);
+        margin-bottom: 0.15rem;
+        text-transform: uppercase;
+        border-left: 2px solid rgba(255, 255, 255, 0.1);
+        padding-left: 8px;
+        line-height: 1.3;
+    }
+
+    .section-content {
+        font-size: 0.8rem;
+        line-height: 1.4;
+        color: #cbd5e1;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 0.35rem 0.5rem;
+        border-radius: 6px;
+    }
+
+    .section-content.memo {
+        color: #94a3b8;
+        border-left: 2px solid #334155;
+    }
+
+    .section-content.condition {
+        color: #fef08a;
+        border-left: 2px solid #ca8a04;
+    }
+
+    .pc-detail-map-container {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .pc-detail-map {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .pc-detail-map-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+    }
 }

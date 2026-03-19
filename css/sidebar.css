@@ -53,7 +53,7 @@
 
     #app-sidebar.expanded .sidebar-panel {
         display: block;
-        width: 260px; /* narrowed from flex:1 */
+        width: 200px; /* even narrower */
         border-left: 1px solid rgba(255, 255, 255, 0.06);
     }
 
@@ -61,7 +61,6 @@
         width: 56px;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
         height: 100%;
         border-right: 1px solid rgba(255, 255, 255, 0.06);
         background: rgba(10, 15, 30, 0.4);
@@ -106,28 +105,13 @@
 
 
 
-    .sidebar-bottom {
-        padding-bottom: 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.04);
-        width: 100%;
-    }
-
-    .sidebar-notifications-persistent {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        margin-top: 12px;
-    }
-
     .sidebar-notification-toggle {
+        margin-top: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 32px;
-        height: 32px;
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 50%;
+        width: 44px;
+        height: 44px;
         cursor: pointer;
     }
 
@@ -392,7 +376,7 @@
     }
 
     body.has-sidebar.sidebar-expanded main.main-content-area {
-        margin-left: calc(56px + 260px); 
+        margin-left: calc(56px + 200px); 
     }
 }
 

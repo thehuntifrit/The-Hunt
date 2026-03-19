@@ -198,7 +198,7 @@ function renderSidebarRankTabs() {
         <button class="tab-button ${r.key === activeRank ? 'active' : ''}"
                 data-rank="${r.key}"
                 style="${r.key === activeRank ? `color: ${r.color}; border-color: ${r.color};` : ''}">
-            ${r.label}
+            ${r.key}
         </button>
     `).join("");
 
