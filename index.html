@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/mobile.css">
     <link rel="stylesheet" href="css/pc.css">
+    <link rel="stylesheet" href="css/sidebar.css">
 </head>
 
 <body class="leading-relaxed">
@@ -21,6 +22,71 @@
         <div class="loading-spinner"></div>
         <div class="loading-text">Loading...</div>
     </div>
+
+    <aside id="app-sidebar">
+        <div class="sidebar-inner">
+            <div class="sidebar-icon-col">
+                <div class="sidebar-logo" title="The Hunt">
+                    <span class="logo-the">The</span><br><span class="logo-hunt">Hunt</span>
+                </div>
+                <div class="sidebar-divider"></div>
+                <button class="sidebar-icon-btn" data-panel="clock" title="時計">⏱</button>
+                <button class="sidebar-icon-btn" data-panel="notification" title="通知">🔔</button>
+                <button class="sidebar-icon-btn" data-panel="rank" title="ランク">🏷️</button>
+                <button class="sidebar-icon-btn" data-panel="area" title="エリア">🗺️</button>
+                <button class="sidebar-icon-btn" data-panel="user" title="ユーザー">👤</button>
+            </div>
+            <div class="sidebar-panel">
+                <div id="sidebar-panel-clock" class="sidebar-panel-content hidden">
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">CLOCKS</div>
+                        <div class="sidebar-clock-row">
+                            <span class="sidebar-clock-label">LT</span>
+                            <span id="sidebar-lt" class="sidebar-clock-value">--:--</span>
+                        </div>
+                        <div class="sidebar-clock-row">
+                            <span class="sidebar-clock-label">ET</span>
+                            <span id="sidebar-et" class="sidebar-clock-value">--:--</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="sidebar-panel-notification" class="sidebar-panel-content hidden">
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">NOTIFICATION</div>
+                        <div class="sidebar-notification-toggle">
+                            <label>
+                                <input type="checkbox" id="sidebar-notification-toggle">
+                                <span class="sidebar-notification-label">通知</span>
+                            </label>
+                        </div>
+                        <div class="sidebar-volume">
+                            <input type="range" id="sidebar-notification-volume" min="0" max="1" step="0.1" class="volume-slider" title="音量">
+                        </div>
+                    </div>
+                </div>
+                <div id="sidebar-panel-rank" class="sidebar-panel-content hidden">
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">RANK</div>
+                        <div id="sidebar-rank-tabs"></div>
+                    </div>
+                </div>
+                <div id="sidebar-panel-area" class="sidebar-panel-content hidden">
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">AREA FILTER</div>
+                        <div id="sidebar-area-filter"></div>
+                    </div>
+                </div>
+                <div id="sidebar-panel-user" class="sidebar-panel-content hidden">
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">USER</div>
+                        <div id="sidebar-welcome" class="sidebar-welcome"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div id="sidebar-status-bar"></div>
 
     <header id="main-header"
         class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md border-bottom border-slate-700/50">
@@ -82,7 +148,7 @@
 
     </header>
 
-    <main class="mx-auto px-2 py-2 sm:px-4 pb-10 pt-24">
+    <main class="mx-auto px-2 py-2 sm:px-4 pb-10 pt-24 main-content-area">
         <div id="master-mob-container" class="hidden"></div>
         
         <!-- PC Layout (3/5 and 2/5 split pane) -->

@@ -1,0 +1,251 @@
+import { getState } from "./dataManager.js";
+import { getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
+
+let currentPanel = null;
+
+const PANELS = ["clock", "notification", "rank", "area", "user"];
+
+function getStoredState() {
+    try {
+        return JSON.parse(localStorage.getItem("sidebarState")) || {};
+    } catch { return {}; }
+}
+
+function saveState(key, value) {
+    const s = getStoredState();
+    s[key] = value;
+    localStorage.setItem("sidebarState", JSON.stringify(s));
+}
+
+export function initSidebar() {
+    const sidebar = document.getElementById("app-sidebar");
+    if (!sidebar) return;
+
+    document.body.classList.add("has-sidebar");
+
+    const stored = getStoredState();
+    if (stored.panel) {
+        currentPanel = stored.panel;
+        sidebar.classList.add("expanded");
+        document.body.classList.add("sidebar-expanded");
+        const btn = sidebar.querySelector(`[data-panel="${currentPanel}"]`);
+        if (btn) btn.classList.add("active");
+        showPanel(currentPanel);
+    }
+
+    sidebar.querySelectorAll(".sidebar-icon-btn[data-panel]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            togglePanel(btn.dataset.panel);
+        });
+    });
+
+    const logo = sidebar.querySelector(".sidebar-logo");
+    if (logo) {
+        logo.addEventListener("click", () => {
+            if (sidebar.classList.contains("expanded")) {
+                closePanel();
+            }
+        });
+    }
+
+    renderSidebarRankTabs();
+    renderSidebarAreaFilter();
+    updateSidebarClocks();
+    updateSidebarWelcome();
+
+    setInterval(updateSidebarClocks, EORZEA_MINUTE_MS);
+
+    window.addEventListener("characterNameSet", updateSidebarWelcome);
+
+    setupSidebarNotification();
+    initStatusBarMirror();
+}
+
+function initStatusBarMirror() {
+    const source = document.getElementById("status-message");
+    const target = document.getElementById("sidebar-status-bar");
+    if (!source || !target) return;
+
+    function sync() {
+        const html = source.innerHTML.trim();
+        target.innerHTML = html;
+        target.style.display = html ? "" : "none";
+    }
+
+    const observer = new MutationObserver(sync);
+    observer.observe(source, { childList: true, subtree: true, characterData: true });
+    sync();
+}
+
+function togglePanel(panelName) {
+    const sidebar = document.getElementById("app-sidebar");
+    if (!sidebar) return;
+
+    if (currentPanel === panelName) {
+        closePanel();
+        return;
+    }
+
+    sidebar.querySelectorAll(".sidebar-icon-btn").forEach(b => b.classList.remove("active"));
+    const btn = sidebar.querySelector(`[data-panel="${panelName}"]`);
+    if (btn) btn.classList.add("active");
+
+    currentPanel = panelName;
+    sidebar.classList.add("expanded");
+    document.body.classList.add("sidebar-expanded");
+    saveState("panel", panelName);
+
+    showPanel(panelName);
+}
+
+function closePanel() {
+    const sidebar = document.getElementById("app-sidebar");
+    if (!sidebar) return;
+
+    sidebar.querySelectorAll(".sidebar-icon-btn").forEach(b => b.classList.remove("active"));
+    sidebar.classList.remove("expanded");
+    document.body.classList.remove("sidebar-expanded");
+    currentPanel = null;
+    saveState("panel", null);
+
+    document.querySelectorAll(".sidebar-panel-content").forEach(p => p.classList.add("hidden"));
+}
+
+function showPanel(panelName) {
+    document.querySelectorAll(".sidebar-panel-content").forEach(p => p.classList.add("hidden"));
+    const target = document.getElementById(`sidebar-panel-${panelName}`);
+    if (target) target.classList.remove("hidden");
+}
+
+function updateSidebarClocks() {
+    const now = new Date();
+    const et = getEorzeaTime(now);
+    const ltH = String(now.getHours()).padStart(2, "0");
+    const ltM = String(now.getMinutes()).padStart(2, "0");
+
+    const ltEl = document.getElementById("sidebar-lt");
+    const etEl = document.getElementById("sidebar-et");
+    if (ltEl) ltEl.textContent = `${ltH}:${ltM}`;
+    if (etEl) etEl.textContent = `${et.hours}:${et.minutes}`;
+}
+
+function updateSidebarWelcome() {
+    const el = document.getElementById("sidebar-welcome");
+    if (!el) return;
+    const name = getState().characterName || "";
+    el.textContent = name ? `ようこそ ${name}` : "";
+}
+
+function setupSidebarNotification() {
+    const origToggle = document.getElementById("notification-toggle");
+    const origVolume = document.getElementById("notification-volume");
+    const sidebarToggle = document.getElementById("sidebar-notification-toggle");
+    const sidebarVolume = document.getElementById("sidebar-notification-volume");
+
+    if (sidebarToggle && origToggle) {
+        sidebarToggle.checked = origToggle.checked;
+        sidebarToggle.addEventListener("change", () => {
+            origToggle.checked = sidebarToggle.checked;
+            origToggle.dispatchEvent(new Event("change"));
+        });
+        origToggle.addEventListener("change", () => {
+            sidebarToggle.checked = origToggle.checked;
+        });
+    }
+
+    if (sidebarVolume && origVolume) {
+        sidebarVolume.value = origVolume.value;
+        sidebarVolume.addEventListener("input", () => {
+            origVolume.value = sidebarVolume.value;
+            origVolume.dispatchEvent(new Event("input"));
+        });
+    }
+}
+
+function renderSidebarRankTabs() {
+    const container = document.getElementById("sidebar-rank-tabs");
+    if (!container) return;
+
+    const ranks = [
+        { key: "S", label: "S Rank", color: "var(--rank-s)" },
+        { key: "A", label: "A Rank", color: "var(--rank-a)" },
+        { key: "FATE", label: "FATE", color: "var(--rank-f)" },
+    ];
+
+    const state = getState();
+    const activeRank = state.selectedRank || "S";
+
+    container.innerHTML = ranks.map(r => `
+        <button class="tab-button ${r.key === activeRank ? 'active' : ''}"
+                data-rank="${r.key}"
+                style="${r.key === activeRank ? `color: ${r.color}; border-color: ${r.color};` : ''}">
+            ${r.label}
+        </button>
+    `).join("");
+
+    container.addEventListener("click", (e) => {
+        const btn = e.target.closest(".tab-button");
+        if (!btn) return;
+        const origBtn = document.querySelector(`#rank-tabs .tab-button[data-rank="${btn.dataset.rank}"]`);
+        if (origBtn) origBtn.click();
+
+        container.querySelectorAll(".tab-button").forEach(b => {
+            b.classList.remove("active");
+            b.style.color = "";
+            b.style.borderColor = "";
+        });
+        btn.classList.add("active");
+        const r = ranks.find(r => r.key === btn.dataset.rank);
+        if (r) {
+            btn.style.color = r.color;
+            btn.style.borderColor = r.color;
+        }
+    });
+}
+
+function renderSidebarAreaFilter() {
+    const container = document.getElementById("sidebar-area-filter");
+    if (!container) return;
+
+    const observer = new MutationObserver(() => {
+        syncAreaFilter();
+    });
+
+    const desktopPanel = document.getElementById("area-filter-panel-desktop");
+    if (desktopPanel) {
+        observer.observe(desktopPanel, { childList: true, subtree: true });
+        setTimeout(syncAreaFilter, 500);
+    }
+}
+
+function syncAreaFilter() {
+    const container = document.getElementById("sidebar-area-filter");
+    const desktopPanel = document.getElementById("area-filter-panel-desktop");
+    if (!container || !desktopPanel) return;
+
+    const origButtons = desktopPanel.querySelectorAll(".area-filter-btn");
+    if (origButtons.length === 0) return;
+
+    container.innerHTML = "";
+    origButtons.forEach(orig => {
+        const btn = orig.cloneNode(true);
+        btn.addEventListener("click", () => {
+            orig.click();
+            setTimeout(syncAreaFilter, 50);
+        });
+        container.appendChild(btn);
+    });
+}
+
+window.addEventListener("filterChanged", () => {
+    const sidebarRankTabs = document.getElementById("sidebar-rank-tabs");
+    if (sidebarRankTabs) {
+        const state = getState();
+        const activeRank = state.selectedRank || "S";
+        sidebarRankTabs.querySelectorAll(".tab-button").forEach(btn => {
+            const isActive = btn.dataset.rank === activeRank;
+            btn.classList.toggle("active", isActive);
+        });
+    }
+    syncAreaFilter();
+});

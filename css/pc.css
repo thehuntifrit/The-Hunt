@@ -1,4 +1,8 @@
 @media (min-width: 1024px) {
+    #main-header {
+        display: none !important;
+    }
+
     #mobile-layout {
         display: none !important;
     }
@@ -23,7 +27,7 @@
         width: 40%;
         align-self: flex-start;
         position: sticky;
-        top: 8rem; /* align correctly with the header/list */
+        top: 1rem;
         z-index: 10;
     }
 

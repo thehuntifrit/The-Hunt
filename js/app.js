@@ -8,6 +8,7 @@ import { DOM, sortAndRedistribute, showColumnContainer, updateHeaderTime } from 
 import { debounce } from "./cal.js";
 import { initTooltip } from "./tooltip.js";
 import { initGlobalMagnifier } from "./magnifier.js";
+import { initSidebar } from "./sidebar.js";
 import "./readme.js";
 
 import { initNotification } from "./notificationManager.js";
@@ -93,6 +94,7 @@ async function initApp() {
         initModal();
         renderMaintenanceStatus();
         updateHeaderTime();
+        initSidebar();
         attachGlobalEventListeners();
 
         window.addEventListener('pageshow', (event) => {

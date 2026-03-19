@@ -1,0 +1,281 @@
+@media (min-width: 1024px) {
+    #app-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 48px;
+        background: rgba(10, 15, 30, 0.95);
+        -webkit-backdrop-filter: blur(16px);
+        backdrop-filter: blur(16px);
+        border-right: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        flex-direction: column;
+        z-index: 100;
+        transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+
+    #app-sidebar.expanded {
+        width: 220px;
+    }
+
+    #app-sidebar .sidebar-icon-col {
+        width: 48px;
+        min-width: 48px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding-top: 12px;
+    }
+
+    #app-sidebar .sidebar-inner {
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+    }
+
+    #app-sidebar .sidebar-panel {
+        flex: 1;
+        min-width: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 12px 10px;
+        display: none;
+    }
+
+    #app-sidebar.expanded .sidebar-panel {
+        display: block;
+    }
+
+    .sidebar-icon-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .sidebar-icon-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .sidebar-icon-btn.active {
+        background: rgba(6, 182, 212, 0.15);
+        color: var(--accent-cyan);
+        box-shadow: 0 0 12px rgba(6, 182, 212, 0.2);
+    }
+
+    .sidebar-icon-btn.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 25%;
+        bottom: 25%;
+        width: 3px;
+        background: var(--accent-cyan);
+        border-radius: 0 2px 2px 0;
+    }
+
+    .sidebar-logo {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 8px;
+        font-size: 11px;
+        font-weight: 900;
+        line-height: 0.9;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .sidebar-logo .logo-the { color: var(--accent-cyan); }
+    .sidebar-logo .logo-hunt { color: var(--accent-gold); }
+
+    .sidebar-section {
+        margin-bottom: 16px;
+    }
+
+    .sidebar-section-title {
+        font-size: 9px;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.25);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 6px;
+        padding-left: 2px;
+    }
+
+    .sidebar-clock-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+    }
+
+    .sidebar-clock-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.35);
+        width: 18px;
+    }
+
+    .sidebar-clock-value {
+        font-family: 'JetBrains Mono', 'Inter', monospace;
+        font-size: 14px;
+        font-weight: 600;
+        color: #e2d7c5;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .sidebar-volume {
+        width: 100%;
+        margin-top: 4px;
+    }
+
+    .sidebar-volume .volume-slider {
+        width: 100%;
+    }
+
+    .sidebar-notification-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+    }
+
+    .sidebar-notification-label {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    #sidebar-rank-tabs {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    #sidebar-rank-tabs .tab-button {
+        width: 100%;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(30, 41, 59, 0.5);
+        color: rgba(255, 255, 255, 0.6);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: left;
+    }
+
+    #sidebar-rank-tabs .tab-button:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    #sidebar-rank-tabs .tab-button.active {
+        border-color: currentColor;
+        color: #fff;
+    }
+
+    #sidebar-area-filter {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+    }
+
+    #sidebar-area-filter .area-filter-btn {
+        font-size: 10px;
+        padding: 3px 6px;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(30, 41, 59, 0.4);
+        color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    #sidebar-area-filter .area-filter-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    #sidebar-area-filter .area-filter-btn.active {
+        background: rgba(6, 182, 212, 0.15);
+        border-color: var(--accent-cyan);
+        color: var(--accent-cyan);
+    }
+
+    .sidebar-welcome {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.4);
+        font-weight: 600;
+        word-break: break-all;
+    }
+
+    .sidebar-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.06);
+        margin: 8px 4px;
+    }
+
+    #app-sidebar + #sidebar-status-bar {
+        margin-left: 48px;
+    }
+
+    #app-sidebar.expanded + #sidebar-status-bar {
+        margin-left: 220px;
+    }
+
+    #sidebar-status-bar {
+        position: fixed;
+        top: 0;
+        left: 48px;
+        right: 0;
+        z-index: 90;
+        background: rgba(10, 15, 30, 0.85);
+        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        padding: 2px 12px;
+        font-size: 12px;
+        min-height: 0;
+        transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #app-sidebar.expanded ~ #sidebar-status-bar {
+        left: 220px;
+    }
+
+    #sidebar-status-bar:empty {
+        display: none;
+    }
+
+    body.has-sidebar main.main-content-area {
+        margin-left: 48px;
+        padding-top: 32px !important;
+        transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body.has-sidebar.sidebar-expanded main.main-content-area {
+        margin-left: 220px;
+    }
+}
+
+@media (max-width: 1023px) {
+    #app-sidebar,
+    #sidebar-status-bar {
+        display: none !important;
+    }
+}
