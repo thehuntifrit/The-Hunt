@@ -3,7 +3,7 @@ import { getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
 
 let currentPanel = null;
 
-const PANELS = ["telop", "maintenance", "notification", "rank", "area"];
+const PANELS = ["telop", "maintenance", "rank"];
 
 function getStoredState() {
     try {
@@ -189,13 +189,14 @@ function renderSidebarRankTabs() {
     if (!container) return;
 
     const ranks = [
+        { key: "ALL", label: "ALL", color: "#fff" },
         { key: "S", label: "S Rank", color: "var(--rank-s)" },
         { key: "A", label: "A Rank", color: "var(--rank-a)" },
         { key: "FATE", label: "FATE", color: "var(--rank-f)" },
     ];
 
     const state = getState();
-    const activeRank = state.selectedRank || "S";
+    const activeRank = state.selectedRank || "ALL";
 
     container.innerHTML = ranks.map(r => `
         <button class="tab-button ${r.key === activeRank ? 'active' : ''}"
@@ -263,10 +264,21 @@ window.addEventListener("filterChanged", () => {
     const sidebarRankTabs = document.getElementById("sidebar-rank-tabs");
     if (sidebarRankTabs) {
         const state = getState();
-        const activeRank = state.selectedRank || "S";
+        const activeRank = state.selectedRank || "ALL";
+        const ranks = [
+            { key: "ALL", label: "ALL", color: "#fff" },
+            { key: "S", label: "S Rank", color: "var(--rank-s)" },
+            { key: "A", label: "A Rank", color: "var(--rank-a)" },
+            { key: "FATE", label: "FATE", color: "var(--rank-f)" },
+        ];
         sidebarRankTabs.querySelectorAll(".tab-button").forEach(btn => {
             const isActive = btn.dataset.rank === activeRank;
             btn.classList.toggle("active", isActive);
+            const r = ranks.find(r => r.key === btn.dataset.rank);
+            if (r) {
+                btn.style.color = isActive ? r.color : "";
+                btn.style.borderColor = isActive ? r.color : "";
+            }
         });
     }
     syncAreaFilter();

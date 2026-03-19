@@ -61,6 +61,7 @@
         width: 56px;
         display: flex;
         flex-direction: column;
+        justify-content: space-between;
         height: 100%;
         border-right: 1px solid rgba(255, 255, 255, 0.06);
         background: rgba(10, 15, 30, 0.4);
@@ -143,6 +144,76 @@
         color: #e2d7c5;
         font-weight: 700;
         text-align: center;
+    }
+
+    .sidebar-bottom {
+        padding-bottom: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.04);
+        width: 100%;
+    }
+
+    .sidebar-notifications-persistent {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        margin-top: 12px;
+    }
+
+    .sidebar-notification-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .sidebar-notification-toggle input {
+        display: none;
+    }
+
+    .sidebar-notification-label {
+        font-size: 16px;
+        line-height: 1;
+        opacity: 0.35;
+        transition: all 0.2s ease;
+    }
+
+    .sidebar-notification-toggle input:checked + .sidebar-notification-label {
+        opacity: 1;
+        color: var(--accent-gold);
+        text-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+    }
+
+    .sidebar-volume {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 4px 0;
+    }
+
+    .vertical-slider {
+        -webkit-appearance: none;
+        width: 60px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        transform: rotate(-90deg);
+        margin: 28px 0;
+        cursor: pointer;
+    }
+
+    .vertical-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 10px;
+        height: 10px;
+        background: var(--accent-gold);
+        border-radius: 50%;
+        border: none;
+        box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
     }
 
     .sidebar-icon-btn {
