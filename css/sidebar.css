@@ -279,6 +279,10 @@
         position: relative;
     }
 
+    .sidebar-notification-toggle input {
+        display: none;
+    }
+
     .sidebar-notification-icon {
         font-size: 20px;
         line-height: 1;
