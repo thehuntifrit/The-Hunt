@@ -221,7 +221,7 @@ function renderSidebarFilterAccordion() {
                 ${r.label}
             </button>
             <div class="area-expansion">
-                <div class="area-grid"></div>
+                <div class="area-grid-container"></div>
             </div>
         </div>
     `).join("");
@@ -230,46 +230,60 @@ function renderSidebarFilterAccordion() {
 
     container.querySelectorAll(".rank-header").forEach(header => {
         header.addEventListener("click", () => {
-            const item = header.closest(".rank-accordion-item");
-            const rankKey = item.dataset.rank;
+            const rankKey = header.closest(".rank-accordion-item").dataset.rank;
             const origBtn = document.querySelector(`#rank-tabs .tab-button[data-rank="${rankKey}"]`);
             if (origBtn) origBtn.click();
         });
     });
 
-    // Populate area grid for the active item
-    const activeExpansion = container.querySelector(".rank-accordion-item.active .area-expansion");
+    const activeExpansion = container.querySelector(".rank-accordion-item.active .area-grid-container");
     if (activeExpansion) {
-        const desktopPanel = document.getElementById("area-filter-panel-desktop");
-        if (desktopPanel) {
-            // Force render original buttons to ensure they exist
-            import("./filterUI.js").then(m => m.renderAreaFilterPanel());
+        if (activeRank === "ALL") {
+            const grid = document.createElement("div");
+            grid.className = "area-grid";
+            ["S", "A", "F"].forEach(rank => {
+                const isSelected = state.filter.allRankSet?.has(rank);
+                const btn = document.createElement("button");
+                btn.className = `area-filter-btn ${isSelected ? 'active' : ''}`;
+                btn.textContent = rank === "F" ? "FATE" : `${rank} Rank`;
+                btn.dataset.value = rank;
+                btn.addEventListener("click", (e) => {
+                    handleAreaFilterClick({ target: btn });
+                });
+                grid.appendChild(btn);
+            });
+            activeExpansion.appendChild(grid);
+        } else {
+            const targetRankKey = activeRank === 'FATE' ? 'F' : activeRank;
+            const currentSet = state.filter.areaSets[targetRankKey] || new Set();
+            const expansions = Object.entries(EXPANSION_MAP).sort((a, b) => b[0] - a[0]);
             
-            const origButtons = Array.from(desktopPanel.querySelectorAll(".area-filter-btn"));
-            if (origButtons.length > 0) {
-                const firstOrig = origButtons[0];
-                const allBtn = document.createElement("button");
-                allBtn.className = `area-filter-btn area-select-all ${firstOrig.classList.contains('is-selected') ? 'active' : ''}`;
-                allBtn.textContent = firstOrig.textContent;
-                allBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    firstOrig.click();
-                });
-                activeExpansion.appendChild(allBtn);
+            // All select button
+            const allBtn = document.createElement("button");
+            const isAllSelected = expansions.length > 0 && currentSet.size === expansions.length;
+            allBtn.className = `area-filter-btn area-select-all ${isAllSelected ? 'active' : ''}`;
+            allBtn.textContent = isAllSelected ? "全解除" : "全選択";
+            allBtn.dataset.value = "ALL";
+            allBtn.addEventListener("click", () => {
+                handleAreaFilterClick({ target: allBtn });
+            });
+            activeExpansion.appendChild(allBtn);
 
-                const grid = activeExpansion.querySelector(".area-grid");
-                origButtons.slice(1).forEach(orig => {
-                    const btn = document.createElement("button");
-                    btn.className = `area-filter-btn ${orig.classList.contains('is-selected') ? 'active' : ''}`;
-                    btn.textContent = orig.textContent;
-                    btn.dataset.area = orig.dataset.area || orig.dataset.value;
-                    btn.addEventListener("click", (e) => {
-                        e.stopPropagation();
-                        orig.click();
-                    });
-                    grid.appendChild(btn);
+            // Expansion grid
+            const grid = document.createElement("div");
+            grid.className = "area-grid";
+            expansions.forEach(([id, name]) => {
+                const isSelected = currentSet.has(name);
+                const btn = document.createElement("button");
+                btn.className = `area-filter-btn ${isSelected ? 'active' : ''}`;
+                btn.textContent = name;
+                btn.dataset.value = name;
+                btn.addEventListener("click", () => {
+                    handleAreaFilterClick({ target: btn });
                 });
-            }
+                grid.appendChild(btn);
+            });
+            activeExpansion.appendChild(grid);
         }
     }
 }
