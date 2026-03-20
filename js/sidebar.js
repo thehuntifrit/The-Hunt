@@ -212,7 +212,7 @@ function renderSidebarFilterAccordion() {
     ];
 
     const state = getState();
-    const activeRank = state.selectedRank || "ALL";
+    const activeRank = state.filter.rank || "ALL";
 
     let html = `<div class="sidebar-section-title" style="text-align: center; margin-bottom: 12px; opacity: 0.6;">Filter</div>`;
     html += ranks.map(r => `
@@ -242,11 +242,14 @@ function renderSidebarFilterAccordion() {
     if (activeExpansion) {
         const desktopPanel = document.getElementById("area-filter-panel-desktop");
         if (desktopPanel) {
+            // Force render original buttons to ensure they exist
+            import("./filterUI.js").then(m => m.renderAreaFilterPanel());
+            
             const origButtons = Array.from(desktopPanel.querySelectorAll(".area-filter-btn"));
             if (origButtons.length > 0) {
                 const firstOrig = origButtons[0];
                 const allBtn = document.createElement("button");
-                allBtn.className = `area-filter-btn area-select-all ${firstOrig.classList.contains('active') ? 'active' : ''}`;
+                allBtn.className = `area-filter-btn area-select-all ${firstOrig.classList.contains('is-selected') ? 'active' : ''}`;
                 allBtn.textContent = firstOrig.textContent;
                 allBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
@@ -257,9 +260,9 @@ function renderSidebarFilterAccordion() {
                 const grid = activeExpansion.querySelector(".area-grid");
                 origButtons.slice(1).forEach(orig => {
                     const btn = document.createElement("button");
-                    btn.className = `area-filter-btn ${orig.classList.contains('active') ? 'active' : ''}`;
+                    btn.className = `area-filter-btn ${orig.classList.contains('is-selected') ? 'active' : ''}`;
                     btn.textContent = orig.textContent;
-                    btn.dataset.area = orig.dataset.area;
+                    btn.dataset.area = orig.dataset.area || orig.dataset.value;
                     btn.addEventListener("click", (e) => {
                         e.stopPropagation();
                         orig.click();
