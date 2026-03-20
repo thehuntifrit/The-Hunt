@@ -134,71 +134,87 @@ export function createMobCard(mob, isDetailView = false) {
 export function createPCDetailCard(mob) {
     const card = document.createElement("div");
     const rank = mob.Rank;
-    card.className = `mob-card pc-detail-card rank-${rank.toLowerCase()}`;
-    card.dataset.mobNo = mob.No;
-    card.dataset.rank = rank;
+    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, conditionWindowEnd, minRepop, maxRepop, status, isInConditionWindow, timeRemaining } = mob.repopInfo || {};
+    
+    // Time formatters
+    const fmt = (val) => val ? formatMMDDHHmm(val) : "--/-- --:--";
+    
+    let nextPossibleTime = "--/-- --:--";
+    if (nextConditionSpawnDate) {
+        nextPossibleTime = formatMMDDHHmm(nextConditionSpawnDate);
+    } else if (minRepop) {
+        nextPossibleTime = formatMMDDHHmm(minRepop);
+    }
 
-    const { elapsedPercent, status, repopTimeStr, timeRemaining, conditionRemaining, isInConditionWindow } = mob.repopInfo || {};
-    const leftStr = timeRemaining || "未確定";
-    const rightStr = (isInConditionWindow && conditionRemaining) ? conditionRemaining : (repopTimeStr || "未確定");
+    const mapFile = resolveMapFile(mob);
 
     const layout = `
         <div class="pc-detail-header">
-            <div class="pc-detail-name-row">
-                <h3 class="pc-detail-name">${mob.Name}</h3>
-                <span class="pc-detail-rank">${rank}</span>
+            <div class="flex items-center justify-between mb-0">
+                <h2 class="pc-detail-name">${mob.Name}</h2>
+                <div class="pc-detail-rank">${mob.Rank}</div>
             </div>
             <div class="pc-detail-area-row">
-                <span class="text-glow">${mob.Area}</span>
-                <span class="pc-detail-expansion">${mob.Expansion}</span>
-            </div>
-        </div>
-        
-        <div class="pc-detail-grid">
-            <div class="pc-detail-info-item">
-                <span class="label">Last Kill</span>
-                <span class="value" data-last-kill>${formatLastKillTime(mob.last_kill_time)}</span>
-            </div>
-            <div class="pc-detail-info-item highlight">
-                <span class="label">Respawn</span>
-                <span class="value">${leftStr}</span>
+                <span class="text-yellow-500 font-bold">${mob.Area}</span>
+                <span class="text-gray-500 font-normal">${mob.Expansion}</span>
             </div>
         </div>
 
         <div class="pc-detail-progress-section">
-            <div class="pc-detail-progress-text">
-                <span class="${isInConditionWindow ? 'label-next' : ''}">${rightStr}</span>
-                <span class="percent ml-2">(${elapsedPercent || 0}%)</span>
-            </div>
-            <div class="pc-detail-progress-container h-[10px] bg-black/40 rounded-full overflow-hidden border border-white/5">
-                <div class="pc-detail-progress-bar h-full transition-all duration-100 ease-linear" style="width: ${elapsedPercent || 0}%"></div>
-            </div>
-        </div>
-
-        <div class="pc-detail-section mb-2">
-            <div class="section-label">Trigger</div>
-            <div class="section-content condition text-xs leading-relaxed text-yellow-400/90">${processText(mob.Condition || "")}</div>
-        </div>
-
-        <div class="pc-detail-section mb-2">
-            <div class="section-label">Memo</div>
-            <div class="section-content memo bg-white/5 p-1.5 rounded-md">
-                <input type="text" class="memo-input w-full bg-transparent border-none outline-none text-sm text-gray-300"
-                    data-action="save-memo" data-mob-no="${mob.No}" value="${mob.memo_text || ""}" placeholder="全角30文字まで" maxlength="30">
+            <div class="flex items-center gap-3">
+                <div class="pc-detail-progress-container">
+                    <div class="pc-detail-progress-bar" style="width: ${elapsedPercent || 0}%"></div>
+                </div>
+                <div class="pc-detail-progress-text">
+                    <span class="percent">${Math.floor(elapsedPercent || 0)}%</span>
+                </div>
             </div>
         </div>
 
-        <div class="pc-detail-map-container mt-2 relative aspect-square rounded-lg overflow-hidden border border-white/10 shadow-2xl">
-            <img src="./maps/${mob.Map || ""}" class="pc-detail-map w-full h-full object-cover opacity-90" data-mob-map="${mob.Map || ""}" alt="${mob.Name} Map">
-            <div class="pc-detail-map-overlay map-overlay absolute inset-0"></div>
+        <div class="pc-detail-grid">
+            <div class="pc-detail-info-item">
+                <div class="label">最短POP</div>
+                <div class="value">${fmt(minRepop)}</div>
+            </div>
+            <div class="pc-detail-info-item">
+                <div class="label">最大POP</div>
+                <div class="value">${fmt(maxRepop)}</div>
+            </div>
+            <div class="pc-detail-info-item highlight">
+                <div class="label">次回POP可能</div>
+                <div class="value">${nextPossibleTime}</div>
+            </div>
+            <div class="pc-detail-info-item">
+                <div class="label">前回討伐</div>
+                <div class="value">${fmt(mob.last_kill_time)}</div>
+            </div>
         </div>
 
-        <div class="report-side-bar absolute top-2 right-2 w-8 h-32 opacity-0 hover:opacity-100 transition-opacity" 
+        <div class="pc-detail-content">
+            <div class="pc-detail-section">
+                <div class="section-label">出現条件</div>
+                <div class="section-content condition">
+                    ${processText(mob.Condition || "特殊な出現条件はありません。")}
+                </div>
+            </div>
+
+            <div class="pc-detail-section">
+                <div class="section-label">出現マップ</div>
+                <div class="pc-detail-map-container">
+                    <img src="./maps/${mapFile}" class="pc-detail-map mob-map-img" 
+                        data-mob-map="${mapFile}" alt="${mob.Name} Map">
+                    <div class="pc-detail-map-overlay map-overlay"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-side-bar absolute top-0 right-0 w-12 bottom-0 opacity-0 cursor-pointer pointer-events-auto z-10" 
             data-report-type="${rank === 'A' ? 'instant' : 'modal'}" data-mob-no="${mob.No}">
         </div>
     `;
 
     card.innerHTML = layout;
+    card.className = "pc-detail-card-inner relative h-full flex flex-col";
 
     const mapOverlay = card.querySelector(".pc-detail-map-overlay");
     if (mapOverlay && mob.spawn_points) {
@@ -326,13 +342,32 @@ export function updateProgressText(card, mob) {
 }
 
 export function updateExpandablePanel(card, mob) {
+    const { minRepop, maxRepop, nextConditionSpawnDate, elapsedPercent } = mob.repopInfo || {};
+    
+    // Metrics
+    const elMin = card.querySelector("[data-min-repop]");
+    const elMax = card.querySelector("[data-max-repop]");
+    const elNext = card.querySelector("[data-next-possible]");
     const elLast = card.querySelector("[data-last-kill]");
-    const elMemoInput = card.querySelector("input[data-action='save-memo']");
-    const elCondition = card.querySelector(".condition-text");
+    
+    const fmt = (val) => val ? formatMMDDHHmm(val) : "--/-- --:--";
+    
+    if (elMin) elMin.textContent = fmt(minRepop);
+    if (elMax) elMax.textContent = fmt(maxRepop);
+    
+    let nextPossibleTime = "--/-- --:--";
+    if (nextConditionSpawnDate) {
+        nextPossibleTime = formatMMDDHHmm(nextConditionSpawnDate);
+    } else if (minRepop) {
+        nextPossibleTime = formatMMDDHHmm(minRepop);
+    }
+    if (elNext) elNext.textContent = nextPossibleTime;
     
     const lastStr = formatLastKillTime(mob.last_kill_time);
-    if (elLast && elLast.textContent !== `前回: ${lastStr}`) elLast.textContent = `前回: ${lastStr}`;
+    if (elLast) elLast.textContent = `前回: ${lastStr}`;
     
+    // Memo
+    const elMemoInput = card.querySelector("input[data-action='save-memo']");
     if (elMemoInput) {
         if (elMemoInput.dataset.mobNo !== String(mob.No)) elMemoInput.dataset.mobNo = mob.No;
         if (document.activeElement !== elMemoInput) {
@@ -341,9 +376,33 @@ export function updateExpandablePanel(card, mob) {
         }
     }
     
+    // Condition
+    const elCondition = card.querySelector(".condition-text");
     if (elCondition && mob.Condition) {
         const processed = processText(mob.Condition);
         if (elCondition.innerHTML !== processed) elCondition.innerHTML = processed;
+    }
+
+    // Map logic for mobile
+    const mapImg = card.querySelector(".mob-map-img");
+    const mapOverlay = card.querySelector(".map-overlay");
+    if (mapImg && !mapImg.src.includes(".webp")) {
+        const mapFile = resolveMapFile(mob);
+        if (mapFile) mapImg.src = `./maps/${mapFile}`;
+    }
+
+    if (mapOverlay && mob.spawn_points && mapOverlay.innerHTML === "") {
+        const state = getState();
+        const mobLocationsData = state.mobLocations?.[mob.No];
+        const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
+        const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
+        const isOneLeft = validSpawnPoints.length === 1;
+
+        mapOverlay.innerHTML = (mob.spawn_points || []).map(p => {
+            const isLastOne = isOneLeft && p.id === validSpawnPoints[0]?.id;
+            const rankToPass = p.mob_ranks.includes("B2") ? "B2" : p.mob_ranks.includes("B1") ? "B1" : p.mob_ranks[0];
+            return drawSpawnPoint(p, spawnCullStatus, mob.No, rankToPass, isLastOne, isOneLeft);
+        }).join("");
     }
 }
 
@@ -626,6 +685,8 @@ export function updateHeaderTime() {
   const name = state.characterName || "";
   const elLT = document.getElementById("header-time-lt");
   const elET = document.getElementById("header-time-et");
+  const elPCLT = document.getElementById("pc-time-lt");
+  const elPCET = document.getElementById("pc-time-et");
   const elWelcome = document.getElementById("header-welcome-message");
 
   const elSidebarLT = document.getElementById("sidebar-lt-persistent");
@@ -634,6 +695,10 @@ export function updateHeaderTime() {
   if (elLT && elET) {
     elLT.textContent = `${ltHours}:${ltMinutes}`;
     elET.textContent = `${et.hours}:${et.minutes}`;
+  }
+  if (elPCLT && elPCET) {
+    elPCLT.textContent = `${ltHours}:${ltMinutes}`;
+    elPCET.textContent = `${et.hours}:${et.minutes}`;
   }
   if (elSidebarLT) elSidebarLT.textContent = `${ltHours}:${ltMinutes}`;
   if (elSidebarET) elSidebarET.textContent = `${et.hours}:${et.minutes}`;
@@ -1162,3 +1227,22 @@ function updateProgressBars() {
 setInterval(() => {
   updateProgressBars();
 }, EORZEA_MINUTE_MS);
+
+function resolveMapFile(mob) {
+    if (mob.Map) return mob.Map;
+    const areaToMap = {
+        "南ザナラーン": "Southern_Thanalan.webp", "中央ザナラーン": "Central_Thanalan.webp",
+        "東ザナラーン": "East_Thanalan.webp", "西ザナラーン": "West_Thanalan.webp", "北ザナラーン": "North_Thanalan.webp",
+        "中央ラノシア": "Middle_La_Noscea.webp", "低地ラノシア": "Lower_La_Noscea.webp", "東ラノシア": "Eastern_La_Noscea.webp",
+        "西ラノシア": "Western_La_Noscea.webp", "高地ラノシア": "Upper_La_Noscea.webp", "外地ラノシア": "Outer_La_Noscea.webp",
+        "中央森林": "Central_Shroud.webp", "東部森林": "East_Shroud.webp", "南部森林": "South_Shroud.webp", "北部森林": "North_Shroud.webp",
+        "モードゥナ": "Mor_Dhona.webp", "クルザス中央高地": "Coerthas_Central_Highlands.webp", "西ザナラーン": "Western_Thanalan.webp",
+        "オルコ・パチャ": "Urqopacha.webp", "コザマル・カ": "Kozama'uka.webp", "アム・アレーン": "Amh_Araeng.webp",
+        "イル・メグ": "Il_Mheg.webp", "ラケティカ大森林": "Rak_tika_Greatwood.webp", "テンペスト": "Tempest.webp",
+        "ウルティマ・トゥーレ": "Ultima_Thule.webp", "ガレマール": "Garlemald.webp", "サベネア島": "Thavnair.webp",
+        "エルピス": "Elpis.webp", "ラヴィリンソス": "Labyrinthos.webp", "嘆きの海": "Mare_Lamentorum.webp",
+        "リビング・メモリー": "Living_Memory.webp", "ヘリテージファウンド": "Heritage_Found.webp",
+        "シャーローニ荒野": "Shaaloani.webp", "ヤクテル樹海": "Yak_Tel.webp", "エニグマ・セクター": "The_Tempest.webp"
+    };
+    return areaToMap[mob.Area] || "";
+}
