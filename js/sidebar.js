@@ -166,8 +166,7 @@ function showPanel(panelName) {
         target.classList.remove("hidden");
         // Ensure filters render if opening rank panel
         if (panelName === "rank") {
-            if (typeof renderSidebarRankTabs === "function") renderSidebarRankTabs();
-            if (typeof renderSidebarAreaFilter === "function") renderSidebarAreaFilter();
+            renderSidebarFilterAccordion();
         }
     }
 }
@@ -192,7 +191,6 @@ function updateSidebarClocks() {
 
 function setupSidebarNotification() {
     const origToggle = document.getElementById("notification-toggle");
-    const origVolume = document.getElementById("notification-volume");
     const sidebarToggle = document.getElementById("sidebar-notification-toggle");
     if (sidebarToggle && origToggle) {
         sidebarToggle.checked = origToggle.checked;
@@ -206,8 +204,8 @@ function setupSidebarNotification() {
     }
 }
 
-function renderSidebarRankTabs() {
-    const container = document.getElementById("sidebar-rank-tabs");
+function renderSidebarFilterAccordion() {
+    const container = document.getElementById("sidebar-filter-accordion");
     if (!container) return;
 
     const ranks = [
@@ -221,87 +219,66 @@ function renderSidebarRankTabs() {
     const activeRank = state.selectedRank || "ALL";
 
     container.innerHTML = ranks.map(r => `
-        <button class="tab-button ${r.key === activeRank ? 'active' : ''}"
-                data-rank="${r.key}"
-                style="${r.key === activeRank ? `color: ${r.color}; border-color: ${r.color};` : ''}">
-            ${r.key}
-        </button>
+        <div class="rank-accordion-item ${r.key === activeRank ? 'active' : ''}" data-rank="${r.key}">
+            <button class="rank-header" style="${r.key === activeRank ? `color: ${r.color};` : ''}">
+                ${r.label}
+            </button>
+            <div class="area-expansion">
+                <div class="area-grid"></div>
+            </div>
+        </div>
     `).join("");
 
-    container.addEventListener("click", (e) => {
-        const btn = e.target.closest(".tab-button");
-        if (!btn) return;
-        const origBtn = document.querySelector(`#rank-tabs .tab-button[data-rank="${btn.dataset.rank}"]`);
-        if (origBtn) origBtn.click();
+    container.querySelectorAll(".rank-header").forEach(header => {
+        header.addEventListener("click", () => {
+            const item = header.closest(".rank-accordion-item");
+            const rankKey = item.dataset.rank;
+            
+            // Sync with master rank tabs
+            const origBtn = document.querySelector(`#rank-tabs .tab-button[data-rank="${rankKey}"]`);
+            if (origBtn) origBtn.click();
 
-        container.querySelectorAll(".tab-button").forEach(b => {
-            b.classList.remove("active");
-            b.style.color = "";
-            b.style.borderColor = "";
+            // Rerender to show expanded state
+            setTimeout(renderSidebarFilterAccordion, 50);
         });
-        btn.classList.add("active");
-        const r = ranks.find(r => r.key === btn.dataset.rank);
-        if (r) {
-            btn.style.color = r.color;
-            btn.style.borderColor = r.color;
+    });
+
+    // Populate area grid for the active item
+    const activeItem = container.querySelector(".rank-accordion-item.active .area-grid");
+    if (activeItem) {
+        const desktopPanel = document.getElementById("area-filter-panel-desktop");
+        if (desktopPanel) {
+            // First add Select All button if applicable
+            if (activeRank !== "ALL") {
+                const selectAllBtn = document.createElement("button");
+                selectAllBtn.className = "area-filter-btn";
+                selectAllBtn.textContent = "全選択";
+                selectAllBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    // Custom logic to select all areas for current rank?
+                    // Usually there's a master "Select All" button in the origin
+                    const origAll = desktopPanel.querySelector(".area-filter-btn:first-child"); // Hypothesis
+                    if (origAll) origAll.click();
+                    setTimeout(renderSidebarFilterAccordion, 50);
+                });
+                activeItem.appendChild(selectAllBtn);
+            }
+
+            const origButtons = desktopPanel.querySelectorAll(".area-filter-btn");
+            origButtons.forEach(orig => {
+                const btn = orig.cloneNode(true);
+                btn.classList.add("area-filter-btn");
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    orig.click();
+                    setTimeout(renderSidebarFilterAccordion, 50);
+                });
+                activeItem.appendChild(btn);
+            });
         }
-    });
-}
-
-function renderSidebarAreaFilter() {
-    const container = document.getElementById("sidebar-area-filter");
-    if (!container) return;
-
-    const observer = new MutationObserver(() => {
-        syncAreaFilter();
-    });
-
-    const desktopPanel = document.getElementById("area-filter-panel-desktop");
-    if (desktopPanel) {
-        observer.observe(desktopPanel, { childList: true, subtree: true });
-        setTimeout(syncAreaFilter, 500);
     }
-}
-
-function syncAreaFilter() {
-    const container = document.getElementById("sidebar-area-filter");
-    const desktopPanel = document.getElementById("area-filter-panel-desktop");
-    if (!container || !desktopPanel) return;
-
-    const origButtons = desktopPanel.querySelectorAll(".area-filter-btn");
-    if (origButtons.length === 0) return;
-
-    container.innerHTML = "";
-    origButtons.forEach(orig => {
-        const btn = orig.cloneNode(true);
-        btn.addEventListener("click", () => {
-            orig.click();
-            setTimeout(syncAreaFilter, 50);
-        });
-        container.appendChild(btn);
-    });
 }
 
 window.addEventListener("filterChanged", () => {
-    const sidebarRankTabs = document.getElementById("sidebar-rank-tabs");
-    if (sidebarRankTabs) {
-        const state = getState();
-        const activeRank = state.selectedRank || "ALL";
-        const ranks = [
-            { key: "ALL", label: "ALL", color: "#fff" },
-            { key: "S", label: "S Rank", color: "var(--rank-s)" },
-            { key: "A", label: "A Rank", color: "var(--rank-a)" },
-            { key: "FATE", label: "FATE", color: "var(--rank-f)" },
-        ];
-        sidebarRankTabs.querySelectorAll(".tab-button").forEach(btn => {
-            const isActive = btn.dataset.rank === activeRank;
-            btn.classList.toggle("active", isActive);
-            const r = ranks.find(r => r.key === btn.dataset.rank);
-            if (r) {
-                btn.style.color = isActive ? r.color : "";
-                btn.style.borderColor = isActive ? r.color : "";
-            }
-        });
-    }
-    syncAreaFilter();
+    renderSidebarFilterAccordion();
 });
