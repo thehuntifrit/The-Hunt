@@ -71,17 +71,18 @@ export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, i
 }
 
 export function createMobCard(mob, isDetailView = false) {
+    if (isDetailView) return createPCDetailCard(mob);
+
     const template = document.getElementById('mob-card-template');
     const clone = template.content.cloneNode(true);
     const card = clone.querySelector('.mob-card');
 
     const rank = mob.Rank;
     const { openMobCardNo } = getState();
-    const isOpen = isDetailView || mob.No === openMobCardNo;
+    const isOpen = mob.No === openMobCardNo;
 
     card.dataset.mobNo = mob.No;
     card.dataset.rank = rank;
-    if (isDetailView) card.classList.add('pc-detail-card');
 
     const memoInput = card.querySelector('.memo-input');
     if (memoInput) {
@@ -107,9 +108,9 @@ export function createMobCard(mob, isDetailView = false) {
         expandablePanel.classList.add('open');
     }
 
-    if (mob.Condition) {
-        const conditionText = card.querySelector('.condition-text');
-        if (conditionText) conditionText.innerHTML = processText(mob.Condition);
+    const conditionText = card.querySelector('.condition-text');
+    if (conditionText && mob.Condition) {
+        conditionText.innerHTML = processText(mob.Condition);
     }
 
     const mapImg = card.querySelector('.mob-map-img');
@@ -130,10 +131,97 @@ export function createMobCard(mob, isDetailView = false) {
     return card;
 }
 
+export function createPCDetailCard(mob) {
+    const card = document.createElement("div");
+    const rank = mob.Rank;
+    card.className = `mob-card pc-detail-card rank-${rank.toLowerCase()}`;
+    card.dataset.mobNo = mob.No;
+    card.dataset.rank = rank;
+
+    const { elapsedPercent, status, repopTimeStr, timeRemaining, conditionRemaining, isInConditionWindow } = mob.repopInfo || {};
+    const leftStr = timeRemaining || "未確定";
+    const rightStr = (isInConditionWindow && conditionRemaining) ? conditionRemaining : (repopTimeStr || "未確定");
+
+    const layout = `
+        <div class="pc-detail-header">
+            <div class="pc-detail-name-row">
+                <h3 class="pc-detail-name">${mob.Name}</h3>
+                <span class="pc-detail-rank">${rank}</span>
+            </div>
+            <div class="pc-detail-area-row">
+                <span class="text-glow">${mob.Area}</span>
+                <span class="pc-detail-expansion">${mob.Expansion}</span>
+            </div>
+        </div>
+        
+        <div class="pc-detail-grid">
+            <div class="pc-detail-info-item">
+                <span class="label">Last Kill</span>
+                <span class="value" data-last-kill>${formatLastKillTime(mob.last_kill_time)}</span>
+            </div>
+            <div class="pc-detail-info-item highlight">
+                <span class="label">Respawn</span>
+                <span class="value">${leftStr}</span>
+            </div>
+        </div>
+
+        <div class="pc-detail-progress-section">
+            <div class="pc-detail-progress-text">
+                <span class="${isInConditionWindow ? 'label-next' : ''}">${rightStr}</span>
+                <span class="percent ml-2">(${elapsedPercent || 0}%)</span>
+            </div>
+            <div class="pc-detail-progress-container h-[10px] bg-black/40 rounded-full overflow-hidden border border-white/5">
+                <div class="pc-detail-progress-bar h-full transition-all duration-100 ease-linear" style="width: ${elapsedPercent || 0}%"></div>
+            </div>
+        </div>
+
+        <div class="pc-detail-section mb-2">
+            <div class="section-label">Trigger</div>
+            <div class="section-content condition text-xs leading-relaxed text-yellow-400/90">${processText(mob.Condition || "")}</div>
+        </div>
+
+        <div class="pc-detail-section mb-2">
+            <div class="section-label">Memo</div>
+            <div class="section-content memo bg-white/5 p-1.5 rounded-md">
+                <input type="text" class="memo-input w-full bg-transparent border-none outline-none text-sm text-gray-300"
+                    data-action="save-memo" data-mob-no="${mob.No}" value="${mob.memo_text || ""}" placeholder="全角30文字まで" maxlength="30">
+            </div>
+        </div>
+
+        <div class="pc-detail-map-container mt-2 relative aspect-square rounded-lg overflow-hidden border border-white/10 shadow-2xl">
+            <img src="./maps/${mob.Map || ""}" class="pc-detail-map w-full h-full object-cover opacity-90" data-mob-map="${mob.Map || ""}" alt="${mob.Name} Map">
+            <div class="pc-detail-map-overlay map-overlay absolute inset-0"></div>
+        </div>
+
+        <div class="report-side-bar absolute top-2 right-2 w-8 h-32 opacity-0 hover:opacity-100 transition-opacity" 
+            data-report-type="${rank === 'A' ? 'instant' : 'modal'}" data-mob-no="${mob.No}">
+        </div>
+    `;
+
+    card.innerHTML = layout;
+
+    const mapOverlay = card.querySelector(".pc-detail-map-overlay");
+    if (mapOverlay && mob.spawn_points) {
+        const state = getState();
+        const mobLocationsData = state.mobLocations?.[mob.No];
+        const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
+        const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
+        const isOneLeft = validSpawnPoints.length === 1;
+
+        mapOverlay.innerHTML = (mob.spawn_points || []).map(p => {
+            const isLastOne = isOneLeft && p.id === validSpawnPoints[0]?.id;
+            const rankToPass = p.mob_ranks.includes("B2") ? "B2" : p.mob_ranks.includes("B1") ? "B1" : p.mob_ranks[0];
+            return drawSpawnPoint(p, spawnCullStatus, mob.No, rankToPass, isLastOne, isOneLeft);
+        }).join("");
+    }
+
+    return card;
+}
+
 export function updateProgressBar(card, mob) {
-    const bar = card.querySelector(".progress-bar-bg");
+    const bar = card.querySelector(".progress-bar-bg") || card.querySelector(".pc-detail-progress-bar");
     const wrapper = bar?.parentElement;
-    const text = card.querySelector(".progress-text");
+    const text = card.querySelector(".progress-text") || card.querySelector(".pc-detail-progress-text");
     if (!bar || !wrapper || !text) return;
 
     const { elapsedPercent, status } = mob.repopInfo;
@@ -176,9 +264,9 @@ export function updateProgressBar(card, mob) {
 }
 
 export function updateProgressText(card, mob) {
-    const text = card.querySelector(".progress-text");
+    const text = card.querySelector(".progress-text") || card.querySelector(".pc-detail-progress-text");
     if (!text) return;
-    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, minRepop, status, isInConditionWindow, timeRemaining, conditionRemaining } = mob.repopInfo || {};
+    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, minRepop, status, isInConditionWindow, timeRemaining, conditionRemaining, repopTimeStr } = mob.repopInfo || {};
     const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
     const nowSec = Date.now() / 1000;
     let leftStr = timeRemaining || "未確定";
@@ -201,27 +289,38 @@ export function updateProgressText(card, mob) {
     if (isMaint) card.classList.add("maintenance-gray-out");
     else card.classList.remove("maintenance-gray-out");
 
-    let rightStr = "未確定";
-    let isSpecialCondition = false;
-    if (isInConditionWindow && conditionRemaining) {
-        rightStr = conditionRemaining;
-        isSpecialCondition = true;
-    } else if (nextConditionSpawnDate) {
-        try { rightStr = `🔔 ${dateFormatter.format(nextConditionSpawnDate)}`; isSpecialCondition = true; } catch { rightStr = "未確定"; }
-    } else if (nextMinRepopDate) {
-        try { rightStr = `in ${dateFormatter.format(nextMinRepopDate)}`; } catch { rightStr = "未確定"; }
+    let rightStr = (isInConditionWindow && conditionRemaining) ? conditionRemaining : (repopTimeStr || "未確定");
+    let isSpecialCondition = isInConditionWindow;
+    
+    if (!isSpecialCondition) {
+        if (nextConditionSpawnDate) {
+            try { rightStr = `🔔 ${dateFormatter.format(nextConditionSpawnDate)}`; isSpecialCondition = true; } catch { rightStr = "未確定"; }
+        } else if (nextMinRepopDate) {
+            try { rightStr = `in ${dateFormatter.format(nextMinRepopDate)}`; } catch { rightStr = "未確定"; }
+        }
     }
 
-    const newHTML = `<div class="truncate min-w-0 ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div><div class="truncate min-w-0 text-right"><span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span></div>`;
-    const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}`;
+    const isDetail = card.classList.contains("pc-detail-card");
+    let newHTML = "";
+    if (isDetail) {
+        newHTML = `<span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span><span class="percent ml-2">(${elapsedPercent || 0}%)</span>`;
+    } else {
+        newHTML = `<div class="truncate min-w-0 ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div><div class="truncate min-w-0 text-right"><span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span></div>`;
+    }
+    
+    const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}|${isDetail}`;
     if (text.dataset.cacheKey !== cacheKey) {
         text.dataset.cacheKey = cacheKey;
         text.innerHTML = newHTML;
     }
     if (status === "MaxOver") text.classList.add("max-over");
     else text.classList.remove("max-over");
-    if (minRepop - nowSec >= 3600) text.classList.add("long-wait");
-    else text.classList.remove("long-wait");
+    
+    if (!isDetail) {
+        if (minRepop - nowSec >= 3600) text.classList.add("long-wait");
+        else text.classList.remove("long-wait");
+    }
+    
     if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) card.classList.add("blink-border-white");
     else card.classList.remove("blink-border-white");
 }
@@ -229,14 +328,22 @@ export function updateProgressText(card, mob) {
 export function updateExpandablePanel(card, mob) {
     const elLast = card.querySelector("[data-last-kill]");
     const elMemoInput = card.querySelector("input[data-action='save-memo']");
+    const elCondition = card.querySelector(".condition-text");
+    
     const lastStr = formatLastKillTime(mob.last_kill_time);
     if (elLast && elLast.textContent !== `前回: ${lastStr}`) elLast.textContent = `前回: ${lastStr}`;
+    
     if (elMemoInput) {
         if (elMemoInput.dataset.mobNo !== String(mob.No)) elMemoInput.dataset.mobNo = mob.No;
         if (document.activeElement !== elMemoInput) {
             const newValue = mob.memo_text || "";
             if (elMemoInput.value !== newValue) elMemoInput.value = newValue;
         }
+    }
+    
+    if (elCondition && mob.Condition) {
+        const processed = processText(mob.Condition);
+        if (elCondition.innerHTML !== processed) elCondition.innerHTML = processed;
     }
 }
 
@@ -305,9 +412,9 @@ export function updateAreaInfo(card, mob) {
 }
 
 export function updateMapOverlay(card, mob) {
-    const mapContainer = card.querySelector('.map-container');
+    const mapContainer = card.querySelector('.map-container') || card.querySelector('.pc-detail-map-container');
     if (!mapContainer) return;
-    const mapImg = mapContainer.querySelector('.mob-map-img');
+    const mapImg = mapContainer.querySelector('.mob-map-img') || mapContainer.querySelector('.pc-detail-map');
     if (mapImg && mob.Map && mapImg.dataset.mobMap !== mob.Map) {
         mapImg.src = `./maps/${mob.Map}`;
         mapImg.alt = `${mob.Area} Map`;
@@ -316,7 +423,7 @@ export function updateMapOverlay(card, mob) {
         delete mapContainer.dataset.locationLoading;
     }
     if (mapContainer.classList.contains('hidden')) return;
-    const mapOverlay = mapContainer.querySelector('.map-overlay');
+    const mapOverlay = mapContainer.querySelector('.map-overlay') || mapContainer.querySelector('.pc-detail-map-overlay');
     if (!mapOverlay) return;
     let spawnPointsHtml = "";
     if (mob.Map && mob.spawn_points) {
@@ -620,6 +727,16 @@ function updateVisibleCards() {
     const card = cardCache.get(mobNoStr);
     const mob = mobMap.get(mobNoStr);
     if (card && mob) updateCardFull(card, mob);
+  }
+  updateDetailCardRealtime(mobMap);
+}
+
+function updateDetailCardRealtime(mobMap) {
+  const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
+  if (rightPane && rightPane.dataset.renderedMobNo && rightPane.dataset.renderedMobNo !== "none") {
+    const detailCard = rightPane.firstElementChild;
+    const mob = mobMap.get(rightPane.dataset.renderedMobNo);
+    if (detailCard && mob) updateCardFull(detailCard, mob);
   }
 }
 
@@ -1001,6 +1118,16 @@ function updateProgressBars() {
       updateProgressText(card, mob);
       updateProgressBar(card, mob);
     }
+  }
+
+  const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
+  if (rightPane && rightPane.dataset.renderedMobNo && rightPane.dataset.renderedMobNo !== "none") {
+      const detailCard = rightPane.firstElementChild;
+      const mob = mobMap.get(rightPane.dataset.renderedMobNo);
+      if (detailCard && mob) {
+          updateProgressText(detailCard, mob);
+          updateProgressBar(detailCard, mob);
+      }
   }
 
   invalidateSortCache();
