@@ -294,9 +294,6 @@ export const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
         };
 
         await setDoc(docRef, updatePayload, { merge: true });
-
-        updateCrushUI(mobNo, locationId, nextCulled);
-
     } catch (error) {
         console.error("湧き潰し報告エラー:", error);
     }

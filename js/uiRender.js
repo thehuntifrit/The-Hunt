@@ -148,10 +148,15 @@ export function updateHeaderTime() {
   const elET = document.getElementById("header-time-et");
   const elWelcome = document.getElementById("header-welcome-message");
 
+  const elSidebarLT = document.getElementById("sidebar-lt-persistent");
+  const elSidebarET = document.getElementById("sidebar-et-persistent");
+  
   if (elLT && elET) {
     elLT.textContent = `${ltHours}:${ltMinutes}`;
     elET.textContent = `${et.hours}:${et.minutes}`;
   }
+  if (elSidebarLT) elSidebarLT.textContent = `${ltHours}:${ltMinutes}`;
+  if (elSidebarET) elSidebarET.textContent = `${et.hours}:${et.minutes}`;
 
   if (elWelcome) {
     if (name) {

@@ -61,27 +61,33 @@ export const renderAreaFilterPanel = (customContainer = null) => {
     isAllSelected = items.length > 0 && currentSet.size === 6;
   }
 
-  const createPanelContent = () => {
-    const fragment = document.createDocumentFragment();
-    const allBtn = document.createElement("button");
-    allBtn.className = `area-filter-btn area-select-all ${isAllSelected ? 'is-selected' : ''}`;
-    allBtn.textContent = isAllSelected ? "全解除" : "全選択";
-    allBtn.dataset.value = "ALL";
-    allBtn.addEventListener("click", handleAreaFilterClick);
-    fragment.appendChild(allBtn);
+    const createPanelContent = () => {
+        const fragment = document.createDocumentFragment();
+        const allBtn = document.createElement("button");
+        allBtn.className = `area-filter-btn area-select-all ${isAllSelected ? 'is-selected' : ''}`;
+        allBtn.textContent = isAllSelected ? "全解除" : "全選択";
+        allBtn.dataset.value = "ALL";
+        allBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            handleAreaFilterClick(e);
+        });
+        fragment.appendChild(allBtn);
 
-    items.forEach(item => {
-      const isSelected = currentSet.has(item);
-      const btn = document.createElement("button");
-      btn.className = `area-filter-btn ${isSelected ? 'is-selected' : ''}`;
-      btn.textContent = (uiRank === 'ALL' && item === 'F') ? 'F.A.T.E.' : (uiRank === 'ALL' ? `${item} RANK` : item);
-      btn.dataset.value = item;
-      btn.addEventListener("click", handleAreaFilterClick);
-      fragment.appendChild(btn);
-    });
+        items.forEach(item => {
+            const isSelected = currentSet.has(item);
+            const btn = document.createElement("button");
+            btn.className = `area-filter-btn ${isSelected ? 'is-selected' : ''}`;
+            btn.textContent = (uiRank === 'F.A.T.E.' && item === 'F') ? 'F.A.T.E.' : (uiRank === 'ALL' ? (item === 'F' ? 'F.A.T.E.' : `${item} RANK`) : item);
+            btn.dataset.value = item;
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                handleAreaFilterClick(e);
+            });
+            fragment.appendChild(btn);
+        });
 
-    return fragment;
-  };
+        return fragment;
+    };
 
   if (customContainer) {
     customContainer.innerHTML = "";

@@ -120,7 +120,7 @@ function renderSidebarFilterAccordion() {
         { key: "ALL", label: "ALL", color: "#fff" },
         { key: "S", label: "S RANK", color: "var(--rank-s)" },
         { key: "A", label: "A RANK", color: "var(--rank-a)" },
-        { key: "FATE", label: "F.A.T.E.", color: "var(--rank-f)" },
+        { key: "F.A.T.E.", label: "F.A.T.E.", color: "var(--rank-f)" },
     ];
 
     const state = getState();
