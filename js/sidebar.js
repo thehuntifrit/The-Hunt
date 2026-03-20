@@ -87,13 +87,7 @@ function initAlertMirroring() {
         if (state.maintenance && state.maintenance.start && state.maintenance.end) {
             const start = highlightDateTime(state.maintenance.start);
             const end = highlightDateTime(state.maintenance.end);
-            maintContainer.innerHTML = `
-                <div class="maintenance-box">
-                    <div class="time-val">${start}</div>
-                    <div class="time-sep">～</div>
-                    <div class="time-val">${end}</div>
-                </div>
-            `;
+            maintContainer.innerHTML = `<div class="maintenance-box"><div class="time-val">${start}</div><div class="time-sep">～</div><div class="time-val">${end}</div></div>`;
             hasContent = true;
         } else {
             maintContainer.textContent = "現在予定されているメンテナンスはありません。";

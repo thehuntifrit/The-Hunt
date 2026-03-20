@@ -234,13 +234,13 @@
     }
 
     .sidebar-alert-content {
-        font-size: 15px; /* Larger */
-        line-height: 1.2; /* Tighter */
+        font-size: 15px;
+        line-height: 1.2;
         color: #e2e8f0;
         background: rgba(255, 255, 255, 0.04);
-        padding: 6px 10px;
+        padding: 4px 10px;
         border-radius: 8px;
-        white-space: pre-wrap;
+        white-space: normal; /* Change from pre-wrap to prevent JS-spacing bugs */
         word-break: break-all;
         text-align: center;
         width: 100%;
