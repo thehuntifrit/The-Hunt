@@ -33,7 +33,7 @@
         flex-shrink: 0;
         align-self: flex-start;
         position: sticky;
-        top: 1.8rem;
+        top: 1.0rem; /* Higher */
         z-index: 10;
         display: flex;
         flex-direction: column;
@@ -72,7 +72,7 @@
 
     .header-time-val-mini {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 14px;
+        font-size: 18px; /* Larger */
         font-weight: 700;
         color: var(--accent-gold);
         line-height: 1;
@@ -365,7 +365,7 @@
     }
 
     .pc-detail-info-item .label {
-        font-size: 0.65rem;
+        font-size: 0.75rem; /* Larger */
         font-weight: 700;
         color: rgba(255, 255, 255, 0.4);
         text-transform: uppercase;
@@ -375,9 +375,10 @@
 
     .pc-detail-info-item .value {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 0.8rem;
+        font-size: 1.1rem; /* Larger */
         color: #e2e8f0;
         line-height: 1.3;
+        font-weight: 600;
     }
 
     .pc-detail-info-item.highlight .value {
@@ -394,7 +395,7 @@
         display: flex;
         justify-content: flex-end;
         align-items: baseline;
-        font-size: 0.85rem;
+        font-size: 1.1rem; /* Larger */
         font-weight: 900;
         color: #fff;
         margin-bottom: 0.2rem;

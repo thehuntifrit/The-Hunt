@@ -89,10 +89,8 @@ function initAlertMirroring() {
             const end = highlightDateTime(state.maintenance.end);
             maintContainer.innerHTML = `
                 <div class="maintenance-box">
-                    <div class="time-label">開始日時</div>
                     <div class="time-val">${start}</div>
                     <div class="time-sep">～</div>
-                    <div class="time-label">終了日時</div>
                     <div class="time-val">${end}</div>
                 </div>
             `;
@@ -105,7 +103,7 @@ function initAlertMirroring() {
         // Add a badge to the title if has content
         const title = document.querySelector('#sidebar-panel-maintenance .sidebar-section-title');
         if (title) {
-            title.innerHTML = `MAINTENANCE ${hasContent ? '<span class="sidebar-new-badge">NEW</span>' : ''}`;
+            title.innerHTML = `Maintenance info. ${hasContent ? '<span class="sidebar-new-badge">NEW</span>' : ''}`;
         }
     }
 
