@@ -58,8 +58,7 @@ export function initSidebar() {
         });
     }
 
-    renderSidebarRankTabs();
-    renderSidebarAreaFilter();
+    renderSidebarFilterAccordion();
     updateSidebarClocks();
 
     setInterval(updateSidebarClocks, EORZEA_MINUTE_MS);
