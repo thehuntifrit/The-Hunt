@@ -6,7 +6,6 @@ import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gsta
 
 import { getState } from "./dataManager.js";
 import { closeReportModal } from "./modal.js";
-import { updateCrushUI } from "./location.js";
 
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyBikwjGsjL_PVFhx3Vj-OeJCocKA_hQOgU",

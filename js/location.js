@@ -7,6 +7,7 @@ import { openAuthModal } from "./modal.js";
 
 let lastClickTime = 0;
 let lastClickLocationId = null;
+let locationEventsAttached = false;
 
 function handleCrushToggle(e) {
     const point = e.target.closest(".spawn-point");
@@ -83,51 +84,6 @@ export function isCulled(pointStatus, mobNo, mob = null) {
     return false;
 }
 
-export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_LastOne) {
-
-    const pointStatus = spawnCullStatus?.[point.id];
-    const isCulledFlag = isCulled(pointStatus, mobNo);
-
-    const isS_A_Cullable = point.mob_ranks.some(r => r === "S" || r === "A");
-    const isB_Only = point.mob_ranks.every(r => r.startsWith("B"));
-
-    let colorClass = "";
-    let dataIsInteractive = "false";
-
-    if (isLastOne) {
-        colorClass = "color-lastone";
-        dataIsInteractive = "false";
-    } else if (isS_A_Cullable) {
-        const rankB = point.mob_ranks.find(r => r.startsWith("B"));
-        if (isCulledFlag) {
-            colorClass = rankB === "B1" ? "color-b1-culled" : "color-b2-culled";
-        } else {
-            colorClass = rankB === "B1" ? "color-b1" : "color-b2";
-        }
-        dataIsInteractive = "true";
-    } else if (isB_Only) {
-        const rankB = point.mob_ranks[0];
-        colorClass = rankB === "B1" ? "color-b1-only" : "color-b2-only";
-        dataIsInteractive = "false";
-    }
-
-    const pointNumber = parseInt(point.id.slice(-2), 10);
-    const titleText = `${pointNumber}${isCulledFlag ? " (済)" : ""}`;
-
-    return `
-    <div class="spawn-point ${colorClass}"
-        style="left:${point.x}%; top:${point.y}%;"
-        data-tooltip="${titleText}"
-        data-location-id="${point.id}"
-        data-mob-no="${mobNo}"
-        data-rank="${rank}"
-        data-is-culled="${isCulledFlag}"
-        data-is-lastone="${isLastOne ? "true" : "false"}"
-        data-is-interactive="${dataIsInteractive}"
-        tabindex="0">
-    </div>
-    `;
-}
 
 export function attachLocationEvents() {
     if (locationEventsAttached) return;

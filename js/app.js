@@ -1,7 +1,7 @@
-// app.js
-
 import { loadBaseMobData, startRealtime, setOpenMobCardNo, getState, setUserId, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
 import { initializeAuth, getUserData, submitReport, submitMemo } from "./server.js";
+import { attachMobCardEvents, toggleCardExpand, closeCard } from "./mobCard.js";
+import { attachLocationEvents } from "./location.js";
 import { openReportModal, closeReportModal, initModal, openAuthModal } from "./modal.js";
 import { renderRankTabs, handleAreaFilterClick, updateFilterUI } from "./filterUI.js";
 import { DOM, sortAndRedistribute, showColumnContainer, updateHeaderTime } from "./uiRender.js";
@@ -10,7 +10,6 @@ import { initTooltip } from "./tooltip.js";
 import { initGlobalMagnifier } from "./magnifier.js";
 import { initSidebar } from "./sidebar.js";
 import "./readme.js";
-
 import { initNotification } from "./notificationManager.js";
 
 export function showToast(message, type = "error") {
@@ -95,6 +94,8 @@ async function initApp() {
         renderMaintenanceStatus();
         updateHeaderTime();
         initSidebar();
+        attachMobCardEvents();
+        attachLocationEvents();
         attachGlobalEventListeners();
 
         window.addEventListener('pageshow', (event) => {
@@ -285,91 +286,13 @@ function attachGlobalEventListeners() {
         }
     });
 
-    if (DOM.pcLeftList) {
-        DOM.pcLeftList.addEventListener("click", (e) => {
-            const reportBtn = e.target.closest(".pc-list-report-btn");
-            const item = e.target.closest(".pc-list-item");
-            if (!item) return;
-
-            const mobNo = parseInt(item.dataset.mobNo, 10);
-            const rank = item.dataset.rank;
-
-            if (reportBtn) {
-                e.stopPropagation();
-                if (!getState().isVerified) {
-                    openAuthModal();
-                    return;
-                }
-                if (rank === 'A') {
-                    handleInstantReport(mobNo, rank);
-                } else {
-                    openReportModal(mobNo);
-                }
-                return;
-            }
-
-            const { openMobCardNo } = getState();
-
-            if (openMobCardNo === mobNo) {
-                setOpenMobCardNo(null);
-            } else {
-                setOpenMobCardNo(mobNo);
-            }
-            sortAndRedistribute();
-        });
-    }
-
-    if (DOM.pcRightDetail) {
-        DOM.pcRightDetail.addEventListener("click", (e) => {
-            const card = e.target.closest(".mob-card");
-            if (!card) return;
-
-            const mobNo = parseInt(card.dataset.mobNo, 10);
-            const rank = card.dataset.rank;
-
-            const reportBtn = e.target.closest(".report-side-bar");
-            if (reportBtn) {
-                e.stopPropagation();
-                if (!getState().isVerified) {
-                    openAuthModal();
-                    return;
-                }
-                const type = reportBtn.dataset.reportType;
-                if (type === "modal") {
-                    openReportModal(mobNo);
-                } else if (type === "instant") {
-                    handleInstantReport(mobNo, rank);
-                }
-                return;
-            }
-        });
-    }
-
     DOM.colContainer.addEventListener("click", (e) => {
-        const card = e.target.closest(".mob-card");
-        if (!card) return;
-
-        const mobNo = parseInt(card.dataset.mobNo, 10);
-        const rank = card.dataset.rank;
-
-        const reportBtn = e.target.closest(".report-side-bar");
-        if (reportBtn) {
-            e.stopPropagation();
-            if (!getState().isVerified) {
-                openAuthModal();
-                return;
-            }
-            const type = reportBtn.dataset.reportType;
-            if (type === "modal") {
-                openReportModal(mobNo);
-            } else if (type === "instant") {
-                handleInstantReport(mobNo, rank);
-            }
-            return;
-        }
-
         if (e.target.closest("[data-toggle='card-header']")) {
-            toggleCardExpand(card, mobNo);
+            const card = e.target.closest(".mob-card");
+            if (card) {
+                const mobNo = parseInt(card.dataset.mobNo, 10);
+                toggleCardExpand(card, mobNo);
+            }
         }
     });
 
@@ -435,190 +358,17 @@ function attachGlobalEventListeners() {
     const backdrop = document.getElementById("card-overlay-backdrop");
     if (backdrop) {
         backdrop.addEventListener("click", () => {
-            closeActiveCard();
+            closeCard();
         });
     }
 
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
-            closeActiveCard();
+            closeCard();
         }
     });
 }
 
-function closeActiveCard() {
-    closeCard();
-}
-
-function toggleCardExpand(card, mobNo) {
-    if (card.dataset.isTransitioning === "true") return;
-
-    if (card.classList.contains("is-floating-active")) {
-        closeCard();
-    } else {
-        openCard(card, mobNo);
-    }
-}
-
-function openCard(card, mobNo) {
-    if (card.dataset.isTransitioning === "true") return;
-
-    document.querySelectorAll(".mob-card.is-floating-active").forEach(existing => {
-        closeCard(existing, true);
-    });
-
-    const panel = card.querySelector(".expandable-panel");
-    const rect = card.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const top = rect.top;
-    const left = rect.left;
-
-    const placeholder = document.createElement("div");
-    placeholder.className = "mob-card-placeholder mob-card";
-    placeholder.style.width = `${width}px`;
-    placeholder.style.height = `${height}px`;
-    placeholder.style.margin = getComputedStyle(card).margin;
-
-    card.parentNode.insertBefore(placeholder, card);
-    card.dataset.placeholderId = "temp-" + Date.now();
-    placeholder.id = card.dataset.placeholderId;
-
-    const targetLeft = (window.innerWidth - width) / 2;
-    const header = document.getElementById("main-header");
-    const headerHeight = header ? header.offsetHeight : 0;
-    const isMobile = window.innerWidth < 1024;
-    const targetTop = isMobile ? 12 : headerHeight + 24;
-
-    card.classList.add("is-floating-active");
-    card.style.position = "fixed";
-    card.style.top = `${targetTop}px`;
-    card.style.left = `${targetLeft}px`;
-    card.style.width = `${width}px`;
-    card.style.zIndex = "45";
-    card.style.margin = "0";
-    card.dataset.isTransitioning = "true";
-
-    const dx = left - targetLeft;
-    const dy = top - targetTop;
-
-    card.style.transition = "none";
-    card.style.transform = `translate(${dx}px, ${dy}px)`;
-
-    void card.offsetWidth;
-
-    requestAnimationFrame(() => {
-        panel.classList.add("open");
-        setOpenMobCardNo(mobNo);
-        const backdrop = document.getElementById("card-overlay-backdrop");
-        backdrop?.classList.remove("hidden");
-
-        card.style.transition = "";
-        card.style.transform = `translate(0, 0)`;
-
-        setTimeout(() => {
-            delete card.dataset.isTransitioning;
-            card.style.transform = "";
-        }, 500);
-    });
-}
-
-function closeCard(cardToClose = null, immediate = false) {
-    const card = cardToClose || document.querySelector(".mob-card.is-floating-active");
-    if (!card) return;
-    if (!immediate && card.dataset.isTransitioning === "true") return;
-
-    const panel = card.querySelector(".expandable-panel");
-    const backdrop = document.getElementById("card-overlay-backdrop");
-    const placeholderId = card.dataset.placeholderId;
-    const placeholder = document.getElementById(placeholderId);
-
-    setOpenMobCardNo(null);
-    backdrop?.classList.add("hidden");
-
-    if (!placeholder) {
-        card.classList.remove("is-floating-active");
-        card.style = "";
-        delete card.dataset.isTransitioning;
-        return;
-    }
-
-    if (immediate) {
-        finishClose(card, placeholder);
-        return;
-    }
-
-    card.dataset.isTransitioning = "true";
-    panel.classList.remove("open");
-
-    const rect = placeholder.getBoundingClientRect();
-    const cardRect = card.getBoundingClientRect();
-
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-
-    card.classList.remove("is-floating-active");
-    card.style.position = "absolute";
-    card.style.top = `${rect.top + scrollY}px`;
-    card.style.left = `${rect.left + scrollX}px`;
-    card.style.width = `${rect.width}px`;
-
-    const dx = cardRect.left - rect.left;
-    const dy = cardRect.top - rect.top;
-
-    card.style.transition = "none";
-    card.style.transform = `translate(${dx}px, ${dy}px)`;
-
-    void card.offsetWidth;
-
-    card.style.transition = "";
-    card.style.transform = "translate(0, 0)";
-
-    let finished = false;
-    const timer = setTimeout(() => {
-        if (!finished) {
-            finished = true;
-            finishClose(card, placeholder);
-        }
-    }, 450);
-
-    const onEnd = (e) => {
-        if (e.propertyName === 'transform') {
-            if (!finished) {
-                finished = true;
-                clearTimeout(timer);
-                card.removeEventListener("transitionend", onEnd);
-                finishClose(card, placeholder);
-            }
-        }
-    };
-    card.addEventListener("transitionend", onEnd);
-}
-
-function finishClose(card, placeholder) {
-    if (!card.parentElement) return;
-
-    card.style = "";
-    card.classList.remove("is-floating-active");
-    delete card.dataset.placeholderId;
-    delete card.dataset.isTransitioning;
-
-    if (placeholder && placeholder.parentElement) {
-        placeholder.parentElement.removeChild(placeholder);
-    }
-
-    document.querySelectorAll(`.mob-card-placeholder`).forEach(p => {
-        const owner = document.querySelector(`.mob-card[data-placeholder-id='${p.id}']`);
-        if (!owner) {
-            p.remove();
-        }
-    });
-
-    if (!document.querySelector(".mob-card.is-floating-active")) {
-        const backdrop = document.getElementById("card-overlay-backdrop");
-        backdrop?.classList.add("hidden");
-    }
-}
 
 export function handleReportResult(result) {
     if (!result.success) {
