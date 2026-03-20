@@ -164,15 +164,19 @@ export function createMobCard(mob) {
         card.classList.add("maintenance-gray-out");
     } else {
         card.classList.remove("maintenance-gray-out");
-        const memoInput = card.querySelector('.memo-input');
-        if (memoInput) {
-            memoInput.dataset.mobNo = mob.No;
-        }
+    }
+
+    const memoInput = card.querySelector('.memo-input');
+    if (memoInput) {
+        memoInput.dataset.mobNo = mob.No;
+        memoInput.value = mob.memo_text || "";
     }
 
     const mobNameEl = card.querySelector('.mob-name');
-    mobNameEl.textContent = mob.Name;
-    mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
+    if (mobNameEl) {
+        mobNameEl.textContent = mob.Name;
+        mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
+    }
 
     const reportSidebar = card.querySelector('.report-side-bar');
     if (reportSidebar) {
@@ -201,11 +205,6 @@ export function createMobCard(mob) {
     const expandablePanel = card.querySelector('.expandable-panel');
     if (isOpen) {
         expandablePanel.classList.add('open');
-    }
-
-    const memoInput = card.querySelector('.memo-input');
-    if (memoInput) {
-        memoInput.dataset.mobNo = mob.No;
     }
 
     const conditionWrapper = card.querySelector('.condition-text')?.closest('.w-full.mt-2');
@@ -252,8 +251,10 @@ export function updateCardFull(container, mob) {
     const rank = mob.Rank.toLowerCase();
     const isS = mob.Rank === 'S';
 
+    const isMaint = !!(mob.repopInfo?.isMaintenanceStop || mob.repopInfo?.isBlockedByMaintenance);
+
     container.innerHTML = `
-        <div class="pc-detail-card rank-${rank}" data-mob-no="${mob.No}">
+        <div class="pc-detail-card rank-${rank} ${isMaint ? 'maintenance-gray-out' : ''}" data-mob-no="${mob.No}">
             <div class="pc-detail-header">
                 <div class="pc-detail-name-row">
                     <h2 class="pc-detail-name">${mob.Name}</h2>
@@ -296,12 +297,19 @@ export function updateCardFull(container, mob) {
             </div>
 
             <div class="pc-detail-extra">
-                ${mob.memo_text ? `
                 <div class="pc-detail-section">
                     <h3 class="section-label">メモ</h3>
-                    <div class="section-content memo">${processText(mob.memo_text)}</div>
+                    <div class="mob-memo-row w-full mt-1">
+                        <div class="flex items-center bg-gray-800/50 rounded px-2 py-1 border border-gray-700">
+                            <span class="text-sm mr-2 opacity-60">📝</span>
+                            <input type="text" class="memo-input w-full bg-transparent text-sm text-gray-200 outline-none placeholder-gray-600 h-6" 
+                                placeholder="Edit hunting notes..." 
+                                value="${mob.memo_text || ""}"
+                                data-mob-no="${mob.No}"
+                                data-action="save-memo">
+                        </div>
+                    </div>
                 </div>
-                ` : ''}
                 
                 ${isS && mob.Condition ? `
                 <div class="pc-detail-section">
@@ -518,9 +526,11 @@ export function updateExpandablePanel(card, mob) {
     }
 
     if (elMemoInput) {
+        if (elMemoInput.dataset.mobNo !== String(mob.No)) {
+            elMemoInput.dataset.mobNo = mob.No;
+        }
         if (document.activeElement !== elMemoInput) {
-            const shouldShowMemo = shouldDisplayMemo(mob);
-            const newValue = shouldShowMemo ? (mob.memo_text || "") : "";
+            const newValue = mob.memo_text || "";
             if (elMemoInput.value !== newValue) {
                 elMemoInput.value = newValue;
             }

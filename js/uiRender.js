@@ -7,7 +7,7 @@ import { filterMobsByRankAndArea } from "./filterUI.js";
 import { openReportModal } from "./modal.js";
 import { allTabComparator } from "./mobSorter.js";
 import { updateStatusContainerVisibility } from "./app.js";
-import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, updateCardFull as renderPCDetailCard } from "./mobCard.js";
+import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem } from "./mobCard.js";
 import { checkAndNotify } from "./notificationManager.js";
 
 const FIFTEEN_MINUTES_SEC = 15 * 60;
@@ -511,7 +511,8 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
         if (rightPane.dataset.renderedMobNo !== String(state.openMobCardNo)) {
           const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
           if (targetMob) {
-              renderPCDetailCard(rightPane, targetMob);
+              rightPane.innerHTML = "";
+              rightPane.appendChild(createMobCard(targetMob, true));
               rightPane.dataset.renderedMobNo = String(state.openMobCardNo);
           }
         }
