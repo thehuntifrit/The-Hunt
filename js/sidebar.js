@@ -1,5 +1,6 @@
-import { getState } from "./dataManager.js";
+import { getState, EXPANSION_MAP } from "./dataManager.js";
 import { getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
+import { handleAreaFilterClick } from "./filterUI.js";
 
 let currentPanel = null;
 
@@ -258,7 +259,6 @@ function renderSidebarFilterAccordion() {
             const currentSet = state.filter.areaSets[targetRankKey] || new Set();
             const expansions = Object.entries(EXPANSION_MAP).sort((a, b) => b[0] - a[0]);
             
-            // All select button
             const allBtn = document.createElement("button");
             const isAllSelected = expansions.length > 0 && currentSet.size === expansions.length;
             allBtn.className = `area-filter-btn area-select-all ${isAllSelected ? 'active' : ''}`;
@@ -269,7 +269,6 @@ function renderSidebarFilterAccordion() {
             });
             activeExpansion.appendChild(allBtn);
 
-            // Expansion grid
             const grid = document.createElement("div");
             grid.className = "area-grid";
             expansions.forEach(([id, name]) => {

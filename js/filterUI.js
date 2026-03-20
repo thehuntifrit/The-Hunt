@@ -171,7 +171,8 @@ const handleRankTabClick = (rank) => {
   const state = getState();
   const prevRank = state.filter.rank;
 
-  let clickStep = 2; // Always show area panel on rank shift
+  const stored = JSON.parse(localStorage.getItem("huntUIState")) || {};
+  let clickStep = 2;
 
   setFilter({
     rank,
