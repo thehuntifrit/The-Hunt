@@ -43,8 +43,7 @@ export const renderRankTabs = () => {
 
 export const renderAreaFilterPanel = (customContainer = null) => {
   const state = getState();
-  const uiRank = state.filter.rank;
-  const targetRankKey = (uiRank === 'F.A.T.E.' || uiRank === 'FATE') ? 'F' : uiRank;
+  const targetRankKey = normalizeRank(uiRank);
 
   let items = [];
   let currentSet = new Set();
@@ -53,12 +52,12 @@ export const renderAreaFilterPanel = (customContainer = null) => {
   if (uiRank === 'ALL') {
     items = ["S", "A", "F"];
     currentSet = state.filter.allRankSet instanceof Set ? state.filter.allRankSet : new Set();
-    isAllSelected = items.length > 0 && currentSet.size === 3;
+    isAllSelected = items.length > 0 && currentSet.size === items.length;
   } else {
     const expansionEntries = Object.entries(EXPANSION_MAP).sort((a, b) => b[0] - a[0]);
     items = expansionEntries.map(e => e[1]);
     currentSet = state.filter.areaSets[targetRankKey] instanceof Set ? state.filter.areaSets[targetRankKey] : new Set();
-    isAllSelected = items.length > 0 && currentSet.size === 6;
+    isAllSelected = items.length > 0 && currentSet.size === items.length;
   }
 
     const createPanelContent = () => {
@@ -224,7 +223,7 @@ export function handleAreaFilterClick(e) {
     return;
   }
 
-  const targetRankKey = uiRank === 'FATE' ? 'F' : uiRank;
+  const targetRankKey = normalizeRank(uiRank);
   const allAreas = getAllAreas();
 
   const currentSet =
@@ -292,14 +291,14 @@ export function filterMobsByRankAndArea(mobs) {
         areaSets?.[filterKey] instanceof Set ? areaSets[filterKey] : new Set();
 
       if (targetSet.size === 0) return true;
-      if (targetSet.size === allExpansions) return true;
+      if (targetSet.size === allAreas.length) return true;
 
       return targetSet.has(mobExpansion);
     } else {
       const isRankMatch =
         (uiRank === 'S' && mobRank === 'S') ||
         (uiRank === 'A' && (mobRank === 'A' || mobRank.startsWith('B'))) ||
-        (uiRank === 'F.A.T.E.' && mobRank === 'F');
+        (normalizeRank(uiRank) === 'F' && mobRank === 'F');
 
       if (!isRankMatch) return false;
 
@@ -307,9 +306,14 @@ export function filterMobsByRankAndArea(mobs) {
         areaSets?.[filterKey] instanceof Set ? areaSets[filterKey] : new Set();
 
       if (targetSet.size === 0) return true;
-      if (targetSet.size === allExpansions) return true;
+      if (targetSet.size === allAreas.length) return true;
 
       return targetSet.has(mobExpansion);
     }
   });
+}
+
+function normalizeRank(rank) {
+    if (rank === 'F.A.T.E.' || rank === 'FATE') return 'F';
+    return rank;
 }
