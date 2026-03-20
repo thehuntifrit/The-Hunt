@@ -5,16 +5,6 @@ let currentPanel = null;
 
 const PANELS = ["telop", "maintenance", "rank"];
 
-function highlightDateTime(isoStr) {
-    if (!isoStr) return "";
-    const d = new Date(isoStr);
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const h = String(d.getHours()).padStart(2, '0');
-    const min = String(d.getMinutes()).padStart(2, '0');
-    return `${m}/${day} ${h}:${min}`;
-}
-
 function getStoredState() {
     try {
         return JSON.parse(localStorage.getItem("sidebarState")) || {};
@@ -59,6 +49,43 @@ export function initSidebar() {
     }
 
     renderSidebarFilterAccordion();
+    setupSidebarNotification();
+}
+
+function togglePanel(panelName) {
+    const sidebar = document.getElementById("app-sidebar");
+    if (!sidebar) return;
+
+    if (currentPanel === panelName) {
+        closePanel();
+        return;
+    }
+
+    sidebar.querySelectorAll(".sidebar-icon-btn").forEach(b => b.classList.remove("active"));
+    const btn = sidebar.querySelector(`[data-panel="${panelName}"]`);
+    if (btn) btn.classList.add("active");
+
+    currentPanel = panelName;
+    sidebar.classList.add("expanded");
+    document.body.classList.add("sidebar-expanded");
+    saveState("panel", panelName);
+
+    showPanel(panelName);
+}
+
+function closePanel() {
+    const sidebar = document.getElementById("app-sidebar");
+    if (!sidebar) return;
+
+    sidebar.querySelectorAll(".sidebar-icon-btn").forEach(b => b.classList.remove("active"));
+    sidebar.classList.remove("expanded");
+    document.body.classList.remove("sidebar-expanded");
+    currentPanel = null;
+    saveState("panel", null);
+
+    document.querySelectorAll(".sidebar-panel-content").forEach(p => p.classList.add("hidden"));
+}
+
 function showPanel(panelName) {
     document.querySelectorAll(".sidebar-panel-content").forEach(p => p.classList.add("hidden"));
     const target = document.getElementById(`sidebar-panel-${panelName}`);
