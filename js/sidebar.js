@@ -209,7 +209,7 @@ function renderSidebarFilterAccordion() {
         { key: "ALL", label: "ALL", color: "#fff" },
         { key: "S", label: "S RANK", color: "var(--rank-s)" },
         { key: "A", label: "A RANK", color: "var(--rank-a)" },
-        { key: "FATE", label: "FATE", color: "var(--rank-f)" },
+        { key: "FATE", label: "F.A.T.E.", color: "var(--rank-f)" },
     ];
 
     const state = getState();
@@ -242,16 +242,17 @@ function renderSidebarFilterAccordion() {
         activeExpansion.innerHTML = "";
         activeExpansion.className = "area-grid-container area-grid";
 
+        const state = getState();
+        const uiRank = state.filter.rank === 'F.A.T.E.' ? 'FATE' : state.filter.rank;
+
         if (activeRank === "ALL") {
             ["S", "A", "F"].forEach(rank => {
                 const isSelected = state.filter.allRankSet?.has(rank);
                 const btn = document.createElement("button");
                 btn.className = `area-filter-btn ${isSelected ? 'active' : ''}`;
-                btn.textContent = rank === "F" ? "FATE" : `${rank} RANK`;
+                btn.textContent = rank === "F" ? "F.A.T.E." : `${rank} RANK`;
                 btn.dataset.value = rank;
-                btn.addEventListener("click", (e) => {
-                    handleAreaFilterClick({ target: btn });
-                });
+                btn.addEventListener("click", () => handleAreaFilterClick({ target: btn }));
                 activeExpansion.appendChild(btn);
             });
         } else {
@@ -259,14 +260,12 @@ function renderSidebarFilterAccordion() {
             const currentSet = state.filter.areaSets[targetRankKey] || new Set();
             const expansions = Object.entries(EXPANSION_MAP).sort((a, b) => b[0] - a[0]);
             
-            const allBtn = document.createElement("button");
             const isAllSelected = expansions.length > 0 && currentSet.size === expansions.length;
+            const allBtn = document.createElement("button");
             allBtn.className = `area-filter-btn area-select-all ${isAllSelected ? 'active' : ''}`;
             allBtn.textContent = isAllSelected ? "全解除" : "全選択";
             allBtn.dataset.value = "ALL";
-            allBtn.addEventListener("click", () => {
-                handleAreaFilterClick({ target: allBtn });
-            });
+            allBtn.addEventListener("click", () => handleAreaFilterClick({ target: allBtn }));
             activeExpansion.appendChild(allBtn);
 
             expansions.forEach(([id, name]) => {
@@ -275,9 +274,7 @@ function renderSidebarFilterAccordion() {
                 btn.className = `area-filter-btn ${isSelected ? 'active' : ''}`;
                 btn.textContent = name;
                 btn.dataset.value = name;
-                btn.addEventListener("click", () => {
-                    handleAreaFilterClick({ target: btn });
-                });
+                btn.addEventListener("click", () => handleAreaFilterClick({ target: btn }));
                 activeExpansion.appendChild(btn);
             });
         }

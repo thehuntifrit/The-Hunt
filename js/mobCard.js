@@ -253,7 +253,7 @@ export function updateCardFull(container, mob) {
     const isS = mob.Rank === 'S';
 
     container.innerHTML = `
-        <div class="pc-detail-card rank-${rank}">
+        <div class="pc-detail-card rank-${rank}" data-mob-no="${mob.No}">
             <div class="pc-detail-header">
                 <div class="pc-detail-name-row">
                     <h2 class="pc-detail-name">${mob.Name}</h2>

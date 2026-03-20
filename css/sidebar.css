@@ -427,49 +427,52 @@
     .area-expansion .area-filter-btn {
         width: 100%;
         margin: 0;
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 700;
-        padding: 8px 4px;
-        min-height: 36px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 10px 4px;
+        min-height: 40px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 6px;
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.9) !important;
         cursor: pointer;
         transition: all 0.2s;
         display: flex;
         align-items: center;
         justify-content: center;
         text-align: center;
+        box-sizing: border-box;
     }
 
     .area-expansion .area-filter-btn:hover {
-        background: rgba(255, 255, 255, 0.12);
-        color: #fff;
+        background: rgba(255, 255, 255, 0.15);
+        color: #fff !important;
         border-color: rgba(255, 255, 255, 0.2);
     }
 
     .area-expansion .area-filter-btn.active {
-        background: var(--accent-cyan);
-        color: #0f172a;
+        background: var(--accent-cyan) !important;
+        color: #0f172a !important;
         font-weight: 900;
-        border-color: var(--accent-cyan);
-        box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
+        border-color: var(--accent-cyan) !important;
+        box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
     }
 
     .area-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 6px;
-        width: 100%;
+        gap: 8px;
+        width: 100% !important;
         margin-top: 4px;
+        box-sizing: border-box;
     }
 
     .area-select-all {
         grid-column: span 2;
-        margin-bottom: 4px !important;
-        background: rgba(6, 182, 212, 0.1) !important;
-        border-color: rgba(6, 182, 212, 0.3) !important;
+        width: 100% !important;
+        margin-bottom: 8px !important;
+        background: rgba(6, 182, 212, 0.15) !important;
+        border-color: rgba(6, 182, 212, 0.4) !important;
         color: var(--accent-cyan) !important;
     }
 

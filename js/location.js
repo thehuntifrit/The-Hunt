@@ -20,7 +20,7 @@ function handleCrushToggle(e) {
     if (point.dataset.isInteractive !== "true") return;
     if (point.dataset.isLastone === "true") return;
 
-    const card = e.target.closest(".mob-card");
+    const card = e.target.closest(".mob-card, .pc-detail-card");
     if (!card) {
         console.error("FATAL: Mob card (.mob-card) not found for interactive spawn point click.");
         return;

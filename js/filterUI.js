@@ -15,7 +15,7 @@ const getAllAreas = () => {
 
 export const renderRankTabs = () => {
   const state = getState();
-  const rankList = ["ALL", "S", "A", "FATE"];
+  const rankList = ["ALL", "S", "A", "F.A.T.E."];
   const container = FilterDOM.rankTabs;
   if (!container) return;
 
@@ -44,7 +44,7 @@ export const renderRankTabs = () => {
 export const renderAreaFilterPanel = () => {
   const state = getState();
   const uiRank = state.filter.rank;
-  const targetRankKey = uiRank === 'FATE' ? 'F' : uiRank;
+  const targetRankKey = uiRank === 'F.A.T.E.' ? 'F' : uiRank;
 
   let items = [];
   let currentSet = new Set();
@@ -68,29 +68,26 @@ export const renderAreaFilterPanel = () => {
     const btn = document.createElement("button");
     btn.textContent = label;
     btn.className = "area-filter-btn";
-
     if (isAll) {
       btn.dataset.value = "ALL";
-      if (isAllSelected) btn.classList.add("is-selected");
     } else {
       btn.dataset.value = label;
-      if (isSelected) btn.classList.add("is-selected");
     }
+    if (isSelected) btn.classList.add("is-selected");
     return btn;
   };
 
   const createPanelContent = () => {
-    const panel = document.createDocumentFragment();
-
-    const allBtn = createButton(isAllSelected ? "解除" : "全選", true, false);
-    panel.appendChild(allBtn);
+    const fragment = document.createDocumentFragment();
+    const allBtn = createButton(isAllSelected ? "全解除" : "全選択", true, isAllSelected);
+    allBtn.classList.add("area-select-all");
+    fragment.appendChild(allBtn);
 
     items.forEach(item => {
       const isSelected = currentSet.has(item);
-      panel.appendChild(createButton(item, false, isSelected));
+      fragment.appendChild(createButton(item, false, isSelected));
     });
-
-    return panel;
+    return fragment;
   };
 
   const mobilePanel = FilterDOM.areaFilterPanelMobile?.querySelector('.flex-wrap');
@@ -134,7 +131,7 @@ export const updateFilterUI = () => {
         const colorClass = btnRank === "ALL" ? "bg-rose-500"
                          : btnRank === "S" ? "bg-rank-s"
                          : btnRank === "A" ? "bg-rank-a"
-                         : btnRank === "FATE" ? "bg-rank-f"
+                         : btnRank === "F.A.T.E." ? "bg-rank-f"
                          : "bg-cyan-600";
         
         indicator.className = `tab-indicator ${colorClass} transition-all duration-300 ease-out`;
@@ -297,7 +294,7 @@ export function filterMobsByRankAndArea(mobs) {
       const isRankMatch =
         (uiRank === 'S' && mobRank === 'S') ||
         (uiRank === 'A' && (mobRank === 'A' || mobRank.startsWith('B'))) ||
-        (uiRank === 'FATE' && mobRank === 'F');
+        (uiRank === 'F.A.T.E.' && mobRank === 'F');
 
       if (!isRankMatch) return false;
 
