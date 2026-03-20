@@ -80,7 +80,7 @@ function initAlertMirroring() {
 
     function syncMaintenance() {
         const state = getState();
-        const maintContainer = maintenanceTarget; // Use the existing target
+        const maintContainer = maintenanceTarget;
         if (!maintContainer) return;
 
         let hasContent = false;
@@ -94,7 +94,6 @@ function initAlertMirroring() {
         }
         maintenanceBtn?.classList.toggle("has-alert", hasContent);
 
-        // Add a badge to the title if has content
         const title = document.querySelector('#sidebar-panel-maintenance .sidebar-section-title');
         if (title) {
             title.textContent = `Maintenance info.`;
@@ -108,7 +107,6 @@ function initAlertMirroring() {
         telopTarget.textContent = text;
         telopBtn?.classList.toggle("has-alert", hasContent);
 
-        // Add a badge to the title if has content
         const title = document.querySelector('#sidebar-panel-telop .sidebar-section-title');
         if (title) {
             title.textContent = `ANNOUNCEMENT`;
@@ -164,7 +162,6 @@ function showPanel(panelName) {
     const target = document.getElementById(`sidebar-panel-${panelName}`);
     if (target) {
         target.classList.remove("hidden");
-        // Ensure filters render if opening rank panel
         if (panelName === "rank") {
             renderSidebarFilterAccordion();
         }
@@ -218,7 +215,6 @@ function renderSidebarFilterAccordion() {
     const state = getState();
     const activeRank = state.selectedRank || "ALL";
 
-    // Add Filter Title and list
     let html = `<div class="sidebar-section-title" style="text-align: center; margin-bottom: 12px; opacity: 0.6;">Filter</div>`;
     html += ranks.map(r => `
         <div class="rank-accordion-item ${r.key === activeRank ? 'active' : ''}" data-rank="${r.key}">
@@ -243,22 +239,35 @@ function renderSidebarFilterAccordion() {
     });
 
     // Populate area grid for the active item
-    const activeItem = container.querySelector(".rank-accordion-item.active .area-grid");
-    if (activeItem) {
+    const activeExpansion = container.querySelector(".rank-accordion-item.active .area-expansion");
+    if (activeExpansion) {
         const desktopPanel = document.getElementById("area-filter-panel-desktop");
         if (desktopPanel) {
-            const origButtons = desktopPanel.querySelectorAll(".area-filter-btn");
-            origButtons.forEach(orig => {
-                const btn = document.createElement("button");
-                btn.className = `area-filter-btn ${orig.classList.contains('active') ? 'active' : ''}`;
-                btn.textContent = orig.textContent;
-                btn.dataset.area = orig.dataset.area;
-                btn.addEventListener("click", (e) => {
+            const origButtons = Array.from(desktopPanel.querySelectorAll(".area-filter-btn"));
+            if (origButtons.length > 0) {
+                const firstOrig = origButtons[0];
+                const allBtn = document.createElement("button");
+                allBtn.className = `area-filter-btn area-select-all ${firstOrig.classList.contains('active') ? 'active' : ''}`;
+                allBtn.textContent = firstOrig.textContent;
+                allBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
-                    orig.click();
+                    firstOrig.click();
                 });
-                activeItem.appendChild(btn);
-            });
+                activeExpansion.appendChild(allBtn);
+
+                const grid = activeExpansion.querySelector(".area-grid");
+                origButtons.slice(1).forEach(orig => {
+                    const btn = document.createElement("button");
+                    btn.className = `area-filter-btn ${orig.classList.contains('active') ? 'active' : ''}`;
+                    btn.textContent = orig.textContent;
+                    btn.dataset.area = orig.dataset.area;
+                    btn.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        orig.click();
+                    });
+                    grid.appendChild(btn);
+                });
+            }
         }
     }
 }
