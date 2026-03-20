@@ -393,6 +393,30 @@ function attachGlobalEventListeners() {
         }
     });
 
+    let touchStartX = 0;
+    document.addEventListener("touchstart", (e) => {
+        const reportBtn = e.target.closest(".report-side-bar");
+        if (reportBtn) {
+            touchStartX = e.changedTouches[0].screenX;
+        }
+    }, { passive: true });
+
+    document.addEventListener("touchend", (e) => {
+        const reportBtn = e.target.closest(".report-side-bar");
+        if (reportBtn) {
+            const touchEndX = e.changedTouches[0].screenX;
+            if (touchEndX - touchStartX > 30) {
+                const mobNo = parseInt(reportBtn.dataset.mobNo, 10);
+                const type = reportBtn.dataset.reportType;
+                if (type === 'modal') {
+                    openReportModal(mobNo);
+                } else {
+                    reportBtn.click();
+                }
+            }
+        }
+    }, { passive: true });
+
     document.addEventListener("keydown", (e) => {
         if (e.target.matches("input[data-action='save-memo']")) {
             if (e.key === "Enter") {

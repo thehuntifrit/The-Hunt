@@ -129,34 +129,6 @@ export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, i
     `;
 }
 
-export function updateCrushUI(mobNo, locationId, isCulled) {
-    const markers = document.querySelectorAll(
-        `.spawn-point[data-mob-no="${mobNo}"][data-location-id="${locationId}"]`
-    );
-    
-    markers.forEach(marker => {
-        const rank = marker.dataset.rank;
-        const isInteractive = marker.dataset.isInteractive === "true";
-
-        if (isInteractive) {
-            if (isCulled) {
-                marker.classList.remove("color-b1", "color-b2");
-                marker.classList.add(rank === "B1" ? "color-b1-culled" : "color-b2-culled");
-            } else {
-                marker.classList.remove("color-b1-culled", "color-b2-culled");
-                marker.classList.add(rank === "B1" ? "color-b1" : "color-b2");
-            }
-        }
-
-        marker.dataset.isCulled = isCulled.toString();
-        const pointNumber = parseInt(locationId.slice(-2), 10);
-        marker.setAttribute("data-tooltip", `${pointNumber} (${isCulled ? "済" : ""})`);
-        marker.removeAttribute("title");
-    });
-}
-
-let locationEventsAttached = false;
-
 export function attachLocationEvents() {
     if (locationEventsAttached) return;
 

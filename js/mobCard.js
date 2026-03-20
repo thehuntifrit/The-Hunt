@@ -149,22 +149,18 @@ export function processText(text) {
     return text.replace(/\/\//g, "<br>");
 }
 
-export function createMobCard(mob) {
+export function createMobCard(mob, isDetailView = false) {
     const template = document.getElementById('mob-card-template');
     const clone = template.content.cloneNode(true);
     const card = clone.querySelector('.mob-card');
 
     const rank = mob.Rank;
     const { openMobCardNo } = getState();
-    const isOpen = mob.No === openMobCardNo;
+    const isOpen = isDetailView || mob.No === openMobCardNo;
 
     card.dataset.mobNo = mob.No;
     card.dataset.rank = rank;
-    if (mob.repopInfo?.isMaintenanceStop || mob.repopInfo?.isBlockedByMaintenance) {
-        card.classList.add("maintenance-gray-out");
-    } else {
-        card.classList.remove("maintenance-gray-out");
-    }
+    if (isDetailView) card.classList.add('pc-detail-card');
 
     const memoInput = card.querySelector('.memo-input');
     if (memoInput) {
@@ -183,58 +179,23 @@ export function createMobCard(mob) {
         reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
         reportSidebar.dataset.mobNo = mob.No;
         reportSidebar.classList.add(`rank-${rank.toLowerCase()}`);
-
-        let touchStartX = 0;
-        reportSidebar.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-        }, { passive: true });
-
-        reportSidebar.addEventListener('touchend', (e) => {
-            const touchEndX = e.changedTouches[0].screenX;
-            if (touchEndX - touchStartX > 30) {
-                const type = reportSidebar.dataset.reportType;
-                if (type === 'modal') {
-                    openReportModal(mob.No);
-                } else {
-                    reportSidebar.click();
-                }
-            }
-        }, { passive: true });
     }
 
     const expandablePanel = card.querySelector('.expandable-panel');
-    if (isOpen) {
+    if (isOpen && expandablePanel) {
         expandablePanel.classList.add('open');
     }
 
-    const conditionWrapper = card.querySelector('.condition-text')?.closest('.w-full.mt-2');
-    const mapContainer = card.querySelector('.map-container');
+    const conditionText = card.querySelector('.condition-text');
+    if (conditionText) {
+        conditionText.innerHTML = processText(mob.Condition);
+    }
 
-    if (rank !== 'S') {
-        if (conditionWrapper) conditionWrapper.classList.add('hidden');
-        if (mapContainer) mapContainer.classList.add('hidden');
-    } else {
-        const conditionText = card.querySelector('.condition-text');
-        if (conditionText) {
-            conditionText.innerHTML = processText(mob.Condition);
-            if (conditionWrapper) conditionWrapper.classList.remove('hidden');
-        }
-
-        if (mapContainer) {
-            if (mob.Map) {
-                const mapImg = mapContainer.querySelector('.mob-map-img');
-                if (mapImg) {
-                    mapImg.src = `./maps/${mob.Map}`;
-                    mapImg.alt = `${mob.Area} Map`;
-                    mapImg.dataset.mobMap = mob.Map;
-                }
-                mapContainer.classList.remove('hidden');
-                delete mapContainer.dataset.locationLoading;
-            } else {
-                mapContainer.classList.add('hidden');
-                mapContainer.dataset.locationLoading = "true";
-            }
-        }
+    const mapImg = card.querySelector('.mob-map-img');
+    if (mapImg && mob.Map) {
+        mapImg.src = `./maps/${mob.Map}`;
+        mapImg.alt = `${mob.Area} Map`;
+        mapImg.dataset.mobMap = mob.Map;
     }
 
     updateAreaInfo(card, mob);
@@ -242,119 +203,12 @@ export function createMobCard(mob) {
     updateMapOverlay(card, mob);
     updateExpandablePanel(card, mob);
     updateMemoIcon(card, mob);
+    updateProgressBar(card, mob);
+    updateProgressText(card, mob);
 
     return card;
 }
 
-export function updateCardFull(container, mob) {
-    const { elapsedPercent, minRepop, maxRepop, nextConditionSpawnDate, status, isInConditionWindow } = mob.repopInfo || {};
-    const rank = mob.Rank.toLowerCase();
-    const isS = mob.Rank === 'S';
-
-    const isMaint = !!(mob.repopInfo?.isMaintenanceStop || mob.repopInfo?.isBlockedByMaintenance);
-
-    container.innerHTML = `
-        <div class="pc-detail-card rank-${rank} ${isMaint ? 'maintenance-gray-out' : ''}" data-mob-no="${mob.No}">
-            <div class="pc-detail-header">
-                <div class="pc-detail-name-row">
-                    <h2 class="pc-detail-name">${mob.Name}</h2>
-                    <span class="pc-detail-rank">${mob.Rank}</span>
-                </div>
-                <div class="pc-detail-area-row">
-                    <span class="pc-detail-area">${mob.Area}</span>
-                    <span class="pc-detail-expansion">${mob.Expansion}</span>
-                </div>
-            </div>
-
-            <div class="pc-detail-progress-section">
-                <div class="pc-detail-progress-text">
-                    <span>${Math.floor(elapsedPercent || 0)}%</span>
-                </div>
-                <div class="pc-detail-progress-container">
-                    <div class="pc-detail-progress-bar" style="width: ${elapsedPercent || 0}%"></div>
-                </div>
-            </div>
-
-            <div class="pc-detail-grid">
-                <div class="pc-detail-info-item">
-                    <span class="label">最短POP</span>
-                    <span class="value">${formatMMDDHHmm(minRepop)}</span>
-                </div>
-                <div class="pc-detail-info-item">
-                    <span class="label">最大POP</span>
-                    <span class="value">${formatMMDDHHmm(maxRepop)}</span>
-                </div>
-                ${isS ? `
-                <div class="pc-detail-info-item highlight">
-                    <span class="label">次回POP可能</span>
-                    <span class="value">${formatMMDDHHmm(nextConditionSpawnDate)}</span>
-                </div>
-                ` : ''}
-                <div class="pc-detail-info-item">
-                    <span class="label">前回討伐</span>
-                    <span class="value">${formatMMDDHHmm(mob.last_kill_time)}</span>
-                </div>
-            </div>
-
-            <div class="pc-detail-extra">
-                <div class="pc-detail-section">
-                    <h3 class="section-label">メモ</h3>
-                    <div class="mob-memo-row w-full mt-1">
-                        <div class="flex items-center bg-gray-800/50 rounded px-2 py-1 border border-gray-700">
-                            <span class="text-sm mr-2 opacity-60">📝</span>
-                            <input type="text" class="memo-input w-full bg-transparent text-sm text-gray-200 outline-none placeholder-gray-600 h-6" 
-                                placeholder="Edit hunting notes..." 
-                                value="${mob.memo_text || ""}"
-                                data-mob-no="${mob.No}"
-                                data-action="save-memo">
-                        </div>
-                    </div>
-                </div>
-                
-                ${isS && mob.Condition ? `
-                <div class="pc-detail-section">
-                    <h3 class="section-label">出現条件</h3>
-                    <div class="section-content condition">${processText(mob.Condition)}</div>
-                </div>
-                ` : ''}
-
-                ${isS && mob.Map ? `
-                <div class="pc-detail-section">
-                    <h3 class="section-label">出現マップ</h3>
-                    <div class="pc-detail-map-container">
-                        <img src="./maps/${mob.Map}" alt="Map" class="pc-detail-map">
-                        <div class="pc-detail-map-overlay"></div>
-                    </div>
-                </div>
-                ` : ''}
-            </div>
-        </div>
-    `;
-
-    // Map overlay updates if needed
-    if (isS && mob.Map) {
-        const overlay = container.querySelector('.pc-detail-map-overlay');
-        if (overlay) {
-            const state = getState();
-            const mobLocationsData = state.mobLocations?.[mob.No];
-            const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
-            const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
-            const isLastOne = validSpawnPoints.length === 1;
-
-            overlay.innerHTML = (mob.spawn_points ?? []).map(point => {
-                const isThisPointTheLastOne = isLastOne && point.id === validSpawnPoints[0]?.id;
-                return drawSpawnPoint(
-                    point,
-                    spawnCullStatus,
-                    mob.No,
-                    point.mob_ranks.includes("B2") ? "B2" : (point.mob_ranks.includes("B1") ? "B1" : point.mob_ranks[0]),
-                    isThisPointTheLastOne,
-                    isLastOne
-                );
-            }).join("");
-        }
-    }
-}
 
 export function updateProgressBar(card, mob) {
     const bar = card.querySelector(".progress-bar-bg");
@@ -640,7 +494,7 @@ export function updateMapOverlay(card, mob) {
     if (!mapOverlay) return;
 
     let spawnPointsHtml = "";
-    if (mob.Map && mob.Rank === 'S') {
+    if (mob.Map && mob.spawn_points) {
         const state = getState();
         const mobLocationsData = state.mobLocations?.[mob.No];
         const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
