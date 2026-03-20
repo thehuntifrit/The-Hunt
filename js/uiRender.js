@@ -149,61 +149,68 @@ export function createPCDetailCard(mob) {
     const mapFile = resolveMapFile(mob);
 
     const layout = `
-        <div class="pc-detail-header">
-            <div class="flex items-center justify-between mb-0">
-                <h2 class="pc-detail-name">${mob.Name}</h2>
-                <div class="pc-detail-rank">${mob.Rank}</div>
+        <div class="pc-detail-header p-4 pb-2">
+            <div class="flex items-center justify-between mb-1">
+                <h2 class="text-3xl font-bold text-white tracking-widest">${mob.Name}</h2>
+                <div class="rank-badge rank-${rank.toLowerCase()} w-8 h-8 flex items-center justify-center border-2 border-current rounded font-bold text-xl">${mob.Rank}</div>
             </div>
-            <div class="pc-detail-area-row">
+            <div class="pc-detail-area-row flex items-center gap-2 text-sm">
                 <span class="text-yellow-500 font-bold">${mob.Area}</span>
-                <span class="text-gray-500 font-normal">${mob.Expansion}</span>
+                <span class="text-gray-500">${mob.Expansion}</span>
             </div>
         </div>
 
-        <div class="pc-detail-progress-section">
-            <div class="flex items-center gap-3">
-                <div class="pc-detail-progress-container">
-                    <div class="pc-detail-progress-bar" style="width: ${elapsedPercent || 0}%"></div>
-                </div>
-                <div class="pc-detail-progress-text">
-                    <span class="percent">${Math.floor(elapsedPercent || 0)}%</span>
-                </div>
+        <div class="pc-detail-metrics grid grid-cols-4 gap-1 px-4 mb-4">
+            <div class="metric-item">
+                <div class="text-[10px] text-gray-500 font-bold">最短POP</div>
+                <div class="text-white text-sm font-mono">${fmt(minRepop)}</div>
+            </div>
+            <div class="metric-item">
+                <div class="text-[10px] text-gray-500 font-bold">最大POP</div>
+                <div class="text-white text-sm font-mono">${fmt(maxRepop)}</div>
+            </div>
+            <div class="metric-item">
+                <div class="text-[10px] text-gray-500 font-bold">次回POP可能</div>
+                <div class="text-yellow-500 text-sm font-bold font-mono">${nextPossibleTime}</div>
+            </div>
+            <div class="metric-item">
+                <div class="text-[10px] text-gray-500 font-bold">前回討伐</div>
+                <div class="text-white text-sm font-mono">${fmt(mob.last_kill_time)}</div>
             </div>
         </div>
 
-        <div class="pc-detail-grid">
-            <div class="pc-detail-info-item">
-                <div class="label">最短POP</div>
-                <div class="value">${fmt(minRepop)}</div>
+        <div class="pc-detail-progress-row px-4 mb-4">
+            <div class="flex justify-end mb-1">
+                <span class="text-white font-bold text-2xl font-mono leading-none">${Math.floor(elapsedPercent || 0)}%</span>
             </div>
-            <div class="pc-detail-info-item">
-                <div class="label">最大POP</div>
-                <div class="value">${fmt(maxRepop)}</div>
-            </div>
-            <div class="pc-detail-info-item highlight">
-                <div class="label">次回POP可能</div>
-                <div class="value">${nextPossibleTime}</div>
-            </div>
-            <div class="pc-detail-info-item">
-                <div class="label">前回討伐</div>
-                <div class="value">${fmt(mob.last_kill_time)}</div>
+            <div class="pc-detail-progress-container h-[8px] bg-white/10 rounded-full overflow-hidden border border-white/5">
+                <div class="pc-detail-progress-bar h-full bg-blue-500 transition-all duration-100 ease-linear shadow-[0_0_10px_rgba(59,130,246,0.5)]" 
+                     style="width: ${elapsedPercent || 0}%"></div>
             </div>
         </div>
 
-        <div class="pc-detail-content">
-            <div class="pc-detail-section">
-                <div class="section-label">出現条件</div>
-                <div class="section-content condition">
+        <div class="pc-detail-content px-4 space-y-4">
+            <div class="content-section">
+                <div class="section-label border-l-2 border-yellow-500 pl-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">出現条件</div>
+                <div class="section-box bg-slate-900/60 p-3 rounded-lg border border-white/5 text-yellow-400/90 text-sm leading-relaxed">
                     ${processText(mob.Condition || "特殊な出現条件はありません。")}
                 </div>
             </div>
 
-            <div class="pc-detail-section">
-                <div class="section-label">出現マップ</div>
-                <div class="pc-detail-map-container">
-                    <img src="./maps/${mapFile}" class="pc-detail-map mob-map-img" 
+            <div class="content-section">
+                <div class="section-label border-l-2 border-yellow-500 pl-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">MEMO</div>
+                <div class="section-box bg-slate-900/60 p-2 rounded-lg border border-white/5">
+                    <input type="text" class="memo-input w-full bg-transparent border-none outline-none text-white text-sm placeholder-gray-700"
+                        data-action="save-memo" data-mob-no="${mob.No}" value="${mob.memo_text || ""}" placeholder="全角30文字まで" maxlength="30">
+                </div>
+            </div>
+
+            <div class="content-section">
+                <div class="section-label border-l-2 border-yellow-500 pl-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">出現マップ</div>
+                <div class="pc-detail-map-container map-container relative aspect-video w-full bg-slate-950 rounded-lg overflow-hidden border border-white/10 shadow-2xl group">
+                    <img src="./maps/${mapFile}" class="pc-detail-map mob-map-img w-full h-full object-contain opacity-90 group-hover:opacity-100 transition-opacity" 
                         data-mob-map="${mapFile}" alt="${mob.Name} Map">
-                    <div class="pc-detail-map-overlay map-overlay"></div>
+                    <div class="pc-detail-map-overlay map-overlay absolute inset-0"></div>
                 </div>
             </div>
         </div>
@@ -1227,22 +1234,3 @@ function updateProgressBars() {
 setInterval(() => {
   updateProgressBars();
 }, EORZEA_MINUTE_MS);
-
-function resolveMapFile(mob) {
-    if (mob.Map) return mob.Map;
-    const areaToMap = {
-        "南ザナラーン": "Southern_Thanalan.webp", "中央ザナラーン": "Central_Thanalan.webp",
-        "東ザナラーン": "East_Thanalan.webp", "西ザナラーン": "West_Thanalan.webp", "北ザナラーン": "North_Thanalan.webp",
-        "中央ラノシア": "Middle_La_Noscea.webp", "低地ラノシア": "Lower_La_Noscea.webp", "東ラノシア": "Eastern_La_Noscea.webp",
-        "西ラノシア": "Western_La_Noscea.webp", "高地ラノシア": "Upper_La_Noscea.webp", "外地ラノシア": "Outer_La_Noscea.webp",
-        "中央森林": "Central_Shroud.webp", "東部森林": "East_Shroud.webp", "南部森林": "South_Shroud.webp", "北部森林": "North_Shroud.webp",
-        "モードゥナ": "Mor_Dhona.webp", "クルザス中央高地": "Coerthas_Central_Highlands.webp", "西ザナラーン": "Western_Thanalan.webp",
-        "オルコ・パチャ": "Urqopacha.webp", "コザマル・カ": "Kozama'uka.webp", "アム・アレーン": "Amh_Araeng.webp",
-        "イル・メグ": "Il_Mheg.webp", "ラケティカ大森林": "Rak_tika_Greatwood.webp", "テンペスト": "Tempest.webp",
-        "ウルティマ・トゥーレ": "Ultima_Thule.webp", "ガレマール": "Garlemald.webp", "サベネア島": "Thavnair.webp",
-        "エルピス": "Elpis.webp", "ラヴィリンソス": "Labyrinthos.webp", "嘆きの海": "Mare_Lamentorum.webp",
-        "リビング・メモリー": "Living_Memory.webp", "ヘリテージファウンド": "Heritage_Found.webp",
-        "シャーローニ荒野": "Shaaloani.webp", "ヤクテル樹海": "Yak_Tel.webp", "エニグマ・セクター": "The_Tempest.webp"
-    };
-    return areaToMap[mob.Area] || "";
-}
