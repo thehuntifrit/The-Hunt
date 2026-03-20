@@ -424,43 +424,53 @@
         padding: 8px 10px;
     }
 
-    .area-select-all {
+    .area-expansion .area-filter-btn {
         width: 100%;
-        margin-bottom: 8px;
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 8px 4px;
+        min-height: 36px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 6px;
+        color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .area-expansion .area-filter-btn:hover {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .area-expansion .area-filter-btn.active {
+        background: var(--accent-cyan);
+        color: #0f172a;
+        font-weight: 900;
+        border-color: var(--accent-cyan);
+        box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
     }
 
     .area-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 6px;
+        width: 100%;
+        margin-top: 4px;
     }
 
-    .area-grid .area-filter-btn {
-        width: 100% !important;
-        margin: 0 !important;
-        font-size: 13px !important;
-        padding: 6px 4px !important;
-        height: auto !important;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 4px;
-        color: rgba(255, 255, 255, 0.6);
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .area-grid .area-filter-btn:hover {
-        background: rgba(255, 255, 255, 0.15);
-        color: #fff;
-    }
-
-    .area-grid .area-filter-btn.active {
-        background: var(--accent-cyan);
-        color: #0f172a;
-        font-weight: 800;
-        border-color: var(--accent-cyan);
+    .area-select-all {
+        grid-column: span 2;
+        margin-bottom: 4px !important;
+        background: rgba(6, 182, 212, 0.1) !important;
+        border-color: rgba(6, 182, 212, 0.3) !important;
+        color: var(--accent-cyan) !important;
     }
 
     #sidebar-area-filter {

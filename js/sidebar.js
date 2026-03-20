@@ -207,8 +207,8 @@ function renderSidebarFilterAccordion() {
 
     const ranks = [
         { key: "ALL", label: "ALL", color: "#fff" },
-        { key: "S", label: "S Rank", color: "var(--rank-s)" },
-        { key: "A", label: "A Rank", color: "var(--rank-a)" },
+        { key: "S", label: "S RANK", color: "var(--rank-s)" },
+        { key: "A", label: "A RANK", color: "var(--rank-a)" },
         { key: "FATE", label: "FATE", color: "var(--rank-f)" },
     ];
 
@@ -218,7 +218,7 @@ function renderSidebarFilterAccordion() {
     let html = `<div class="sidebar-section-title" style="text-align: center; margin-bottom: 12px; opacity: 0.6;">Filter</div>`;
     html += ranks.map(r => `
         <div class="rank-accordion-item ${r.key === activeRank ? 'active' : ''}" data-rank="${r.key}">
-            <button class="rank-header" style="${r.key === activeRank ? `color: ${r.color};` : ''}">
+            <button class="rank-header" style="color: ${r.color};">
                 ${r.label}
             </button>
             <div class="area-expansion">
@@ -239,21 +239,21 @@ function renderSidebarFilterAccordion() {
 
     const activeExpansion = container.querySelector(".rank-accordion-item.active .area-grid-container");
     if (activeExpansion) {
+        activeExpansion.innerHTML = "";
+        activeExpansion.className = "area-grid-container area-grid";
+
         if (activeRank === "ALL") {
-            const grid = document.createElement("div");
-            grid.className = "area-grid";
             ["S", "A", "F"].forEach(rank => {
                 const isSelected = state.filter.allRankSet?.has(rank);
                 const btn = document.createElement("button");
                 btn.className = `area-filter-btn ${isSelected ? 'active' : ''}`;
-                btn.textContent = rank === "F" ? "FATE" : `${rank} Rank`;
+                btn.textContent = rank === "F" ? "FATE" : `${rank} RANK`;
                 btn.dataset.value = rank;
                 btn.addEventListener("click", (e) => {
                     handleAreaFilterClick({ target: btn });
                 });
-                grid.appendChild(btn);
+                activeExpansion.appendChild(btn);
             });
-            activeExpansion.appendChild(grid);
         } else {
             const targetRankKey = activeRank === 'FATE' ? 'F' : activeRank;
             const currentSet = state.filter.areaSets[targetRankKey] || new Set();
@@ -269,8 +269,6 @@ function renderSidebarFilterAccordion() {
             });
             activeExpansion.appendChild(allBtn);
 
-            const grid = document.createElement("div");
-            grid.className = "area-grid";
             expansions.forEach(([id, name]) => {
                 const isSelected = currentSet.has(name);
                 const btn = document.createElement("button");
@@ -280,9 +278,8 @@ function renderSidebarFilterAccordion() {
                 btn.addEventListener("click", () => {
                     handleAreaFilterClick({ target: btn });
                 });
-                grid.appendChild(btn);
+                activeExpansion.appendChild(btn);
             });
-            activeExpansion.appendChild(grid);
         }
     }
 }
