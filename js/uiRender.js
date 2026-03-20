@@ -149,68 +149,61 @@ export function createPCDetailCard(mob) {
     const mapFile = resolveMapFile(mob);
 
     const layout = `
-        <div class="pc-detail-header p-4 pb-2">
-            <div class="flex items-center justify-between mb-1">
-                <h2 class="text-3xl font-bold text-white tracking-widest">${mob.Name}</h2>
-                <div class="rank-badge rank-${rank.toLowerCase()} w-8 h-8 flex items-center justify-center border-2 border-current rounded font-bold text-xl">${mob.Rank}</div>
+        <div class="pc-detail-header">
+            <div class="flex items-center justify-between mb-0">
+                <h2 class="pc-detail-name">${mob.Name}</h2>
+                <div class="pc-detail-rank">${mob.Rank}</div>
             </div>
-            <div class="pc-detail-area-row flex items-center gap-2 text-sm">
+            <div class="pc-detail-area-row">
                 <span class="text-yellow-500 font-bold">${mob.Area}</span>
-                <span class="text-gray-500">${mob.Expansion}</span>
+                <span class="text-gray-500 font-normal">${mob.Expansion}</span>
             </div>
         </div>
 
-        <div class="pc-detail-metrics grid grid-cols-4 gap-1 px-4 mb-4">
-            <div class="metric-item">
-                <div class="text-[10px] text-gray-500 font-bold">最短POP</div>
-                <div class="text-white text-sm font-mono">${fmt(minRepop)}</div>
-            </div>
-            <div class="metric-item">
-                <div class="text-[10px] text-gray-500 font-bold">最大POP</div>
-                <div class="text-white text-sm font-mono">${fmt(maxRepop)}</div>
-            </div>
-            <div class="metric-item">
-                <div class="text-[10px] text-gray-500 font-bold">次回POP可能</div>
-                <div class="text-yellow-500 text-sm font-bold font-mono">${nextPossibleTime}</div>
-            </div>
-            <div class="metric-item">
-                <div class="text-[10px] text-gray-500 font-bold">前回討伐</div>
-                <div class="text-white text-sm font-mono">${fmt(mob.last_kill_time)}</div>
+        <div class="pc-detail-progress-section">
+            <div class="flex items-center gap-3">
+                <div class="pc-detail-progress-container">
+                    <div class="pc-detail-progress-bar" style="width: ${elapsedPercent || 0}%"></div>
+                </div>
+                <div class="pc-detail-progress-text">
+                    <span class="percent">${Math.floor(elapsedPercent || 0)}%</span>
+                </div>
             </div>
         </div>
 
-        <div class="pc-detail-progress-row px-4 mb-4">
-            <div class="flex justify-end mb-1">
-                <span class="text-white font-bold text-2xl font-mono leading-none">${Math.floor(elapsedPercent || 0)}%</span>
+        <div class="pc-detail-grid">
+            <div class="pc-detail-info-item">
+                <div class="label">最短POP</div>
+                <div class="value">${fmt(minRepop)}</div>
             </div>
-            <div class="pc-detail-progress-container h-[8px] bg-white/10 rounded-full overflow-hidden border border-white/5">
-                <div class="pc-detail-progress-bar h-full bg-blue-500 transition-all duration-100 ease-linear shadow-[0_0_10px_rgba(59,130,246,0.5)]" 
-                     style="width: ${elapsedPercent || 0}%"></div>
+            <div class="pc-detail-info-item">
+                <div class="label">最大POP</div>
+                <div class="value">${fmt(maxRepop)}</div>
+            </div>
+            <div class="pc-detail-info-item highlight">
+                <div class="label">次回POP可能</div>
+                <div class="value">${nextPossibleTime}</div>
+            </div>
+            <div class="pc-detail-info-item">
+                <div class="label">前回討伐</div>
+                <div class="value">${fmt(mob.last_kill_time)}</div>
             </div>
         </div>
 
-        <div class="pc-detail-content px-4 space-y-4">
-            <div class="content-section">
-                <div class="section-label border-l-2 border-yellow-500 pl-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">出現条件</div>
-                <div class="section-box bg-slate-900/60 p-3 rounded-lg border border-white/5 text-yellow-400/90 text-sm leading-relaxed">
+        <div class="pc-detail-content">
+            <div class="pc-detail-section">
+                <div class="section-label">出現条件</div>
+                <div class="section-content condition">
                     ${processText(mob.Condition || "特殊な出現条件はありません。")}
                 </div>
             </div>
 
-            <div class="content-section">
-                <div class="section-label border-l-2 border-yellow-500 pl-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">MEMO</div>
-                <div class="section-box bg-slate-900/60 p-2 rounded-lg border border-white/5">
-                    <input type="text" class="memo-input w-full bg-transparent border-none outline-none text-white text-sm placeholder-gray-700"
-                        data-action="save-memo" data-mob-no="${mob.No}" value="${mob.memo_text || ""}" placeholder="全角30文字まで" maxlength="30">
-                </div>
-            </div>
-
-            <div class="content-section">
-                <div class="section-label border-l-2 border-yellow-500 pl-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1.5">出現マップ</div>
-                <div class="pc-detail-map-container map-container relative aspect-video w-full bg-slate-950 rounded-lg overflow-hidden border border-white/10 shadow-2xl group">
-                    <img src="./maps/${mapFile}" class="pc-detail-map mob-map-img w-full h-full object-contain opacity-90 group-hover:opacity-100 transition-opacity" 
+            <div class="pc-detail-section">
+                <div class="section-label">出現マップ</div>
+                <div class="pc-detail-map-container">
+                    <img src="./maps/${mapFile}" class="pc-detail-map mob-map-img" 
                         data-mob-map="${mapFile}" alt="${mob.Name} Map">
-                    <div class="pc-detail-map-overlay map-overlay absolute inset-0"></div>
+                    <div class="pc-detail-map-overlay map-overlay"></div>
                 </div>
             </div>
         </div>
