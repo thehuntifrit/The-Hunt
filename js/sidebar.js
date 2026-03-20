@@ -218,7 +218,9 @@ function renderSidebarFilterAccordion() {
     const state = getState();
     const activeRank = state.selectedRank || "ALL";
 
-    container.innerHTML = ranks.map(r => `
+    // Add Filter Title and list
+    let html = `<div class="sidebar-section-title" style="text-align: center; margin-bottom: 12px; opacity: 0.6;">Filter</div>`;
+    html += ranks.map(r => `
         <div class="rank-accordion-item ${r.key === activeRank ? 'active' : ''}" data-rank="${r.key}">
             <button class="rank-header" style="${r.key === activeRank ? `color: ${r.color};` : ''}">
                 ${r.label}
@@ -228,18 +230,15 @@ function renderSidebarFilterAccordion() {
             </div>
         </div>
     `).join("");
+    
+    container.innerHTML = html;
 
     container.querySelectorAll(".rank-header").forEach(header => {
         header.addEventListener("click", () => {
             const item = header.closest(".rank-accordion-item");
             const rankKey = item.dataset.rank;
-            
-            // Sync with master rank tabs
             const origBtn = document.querySelector(`#rank-tabs .tab-button[data-rank="${rankKey}"]`);
             if (origBtn) origBtn.click();
-
-            // Rerender to show expanded state
-            setTimeout(renderSidebarFilterAccordion, 50);
         });
     });
 
@@ -248,30 +247,15 @@ function renderSidebarFilterAccordion() {
     if (activeItem) {
         const desktopPanel = document.getElementById("area-filter-panel-desktop");
         if (desktopPanel) {
-            // First add Select All button if applicable
-            if (activeRank !== "ALL") {
-                const selectAllBtn = document.createElement("button");
-                selectAllBtn.className = "area-filter-btn";
-                selectAllBtn.textContent = "全選択";
-                selectAllBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    // Custom logic to select all areas for current rank?
-                    // Usually there's a master "Select All" button in the origin
-                    const origAll = desktopPanel.querySelector(".area-filter-btn:first-child"); // Hypothesis
-                    if (origAll) origAll.click();
-                    setTimeout(renderSidebarFilterAccordion, 50);
-                });
-                activeItem.appendChild(selectAllBtn);
-            }
-
             const origButtons = desktopPanel.querySelectorAll(".area-filter-btn");
             origButtons.forEach(orig => {
-                const btn = orig.cloneNode(true);
-                btn.classList.add("area-filter-btn");
+                const btn = document.createElement("button");
+                btn.className = `area-filter-btn ${orig.classList.contains('active') ? 'active' : ''}`;
+                btn.textContent = orig.textContent;
+                btn.dataset.area = orig.dataset.area;
                 btn.addEventListener("click", (e) => {
                     e.stopPropagation();
                     orig.click();
-                    setTimeout(renderSidebarFilterAccordion, 50);
                 });
                 activeItem.appendChild(btn);
             });
