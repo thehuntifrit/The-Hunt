@@ -103,7 +103,7 @@ function initAlertMirroring() {
         // Add a badge to the title if has content
         const title = document.querySelector('#sidebar-panel-maintenance .sidebar-section-title');
         if (title) {
-            title.innerHTML = `Maintenance info. ${hasContent ? '<span class="sidebar-new-badge">NEW</span>' : ''}`;
+            title.textContent = `Maintenance info.`;
         }
     }
 
@@ -117,7 +117,7 @@ function initAlertMirroring() {
         // Add a badge to the title if has content
         const title = document.querySelector('#sidebar-panel-telop .sidebar-section-title');
         if (title) {
-            title.innerHTML = `ANNOUNCEMENT ${hasContent ? '<span class="sidebar-new-badge">NEW</span>' : ''}`;
+            title.textContent = `ANNOUNCEMENT`;
         }
     }
 
