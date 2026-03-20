@@ -1,6 +1,5 @@
 import { getState, EXPANSION_MAP } from "./dataManager.js";
-import { getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
-import { handleAreaFilterClick } from "./filterUI.js";
+import { renderAreaFilterPanel } from "./filterUI.js";
 
 let currentPanel = null;
 
@@ -60,103 +59,6 @@ export function initSidebar() {
     }
 
     renderSidebarFilterAccordion();
-    updateSidebarClocks();
-
-    setInterval(updateSidebarClocks, EORZEA_MINUTE_MS);
-
-    setupSidebarNotification();
-    initAlertMirroring();
-}
-
-function initAlertMirroring() {
-    const maintenanceSource = document.getElementById("status-message-maintenance");
-    const telopSource = document.getElementById("status-message-telop");
-
-    const maintenanceTarget = document.getElementById("sidebar-maintenance-content");
-    const telopTarget = document.getElementById("sidebar-telop-content");
-
-    const maintenanceBtn = document.querySelector('.sidebar-icon-btn[data-panel="maintenance"]');
-    const telopBtn = document.querySelector('.sidebar-icon-btn[data-panel="telop"]');
-
-    function syncMaintenance() {
-        const state = getState();
-        const maintContainer = maintenanceTarget;
-        if (!maintContainer) return;
-
-        let hasContent = false;
-        if (state.maintenance && state.maintenance.start && state.maintenance.end) {
-            const start = highlightDateTime(state.maintenance.start);
-            const end = highlightDateTime(state.maintenance.end);
-            maintContainer.innerHTML = `<div class="maintenance-box"><div class="time-val">${start}</div><div class="time-sep">～</div><div class="time-val">${end}</div></div>`;
-            hasContent = true;
-        } else {
-            maintContainer.textContent = "現在予定されているメンテナンスはありません。";
-        }
-        maintenanceBtn?.classList.toggle("has-alert", hasContent);
-
-        const title = document.querySelector('#sidebar-panel-maintenance .sidebar-section-title');
-        if (title) {
-            title.textContent = `Maintenance info.`;
-        }
-    }
-
-    function syncTelop() {
-        if (!telopSource || !telopTarget) return;
-        const text = telopSource.textContent.trim();
-        const hasContent = text !== "";
-        telopTarget.textContent = text;
-        telopBtn?.classList.toggle("has-alert", hasContent);
-
-        const title = document.querySelector('#sidebar-panel-telop .sidebar-section-title');
-        if (title) {
-            title.textContent = `ANNOUNCEMENT`;
-        }
-    }
-
-    if (maintenanceSource) {
-        new MutationObserver(syncMaintenance).observe(maintenanceSource, { childList: true, subtree: true, characterData: true });
-        syncMaintenance();
-    }
-    if (telopSource) {
-        new MutationObserver(syncTelop).observe(telopSource, { childList: true, subtree: true, characterData: true });
-        syncTelop();
-    }
-}
-
-function togglePanel(panelName) {
-    const sidebar = document.getElementById("app-sidebar");
-    if (!sidebar) return;
-
-    if (currentPanel === panelName) {
-        closePanel();
-        return;
-    }
-
-    sidebar.querySelectorAll(".sidebar-icon-btn").forEach(b => b.classList.remove("active"));
-    const btn = sidebar.querySelector(`[data-panel="${panelName}"]`);
-    if (btn) btn.classList.add("active");
-
-    currentPanel = panelName;
-    sidebar.classList.add("expanded");
-    document.body.classList.add("sidebar-expanded");
-    saveState("panel", panelName);
-
-    showPanel(panelName);
-}
-
-function closePanel() {
-    const sidebar = document.getElementById("app-sidebar");
-    if (!sidebar) return;
-
-    sidebar.querySelectorAll(".sidebar-icon-btn").forEach(b => b.classList.remove("active"));
-    sidebar.classList.remove("expanded");
-    document.body.classList.remove("sidebar-expanded");
-    currentPanel = null;
-    saveState("panel", null);
-
-    document.querySelectorAll(".sidebar-panel-content").forEach(p => p.classList.add("hidden"));
-}
-
 function showPanel(panelName) {
     document.querySelectorAll(".sidebar-panel-content").forEach(p => p.classList.add("hidden"));
     const target = document.getElementById(`sidebar-panel-${panelName}`);
@@ -166,24 +68,6 @@ function showPanel(panelName) {
             renderSidebarFilterAccordion();
         }
     }
-}
-
-function updateSidebarClocks() {
-    const now = new Date();
-    const et = getEorzeaTime(now);
-    const ltH = String(now.getHours()).padStart(2, "0");
-    const ltM = String(now.getMinutes()).padStart(2, "0");
-    const ltStr = `${ltH}:${ltM}`;
-    const etStr = `${et.hours}:${et.minutes}`;
-
-    ["sidebar-lt-persistent", "pc-time-lt", "header-time-lt"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = ltStr;
-    });
-    ["sidebar-et-persistent", "pc-time-et", "header-time-et"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = etStr;
-    });
 }
 
 function setupSidebarNotification() {

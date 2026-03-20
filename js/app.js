@@ -233,6 +233,27 @@ function renderMaintenanceStatus() {
         }
     }
 
+    const sidebarMaint = document.getElementById("sidebar-maintenance-content");
+    const sidebarTelop = document.getElementById("sidebar-telop-content");
+    const sidebarMaintBtn = document.querySelector('.sidebar-icon-btn[data-panel="maintenance"]');
+    const sidebarTelopBtn = document.querySelector('.sidebar-icon-btn[data-panel="telop"]');
+
+    if (sidebarMaint) {
+        if (hasMaintenance) {
+            const start = formatDate(new Date(maintenance.start));
+            const end = formatDate(new Date(maintenance.end));
+            sidebarMaint.innerHTML = `<div class="maintenance-box"><div class="time-val">${start}</div><div class="time-sep">～</div><div class="time-val">${end}</div></div>`;
+        } else {
+            sidebarMaint.textContent = "現在予定されているメンテナンスはありません。";
+        }
+        sidebarMaintBtn?.classList.toggle("has-alert", hasMaintenance);
+    }
+
+    if (sidebarTelop) {
+        sidebarTelop.textContent = hasMessage ? maintenance.message : "";
+        sidebarTelopBtn?.classList.toggle("has-alert", hasMessage);
+    }
+
     updateStatusContainerVisibility();
 }
 
