@@ -692,6 +692,8 @@ export function updateHeaderTime() {
   const name = state.characterName || "";
   const elLT = document.getElementById("header-time-lt");
   const elET = document.getElementById("header-time-et");
+  const elPCLT = document.getElementById("pc-time-lt");
+  const elPCET = document.getElementById("pc-time-et");
   const elWelcome = document.getElementById("header-welcome-message");
 
   const elSidebarLT = document.getElementById("sidebar-lt-persistent");
@@ -700,6 +702,10 @@ export function updateHeaderTime() {
   if (elLT && elET) {
     elLT.textContent = `${ltHours}:${ltMinutes}`;
     elET.textContent = `${et.hours}:${et.minutes}`;
+  }
+  if (elPCLT && elPCET) {
+    elPCLT.textContent = `${ltHours}:${ltMinutes}`;
+    elPCET.textContent = `${et.hours}:${et.minutes}`;
   }
   if (elSidebarLT) elSidebarLT.textContent = `${ltHours}:${ltMinutes}`;
   if (elSidebarET) elSidebarET.textContent = `${et.hours}:${et.minutes}`;

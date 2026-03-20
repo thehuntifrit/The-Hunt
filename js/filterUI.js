@@ -43,13 +43,13 @@ export const renderRankTabs = () => {
 
 export const renderAreaFilterPanel = (customContainer = null) => {
   const state = getState();
-  const targetRankKey = normalizeRank(uiRank);
+  const targetRankKey = normalizeRank(state.filter.rank);
 
   let items = [];
   let currentSet = new Set();
   let isAllSelected = false;
 
-  if (uiRank === 'ALL') {
+  if (state.filter.rank === 'ALL') {
     items = ["S", "A", "F"];
     currentSet = state.filter.allRankSet instanceof Set ? state.filter.allRankSet : new Set();
     isAllSelected = items.length > 0 && currentSet.size === items.length;
@@ -76,7 +76,7 @@ export const renderAreaFilterPanel = (customContainer = null) => {
             const isSelected = currentSet.has(item);
             const btn = document.createElement("button");
             btn.className = `area-filter-btn ${isSelected ? 'is-selected' : ''}`;
-            btn.textContent = (uiRank === 'F.A.T.E.' && item === 'F') ? 'F.A.T.E.' : (uiRank === 'ALL' ? (item === 'F' ? 'F.A.T.E.' : `${item} RANK`) : item);
+            btn.textContent = (state.filter.rank === 'F.A.T.E.' && item === 'F') ? 'F.A.T.E.' : (state.filter.rank === 'ALL' ? (item === 'F' ? 'F.A.T.E.' : `${item} RANK`) : item);
             btn.dataset.value = item;
             btn.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -291,7 +291,7 @@ export function filterMobsByRankAndArea(mobs) {
         areaSets?.[filterKey] instanceof Set ? areaSets[filterKey] : new Set();
 
       if (targetSet.size === 0) return true;
-      if (targetSet.size === allAreas.length) return true;
+      if (targetSet.size === allExpansions) return true;
 
       return targetSet.has(mobExpansion);
     } else {
@@ -306,7 +306,7 @@ export function filterMobsByRankAndArea(mobs) {
         areaSets?.[filterKey] instanceof Set ? areaSets[filterKey] : new Set();
 
       if (targetSet.size === 0) return true;
-      if (targetSet.size === allAreas.length) return true;
+      if (targetSet.size === allExpansions) return true;
 
       return targetSet.has(mobExpansion);
     }
