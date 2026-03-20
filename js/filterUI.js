@@ -41,10 +41,10 @@ export const renderRankTabs = () => {
   updateFilterUI();
 };
 
-export const renderAreaFilterPanel = () => {
+export const renderAreaFilterPanel = (customContainer = null) => {
   const state = getState();
   const uiRank = state.filter.rank;
-  const targetRankKey = uiRank === 'F.A.T.E.' ? 'F' : uiRank;
+  const targetRankKey = (uiRank === 'F.A.T.E.' || uiRank === 'FATE') ? 'F' : uiRank;
 
   let items = [];
   let currentSet = new Set();
@@ -53,42 +53,41 @@ export const renderAreaFilterPanel = () => {
   if (uiRank === 'ALL') {
     items = ["S", "A", "F"];
     currentSet = state.filter.allRankSet instanceof Set ? state.filter.allRankSet : new Set();
-    isAllSelected = items.length > 0 && currentSet.size === items.length;
+    isAllSelected = items.length > 0 && currentSet.size === 3;
   } else {
     const expansionEntries = Object.entries(EXPANSION_MAP).sort((a, b) => b[0] - a[0]);
     items = expansionEntries.map(e => e[1]);
-    currentSet =
-      state.filter.areaSets[targetRankKey] instanceof Set
-        ? state.filter.areaSets[targetRankKey]
-        : new Set();
-    isAllSelected = items.length > 0 && currentSet.size === items.length;
+    currentSet = state.filter.areaSets[targetRankKey] instanceof Set ? state.filter.areaSets[targetRankKey] : new Set();
+    isAllSelected = items.length > 0 && currentSet.size === 6;
   }
-
-  const createButton = (label, isAll, isSelected) => {
-    const btn = document.createElement("button");
-    btn.textContent = label;
-    btn.className = "area-filter-btn";
-    if (isAll) {
-      btn.dataset.value = "ALL";
-    } else {
-      btn.dataset.value = label;
-    }
-    if (isSelected) btn.classList.add("is-selected");
-    return btn;
-  };
 
   const createPanelContent = () => {
     const fragment = document.createDocumentFragment();
-    const allBtn = createButton(isAllSelected ? "全解除" : "全選択", true, isAllSelected);
-    allBtn.classList.add("area-select-all");
+    const allBtn = document.createElement("button");
+    allBtn.className = `area-filter-btn area-select-all ${isAllSelected ? 'is-selected' : ''}`;
+    allBtn.textContent = isAllSelected ? "全解除" : "全選択";
+    allBtn.dataset.value = "ALL";
+    allBtn.addEventListener("click", handleAreaFilterClick);
     fragment.appendChild(allBtn);
 
     items.forEach(item => {
       const isSelected = currentSet.has(item);
-      fragment.appendChild(createButton(item, false, isSelected));
+      const btn = document.createElement("button");
+      btn.className = `area-filter-btn ${isSelected ? 'is-selected' : ''}`;
+      btn.textContent = (uiRank === 'ALL' && item === 'F') ? 'F.A.T.E.' : (uiRank === 'ALL' ? `${item} RANK` : item);
+      btn.dataset.value = item;
+      btn.addEventListener("click", handleAreaFilterClick);
+      fragment.appendChild(btn);
     });
+
     return fragment;
   };
+
+  if (customContainer) {
+    customContainer.innerHTML = "";
+    customContainer.appendChild(createPanelContent());
+    return;
+  }
 
   const mobilePanel = FilterDOM.areaFilterPanelMobile?.querySelector('.flex-wrap');
   const desktopPanel = FilterDOM.areaFilterPanelDesktop?.querySelector('.flex-wrap');

@@ -164,7 +164,7 @@ export function attachLocationEvents() {
         colContainer.addEventListener("click", handleCrushToggle, { capture: true });
     }
 
-    const pcRightPane = document.getElementById("pc-right-pane");
+    const pcRightPane = document.getElementById("pc-right-detail");
     if (pcRightPane) {
         pcRightPane.addEventListener("click", handleCrushToggle, { capture: true });
     }
