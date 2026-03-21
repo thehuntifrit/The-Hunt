@@ -508,6 +508,99 @@ body::before {
     }
 }
 
+.mobile-expand-inner {
+    padding: 0.75rem;
+}
+
+.mobile-expand-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.5rem;
+}
+
+.mobile-expand-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem 0.6rem;
+    margin-bottom: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 0.6rem;
+}
+
+.mobile-expand-info-item {
+    text-align: center;
+}
+
+.mobile-expand-info-item .label {
+    font-size: 9px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.35);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+}
+
+.mobile-expand-info-item .value {
+    font-size: 12px;
+    font-weight: 700;
+    color: #e2e8f0;
+    font-family: 'Inter', monospace;
+    font-variant-numeric: tabular-nums;
+}
+
+.mobile-expand-info-item.highlight .value {
+    color: var(--accent-gold);
+}
+
+.mobile-expand-section {
+    margin-bottom: 0.75rem;
+}
+
+.mobile-expand-section .section-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.35);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+    padding-left: 0.5rem;
+    border-left: 2px solid var(--accent-gold);
+}
+
+.mobile-expand-section .condition {
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(234, 179, 8, 0.85);
+    background: rgba(15, 23, 42, 0.5);
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.mobile-expand-memo-box {
+    background: rgba(15, 23, 42, 0.6);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mobile-expand-memo-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #f1f5f9;
+    font-size: 0.8rem;
+    padding: 2px 0;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    cursor: text !important;
+}
+
+.mobile-expand-memo-input::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+}
+
 .spawn-point {
     position: absolute;
     border-radius: 50%;
