@@ -13,13 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!modal || !container) return;
 
     window.openUserManual = async () => {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
 
         if (!isLoaded) {
             try {
-                container.innerHTML = '<p class="text-center text-gray-400 animate-pulse">読み込み中...</p>';
+                container.innerHTML = '<p style="text-align:center;color:#9ca3af">読み込み中...</p>';
                 const response = await fetch('./README.md');
                 if (!response.ok) throw new Error('Failed to load README');
 
@@ -33,14 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateAuthUI();
             } catch (error) {
                 console.error(error);
-                container.innerHTML = '<p class="text-red-400 text-center">マニュアルの読み込みに失敗しました。</p>';
+                container.innerHTML = '<p style="color:#f87171;text-align:center">マニュアルの読み込みに失敗しました。</p>';
             }
         }
     };
 
     const closeModal = () => {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        modal.style.display = 'none';
         document.body.style.overflow = '';
     };
 

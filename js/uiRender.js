@@ -333,16 +333,19 @@ export function updateProgressText(card, mob) {
 
     const isDetail = card.classList.contains("pc-detail-card");
     let newHTML = "";
-    newHTML = `<span class="percent">${Math.floor(elapsedPercent || 0)}%</span>`;
+    if (isDetail) {
+        newHTML = `<span class="percent">${Math.floor(elapsedPercent || 0)}%</span>`;
+    } else {
+        newHTML = `<div class="truncate min-w-0 ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div><div class="truncate min-w-0 text-right"><span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span></div>`;
+    }
     
-    const cacheKey = `${elapsedPercent}|${status}`;
+    const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}|${isDetail}`;
     if (text.dataset.cacheKey !== cacheKey) {
         text.dataset.cacheKey = cacheKey;
         text.innerHTML = newHTML;
     }
     if (status === "MaxOver") text.classList.add("max-over");
     else text.classList.remove("max-over");
-    
 
     
     if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) card.classList.add("blink-border-white");

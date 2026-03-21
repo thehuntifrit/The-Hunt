@@ -510,6 +510,9 @@ body::before {
 
 .mobile-expand-inner {
     padding: 0.75rem;
+    background: linear-gradient(180deg, rgba(6, 20, 40, 0.95), rgba(8, 12, 28, 0.98));
+    border-top: 1px solid rgba(6, 182, 212, 0.15);
+    box-shadow: inset 0 1px 20px rgba(6, 182, 212, 0.04);
 }
 
 .mobile-expand-header {
@@ -521,22 +524,25 @@ body::before {
 .mobile-expand-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.4rem 0.6rem;
+    gap: 0.5rem;
     margin-bottom: 0.75rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    padding-top: 0.6rem;
+    padding-top: 0.5rem;
 }
 
 .mobile-expand-info-item {
     text-align: center;
+    background: rgba(6, 182, 212, 0.04);
+    border: 1px solid rgba(6, 182, 212, 0.08);
+    border-radius: 6px;
+    padding: 6px 4px;
 }
 
 .mobile-expand-info-item .label {
     font-size: 9px;
     font-weight: 800;
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(6, 182, 212, 0.5);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     margin-bottom: 2px;
 }
 
@@ -548,8 +554,18 @@ body::before {
     font-variant-numeric: tabular-nums;
 }
 
+.mobile-expand-info-item.highlight {
+    border-color: rgba(251, 191, 36, 0.15);
+    background: rgba(251, 191, 36, 0.04);
+}
+
+.mobile-expand-info-item.highlight .label {
+    color: rgba(251, 191, 36, 0.5);
+}
+
 .mobile-expand-info-item.highlight .value {
     color: var(--accent-gold);
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.25);
 }
 
 .mobile-expand-section {
@@ -559,29 +575,37 @@ body::before {
 .mobile-expand-section .section-label {
     font-size: 10px;
     font-weight: 800;
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(6, 182, 212, 0.6);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin-bottom: 0.4rem;
     padding-left: 0.5rem;
-    border-left: 2px solid var(--accent-gold);
+    border-left: 2px solid var(--accent-cyan);
+    text-shadow: 0 0 8px rgba(6, 182, 212, 0.2);
 }
 
 .mobile-expand-section .condition {
     font-size: 12px;
     line-height: 1.5;
-    color: rgba(234, 179, 8, 0.85);
-    background: rgba(15, 23, 42, 0.5);
-    padding: 0.4rem 0.6rem;
+    color: rgba(234, 179, 8, 0.9);
+    background: rgba(234, 179, 8, 0.04);
+    padding: 0.5rem 0.6rem;
     border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(234, 179, 8, 0.1);
+    text-shadow: 0 0 6px rgba(234, 179, 8, 0.15);
 }
 
 .mobile-expand-memo-box {
-    background: rgba(15, 23, 42, 0.6);
-    padding: 4px 8px;
+    background: rgba(6, 182, 212, 0.03);
+    padding: 6px 10px;
     border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(6, 182, 212, 0.1);
+    transition: border-color 0.2s;
+}
+
+.mobile-expand-memo-box:focus-within {
+    border-color: rgba(6, 182, 212, 0.3);
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.08);
 }
 
 .mobile-expand-memo-input {
@@ -598,7 +622,7 @@ body::before {
 }
 
 .mobile-expand-memo-input::placeholder {
-    color: rgba(255, 255, 255, 0.2);
+    color: rgba(6, 182, 212, 0.2);
 }
 
 .spawn-point {

@@ -3,6 +3,14 @@
         display: none !important;
     }
 
+    .mob-card {
+        scroll-margin-top: 40px;
+    }
+
+    .mob-card.is-floating-active {
+        top: 40px !important;
+    }
+
     #mobile-top-bar {
         position: fixed;
         top: 0;
