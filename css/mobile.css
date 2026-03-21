@@ -359,7 +359,7 @@
     }
 
     footer {
-        padding-bottom: 70px !important;
+        display: none !important;
     }
 }
 

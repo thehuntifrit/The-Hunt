@@ -114,10 +114,13 @@ export function createMobCard(mob, isDetailView = false) {
     }
 
     const mapImg = card.querySelector('.mob-map-img');
+    const mapSection = mapImg?.closest('.mobile-expand-section');
     if (mapImg && mob.Map) {
         mapImg.src = `./maps/${mob.Map}`;
         mapImg.alt = `${mob.Area} Map`;
         mapImg.dataset.mobMap = mob.Map;
+    } else if (mapSection) {
+        mapSection.style.display = 'none';
     }
 
     updateAreaInfo(card, mob);
@@ -330,13 +333,9 @@ export function updateProgressText(card, mob) {
 
     const isDetail = card.classList.contains("pc-detail-card");
     let newHTML = "";
-    if (isDetail) {
-        newHTML = `<span class="percent">${Math.floor(elapsedPercent || 0)}%</span>`;
-    } else {
-        newHTML = `<div class="truncate min-w-0 ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div><div class="truncate min-w-0 text-right"><span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span></div>`;
-    }
+    newHTML = `<span class="percent">${Math.floor(elapsedPercent || 0)}%</span>`;
     
-    const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}|${isDetail}`;
+    const cacheKey = `${elapsedPercent}|${status}`;
     if (text.dataset.cacheKey !== cacheKey) {
         text.dataset.cacheKey = cacheKey;
         text.innerHTML = newHTML;
@@ -344,10 +343,7 @@ export function updateProgressText(card, mob) {
     if (status === "MaxOver") text.classList.add("max-over");
     else text.classList.remove("max-over");
     
-    if (!isDetail) {
-        if (minRepop - nowSec >= 3600) text.classList.add("long-wait");
-        else text.classList.remove("long-wait");
-    }
+
     
     if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) card.classList.add("blink-border-white");
     else card.classList.remove("blink-border-white");
