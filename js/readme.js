@@ -13,7 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!modal || !container) return;
 
     window.openUserManual = async () => {
-        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
         document.body.style.overflow = 'hidden';
 
         if (!isLoaded) {
@@ -38,7 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const closeModal = () => {
-        modal.style.display = 'none';
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
         document.body.style.overflow = '';
     };
 

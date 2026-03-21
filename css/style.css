@@ -478,6 +478,94 @@ body::before {
     cursor: pointer;
 }
 
+#manual-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+#manual-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+}
+
+.manual-modal-content {
+    position: relative;
+    z-index: 61;
+    background: #0f172a;
+    border-radius: 0.75rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+    width: 100%;
+    max-width: 56rem;
+    max-height: 90vh;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.manual-modal-top-border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(to right, #06b6d4, #2563eb);
+}
+
+.manual-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.manual-modal-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.manual-modal-title .text-cyan { color: #22d3ee; }
+.manual-modal-title .text-yellow { color: #facc15; }
+.manual-modal-title .text-gray {
+    color: rgba(255, 255, 255, 0.4);
+    margin-left: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+}
+
+.manual-modal-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    padding: 4px;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.manual-modal-close:hover {
+    color: #fff;
+}
+
+#readme-container {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
 .expandable-panel {
     max-height: 0;
     overflow: hidden;
@@ -486,7 +574,9 @@ body::before {
 }
 
 .expandable-panel.open {
-    max-height: 1000px;
+    max-height: 75vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .memo-input {
@@ -510,9 +600,8 @@ body::before {
 
 .mobile-expand-inner {
     padding: 0.75rem;
-    background: linear-gradient(180deg, rgba(6, 20, 40, 0.95), rgba(8, 12, 28, 0.98));
-    border-top: 1px solid rgba(6, 182, 212, 0.15);
-    box-shadow: inset 0 1px 20px rgba(6, 182, 212, 0.04);
+    background: rgba(8, 15, 30, 0.97);
+    border-top: 1px solid rgba(6, 182, 212, 0.12);
 }
 
 .mobile-expand-header {

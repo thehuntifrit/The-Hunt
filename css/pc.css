@@ -276,12 +276,11 @@
     }
 
     .pc-detail-card {
-        background: #0d121f;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(8, 15, 30, 0.97);
+        border: 1px solid rgba(6, 182, 212, 0.1);
         border-radius: 10px;
         padding: 1.25rem 1rem;
         color: #f8fafc;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.4);
         position: relative;
         overflow: hidden;
     }
