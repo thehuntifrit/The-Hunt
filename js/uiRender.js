@@ -150,11 +150,7 @@ export function updateHeaderTime() {
   }
 
   if (elWelcome) {
-    if (name) {
-      elWelcome.textContent = `ようこそ ${name}`;
-    } else {
-      elWelcome.textContent = "";
-    }
+    elWelcome.textContent = "";
   }
 }
 
@@ -538,3 +534,97 @@ function updateProgressBars() {
 setInterval(() => {
   updateProgressBars();
 }, EORZEA_MINUTE_MS);
+
+export function renderSidebar() {
+  if (document.getElementById('sidebar-menu')) return;
+  
+  const sidebar = document.createElement('aside');
+  sidebar.id = 'sidebar-menu';
+  sidebar.className = 'fixed left-0 top-0 h-full w-[56px] bg-slate-900 border-r border-slate-700/50 flex flex-col z-[100] text-gray-400';
+  
+  sidebar.innerHTML = `
+    <div class="flex-1 flex flex-col items-center py-4 gap-6">
+      <div class="text-[10px] font-bold leading-tight text-center text-cyan-400 mb-2">
+        The<br>Hunt
+      </div>
+      <button id="sidebar-error-btn" style="display: none;" class="w-10 h-10 flex flex-col items-center justify-center rounded hover:bg-slate-800 transition-colors group">
+        <span class="text-lg group-[.is-active]:text-red-500 group-[.is-active]:animate-pulse">⚠️</span>
+        <span class="text-[8px] mt-0.5 group-[.is-active]:text-red-400 font-bold">エラー</span>
+      </button>
+      <button id="sidebar-info-btn" class="w-10 h-10 flex flex-col items-center justify-center rounded hover:bg-slate-800 transition-colors group">
+        <span class="text-lg group-[.is-active]:text-cyan-400 group-[.is-active]:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]">📢</span>
+        <span class="text-[8px] mt-0.5 group-[.is-active]:text-cyan-300 font-bold">告知</span>
+      </button>
+      <button id="sidebar-maintenance-btn" class="w-10 h-10 flex flex-col items-center justify-center rounded hover:bg-slate-800 transition-colors group">
+        <span class="text-lg group-[.is-active]:text-yellow-400 group-[.is-active]:drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]">🛠️</span>
+        <span class="text-[8px] mt-0.5 group-[.is-active]:text-yellow-300 font-bold">メンテ</span>
+      </button>
+      <button id="sidebar-select-btn" class="w-10 h-10 flex flex-col items-center justify-center rounded hover:bg-slate-800 transition-colors">
+        <span class="text-lg">🏷️</span>
+        <span class="text-[8px] mt-0.5">選択</span>
+      </button>
+    </div>
+    
+    <div class="w-8 mx-auto border-t border-slate-700"></div>
+    
+    <div class="flex flex-col items-center py-4 gap-4">
+      <button id="sidebar-readme-btn" class="w-10 h-10 flex flex-col items-center justify-center rounded hover:bg-slate-800 transition-colors">
+        <span class="text-lg">📋</span>
+        <span class="text-[8px] mt-0.5">説明</span>
+      </button>
+      <button id="sidebar-notification-btn" class="w-10 h-10 flex flex-col items-center justify-center rounded hover:bg-slate-800 transition-colors">
+        <span class="text-lg">🔔</span>
+        <span class="text-[8px] mt-0.5">通知</span>
+      </button>
+    </div>
+  `;
+  document.body.appendChild(sidebar);
+
+  const submenu = document.createElement('div');
+  submenu.id = 'sidebar-submenu';
+  submenu.className = 'fixed left-[56px] top-0 h-full w-[300px] bg-slate-800 border-r border-slate-700 shadow-2xl transform -translate-x-full transition-transform duration-300 z-[90] overflow-y-auto flex flex-col';
+  
+  submenu.innerHTML = `
+    <div class="p-4 flex-1 flex flex-col">
+      <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2 shrink-0">
+        <h2 id="submenu-title" class="text-base font-bold text-cyan-400 font-mono tracking-tight"></h2>
+        <button id="submenu-close-btn" class="text-gray-400 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded hover:bg-slate-700 bg-slate-800 border border-slate-600">✕</button>
+      </div>
+      <div class="border border-slate-600 rounded p-3 text-sm text-gray-300 flex-1 overflow-y-auto w-full">
+        <div id="submenu-content-info" class="hidden w-full whitespace-pre-wrap"></div>
+        <div id="submenu-content-maintenance" class="hidden w-full text-center"></div>
+        <div id="submenu-content-select" class="hidden flex-col gap-4 items-start w-full"></div>
+        <div id="submenu-content-readme" class="hidden w-full relative"></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(submenu);
+
+  const moveIfExists = (srcId, destId) => {
+    const src = document.getElementById(srcId);
+    const dest = document.getElementById(destId);
+    if (src && dest) {
+      dest.appendChild(src);
+    }
+  };
+
+  moveIfExists('status-message-telop', 'submenu-content-info');
+  moveIfExists('status-message-maintenance', 'submenu-content-maintenance');
+  moveIfExists('rank-tabs', 'submenu-content-select');
+  moveIfExists('area-filter-panel-desktop', 'submenu-content-select');
+  moveIfExists('area-filter-panel-mobile', 'submenu-content-select');
+  moveIfExists('readme-container', 'submenu-content-readme');
+
+  const rc = document.getElementById('readme-container');
+  if (rc) {
+      rc.classList.remove('hidden', 'mt-8', 'bg-slate-900/80', 'p-6', 'rounded-xl', 'shadow-2xl');
+      rc.classList.add('w-full', 'bg-transparent', 'border-none', 'p-0');
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', renderSidebar);
+} else {
+  renderSidebar();
+}
+

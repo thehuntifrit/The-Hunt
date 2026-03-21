@@ -94,6 +94,7 @@ async function initApp() {
         renderMaintenanceStatus();
         updateHeaderTime();
         attachGlobalEventListeners();
+        attachSidebarLogic();
 
         window.addEventListener('pageshow', (event) => {
             if (event.persisted) {
@@ -231,6 +232,18 @@ function renderMaintenanceStatus() {
         }
     }
 
+    const infoBtn = document.getElementById("sidebar-info-btn");
+    if (infoBtn) {
+        if (hasMessage) infoBtn.classList.add("is-active");
+        else infoBtn.classList.remove("is-active");
+    }
+
+    const maintBtn = document.getElementById("sidebar-maintenance-btn");
+    if (maintBtn) {
+        if (hasMaintenance) maintBtn.classList.add("is-active");
+        else maintBtn.classList.remove("is-active");
+    }
+
     updateStatusContainerVisibility();
 }
 
@@ -240,6 +253,96 @@ function formatDate(date) {
     const h = String(date.getHours()).padStart(2, '0');
     const min = String(date.getMinutes()).padStart(2, '0');
     return `${m}/${d} ${h}:${min}`;
+}
+
+function attachSidebarLogic() {
+    const submenu = document.getElementById('sidebar-submenu');
+    const submenuTitle = document.getElementById('submenu-title');
+    const closeBtn = document.getElementById('submenu-close-btn');
+
+    const sections = {
+        info: document.getElementById('submenu-content-info'),
+        maintenance: document.getElementById('submenu-content-maintenance'),
+        select: document.getElementById('submenu-content-select'),
+        readme: document.getElementById('submenu-content-readme')
+    };
+
+    let currentOpen = null;
+
+    function openSubmenu(key, titleText) {
+        if (currentOpen === key) {
+            closeSubmenu();
+            return;
+        }
+        currentOpen = key;
+        if (submenuTitle) submenuTitle.textContent = titleText;
+        Object.values(sections).forEach(sec => {
+            if (sec) {
+                if (sec === sections[key]) {
+                    sec.classList.remove('hidden');
+                    if (key === 'select') sec.classList.add('flex');
+                } else {
+                    sec.classList.add('hidden');
+                    if (key === 'select') sec.classList.remove('flex');
+                }
+            }
+        });
+        if (submenu) submenu.classList.remove('-translate-x-full');
+    }
+
+    function closeSubmenu() {
+        currentOpen = null;
+        if (submenu) submenu.classList.add('-translate-x-full');
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', closeSubmenu);
+
+    const infoBtn = document.getElementById('sidebar-info-btn');
+    if (infoBtn) {
+        infoBtn.addEventListener('click', () => openSubmenu('info', 'System Information'));
+    }
+
+    const maintBtn = document.getElementById('sidebar-maintenance-btn');
+    if (maintBtn) {
+        maintBtn.addEventListener('click', () => openSubmenu('maintenance', 'Maintenance Info.'));
+    }
+
+    const selectBtn = document.getElementById('sidebar-select-btn');
+    if (selectBtn) {
+        selectBtn.addEventListener('click', () => openSubmenu('select', 'Filter Settings'));
+    }
+
+    const readmeBtn = document.getElementById('sidebar-readme-btn');
+    if (readmeBtn) {
+        readmeBtn.addEventListener('click', async () => {
+            openSubmenu('readme', 'User Manual');
+            if (window.openUserManual) {
+                await window.openUserManual({ scroll: false });
+            }
+        });
+    }
+
+    const notifBtn = document.getElementById('sidebar-notification-btn');
+    if (notifBtn) {
+        const updateIconState = () => {
+            const isEnabled = getState().notificationEnabled;
+            if (isEnabled) {
+                notifBtn.classList.remove('grayscale', 'opacity-50');
+            } else {
+                notifBtn.classList.add('grayscale', 'opacity-50');
+            }
+        };
+        updateIconState();
+
+        notifBtn.addEventListener('click', () => {
+            const toggle = document.getElementById('notification-toggle');
+            if (toggle) {
+                toggle.checked = !toggle.checked;
+                toggle.dispatchEvent(new Event('change'));
+                updateIconState();
+            }
+        });
+    }
 }
 
 function attachGlobalEventListeners() {
