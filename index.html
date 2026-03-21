@@ -38,10 +38,6 @@
                         <input type="range" id="notification-volume" min="0" max="1" step="0.1" class="volume-slider"
                             title="通知音量">
                     </div>
-                    <div class="header-clock-group">
-                        <span class="header-label-mini">LT</span>
-                        <span id="header-time-lt" class="header-time-val-mini">--:--</span>
-                    </div>
                 </div>
 
                 <div class="header-right-row-2">
@@ -52,10 +48,6 @@
                                 <div class="switch-knob"></div>
                             </div>
                         </label>
-                    </div>
-                    <div class="header-clock-group">
-                        <span class="header-label-mini">ET</span>
-                        <span id="header-time-et" class="header-time-val-mini">--:--</span>
                     </div>
                 </div>
 
@@ -80,11 +72,26 @@
 
     </header>
 
-    <main class="mx-auto px-2 py-2 sm:px-4 pb-10 pt-24">
+    <main class="mx-auto px-4 pb-10 pt-6 flex flex-col lg:flex-row gap-6 lg:ml-[56px] max-w-[1400px]">
         <div id="master-mob-container" class="hidden"></div>
         <div id="column-container"
-            class="flex flex-col gap-8 max-w-6xl mx-auto opacity-0 transition-opacity duration-300"
-            data-breakpoint-md="768" data-breakpoint-lg="1024">
+            class="flex-1 flex flex-col gap-6 opacity-0 transition-opacity duration-300 min-w-0">
+        </div>
+
+        <div id="right-details-panel" class="w-full lg:w-[480px] flex-shrink-0 flex-col gap-4 hidden lg:flex sticky top-6 h-[calc(100vh-3rem)]">
+            <div class="flex justify-end gap-6 text-[10px] font-bold text-gray-400">
+                <div class="header-clock-group flex items-center gap-1.5 bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700/50">
+                    <span class="header-label-mini text-gray-500">LT</span>
+                    <span id="header-time-lt" class="header-time-val-mini text-gray-200 tracking-wider">--:--</span>
+                </div>
+                <div class="header-clock-group flex items-center gap-1.5 bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700/50">
+                    <span class="header-label-mini text-gray-500">ET</span>
+                    <span id="header-time-et" class="header-time-val-mini text-yellow-500 tracking-wider">--:--</span>
+                </div>
+            </div>
+            <div id="selected-mob-details" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-5 shadow-2xl overflow-y-auto">
+                <div class="text-center text-gray-500 mt-20 text-sm">モブを選択してください</div>
+            </div>
         </div>
     </main>
 
@@ -200,67 +207,82 @@
     </div>
 
     <template id="mob-card-template">
-        <div class="mob-card">
-            <div class="mob-card-inner">
-                <div class="mob-card-header p-0 relative" data-toggle="card-header">
-                    <div class="pl-2 py-1.5 flex flex-col justify-center min-w-0 flex-1 content-area">
-                        <div class="flex items-center justify-between gap-1.5 min-w-0 mb-1">
-                            <div class="flex items-center gap-1 min-w-0 flex-1">
-                                <span class="text-base font-bold truncate text-gray-100 mob-name"></span>
-                                <span class="mob-count-container text-[10px] whitespace-nowrap"></span>
-                                <span class="memo-icon-container text-xs"></span>
-                            </div>
-                            <div
-                                class="area-info-container flex flex-col justify-center text-right text-[9px] text-gray-400 font-numeric tracking-tighter leading-tight min-w-0">
-                            </div>
-                        </div>
-
-                        <div class="progress-bar-wrapper rounded-sm relative overflow-hidden text-center h-5">
-                            <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-sm transition-all duration-100 ease-linear"
-                                style="width: 0%"></div>
-                            <div
-                                class="progress-text absolute inset-0 z-10 flex items-center justify-between text-[13px] font-bold leading-5 px-1.5 pointer-events-none">
-                            </div>
-                        </div>
+        <div class="mob-card w-full cursor-pointer hover:bg-slate-800/50 bg-slate-900 border-b border-slate-800 transition-colors" data-toggle="card-header">
+            <div class="flex items-center justify-between px-4 py-2.5">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <span class="text-xs font-bold text-center w-5 h-5 flex items-center justify-center border border-current rounded-[2px]" data-rank-text></span>
+                    <span class="text-base font-bold truncate mob-name text-gray-100"></span>
+                    <span class="mob-count-container text-[10px] whitespace-nowrap ml-2"></span>
+                    <span class="memo-icon-container text-xs ml-1"></span>
+                </div>
+                
+                <div class="flex items-center gap-4 flex-shrink-0">
+                    <span class="mob-status-icon text-lg w-5 text-center"></span>
+                    <span class="progress-text text-xs text-right w-[60px] font-mono tracking-tighter text-gray-300"></span>
+                    
+                    <div class="progress-bar-wrapper rounded-sm overflow-hidden h-1.5 w-[100px] bg-slate-800">
+                        <div class="progress-bar-bg h-full transition-all duration-100 ease-linear" style="width: 0%"></div>
                     </div>
+                    
+                    <span class="progress-percentage text-xs font-bold text-right w-[36px] text-gray-200"></span>
+                    
+                    <button class="report-side-bar text-[10px] font-bold px-3 py-1 border border-cyan-700 text-cyan-400 rounded hover:bg-cyan-900/50 transition-colors" data-report-type="" data-mob-no="">REPORT</button>
+                    
+                    <div class="area-info-container hidden"></div>
+                </div>
+            </div>
 
-                    <div class="report-side-bar transition-colors duration-200" data-report-type="" data-mob-no="">
+            <div class="expandable-panel hidden">
+                <div class="mb-4 pb-4 border-b border-slate-700">
+                    <div class="text-2xl font-bold mob-name-detail mb-1 text-gray-100"></div>
+                    <div class="text-xs text-gray-400 flex items-center gap-2 mb-4">
+                        <span class="mob-area-detail"></span>
+                        <span class="mob-expansion-detail text-cyan-500"></span>
+                        <span class="mob-rank-detail inline-flex items-center justify-center w-4 h-4 border border-current rounded-[2px] text-[10px]"></span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-1.5 rounded-sm overflow-hidden mb-1">
+                        <div class="detail-progress-bar-bg bg-cyan-500 h-full transition-all duration-100" style="width:0%"></div>
+                    </div>
+                    <div class="text-right text-xs font-bold detail-progress-percentage mb-4 text-gray-200">0%</div>
+
+                    <div class="grid grid-cols-2 gap-4 text-xs font-mono mb-4 text-gray-300">
+                        <div>
+                            <div class="text-gray-500 mb-1">最短POP</div>
+                            <div class="detail-min-pop">--/-- --:--</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-500 mb-1">最大POP</div>
+                            <div class="detail-max-pop">--/-- --:--</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-500 mb-1">次回POP可能</div>
+                            <div class="detail-next-pop text-yellow-500 font-bold">--/-- --:--</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-500 mb-1">前回討伐</div>
+                            <div class="detail-last-kill" data-last-kill>--/-- --:--</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="expandable-panel">
-                    <div class="px-2 py-1 text-sm space-y-1">
-                        <div class="flex justify-between items-start flex-wrap gap-y-1">
-                            <div class="last-kill-time w-full text-right text-xs text-gray-400 font-mono"
-                                data-last-kill>
-                            </div>
-                            <div class="mob-memo-row w-full mt-1">
-                                <div class="flex items-center bg-gray-800/50 rounded px-2 py-1 border border-gray-700 
-                                    hover:bg-gray-700/50 transition">
-                                    <span class="mr-2 text-cyan-400 font-bold text-xs whitespace-nowrap">メモ:</span>
-                                    <input type="text" class="memo-input bg-transparent text-gray-200 text-sm w-full outline-none 
-                                        placeholder-gray-500 appearance-none" placeholder="全角30文字まで" maxlength="30"
-                                        autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off"
-                                        aria-label="メモ入力" data-action="save-memo">
-                                </div>
-                            </div>
-
-                            <div class="w-full mt-2">
-                                <div class="font-semibold text-yellow-400 text-xs uppercase tracking-widest mb-1">
-                                    trigger
-                                </div>
-                                <div
-                                    class="condition-text text-gray-300 text-xs leading-relaxed pl-2 border-l-2 border-yellow-600/50">
-                                </div>
-                            </div>
+                <div class="px-1 text-sm space-y-4">
+                    <div class="w-full">
+                        <div class="font-bold text-yellow-500 text-xs uppercase tracking-widest mb-2 border-l-2 border-yellow-500 pl-2">
+                            出現条件
                         </div>
-
-                        <div
-                            class="map-container map-content mt-2 flex justify-center relative rounded overflow-hidden border border-gray-600 shadow-lg !cursor-crosshair">
-                            <img
-                                class="mob-map-img mob-crush-map w-full h-auto opacity-90 hover:opacity-100 transition-opacity">
-                            <div class="map-overlay absolute inset-0"></div>
+                        <div class="condition-text text-gray-300 text-xs leading-relaxed pl-2">
                         </div>
+                    </div>
+                    <div class="mob-memo-row w-full mt-2">
+                        <div class="flex items-center bg-slate-900 rounded px-3 py-2 border border-slate-700 hover:border-slate-500 transition-colors">
+                            <span class="mr-2 text-cyan-400 font-bold text-xs whitespace-nowrap">メモ:</span>
+                            <input type="text" class="memo-input bg-transparent text-gray-200 text-sm w-full outline-none placeholder-gray-600 appearance-none border-none" 
+                                placeholder="全角30文字まで" maxlength="30" autocomplete="off" spellcheck="false" data-action="save-memo">
+                        </div>
+                    </div>
+                    <div class="map-container map-content mt-4 flex justify-center relative rounded-lg overflow-hidden border border-slate-700 shadow-lg cursor-crosshair">
+                        <img class="mob-map-img mob-crush-map w-full h-auto opacity-90 hover:opacity-100 transition-opacity">
+                        <div class="map-overlay absolute inset-0"></div>
                     </div>
                 </div>
             </div>

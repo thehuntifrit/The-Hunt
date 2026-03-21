@@ -32,7 +32,6 @@ export function createMobCard(mob) {
     const { openMobCardNo } = getState();
     const isOpen = mob.No === openMobCardNo;
 
-
     card.dataset.mobNo = mob.No;
     card.dataset.rank = rank;
     if (mob.repopInfo?.isMaintenanceStop || mob.repopInfo?.isBlockedByMaintenance) {
@@ -45,9 +44,34 @@ export function createMobCard(mob) {
         }
     }
 
+    const rankText = card.querySelector('[data-rank-text]');
+    if (rankText) {
+        rankText.textContent = rank;
+        rankText.style.color = `var(--rank-${rank.toLowerCase()})`;
+    }
+
     const mobNameEl = card.querySelector('.mob-name');
-    mobNameEl.textContent = mob.Name;
-    mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
+    if (mobNameEl) {
+        mobNameEl.textContent = mob.Name;
+        mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
+    }
+
+    const detailName = card.querySelector('.mob-name-detail');
+    if (detailName) detailName.textContent = mob.Name;
+
+    const detailArea = card.querySelector('.mob-area-detail');
+    if (detailArea) detailArea.textContent = mob.Area;
+
+    const detailExpansion = card.querySelector('.mob-expansion-detail');
+    if (detailExpansion) {
+        detailExpansion.textContent = EXPANSION_MAP[mob.Expansion] || mob.Expansion;
+    }
+
+    const detailRank = card.querySelector('.mob-rank-detail');
+    if (detailRank) {
+        detailRank.textContent = rank;
+        detailRank.style.color = `var(--rank-${rank.toLowerCase()})`;
+    }
 
     const memoIconContainer = card.querySelector('.memo-icon-container');
 
@@ -56,36 +80,28 @@ export function createMobCard(mob) {
         reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
         reportSidebar.dataset.mobNo = mob.No;
         reportSidebar.classList.add(`rank-${rank.toLowerCase()}`);
-
-        let touchStartX = 0;
-        reportSidebar.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-        }, { passive: true });
-
-        reportSidebar.addEventListener('touchend', (e) => {
-            const touchEndX = e.changedTouches[0].screenX;
-            if (touchEndX - touchStartX > 30) {
-                const type = reportSidebar.dataset.reportType;
-                if (type === 'modal') {
-                    openReportModal(mob.No);
-                } else {
-                    reportSidebar.click();
+        
+        reportSidebar.addEventListener('click', (e) => {
+            e.stopPropagation();
+            import("./app.js").then(m => {
+                const state = getState();
+                if (!state.isVerified) {
+                    import("./modal.js").then(mod => mod.openAuthModal());
+                    return;
                 }
-            }
-        }, { passive: true });
-    }
-
-    const expandablePanel = card.querySelector('.expandable-panel');
-    if (isOpen) {
-        expandablePanel.classList.add('open');
+                if (rank === 'A') m.handleInstantReport(mob.No, rank);
+                else import("./modal.js").then(mod => mod.openReportModal(mob.No));
+            });
+        });
     }
 
     const memoInput = card.querySelector('.memo-input');
     if (memoInput) {
         memoInput.dataset.mobNo = mob.No;
+        memoInput.dataset.action = 'save-memo';
     }
 
-    const conditionWrapper = card.querySelector('.condition-text')?.closest('.w-full.mt-2');
+    const conditionWrapper = card.querySelector('.condition-text')?.closest('.w-full.mt-2') || card.querySelector('.condition-text')?.parentElement;
     const mapContainer = card.querySelector('.map-container');
 
     if (rank !== 'S') {
@@ -126,9 +142,8 @@ export function createMobCard(mob) {
 
 export function updateProgressBar(card, mob) {
     const bar = card.querySelector(".progress-bar-bg");
-    const wrapper = bar?.parentElement;
-    const text = card.querySelector(".progress-text");
-    if (!bar || !wrapper || !text) return;
+    const detailBar = card.querySelector(".detail-progress-bar-bg");
+    if (!bar) return;
 
     const { elapsedPercent, status } = mob.repopInfo;
 
@@ -136,10 +151,13 @@ export function updateProgressBar(card, mob) {
     if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
         if (currentWidth === 0 || elapsedPercent < currentWidth) {
             bar.style.transition = "none";
+            if (detailBar) detailBar.style.transition = "none";
         } else {
             bar.style.transition = "width linear 60s";
+            if (detailBar) detailBar.style.transition = "width linear 60s";
         }
         bar.style.width = `${elapsedPercent}%`;
+        if (detailBar) detailBar.style.width = `${elapsedPercent}%`;
     }
 
     const currentStatus = card.dataset.lastStatus;
@@ -158,129 +176,96 @@ export function updateProgressBar(card, mob) {
         PROGRESS_CLASSES.P80_100,
         PROGRESS_CLASSES.MAX_OVER
     );
-    text.classList.remove(
-        PROGRESS_CLASSES.TEXT_NEXT,
-        PROGRESS_CLASSES.TEXT_POP
-    );
-    wrapper.classList.remove(PROGRESS_CLASSES.BLINK_WHITE);
+    if (detailBar) detailBar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100, PROGRESS_CLASSES.MAX_OVER);
 
     if (elapsedPercent < 60) {
         bar.classList.add(PROGRESS_CLASSES.P0_60);
+        if (detailBar) detailBar.classList.add(PROGRESS_CLASSES.P0_60);
     } else if (elapsedPercent < 80) {
         bar.classList.add(PROGRESS_CLASSES.P60_80);
+        if (detailBar) detailBar.classList.add(PROGRESS_CLASSES.P60_80);
     } else if (elapsedPercent < 100) {
         bar.classList.add(PROGRESS_CLASSES.P80_100);
+        if (detailBar) detailBar.classList.add(PROGRESS_CLASSES.P80_100);
     }
 
-    if (status === "PopWindow" || status === "ConditionActive") {
-        if (elapsedPercent > 90 && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) {
-            wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
-        }
-        text.classList.add(PROGRESS_CLASSES.TEXT_POP);
-
-    } else if (status === "MaxOver") {
+    if (status === "MaxOver") {
         bar.classList.add(PROGRESS_CLASSES.MAX_OVER);
-        text.classList.add(PROGRESS_CLASSES.TEXT_POP);
-
-        if (mob.repopInfo.isInConditionWindow && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) {
-            wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
-        }
-    } else {
-        text.classList.add(PROGRESS_CLASSES.TEXT_NEXT);
+        if (detailBar) detailBar.classList.add(PROGRESS_CLASSES.MAX_OVER);
     }
 }
 
-export function updateProgressText(card, mob) {
-    const text = card.querySelector(".progress-text");
-    if (!text) return;
+function formatTimeDiff(diffSec) {
+    if (diffSec < 0) return "0:00";
+    if (diffSec >= 3600000) return "999:59"; // Max display cap roughly
+    const m = Math.floor(diffSec / 60);
+    const s = Math.floor(diffSec % 60);
+    return `${m}:${s.toString().padStart(2, '0')}`;
+}
 
-    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, minRepop,
-        status, isInConditionWindow, timeRemaining
+export function updateProgressText(card, mob) {
+    const textEl = card.querySelector(".progress-text");
+    const iconEl = card.querySelector(".mob-status-icon");
+    const pctEl = card.querySelector(".progress-percentage");
+    const detailPctEl = card.querySelector(".detail-progress-percentage");
+    if (!textEl || !iconEl || !pctEl) return;
+
+    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, minRepop, maxRepop,
+        status, isInConditionWindow
     } = mob.repopInfo || {};
 
     const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
     const nowSec = Date.now() / 1000;
-    let leftStr = timeRemaining || "未確定";
-    const percentStr =
-        (status !== "MaxOver" &&
-            (
-                (minRepop && nowSec >= minRepop) ||
-                status === "PopWindow" ||
-                status === "ConditionActive"
-            )
-        )
-            ? ` (${Number(elapsedPercent || 0).toFixed(0)}%)`
-            : "";
-    const mobNameEl = card.querySelector('.mob-name');
-    const shouldDimCard =
-        isMaint ||
-        status === "Next" ||
-        (status === "NextCondition" && nowSec < mob.repopInfo.minRepop);
+    
+    let timeStr = "";
+    let iconStr = "";
+    let displayPercent = Math.min(100, Math.max(0, Math.floor(elapsedPercent || 0)));
 
-    const reportSidebar = card.querySelector('.report-side-bar');
-
-    if (shouldDimCard) {
-        card.classList.add("is-pre-repop");
-        card.classList.remove("is-active-neon");
-        if (reportSidebar) reportSidebar.classList.remove("is-active-neon");
+    if (status === "MaxOver") {
+        iconStr = "💯"; // 最大時間超え
+        displayPercent = 100;
+        const excessSec = nowSec - maxRepop;
+        timeStr = formatTimeDiff(excessSec);
+    } else if (isInConditionWindow) {
+        iconStr = "⏳️"; // 時限モブ時間内
+        const diffSec = (mob.repopInfo.conditionWindowEnd?.getTime() / 1000) - nowSec;
+        timeStr = formatTimeDiff(diffSec);
+    } else if (status === "PopWindow" || status === "ConditionActive" || (nowSec >= minRepop)) {
+        iconStr = "⏳️"; // 最短REPOP超え
+        const diffSec = maxRepop - nowSec;
+        timeStr = formatTimeDiff(diffSec);
     } else {
-        card.classList.remove("is-pre-repop");
-        card.classList.add("is-active-neon");
-        if (reportSidebar) reportSidebar.classList.add("is-active-neon");
-        if (mobNameEl) {
-            mobNameEl.style.color = `var(--rank-${mob.Rank.toLowerCase()})`;
+        iconStr = "🔜"; // 最短REPOP前・時限機能時間外
+        if (nextConditionSpawnDate && nextConditionSpawnDate.getTime() / 1000 > nowSec) {
+            const diffSec = (nextConditionSpawnDate.getTime() / 1000) - nowSec;
+            timeStr = formatTimeDiff(diffSec);
+        } else {
+            const diffSec = minRepop - nowSec;
+            timeStr = formatTimeDiff(diffSec);
         }
+        displayPercent = 0;
     }
 
-    if (mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop) {
-        card.classList.add("maintenance-gray-out");
+    if (isMaint) {
+        iconStr = "🛠️";
+        timeStr = "メンテ中";
+    }
+
+    const cacheKey = `${timeStr}|${iconStr}|${displayPercent}|${status}`;
+    if (textEl.dataset.cacheKey !== cacheKey) {
+        textEl.dataset.cacheKey = cacheKey;
+        textEl.textContent = timeStr;
+        iconEl.textContent = iconStr;
+        pctEl.textContent = `${displayPercent}%`;
+        if (detailPctEl) detailPctEl.textContent = `${displayPercent}%`;
+    }
+
+    if (status === "MaxOver") {
+        textEl.classList.add("text-red-400");
+        textEl.classList.remove("text-gray-300");
     } else {
-        card.classList.remove("maintenance-gray-out");
-    }
-
-    let rightStr = "未確定";
-    let isSpecialCondition = false;
-
-    if (isInConditionWindow && mob.repopInfo.conditionRemaining) {
-        rightStr = mob.repopInfo.conditionRemaining;
-        isSpecialCondition = true;
-    } else if (nextConditionSpawnDate) {
-        try {
-            rightStr = `🔔 ${dateFormatter.format(nextConditionSpawnDate)}`;
-            isSpecialCondition = true;
-        } catch {
-            rightStr = "未確定";
-        }
-    } else if (nextMinRepopDate) {
-        try {
-            rightStr = `in ${dateFormatter.format(nextMinRepopDate)}`;
-        } catch {
-            rightStr = "未確定";
-        }
-    }
-
-    let rightContent = `<span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span>`;
-
-    const newHTML = `
-<div class="truncate min-w-0 ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div>
-<div class="truncate min-w-0 text-right">${rightContent}</div>
-  `;
-    const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}`;
-    if (text.dataset.cacheKey !== cacheKey) {
-        text.dataset.cacheKey = cacheKey;
-        text.innerHTML = newHTML;
-    }
-
-    if (status === "MaxOver") text.classList.add("max-over");
-    else text.classList.remove("max-over");
-
-    if (minRepop - nowSec >= 3600) text.classList.add("long-wait");
-    else text.classList.remove("long-wait");
-
-    if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) {
-        card.classList.add("blink-border-white");
-    } else {
-        card.classList.remove("blink-border-white");
+        textEl.classList.remove("text-red-400");
+        textEl.classList.add("text-gray-300");
     }
 }
 

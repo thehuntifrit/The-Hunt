@@ -54,22 +54,18 @@ function getOrCreateGroupSection(groupKey) {
   if (groupSectionCache.has(groupKey)) return groupSectionCache.get(groupKey);
 
   const section = document.createElement("section");
-  section.className = "status-group w-full hidden";
+  section.className = "status-group w-full hidden mb-2";
   section.innerHTML = `
-      <div class="status-group-separator">
+      <div class="status-group-separator text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-slate-700/50 pb-1 mb-2 pl-2">
           <span class="status-group-label">${GROUP_LABELS[groupKey]}</span>
       </div>
-      <div class="group-columns grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div class="col-1 flex flex-col gap-4"></div>
-          <div class="col-2 flex flex-col gap-4"></div>
-          <div class="col-3 flex flex-col gap-4"></div>
+      <div class="group-columns grid grid-cols-1 gap-2">
+          <div class="col-1 flex flex-col gap-0 border border-slate-800 rounded-md overflow-hidden bg-slate-900 shadow"></div>
       </div>
   `;
 
   const cols = [
-    section.querySelector(".col-1"),
-    section.querySelector(".col-2"),
-    section.querySelector(".col-3")
+    section.querySelector(".col-1")
   ];
 
   const result = { section, cols };
@@ -296,12 +292,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     }
   }
 
-  const width = window.innerWidth;
-  const md = 768;
-  const lg = 1024;
   let numCols = 1;
-  if (width >= lg) numCols = 3;
-  else if (width >= md) numCols = 2;
 
   const groups = {
     MAX_OVER: [],

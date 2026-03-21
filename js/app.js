@@ -447,9 +447,8 @@ function closeActiveCard() {
 }
 
 function toggleCardExpand(card, mobNo) {
-    if (card.dataset.isTransitioning === "true") return;
-
-    if (card.classList.contains("is-floating-active")) {
+    const state = getState();
+    if (state.openMobCardNo === mobNo) {
         closeCard();
     } else {
         openCard(card, mobNo);
@@ -457,163 +456,60 @@ function toggleCardExpand(card, mobNo) {
 }
 
 function openCard(card, mobNo) {
-    if (card.dataset.isTransitioning === "true") return;
+    const state = getState();
+    if (state.openMobCardNo && state.openMobCardNo !== mobNo) {
+        closeCard();
+    }
 
-    document.querySelectorAll(".mob-card.is-floating-active").forEach(existing => {
-        closeCard(existing, true);
-    });
+    const panelContent = card.querySelector(".expandable-panel");
+    const rightDetailsPanel = document.getElementById("selected-mob-details");
+    
+    if (panelContent && rightDetailsPanel) {
+        // 現在のカードの中身（hiddenなラッパー内の要素）を右パネルに移動
+        while (panelContent.firstChild) {
+            rightDetailsPanel.appendChild(panelContent.firstChild);
+        }
+        
+        // 以前のテキスト「モブを選択してください」等を消去（最初だけ）
+        const placeholder = rightDetailsPanel.querySelector(".text-center.text-gray-500");
+        if (placeholder) placeholder.remove();
 
-    const panel = card.querySelector(".expandable-panel");
-    const rect = card.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const top = rect.top;
-    const left = rect.left;
-
-    const placeholder = document.createElement("div");
-    placeholder.className = "mob-card-placeholder mob-card";
-    placeholder.style.width = `${width}px`;
-    placeholder.style.height = `${height}px`;
-    placeholder.style.margin = getComputedStyle(card).margin;
-
-    card.parentNode.insertBefore(placeholder, card);
-    card.dataset.placeholderId = "temp-" + Date.now();
-    placeholder.id = card.dataset.placeholderId;
-
-    const targetLeft = (window.innerWidth - width) / 2;
-    const header = document.getElementById("main-header");
-    const headerHeight = header ? header.offsetHeight : 0;
-    const isMobile = window.innerWidth < 1024;
-    const targetTop = isMobile ? 12 : headerHeight + 24;
-
-    card.classList.add("is-floating-active");
-    card.style.position = "fixed";
-    card.style.top = `${targetTop}px`;
-    card.style.left = `${targetLeft}px`;
-    card.style.width = `${width}px`;
-    card.style.zIndex = "45";
-    card.style.margin = "0";
-    card.dataset.isTransitioning = "true";
-
-    const dx = left - targetLeft;
-    const dy = top - targetTop;
-
-    card.style.transition = "none";
-    card.style.transform = `translate(${dx}px, ${dy}px)`;
-
-    void card.offsetWidth;
-
-    requestAnimationFrame(() => {
-        panel.classList.add("open");
+        // 枠ごとのアクティブ表示（任意）
+        card.classList.add("bg-slate-800");
+        card.classList.remove("bg-slate-900");
+        
         setOpenMobCardNo(mobNo);
-        const backdrop = document.getElementById("card-overlay-backdrop");
-        backdrop?.classList.remove("hidden");
-
-        card.style.transition = "";
-        card.style.transform = `translate(0, 0)`;
-
-        setTimeout(() => {
-            delete card.dataset.isTransitioning;
-            card.style.transform = "";
-        }, 500);
-    });
+    }
 }
 
-function closeCard(cardToClose = null, immediate = false) {
-    const card = cardToClose || document.querySelector(".mob-card.is-floating-active");
-    if (!card) return;
-    if (!immediate && card.dataset.isTransitioning === "true") return;
-
-    const panel = card.querySelector(".expandable-panel");
-    const backdrop = document.getElementById("card-overlay-backdrop");
-    const placeholderId = card.dataset.placeholderId;
-    const placeholder = document.getElementById(placeholderId);
-
-    setOpenMobCardNo(null);
-    backdrop?.classList.add("hidden");
-
-    if (!placeholder) {
-        card.classList.remove("is-floating-active");
-        card.style = "";
-        delete card.dataset.isTransitioning;
-        return;
-    }
-
-    if (immediate) {
-        finishClose(card, placeholder);
-        return;
-    }
-
-    card.dataset.isTransitioning = "true";
-    panel.classList.remove("open");
-
-    const rect = placeholder.getBoundingClientRect();
-    const cardRect = card.getBoundingClientRect();
-
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-
-    card.classList.remove("is-floating-active");
-    card.style.position = "absolute";
-    card.style.top = `${rect.top + scrollY}px`;
-    card.style.left = `${rect.left + scrollX}px`;
-    card.style.width = `${rect.width}px`;
-
-    const dx = cardRect.left - rect.left;
-    const dy = cardRect.top - rect.top;
-
-    card.style.transition = "none";
-    card.style.transform = `translate(${dx}px, ${dy}px)`;
-
-    void card.offsetWidth;
-
-    card.style.transition = "";
-    card.style.transform = "translate(0, 0)";
-
-    let finished = false;
-    const timer = setTimeout(() => {
-        if (!finished) {
-            finished = true;
-            finishClose(card, placeholder);
-        }
-    }, 450);
-
-    const onEnd = (e) => {
-        if (e.propertyName === 'transform') {
-            if (!finished) {
-                finished = true;
-                clearTimeout(timer);
-                card.removeEventListener("transitionend", onEnd);
-                finishClose(card, placeholder);
+function closeCard() {
+    const state = getState();
+    if (!state.openMobCardNo) return;
+    
+    const card = document.querySelector(`.mob-card[data-mob-no="${state.openMobCardNo}"]`);
+    const rightDetailsPanel = document.getElementById("selected-mob-details");
+    
+    if (card && rightDetailsPanel) {
+        const panelContent = card.querySelector(".expandable-panel");
+        if (panelContent) {
+            // 右パネルの中身を元のカードの中へ戻す
+            while (rightDetailsPanel.firstChild) {
+                panelContent.appendChild(rightDetailsPanel.firstChild);
             }
         }
-    };
-    card.addEventListener("transitionend", onEnd);
-}
-
-function finishClose(card, placeholder) {
-    if (!card.parentElement) return;
-
-    card.style = "";
-    card.classList.remove("is-floating-active");
-    delete card.dataset.placeholderId;
-    delete card.dataset.isTransitioning;
-
-    if (placeholder && placeholder.parentElement) {
-        placeholder.parentElement.removeChild(placeholder);
+        card.classList.remove("bg-slate-800");
+        card.classList.add("bg-slate-900");
+    } else if (rightDetailsPanel) {
+        // カードが見つからなくても中身はクリアする
+        rightDetailsPanel.innerHTML = '';
+    }
+    
+    // 表示プレースホルダーを戻す
+    if (rightDetailsPanel && rightDetailsPanel.childNodes.length === 0) {
+        rightDetailsPanel.innerHTML = '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択してください</div>';
     }
 
-    document.querySelectorAll(`.mob-card-placeholder`).forEach(p => {
-        const owner = document.querySelector(`.mob-card[data-placeholder-id='${p.id}']`);
-        if (!owner) {
-            p.remove();
-        }
-    });
-
-    if (!document.querySelector(".mob-card.is-floating-active")) {
-        const backdrop = document.getElementById("card-overlay-backdrop");
-        backdrop?.classList.add("hidden");
-    }
+    setOpenMobCardNo(null);
 }
 
 function handleReportResult(result) {
