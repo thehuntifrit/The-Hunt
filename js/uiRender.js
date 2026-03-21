@@ -198,6 +198,7 @@ export function createPCDetailCard(mob) {
                 </div>
             </div>
 
+            ${mapFile ? `
             <div class="pc-detail-section">
                 <div class="section-label">出現マップ</div>
                 <div class="pc-detail-map-container">
@@ -206,6 +207,7 @@ export function createPCDetailCard(mob) {
                     <div class="pc-detail-map-overlay map-overlay"></div>
                 </div>
             </div>
+            ` : ''}
         </div>
 
         <div class="report-side-bar absolute top-0 right-0 w-12 bottom-0 opacity-0 cursor-pointer pointer-events-auto z-10" 
@@ -214,7 +216,7 @@ export function createPCDetailCard(mob) {
     `;
 
     card.innerHTML = layout;
-    card.className = "pc-detail-card-inner relative h-full flex flex-col";
+    card.className = "pc-detail-card pc-detail-card-inner relative h-full flex flex-col";
 
     const mapOverlay = card.querySelector(".pc-detail-map-overlay");
     if (mapOverlay && mob.spawn_points) {
@@ -319,7 +321,7 @@ export function updateProgressText(card, mob) {
     const isDetail = card.classList.contains("pc-detail-card");
     let newHTML = "";
     if (isDetail) {
-        newHTML = `<span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span><span class="percent ml-2">(${elapsedPercent || 0}%)</span>`;
+        newHTML = `<span class="percent">${Math.floor(elapsedPercent || 0)}%</span>`;
     } else {
         newHTML = `<div class="truncate min-w-0 ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div><div class="truncate min-w-0 text-right"><span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span></div>`;
     }
