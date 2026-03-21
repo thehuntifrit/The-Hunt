@@ -276,11 +276,11 @@ export const submitMemo = async (mobNo, memoText) => {
 
 export const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
     const authData = ensureAuth();
-    if (!authData) return;
+    if (!authData) return { success: false };
 
     const { lodestoneId, mobs } = authData;
     const mob = mobs.find(m => m.No === mobNo);
-    if (!mob) return;
+    if (!mob) return { success: false };
 
     try {
         const docRef = doc(db, "mob_locations", mobNo.toString());
@@ -293,8 +293,10 @@ export const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
         };
 
         await setDoc(docRef, updatePayload, { merge: true });
+        return { success: true };
     } catch (error) {
         console.error("湧き潰し報告エラー:", error);
+        return { success: false };
     }
 };
 

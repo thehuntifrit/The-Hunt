@@ -1,5 +1,3 @@
-// location.js
-
 import { toggleCrushStatus } from "./server.js";
 import { getState } from "./dataManager.js";
 import { hideTooltip } from "./tooltip.js";
@@ -8,6 +6,64 @@ import { openAuthModal } from "./modal.js";
 let lastClickTime = 0;
 let lastClickLocationId = null;
 let locationEventsAttached = false;
+
+const CULLED_CLASS_MAP = {
+    "color-b1": "color-b1-culled",
+    "color-b2": "color-b2-culled",
+};
+const UNCULLED_CLASS_MAP = {
+    "color-b1-culled": "color-b1",
+    "color-b2-culled": "color-b2",
+};
+
+function applyOptimisticDOM(point, nextCulled) {
+    point.dataset.isCulled = String(nextCulled);
+
+    if (nextCulled) {
+        for (const [from, to] of Object.entries(CULLED_CLASS_MAP)) {
+            if (point.classList.contains(from)) {
+                point.classList.replace(from, to);
+                break;
+            }
+        }
+    } else {
+        for (const [from, to] of Object.entries(UNCULLED_CLASS_MAP)) {
+            if (point.classList.contains(from)) {
+                point.classList.replace(from, to);
+                break;
+            }
+        }
+    }
+
+    const pointNumber = parseInt(point.dataset.locationId?.slice(-2), 10);
+    point.dataset.tooltip = `${pointNumber}${nextCulled ? " (済)" : ""}`;
+}
+
+function applyOptimisticState(mobNo, locationId, nextCulled) {
+    const state = getState();
+    if (!state.mobLocations[mobNo]) {
+        state.mobLocations[mobNo] = {};
+    }
+    if (!state.mobLocations[mobNo][locationId]) {
+        state.mobLocations[mobNo][locationId] = {};
+    }
+
+    const now = { toMillis: () => Date.now() };
+    if (nextCulled) {
+        state.mobLocations[mobNo][locationId].culled_at = now;
+    } else {
+        state.mobLocations[mobNo][locationId].uncull_at = now;
+    }
+
+    const mob = state.mobs.find(m => m.No === mobNo);
+    if (mob) {
+        mob.spawn_cull_status = state.mobLocations[mobNo];
+    }
+
+    window.dispatchEvent(new CustomEvent("locationsUpdated", {
+        detail: { locationsMap: state.mobLocations }
+    }));
+}
 
 function handleCrushToggle(e) {
     const point = e.target.closest(".spawn-point");
@@ -22,10 +78,7 @@ function handleCrushToggle(e) {
     if (point.dataset.isLastone === "true") return;
 
     const card = e.target.closest(".mob-card, .pc-detail-card");
-    if (!card) {
-        console.error("FATAL: Mob card (.mob-card) not found for interactive spawn point click.");
-        return;
-    }
+    if (!card) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -52,7 +105,15 @@ function handleCrushToggle(e) {
     const isCurrentlyCulled = point.dataset.isCulled === "true";
     const nextCulled = !isCurrentlyCulled;
 
-    toggleCrushStatus(mobNo, locationId, nextCulled);
+    applyOptimisticDOM(point, nextCulled);
+    applyOptimisticState(mobNo, locationId, nextCulled);
+
+    toggleCrushStatus(mobNo, locationId, nextCulled).then(result => {
+        if (!result?.success) {
+            applyOptimisticDOM(point, !nextCulled);
+            applyOptimisticState(mobNo, locationId, !nextCulled);
+        }
+    });
 }
 
 export function isCulled(pointStatus, mobNo, mob = null) {
