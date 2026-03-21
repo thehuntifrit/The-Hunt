@@ -146,7 +146,7 @@ export function createPCDetailCard(mob) {
         nextPossibleTime = formatMMDDHHmm(minRepop);
     }
 
-    const mapFile = resolveMapFile(mob);
+    const mapFile = mob.Map;
 
     const layout = `
         <div class="pc-detail-header">
@@ -161,13 +161,13 @@ export function createPCDetailCard(mob) {
         </div>
 
         <div class="pc-detail-progress-section">
-            <div class="flex items-center gap-3">
-                <div class="pc-detail-progress-container">
-                    <div class="pc-detail-progress-bar" style="width: ${elapsedPercent || 0}%"></div>
-                </div>
+            <div class="flex justify-end mb-1">
                 <div class="pc-detail-progress-text">
                     <span class="percent">${Math.floor(elapsedPercent || 0)}%</span>
                 </div>
+            </div>
+            <div class="pc-detail-progress-container">
+                <div class="pc-detail-progress-bar" style="width: ${elapsedPercent || 0}%"></div>
             </div>
         </div>
 
@@ -198,6 +198,7 @@ export function createPCDetailCard(mob) {
                 </div>
             </div>
 
+            ${mapFile ? `
             <div class="pc-detail-section">
                 <div class="section-label">出現マップ</div>
                 <div class="pc-detail-map-container">
@@ -206,6 +207,7 @@ export function createPCDetailCard(mob) {
                     <div class="pc-detail-map-overlay map-overlay"></div>
                 </div>
             </div>
+            ` : ''}
         </div>
 
         <div class="report-side-bar absolute top-0 right-0 w-12 bottom-0 opacity-0 cursor-pointer pointer-events-auto z-10" 
@@ -214,7 +216,7 @@ export function createPCDetailCard(mob) {
     `;
 
     card.innerHTML = layout;
-    card.className = "pc-detail-card-inner relative h-full flex flex-col";
+    card.className = "pc-detail-card pc-detail-card-inner relative h-full flex flex-col";
 
     const mapOverlay = card.querySelector(".pc-detail-map-overlay");
     if (mapOverlay && mob.spawn_points) {
@@ -319,7 +321,7 @@ export function updateProgressText(card, mob) {
     const isDetail = card.classList.contains("pc-detail-card");
     let newHTML = "";
     if (isDetail) {
-        newHTML = `<span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span><span class="percent ml-2">(${elapsedPercent || 0}%)</span>`;
+        newHTML = `<span class="percent">${Math.floor(elapsedPercent || 0)}%</span>`;
     } else {
         newHTML = `<div class="truncate min-w-0 ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div><div class="truncate min-w-0 text-right"><span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span></div>`;
     }
@@ -387,7 +389,7 @@ export function updateExpandablePanel(card, mob) {
     const mapImg = card.querySelector(".mob-map-img");
     const mapOverlay = card.querySelector(".map-overlay");
     if (mapImg && !mapImg.src.includes(".webp")) {
-        const mapFile = resolveMapFile(mob);
+        const mapFile = mob.Map;
         if (mapFile) mapImg.src = `./maps/${mapFile}`;
     }
 
@@ -1227,22 +1229,3 @@ function updateProgressBars() {
 setInterval(() => {
   updateProgressBars();
 }, EORZEA_MINUTE_MS);
-
-function resolveMapFile(mob) {
-    if (mob.Map) return mob.Map;
-    const areaToMap = {
-        "南ザナラーン": "Southern_Thanalan.webp", "中央ザナラーン": "Central_Thanalan.webp",
-        "東ザナラーン": "East_Thanalan.webp", "西ザナラーン": "West_Thanalan.webp", "北ザナラーン": "North_Thanalan.webp",
-        "中央ラノシア": "Middle_La_Noscea.webp", "低地ラノシア": "Lower_La_Noscea.webp", "東ラノシア": "Eastern_La_Noscea.webp",
-        "西ラノシア": "Western_La_Noscea.webp", "高地ラノシア": "Upper_La_Noscea.webp", "外地ラノシア": "Outer_La_Noscea.webp",
-        "中央森林": "Central_Shroud.webp", "東部森林": "East_Shroud.webp", "南部森林": "South_Shroud.webp", "北部森林": "North_Shroud.webp",
-        "モードゥナ": "Mor_Dhona.webp", "クルザス中央高地": "Coerthas_Central_Highlands.webp", "西ザナラーン": "Western_Thanalan.webp",
-        "オルコ・パチャ": "Urqopacha.webp", "コザマル・カ": "Kozama'uka.webp", "アム・アレーン": "Amh_Araeng.webp",
-        "イル・メグ": "Il_Mheg.webp", "ラケティカ大森林": "Rak_tika_Greatwood.webp", "テンペスト": "Tempest.webp",
-        "ウルティマ・トゥーレ": "Ultima_Thule.webp", "ガレマール": "Garlemald.webp", "サベネア島": "Thavnair.webp",
-        "エルピス": "Elpis.webp", "ラヴィリンソス": "Labyrinthos.webp", "嘆きの海": "Mare_Lamentorum.webp",
-        "リビング・メモリー": "Living_Memory.webp", "ヘリテージファウンド": "Heritage_Found.webp",
-        "シャーローニ荒野": "Shaaloani.webp", "ヤクテル樹海": "Yak_Tel.webp", "エニグマ・セクター": "The_Tempest.webp"
-    };
-    return areaToMap[mob.Area] || "";
-}
