@@ -217,6 +217,7 @@ export function createPCDetailCard(mob) {
 
     card.innerHTML = layout;
     card.className = "pc-detail-card pc-detail-card-inner relative h-full flex flex-col";
+    card.dataset.mobNo = mob.No;
 
     const mapOverlay = card.querySelector(".pc-detail-map-overlay");
     if (mapOverlay && mob.spawn_points) {
