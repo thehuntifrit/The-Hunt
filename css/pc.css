@@ -31,7 +31,7 @@
     }
 
     #pc-right-pane {
-        width: 450px;
+        width: 380px;
         flex-shrink: 0;
         align-self: flex-start;
         position: sticky;
@@ -352,10 +352,10 @@
     .pc-detail-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 0.75rem 1rem;
-        margin-bottom: 1.25rem;
+        gap: 0.4rem 0.6rem;
+        margin-bottom: 0.75rem;
         border-top: 1px solid rgba(255, 255, 255, 0.06);
-        padding-top: 1rem;
+        padding-top: 0.6rem;
     }
 
     .pc-detail-info-item {
@@ -444,5 +444,26 @@
         height: 14px;
         border-width: 2.5px;
         box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+    }
+
+    .pc-detail-memo-box {
+        background: rgba(15, 23, 42, 0.6);
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .pc-detail-memo-input {
+        width: 100%;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #f1f5f9;
+        font-size: 0.8rem;
+        padding: 2px 0;
+    }
+
+    .pc-detail-memo-input::placeholder {
+        color: rgba(255, 255, 255, 0.2);
     }
 }

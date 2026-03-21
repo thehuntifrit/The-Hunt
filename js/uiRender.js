@@ -198,6 +198,15 @@ export function createPCDetailCard(mob) {
                 </div>
             </div>
 
+            <div class="pc-detail-section">
+                <div class="section-label">MEMO</div>
+                <div class="pc-detail-memo-box">
+                    <input type="text" class="memo-input pc-detail-memo-input"
+                        placeholder="全角30文字まで" maxlength="30" data-action="save-memo" data-mob-no="${mob.No}"
+                        value="${mob.memo_text || ''}">
+                </div>
+            </div>
+
             ${mapFile ? `
             <div class="pc-detail-section">
                 <div class="section-label">出現マップ</div>

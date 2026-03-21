@@ -3,7 +3,61 @@ import { renderAreaFilterPanel } from "./filterUI.js";
 
 let currentPanel = null;
 
-const PANELS = ["telop", "maintenance", "rank"];
+const PANELS = ["error", "telop", "maintenance", "rank", "manual"];
+
+const errorLog = [];
+const MAX_ERROR_LOG = 50;
+let manualLoaded = false;
+
+function captureErrors() {
+    const origError = console.error;
+    console.error = (...args) => {
+        origError.apply(console, args);
+        const msg = args.map(a => (typeof a === "object" ? JSON.stringify(a, null, 2) : String(a))).join(" ");
+        const time = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        errorLog.unshift({ time, msg });
+        if (errorLog.length > MAX_ERROR_LOG) errorLog.pop();
+        updateErrorPanel();
+        updateErrorBadge();
+    };
+
+    window.addEventListener("error", (e) => {
+        const time = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        errorLog.unshift({ time, msg: e.message || "Unknown error" });
+        if (errorLog.length > MAX_ERROR_LOG) errorLog.pop();
+        updateErrorPanel();
+        updateErrorBadge();
+    });
+
+    window.addEventListener("unhandledrejection", (e) => {
+        const time = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        errorLog.unshift({ time, msg: String(e.reason) });
+        if (errorLog.length > MAX_ERROR_LOG) errorLog.pop();
+        updateErrorPanel();
+        updateErrorBadge();
+    });
+}
+
+function updateErrorPanel() {
+    const el = document.getElementById("sidebar-error-content");
+    if (!el) return;
+    if (errorLog.length === 0) {
+        el.innerHTML = "";
+        return;
+    }
+    el.innerHTML = errorLog.map(e =>
+        `<div class="sidebar-error-item"><span class="error-time">${e.time}</span><span class="error-msg">${escapeHtml(e.msg)}</span></div>`
+    ).join("");
+}
+
+function updateErrorBadge() {
+    const btn = document.querySelector('.sidebar-icon-btn[data-panel="error"]');
+    if (btn) btn.classList.toggle("has-alert", errorLog.length > 0);
+}
+
+function escapeHtml(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
 
 function getStoredState() {
     try {
@@ -21,6 +75,7 @@ export function initSidebar() {
     const sidebar = document.getElementById("app-sidebar");
     if (!sidebar) return;
 
+    captureErrors();
     document.body.classList.add("has-sidebar");
 
     const stored = getStoredState();
@@ -93,7 +148,33 @@ function showPanel(panelName) {
         target.classList.remove("hidden");
         if (panelName === "rank") {
             renderSidebarFilterAccordion();
+        } else if (panelName === "manual" && !manualLoaded) {
+            loadManualContent();
+        } else if (panelName === "error") {
+            updateErrorPanel();
         }
+    }
+}
+
+async function loadManualContent() {
+    const container = document.getElementById("sidebar-manual-content");
+    if (!container) return;
+
+    container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.4)">読み込み中...</p>';
+
+    try {
+        const response = await fetch("./README.md");
+        if (!response.ok) throw new Error("Failed to load");
+        const text = await response.text();
+        if (typeof marked !== "undefined") {
+            marked.setOptions({ breaks: true, gfm: true });
+            container.innerHTML = marked.parse(text);
+        } else {
+            container.textContent = text;
+        }
+        manualLoaded = true;
+    } catch {
+        container.innerHTML = '<p style="color:#ef4444;text-align:center">読み込み失敗</p>';
     }
 }
 

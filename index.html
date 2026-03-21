@@ -34,6 +34,10 @@
 
                 <div class="sidebar-icon-col">
                     <div class="sidebar-divider"></div>
+                    <button class="sidebar-icon-btn" data-panel="error">
+                        <span class="sidebar-icon">⚠️</span>
+                        <span class="sidebar-label">エラー</span>
+                    </button>
                     <button class="sidebar-icon-btn" data-panel="telop">
                         <span class="sidebar-icon">📢</span>
                         <span class="sidebar-label">告知</span>
@@ -46,6 +50,11 @@
                         <span class="sidebar-icon">🏷️</span>
                         <span class="sidebar-label">選択</span>
                     </button>
+                    <div class="sidebar-divider"></div>
+                    <button class="sidebar-icon-btn" data-panel="manual">
+                        <span class="sidebar-icon">📋</span>
+                        <span class="sidebar-label">説明</span>
+                    </button>
                     <div class="sidebar-notification-toggle">
                         <label>
                             <input type="checkbox" id="sidebar-notification-toggle">
@@ -56,6 +65,12 @@
                 </div>
             </div>
             <div class="sidebar-panel">
+                <div id="sidebar-panel-error" class="sidebar-panel-content hidden">
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">ERRORS</div>
+                        <div id="sidebar-error-content" class="sidebar-alert-content"></div>
+                    </div>
+                </div>
                 <div id="sidebar-panel-telop" class="sidebar-panel-content hidden">
                     <div class="sidebar-section">
                         <div class="sidebar-section-title">ANNOUNCEMENT</div>
@@ -70,6 +85,12 @@
                 </div>
                 <div id="sidebar-panel-rank" class="sidebar-panel-content hidden">
                     <div id="sidebar-filter-accordion" class="sidebar-filter-accordion"></div>
+                </div>
+                <div id="sidebar-panel-manual" class="sidebar-panel-content hidden">
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">USER MANUAL</div>
+                        <div id="sidebar-manual-content" class="sidebar-manual-content"></div>
+                    </div>
                 </div>
             </div>
         </div>
