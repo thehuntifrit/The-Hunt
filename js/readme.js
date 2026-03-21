@@ -3,17 +3,19 @@ import { getState, setLodestoneId, setCharacterName, setVerified } from "./dataM
 import { verifyLodestoneCharacter, registerUserToFirestore } from "./server.js";
 
 document.addEventListener('DOMContentLoaded', () => {
-    const toggleBtn = document.getElementById('toggle-readme-btn');
+    const modal = document.getElementById('manual-modal');
+    const backdrop = document.getElementById('manual-modal-backdrop');
+    const closeBtn = document.getElementById('close-manual-modal');
     const container = document.getElementById('readme-container');
     let isLoaded = false;
     let currentVCode = "";
 
-    if (!toggleBtn || !container) return;
+    if (!modal || !container) return;
 
-    window.openUserManual = async (options = {}) => {
-        const { scroll = true } = options;
-        container.classList.remove('hidden');
-        toggleBtn.innerHTML = '<span>📖</span> ユーザーマニュアルを閉じる';
+    window.openUserManual = async () => {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
 
         if (!isLoaded) {
             try {
@@ -34,25 +36,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 container.innerHTML = '<p class="text-red-400 text-center">マニュアルの読み込みに失敗しました。</p>';
             }
         }
-
-        if (scroll) {
-            setTimeout(() => {
-                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
-        }
     };
 
-    toggleBtn.addEventListener('click', async () => {
-        const isHidden = container.classList.contains('hidden');
+    const closeModal = () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = '';
+    };
 
-        if (isHidden) {
-            await window.openUserManual({ scroll: false });
-        } else {
-            container.classList.add('hidden');
-            toggleBtn.innerHTML = '<span>📖</span> ユーザーマニュアルを表示';
-            toggleBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    });
+    closeBtn?.addEventListener('click', closeModal);
+    backdrop?.addEventListener('click', closeModal);
 
     window.addEventListener('characterNameSet', () => {
         if (isLoaded) updateAuthUI();

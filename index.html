@@ -86,12 +86,6 @@
                 <div id="sidebar-panel-rank" class="sidebar-panel-content hidden">
                     <div id="sidebar-filter-accordion" class="sidebar-filter-accordion"></div>
                 </div>
-                <div id="sidebar-panel-manual" class="sidebar-panel-content hidden">
-                    <div class="sidebar-section">
-                        <div class="sidebar-section-title">USER MANUAL</div>
-                        <div id="sidebar-manual-content" class="sidebar-manual-content"></div>
-                    </div>
-                </div>
             </div>
         </div>
     </aside>
@@ -234,22 +228,26 @@
         </div>
     </main>
 
-    <footer class="max-w-6xl mx-auto px-4 py-8 text-center">
-        <button id="toggle-readme-btn" class="text-gray-400 hover:text-cyan-400 transition text-sm font-semibold flex items-center 
-            justify-center mx-auto gap-2">
-            <span>📖</span> ユーザーマニュアルを表示
-        </button>
-
-        <div id="readme-container" class="hidden mt-8 text-left bg-slate-900/80 p-6 rounded-xl border border-gray-700 shadow-2xl 
-            prose prose-invert prose-sm max-w-none">
-        </div>
-
-        <div class="mt-8 text-xs text-gray-600">
-            &copy; 2025 The Hunt
-        </div>
-    </footer>
-
     <div id="card-overlay-backdrop" class="fixed inset-0 hidden z-40"></div>
+
+    <div id="manual-modal" class="fixed inset-0 hidden items-center justify-center p-4 z-[60]">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" id="manual-modal-backdrop"></div>
+        <div class="bg-slate-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] border border-gray-700 text-white 
+            relative overflow-hidden flex flex-col z-[61]">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-600"></div>
+            
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h2 class="text-xl font-bold flex items-center gap-2"><span class="text-cyan-400">The</span><span class="text-yellow-400">Hunt</span><span class="text-gray-400 ml-2 text-base font-normal tracking-wider">USER MANUAL</span></h2>
+                <button id="close-manual-modal" class="text-gray-400 hover:text-white transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div id="readme-container" class="p-6 overflow-y-auto prose prose-invert prose-sm max-w-none w-full">
+                <!-- content injected here -->
+            </div>
+        </div>
+    </div>
 
     <div id="report-modal" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
         <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-md border border-gray-600 text-white 

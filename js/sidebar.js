@@ -232,6 +232,13 @@ function renderMobileErrors(panel) {
 }
 
 function togglePanel(panelName) {
+    if (panelName === "manual") {
+        if (typeof window.openUserManual === "function") {
+            window.openUserManual();
+        }
+        return;
+    }
+
     const sidebar = document.getElementById("app-sidebar");
     if (!sidebar) return;
 
@@ -244,12 +251,11 @@ function togglePanel(panelName) {
     const btn = sidebar.querySelector(`[data-panel="${panelName}"]`);
     if (btn) btn.classList.add("active");
 
-    currentPanel = panelName;
     sidebar.classList.add("expanded");
     document.body.classList.add("sidebar-expanded");
-    saveState("panel", panelName);
-
     showPanel(panelName);
+    currentPanel = panelName;
+    saveState("panel", panelName);
 }
 
 function closePanel() {
