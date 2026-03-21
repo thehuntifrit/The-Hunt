@@ -287,12 +287,12 @@ function attachSidebarLogic() {
                 }
             }
         });
-        if (submenu) submenu.classList.remove('-translate-x-full');
+        if (submenu) submenu.style.transform = 'translateX(0)';
     }
 
     function closeSubmenu() {
         currentOpen = null;
-        if (submenu) submenu.classList.add('-translate-x-full');
+        if (submenu) submenu.style.transform = 'translateX(-100%)';
     }
 
     if (closeBtn) closeBtn.addEventListener('click', closeSubmenu);

@@ -1106,3 +1106,27 @@ html body.magnifier-active .mob-card-inner * {
         width: 182px !important;
     }
 }
+
+/* Custom Responsive Layout */
+#main-content {
+    display: flex;
+    flex-direction: column;
+}
+#right-details-panel {
+    display: none;
+}
+#column-container {
+    width: 100%;
+}
+
+@media (min-width: 1024px) {
+    #main-content {
+        flex-direction: row;
+    }
+    #column-container {
+        width: 60%;
+    }
+    #right-details-panel {
+        display: flex;
+    }
+}

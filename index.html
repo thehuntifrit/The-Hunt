@@ -20,94 +20,101 @@
         <div class="loading-text">Loading...</div>
     </div>
 
-    <header id="main-header"
-        class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md border-bottom border-slate-700/50">
-
-        <div id="status-message"
-            class="text-center py-1 text-sm text-white bg-transparent flex flex-col items-center justify-center gap-0.5"
-            role="status" aria-live="polite">
-            <div id="status-message-maintenance"></div>
-            <div id="status-message-telop" class="font-bold text-cyan-400"></div>
-            <div id="status-message-temp"></div>
-        </div>
-
-        <div class="max-w-6xl mx-auto px-4 pt-2 pb-4">
-            <div class="header-final-grid">
-                <div class="header-right-row-1">
-                    <div class="notification-volume-wrapper hidden">
-                        <input type="range" id="notification-volume" min="0" max="1" step="0.1" class="volume-slider"
-                            title="通知音量">
-                    </div>
-                </div>
-
-                <div class="header-right-row-2">
-                    <div class="notification-toggle-wrapper">
-                        <label class="notification-toggle-label">
-                            <input type="checkbox" id="notification-toggle" class="sr-only peer" aria-label="通知の有効化">
-                            <div class="notification-switch-ui">
-                                <div class="switch-knob"></div>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <div id="rank-tabs"></div>
-
-                <div id="area-filter-panel-mobile" class="hidden lg:hidden">
-                    <div class="flex-wrap justify-end gap-0 w-[182px]"></div>
-                </div>
-
-                <div id="area-filter-panel-desktop" class="hidden flex-col items-end">
-                    <div class="flex-wrap gap-0 justify-end w-[182px]"></div>
-                </div>
-
-                <div class="header-title-area">
-                    <h1 class="flex flex-col text-3xl font-bold font-stretch-condensed leading-[0.8] text-glow">
-                        <span class="text-cyan-400">The</span>
-                        <span class="text-yellow-400">Hunt</span>
-                    </h1>
-                </div>
-                <div id="header-welcome-message" class="header-greeting-left"></div>
+    <!-- Sidebar Menu -->
+    <aside id="sidebar-menu" class="fixed left-0 top-0 h-full bg-slate-900 border-r border-slate-700/50 flex flex-col z-[100] text-gray-400" style="width: 56px;">
+        <div class="flex-1 flex flex-col items-center py-4 gap-6">
+            <div class="text-[10px] font-bold leading-tight text-center text-cyan-400 mb-2">
+                The<br>Hunt
             </div>
+            <button id="sidebar-error-btn" style="display: none;" class="w-10 h-10 flex flex-col items-center justify-center rounded hover:bg-slate-800 transition-colors group">
+                <span class="text-lg group-[.is-active]:text-red-500 group-[.is-active]:animate-pulse">⚠️</span>
+                <span class="text-[8px] mt-0.5 group-[.is-active]:text-red-400 font-bold">エラー</span>
+            </button>
+            <button id="sidebar-info-btn" class="w-10 h-10 flex flex-col items-center justify-center rounded hover:bg-slate-800 transition-colors group">
+                <span class="text-lg group-[.is-active]:text-cyan-400 group-[.is-active]:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]">📢</span>
+                <span class="text-[8px] mt-0.5 group-[.is-active]:text-cyan-300 font-bold">告知</span>
+            </button>
+            <button id="sidebar-maintenance-btn" class="w-10 h-10 flex flex-col items-center justify-center rounded hover:bg-slate-800 transition-colors group">
+                <span class="text-lg group-[.is-active]:text-yellow-400 group-[.is-active]:drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]">🛠️</span>
+                <span class="text-[8px] mt-0.5 group-[.is-active]:text-yellow-300 font-bold">メンテ</span>
+            </button>
+            <button id="sidebar-select-btn" class="w-10 h-10 flex flex-col items-center justify-center rounded hover:bg-slate-800 transition-colors">
+                <span class="text-lg">🏷️</span>
+                <span class="text-[8px] mt-0.5">選択</span>
+            </button>
+        </div>
+        <div class="w-8 mx-auto border-t border-slate-700"></div>
+        <div class="flex flex-col items-center py-4 gap-4">
+            <button id="sidebar-readme-btn" class="w-10 h-10 flex flex-col items-center justify-center rounded hover:bg-slate-800 transition-colors">
+                <span class="text-lg">📋</span>
+                <span class="text-[8px] mt-0.5">説明</span>
+            </button>
+            <button id="sidebar-notification-btn" class="w-10 h-10 flex flex-col items-center justify-center rounded hover:bg-slate-800 transition-colors">
+                <span class="text-lg">🔔</span>
+                <span class="text-[8px] mt-0.5">通知</span>
+                <!-- hidden toggle elements -->
+                <div class="hidden">
+                    <input type="checkbox" id="notification-toggle">
+                    <input type="range" id="notification-volume" min="0" max="1" step="0.1">
+                </div>
+            </button>
+        </div>
+    </aside>
 
-    </header>
+    <!-- Sidebar Submenu -->
+    <div id="sidebar-submenu" class="fixed top-0 h-full bg-slate-800 border-r border-slate-700 shadow-2xl transform transition-transform duration-300 z-[90] flex flex-col" style="left: 56px; width: 300px; transform: translateX(-100%);">
+        <div class="p-4 flex-1 flex flex-col overflow-hidden">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2 shrink-0">
+                <h2 id="submenu-title" class="text-base font-bold text-cyan-400 font-mono tracking-tight"></h2>
+                <button id="submenu-close-btn" class="text-gray-400 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded hover:bg-slate-700 bg-slate-800 border border-slate-600">✕</button>
+            </div>
+            <div class="border border-slate-600 rounded p-3 text-sm text-gray-300 flex-1 overflow-y-auto w-full">
+                <div id="submenu-content-info" class="hidden w-full whitespace-pre-wrap">
+                    <div id="status-message-telop" class="font-bold text-cyan-400"></div>
+                    <div id="status-message-temp"></div>
+                </div>
+                <div id="submenu-content-maintenance" class="hidden w-full text-center">
+                    <div id="status-message-maintenance"></div>
+                </div>
+                <div id="submenu-content-select" class="hidden flex-col gap-4 items-start w-full">
+                    <div id="rank-tabs"></div>
+                    <div id="area-filter-panel-mobile" class="hidden lg:hidden"><div class="flex-wrap justify-end gap-0 w-[182px]"></div></div>
+                    <div id="area-filter-panel-desktop" class="hidden flex-col items-end"><div class="flex-wrap gap-0 justify-end w-[182px]"></div></div>
+                </div>
+                <!-- readme script uses this container -->
+                <div id="submenu-content-readme" class="hidden w-full relative">
+                    <div id="readme-container" class="w-full bg-transparent border-none p-0 prose prose-invert prose-sm max-w-none"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <main class="mx-auto px-4 pb-10 pt-6 flex flex-col lg:flex-row gap-6 lg:ml-[56px] max-w-[1400px]">
+    <main id="main-content" class="mx-auto px-4 pb-10 pt-6 gap-6 w-full" style="padding-left: 72px; max-width: 1400px;">
         <div id="master-mob-container" class="hidden"></div>
         <div id="column-container"
-            class="flex-1 flex flex-col gap-6 opacity-0 transition-opacity duration-300 min-w-0">
+            class="flex-1 flex flex-col gap-6 opacity-0 transition-opacity duration-300 min-w-0 w-full">
         </div>
 
-        <div id="right-details-panel" class="w-full lg:w-[480px] flex-shrink-0 flex-col gap-4 hidden lg:flex sticky top-6 h-[calc(100vh-3rem)]">
+        <div id="right-details-panel" class="flex-shrink-0 flex-col gap-4 sticky top-6" style="width: 480px; height: calc(100vh - 3rem);">
             <div class="flex justify-end gap-6 text-[10px] font-bold text-gray-400">
-                <div class="header-clock-group flex items-center gap-1.5 bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700/50">
+                <div class="header-clock-group flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-700/50" style="background-color: rgba(30, 41, 59, 0.5);">
                     <span class="header-label-mini text-gray-500">LT</span>
                     <span id="header-time-lt" class="header-time-val-mini text-gray-200 tracking-wider">--:--</span>
                 </div>
-                <div class="header-clock-group flex items-center gap-1.5 bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700/50">
+                <div class="header-clock-group flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-700/50" style="background-color: rgba(30, 41, 59, 0.5);">
                     <span class="header-label-mini text-gray-500">ET</span>
                     <span id="header-time-et" class="header-time-val-mini text-yellow-500 tracking-wider">--:--</span>
                 </div>
             </div>
-            <div id="selected-mob-details" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-5 shadow-2xl overflow-y-auto">
+            <div id="selected-mob-details" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-5 shadow-2xl overflow-y-auto flex flex-col">
                 <div class="text-center text-gray-500 mt-20 text-sm">モブを選択してください</div>
             </div>
         </div>
     </main>
 
-    <footer class="max-w-6xl mx-auto px-4 py-8 text-center">
-        <button id="toggle-readme-btn" class="text-gray-400 hover:text-cyan-400 transition text-sm font-semibold flex items-center 
-            justify-center mx-auto gap-2">
-            <span>📖</span> ユーザーマニュアルを表示
-        </button>
-
-        <div id="readme-container" class="hidden mt-8 text-left bg-slate-900/80 p-6 rounded-xl border border-gray-700 shadow-2xl 
-            prose prose-invert prose-sm max-w-none">
-        </div>
-
-        <div class="mt-8 text-xs text-gray-600">
-            &copy; 2025 The Hunt
-        </div>
+    <footer class="hidden">
+        <!-- toggle-readme-btn is completely unused now -->
+        <button id="toggle-readme-btn"></button>
     </footer>
 
     <div id="card-overlay-backdrop" class="fixed inset-0 hidden z-40"></div>
@@ -207,26 +214,28 @@
     </div>
 
     <template id="mob-card-template">
-        <div class="mob-card w-full cursor-pointer hover:bg-slate-800/50 bg-slate-900 border-b border-slate-800 transition-colors" data-toggle="card-header">
-            <div class="flex items-center justify-between px-4 py-2.5">
-                <div class="flex items-center gap-3 min-w-0 flex-1">
-                    <span class="text-xs font-bold text-center w-5 h-5 flex items-center justify-center border border-current rounded-[2px]" data-rank-text></span>
-                    <span class="text-base font-bold truncate mob-name text-gray-100"></span>
-                    <span class="mob-count-container text-[10px] whitespace-nowrap ml-2"></span>
-                    <span class="memo-icon-container text-xs ml-1"></span>
+        <div class="mob-card w-full cursor-pointer hover:bg-slate-800 bg-slate-900 border-b border-slate-800 transition-colors" data-toggle="card-header">
+            <div class="flex items-center justify-between px-4 py-2.5 w-full">
+                <!-- Left: Rank and Name -->
+                <div class="flex items-center justify-start gap-3 min-w-0" style="flex: 2;">
+                    <span class="text-xs font-bold text-center flex items-center justify-center border border-current rounded-[2px] flex-shrink-0" style="width: 20px; height: 20px;" data-rank-text></span>
+                    <span class="text-[13px] font-bold truncate mob-name text-gray-100 mix-blend-screen overflow-hidden whitespace-nowrap"></span>
+                    <span class="mob-count-container text-[10px] whitespace-nowrap ml-2 flex-shrink-0"></span>
+                    <span class="memo-icon-container text-xs ml-1 flex-shrink-0"></span>
                 </div>
                 
-                <div class="flex items-center gap-4 flex-shrink-0">
-                    <span class="mob-status-icon text-lg w-5 text-center"></span>
-                    <span class="progress-text text-xs text-right w-[60px] font-mono tracking-tighter text-gray-300"></span>
+                <!-- Right: Status and Report -->
+                <div class="flex items-center justify-end gap-3 flex-shrink-0" style="flex: 3; max-width: 320px;">
+                    <span class="mob-status-icon text-base text-center flex-shrink-0" style="width: 20px;"></span>
+                    <span class="progress-text text-[11px] text-right font-mono tracking-tighter text-gray-300 flex-shrink-0" style="width: 45px;"></span>
                     
-                    <div class="progress-bar-wrapper rounded-sm overflow-hidden h-1.5 w-[100px] bg-slate-800">
+                    <div class="progress-bar-wrapper rounded-sm overflow-hidden flex-shrink-0 bg-slate-800" style="height: 6px; width: 100px;">
                         <div class="progress-bar-bg h-full transition-all duration-100 ease-linear" style="width: 0%"></div>
                     </div>
                     
-                    <span class="progress-percentage text-xs font-bold text-right w-[36px] text-gray-200"></span>
+                    <span class="progress-percentage text-[11px] font-bold text-right text-gray-200 flex-shrink-0" style="width: 32px;"></span>
                     
-                    <button class="report-side-bar text-[10px] font-bold px-3 py-1 border border-cyan-700 text-cyan-400 rounded hover:bg-cyan-900/50 transition-colors" data-report-type="" data-mob-no="">REPORT</button>
+                    <button class="report-side-bar text-[10px] font-bold px-2 py-0.5 border border-cyan-800 text-cyan-400 rounded hover:bg-cyan-900 transition-colors flex-shrink-0" data-report-type="" data-mob-no="">REPORT</button>
                     
                     <div class="area-info-container hidden"></div>
                 </div>
