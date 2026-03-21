@@ -53,25 +53,7 @@ async function requestNotificationPermission() {
 }
 
 export function playNotificationSound(isSilent = false) {
-    if (!audio) return;
-
-    audio.currentTime = 0;
-    const currentVolume = getState().notificationVolume;
-
-    if (isSilent) {
-        audio.volume = 0;
-        audio.play().then(() => {
-            audio.pause();
-            audio.volume = currentVolume;
-        }).catch(err => console.warn("Audio unlock failed:", err));
-    } else {
-        audio.volume = currentVolume;
-        audio.play().catch(err => {
-            if (err.name !== 'NotAllowedError') {
-                console.warn("Audio play failed:", err);
-            }
-        });
-    }
+    return;
 }
 
 export function sendBrowserNotification(title, body) {
