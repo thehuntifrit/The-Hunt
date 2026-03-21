@@ -98,6 +98,52 @@
 
     <div id="sidebar-status-bar"></div>
 
+    <div id="mobile-top-bar">
+        <div class="mobile-top-title">
+            <span class="text-cyan-400 font-bold">The</span>
+            <span class="text-yellow-400 font-bold">Hunt</span>
+        </div>
+        <div class="mobile-top-clocks">
+            <span class="mobile-clock-label">ET</span>
+            <span id="mobile-time-et" class="mobile-clock-val">--:--</span>
+            <span class="mobile-clock-label">LT</span>
+            <span id="mobile-time-lt" class="mobile-clock-val">--:--</span>
+        </div>
+    </div>
+
+    <nav id="mobile-footer-bar">
+        <div class="mobile-footer-icons">
+            <button class="mobile-footer-btn" data-panel="error">
+                <span class="mobile-footer-icon">⚠️</span>
+                <span class="mobile-footer-label">エラー</span>
+            </button>
+            <button class="mobile-footer-btn" data-panel="telop">
+                <span class="mobile-footer-icon">📢</span>
+                <span class="mobile-footer-label">告知</span>
+            </button>
+            <button class="mobile-footer-btn" data-panel="maintenance">
+                <span class="mobile-footer-icon">🛠️</span>
+                <span class="mobile-footer-label">メンテ</span>
+            </button>
+            <button class="mobile-footer-btn" data-panel="rank">
+                <span class="mobile-footer-icon">🏷️</span>
+                <span class="mobile-footer-label">選択</span>
+            </button>
+            <button class="mobile-footer-btn" data-panel="manual">
+                <span class="mobile-footer-icon">📋</span>
+                <span class="mobile-footer-label">説明</span>
+            </button>
+            <div class="mobile-footer-notify">
+                <label>
+                    <input type="checkbox" id="mobile-notification-toggle">
+                    <span class="mobile-footer-icon">🔔</span>
+                    <span class="mobile-footer-label">通知</span>
+                </label>
+            </div>
+        </div>
+        <div id="mobile-footer-panel" class="mobile-footer-panel hidden"></div>
+    </nav>
+
     <header id="main-header"
         class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/90 backdrop-blur-md border-bottom border-slate-700/50">
 

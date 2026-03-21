@@ -712,6 +712,10 @@ export function updateHeaderTime() {
     elPCLT.textContent = `${ltHours}:${ltMinutes}`;
     elPCET.textContent = `${et.hours}:${et.minutes}`;
   }
+  const elMobileLT = document.getElementById("mobile-time-lt");
+  const elMobileET = document.getElementById("mobile-time-et");
+  if (elMobileLT) elMobileLT.textContent = `${ltHours}:${ltMinutes}`;
+  if (elMobileET) elMobileET.textContent = `${et.hours}:${et.minutes}`;
   if (elSidebarLT) elSidebarLT.textContent = `${ltHours}:${ltMinutes}`;
   if (elSidebarET) elSidebarET.textContent = `${et.hours}:${et.minutes}`;
 
