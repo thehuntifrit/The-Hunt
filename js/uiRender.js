@@ -146,7 +146,7 @@ export function createPCDetailCard(mob) {
         nextPossibleTime = formatMMDDHHmm(minRepop);
     }
 
-    const mapFile = resolveMapFile(mob);
+    const mapFile = mob.Map;
 
     const layout = `
         <div class="pc-detail-header">
@@ -387,7 +387,7 @@ export function updateExpandablePanel(card, mob) {
     const mapImg = card.querySelector(".mob-map-img");
     const mapOverlay = card.querySelector(".map-overlay");
     if (mapImg && !mapImg.src.includes(".webp")) {
-        const mapFile = resolveMapFile(mob);
+        const mapFile = mob.Map;
         if (mapFile) mapImg.src = `./maps/${mapFile}`;
     }
 
@@ -1227,22 +1227,3 @@ function updateProgressBars() {
 setInterval(() => {
   updateProgressBars();
 }, EORZEA_MINUTE_MS);
-
-function resolveMapFile(mob) {
-    if (mob.Map) return mob.Map;
-    const areaToMap = {
-        "南ザナラーン": "Southern_Thanalan.webp", "中央ザナラーン": "Central_Thanalan.webp",
-        "東ザナラーン": "East_Thanalan.webp", "西ザナラーン": "West_Thanalan.webp", "北ザナラーン": "North_Thanalan.webp",
-        "中央ラノシア": "Middle_La_Noscea.webp", "低地ラノシア": "Lower_La_Noscea.webp", "東ラノシア": "Eastern_La_Noscea.webp",
-        "西ラノシア": "Western_La_Noscea.webp", "高地ラノシア": "Upper_La_Noscea.webp", "外地ラノシア": "Outer_La_Noscea.webp",
-        "中央森林": "Central_Shroud.webp", "東部森林": "East_Shroud.webp", "南部森林": "South_Shroud.webp", "北部森林": "North_Shroud.webp",
-        "モードゥナ": "Mor_Dhona.webp", "クルザス中央高地": "Coerthas_Central_Highlands.webp", "西ザナラーン": "Western_Thanalan.webp",
-        "オルコ・パチャ": "Urqopacha.webp", "コザマル・カ": "Kozama'uka.webp", "アム・アレーン": "Amh_Araeng.webp",
-        "イル・メグ": "Il_Mheg.webp", "ラケティカ大森林": "Rak_tika_Greatwood.webp", "テンペスト": "Tempest.webp",
-        "ウルティマ・トゥーレ": "Ultima_Thule.webp", "ガレマール": "Garlemald.webp", "サベネア島": "Thavnair.webp",
-        "エルピス": "Elpis.webp", "ラヴィリンソス": "Labyrinthos.webp", "嘆きの海": "Mare_Lamentorum.webp",
-        "リビング・メモリー": "Living_Memory.webp", "ヘリテージファウンド": "Heritage_Found.webp",
-        "シャーローニ荒野": "Shaaloani.webp", "ヤクテル樹海": "Yak_Tel.webp", "エニグマ・セクター": "The_Tempest.webp"
-    };
-    return areaToMap[mob.Area] || "";
-}
