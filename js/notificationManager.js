@@ -56,14 +56,21 @@ export function playNotificationSound(isSilent = false) {
     return;
 }
 
-export function sendBrowserNotification(title, body) {
+export async function sendBrowserNotification(title, body) {
     if (!getState().notificationEnabled) return;
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
 
-    if ("Notification" in window && Notification.permission === "granted") {
-        new Notification(title, {
-            body: body,
-            icon: "./icon/The_Hunt.png"
-        });
+    const options = { body, icon: "./icon/The_Hunt.png" };
+
+    try {
+        if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+            const reg = await navigator.serviceWorker.ready;
+            await reg.showNotification(title, options);
+        } else {
+            new Notification(title, options);
+        }
+    } catch {
+        // silently ignore
     }
 }
 
