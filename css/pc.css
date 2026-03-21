@@ -307,7 +307,7 @@
     }
 
     .pc-detail-progress-container {
-        flex: 1;
+        width: 100%;
         height: 6px;
         background: rgba(255, 255, 255, 0.08);
         border-radius: 3px;
@@ -328,8 +328,6 @@
         font-weight: 800;
         color: #fff;
         line-height: 1;
-        min-width: 50px;
-        text-align: right;
     }
 
     .pc-detail-grid {
@@ -368,6 +366,11 @@
         text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
     }
 
+    .pc-detail-content {
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        padding-top: 0.75rem;
+    }
+
     .pc-detail-section {
         margin-top: 0.75rem;
     }
@@ -375,21 +378,19 @@
     .section-label {
         font-size: 0.75rem;
         font-weight: 800;
-        color: rgba(255, 255, 255, 0.3);
+        color: rgba(255, 255, 255, 0.45);
         margin-bottom: 0.4rem;
         text-transform: uppercase;
-        border-left: 2.5px solid rgba(255, 255, 255, 0.1);
-        padding-left: 10px;
+        border-left: 3px solid rgba(255, 255, 255, 0.3);
+        padding-left: 8px;
         line-height: 1;
     }
 
     .section-content {
         font-size: 0.85rem;
         line-height: 1.5;
-        background: #070a14;
-        padding: 0.75rem 0.85rem;
-        border-radius: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.03);
+        padding: 0.2rem 0;
+        color: rgba(255, 255, 255, 0.8);
     }
 
     .section-content.condition {

@@ -161,13 +161,13 @@ export function createPCDetailCard(mob) {
         </div>
 
         <div class="pc-detail-progress-section">
-            <div class="flex items-center gap-3">
-                <div class="pc-detail-progress-container">
-                    <div class="pc-detail-progress-bar" style="width: ${elapsedPercent || 0}%"></div>
-                </div>
+            <div class="flex justify-end mb-1">
                 <div class="pc-detail-progress-text">
                     <span class="percent">${Math.floor(elapsedPercent || 0)}%</span>
                 </div>
+            </div>
+            <div class="pc-detail-progress-container">
+                <div class="pc-detail-progress-bar" style="width: ${elapsedPercent || 0}%"></div>
             </div>
         </div>
 
