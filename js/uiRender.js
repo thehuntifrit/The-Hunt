@@ -310,25 +310,14 @@ export function updateProgressText(card, mob) {
 
   let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
   const percentStr = isTimeOver ? "100%" : `${safePercent}%`;
-
-  const iconArea = card.querySelector('.mobile-icon-area');
-  const timeArea = card.querySelector('.mobile-time-area');
-  const percentArea = card.querySelector('.mobile-percent-area');
   const progressTextNodes = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
-
-  if (timeArea && iconArea && percentArea) {
-    iconArea.innerHTML = `<span class="detail-label-icon text-[13px] text-yellow-500">${label}</span>`;
-    timeArea.innerHTML = `<span class="detail-time-val font-bold text-[12px] text-gray-100 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</span>`;
-    percentArea.textContent = percentStr;
-    percentArea.classList.add("text-gray-300");
-  }
 
   const pcProgressTextHTML = `<span class="font-bold text-[14px] text-gray-100">${percentStr}</span>`;
   const defaultProgressTextHTML = `
         <div class="flex items-center justify-between w-full">
             <div class="flex items-center gap-1.5">
                 ${label ? `<span class="detail-label-icon text-[12px] opacity-80">${label}</span>` : ''}
-                <span class="detail-time-val font-bold text-[13px] ${isSpecialCondition ? 'label-next' : ''}">${timeValue}</span>
+                <span class="detail-time-val font-bold text-[13px] ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</span>
             </div>
             <span class="font-bold text-[13px] ml-4">${percentStr}</span>
         </div>`;

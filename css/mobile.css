@@ -69,22 +69,28 @@
         opacity: 0.8;
     }
 
-    .mobile-grid-upper,
-    .mobile-grid-lower {
-        grid-template-columns: 1fr 50px 40px;
-        gap: 2px;
-        width: 100%;
+    .mobile-header-area-text {
+        opacity: 0.8;
+        font-weight: 600;
+        max-width: 60%;
     }
 
-    .mobile-time-area {
-        flex-shrink: 0;
-        min-width: 0;
-        justify-content: flex-end !important;
+    .progress-text {
+        font-size: 11px !important;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
     }
 
-    .mobile-percent-area {
-        flex-shrink: 0;
-        min-width: 0;
+    .progress-text .detail-time-val {
+        font-size: 11px !important;
+        letter-spacing: -0.01em;
+    }
+
+    .progress-text .detail-label-icon {
+        font-size: 11px !important;
+        margin-right: 2px;
     }
 
     .expandable-panel {
@@ -181,9 +187,6 @@
         color: #facc15;
     }
 
-    .mobile-time-area {
-        flex-shrink: 0;
-    }
 
     .mobile-footer-btn.has-alert::before {
         content: '';
@@ -199,11 +202,6 @@
         animation: mobile-alert-pulse 1.5s infinite;
     }
 
-    .mobile-percent-area {
-        opacity: 0.9 !important;
-        font-family: 'Inter', sans-serif;
-        font-size: 12px !important;
-    }
     .list-rank-badge {
         margin-right: 0.4rem !important;
     }

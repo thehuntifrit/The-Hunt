@@ -292,31 +292,21 @@
                         class="progress-bar-wrapper absolute top-0 bottom-0 left-0 right-[38px] z-0 pointer-events-none">
                         <div class="progress-bar-bg absolute left-0 top-0 h-full" style="width: 0%"></div>
                     </div>
-                    <div class="px-2 py-1.5 grid grid-rows-2 gap-y-0.5 content-area relative z-10">
-                        <!-- Upper Row: Grid Column for alignment -->
-                        <div class="mobile-grid-upper grid items-center w-full min-w-0">
+                    <div class="px-2 py-1.5 flex flex-col gap-y-0.5 content-area relative z-10">
+                        <!-- Upper Row -->
+                        <div class="flex items-center justify-between w-full min-w-0">
                             <div class="flex items-center gap-1.5 min-w-0 overflow-hidden">
                                 <span class="mob-name font-bold truncate text-gray-100"></span>
                                 <span class="mob-count-container text-[10px] whitespace-nowrap text-slate-400"></span>
                                 <span class="memo-icon-container text-xs"></span>
                             </div>
-                            <div class="mobile-icon-area flex items-center justify-end"></div>
-                            <div class="mobile-empty-area"></div>
+                            <span class="list-rank-badge font-bold text-[9px] px-1 border border-current rounded flex-shrink-0"></span>
                         </div>
 
-                        <!-- Lower Row: Grid Column for alignment -->
-                        <div class="mobile-grid-lower grid items-center w-full min-w-0">
-                            <div class="flex items-center min-w-0 overflow-hidden">
-                                <span
-                                    class="list-rank-badge font-bold text-[9px] px-1 border border-current rounded mr-1.5 flex-shrink-0"></span>
-                                <div
-                                    class="mobile-header-area-text text-[10px] text-yellow-600/80 truncate leading-none">
-                                </div>
-                            </div>
-                            <div class="mobile-time-area flex items-center justify-start"></div>
-                            <div
-                                class="mobile-percent-area text-[12px] font-bold text-right text-gray-400 flex-shrink-0">
-                            </div>
+                        <!-- Lower Row -->
+                        <div class="flex items-center justify-between w-full min-w-0 gap-2">
+                            <div class="mobile-header-area-text text-[10px] text-yellow-600/80 truncate leading-none flex-shrink-0"></div>
+                            <div class="progress-text flex-1 min-w-0"></div>
                         </div>
                     </div>
 
