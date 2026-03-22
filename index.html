@@ -346,37 +346,35 @@
     <template id="mob-card-template">
         <div class="mob-card">
             <div class="mob-card-inner">
-                <div class="mob-card-header p-0 relative" data-toggle="card-header">
-                    <div class="pl-2 pr-3 py-1.5 flex flex-col justify-center min-w-0 flex-1 content-area">
-                        <div class="flex items-center justify-between min-w-0 mb-1">
-                            <span class="mob-name font-bold truncate text-gray-100 flex-1 min-w-0"></span>
-                            <div class="flex items-center gap-1.5">
-                                <span class="mob-count-container text-[10px] whitespace-nowrap text-slate-400"></span>
-                                <span class="memo-icon-container text-xs"></span>
-                                <span class="mob-rank-badge font-bold text-xs"></span>
-                            </div>
-                        </div>
-                        <!-- Progress for List View (Visible on PC) -->
-                        <div class="progress-bar-wrapper pc-list-progress rounded-sm relative overflow-hidden text-center h-5 lg:block hidden">
-                            <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-sm transition-all duration-100 ease-linear" style="width: 0%"></div>
-                            <div class="progress-text absolute inset-0 z-10 flex items-center justify-start gap-1.5 text-[13px] font-bold leading-5 px-1.5 pointer-events-none"></div>
-                        </div>
+                <div class="mob-card-header p-0 relative overflow-hidden" data-toggle="card-header">
+                    <!-- Background Progress Bar integrated into the list -->
+                    <div class="progress-bar-wrapper absolute inset-0 z-0 opacity-25">
+                        <div class="progress-bar-bg absolute left-0 top-0 h-full transition-all duration-100 ease-linear" style="width: 0%"></div>
                     </div>
-                    <div class="report-side-bar transition-colors duration-200" data-report-type="" data-mob-no=""></div>
+                    
+                    <div class="pl-2 pr-3 py-2 flex items-center justify-between min-w-0 flex-1 content-area relative z-10">
+                        <div class="flex items-center gap-1.5 min-w-0 flex-1 mr-2">
+                            <span class="mob-name font-bold truncate text-gray-100 min-w-0"></span>
+                            <span class="mob-count-container text-[10px] whitespace-nowrap text-slate-400"></span>
+                            <span class="memo-icon-container text-xs"></span>
+                        </div>
+                        
+                        <!-- PC/Mobile Progress Text (Right aligned) -->
+                        <div class="progress-text flex items-center justify-end gap-2 text-[12px] whitespace-nowrap pointer-events-none text-right flex-shrink-0 lg:flex-1 lg:justify-between"></div>
+                    </div>
+                    
+                    <div class="report-side-bar transition-colors duration-200 z-10 relative" data-report-type="" data-mob-no=""></div>
                 </div>
 
                 <div class="expandable-panel">
-                    <div class="mobile-expand-inner">
-                        <!-- 2. エリア名 n% -->
-                        <div class="mobile-expand-row flex justify-between items-center mb-2">
-                            <span class="mobile-expand-area-text text-[11px] text-yellow-500 font-bold"></span>
-                            <span class="mobile-expand-percent-text text-[11px] text-cyan-400 font-bold"></span>
-                        </div>
-
-                        <!-- 3. プログレスバー (Mobile Expand View) -->
-                        <div class="progress-bar-wrapper mobile-expand-progress rounded-sm relative overflow-hidden text-center h-5 mb-3 lg:hidden">
-                            <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-sm transition-all duration-100 ease-linear" style="width: 0%"></div>
-                            <div class="progress-text absolute inset-0 z-10 flex items-center justify-start gap-1.5 text-[13px] font-bold leading-5 px-1.5 pointer-events-none"></div>
+                    <div class="mobile-expand-inner relative z-10 px-2 py-3">
+                        <!-- 1. エリア名 拡張名 ランク -->
+                        <div class="mobile-expand-row flex justify-between items-center mb-3">
+                            <div class="text-[12px] font-bold text-yellow-500 truncate flex items-baseline gap-1">
+                                <span class="mobile-expand-area-text"></span>
+                                <span class="mobile-expand-expansion-text text-slate-400 text-[10px]"></span>
+                            </div>
+                            <span class="mob-rank-badge font-bold text-[12px] px-1.5 py-0.5 border border-current rounded flex-shrink-0 ml-2"></span>
                         </div>
 
                         <!-- 4. メモ -->

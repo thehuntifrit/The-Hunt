@@ -121,9 +121,8 @@ export function createMobCard(mob, isDetailView = false) {
         mapImg.alt = `${mob.Area} Map`;
         mapImg.dataset.mobMap = mob.Map;
     } else if (mapSection) {
-        mapSection.style.display = 'none';
+        mapSection.classList.add('hidden');
     }
-
     updateAreaInfo(card, mob);
     updateMobCount(card, mob);
     updateMapOverlay(card, mob);
@@ -325,16 +324,11 @@ export function updateProgressText(card, mob) {
     if (isDetail) {
         newHTML = `<span class="percent">${Math.floor(elapsedPercent || 0)}%</span>`;
     } else {
-        newHTML = `<div class="truncate min-w-0 ${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div><div class="truncate min-w-0 text-right"><span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span></div>`;
+        newHTML = `<div class="${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div><div class="hidden lg:block text-right"><span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span></div>`;
     }
     
     const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}|${isDetail}`;
     
-    const percentEls = card.querySelectorAll('.mobile-expand-percent-text');
-    percentEls.forEach(el => {
-        el.textContent = `${Math.floor(elapsedPercent || 0)}%`;
-    });
-
     const texts = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
     texts.forEach(text => {
         if (text.dataset.cacheKey !== cacheKey) {
@@ -467,7 +461,6 @@ export function updateMobCount(card, mob) {
 }
 
 export function updateAreaInfo(card, mob) {
-    const areaEl = card.querySelector('.mobile-expand-area-text');
     if (areaEl) {
         areaEl.textContent = `${mob.Area} (${mob.Expansion})`;
     }
