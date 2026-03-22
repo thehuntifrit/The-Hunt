@@ -1,5 +1,3 @@
-// notificationManager.js
-
 import { getState } from "./dataManager.js";
 
 const SOUND_FILE = "./sound/01 FFXIV_Linkshell_Transmission.mp3";
@@ -52,7 +50,6 @@ export async function sendBrowserNotification(title, body) {
             new Notification(title, options);
         }
     } catch {
-        // silently ignore
     }
 }
 

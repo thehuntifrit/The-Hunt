@@ -1,5 +1,3 @@
-// server.js
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, getDoc, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
@@ -29,7 +27,6 @@ export async function initializeAuth() {
                         resolve(credential.user.uid);
                     })
                     .catch((error) => {
-                        console.error("匿名認証に失敗しました:", error);
                         resolve(null);
                     });
             }
@@ -45,7 +42,6 @@ export async function getUserData(uid) {
             return userSnap.data();
         }
     } catch (error) {
-        console.error("ユーザー情報の取得に失敗しました:", error);
     }
     return null;
 }
@@ -76,10 +72,8 @@ export function subscribeMaintenance(onUpdate) {
     const maintenanceDocRef = doc(db, "shared_data", "maintenance");
     const unsub = onSnapshot(maintenanceDocRef, snap => {
         const data = snap.data() || null;
-        console.log("[Firestore] Maintenance data updated:", data);
         onUpdate(data);
     }, err => {
-        console.error("[Firestore] Maintenance subscribe error:", err);
         onUpdate(null);
     });
     return unsub;
@@ -155,7 +149,6 @@ export const submitReport = async (mobNo, timeISO) => {
     const nowMs = Date.now();
     if (killTimeDate.getTime() > nowMs + 600000) {
         const msg = "現在時刻より10分以上未来の時刻は報告できません。";
-        console.warn(msg);
         if (modalStatusEl) {
             modalStatusEl.textContent = msg;
             modalStatusEl.style.color = "#ef4444";
@@ -190,7 +183,6 @@ export const submitReport = async (mobNo, timeISO) => {
             const timeStr = allowedDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
 
             const msg = `まだ湧き時間になっていません。\n最短でも ${timeStr} 以降である必要があります。\n(強制送信する場合はチェックを入れてください)`;
-            console.warn(msg);
             if (modalStatusEl) {
                 modalStatusEl.textContent = msg;
                 modalStatusEl.style.color = "#ef4444";
@@ -224,11 +216,9 @@ export const submitReport = async (mobNo, timeISO) => {
 
         await updateDoc(docRef, newData);
 
-        console.log(`[Report] Success: Mob ${mobNo}`);
         return { success: true };
 
     } catch (error) {
-        console.error("レポート送信エラー:", error);
         return {
             success: false,
             error: error.message || "通信失敗",
@@ -268,7 +258,6 @@ export const submitMemo = async (mobNo, memoText) => {
         return { success: true };
 
     } catch (error) {
-        console.error("メモ投稿エラー:", error);
         const userFriendlyError = error.message || "通信または認証に失敗しました。";
         return { success: false, error: userFriendlyError };
     }
@@ -295,7 +284,6 @@ export const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
         await setDoc(docRef, updatePayload, { merge: true });
         return { success: true };
     } catch (error) {
-        console.error("湧き潰し報告エラー:", error);
         return { success: false };
     }
 };
@@ -312,7 +300,6 @@ export async function registerUserToFirestore(lodestoneId, characterName) {
             updated_at: Timestamp.now()
         }, { merge: true });
     } catch (error) {
-        console.error("ユーザー登録エラー:", error);
     }
 }
 
@@ -358,7 +345,6 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
             return { success: false, error: "検証コードが自己紹介文に見つかりませんでした。保存されているか確認してください。" };
         }
     } catch (error) {
-        console.error("Verification error:", error);
         return {
             success: false,
             error: `認証に失敗しました。時間をおいて再試行してください。(Error: ${error.message})`

@@ -1,5 +1,3 @@
-// cal.js
-
 const ET_HOUR_SEC = 175;
 const WEATHER_CYCLE_SEC = 1400;
 const ET_DAY_SEC = ET_HOUR_SEC * 24;
@@ -564,7 +562,6 @@ export function calculateRepop(mob, maintenance, options = {}) {
     }
   }
 
-  // メンテナンス中のステータス上書き（他の状態に優先させる）
   if (isMaintenanceStop || isBlockedByMaintenance) {
     status = "Maintenance";
   }

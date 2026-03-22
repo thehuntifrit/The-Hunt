@@ -58,7 +58,6 @@
         opacity: 0.8;
     }
 
-    /* Grid Layout for vertical alignment with proportional columns */
     .mobile-grid-upper,
     .mobile-grid-lower {
         grid-template-columns: 1fr 20px 60px;
@@ -195,14 +194,22 @@
         font-family: 'Inter', sans-serif;
         font-size: 12px !important;
     }
-
     .list-rank-badge {
-        margin-right: 0.75rem !important; /* mr-3 */
+        margin-right: 0.75rem !important;
     }
 
     @keyframes mobile-alert-pulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.4; transform: scale(0.8); }
+
+        0%,
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: 0.4;
+            transform: scale(0.8);
+        }
     }
 
     .mobile-footer-icon {
@@ -255,12 +262,12 @@
         transition: all 0.2s;
     }
 
-    .mobile-footer-notify input:checked ~ .mobile-footer-icon {
+    .mobile-footer-notify input:checked~.mobile-footer-icon {
         filter: grayscale(0);
         opacity: 1;
     }
 
-    .mobile-footer-notify input:checked ~ .mobile-footer-label {
+    .mobile-footer-notify input:checked~.mobile-footer-label {
         color: rgba(255, 255, 255, 0.8);
         opacity: 1;
     }
@@ -428,9 +435,17 @@
         font-weight: 800;
     }
 
-    .mobile-footer-panel .sidebar-manual-content h1 { font-size: 16px; }
-    .mobile-footer-panel .sidebar-manual-content h2 { font-size: 14px; }
-    .mobile-footer-panel .sidebar-manual-content h3 { font-size: 13px; }
+    .mobile-footer-panel .sidebar-manual-content h1 {
+        font-size: 16px;
+    }
+
+    .mobile-footer-panel .sidebar-manual-content h2 {
+        font-size: 14px;
+    }
+
+    .mobile-footer-panel .sidebar-manual-content h3 {
+        font-size: 13px;
+    }
 
     .mobile-footer-panel .sidebar-manual-content a {
         color: var(--accent-cyan);
@@ -475,6 +490,7 @@
 }
 
 @media (min-width: 1024px) {
+
     #mobile-top-bar,
     #mobile-footer-bar {
         display: none !important;

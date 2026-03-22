@@ -1,5 +1,3 @@
-// mobSorter.js
-
 const mobIdPartsCache = new Map();
 
 export function rankPriority(rank) {
@@ -51,7 +49,6 @@ export function allTabComparator(a, b) {
         if (aActive && !bActive) return -1;
         if (!aActive && bActive) return 1;
 
-        // Sort by elapsed time: oldest (smallest maxRepop) first
         const at = aInfo.maxRepop || 0;
         const bt = bInfo.maxRepop || 0;
         if (at !== bt) return at - bt;

@@ -32,14 +32,12 @@ export function computeTimeLabel(mob) {
   const isMaint = !!(isMaintenanceStop || isBlockedByMaintenance);
   const isTimedMob = !!(isInConditionWindow || nextConditionSpawnDate);
 
-  // 全ての値がない場合は未確定
   if (!minRepop && !maxRepop && !isTimedMob) {
     return { label: "", timeValue: "--/-- --:--", isSpecialCondition: false, isTimeOver: false, isTimedMob: false };
   }
 
   let label = "", timeValue = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
 
-  // タイマー計算
   if (isInConditionWindow && conditionWindowEnd) {
     label = "⏳"; timeValue = formatDurationM((conditionWindowEnd.getTime() / 1000) - now); isSpecialCondition = true;
   } else if (nextConditionSpawnDate && now >= (minRepop || 0)) {
@@ -59,7 +57,6 @@ export function computeTimeLabel(mob) {
     label = ""; timeValue = "--/-- --:--"; isSpecialCondition = false; isTimedMob = false;
   }
 
-  // メンテナンスアイコンの優先適用 (時間は上書きしない)
   if (isMaint) {
     label = "🛠️";
   }
@@ -225,7 +222,7 @@ export function createPCDetailCard(mob) {
 
   card.querySelector('[data-min-repop]').textContent = fmt(minRepop);
   card.querySelector('[data-max-repop]').textContent = fmt(maxRepop);
-  card.querySelector('[data-next-possible]').textContent = nextConditionSpawnDate ? fmt(nextConditionSpawnDate) : fmt(minRepop);
+  card.querySelector('[data-next-possible]').textContent = nextConditionSpawnDate ? fmt(nextConditionSpawnDate) : "--/-- --:--";
   card.querySelector('[data-last-kill]').textContent = fmt(mob.last_kill_time);
 
   const conditionEl = card.querySelector('.section-content.condition');
@@ -272,16 +269,14 @@ export function updateProgressBar(card, mob) {
       bar.style.transition = (currentWidth === 0 || elapsedPercent < currentWidth) ? "none" : "width 10s linear";
       bar.style.width = `${elapsedPercent || 0}%`;
     }
-    let color = "rgba(107, 114, 128, 0.1)"; // Default gray
-    if (status === "MaxOver") color = "rgba(30, 58, 138, 0.2)"; // Muted blue
-    else if (status === "ConditionActive") color = "rgba(251, 191, 36, 0.2)"; // Muted gold
-    else if (status === "PopWindow") color = "rgba(59, 130, 246, 0.2)"; // Muted blue-fill
-
     if (bar.classList.contains('pc-detail-progress-bar')) {
-      bar.style.background = color;
+      bar.style.background = status === "MaxOver" ? "var(--progress-max-over)" : "var(--progress-fill)";
     } else {
-      bar.style.backgroundColor = color;
-      bar.style.background = "none"; 
+      let color = "rgba(107, 114, 128, 0.2)";
+      if (status === "MaxOver") color = "rgba(30, 58, 138, 0.3)";
+      else if (status === "ConditionActive") color = "rgba(251, 191, 36, 0.3)";
+      else if (status === "PopWindow") color = "rgba(59, 130, 246, 0.3)";
+      bar.style.background = color;
     }
     bar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100, PROGRESS_CLASSES.MAX_OVER);
     if (elapsedPercent < 60) bar.classList.add(PROGRESS_CLASSES.P0_60);
@@ -313,7 +308,6 @@ export function updateProgressText(card, mob) {
   const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
   const nowSec = Date.now() / 1000;
 
-  // パーセンテージ算出
   let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
   const percentStr = isTimeOver ? "100%" : `${safePercent}%`;
 
@@ -322,7 +316,6 @@ export function updateProgressText(card, mob) {
   const percentArea = card.querySelector('.mobile-percent-area');
   const progressTextNodes = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
 
-  // モバイル用新レイアウトへの割当 (Icon と Time を分離し、左寄せで垂直整列と密着を両立)
   if (timeArea && iconArea && percentArea) {
     iconArea.innerHTML = `<span class="detail-label-icon text-[13px] text-yellow-500">${label}</span>`;
     timeArea.innerHTML = `<span class="detail-time-val font-bold text-[12px] text-gray-100 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</span>`;
@@ -330,7 +323,6 @@ export function updateProgressText(card, mob) {
     percentArea.classList.add("text-gray-300");
   }
 
-  // 既存/PC詳細用への割当
   const pcProgressTextHTML = `<span class="font-bold text-[14px] text-gray-100">${percentStr}</span>`;
   const defaultProgressTextHTML = `
         <div class="flex items-center justify-between w-full">
@@ -343,7 +335,7 @@ export function updateProgressText(card, mob) {
 
   progressTextNodes.forEach(text => {
     if (text.classList.contains('pc-detail-progress-text')) {
-      text.innerHTML = pcProgressTextHTML; // PC詳細パネルは % のみ
+      text.innerHTML = pcProgressTextHTML;
     } else {
       text.innerHTML = defaultProgressTextHTML;
     }
@@ -386,28 +378,20 @@ export function updateExpandablePanel(card, mob) {
   if (elMin) elMin.textContent = fmt(minRepop);
   if (elMax) elMax.textContent = fmt(maxRepop);
 
-    // 名称の更新
-    if (elNext) {
-      let npt = "--/-- --:--";
-      if (mob.repopInfo?.nextConditionSpawnDate) npt = formatMMDDHHmm(mob.repopInfo.nextConditionSpawnDate);
-      else if (minRepop) npt = formatMMDDHHmm(minRepop);
-      elNext.textContent = npt;
-
-      // 特殊条件がない場合は強調（highlight）を外す
-      const parent = elNext.closest('.detail-info-item');
-      if (parent) {
-        const isActuallyTimed = !!(mob.repopInfo?.nextConditionSpawnDate || mob.repopInfo?.isInConditionWindow);
-        if (isActuallyTimed) {
-          parent.classList.add('highlight');
-        } else {
-          parent.classList.remove('highlight');
-        }
-      }
+  if (elNext) {
+    if (mob.repopInfo?.nextConditionSpawnDate) {
+      elNext.textContent = formatMMDDHHmm(mob.repopInfo.nextConditionSpawnDate);
+      elNext.classList.add('text-yellow-500');
+      elNext.classList.remove('text-gray-400');
+    } else {
+      elNext.textContent = "--/-- --:--";
+      elNext.classList.remove('text-yellow-500');
+      elNext.classList.add('text-gray-400');
     }
+  }
 
   if (elLast) elLast.textContent = fmt(mob.last_kill_time);
 
-  // Memo
   const elMemoInput = card.querySelector("input[data-action='save-memo']");
   if (elMemoInput) {
     if (elMemoInput.dataset.mobNo !== String(mob.No)) elMemoInput.dataset.mobNo = mob.No;
@@ -417,7 +401,6 @@ export function updateExpandablePanel(card, mob) {
     }
   }
 
-  // Condition
   const elCondition = card.querySelector(".condition-text");
   if (elCondition) {
     const conditionText = mob.Condition ? processText(mob.Condition) : "特別な出現条件はありません。";
@@ -438,8 +421,6 @@ export function updateExpandablePanel(card, mob) {
       }
     });
   }
-
-
 }
 
 export function updateMemoIcon(card, mob) {
@@ -498,7 +479,6 @@ export function updateAreaInfo(card, mob) {
   const expName = mob.Expansion || "--";
   const rank = mob.Rank || "A";
 
-  // ランクバッジの更新 (リスト側と詳細側の両方)
   card.querySelectorAll('.mob-rank-badge, .list-rank-badge').forEach(badge => {
     badge.textContent = rank;
     const color = `var(--rank-${rank.toLowerCase()})`;
@@ -506,11 +486,9 @@ export function updateAreaInfo(card, mob) {
     badge.style.borderColor = color;
   });
 
-  // 詳細パネル/拡大表示用のエリア情報
   card.querySelectorAll('.detail-area').forEach(el => el.textContent = areaName);
   card.querySelectorAll('.detail-expansion').forEach(el => el.textContent = `| ${expName}`);
 
-  // モバイル版リストヘッダーのエリアテキスト (Rank との間に &nbsp; を追加)
   const headerArea = card.querySelector('.mobile-header-area-text');
   if (headerArea) {
     headerArea.textContent = `\u00A0\u00A0${areaName} | ${expName}`;
@@ -573,9 +551,9 @@ export function updateSimpleMobItem(item, mob) {
 
   if (timeEl) {
     timeEl.innerHTML = `
-        <div class="grid grid-cols-[20px_55px] items-center w-full h-full">
-            <span class="timer-label text-[12px] text-right opacity-90">${label}</span>
-            <span class="timer-value font-bold text-[12px] text-left ml-1 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
+        <div class="grid items-center w-full h-full" style="grid-template-columns: 24px 75px; gap: 2px;">
+            <span class="timer-label text-[14px] text-right opacity-90">${label}</span>
+            <span class="timer-value font-bold text-[14px] text-left ml-1 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
         </div>`;
   }
   const countEl = item.querySelector('.pc-list-count');
@@ -849,7 +827,6 @@ export const sortAndRedistribute = (options = {}) => {
     filterAndRender();
     if (isInitialLoading) {
       isInitialLoading = false;
-      // Double rAF to ensure browser has flushed DOM changes to the screen
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           window.dispatchEvent(new CustomEvent('initialSortComplete'));
@@ -910,7 +887,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   if (isPC) {
     if (pcLayout) {
       pcLayout.classList.remove("hidden");
-      pcLayout.style.display = "flex"; // Force display
+      pcLayout.style.display = "flex";
     }
     if (mobileLayout) mobileLayout.classList.add("hidden");
   } else {
@@ -1026,9 +1003,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     });
   });
 
-  // PC Layout specific rendering: Surgical update to prevent animation reset
   if (DOM.pcLeftList) {
-    // Collect the current DOM nodes and their identifiers
     const currentNodes = Array.from(DOM.pcLeftList.children);
     const currentMap = new Map();
     currentNodes.forEach(node => {
@@ -1036,7 +1011,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       else if (node.textContent) currentMap.set(`header-${node.textContent}`, node);
     });
 
-    // Prepare the intended child list
     const nextChildren = [];
     ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
       const groupMobs = groups[key];
@@ -1074,8 +1048,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
     }
 
-    // Sync selected state even if order didn't change
-    const state = getState();
+
     Array.from(DOM.pcLeftList.children).forEach(child => {
       if (child.dataset.mobNo) {
         if (parseInt(child.dataset.mobNo, 10) === state.openMobCardNo) {
@@ -1089,7 +1062,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 
   const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
   if (rightPane) {
-    const state = getState();
+
     if (state.openMobCardNo) {
       if (rightPane.dataset.renderedMobNo !== String(state.openMobCardNo)) {
         const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
@@ -1252,7 +1225,6 @@ function updateProgressBars() {
     updateStatusContainerVisibility();
   }
 
-  // Update mobile footer rank alert
   const hasActiveAlpha = state.mobs.some(m => {
     const isS = m.Rank === "S";
     const isA = m.Rank === "A";

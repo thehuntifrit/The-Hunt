@@ -52,7 +52,6 @@ function updateErrorPanel() {
 }
 
 function updateErrorBadge() {
-    // バッジ更新は app.js の renderMaintenanceStatus 内で一括管理するように変更
     if (typeof window.renderMaintenanceStatus === "function") {
         window.renderMaintenanceStatus();
     }

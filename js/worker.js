@@ -1,5 +1,3 @@
-// worker.js
-
 import { calculateRepop } from "./cal.js";
 
 self.onmessage = function (e) {

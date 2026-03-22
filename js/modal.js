@@ -1,4 +1,4 @@
-// modal.js
+
 
 import { DOM as UiDOM } from "./uiRender.js";
 import { getState, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";

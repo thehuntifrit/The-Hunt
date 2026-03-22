@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -142,7 +141,7 @@
 
     <main class="mx-auto px-2 py-2 sm:px-4 pb-10 pt-24 main-content-area">
         <div id="master-mob-container" class="hidden"></div>
-        
+
         <!-- PC Layout (3/5 and 2/5 split pane) -->
         <div id="pc-layout" class="hidden">
             <div id="pc-left-list"></div>
@@ -176,7 +175,7 @@
         <div id="manual-modal-backdrop"></div>
         <div class="manual-modal-content">
             <div class="manual-modal-top-border"></div>
-            
+
             <div class="manual-modal-header">
                 <h2 class="manual-modal-title">
                     <span class="text-cyan">The</span>
@@ -185,7 +184,7 @@
                 </h2>
                 <button id="close-manual-modal" class="manual-modal-close" title="閉じる">✕</button>
             </div>
-            
+
             <div id="readme-container" class="prose prose-invert prose-sm max-w-none">
             </div>
         </div>
@@ -289,7 +288,8 @@
         <div class="mob-card">
             <div class="mob-card-inner relative overflow-hidden transition-all duration-300">
                 <div class="mob-card-header p-0 relative bg-transparent z-10" data-toggle="card-header">
-                    <div class="progress-bar-wrapper absolute top-0 bottom-0 left-0 right-[38px] z-0 pointer-events-none">
+                    <div
+                        class="progress-bar-wrapper absolute top-0 bottom-0 left-0 right-[38px] z-0 pointer-events-none">
                         <div class="progress-bar-bg absolute left-0 top-0 h-full" style="width: 0%"></div>
                     </div>
                     <div class="px-2 py-1.5 grid grid-rows-2 gap-y-0.5 content-area relative z-10">
@@ -307,15 +307,21 @@
                         <!-- Lower Row: Grid Column for alignment -->
                         <div class="mobile-grid-lower grid items-center w-full min-w-0">
                             <div class="flex items-center min-w-0 overflow-hidden">
-                                <span class="list-rank-badge font-bold text-[9px] px-1 border border-current rounded mr-1.5 flex-shrink-0"></span>
-                                <div class="mobile-header-area-text text-[10px] text-yellow-600/80 truncate leading-none"></div>
+                                <span
+                                    class="list-rank-badge font-bold text-[9px] px-1 border border-current rounded mr-1.5 flex-shrink-0"></span>
+                                <div
+                                    class="mobile-header-area-text text-[10px] text-yellow-600/80 truncate leading-none">
+                                </div>
                             </div>
                             <div class="mobile-empty-area"></div>
-                            <div class="mobile-percent-area text-[12px] font-bold text-right text-gray-400 flex-shrink-0"></div>
+                            <div
+                                class="mobile-percent-area text-[12px] font-bold text-right text-gray-400 flex-shrink-0">
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="report-side-bar transition-colors duration-200 z-10 absolute" data-report-type="" data-mob-no=""></div>
+
+                    <div class="report-side-bar transition-colors duration-200 z-10 absolute" data-report-type=""
+                        data-mob-no=""></div>
                 </div>
 
                 <div class="expandable-panel relative z-10">
@@ -344,14 +350,16 @@
                         <div class="detail-section mb-4">
                             <div class="section-label">MEMO</div>
                             <div class="detail-memo-box">
-                                <input type="text" class="memo-input detail-memo-input" placeholder="全角30文字まで" maxlength="30" data-action="save-memo">
+                                <input type="text" class="memo-input detail-memo-input" placeholder="全角30文字まで"
+                                    maxlength="30" data-action="save-memo">
                             </div>
                         </div>
 
                         <!-- 4. 出現マップ -->
                         <div class="detail-section map-section mb-4">
                             <div class="section-label">出現マップ</div>
-                            <div class="map-container relative w-full bg-slate-950 rounded border border-white/10 overflow-hidden">
+                            <div
+                                class="map-container relative w-full bg-slate-950 rounded border border-white/10 overflow-hidden">
                                 <img class="mob-map-img w-full h-full object-contain opacity-90 transition-opacity">
                                 <div class="map-overlay absolute inset-0"></div>
                             </div>
@@ -394,10 +402,11 @@
                 <div class="detail-section memo-section mb-5">
                     <div class="section-label">MEMO</div>
                     <div class="detail-memo-box">
-                        <input type="text" class="memo-input detail-memo-input" placeholder="全角30文字まで" maxlength="30" data-action="save-memo">
+                        <input type="text" class="memo-input detail-memo-input" placeholder="全角30文字まで" maxlength="30"
+                            data-action="save-memo">
                     </div>
                 </div>
-                
+
                 <!-- 3. 時間4種 -->
                 <div class="detail-grid mb-5">
                     <div class="detail-info-item">
@@ -421,7 +430,8 @@
                 <!-- 4. 出現マップ -->
                 <div class="detail-section map-section mb-5">
                     <div class="section-label">出現マップ</div>
-                    <div class="map-container relative w-full bg-slate-950 rounded border border-white/10 overflow-hidden mt-2">
+                    <div
+                        class="map-container relative w-full bg-slate-950 rounded border border-white/10 overflow-hidden mt-2">
                         <img class="mob-map-img w-full h-full object-contain opacity-90 transition-opacity">
                         <div class="map-overlay absolute inset-0"></div>
                     </div>
@@ -434,7 +444,9 @@
                 </div>
             </div>
 
-            <div class="report-side-bar absolute top-0 right-0 w-12 bottom-0 opacity-0 cursor-pointer pointer-events-auto z-10"></div>
+            <div
+                class="report-side-bar absolute top-0 right-0 w-12 bottom-0 opacity-0 cursor-pointer pointer-events-auto z-10">
+            </div>
         </div>
     </template>
 

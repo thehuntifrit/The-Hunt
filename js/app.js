@@ -123,7 +123,6 @@ async function initApp() {
             const overlay = document.getElementById("loading-overlay");
             if (overlay && !overlay.classList.contains("hidden")) {
                 console.warn("Loading timeout: Forcing UI display.");
-                // レンダリングが開始されていない場合に備え、イベントを強制発火
                 if (!getState().initialLoadComplete) {
                     window.dispatchEvent(new CustomEvent('initialDataLoaded'));
                 }
@@ -245,7 +244,6 @@ function renderMaintenanceStatus() {
             maintenanceEl.innerHTML = "";
         }
         
-        // パネル内（サイドバー/フッター）には常に情報を出す
         const sidebarMaint = document.getElementById("sidebar-maintenance-content");
         if (sidebarMaint) {
             const startStr = formatDate(start);
@@ -275,7 +273,6 @@ function renderMaintenanceStatus() {
     const sidebarTelop = document.getElementById("sidebar-telop-content");
     const isMobile = window.innerWidth < 1024;
 
-    // アイコンのバッジ更新（既存ロジック維持）
     document.querySelectorAll('.sidebar-icon-btn[data-panel="maintenance"], .mobile-footer-btn[data-panel="maintenance"]')
         .forEach(btn => btn.classList.toggle("has-alert", hasMaintenance));
 
@@ -289,13 +286,8 @@ function renderMaintenanceStatus() {
             .forEach(btn => btn.classList.toggle("has-alert", hasMessage));
     }
 
-    // エラーバッジの更新もここで行うか、個別に呼ぶ
     const errorLogCount = window.errorLog ? window.errorLog.length : 0;
     const hasError = errorLogCount > 0;
-    document.querySelectorAll('.sidebar-icon-btn[data-panel="error"], .mobile-footer-btn[data-panel="error"]')
-        .forEach(btn => btn.classList.toggle("has-alert", hasError));
-
-    // それ以外のパネル（選択、説明等）からは強制的に has-alert を除去してユーザー要望の「他には必要ない」を徹底
     document.querySelectorAll('.sidebar-icon-btn, .mobile-footer-btn').forEach(btn => {
         const panel = btn.dataset.panel;
         if (panel !== "error" && panel !== "telop" && panel !== "maintenance") {
@@ -335,7 +327,7 @@ function attachGlobalEventListeners() {
     });
 
     DOM.colContainer.addEventListener("click", (e) => {
-        if (e.target.closest(".report-side-bar")) return; // 報告ボタン時は展開しない
+        if (e.target.closest(".report-side-bar")) return;
         
         if (e.target.closest("[data-toggle='card-header']")) {
             const card = e.target.closest(".mob-card");
@@ -418,7 +410,6 @@ function attachGlobalEventListeners() {
         }
     });
 }
-
 
 export function handleReportResult(result) {
     if (!result.success) {

@@ -1,4 +1,4 @@
-// magnifier.js
+
 
 export function initGlobalMagnifier() {
     if (window.magnifierInitialized) return;

@@ -1,5 +1,3 @@
-// filterUI.js
-
 import { getState, EXPANSION_MAP, setFilter } from "./dataManager.js";
 import { filterAndRender } from "./uiRender.js";
 
@@ -221,7 +219,7 @@ export function handleAreaFilterClick(e) {
 
     filterAndRender();
     renderAreaFilterPanel(customContainer);
-    if (customContainer) renderAreaFilterPanel(); // グローバル設定用にも呼び出し
+    if (customContainer) renderAreaFilterPanel();
     return;
   }
 
@@ -257,7 +255,7 @@ export function handleAreaFilterClick(e) {
 
   filterAndRender();
   renderAreaFilterPanel(customContainer);
-  if (customContainer) renderAreaFilterPanel(); // グローバル設定用にも呼び出し
+  if (customContainer) renderAreaFilterPanel();
 }
 
 export function filterMobsByRankAndArea(mobs) {
