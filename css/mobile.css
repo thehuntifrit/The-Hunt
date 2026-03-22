@@ -39,6 +39,16 @@
         text-align: right;
     }
 
+    .mob-count-container {
+        font-family: 'Inter', monospace;
+        letter-spacing: -0.02em;
+        opacity: 0.8;
+    }
+
+    .pc-list-progress {
+        display: none !important;
+    }
+
     .mobile-expand-row {
         width: 100%;
     }

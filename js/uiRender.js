@@ -145,6 +145,13 @@ export function createPCDetailCard(mob) {
     
     const mapFile = mob.Map;
 
+    let nextPossibleTime = "--/-- --:--";
+    if (nextConditionSpawnDate) {
+        nextPossibleTime = fmt(nextConditionSpawnDate);
+    } else if (minRepop) {
+        nextPossibleTime = fmt(minRepop);
+    }
+
     const layout = `
         <div class="pc-detail-header">
             <div class="flex items-center justify-between mb-0">
@@ -244,58 +251,46 @@ export function createPCDetailCard(mob) {
 }
 
 export function updateProgressBar(card, mob) {
-    const bar = card.querySelector(".progress-bar-bg") || card.querySelector(".pc-detail-progress-bar");
-    const wrapper = bar?.parentElement;
-    const text = card.querySelector(".progress-text") || card.querySelector(".pc-detail-progress-text");
-    if (!bar || !wrapper || !text) return;
-
-    const { elapsedPercent, status } = mob.repopInfo;
-    const currentWidth = parseFloat(bar.style.width) || 0;
-    if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
-        if (currentWidth === 0 || elapsedPercent < currentWidth) {
-            bar.style.transition = "none";
-        } else {
-            bar.style.transition = "width linear 60s";
-        }
-        bar.style.width = `${elapsedPercent}%`;
-    }
-
-    const currentStatus = card.dataset.lastStatus;
-    const currentInCondition = card.dataset.lastInCondition === "true";
+    const { elapsedPercent, status } = mob.repopInfo || {};
+    const bars = card.querySelectorAll('.progress-bar-bg, .pc-detail-progress-bar');
+    const texts = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
+    const wrappers = card.querySelectorAll('.progress-bar-wrapper, .pc-detail-progress-container');
     const isInCondition = !!mob.repopInfo.isInConditionWindow;
 
-    if (currentStatus === status && currentInCondition === isInCondition) return;
-    card.dataset.lastStatus = status;
-    card.dataset.lastInCondition = isInCondition;
+    bars.forEach(bar => {
+        bar.style.width = `${elapsedPercent || 0}%`;
+        bar.style.backgroundColor = `var(--progress-${status === "MaxOver" ? "max-over" : status === "ConditionActive" ? "condition" : "normal"})`;
+        bar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100, PROGRESS_CLASSES.MAX_OVER);
+        if (elapsedPercent < 60) bar.classList.add(PROGRESS_CLASSES.P0_60);
+        else if (elapsedPercent < 80) bar.classList.add(PROGRESS_CLASSES.P60_80);
+        else if (elapsedPercent < 100) bar.classList.add(PROGRESS_CLASSES.P80_100);
+        if (status === "MaxOver") bar.classList.add(PROGRESS_CLASSES.MAX_OVER);
+    });
 
-    bar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100, PROGRESS_CLASSES.MAX_OVER);
-    text.classList.remove(PROGRESS_CLASSES.TEXT_NEXT, PROGRESS_CLASSES.TEXT_POP);
-    wrapper.classList.remove(PROGRESS_CLASSES.BLINK_WHITE);
+    texts.forEach(text => {
+        text.classList.remove(PROGRESS_CLASSES.TEXT_NEXT, PROGRESS_CLASSES.TEXT_POP);
+        if (status === "PopWindow" || status === "ConditionActive" || status === "MaxOver") {
+            text.classList.add(PROGRESS_CLASSES.TEXT_POP);
+        }
+    });
 
-    if (elapsedPercent < 60) bar.classList.add(PROGRESS_CLASSES.P0_60);
-    else if (elapsedPercent < 80) bar.classList.add(PROGRESS_CLASSES.P60_80);
-    else if (elapsedPercent < 100) bar.classList.add(PROGRESS_CLASSES.P80_100);
-
-    if (status === "PopWindow" || status === "ConditionActive") {
-        if (elapsedPercent > 90 && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
-        text.classList.add(PROGRESS_CLASSES.TEXT_POP);
-    } else if (status === "MaxOver") {
-        bar.classList.add(PROGRESS_CLASSES.MAX_OVER);
-        text.classList.add(PROGRESS_CLASSES.TEXT_POP);
-        if (mob.repopInfo.isInConditionWindow && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
-    } else {
-        text.classList.add(PROGRESS_CLASSES.TEXT_NEXT);
-    }
+    wrappers.forEach(wrapper => {
+        wrapper.classList.remove(PROGRESS_CLASSES.BLINK_WHITE);
+        if ((status === "PopWindow" || status === "ConditionActive") && elapsedPercent > 90 && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) {
+            wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
+        } else if (status === "MaxOver" && isInCondition && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) {
+            wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
+        }
+    });
 }
 
 export function updateProgressText(card, mob) {
-    const text = card.querySelector(".progress-text") || card.querySelector(".pc-detail-progress-text");
-    if (!text) return;
     const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, minRepop, status, isInConditionWindow, timeRemaining, conditionRemaining, repopTimeStr } = mob.repopInfo || {};
     const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
     const nowSec = Date.now() / 1000;
     let leftStr = timeRemaining || "未確定";
     const percentStr = (status !== "MaxOver" && ((minRepop && nowSec >= minRepop) || status === "PopWindow" || status === "ConditionActive")) ? ` (${Number(elapsedPercent || 0).toFixed(0)}%)` : "";
+    
     const mobNameEl = card.querySelector('.mob-name');
     const shouldDimCard = isMaint || status === "Next" || (status === "NextCondition" && nowSec < (mob.repopInfo?.minRepop || 0));
     const reportSidebar = card.querySelector('.report-side-bar');
@@ -334,17 +329,21 @@ export function updateProgressText(card, mob) {
     }
     
     const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}|${isDetail}`;
-    if (text.dataset.cacheKey !== cacheKey) {
-        text.dataset.cacheKey = cacheKey;
-        text.innerHTML = newHTML;
-    }
-    if (status === "MaxOver") text.classList.add("max-over");
-    else text.classList.remove("max-over");
+    
+    const percentEls = card.querySelectorAll('.mobile-expand-percent-text');
+    percentEls.forEach(el => {
+        el.textContent = `${Math.floor(elapsedPercent || 0)}%`;
+    });
 
-    const percentEl = card.querySelector('.mobile-expand-percent-text');
-    if (percentEl) {
-        percentEl.textContent = `${Math.floor(elapsedPercent || 0)}%`;
-    }
+    const texts = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
+    texts.forEach(text => {
+        if (text.dataset.cacheKey !== cacheKey) {
+            text.dataset.cacheKey = cacheKey;
+            text.innerHTML = newHTML;
+        }
+        if (status === "MaxOver") text.classList.add("max-over");
+        else text.classList.remove("max-over");
+    });
 
     if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) card.classList.add("blink-border-white");
     else card.classList.remove("blink-border-white");

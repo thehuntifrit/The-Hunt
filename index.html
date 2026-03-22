@@ -347,11 +347,19 @@
         <div class="mob-card">
             <div class="mob-card-inner">
                 <div class="mob-card-header p-0 relative" data-toggle="card-header">
-                    <div class="pl-2 pr-3 py-2 flex items-center justify-between min-w-0 flex-1">
-                        <span class="mob-name font-bold truncate text-gray-100 flex-1 min-w-0"></span>
-                        <div class="flex items-center gap-2">
-                            <span class="memo-icon-container text-xs"></span>
-                            <span class="mob-rank-badge font-bold text-xs"></span>
+                    <div class="pl-2 pr-3 py-1.5 flex flex-col justify-center min-w-0 flex-1 content-area">
+                        <div class="flex items-center justify-between min-w-0 mb-1">
+                            <span class="mob-name font-bold truncate text-gray-100 flex-1 min-w-0"></span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="mob-count-container text-[10px] whitespace-nowrap text-slate-400"></span>
+                                <span class="memo-icon-container text-xs"></span>
+                                <span class="mob-rank-badge font-bold text-xs"></span>
+                            </div>
+                        </div>
+                        <!-- Progress for List View (Visible on PC) -->
+                        <div class="progress-bar-wrapper pc-list-progress rounded-sm relative overflow-hidden text-center h-5 lg:block hidden">
+                            <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-sm transition-all duration-100 ease-linear" style="width: 0%"></div>
+                            <div class="progress-text absolute inset-0 z-10 flex items-center justify-start gap-1.5 text-[13px] font-bold leading-5 px-1.5 pointer-events-none"></div>
                         </div>
                     </div>
                     <div class="report-side-bar transition-colors duration-200" data-report-type="" data-mob-no=""></div>
@@ -365,10 +373,10 @@
                             <span class="mobile-expand-percent-text text-[11px] text-cyan-400 font-bold"></span>
                         </div>
 
-                        <!-- 3. プログレスバー -->
-                        <div class="progress-bar-wrapper rounded-sm relative overflow-hidden text-center h-5 mb-3">
+                        <!-- 3. プログレスバー (Mobile Expand View) -->
+                        <div class="progress-bar-wrapper mobile-expand-progress rounded-sm relative overflow-hidden text-center h-5 mb-3 lg:hidden">
                             <div class="progress-bar-bg absolute left-0 top-0 h-full rounded-sm transition-all duration-100 ease-linear" style="width: 0%"></div>
-                            <div class="progress-text absolute inset-0 z-10 flex items-center justify-between text-[13px] font-bold leading-5 px-1.5 pointer-events-none"></div>
+                            <div class="progress-text absolute inset-0 z-10 flex items-center justify-start gap-1.5 text-[13px] font-bold leading-5 px-1.5 pointer-events-none"></div>
                         </div>
 
                         <!-- 4. メモ -->
