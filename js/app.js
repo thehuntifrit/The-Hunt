@@ -314,6 +314,9 @@ export async function renderMaintenanceStatus() {
     document.querySelectorAll('.sidebar-icon-btn[data-panel="error"], .mobile-footer-btn[data-panel="error"]')
         .forEach(btn => btn.classList.toggle("has-alert", hasError));
 
+    document.querySelectorAll('.sidebar-icon-btn[data-panel="rank"], .mobile-footer-btn[data-panel="rank"]')
+        .forEach(btn => btn.classList.remove("has-alert"));
+
     updateStatusContainerVisibility();
 }
 
