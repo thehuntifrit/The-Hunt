@@ -413,7 +413,7 @@
         transition: max-height 0.3s ease;
     }
 
-    .mobile-footer-panel .rank-accordion-item.active .area-expansion {
+    .mobile-footer-panel .rank-accordion-item.is-expanded .area-expansion {
         max-height: 500px;
         padding: 8px;
     }

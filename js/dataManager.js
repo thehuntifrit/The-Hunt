@@ -19,12 +19,17 @@ export const state = {
     filter: (() => {
         try {
             const val = localStorage.getItem("huntFilterState");
-            if (val) return JSON.parse(val);
+            if (val) {
+                const parsed = JSON.parse(val);
+                if (parsed.clickStep === undefined) parsed.clickStep = 1;
+                return parsed;
+            }
         } catch (e) {
             console.warn("huntFilterState parse error", e);
         }
         return {
             rank: "ALL",
+            clickStep: 1,
             areaSets: {
                 S: new Set(),
                 A: new Set(),

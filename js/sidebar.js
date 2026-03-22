@@ -183,14 +183,19 @@ function renderMobileFilterAccordion(panel) {
         { key: "F.A.T.E.", label: "F.A.T.E.", color: "var(--rank-f)" },
     ];
     const activeRank = state.filter.rank || "ALL";
+    const clickStep = state.filter.clickStep || 1;
 
     let html = `<div class="sidebar-filter-accordion">`;
-    html += ranks.map(r => `
-        <div class="rank-accordion-item ${r.key === activeRank ? 'active' : ''}" data-rank="${r.key}">
-            <button class="rank-header" style="color: ${r.color};">${r.label}</button>
-            <div class="area-expansion"><div class="area-grid-container"></div></div>
-        </div>
-    `).join("");
+    html += ranks.map(r => {
+        const isActive = r.key === activeRank;
+        const isExpanded = isActive && clickStep === 2;
+        return `
+            <div class="rank-accordion-item ${isActive ? 'active' : ''} ${isExpanded ? 'is-expanded' : ''}" data-rank="${r.key}">
+                <button class="rank-header" style="color: ${r.color};">${r.label}</button>
+                <div class="area-expansion"><div class="area-grid-container"></div></div>
+            </div>
+        `;
+    }).join("");
     html += `</div>`;
     panel.innerHTML = html;
 
@@ -338,19 +343,24 @@ function renderSidebarFilterAccordion() {
 
     const state = getState();
     const activeRank = state.filter.rank || "ALL";
-
+    const clickStep = state.filter.clickStep || 1;
+ 
     let html = `<div class="sidebar-section-title" style="text-align: center; margin-bottom: 12px; opacity: 0.6;">Filter</div>`;
-    html += ranks.map(r => `
-        <div class="rank-accordion-item ${r.key === activeRank ? 'active' : ''}" data-rank="${r.key}">
-            <button class="rank-header" style="color: ${r.color};">
-                ${r.label}
-            </button>
-            <div class="area-expansion">
-                <div class="area-grid-container"></div>
+    html += ranks.map(r => {
+        const isActive = r.key === activeRank;
+        const isExpanded = isActive && clickStep === 2;
+        return `
+            <div class="rank-accordion-item ${isActive ? 'active' : ''} ${isExpanded ? 'is-expanded' : ''}" data-rank="${r.key}">
+                <button class="rank-header" style="color: ${r.color};">
+                    ${r.label}
+                </button>
+                <div class="area-expansion">
+                    <div class="area-grid-container"></div>
+                </div>
             </div>
-        </div>
-    `).join("");
-    
+        `;
+    }).join("");
+     
     container.innerHTML = html;
 
     container.querySelectorAll(".rank-header").forEach(header => {

@@ -427,7 +427,7 @@
         background: rgba(15, 23, 42, 0.3);
     }
 
-    .rank-accordion-item.active .area-expansion {
+    .rank-accordion-item.is-expanded .area-expansion {
         max-height: 800px;
         padding: 8px 10px;
     }

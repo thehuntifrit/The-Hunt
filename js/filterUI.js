@@ -173,29 +173,24 @@ export const updateFilterUI = () => {
 export const handleRankTabClick = (rank) => {
   const state = getState();
   const prevRank = state.filter.rank;
-
-  const stored = JSON.parse(localStorage.getItem("huntUIState")) || {};
-  let clickStep = stored.clickStep || 1;
+  let clickStep = state.filter.clickStep || 1;
 
   if (rank === prevRank) {
     // Already in this rank. Toggle between step 2 (show) and 3 (hide).
     if (clickStep === 1) clickStep = 2; // Was hidden, now show
     else if (clickStep === 2) clickStep = 3; // Was shown, now hide
     else if (clickStep === 3) clickStep = 2; // Was hidden again, now show
+    
+    setFilter({ clickStep });
   } else {
     // Rank changed. Reset to step 1 (hidden).
     clickStep = 1;
     setFilter({
       rank,
+      clickStep,
       areaSets: state.filter.areaSets
     });
   }
-
-  localStorage.setItem("huntUIState", JSON.stringify({
-    ...stored,
-    rank: state.filter.rank,
-    clickStep
-  }));
 
   filterAndRender();
   updateFilterUI();
