@@ -16,9 +16,9 @@
         position: sticky;
         top: 0;
         z-index: 30;
-        background: rgba(15, 23, 42, 0.98);
+        background: rgba(15, 23, 42, 0.95);
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
 
     .mob-card.is-floating-active {
@@ -59,25 +59,32 @@
         opacity: 0.8;
     }
 
-    /* Grid Layout for vertical alignment */
+    /* Grid Layout for vertical alignment with proportional columns */
     .mobile-grid-upper {
-        grid-template-columns: 1fr 105px;
+        grid-template-columns: 7fr 3fr;
         gap: 4px;
+        width: 100%;
     }
     
     .mobile-grid-lower {
-        grid-template-columns: 35px 1fr 45px;
+        grid-template-columns: 1fr 7.5fr 1.5fr;
         gap: 4px;
+        width: 100%;
     }
 
     .mobile-time-area {
-        width: 105px;
         flex-shrink: 0;
+        min-width: 0;
     }
 
     .mobile-percent-area {
-        width: 45px;
         flex-shrink: 0;
+        min-width: 0;
+    }
+
+    .expandable-panel {
+        background: transparent !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .mobile-expand-row {

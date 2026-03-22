@@ -32,18 +32,6 @@ export function computeTimeLabel(mob) {
   const isMaint = !!(isMaintenanceStop || isBlockedByMaintenance);
   const isTimedMob = !!(isInConditionWindow || nextConditionSpawnDate);
 
-  // メンテナンス中
-  if (isMaint) {
-    let maintStr = "メンテ中";
-    if (maintStart && maintEnd) {
-      const startStr = formatMMDDHHmm(maintStart).split(' ')[1];
-      const endStr = formatMMDDHHmm(maintEnd).split(' ')[1];
-      maintStr = `${startStr}~${endStr}`;
-    }
-    // モブリスト内には詳細時間は出さず、アイコンのみにする方針（ユーザー要望）
-    return { label: "🛠️", timeValue: "メンテ中", isSpecialCondition: false, isTimeOver: false, isTimedMob: false };
-  }
-
   // 全ての値がない場合は未確定
   if (!minRepop && !maxRepop && !isTimedMob) {
     return { label: "", timeValue: "--/-- --:--", isSpecialCondition: false, isTimeOver: false, isTimedMob: false };
@@ -51,9 +39,10 @@ export function computeTimeLabel(mob) {
 
   let label = "", timeValue = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
 
+  // タイマー計算
   if (isInConditionWindow && conditionWindowEnd) {
     label = "⏳"; timeValue = formatDurationM((conditionWindowEnd.getTime() / 1000) - now); isSpecialCondition = true;
-  } else if (nextConditionSpawnDate && now >= minRepop) {
+  } else if (nextConditionSpawnDate && now >= (minRepop || 0)) {
     label = "🔜"; timeValue = formatDurationColon((nextConditionSpawnDate.getTime() / 1000) - now); isSpecialCondition = true;
   } else if (minRepop && now < minRepop) {
     label = "🔜"; timeValue = formatDurationColon(minRepop - now); if (isTimedMob) isSpecialCondition = true;
@@ -68,6 +57,11 @@ export function computeTimeLabel(mob) {
     isTimeOver = true;
   } else {
     label = ""; timeValue = "--/-- --:--"; isSpecialCondition = false; isTimedMob = false;
+  }
+
+  // メンテナンスアイコンの優先適用 (時間は上書きしない)
+  if (isMaint) {
+    label = "🛠️";
   }
 
   return { label, timeValue, isSpecialCondition, isTimeOver, isTimedMob };
@@ -273,7 +267,11 @@ export function updateProgressBar(card, mob) {
   const isInCondition = !!mob.repopInfo.isInConditionWindow;
 
   bars.forEach(bar => {
-    bar.style.width = `${elapsedPercent || 0}%`;
+    const currentWidth = parseFloat(bar.style.width) || 0;
+    if (Math.abs(elapsedPercent - currentWidth) > 0.1) {
+      bar.style.transition = (currentWidth === 0 || elapsedPercent < currentWidth) ? "none" : "width 10s linear";
+      bar.style.width = `${elapsedPercent || 0}%`;
+    }
     const color = `var(--progress-${status === "MaxOver" ? "max-over" : status === "ConditionActive" ? "condition" : "normal"})`;
     if (bar.classList.contains('pc-detail-progress-bar')) {
       bar.style.background = color;
@@ -391,6 +389,16 @@ export function updateExpandablePanel(card, mob) {
     if (nextConditionSpawnDate) npt = formatMMDDHHmm(nextConditionSpawnDate);
     else if (minRepop) npt = formatMMDDHHmm(minRepop);
     elNext.textContent = npt;
+
+    // 特殊条件がない場合は強調（highlight）を外す
+    const parent = elNext.closest('.detail-info-item');
+    if (parent) {
+      if (mob.repopInfo?.isInConditionWindow || mob.repopInfo?.nextConditionSpawnDate) {
+        parent.classList.add('highlight');
+      } else {
+        parent.classList.remove('highlight');
+      }
+    }
   }
 
   if (elLast) elLast.textContent = fmt(mob.last_kill_time);
