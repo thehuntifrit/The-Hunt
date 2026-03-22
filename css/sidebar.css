@@ -123,24 +123,10 @@
         color: var(--accent-gold);
     }
 
-    .sidebar-logo-compact {
-        display: none;
-    }
-
-
-
     .sidebar-notification-toggle input:checked + .sidebar-notification-label {
         opacity: 1;
         color: var(--accent-gold);
         text-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
-    }
-
-    .sidebar-volume {
-        display: none;
-    }
-
-    .vertical-slider {
-        display: none;
     }
 
     .sidebar-icon-btn {
@@ -524,13 +510,6 @@
         background: rgba(6, 182, 212, 0.15);
         border-color: var(--accent-cyan);
         color: var(--accent-cyan);
-    }
-
-    .sidebar-welcome {
-        font-size: 11px;
-        color: rgba(255, 255, 255, 0.4);
-        font-weight: 600;
-        word-break: break-all;
     }
 
     .sidebar-divider {

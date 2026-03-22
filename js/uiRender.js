@@ -144,6 +144,10 @@ export function createMobCard(mob, isDetailView = false) {
     }
 
     const reportSidebar = card.querySelector('.report-side-bar');
+    if (reportSidebar) {
+        reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
+        reportSidebar.dataset.mobNo = mob.No;
+    }
 
     const expandablePanel = card.querySelector('.expandable-panel');
     if (isOpen && expandablePanel) {

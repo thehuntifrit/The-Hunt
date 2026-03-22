@@ -11,7 +11,6 @@ export function initNotification() {
     audio.load();
 
     const toggle = document.getElementById('notification-toggle');
-    const volumeSlider = document.getElementById('notification-volume');
 
     if (toggle) {
         toggle.checked = getState().notificationEnabled;
@@ -25,23 +24,6 @@ export function initNotification() {
             }
         });
     }
-
-    if (volumeSlider) {
-        const state = getState();
-        volumeSlider.value = state.notificationVolume;
-        updateVolumeSliderBackground(volumeSlider);
-        
-        volumeSlider.addEventListener('input', (e) => {
-            const vol = parseFloat(e.target.value);
-            import("./dataManager.js").then(m => m.setNotificationVolume(vol));
-            updateVolumeSliderBackground(e.target);
-        });
-    }
-}
-
-function updateVolumeSliderBackground(slider) {
-    const val = (slider.value - slider.min) / (slider.max - slider.min) * 100;
-    slider.style.setProperty('--volume-percent', val + '%');
 }
 
 async function requestNotificationPermission() {

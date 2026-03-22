@@ -36,12 +36,6 @@ export const state = {
     })(),
     openMobCardNo: null,
     notificationEnabled: localStorage.getItem("huntNotificationEnabled") === "true",
-    notificationVolume: (() => {
-        const val = localStorage.getItem("huntNotificationVolume");
-        if (val === null) return 0.5;
-        const parsed = parseFloat(val);
-        return isNaN(parsed) ? 0.5 : parsed;
-    })(),
     pendingCalculationMobs: new Set(),
     pendingStatusMap: null,
     pendingMaintenanceData: null,
@@ -183,12 +177,6 @@ export function setNotificationEnabled(enabled) {
     state.notificationEnabled = enabled;
     localStorage.setItem("huntNotificationEnabled", enabled ? "true" : "false");
     window.dispatchEvent(new CustomEvent('notificationSettingChanged', { detail: { enabled } }));
-}
-
-export function setNotificationVolume(volume) {
-    state.notificationVolume = volume;
-    localStorage.setItem("huntNotificationVolume", volume.toString());
-    window.dispatchEvent(new CustomEvent('notificationVolumeChanged', { detail: { volume } }));
 }
 
 export function setFilter(partial) {

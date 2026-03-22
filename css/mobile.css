@@ -45,16 +45,8 @@
         opacity: 0.8;
     }
 
-    .pc-list-progress {
-        display: none !important;
-    }
-
     .mobile-expand-row {
         width: 100%;
-    }
-
-    .mobile-expand-percent-text {
-        text-align: right;
     }
 
     .mobile-top-title {
