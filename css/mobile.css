@@ -4,6 +4,21 @@
         margin-bottom: 1px !important;
     }
 
+    .mob-card:has(.expandable-panel.open) .mob-card-inner {
+        max-height: 75vh;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .mob-card:has(.expandable-panel.open) .mob-card-header {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        background: rgba(15, 23, 42, 0.98);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
     .mob-card.is-floating-active {
         top: 40px !important;
     }
@@ -153,6 +168,7 @@
     .mobile-percent-area {
         opacity: 0.9 !important;
         font-family: 'Inter', sans-serif;
+        font-size: 12px !important;
     }
 
     .list-rank-badge {
