@@ -26,6 +26,47 @@ export function shouldDisplayMemo(mob) {
     return hasMemo && (isMemoNewer || !mob.last_kill_time);
 }
 
+export function computeTimeLabel(mob) {
+    const { minRepop, maxRepop, status, isInConditionWindow, conditionWindowEnd, nextConditionSpawnDate } = mob.repopInfo || {};
+    const now = Date.now() / 1000;
+    const isTimedMob = !!(isInConditionWindow || nextConditionSpawnDate);
+    let label = "未確定", timeValue = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
+    if (isInConditionWindow && conditionWindowEnd) {
+        label = "⏳"; timeValue = formatDurationM((conditionWindowEnd.getTime() / 1000) - now); isSpecialCondition = true;
+    } else if (nextConditionSpawnDate && now >= minRepop) {
+        label = "🔜"; timeValue = formatDurationColon((nextConditionSpawnDate.getTime() / 1000) - now); isSpecialCondition = true;
+    } else if (minRepop && now < minRepop) {
+        label = "🔜"; timeValue = formatDurationColon(minRepop - now); if (isTimedMob) isSpecialCondition = true;
+    } else if (maxRepop && now < maxRepop) {
+        label = "⏳";
+        if (isTimedMob) { timeValue = formatDurationM(maxRepop - now); isSpecialCondition = true; }
+        else { timeValue = formatDurationColon(maxRepop - now); }
+    } else if (maxRepop) {
+        label = "💯";
+        if (isTimedMob) { timeValue = formatDurationM(now - maxRepop); isSpecialCondition = true; }
+        else { timeValue = formatDurationColon(now - maxRepop); }
+        isTimeOver = true;
+    }
+    return { label, timeValue, isSpecialCondition, isTimeOver, isTimedMob };
+}
+
+export function getSpawnCountInfo(mob) {
+    const state = getState();
+    const mobLocationsData = state.mobLocations?.[mob.No];
+    const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
+    if (!mob.Map || !mob.spawn_points) return { countHtml: "", remainingCount: 0, spawnCullStatus };
+    const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
+    const remainingCount = validSpawnPoints.length;
+    let countHtml = "";
+    if (remainingCount === 1) {
+        const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
+        countHtml = `<span class="text-[10px] text-yellow-500 font-bold mr-1 opacity-80">${pointNumber}#</span>`;
+    } else if (remainingCount > 1) {
+        countHtml = `<span class="text-[10px] text-slate-400 mr-1 opacity-70">@${remainingCount}</span>`;
+    }
+    return { countHtml, remainingCount, spawnCullStatus, validSpawnPoints };
+}
+
 export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_LastOne) {
     const pointStatus = spawnCullStatus?.[point.id];
     const isCulledFlag = isCulled(pointStatus, mobNo);
@@ -281,20 +322,10 @@ export function updateProgressBar(card, mob) {
 }
 
 export function updateProgressText(card, mob) {
-    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, conditionWindowEnd, minRepop, maxRepop, status, isInConditionWindow, repopTimeStr } = mob.repopInfo || {};
+    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, status, isInConditionWindow, repopTimeStr } = mob.repopInfo || {};
     const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
     const nowSec = Date.now() / 1000;
-    
-    // PC版と同じ時間優先判定ロジック
-    const isTimedMob = !!(isInConditionWindow || nextConditionSpawnDate);
-    let label = "未確定", timeValue = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
-    if (isInConditionWindow && conditionWindowEnd) {
-        label = "⏳"; timeValue = formatDurationM((conditionWindowEnd.getTime() / 1000) - nowSec); isSpecialCondition = true;
-    } else if (nextConditionSpawnDate && nowSec >= minRepop) {
-        label = "🔜"; timeValue = formatDurationColon((nextConditionSpawnDate.getTime() / 1000) - nowSec); isSpecialCondition = true;
-    } else if (minRepop && nowSec < minRepop) { label = "🔜"; timeValue = formatDurationColon(minRepop - nowSec); if (isTimedMob) isSpecialCondition = true;
-    } else if (maxRepop && nowSec < maxRepop) { label = "⏳"; if (isTimedMob) { timeValue = formatDurationM(maxRepop - nowSec); isSpecialCondition = true; } else { timeValue = formatDurationColon(maxRepop - nowSec); }
-    } else if (maxRepop) { label = "💯"; if (isTimedMob) { timeValue = formatDurationM(nowSec - maxRepop); isSpecialCondition = true; } else { timeValue = formatDurationColon(nowSec - maxRepop); } isTimeOver = true; }
+    let { label, timeValue, isSpecialCondition, isTimeOver } = computeTimeLabel(mob);
 
     let leftStr = label === "未確定" ? label : `${label} <span class="${isSpecialCondition ? 'label-next' : ''}">${timeValue}</span>`;
     
@@ -398,27 +429,7 @@ export function updateExpandablePanel(card, mob) {
         if (elCondition.innerHTML !== processed) elCondition.innerHTML = processed;
     }
 
-    // Map logic for mobile
-    const mapImg = card.querySelector(".mob-map-img");
-    const mapOverlay = card.querySelector(".map-overlay");
-    if (mapImg && !mapImg.src.includes(".webp")) {
-        const mapFile = mob.Map;
-        if (mapFile) mapImg.src = `./maps/${mapFile}`;
-    }
 
-    if (mapOverlay && mob.spawn_points && mapOverlay.innerHTML === "") {
-        const state = getState();
-        const mobLocationsData = state.mobLocations?.[mob.No];
-        const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
-        const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
-        const isOneLeft = validSpawnPoints.length === 1;
-
-        mapOverlay.innerHTML = (mob.spawn_points || []).map(p => {
-            const isLastOne = isOneLeft && p.id === validSpawnPoints[0]?.id;
-            const rankToPass = p.mob_ranks.includes("B2") ? "B2" : p.mob_ranks.includes("B1") ? "B1" : p.mob_ranks[0];
-            return drawSpawnPoint(p, spawnCullStatus, mob.No, rankToPass, isLastOne, isOneLeft);
-        }).join("");
-    }
 }
 
 export function updateMemoIcon(card, mob) {
@@ -454,16 +465,12 @@ export function getValidSpawnPoints(mob, spawnCullStatus) {
 export function updateMobCount(card, mob) {
     const countContainer = card.querySelector('.mob-count-container');
     if (!countContainer) return;
-    const state = getState();
-    const mobLocationsData = state.mobLocations?.[mob.No];
-    const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
+    const { remainingCount } = getSpawnCountInfo(mob);
     let displayCountText = "";
     if (mob.Map && mob.spawn_points) {
-        const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
-        const remainingCount = validSpawnPoints.length;
         if (remainingCount === 1) {
-            const pointId = validSpawnPoints[0]?.id || "";
-            const pointNumber = parseInt(pointId.slice(-2), 10);
+            const { validSpawnPoints } = getSpawnCountInfo(mob);
+            const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
             displayCountText = `<span class="text-sm text-yellow-400 font-bold text-glow">${pointNumber}&thinsp;番</span>`;
         } else if (remainingCount > 1) {
             displayCountText = `<span class="text-sm text-gray-400 relative -top-[0.12rem]">@</span><span class="text-base text-gray-400 font-bold text-glow relative top-[0.04rem]">&thinsp;${remainingCount}</span>`;
@@ -504,12 +511,11 @@ export function updateMapOverlay(card, mob) {
     if (!mapOverlay) return;
     let spawnPointsHtml = "";
     if (mob.Map && mob.spawn_points) {
-        const state = getState();
-        const mobLocationsData = state.mobLocations?.[mob.No];
-        const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
+        const { spawnCullStatus, validSpawnPoints } = getSpawnCountInfo(mob);
+        const isOneLeft = (validSpawnPoints?.length || 0) === 1;
         spawnPointsHtml = (mob.spawn_points ?? []).map(point => {
-            const isThisPointTheLastOne = isLastOne && point.id === validSpawnPoints[0]?.id;
-            return drawSpawnPoint(point, spawnCullStatus, mob.No, point.mob_ranks.includes("B2") ? "B2" : point.mob_ranks.includes("B1") ? "B1" : point.mob_ranks[0], isThisPointTheLastOne, isLastOne);
+            const isThisPointTheLastOne = isOneLeft && point.id === validSpawnPoints[0]?.id;
+            return drawSpawnPoint(point, spawnCullStatus, mob.No, point.mob_ranks.includes("B2") ? "B2" : point.mob_ranks.includes("B1") ? "B1" : point.mob_ranks[0], isThisPointTheLastOne, isOneLeft);
         }).join("");
     }
     if (mapOverlay.innerHTML !== spawnPointsHtml) mapOverlay.innerHTML = spawnPointsHtml;
@@ -535,37 +541,14 @@ export function createSimpleMobItem(mob) {
 }
 
 export function updateSimpleMobItem(item, mob) {
-    const { elapsedPercent, minRepop, maxRepop, status, isInConditionWindow, conditionWindowEnd, nextConditionSpawnDate } = mob.repopInfo || {};
+    const { elapsedPercent, status, isInConditionWindow } = mob.repopInfo || {};
     const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
     const now = Date.now() / 1000;
     const timeEl = item.querySelector('.pc-list-time');
     const progressEl = item.querySelector('.pc-list-progress-bar');
     const percentEl = item.querySelector('.pc-list-percent');
-    const isTimedMob = !!(mob.repopInfo?.isInConditionWindow || mob.repopInfo?.nextConditionSpawnDate);
-    let countHtml = "";
-    const state = getState();
-    const mobLocationsData = state.mobLocations?.[mob.No];
-    const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
-    if (mob.Map && mob.spawn_points) {
-        const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
-        const remainingCount = validSpawnPoints.length;
-        if (remainingCount === 1) {
-            const pointId = validSpawnPoints[0]?.id || "";
-            const pointNumber = parseInt(pointId.slice(-2), 10);
-            countHtml = `<span class="text-[10px] text-yellow-500 font-bold mr-1 opacity-80">${pointNumber}#</span>`;
-        } else if (remainingCount > 1) {
-            countHtml = `<span class="text-[10px] text-slate-400 mr-1 opacity-70">@${remainingCount}</span>`;
-        }
-    }
-
-    let label = "未確定", timeValue = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
-    if (isInConditionWindow && conditionWindowEnd) {
-        label = "⏳"; timeValue = formatDurationM((conditionWindowEnd.getTime() / 1000) - now); isSpecialCondition = true;
-    } else if (nextConditionSpawnDate && now >= minRepop) {
-        label = "🔜"; timeValue = formatDurationColon((nextConditionSpawnDate.getTime() / 1000) - now); isSpecialCondition = true;
-    } else if (minRepop && now < minRepop) { label = "🔜"; timeValue = formatDurationColon(minRepop - now); if (isTimedMob) isSpecialCondition = true;
-    } else if (maxRepop && now < maxRepop) { label = "⏳"; if (isTimedMob) { timeValue = formatDurationM(maxRepop - now); isSpecialCondition = true; } else { timeValue = formatDurationColon(maxRepop - now); }
-    } else if (maxRepop) { label = "💯"; if (isTimedMob) { timeValue = formatDurationM(now - maxRepop); isSpecialCondition = true; } else { timeValue = formatDurationColon(now - maxRepop); } isTimeOver = true; }
+    const { countHtml } = getSpawnCountInfo(mob);
+    const { label, timeValue, isSpecialCondition, isTimeOver } = computeTimeLabel(mob);
 
     if (timeEl) timeEl.innerHTML = `${countHtml}<span class="timer-label">${label}</span><span class="timer-value ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>`;
     if (progressEl) {
