@@ -316,12 +316,6 @@
         display: flex;
         gap: 0.6rem;
         font-size: 0.85rem;
-        margin-top: 2px;
-    }
-
-    .pc-detail-progress-section {
-        margin-bottom: 1.25rem;
-        padding-top: 0.5rem;
     }
 
     .pc-detail-progress-container {
@@ -331,6 +325,8 @@
         border-radius: 3px;
         overflow: hidden;
         border: 1px solid rgba(255, 255, 255, 0.03);
+        margin-top: 4px;
+        margin-bottom: 0.75rem;
     }
 
     .pc-detail-progress-bar {

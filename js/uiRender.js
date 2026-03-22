@@ -153,18 +153,15 @@ export function createPCDetailCard(mob) {
 
     const layout = `
         <div class="pc-detail-header">
-            <div class="flex items-center justify-between mb-0">
+            <div class="flex items-center justify-between mb-1">
                 <h2 class="pc-detail-name">${mob.Name}</h2>
                 <div class="pc-detail-rank">${mob.Rank}</div>
             </div>
-            <div class="pc-detail-area-row">
-                <span class="text-yellow-500 font-bold">${mob.Area}</span>
-                <span class="text-gray-500 font-normal">${mob.Expansion}</span>
-            </div>
-        </div>
-
-        <div class="pc-detail-progress-section">
-            <div class="flex justify-end mb-1">
+            <div class="flex items-center justify-between mb-1">
+                <div class="pc-detail-area-row m-0 p-0">
+                    <span class="text-yellow-500 font-bold">${mob.Area}</span>
+                    <span class="text-gray-500 font-normal">${mob.Expansion}</span>
+                </div>
                 <div class="pc-detail-progress-text">
                     <span class="percent">${Math.floor(elapsedPercent || 0)}%</span>
                 </div>
@@ -522,8 +519,23 @@ export function updateSimpleMobItem(item, mob) {
     const progressEl = item.querySelector('.pc-list-progress-bar');
     const percentEl = item.querySelector('.pc-list-percent');
     const isTimedMob = !!(mob.repopInfo?.isInConditionWindow || mob.repopInfo?.nextConditionSpawnDate);
-    let label = "未確定", timeValue = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
+    let countHtml = "";
+    const state = getState();
+    const mobLocationsData = state.mobLocations?.[mob.No];
+    const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
+    if (mob.Map && mob.spawn_points) {
+        const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
+        const remainingCount = validSpawnPoints.length;
+        if (remainingCount === 1) {
+            const pointId = validSpawnPoints[0]?.id || "";
+            const pointNumber = parseInt(pointId.slice(-2), 10);
+            countHtml = `<span class="text-[10px] text-yellow-500 font-bold mr-1 opacity-80">${pointNumber}#</span>`;
+        } else if (remainingCount > 1) {
+            countHtml = `<span class="text-[10px] text-slate-400 mr-1 opacity-70">@${remainingCount}</span>`;
+        }
+    }
 
+    let label = "未確定", timeValue = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
     if (isInConditionWindow && conditionWindowEnd) {
         label = "⏳"; timeValue = formatDurationM((conditionWindowEnd.getTime() / 1000) - now); isSpecialCondition = true;
     } else if (nextConditionSpawnDate && now >= minRepop) {
@@ -532,7 +544,7 @@ export function updateSimpleMobItem(item, mob) {
     } else if (maxRepop && now < maxRepop) { label = "⏳"; if (isTimedMob) { timeValue = formatDurationM(maxRepop - now); isSpecialCondition = true; } else { timeValue = formatDurationColon(maxRepop - now); }
     } else if (maxRepop) { label = "💯"; if (isTimedMob) { timeValue = formatDurationM(now - maxRepop); isSpecialCondition = true; } else { timeValue = formatDurationColon(now - maxRepop); } isTimeOver = true; }
 
-    if (timeEl) timeEl.innerHTML = `<span class="timer-label">${label}</span><span class="timer-value ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>`;
+    if (timeEl) timeEl.innerHTML = `${countHtml}<span class="timer-label">${label}</span><span class="timer-value ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>`;
     if (progressEl) {
         const currentWidth = parseFloat(progressEl.style.width) || 0;
         if (Math.abs(elapsedPercent - currentWidth) > 0.001) {

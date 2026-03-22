@@ -29,8 +29,7 @@ export function formatDurationColon(seconds) {
   if (seconds < 0) seconds = 0;
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  const hStr = String(h).padStart(3, "0");
-  return `${hStr}:${String(m).padStart(2, "0")}`;
+  return `${h}:${String(m).padStart(2, "0")}`;
 }
 
 export function formatDurationM(seconds) {
