@@ -221,11 +221,13 @@ export function createPCDetailCard(mob) {
     }
 
     const mapSection = card.querySelector('.map-section');
-    if (mob.Map && mapSection) {
-        mapSection.classList.remove('hidden');
-        updateMapOverlay(card, mob);
-    } else if (mapSection) {
-        mapSection.classList.add('hidden');
+    if (mapSection) {
+        if (mob.Map) {
+            mapSection.classList.remove('hidden');
+            updateMapOverlay(card, mob);
+        } else {
+            mapSection.classList.add('hidden');
+        }
     }
 
     const reportSidebar = card.querySelector('.report-side-bar');
