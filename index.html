@@ -366,7 +366,7 @@
                         <div class="progress-text flex items-center justify-end gap-2 text-[12px] whitespace-nowrap pointer-events-none text-right flex-shrink-0 lg:flex-1 lg:justify-between"></div>
                     </div>
                     
-                    <div class="report-side-bar transition-colors duration-200 z-10 relative" data-report-type="" data-mob-no=""></div>
+                    <div class="report-side-bar transition-colors duration-200 z-10 absolute" data-report-type="" data-mob-no=""></div>
                 </div>
 
                 <div class="expandable-panel">
@@ -433,14 +433,14 @@
             <div class="pc-detail-header">
                 <div class="flex items-center justify-between mb-1">
                     <h2 class="pc-detail-name"></h2>
-                    <div class="pc-detail-rank"></div>
+                    <div class="pc-detail-rank font-bold px-1.5 py-0.5 border rounded" data-rank=""></div>
                 </div>
-                <div class="flex items-center justify-between mb-1">
-                    <div class="pc-detail-area-row m-0 p-0">
-                        <span class="pc-detail-area text-yellow-500 font-bold"></span>
-                        <span class="pc-detail-expansion text-gray-500 font-normal"></span>
+                <div class="flex items-center justify-between mb-2">
+                    <div class="pc-detail-area-row m-0 p-0 text-[11px] text-slate-400">
+                        <span class="pc-detail-area"></span>
+                        <span class="pc-detail-expansion opacity-70"></span>
                     </div>
-                    <div class="pc-detail-progress-text">
+                    <div class="pc-detail-progress-text text-[14px]">
                         <span class="percent">0%</span>
                     </div>
                 </div>
@@ -449,36 +449,52 @@
                 </div>
             </div>
 
-            <div class="pc-detail-grid">
-                <div class="pc-detail-info-item">
-                    <div class="label">最短POP</div>
-                    <div class="value" data-min-repop>--/-- --:--</div>
+            <div class="pc-detail-content overflow-y-auto pr-1">
+                <!-- 2. MEMO -->
+                <div class="pc-detail-section mb-5">
+                    <div class="section-label">MEMO</div>
+                    <div class="pc-detail-memo-box">
+                        <input type="text" class="memo-input pc-detail-memo-input" placeholder="全角30文字まで" maxlength="30" data-action="save-memo">
+                    </div>
                 </div>
-                <div class="pc-detail-info-item">
-                    <div class="label">最大POP</div>
-                    <div class="value" data-max-repop>--/-- --:--</div>
+                
+                <!-- 3. 時間4種 -->
+                <div class="pc-detail-grid mb-5">
+                    <div class="pc-detail-info-item">
+                        <div class="label">最短POP</div>
+                        <div class="value" data-min-repop>--/-- --:--</div>
+                    </div>
+                    <div class="pc-detail-info-item">
+                        <div class="label">最大POP</div>
+                        <div class="value" data-max-repop>--/-- --:--</div>
+                    </div>
+                    <div class="pc-detail-info-item highlight">
+                        <div class="label">次回POP可能</div>
+                        <div class="value" data-next-possible>--/-- --:--</div>
+                    </div>
+                    <div class="pc-detail-info-item">
+                        <div class="label">前回討伐</div>
+                        <div class="value" data-last-kill>--/-- --:--</div>
+                    </div>
                 </div>
-                <div class="pc-detail-info-item highlight">
-                    <div class="label">次回POP可能</div>
-                    <div class="value" data-next-possible>--/-- --:--</div>
-                </div>
-                <div class="pc-detail-info-item">
-                    <div class="label">前回討伐</div>
-                    <div class="value" data-last-kill>--/-- --:--</div>
-                </div>
-            </div>
 
-            <div class="pc-detail-content">
-                <div class="pc-detail-section">
+                <!-- 4. 出現マップ -->
+                <div class="pc-detail-section pc-detail-map-section mb-5">
+                    <div class="section-label">出現マップ</div>
+                    <div class="pc-detail-map-container mt-2">
+                        <img class="pc-detail-map" src="" alt="">
+                        <div class="pc-detail-map-overlay"></div>
+                    </div>
+                </div>
+
+                <!-- 5. 出現条件 -->
+                <div class="pc-detail-section mb-2">
                     <div class="section-label">出現条件</div>
                     <div class="section-content condition"></div>
                 </div>
-
-                <div class="pc-detail-section">
-                    <div class="section-label">MEMO</div>
-                    <div class="pc-detail-memo-box">
-                        <input type="text" class="memo-input pc-detail-memo-input"
-                            placeholder="全角30文字まで" maxlength="30" data-action="save-memo">
+            </div>
+        </div>
+    </template>                            placeholder="全角30文字まで" maxlength="30" data-action="save-memo">
                     </div>
                 </div>
 

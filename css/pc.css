@@ -12,6 +12,71 @@
         display: none !important;
     }
 
+    .pc-detail-card {
+        padding: 1.25rem;
+        background: rgba(15, 23, 42, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.82);
+    }
+
+    .pc-detail-name {
+        font-size: 1.25rem;
+        font-weight: 900;
+        color: #fff;
+        line-height: 1.2;
+    }
+
+    .pc-detail-rank {
+        font-size: 12px;
+        height: min-content;
+    }
+
+    .pc-detail-rank[data-rank="S"] {
+        color: var(--rank-s);
+        border-color: rgba(245, 158, 11, 0.3);
+        background: rgba(245, 158, 11, 0.05);
+    }
+
+    .pc-detail-rank[data-rank="A"] {
+        color: var(--rank-a);
+        border-color: rgba(107, 163, 122, 0.3);
+        background: rgba(107, 163, 122, 0.05);
+    }
+
+    .pc-detail-rank[data-rank="F"] {
+        color: var(--rank-f);
+        border-color: rgba(129, 140, 248, 0.3);
+        background: rgba(129, 140, 248, 0.05);
+    }
+
+    .pc-detail-progress-container {
+        height: 10px;
+        background: rgba(15, 23, 42, 0.8);
+        border-radius: 5px;
+        overflow: hidden;
+        margin-top: 8px;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .pc-detail-content {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
+        padding-top: 0 !important;
+        border-top: none !important;
+    }
+
+    .pc-detail-content::-webkit-scrollbar {
+        width: 3px;
+    }
+
+    .pc-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-top: 0.5rem;
+    }
+
     #pc-layout {
         display: flex !important;
         flex-direction: row;
@@ -278,162 +343,6 @@
 
     .pc-list-item.selected .pc-list-report-btn {
         border-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .pc-detail-card {
-        background: rgba(8, 15, 30, 0.97);
-        border: 1px solid rgba(6, 182, 212, 0.1);
-        border-radius: 10px;
-        padding: 1.25rem 1rem;
-        color: #f8fafc;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .pc-detail-header {
-        margin-bottom: 0.75rem;
-    }
-
-    .pc-detail-name {
-        font-size: 1.4rem;
-        font-weight: 800;
-        letter-spacing: -0.01em;
-        margin: 0;
-        color: #fff;
-        text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-    }
-
-    .pc-detail-rank {
-        font-size: 1rem;
-        font-weight: 900;
-        padding: 2px 6px;
-        border-radius: 4px;
-        border: 1.5px solid currentColor;
-        line-height: 1;
-        background: transparent;
-    }
-
-    .pc-detail-card.rank-s .pc-detail-rank { color: var(--rank-s); }
-    .pc-detail-card.rank-a .pc-detail-rank { color: var(--rank-a); }
-    .pc-detail-card.rank-f .pc-detail-rank { color: var(--rank-f); }
-
-    .pc-detail-area-row {
-        display: flex;
-        gap: 0.6rem;
-        font-size: 0.85rem;
-    }
-
-    .pc-detail-progress-container {
-        width: 100%;
-        height: 6px;
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 3px;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.03);
-        margin-top: 4px;
-        margin-bottom: 0.75rem;
-    }
-
-    .pc-detail-progress-bar {
-        height: 100%;
-        background: #3b82f6;
-        box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
-        transition: width 0.5s ease;
-    }
-
-    .pc-detail-progress-text {
-        font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
-        font-size: 1.1rem;
-        font-weight: 800;
-        color: #fff;
-        line-height: 1;
-    }
-
-    .pc-detail-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.5rem;
-        margin-bottom: 0.75rem;
-        padding-top: 0.6rem;
-    }
-
-    .pc-detail-info-item {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        background: rgba(6, 182, 212, 0.04);
-        border: 1px solid rgba(6, 182, 212, 0.08);
-        border-radius: 6px;
-        padding: 6px 10px;
-        text-align: center;
-    }
-
-    .pc-detail-info-item .label {
-        font-size: 0.65rem;
-        font-weight: 800;
-        color: rgba(6, 182, 212, 0.5);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-
-    .pc-detail-info-item .value {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.9);
-        font-weight: 600;
-    }
-
-    .pc-detail-info-item.highlight {
-        border-color: rgba(251, 191, 36, 0.15);
-        background: rgba(251, 191, 36, 0.04);
-    }
-
-    .pc-detail-info-item.highlight .label {
-        color: rgba(251, 191, 36, 0.5);
-    }
-
-    .pc-detail-info-item.highlight .value {
-        color: var(--accent-gold);
-        font-weight: 700;
-        text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
-    }
-
-    .pc-detail-content {
-        border-top: 1px solid rgba(6, 182, 212, 0.1);
-        padding-top: 0.75rem;
-    }
-
-    .pc-detail-section {
-        margin-top: 0.75rem;
-    }
-
-    .section-label {
-        font-size: 0.7rem;
-        font-weight: 800;
-        color: rgba(6, 182, 212, 0.6);
-        margin-bottom: 0.4rem;
-        text-transform: uppercase;
-        border-left: 3px solid var(--accent-cyan);
-        padding-left: 8px;
-        line-height: 1;
-        text-shadow: 0 0 8px rgba(6, 182, 212, 0.15);
-    }
-
-    .section-content {
-        font-size: 0.85rem;
-        line-height: 1.5;
-        padding: 0.2rem 0;
-        color: rgba(255, 255, 255, 0.8);
-    }
-
-    .section-content.condition {
-        color: rgba(251, 191, 36, 0.95);
-        font-weight: 500;
-        background: rgba(234, 179, 8, 0.04);
-        padding: 0.4rem 0.6rem;
-        border-radius: 6px;
-        border: 1px solid rgba(234, 179, 8, 0.1);
-        text-shadow: 0 0 6px rgba(234, 179, 8, 0.12);
     }
 
     .pc-detail-map-container {
