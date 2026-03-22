@@ -804,18 +804,20 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .condition-section-neon {
-    border-color: rgba(251, 191, 36, 0.4) !important;
-    box-shadow: 0 0 15px rgba(251, 191, 36, 0.1) inset, 0 0 10px rgba(251, 191, 36, 0.2) !important;
-    background: rgba(251, 191, 36, 0.05) !important;
+    border-color: rgba(251, 191, 36, 0.5) !important;
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.2) !important;
+    background: none !important;
 }
 
 .condition-section-neon .section-label {
-    color: var(--accent-gold) !important;
-    text-shadow: 0 0 8px rgba(251, 191, 36, 0.5) !important;
+    color: #fbbf24 !important;
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.4) !important;
 }
 
-.condition-section-neon .section-content {
-    color: #fff !important;
-    text-shadow: 0 0 10px rgba(251, 191, 36, 0.6) !important;
+.condition-section-neon .section-content,
+.condition-section-neon .detail-memo-input,
+.condition-section-neon .condition-text {
+    color: #fbbf24 !important;
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.4) !important;
     font-weight: 600;
 }

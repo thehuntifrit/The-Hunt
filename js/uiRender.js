@@ -60,7 +60,7 @@ export function getSpawnCountInfo(mob) {
     let countHtml = "";
     if (remainingCount === 1) {
         const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-        countHtml = `<span class="pc-count-val font-bold text-yellow-500">${pointNumber}版</span>`;
+        countHtml = `<span class="pc-count-val font-bold text-yellow-500">${pointNumber}番</span>`;
     } else if (remainingCount > 1) {
         countHtml = `<span class="pc-count-val font-bold text-slate-400">@ ${remainingCount}</span>`;
     }
@@ -392,15 +392,20 @@ export function updateExpandablePanel(card, mob) {
         const conditionText = mob.Condition ? processText(mob.Condition) : "特別な出現条件はありません。";
         if (elCondition.innerHTML !== conditionText) elCondition.innerHTML = conditionText;
         
-        const section = elCondition.closest('.detail-section') || elCondition.closest('.pc-detail-section');
         const isPCDetail = card.classList.contains('pc-detail-card');
-        if (section) {
+        const sections = [
+            elCondition.closest('.detail-section') || elCondition.closest('.pc-detail-section'),
+            card.querySelector('.memo-section'),
+            card.querySelector('.map-section')
+        ].filter(Boolean);
+
+        sections.forEach(section => {
             if (isPCDetail && mob.Condition) {
                 section.classList.add('condition-section-neon');
             } else {
                 section.classList.remove('condition-section-neon');
             }
-        }
+        });
     }
 
 
@@ -618,7 +623,7 @@ function getOrCreateGroupSection(groupKey) {
       <div class="status-group-separator">
           <span class="status-group-label">${GROUP_LABELS[groupKey]}</span>
       </div>
-      <div class="group-columns grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="group-columns grid grid-cols-1 lg:grid-cols-3 gap-0.5 lg:gap-4">
           <div class="col-1 flex flex-col gap-4"></div>
           <div class="col-2 flex flex-col gap-4"></div>
           <div class="col-3 flex flex-col gap-4"></div>

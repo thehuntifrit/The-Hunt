@@ -230,7 +230,7 @@
     }
 
     .pc-list-time {
-        flex: 0 0 82px;
+        flex: 0 0 88px;
         font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
         font-size: 13px;
         font-weight: 500;
@@ -243,7 +243,7 @@
     .pc-list-time .timer-label {
         text-align: center;
         font-size: 13px;
-        margin-right: 0px;
+        margin-right: 4px;
     }
 
     .pc-list-time .timer-value {
