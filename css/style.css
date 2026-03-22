@@ -804,14 +804,14 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .condition-section-neon {
-    border-color: rgba(251, 191, 36, 0.5) !important;
-    box-shadow: 0 0 10px rgba(251, 191, 36, 0.2) !important;
+    border-color: rgba(251, 191, 36, 0.4) !important;
+    box-shadow: none !important;
     background: none !important;
 }
 
 .condition-section-neon .section-label {
     color: #fbbf24 !important;
-    text-shadow: 0 0 8px rgba(251, 191, 36, 0.4) !important;
+    text-shadow: none !important;
 }
 
 .condition-section-neon .section-content,

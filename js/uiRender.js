@@ -30,7 +30,14 @@ export function computeTimeLabel(mob) {
     const { minRepop, maxRepop, status, isInConditionWindow, conditionWindowEnd, nextConditionSpawnDate } = mob.repopInfo || {};
     const now = Date.now() / 1000;
     const isTimedMob = !!(isInConditionWindow || nextConditionSpawnDate);
-    let label = "未確定", timeValue = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
+    
+    // 全ての値がない場合は未確定
+    if (!minRepop && !maxRepop && !isTimedMob) {
+        return { label: "", timeValue: "--/-- --:--", isSpecialCondition: false, isTimeOver: false, isTimedMob: false };
+    }
+
+    let label = "", timeValue = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
+    
     if (isInConditionWindow && conditionWindowEnd) {
         label = "⏳"; timeValue = formatDurationM((conditionWindowEnd.getTime() / 1000) - now); isSpecialCondition = true;
     } else if (nextConditionSpawnDate && now >= minRepop) {
@@ -46,7 +53,11 @@ export function computeTimeLabel(mob) {
         if (isTimedMob) { timeValue = formatDurationM(now - maxRepop); isSpecialCondition = true; }
         else { timeValue = formatDurationColon(now - maxRepop); }
         isTimeOver = true;
+    } else {
+        // フォールバック
+        label = ""; timeValue = "--/-- --:--"; isSpecialCondition = false; isTimedMob = false;
     }
+    
     return { label, timeValue, isSpecialCondition, isTimeOver, isTimedMob };
 }
 
@@ -298,25 +309,31 @@ export function updateProgressText(card, mob) {
     
     // モバイル用新レイアウトへの割当
     if (timeArea && percentArea) {
-        timeArea.innerHTML = `
-            <span class="detail-label-icon text-[12px] opacity-80 mr-1">${label}</span>
-            <span class="detail-time-val font-bold text-[13px] ${isSpecialCondition ? 'label-next' : ''}">${timeValue}</span>
-        `;
+        timeArea.innerHTML = label ? `
+            <span class="detail-label-icon text-[13px] opacity-100 text-yellow-500 mr-1.5">${label}</span>
+            <span class="detail-time-val font-bold text-[13px] text-gray-100 ${isSpecialCondition ? 'label-next' : ''}">${timeValue}</span>
+        ` : `<span class="detail-time-val font-bold text-[13px] text-gray-400">${timeValue}</span>`;
         percentArea.textContent = percentStr;
+        percentArea.classList.add("text-gray-300"); // 視認性確保
     }
     
     // 既存/PC詳細用への割当
-    const progressTextHTML = `
+    const pcProgressTextHTML = `<span class="font-bold text-[14px] text-gray-100">${percentStr}</span>`;
+    const defaultProgressTextHTML = `
         <div class="flex items-center justify-between w-full">
             <div class="flex items-center gap-1.5">
-                <span class="detail-label-icon text-[12px] opacity-80">${label}</span>
+                ${label ? `<span class="detail-label-icon text-[12px] opacity-80">${label}</span>` : ''}
                 <span class="detail-time-val font-bold text-[13px] ${isSpecialCondition ? 'label-next' : ''}">${timeValue}</span>
             </div>
             <span class="font-bold text-[13px] ml-4">${percentStr}</span>
         </div>`;
     
     progressTextNodes.forEach(text => {
-        text.innerHTML = progressTextHTML;
+        if (text.classList.contains('pc-detail-progress-text')) {
+            text.innerHTML = pcProgressTextHTML; // PC詳細パネルは % のみ
+        } else {
+            text.innerHTML = defaultProgressTextHTML;
+        }
         if (status === "MaxOver") text.classList.add("max-over");
         else text.classList.remove("max-over");
     });
@@ -471,7 +488,7 @@ export function updateAreaInfo(card, mob) {
     // モバイル版リストヘッダーのエリアテキスト
     const headerArea = card.querySelector('.mobile-header-area-text');
     if (headerArea) {
-        headerArea.textContent = `${areaName} | ${expName}`;
+        headerArea.textContent = ` ${areaName} | ${expName}`; // 前方にスペース追加
     }
 }
 
@@ -531,9 +548,13 @@ export function updateSimpleMobItem(item, mob) {
 
     if (timeEl) {
         timeEl.innerHTML = `
-        <div class="flex items-center justify-end gap-1.5">
-            <span class="timer-label text-[12px] opacity-90">${label}</span>
-            <span class="timer-value font-bold text-right ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
+        <div class="flex items-center justify-end">
+            <div class="w-6 flex justify-center shrink-0">
+                <span class="timer-label text-[12px] opacity-90">${label}</span>
+            </div>
+            <div class="w-16 text-right">
+                <span class="timer-value font-bold ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
+            </div>
         </div>`;
     }
     const countEl = item.querySelector('.pc-list-count');
