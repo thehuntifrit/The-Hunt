@@ -264,9 +264,10 @@ body::before {
     background: transparent;
     position: sticky;
     top: 0;
-    z-index: 20;
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.95));
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 30;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 1), rgba(30, 41, 59, 1)) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes pulse-sync {

@@ -318,11 +318,11 @@ export function updateProgressText(card, mob) {
     if (timeArea && percentArea) {
         timeArea.innerHTML = `
             <div class="flex items-center justify-end">
-                <div class="w-[20px] flex justify-center shrink-0">
+                <div class="w-[18px] flex justify-center shrink-0">
                     ${label ? `<span class="detail-label-icon text-[13px] opacity-100 text-yellow-500">${label}</span>` : ''}
                 </div>
-                <div class="w-[60px] text-right ml-1">
-                    <span class="detail-time-val font-bold text-[13px] text-gray-100 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</span>
+                <div class="w-[100px] text-right ml-1">
+                    <span class="detail-time-val font-bold text-[12px] text-gray-100 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</span>
                 </div>
             </div>`;
         percentArea.textContent = percentStr;
@@ -564,8 +564,8 @@ export function updateSimpleMobItem(item, mob) {
             <div class="w-[24px] flex justify-center shrink-0">
                 ${label ? `<span class="timer-label text-[12px] opacity-90">${label}</span>` : ''}
             </div>
-            <div class="w-[64px] text-right ml-1.5">
-                <span class="timer-value font-bold ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
+            <div class="w-[100px] text-right ml-1.5">
+                <span class="timer-value font-bold text-[12px] ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
             </div>
         </div>`;
     }
