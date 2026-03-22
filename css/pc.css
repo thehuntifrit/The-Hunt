@@ -1,13 +1,4 @@
 @media (min-width: 1024px) {
-    #main-header {
-        display: none !important;
-        visibility: hidden !important;
-        height: 0 !important;
-        padding: 0 !important;
-        overflow: hidden !important;
-        pointer-events: none !important;
-    }
-
     #mobile-layout {
         display: none !important;
     }

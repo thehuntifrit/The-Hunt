@@ -1,8 +1,4 @@
 @media (max-width: 1023px) {
-    #main-header {
-        display: none !important;
-    }
-
     .mob-card {
         scroll-margin-top: 40px;
     }
