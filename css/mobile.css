@@ -383,9 +383,22 @@
 
     .mob-card-inner {
         background: rgba(15, 23, 42, 0.85);
-        border-radius: 0 !important;
+        border-radius: 0;
         border-left: none !important;
         border-right: none !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .mob-card.open {
+        margin: 8px 4px !important;
+        z-index: 20;
+    }
+
+    .mob-card.open .mob-card-inner {
+        border-radius: 12px !important;
+        background: rgba(15, 23, 42, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6);
     }
 
     #pc-layout {

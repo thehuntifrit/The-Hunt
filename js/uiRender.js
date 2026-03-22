@@ -283,20 +283,44 @@ export function updateProgressBar(card, mob) {
 }
 
 export function updateProgressText(card, mob) {
-    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, status, isInConditionWindow, repopTimeStr } = mob.repopInfo || {};
+    const { elapsedPercent, status, isInConditionWindow, repopTimeStr } = mob.repopInfo || {};
     const { label, timeValue, isSpecialCondition, isTimeOver } = computeTimeLabel(mob);
     const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
     const nowSec = Date.now() / 1000;
-    let leftStr = label === "未確定" ? `<div class="w-[100px] text-right">${label}</div>` : 
-        `<div class="flex items-center justify-between w-[100px]">
-            <span class="detail-label-icon text-[12px] opacity-80 text-left shrink-0">${label}</span>
-            <span class="detail-time-val font-bold text-[13px] text-right ${isSpecialCondition ? 'label-next' : ''}">${timeValue}</span>
-        </div>`;
     
-    // パーセンテージは常に0-100%で算出
+    // パーセンテージ算出
     let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
     const percentStr = isTimeOver ? "100%" : `${safePercent}%`;
     
+    const timeArea = card.querySelector('.mobile-time-area');
+    const percentArea = card.querySelector('.mobile-percent-area');
+    const progressTextNodes = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
+    
+    // モバイル用新レイアウトへの割当
+    if (timeArea && percentArea) {
+        timeArea.innerHTML = `
+            <span class="detail-label-icon text-[12px] opacity-80 mr-1">${label}</span>
+            <span class="detail-time-val font-bold text-[13px] ${isSpecialCondition ? 'label-next' : ''}">${timeValue}</span>
+        `;
+        percentArea.textContent = percentStr;
+    }
+    
+    // 既存/PC詳細用への割当
+    const progressTextHTML = `
+        <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-1.5">
+                <span class="detail-label-icon text-[12px] opacity-80">${label}</span>
+                <span class="detail-time-val font-bold text-[13px] ${isSpecialCondition ? 'label-next' : ''}">${timeValue}</span>
+            </div>
+            <span class="font-bold text-[13px] ml-4">${percentStr}</span>
+        </div>`;
+    
+    progressTextNodes.forEach(text => {
+        text.innerHTML = progressTextHTML;
+        if (status === "MaxOver") text.classList.add("max-over");
+        else text.classList.remove("max-over");
+    });
+
     const mobNameEl = card.querySelector('.mob-name');
     const shouldDimCard = isMaint || status === "Next" || (status === "NextCondition" && nowSec < (mob.repopInfo?.minRepop || 0));
     const reportSidebar = card.querySelector('.report-side-bar');
@@ -310,45 +334,10 @@ export function updateProgressText(card, mob) {
         card.classList.add("is-active-neon");
         if (reportSidebar) reportSidebar.classList.add("is-active-neon");
     }
-    // モブ名は常に白に固定
     if (mobNameEl) mobNameEl.style.color = '#fff';
 
     if (isMaint) card.classList.add("maintenance-gray-out");
     else card.classList.remove("maintenance-gray-out");
-
-    let rightStr = repopTimeStr || "未確定";
-    if (!isSpecialCondition) {
-        if (nextConditionSpawnDate) {
-            try { rightStr = `🔔 ${dateFormatter.format(nextConditionSpawnDate)}`; isSpecialCondition = true; } catch { rightStr = "未確定"; }
-        } else if (nextMinRepopDate) {
-            try { rightStr = `in ${dateFormatter.format(nextMinRepopDate)}`; } catch { rightStr = "未確定"; }
-        }
-    }
-
-    const isDetail = card.classList.contains("pc-detail-card");
-    let newHTML = "";
-    if (isDetail) {
-        newHTML = `<span class="percent">${percentStr}</span>`;
-    } else {
-        newHTML = `
-            <div class="flex flex-col items-end justify-center leading-none gap-[1px]">
-                <div class="${isTimeOver ? 'time-over' : 'time-normal'}">${leftStr}</div>
-                <div class="text-[10px] text-gray-400 font-mono tracking-tight opacity-70">${percentStr}</div>
-            </div>
-            <div class="hidden lg:block text-right"><span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span></div>`;
-    }
-    
-    const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}|${isDetail}`;
-    
-    const texts = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
-    texts.forEach(text => {
-        if (text.dataset.cacheKey !== cacheKey) {
-            text.dataset.cacheKey = cacheKey;
-            text.innerHTML = newHTML;
-        }
-        if (status === "MaxOver") text.classList.add("max-over");
-        else text.classList.remove("max-over");
-    });
 
     if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) card.classList.add("blink-border-white");
     else card.classList.remove("blink-border-white");
@@ -463,27 +452,26 @@ export function updateMobCount(card, mob) {
 }
 
 export function updateAreaInfo(card, mob) {
-    const areaName = mob.Area || "";
-    const expName = mob.Expansion || "";
+    const areaName = mob.Area || "--";
+    const expName = mob.Expansion || "--";
+    const rank = mob.Rank || "A";
     
-    const areaInfoContainer = card.querySelector('.area-info-container');
-    if (areaInfoContainer && (areaName || expName)) {
-        areaInfoContainer.innerHTML = `<div class="font-numeric text-slate-400 mb-1 leading-tight">${areaName}</div><div class="flex items-center justify-end gap-1 font-numeric text-slate-500 leading-none"><span>${expName}</span><span class="inline-flex items-center justify-center w-3 h-3 border border-current rounded-sm text-[8px] leading-none font-bold">${mob.Rank}</span></div>`;
-    }
-
-    // Now covers both PC detail card and Mobile expand panel
-    card.querySelectorAll('.detail-area').forEach(el => {
-        el.textContent = areaName;
-        el.classList.add('text-[10px]', 'opacity-80'); // マップ表示時のエリア名を縮小
-    });
-    card.querySelectorAll('.detail-expansion').forEach(el => {
-        el.textContent = expName ? `| ${expName}` : "";
-        el.classList.add('text-[10px]', 'opacity-60');
+    // ランクバッジの更新 (リスト側と詳細側の両方)
+    card.querySelectorAll('.mob-rank-badge, .list-rank-badge').forEach(badge => {
+        badge.textContent = rank;
+        const color = `var(--rank-${rank.toLowerCase()})`;
+        badge.style.color = color;
+        badge.style.borderColor = color;
     });
 
+    // 詳細パネル/拡大表示用のエリア情報
+    card.querySelectorAll('.detail-area').forEach(el => el.textContent = areaName);
+    card.querySelectorAll('.detail-expansion').forEach(el => el.textContent = `| ${expName}`);
+
+    // モバイル版リストヘッダーのエリアテキスト
     const headerArea = card.querySelector('.mobile-header-area-text');
     if (headerArea) {
-        headerArea.textContent = `${areaName} ${expName ? '| ' + expName : ''}`;
+        headerArea.textContent = `${areaName} | ${expName}`;
     }
 }
 
@@ -624,9 +612,9 @@ function getOrCreateGroupSection(groupKey) {
           <span class="status-group-label">${GROUP_LABELS[groupKey]}</span>
       </div>
       <div class="group-columns grid grid-cols-1 lg:grid-cols-3 gap-0.5 lg:gap-4">
-          <div class="col-1 flex flex-col gap-4"></div>
-          <div class="col-2 flex flex-col gap-4"></div>
-          <div class="col-3 flex flex-col gap-4"></div>
+          <div class="col-1 flex flex-col gap-0.5 lg:gap-4"></div>
+          <div class="col-2 flex flex-col gap-0.5 lg:gap-4"></div>
+          <div class="col-3 flex flex-col gap-0.5 lg:gap-4"></div>
       </div>
   `;
 
