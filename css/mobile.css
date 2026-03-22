@@ -540,6 +540,18 @@
         padding-bottom: 60px !important;
     }
 
+    .detail-info-item .label {
+        font-size: 10px !important;
+    }
+
+    .detail-info-item .value {
+        font-size: 14px !important;
+    }
+
+    .detail-section .section-label {
+        font-size: 11px !important;
+    }
+
     footer {
         display: none !important;
     }
