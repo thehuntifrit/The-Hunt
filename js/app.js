@@ -219,6 +219,9 @@ function renderMaintenanceStatus() {
     const maintenanceEl = document.getElementById("status-message-maintenance");
     const telopEl = document.getElementById("status-message-telop");
 
+    const maintPanels = document.querySelectorAll(".js-maintenance-content");
+    const telopPanels = document.querySelectorAll(".js-telop-content");
+
     if (!maintenanceEl) return;
 
     let hasMaintenance = false;
@@ -243,21 +246,20 @@ function renderMaintenanceStatus() {
         } else {
             maintenanceEl.innerHTML = "";
         }
-        
-        const sidebarMaint = document.getElementById("sidebar-maintenance-content");
-        if (sidebarMaint) {
-            const startStr = formatDate(start);
-            const endStr = formatDate(end);
-            sidebarMaint.innerHTML = `
-                <div class="maintenance-info-rich p-2 bg-red-900/20 border border-red-500/30 rounded">
-                    <div class="text-[14px] font-bold text-red-400 mb-1">🛠️ メンテナンス予定</div>
-                    <div class="text-[13px] text-gray-100">${startStr} ～ ${endStr}</div>
-                    <div class="text-[11px] text-gray-400 mt-2">※メンテナンス中はタイマーが一時停止し、終了後に再開されます。</div>
-                </div>
-            `;
-        }
+
+        const startStr = formatDate(start);
+        const endStr = formatDate(end);
+        const maintHtml = `
+            <div class="maintenance-info-rich p-2 bg-red-900/20 border border-red-500/30 rounded">
+                <div class="text-[14px] font-bold text-red-400 mb-1">🛠️ メンテナンス予定</div>
+                <div class="text-[13px] text-gray-100">${startStr} ～ ${endStr}</div>
+                <div class="text-[11px] text-gray-400 mt-2">※メンテナンス中はタイマーが一時停止し、終了後に再開されます。</div>
+            </div>
+        `;
+        maintPanels.forEach(p => { p.innerHTML = maintHtml; });
     } else {
         maintenanceEl.innerHTML = "";
+        maintPanels.forEach(p => { p.textContent = "現在予定されているメンテナンスはありません。"; });
     }
 
     if (telopEl) {
@@ -269,22 +271,15 @@ function renderMaintenanceStatus() {
         }
     }
 
-    const sidebarMaint = document.getElementById("sidebar-maintenance-content");
-    const sidebarTelop = document.getElementById("sidebar-telop-content");
-    const isMobile = window.innerWidth < 1024;
+    telopPanels.forEach(p => {
+        p.textContent = hasMessage ? maintenance.message : "";
+    });
 
     document.querySelectorAll('.sidebar-icon-btn[data-panel="maintenance"], .mobile-footer-btn[data-panel="maintenance"]')
         .forEach(btn => btn.classList.toggle("has-alert", hasMaintenance));
 
-    if (sidebarMaint && !maintenance) {
-        sidebarMaint.textContent = "現在予定されているメンテナンスはありません。";
-    }
-
-    if (sidebarTelop) {
-        sidebarTelop.textContent = hasMessage ? maintenance.message : "";
-        document.querySelectorAll('.sidebar-icon-btn[data-panel="telop"], .mobile-footer-btn[data-panel="telop"]')
-            .forEach(btn => btn.classList.toggle("has-alert", hasMessage));
-    }
+    document.querySelectorAll('.sidebar-icon-btn[data-panel="telop"], .mobile-footer-btn[data-panel="telop"]')
+        .forEach(btn => btn.classList.toggle("has-alert", hasMessage));
 
     const errorLogCount = window.errorLog ? window.errorLog.length : 0;
     const hasError = errorLogCount > 0;

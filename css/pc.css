@@ -29,6 +29,14 @@
         height: min-content;
     }
 
+    .pc-detail-card .detail-info-item .label {
+        font-size: 11px;
+    }
+
+    .pc-detail-card .detail-info-item .value {
+        font-size: 14px;
+    }
+
     .pc-detail-rank[data-rank="S"] {
         color: var(--rank-s);
         border-color: rgba(245, 158, 11, 0.3);
