@@ -287,13 +287,13 @@
 
     <template id="mob-card-template">
         <div class="mob-card">
-            <div class="mob-card-inner">
-                <div class="mob-card-header p-0 relative overflow-hidden" data-toggle="card-header">
-                    <!-- Background Progress Bar integrated into the list -->
-                    <div class="progress-bar-wrapper absolute top-0 bottom-0 left-0 right-[38px] z-0 opacity-25">
-                        <div class="progress-bar-bg absolute left-0 top-0 h-full transition-all duration-100 ease-linear" style="width: 0%"></div>
-                    </div>
-                    
+            <div class="mob-card-inner relative overflow-hidden transition-all duration-300">
+                <!-- Background Progress Bar spanning the whole card -->
+                <div class="progress-bar-wrapper absolute top-0 bottom-0 left-0 right-[38px] z-0 opacity-20 pointer-events-none">
+                    <div class="progress-bar-bg absolute left-0 top-0 h-full" style="width: 0%"></div>
+                </div>
+
+                <div class="mob-card-header p-0 relative bg-transparent z-10" data-toggle="card-header">
                     <div class="px-2 py-1.5 grid grid-rows-2 gap-y-0.5 content-area relative z-10">
                         <!-- Upper Row: Grid Column for alignment -->
                         <div class="mobile-grid-upper grid items-center w-full min-w-0">
@@ -318,7 +318,7 @@
                     <div class="report-side-bar transition-colors duration-200 z-10 absolute" data-report-type="" data-mob-no=""></div>
                 </div>
 
-                <div class="expandable-panel">
+                <div class="expandable-panel relative z-10">
                     <div class="mobile-expand-inner relative z-10 px-2 py-3">
                         <!-- 2. 時間4種 -->
                         <div class="detail-grid mb-4">

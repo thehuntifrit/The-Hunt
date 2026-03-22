@@ -8,118 +8,118 @@ import { updateStatusContainerVisibility } from "./app.js";
 import { checkAndNotify } from "./notificationManager.js";
 
 const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Tokyo"
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "Asia/Tokyo"
 });
 
 export function processText(text) {
-    if (typeof text !== "string" || !text) return "";
-    return text.replace(/\/\//g, "<br>");
+  if (typeof text !== "string" || !text) return "";
+  return text.replace(/\/\//g, "<br>");
 }
 
 export function shouldDisplayMemo(mob) {
-    const hasMemo = mob.memo_text?.trim();
-    const isMemoNewer = (mob.memo_updated_at || 0) >= (mob.last_kill_time || 0);
-    return hasMemo && (isMemoNewer || !mob.last_kill_time);
+  const hasMemo = mob.memo_text?.trim();
+  const isMemoNewer = (mob.memo_updated_at || 0) >= (mob.last_kill_time || 0);
+  return hasMemo && (isMemoNewer || !mob.last_kill_time);
 }
 
 export function computeTimeLabel(mob) {
-    const { minRepop, maxRepop, status, isInConditionWindow, conditionWindowEnd, nextConditionSpawnDate, isMaintenanceStop, isBlockedByMaintenance, maintStart, maintEnd } = mob.repopInfo || {};
-    const now = Date.now() / 1000;
-    const isMaint = !!(isMaintenanceStop || isBlockedByMaintenance);
-    const isTimedMob = !!(isInConditionWindow || nextConditionSpawnDate);
-    
-    // メンテナンス中
-    if (isMaint) {
-        let maintStr = "メンテ中";
-        if (maintStart && maintEnd) {
-            const startStr = formatMMDDHHmm(maintStart).split(' ')[1];
-            const endStr = formatMMDDHHmm(maintEnd).split(' ')[1];
-            maintStr = `${startStr}~${endStr}`;
-        }
-        // モブリスト内には詳細時間は出さず、アイコンのみにする方針（ユーザー要望）
-        return { label: "🛠️", timeValue: "メンテ中", isSpecialCondition: false, isTimeOver: false, isTimedMob: false };
-    }
+  const { minRepop, maxRepop, status, isInConditionWindow, conditionWindowEnd, nextConditionSpawnDate, isMaintenanceStop, isBlockedByMaintenance, maintStart, maintEnd } = mob.repopInfo || {};
+  const now = Date.now() / 1000;
+  const isMaint = !!(isMaintenanceStop || isBlockedByMaintenance);
+  const isTimedMob = !!(isInConditionWindow || nextConditionSpawnDate);
 
-    // 全ての値がない場合は未確定
-    if (!minRepop && !maxRepop && !isTimedMob) {
-        return { label: "", timeValue: "--/-- --:--", isSpecialCondition: false, isTimeOver: false, isTimedMob: false };
+  // メンテナンス中
+  if (isMaint) {
+    let maintStr = "メンテ中";
+    if (maintStart && maintEnd) {
+      const startStr = formatMMDDHHmm(maintStart).split(' ')[1];
+      const endStr = formatMMDDHHmm(maintEnd).split(' ')[1];
+      maintStr = `${startStr}~${endStr}`;
     }
+    // モブリスト内には詳細時間は出さず、アイコンのみにする方針（ユーザー要望）
+    return { label: "🛠️", timeValue: "メンテ中", isSpecialCondition: false, isTimeOver: false, isTimedMob: false };
+  }
 
-    let label = "", timeValue = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
-    
-    if (isInConditionWindow && conditionWindowEnd) {
-        label = "⏳"; timeValue = formatDurationM((conditionWindowEnd.getTime() / 1000) - now); isSpecialCondition = true;
-    } else if (nextConditionSpawnDate && now >= minRepop) {
-        label = "🔜"; timeValue = formatDurationColon((nextConditionSpawnDate.getTime() / 1000) - now); isSpecialCondition = true;
-    } else if (minRepop && now < minRepop) {
-        label = "🔜"; timeValue = formatDurationColon(minRepop - now); if (isTimedMob) isSpecialCondition = true;
-    } else if (maxRepop && now < maxRepop) {
-        label = "⏳";
-        if (isTimedMob) { timeValue = formatDurationM(maxRepop - now); isSpecialCondition = true; }
-        else { timeValue = formatDurationColon(maxRepop - now); }
-    } else if (maxRepop) {
-        label = "READY";
-        if (isTimedMob) { timeValue = formatDurationM(now - maxRepop); isSpecialCondition = true; }
-        else { timeValue = formatDurationColon(now - maxRepop); }
-        isTimeOver = true;
-    } else {
-        label = ""; timeValue = "--/-- --:--"; isSpecialCondition = false; isTimedMob = false;
-    }
-    
-    return { label, timeValue, isSpecialCondition, isTimeOver, isTimedMob };
+  // 全ての値がない場合は未確定
+  if (!minRepop && !maxRepop && !isTimedMob) {
+    return { label: "", timeValue: "--/-- --:--", isSpecialCondition: false, isTimeOver: false, isTimedMob: false };
+  }
+
+  let label = "", timeValue = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
+
+  if (isInConditionWindow && conditionWindowEnd) {
+    label = "⏳"; timeValue = formatDurationM((conditionWindowEnd.getTime() / 1000) - now); isSpecialCondition = true;
+  } else if (nextConditionSpawnDate && now >= minRepop) {
+    label = "🔜"; timeValue = formatDurationColon((nextConditionSpawnDate.getTime() / 1000) - now); isSpecialCondition = true;
+  } else if (minRepop && now < minRepop) {
+    label = "🔜"; timeValue = formatDurationColon(minRepop - now); if (isTimedMob) isSpecialCondition = true;
+  } else if (maxRepop && now < maxRepop) {
+    label = "⏳";
+    if (isTimedMob) { timeValue = formatDurationM(maxRepop - now); isSpecialCondition = true; }
+    else { timeValue = formatDurationColon(maxRepop - now); }
+  } else if (maxRepop) {
+    label = "READY";
+    if (isTimedMob) { timeValue = formatDurationM(now - maxRepop); isSpecialCondition = true; }
+    else { timeValue = formatDurationColon(now - maxRepop); }
+    isTimeOver = true;
+  } else {
+    label = ""; timeValue = "--/-- --:--"; isSpecialCondition = false; isTimedMob = false;
+  }
+
+  return { label, timeValue, isSpecialCondition, isTimeOver, isTimedMob };
 }
 
 export function getSpawnCountInfo(mob) {
-    const state = getState();
-    const mobLocationsData = state.mobLocations?.[mob.No];
-    const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
-    if (!mob.Map || !mob.spawn_points) return { countHtml: "", remainingCount: 0, spawnCullStatus };
-    const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
-    const remainingCount = validSpawnPoints.length;
-    let countHtml = "";
-    if (remainingCount === 1) {
-        const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-        countHtml = `<span class="pc-count-val font-bold text-yellow-500">${pointNumber}番</span>`;
-    } else if (remainingCount > 1) {
-        countHtml = `<span class="pc-count-val font-bold text-slate-400">@ ${remainingCount}</span>`;
-    }
-    return { countHtml, remainingCount, spawnCullStatus, validSpawnPoints };
+  const state = getState();
+  const mobLocationsData = state.mobLocations?.[mob.No];
+  const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
+  if (!mob.Map || !mob.spawn_points) return { countHtml: "", remainingCount: 0, spawnCullStatus };
+  const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
+  const remainingCount = validSpawnPoints.length;
+  let countHtml = "";
+  if (remainingCount === 1) {
+    const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
+    countHtml = `<span class="pc-count-val font-bold text-yellow-500">${pointNumber}番</span>`;
+  } else if (remainingCount > 1) {
+    countHtml = `<span class="pc-count-val font-bold text-slate-400">@ ${remainingCount}</span>`;
+  }
+  return { countHtml, remainingCount, spawnCullStatus, validSpawnPoints };
 }
 
 export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_LastOne) {
-    const pointStatus = spawnCullStatus?.[point.id];
-    const isCulledFlag = isCulled(pointStatus, mobNo);
-    const isS_A_Cullable = point.mob_ranks.some(r => r === "S" || r === "A");
-    const isB_Only = point.mob_ranks.every(r => r.startsWith("B"));
+  const pointStatus = spawnCullStatus?.[point.id];
+  const isCulledFlag = isCulled(pointStatus, mobNo);
+  const isS_A_Cullable = point.mob_ranks.some(r => r === "S" || r === "A");
+  const isB_Only = point.mob_ranks.every(r => r.startsWith("B"));
 
-    let colorClass = "";
-    let dataIsInteractive = "false";
+  let colorClass = "";
+  let dataIsInteractive = "false";
 
-    if (isLastOne) {
-        colorClass = "color-lastone";
-        dataIsInteractive = "false";
-    } else if (isS_A_Cullable) {
-        const rankB = point.mob_ranks.find(r => r.startsWith("B"));
-        if (isCulledFlag) {
-            colorClass = rankB === "B1" ? "color-b1-culled" : "color-b2-culled";
-        } else {
-            colorClass = rankB === "B1" ? "color-b1" : "color-b2";
-        }
-        dataIsInteractive = "true";
-    } else if (isB_Only) {
-        const rankB = point.mob_ranks[0];
-        colorClass = rankB === "B1" ? "color-b1-only" : "color-b2-only";
-        dataIsInteractive = "false";
+  if (isLastOne) {
+    colorClass = "color-lastone";
+    dataIsInteractive = "false";
+  } else if (isS_A_Cullable) {
+    const rankB = point.mob_ranks.find(r => r.startsWith("B"));
+    if (isCulledFlag) {
+      colorClass = rankB === "B1" ? "color-b1-culled" : "color-b2-culled";
+    } else {
+      colorClass = rankB === "B1" ? "color-b1" : "color-b2";
     }
+    dataIsInteractive = "true";
+  } else if (isB_Only) {
+    const rankB = point.mob_ranks[0];
+    colorClass = rankB === "B1" ? "color-b1-only" : "color-b2-only";
+    dataIsInteractive = "false";
+  }
 
-    const pointNumber = parseInt(point.id.slice(-2), 10);
-    const titleText = `${pointNumber}${isCulledFlag ? " (済)" : ""}`;
+  const pointNumber = parseInt(point.id.slice(-2), 10);
+  const titleText = `${pointNumber}${isCulledFlag ? " (済)" : ""}`;
 
-    return `
+  return `
     <div class="spawn-point ${colorClass}"
         style="left:${point.x}%; top:${point.y}%;"
         data-tooltip="${titleText}"
@@ -135,204 +135,204 @@ export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, i
 }
 
 export function createMobCard(mob, isDetailView = false) {
-    if (isDetailView) return createPCDetailCard(mob);
+  if (isDetailView) return createPCDetailCard(mob);
 
-    const template = document.getElementById('mob-card-template');
-    const clone = template.content.cloneNode(true);
-    const card = clone.querySelector('.mob-card');
+  const template = document.getElementById('mob-card-template');
+  const clone = template.content.cloneNode(true);
+  const card = clone.querySelector('.mob-card');
 
-    const rank = mob.Rank;
-    const { openMobCardNo } = getState();
-    const isOpen = mob.No === openMobCardNo;
+  const rank = mob.Rank;
+  const { openMobCardNo } = getState();
+  const isOpen = mob.No === openMobCardNo;
 
-    card.dataset.mobNo = mob.No;
-    card.dataset.rank = rank;
+  card.dataset.mobNo = mob.No;
+  card.dataset.rank = rank;
 
-    const memoInput = card.querySelector('.memo-input');
-    if (memoInput) {
-        memoInput.dataset.mobNo = mob.No;
-        memoInput.value = mob.memo_text || "";
-    }
+  const memoInput = card.querySelector('.memo-input');
+  if (memoInput) {
+    memoInput.dataset.mobNo = mob.No;
+    memoInput.value = mob.memo_text || "";
+  }
 
-    const mobNameEl = card.querySelector('.mob-name');
-    if (mobNameEl) {
-        mobNameEl.textContent = mob.Name;
-        mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
-    }
+  const mobNameEl = card.querySelector('.mob-name');
+  if (mobNameEl) {
+    mobNameEl.textContent = mob.Name;
+    mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
+  }
 
-    const mobRankBadge = card.querySelector('.mob-rank-badge');
-    if (mobRankBadge) {
-        mobRankBadge.textContent = rank;
-        mobRankBadge.style.color = `var(--rank-${rank.toLowerCase()})`;
-    }
+  const mobRankBadge = card.querySelector('.mob-rank-badge');
+  if (mobRankBadge) {
+    mobRankBadge.textContent = rank;
+    mobRankBadge.style.color = `var(--rank-${rank.toLowerCase()})`;
+  }
 
-    const reportSidebar = card.querySelector('.report-side-bar');
-    if (reportSidebar) {
-        reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
-        reportSidebar.dataset.mobNo = mob.No;
-    }
+  const reportSidebar = card.querySelector('.report-side-bar');
+  if (reportSidebar) {
+    reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
+    reportSidebar.dataset.mobNo = mob.No;
+  }
 
-    const expandablePanel = card.querySelector('.expandable-panel');
-    if (isOpen && expandablePanel) {
-        expandablePanel.classList.add('open');
-    }
+  const expandablePanel = card.querySelector('.expandable-panel');
+  if (isOpen && expandablePanel) {
+    expandablePanel.classList.add('open');
+  }
 
-    const conditionText = card.querySelector('.condition-text');
-    if (conditionText && mob.Condition) {
-        conditionText.innerHTML = processText(mob.Condition);
-    }
+  const conditionText = card.querySelector('.condition-text');
+  if (conditionText && mob.Condition) {
+    conditionText.innerHTML = processText(mob.Condition);
+  }
 
-    const mapImg = card.querySelector('.mob-map-img');
-    const mapSection = mapImg?.closest('.map-section');
-    if (mapImg && mob.Map) {
-        mapImg.src = `./maps/${mob.Map}`;
-        mapImg.alt = `${mob.Area} Map`;
-        mapImg.dataset.mobMap = mob.Map;
-    } else if (mapSection) {
-        mapSection.classList.add('hidden');
-    }
-    updateAreaInfo(card, mob);
-    updateMobCount(card, mob);
-    updateMapOverlay(card, mob);
-    updateExpandablePanel(card, mob);
-    updateMemoIcon(card, mob);
-    updateProgressBar(card, mob);
-    updateProgressText(card, mob);
+  const mapImg = card.querySelector('.mob-map-img');
+  const mapSection = mapImg?.closest('.map-section');
+  if (mapImg && mob.Map) {
+    mapImg.src = `./maps/${mob.Map}`;
+    mapImg.alt = `${mob.Area} Map`;
+    mapImg.dataset.mobMap = mob.Map;
+  } else if (mapSection) {
+    mapSection.classList.add('hidden');
+  }
+  updateAreaInfo(card, mob);
+  updateMobCount(card, mob);
+  updateMapOverlay(card, mob);
+  updateExpandablePanel(card, mob);
+  updateMemoIcon(card, mob);
+  updateProgressBar(card, mob);
+  updateProgressText(card, mob);
 
-    return card;
+  return card;
 }
 
 export function createPCDetailCard(mob) {
-    const template = document.getElementById('pc-detail-card-template');
-    const clone = template.content.cloneNode(true);
-    const card = clone.querySelector('.pc-detail-card');
+  const template = document.getElementById('pc-detail-card-template');
+  const clone = template.content.cloneNode(true);
+  const card = clone.querySelector('.pc-detail-card');
 
-    const rank = mob.Rank;
-    const { elapsedPercent, nextConditionSpawnDate, minRepop, maxRepop } = mob.repopInfo || {};
-    const fmt = (val) => val ? formatMMDDHHmm(val) : "--/-- --:--";
+  const rank = mob.Rank;
+  const { elapsedPercent, nextConditionSpawnDate, minRepop, maxRepop } = mob.repopInfo || {};
+  const fmt = (val) => val ? formatMMDDHHmm(val) : "--/-- --:--";
 
-    card.dataset.mobNo = mob.No;
-    card.dataset.rank = rank;
+  card.dataset.mobNo = mob.No;
+  card.dataset.rank = rank;
 
-    const nameEl = card.querySelector('.pc-detail-name');
-    if (nameEl) {
-        nameEl.textContent = mob.Name;
-        nameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
+  const nameEl = card.querySelector('.pc-detail-name');
+  if (nameEl) {
+    nameEl.textContent = mob.Name;
+    nameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
+  }
+
+  const rankEl = card.querySelector('.pc-detail-rank');
+  if (rankEl) {
+    rankEl.textContent = rank;
+    rankEl.dataset.rank = rank;
+  }
+
+  const progressBar = card.querySelector('.pc-detail-progress-bar');
+  if (progressBar) progressBar.style.width = `${elapsedPercent || 0}%`;
+
+  card.querySelector('[data-min-repop]').textContent = fmt(minRepop);
+  card.querySelector('[data-max-repop]').textContent = fmt(maxRepop);
+  card.querySelector('[data-next-possible]').textContent = nextConditionSpawnDate ? fmt(nextConditionSpawnDate) : fmt(minRepop);
+  card.querySelector('[data-last-kill]').textContent = fmt(mob.last_kill_time);
+
+  const conditionEl = card.querySelector('.section-content.condition');
+  if (conditionEl) conditionEl.innerHTML = processText(mob.Condition || "\u7279\u6b8a\u306a\u51fa\u73fe\u6761\u4ef6\u306f\u3042\u308a\u307e\u305b\u3093\u3002");
+
+  const memoInput = card.querySelector('.memo-input');
+  if (memoInput) {
+    memoInput.dataset.mobNo = mob.No;
+    memoInput.value = mob.memo_text || '';
+  }
+
+  const mapSection = card.querySelector('.map-section');
+  if (mapSection) {
+    if (mob.Map) {
+      mapSection.classList.remove('hidden');
+      updateMapOverlay(card, mob);
+    } else {
+      mapSection.classList.add('hidden');
     }
+  }
 
-    const rankEl = card.querySelector('.pc-detail-rank');
-    if (rankEl) {
-        rankEl.textContent = rank;
-        rankEl.dataset.rank = rank;
-    }
+  const reportSidebar = card.querySelector('.report-side-bar');
+  if (reportSidebar) {
+    reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
+    reportSidebar.dataset.mobNo = mob.No;
+  }
 
-    const progressBar = card.querySelector('.pc-detail-progress-bar');
-    if (progressBar) progressBar.style.width = `${elapsedPercent || 0}%`;
+  updateAreaInfo(card, mob);
+  updateExpandablePanel(card, mob);
 
-    card.querySelector('[data-min-repop]').textContent = fmt(minRepop);
-    card.querySelector('[data-max-repop]').textContent = fmt(maxRepop);
-    card.querySelector('[data-next-possible]').textContent = nextConditionSpawnDate ? fmt(nextConditionSpawnDate) : fmt(minRepop);
-    card.querySelector('[data-last-kill]').textContent = fmt(mob.last_kill_time);
-
-    const conditionEl = card.querySelector('.section-content.condition');
-    if (conditionEl) conditionEl.innerHTML = processText(mob.Condition || "\u7279\u6b8a\u306a\u51fa\u73fe\u6761\u4ef6\u306f\u3042\u308a\u307e\u305b\u3093\u3002");
-
-    const memoInput = card.querySelector('.memo-input');
-    if (memoInput) {
-        memoInput.dataset.mobNo = mob.No;
-        memoInput.value = mob.memo_text || '';
-    }
-
-    const mapSection = card.querySelector('.map-section');
-    if (mapSection) {
-        if (mob.Map) {
-            mapSection.classList.remove('hidden');
-            updateMapOverlay(card, mob);
-        } else {
-            mapSection.classList.add('hidden');
-        }
-    }
-
-    const reportSidebar = card.querySelector('.report-side-bar');
-    if (reportSidebar) {
-        reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
-        reportSidebar.dataset.mobNo = mob.No;
-    }
-
-    updateAreaInfo(card, mob);
-    updateExpandablePanel(card, mob);
-
-    return card;
+  return card;
 }
 
 export function updateProgressBar(card, mob) {
-    const { elapsedPercent, status } = mob.repopInfo || {};
-    const bars = card.querySelectorAll('.progress-bar-bg, .pc-detail-progress-bar');
-    const texts = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
-    const wrappers = card.querySelectorAll('.progress-bar-wrapper, .pc-detail-progress-container');
-    const isInCondition = !!mob.repopInfo.isInConditionWindow;
+  const { elapsedPercent, status } = mob.repopInfo || {};
+  const bars = card.querySelectorAll('.progress-bar-bg, .pc-detail-progress-bar');
+  const texts = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
+  const wrappers = card.querySelectorAll('.progress-bar-wrapper, .pc-detail-progress-container');
+  const isInCondition = !!mob.repopInfo.isInConditionWindow;
 
-    bars.forEach(bar => {
-        bar.style.width = `${elapsedPercent || 0}%`;
-        const color = `var(--progress-${status === "MaxOver" ? "max-over" : status === "ConditionActive" ? "condition" : "normal"})`;
-        if (bar.classList.contains('pc-detail-progress-bar')) {
-            bar.style.background = color;
-        } else {
-            bar.style.backgroundColor = color;
-            bar.style.background = ""; // モバイル版などは背景指定をクリア
-        }
-        bar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100, PROGRESS_CLASSES.MAX_OVER);
-        if (elapsedPercent < 60) bar.classList.add(PROGRESS_CLASSES.P0_60);
-        else if (elapsedPercent < 80) bar.classList.add(PROGRESS_CLASSES.P60_80);
-        else if (elapsedPercent < 100) bar.classList.add(PROGRESS_CLASSES.P80_100);
-        if (status === "MaxOver") bar.classList.add(PROGRESS_CLASSES.MAX_OVER);
-    });
+  bars.forEach(bar => {
+    bar.style.width = `${elapsedPercent || 0}%`;
+    const color = `var(--progress-${status === "MaxOver" ? "max-over" : status === "ConditionActive" ? "condition" : "normal"})`;
+    if (bar.classList.contains('pc-detail-progress-bar')) {
+      bar.style.background = color;
+    } else {
+      bar.style.backgroundColor = color;
+      bar.style.background = ""; // モバイル版などは背景指定をクリア
+    }
+    bar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100, PROGRESS_CLASSES.MAX_OVER);
+    if (elapsedPercent < 60) bar.classList.add(PROGRESS_CLASSES.P0_60);
+    else if (elapsedPercent < 80) bar.classList.add(PROGRESS_CLASSES.P60_80);
+    else if (elapsedPercent < 100) bar.classList.add(PROGRESS_CLASSES.P80_100);
+    if (status === "MaxOver") bar.classList.add(PROGRESS_CLASSES.MAX_OVER);
+  });
 
-    texts.forEach(text => {
-        text.classList.remove(PROGRESS_CLASSES.TEXT_NEXT, PROGRESS_CLASSES.TEXT_POP);
-        if (status === "PopWindow" || status === "ConditionActive" || status === "MaxOver") {
-            text.classList.add(PROGRESS_CLASSES.TEXT_POP);
-        }
-    });
+  texts.forEach(text => {
+    text.classList.remove(PROGRESS_CLASSES.TEXT_NEXT, PROGRESS_CLASSES.TEXT_POP);
+    if (status === "PopWindow" || status === "ConditionActive" || status === "MaxOver") {
+      text.classList.add(PROGRESS_CLASSES.TEXT_POP);
+    }
+  });
 
-    wrappers.forEach(wrapper => {
-        wrapper.classList.remove(PROGRESS_CLASSES.BLINK_WHITE);
-        if ((status === "PopWindow" || status === "ConditionActive") && elapsedPercent > 90 && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) {
-            wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
-        } else if (status === "MaxOver" && isInCondition && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) {
-            wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
-        }
-    });
+  wrappers.forEach(wrapper => {
+    wrapper.classList.remove(PROGRESS_CLASSES.BLINK_WHITE);
+    if ((status === "PopWindow" || status === "ConditionActive") && elapsedPercent > 90 && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) {
+      wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
+    } else if (status === "MaxOver" && isInCondition && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) {
+      wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
+    }
+  });
 }
 
 export function updateProgressText(card, mob) {
-    const { elapsedPercent, status, isInConditionWindow, repopTimeStr } = mob.repopInfo || {};
-    const { label, timeValue, isSpecialCondition, isTimeOver } = computeTimeLabel(mob);
-    const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
-    const nowSec = Date.now() / 1000;
-    
-    // パーセンテージ算出
-    let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
-    const percentStr = isTimeOver ? "100%" : `${safePercent}%`;
-    
-    const timeArea = card.querySelector('.mobile-time-area');
-    const percentArea = card.querySelector('.mobile-percent-area');
-    const progressTextNodes = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
-    
-    // モバイル用新レイアウトへの割当 (Icon 000:00 形式で整列)
-    if (timeArea && percentArea) {
-        timeArea.innerHTML = `
+  const { elapsedPercent, status, isInConditionWindow, repopTimeStr } = mob.repopInfo || {};
+  const { label, timeValue, isSpecialCondition, isTimeOver } = computeTimeLabel(mob);
+  const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
+  const nowSec = Date.now() / 1000;
+
+  // パーセンテージ算出
+  let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
+  const percentStr = isTimeOver ? "100%" : `${safePercent}%`;
+
+  const timeArea = card.querySelector('.mobile-time-area');
+  const percentArea = card.querySelector('.mobile-percent-area');
+  const progressTextNodes = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
+
+  // モバイル用新レイアウトへの割当 (Icon 000:00 形式で整列)
+  if (timeArea && percentArea) {
+    timeArea.innerHTML = `
             <div class="flex items-center justify-end h-full">
                 <span class="detail-label-icon text-[13px] opacity-100 text-yellow-500 mr-1">${label}</span>
                 <span class="detail-time-val font-bold text-[12px] text-gray-100 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</span>
             </div>`;
-        percentArea.textContent = percentStr;
-        percentArea.classList.add("text-gray-300");
-    }
-    
-    // 既存/PC詳細用への割当
-    const pcProgressTextHTML = `<span class="font-bold text-[14px] text-gray-100">${percentStr}</span>`;
-    const defaultProgressTextHTML = `
+    percentArea.textContent = percentStr;
+    percentArea.classList.add("text-gray-300");
+  }
+
+  // 既存/PC詳細用への割当
+  const pcProgressTextHTML = `<span class="font-bold text-[14px] text-gray-100">${percentStr}</span>`;
+  const defaultProgressTextHTML = `
         <div class="flex items-center justify-between w-full">
             <div class="flex items-center gap-1.5">
                 ${label ? `<span class="detail-label-icon text-[12px] opacity-80">${label}</span>` : ''}
@@ -340,252 +340,252 @@ export function updateProgressText(card, mob) {
             </div>
             <span class="font-bold text-[13px] ml-4">${percentStr}</span>
         </div>`;
-    
-    progressTextNodes.forEach(text => {
-        if (text.classList.contains('pc-detail-progress-text')) {
-            text.innerHTML = pcProgressTextHTML; // PC詳細パネルは % のみ
-        } else {
-            text.innerHTML = defaultProgressTextHTML;
-        }
-        if (status === "MaxOver") text.classList.add("max-over");
-        else text.classList.remove("max-over");
-    });
 
-    const mobNameEl = card.querySelector('.mob-name');
-    const shouldDimCard = isMaint || status === "Next" || (status === "NextCondition" && nowSec < (mob.repopInfo?.minRepop || 0));
-    const reportSidebar = card.querySelector('.report-side-bar');
-
-    if (shouldDimCard) {
-        card.classList.add("is-pre-repop");
-        card.classList.remove("is-active-neon");
-        if (reportSidebar) reportSidebar.classList.remove("is-active-neon");
+  progressTextNodes.forEach(text => {
+    if (text.classList.contains('pc-detail-progress-text')) {
+      text.innerHTML = pcProgressTextHTML; // PC詳細パネルは % のみ
     } else {
-        card.classList.remove("is-pre-repop");
-        card.classList.add("is-active-neon");
-        if (reportSidebar) reportSidebar.classList.add("is-active-neon");
+      text.innerHTML = defaultProgressTextHTML;
     }
-    if (mobNameEl) mobNameEl.style.color = '#fff';
+    if (status === "MaxOver") text.classList.add("max-over");
+    else text.classList.remove("max-over");
+  });
 
-    if (isMaint) card.classList.add("maintenance-gray-out");
-    else card.classList.remove("maintenance-gray-out");
+  const mobNameEl = card.querySelector('.mob-name');
+  const shouldDimCard = isMaint || status === "Next" || (status === "NextCondition" && nowSec < (mob.repopInfo?.minRepop || 0));
+  const reportSidebar = card.querySelector('.report-side-bar');
 
-    if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) card.classList.add("blink-border-white");
-    else card.classList.remove("blink-border-white");
+  if (shouldDimCard) {
+    card.classList.add("is-pre-repop");
+    card.classList.remove("is-active-neon");
+    if (reportSidebar) reportSidebar.classList.remove("is-active-neon");
+  } else {
+    card.classList.remove("is-pre-repop");
+    card.classList.add("is-active-neon");
+    if (reportSidebar) reportSidebar.classList.add("is-active-neon");
+  }
+  if (mobNameEl) mobNameEl.style.color = '#fff';
+
+  if (isMaint) card.classList.add("maintenance-gray-out");
+  else card.classList.remove("maintenance-gray-out");
+
+  if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) card.classList.add("blink-border-white");
+  else card.classList.remove("blink-border-white");
 }
 
 export function updateExpandablePanel(card, mob) {
-    const { minRepop, maxRepop, nextConditionSpawnDate } = mob.repopInfo || {};
-    
-    const elMin = card.querySelector("[data-min-repop]");
-    const elMax = card.querySelector("[data-max-repop]");
-    const elNext = card.querySelector("[data-next-possible]");
-    const elLast = card.querySelector("[data-last-kill]");
-    
-    const fmt = (val) => val ? formatMMDDHHmm(val) : "--/-- --:--";
-    
-    if (elMin) elMin.textContent = fmt(minRepop);
-    if (elMax) elMax.textContent = fmt(maxRepop);
-    
-    if (elNext) {
-        let npt = "--/-- --:--";
-        if (nextConditionSpawnDate) npt = formatMMDDHHmm(nextConditionSpawnDate);
-        else if (minRepop) npt = formatMMDDHHmm(minRepop);
-        elNext.textContent = npt;
-    }
-    
-    if (elLast) elLast.textContent = fmt(mob.last_kill_time);
+  const { minRepop, maxRepop, nextConditionSpawnDate } = mob.repopInfo || {};
 
-    // Memo
-    const elMemoInput = card.querySelector("input[data-action='save-memo']");
-    if (elMemoInput) {
-        if (elMemoInput.dataset.mobNo !== String(mob.No)) elMemoInput.dataset.mobNo = mob.No;
-        if (document.activeElement !== elMemoInput) {
-            const newValue = mob.memo_text || "";
-            if (elMemoInput.value !== newValue) elMemoInput.value = newValue;
-        }
-    }
-    
-    // Condition
-    const elCondition = card.querySelector(".condition-text");
-    if (elCondition) {
-        const conditionText = mob.Condition ? processText(mob.Condition) : "特別な出現条件はありません。";
-        if (elCondition.innerHTML !== conditionText) elCondition.innerHTML = conditionText;
-        
-        const isPCDetail = card.classList.contains('pc-detail-card');
-        const sections = [
-            elCondition.closest('.detail-section') || elCondition.closest('.pc-detail-section'),
-            card.querySelector('.memo-section'),
-            card.querySelector('.map-section')
-        ].filter(Boolean);
+  const elMin = card.querySelector("[data-min-repop]");
+  const elMax = card.querySelector("[data-max-repop]");
+  const elNext = card.querySelector("[data-next-possible]");
+  const elLast = card.querySelector("[data-last-kill]");
 
-        sections.forEach(section => {
-            if (isPCDetail && mob.Condition) {
-                section.classList.add('condition-section-neon');
-            } else {
-                section.classList.remove('condition-section-neon');
-            }
-        });
+  const fmt = (val) => val ? formatMMDDHHmm(val) : "--/-- --:--";
+
+  if (elMin) elMin.textContent = fmt(minRepop);
+  if (elMax) elMax.textContent = fmt(maxRepop);
+
+  if (elNext) {
+    let npt = "--/-- --:--";
+    if (nextConditionSpawnDate) npt = formatMMDDHHmm(nextConditionSpawnDate);
+    else if (minRepop) npt = formatMMDDHHmm(minRepop);
+    elNext.textContent = npt;
+  }
+
+  if (elLast) elLast.textContent = fmt(mob.last_kill_time);
+
+  // Memo
+  const elMemoInput = card.querySelector("input[data-action='save-memo']");
+  if (elMemoInput) {
+    if (elMemoInput.dataset.mobNo !== String(mob.No)) elMemoInput.dataset.mobNo = mob.No;
+    if (document.activeElement !== elMemoInput) {
+      const newValue = mob.memo_text || "";
+      if (elMemoInput.value !== newValue) elMemoInput.value = newValue;
     }
+  }
+
+  // Condition
+  const elCondition = card.querySelector(".condition-text");
+  if (elCondition) {
+    const conditionText = mob.Condition ? processText(mob.Condition) : "特別な出現条件はありません。";
+    if (elCondition.innerHTML !== conditionText) elCondition.innerHTML = conditionText;
+
+    const isPCDetail = card.classList.contains('pc-detail-card');
+    const sections = [
+      elCondition.closest('.detail-section') || elCondition.closest('.pc-detail-section'),
+      card.querySelector('.memo-section'),
+      card.querySelector('.map-section')
+    ].filter(Boolean);
+
+    sections.forEach(section => {
+      if (isPCDetail && mob.Condition) {
+        section.classList.add('condition-section-neon');
+      } else {
+        section.classList.remove('condition-section-neon');
+      }
+    });
+  }
 
 
 }
 
 export function updateMemoIcon(card, mob) {
-    const memoIconContainer = card.querySelector('.memo-icon-container');
-    if (!memoIconContainer) return;
-    const shouldShowMemo = shouldDisplayMemo(mob);
-    const newState = shouldShowMemo ? mob.memo_text : "";
-    if (memoIconContainer.dataset.memoState === newState) return;
-    memoIconContainer.dataset.memoState = newState;
-    if (shouldShowMemo) {
-        let span = memoIconContainer.querySelector('span');
-        if (!span) {
-            span = document.createElement('span');
-            span.style.fontSize = '1rem';
-            span.textContent = '📝';
-            memoIconContainer.appendChild(span);
-        }
-        if (span.getAttribute('data-tooltip') !== mob.memo_text) span.setAttribute('data-tooltip', mob.memo_text);
-    } else {
-        memoIconContainer.innerHTML = '';
+  const memoIconContainer = card.querySelector('.memo-icon-container');
+  if (!memoIconContainer) return;
+  const shouldShowMemo = shouldDisplayMemo(mob);
+  const newState = shouldShowMemo ? mob.memo_text : "";
+  if (memoIconContainer.dataset.memoState === newState) return;
+  memoIconContainer.dataset.memoState = newState;
+  if (shouldShowMemo) {
+    let span = memoIconContainer.querySelector('span');
+    if (!span) {
+      span = document.createElement('span');
+      span.style.fontSize = '1rem';
+      span.textContent = '📝';
+      memoIconContainer.appendChild(span);
     }
+    if (span.getAttribute('data-tooltip') !== mob.memo_text) span.setAttribute('data-tooltip', mob.memo_text);
+  } else {
+    memoIconContainer.innerHTML = '';
+  }
 }
 
 export function getValidSpawnPoints(mob, spawnCullStatus) {
-    return (mob.spawn_points ?? []).filter(point => {
-        const isS_SpawnPoint = point.mob_ranks.includes("S");
-        if (!isS_SpawnPoint) return false;
-        const pointStatus = spawnCullStatus?.[point.id];
-        return !isCulled(pointStatus, mob.No, mob);
-    });
+  return (mob.spawn_points ?? []).filter(point => {
+    const isS_SpawnPoint = point.mob_ranks.includes("S");
+    if (!isS_SpawnPoint) return false;
+    const pointStatus = spawnCullStatus?.[point.id];
+    return !isCulled(pointStatus, mob.No, mob);
+  });
 }
 
 export function updateMobCount(card, mob) {
-    const countContainer = card.querySelector('.mob-count-container');
-    if (!countContainer) return;
-    const { remainingCount } = getSpawnCountInfo(mob);
-    let displayCountText = "";
-    if (mob.Map && mob.spawn_points) {
-        if (remainingCount === 1) {
-            const { validSpawnPoints } = getSpawnCountInfo(mob);
-            const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-            displayCountText = `<span class="text-sm text-yellow-400 font-bold text-glow">${pointNumber}&thinsp;番</span>`;
-        } else if (remainingCount > 1) {
-            displayCountText = `<span class="text-sm text-gray-400 relative -top-[0.12rem]">@</span><span class="text-base text-gray-400 font-bold text-glow relative top-[0.04rem]">&thinsp;${remainingCount}</span>`;
-        }
-        if (displayCountText) displayCountText = `<span class="text-sm">📍</span>${displayCountText}`;
+  const countContainer = card.querySelector('.mob-count-container');
+  if (!countContainer) return;
+  const { remainingCount } = getSpawnCountInfo(mob);
+  let displayCountText = "";
+  if (mob.Map && mob.spawn_points) {
+    if (remainingCount === 1) {
+      const { validSpawnPoints } = getSpawnCountInfo(mob);
+      const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
+      displayCountText = `<span class="text-sm text-yellow-400 font-bold text-glow">${pointNumber}&thinsp;番</span>`;
+    } else if (remainingCount > 1) {
+      displayCountText = `<span class="text-sm text-gray-400 relative -top-[0.12rem]">@</span><span class="text-base text-gray-400 font-bold text-glow relative top-[0.04rem]">&thinsp;${remainingCount}</span>`;
     }
-    if (countContainer.dataset.cacheKey !== displayCountText) {
-        countContainer.dataset.cacheKey = displayCountText;
-        countContainer.innerHTML = displayCountText;
-    }
+    if (displayCountText) displayCountText = `<span class="text-sm">📍</span>${displayCountText}`;
+  }
+  if (countContainer.dataset.cacheKey !== displayCountText) {
+    countContainer.dataset.cacheKey = displayCountText;
+    countContainer.innerHTML = displayCountText;
+  }
 }
 
 export function updateAreaInfo(card, mob) {
-    const areaName = mob.Area || "--";
-    const expName = mob.Expansion || "--";
-    const rank = mob.Rank || "A";
-    
-    // ランクバッジの更新 (リスト側と詳細側の両方)
-    card.querySelectorAll('.mob-rank-badge, .list-rank-badge').forEach(badge => {
-        badge.textContent = rank;
-        const color = `var(--rank-${rank.toLowerCase()})`;
-        badge.style.color = color;
-        badge.style.borderColor = color;
-    });
+  const areaName = mob.Area || "--";
+  const expName = mob.Expansion || "--";
+  const rank = mob.Rank || "A";
 
-    // 詳細パネル/拡大表示用のエリア情報
-    card.querySelectorAll('.detail-area').forEach(el => el.textContent = areaName);
-    card.querySelectorAll('.detail-expansion').forEach(el => el.textContent = `| ${expName}`);
+  // ランクバッジの更新 (リスト側と詳細側の両方)
+  card.querySelectorAll('.mob-rank-badge, .list-rank-badge').forEach(badge => {
+    badge.textContent = rank;
+    const color = `var(--rank-${rank.toLowerCase()})`;
+    badge.style.color = color;
+    badge.style.borderColor = color;
+  });
 
-    // モバイル版リストヘッダーのエリアテキスト (Rank との間に &nbsp; を追加)
-    const headerArea = card.querySelector('.mobile-header-area-text');
-    if (headerArea) {
-        headerArea.textContent = `\u00A0\u00A0${areaName} | ${expName}`;
-    }
+  // 詳細パネル/拡大表示用のエリア情報
+  card.querySelectorAll('.detail-area').forEach(el => el.textContent = areaName);
+  card.querySelectorAll('.detail-expansion').forEach(el => el.textContent = `| ${expName}`);
+
+  // モバイル版リストヘッダーのエリアテキスト (Rank との間に &nbsp; を追加)
+  const headerArea = card.querySelector('.mobile-header-area-text');
+  if (headerArea) {
+    headerArea.textContent = `\u00A0\u00A0${areaName} | ${expName}`;
+  }
 }
 
 export function updateMapOverlay(card, mob) {
-    const mapContainer = card.querySelector('.map-container');
-    if (!mapContainer) return;
-    const mapImg = mapContainer.querySelector('.mob-map-img');
-    if (mapImg && mob.Map && mapImg.dataset.mobMap !== mob.Map) {
-        mapImg.src = `./maps/${mob.Map}`;
-        mapImg.alt = `${mob.Area} Map`;
-        mapImg.dataset.mobMap = mob.Map;
-        mapContainer.classList.remove('hidden');
-        delete mapContainer.dataset.locationLoading;
-    }
-    if (mapContainer.classList.contains('hidden')) return;
-    const mapOverlay = mapContainer.querySelector('.map-overlay');
-    if (!mapOverlay) return;
-    let spawnPointsHtml = "";
-    if (mob.Map && mob.spawn_points) {
-        const { spawnCullStatus, validSpawnPoints } = getSpawnCountInfo(mob);
-        const isOneLeft = (validSpawnPoints?.length || 0) === 1;
-        spawnPointsHtml = (mob.spawn_points ?? []).map(point => {
-            const isThisPointTheLastOne = isOneLeft && point.id === validSpawnPoints[0]?.id;
-            return drawSpawnPoint(point, spawnCullStatus, mob.No, point.mob_ranks.includes("B2") ? "B2" : point.mob_ranks.includes("B1") ? "B1" : point.mob_ranks[0], isThisPointTheLastOne, isOneLeft);
-        }).join("");
-    }
-    if (mapOverlay.innerHTML !== spawnPointsHtml) mapOverlay.innerHTML = spawnPointsHtml;
+  const mapContainer = card.querySelector('.map-container');
+  if (!mapContainer) return;
+  const mapImg = mapContainer.querySelector('.mob-map-img');
+  if (mapImg && mob.Map && mapImg.dataset.mobMap !== mob.Map) {
+    mapImg.src = `./maps/${mob.Map}`;
+    mapImg.alt = `${mob.Area} Map`;
+    mapImg.dataset.mobMap = mob.Map;
+    mapContainer.classList.remove('hidden');
+    delete mapContainer.dataset.locationLoading;
+  }
+  if (mapContainer.classList.contains('hidden')) return;
+  const mapOverlay = mapContainer.querySelector('.map-overlay');
+  if (!mapOverlay) return;
+  let spawnPointsHtml = "";
+  if (mob.Map && mob.spawn_points) {
+    const { spawnCullStatus, validSpawnPoints } = getSpawnCountInfo(mob);
+    const isOneLeft = (validSpawnPoints?.length || 0) === 1;
+    spawnPointsHtml = (mob.spawn_points ?? []).map(point => {
+      const isThisPointTheLastOne = isOneLeft && point.id === validSpawnPoints[0]?.id;
+      return drawSpawnPoint(point, spawnCullStatus, mob.No, point.mob_ranks.includes("B2") ? "B2" : point.mob_ranks.includes("B1") ? "B1" : point.mob_ranks[0], isThisPointTheLastOne, isOneLeft);
+    }).join("");
+  }
+  if (mapOverlay.innerHTML !== spawnPointsHtml) mapOverlay.innerHTML = spawnPointsHtml;
 }
 
 export function createSimpleMobItem(mob) {
-    const item = document.createElement('div');
-    item.className = `pc-list-item rank-${mob.Rank.toLowerCase()}`;
-    item.dataset.mobNo = mob.No;
-    item.dataset.rank = mob.Rank;
-    item.innerHTML = `
+  const item = document.createElement('div');
+  item.className = `pc-list-item rank-${mob.Rank.toLowerCase()}`;
+  item.dataset.mobNo = mob.No;
+  item.dataset.rank = mob.Rank;
+  item.innerHTML = `
         <div class="pc-list-name font-bold" style="color: #fff;"></div>
         <div class="pc-list-count"></div>
         <div class="pc-list-time"></div>
         <div class="pc-list-progress-container"><div class="pc-list-progress-bar" style="width: 0%"></div></div>
         <div class="pc-list-percent">0%</div>
         <button class="pc-list-report-btn">REPORT</button>`;
-    const nameEl = item.querySelector('.pc-list-name');
-    if (nameEl) nameEl.textContent = mob.Name;
-    updateSimpleMobItem(item, mob);
-    return item;
+  const nameEl = item.querySelector('.pc-list-name');
+  if (nameEl) nameEl.textContent = mob.Name;
+  updateSimpleMobItem(item, mob);
+  return item;
 }
 
 export function updateSimpleMobItem(item, mob) {
-    const { elapsedPercent, status, isInConditionWindow } = mob.repopInfo || {};
-    const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
-    const now = Date.now() / 1000;
-    const timeEl = item.querySelector('.pc-list-time');
-    const progressEl = item.querySelector('.pc-list-progress-bar');
-    const percentEl = item.querySelector('.pc-list-percent');
-    const { countHtml } = getSpawnCountInfo(mob);
-    const { label, timeValue, isSpecialCondition, isTimeOver } = computeTimeLabel(mob);
+  const { elapsedPercent, status, isInConditionWindow } = mob.repopInfo || {};
+  const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
+  const now = Date.now() / 1000;
+  const timeEl = item.querySelector('.pc-list-time');
+  const progressEl = item.querySelector('.pc-list-progress-bar');
+  const percentEl = item.querySelector('.pc-list-percent');
+  const { countHtml } = getSpawnCountInfo(mob);
+  const { label, timeValue, isSpecialCondition, isTimeOver } = computeTimeLabel(mob);
 
-    if (timeEl) {
-        timeEl.innerHTML = `
+  if (timeEl) {
+    timeEl.innerHTML = `
         <div class="flex items-center justify-end w-full h-full">
             <span class="timer-label text-[12px] opacity-90 mr-1">${label}</span>
             <span class="timer-value font-bold text-[12px] ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
         </div>`;
+  }
+  const countEl = item.querySelector('.pc-list-count');
+  if (countEl) {
+    countEl.innerHTML = countHtml;
+  }
+  if (progressEl) {
+    const currentWidth = parseFloat(progressEl.style.width) || 0;
+    if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
+      progressEl.style.transition = (currentWidth === 0 || elapsedPercent < currentWidth) ? "none" : "width linear 60s";
+      progressEl.style.width = `${elapsedPercent}%`;
     }
-    const countEl = item.querySelector('.pc-list-count');
-    if (countEl) {
-        countEl.innerHTML = countHtml;
-    }
-    if (progressEl) {
-        const currentWidth = parseFloat(progressEl.style.width) || 0;
-        if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
-            progressEl.style.transition = (currentWidth === 0 || elapsedPercent < currentWidth) ? "none" : "width linear 60s";
-            progressEl.style.width = `${elapsedPercent}%`;
-        }
-        progressEl.style.background = isTimeOver ? "var(--progress-max-over)" : "var(--progress-fill)";
-    }
-    if (percentEl) {
-        let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
-        percentEl.textContent = isTimeOver ? "100%" : `${safePercent}%`;
-    }
-    item.style.opacity = (isMaint || status === "Next" || (status === "NextCondition" && now < (mob.repopInfo?.minRepop || 0))) ? "0.4" : "1";
-    item.style.filter = (isMaint || status === "Next" || (status === "NextCondition" && now < (mob.repopInfo?.minRepop || 0))) ? "grayscale(1)" : "none";
-    if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) item.classList.add("blink-active");
-    else item.classList.remove("blink-active");
+    progressEl.style.background = isTimeOver ? "var(--progress-max-over)" : "var(--progress-fill)";
+  }
+  if (percentEl) {
+    let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
+    percentEl.textContent = isTimeOver ? "100%" : `${safePercent}%`;
+  }
+  item.style.opacity = (isMaint || status === "Next" || (status === "NextCondition" && now < (mob.repopInfo?.minRepop || 0))) ? "0.4" : "1";
+  item.style.filter = (isMaint || status === "Next" || (status === "NextCondition" && now < (mob.repopInfo?.minRepop || 0))) ? "grayscale(1)" : "none";
+  if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) item.classList.add("blink-active");
+  else item.classList.remove("blink-active");
 }
 
 const FIFTEEN_MINUTES_SEC = 15 * 60;
@@ -897,14 +897,14 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 
   if (isPC) {
     if (pcLayout) {
-        pcLayout.classList.remove("hidden");
-        pcLayout.style.display = "flex"; // Force display
+      pcLayout.classList.remove("hidden");
+      pcLayout.style.display = "flex"; // Force display
     }
     if (mobileLayout) mobileLayout.classList.add("hidden");
   } else {
     if (pcLayout) {
-        pcLayout.classList.add("hidden");
-        pcLayout.style.display = "none";
+      pcLayout.classList.add("hidden");
+      pcLayout.style.display = "none";
     }
     if (mobileLayout) mobileLayout.classList.remove("hidden");
   }
@@ -1014,94 +1014,94 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     });
   });
 
-    // PC Layout specific rendering: Surgical update to prevent animation reset
-    if (DOM.pcLeftList) {
-      // Collect the current DOM nodes and their identifiers
-      const currentNodes = Array.from(DOM.pcLeftList.children);
-      const currentMap = new Map();
-      currentNodes.forEach(node => {
-          if (node.dataset.mobNo) currentMap.set(`mob-${node.dataset.mobNo}`, node);
-          else if (node.textContent) currentMap.set(`header-${node.textContent}`, node);
-      });
+  // PC Layout specific rendering: Surgical update to prevent animation reset
+  if (DOM.pcLeftList) {
+    // Collect the current DOM nodes and their identifiers
+    const currentNodes = Array.from(DOM.pcLeftList.children);
+    const currentMap = new Map();
+    currentNodes.forEach(node => {
+      if (node.dataset.mobNo) currentMap.set(`mob-${node.dataset.mobNo}`, node);
+      else if (node.textContent) currentMap.set(`header-${node.textContent}`, node);
+    });
 
-      // Prepare the intended child list
-      const nextChildren = [];
-      ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
-        const groupMobs = groups[key];
-        if (groupMobs.length === 0) return;
-        
-        const headerText = GROUP_LABELS[key];
-        const headerKey = `header-${headerText}`;
-        let header = currentMap.get(headerKey);
-        if (!header) {
-          header = document.createElement("div");
-          header.className = "text-xs font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
-          header.textContent = headerText;
-        }
-        nextChildren.push(header);
+    // Prepare the intended child list
+    const nextChildren = [];
+    ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
+      const groupMobs = groups[key];
+      if (groupMobs.length === 0) return;
 
-        groupMobs.forEach(mob => {
-          const mobKey = `mob-${mob.No}`;
-          let item = currentMap.get(mobKey);
-          if (!item) {
-            item = createSimpleMobItem(mob);
-          } else {
-            updateSimpleMobItem(item, mob);
-          }
-          nextChildren.push(item);
-        });
-      });
-
-      nextChildren.forEach((child, index) => {
-        if (DOM.pcLeftList.children[index] !== child) {
-          DOM.pcLeftList.insertBefore(child, DOM.pcLeftList.children[index] || null);
-        }
-      });
-
-      while (DOM.pcLeftList.children.length > nextChildren.length) {
-        DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
+      const headerText = GROUP_LABELS[key];
+      const headerKey = `header-${headerText}`;
+      let header = currentMap.get(headerKey);
+      if (!header) {
+        header = document.createElement("div");
+        header.className = "text-xs font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
+        header.textContent = headerText;
       }
+      nextChildren.push(header);
 
-      // Sync selected state even if order didn't change
-      const state = getState();
-      Array.from(DOM.pcLeftList.children).forEach(child => {
-          if (child.dataset.mobNo) {
-              if (parseInt(child.dataset.mobNo, 10) === state.openMobCardNo) {
-                  child.classList.add("selected");
-              } else {
-                  child.classList.remove("selected");
-              }
-          }
+      groupMobs.forEach(mob => {
+        const mobKey = `mob-${mob.No}`;
+        let item = currentMap.get(mobKey);
+        if (!item) {
+          item = createSimpleMobItem(mob);
+        } else {
+          updateSimpleMobItem(item, mob);
+        }
+        nextChildren.push(item);
       });
+    });
+
+    nextChildren.forEach((child, index) => {
+      if (DOM.pcLeftList.children[index] !== child) {
+        DOM.pcLeftList.insertBefore(child, DOM.pcLeftList.children[index] || null);
+      }
+    });
+
+    while (DOM.pcLeftList.children.length > nextChildren.length) {
+      DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
     }
 
-    const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
-    if (rightPane) {
-      const state = getState();
-      if (state.openMobCardNo) {
-        if (rightPane.dataset.renderedMobNo !== String(state.openMobCardNo)) {
-          const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
-          if (targetMob) {
-              rightPane.innerHTML = "";
-              rightPane.appendChild(createMobCard(targetMob, true));
-              rightPane.dataset.renderedMobNo = String(state.openMobCardNo);
-          }
-        }
-      } else {
-        if (rightPane.dataset.renderedMobNo !== "none") {
-          rightPane.innerHTML = '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>';
-          rightPane.dataset.renderedMobNo = "none";
+    // Sync selected state even if order didn't change
+    const state = getState();
+    Array.from(DOM.pcLeftList.children).forEach(child => {
+      if (child.dataset.mobNo) {
+        if (parseInt(child.dataset.mobNo, 10) === state.openMobCardNo) {
+          child.classList.add("selected");
+        } else {
+          child.classList.remove("selected");
         }
       }
+    });
+  }
+
+  const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
+  if (rightPane) {
+    const state = getState();
+    if (state.openMobCardNo) {
+      if (rightPane.dataset.renderedMobNo !== String(state.openMobCardNo)) {
+        const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
+        if (targetMob) {
+          rightPane.innerHTML = "";
+          rightPane.appendChild(createMobCard(targetMob, true));
+          rightPane.dataset.renderedMobNo = String(state.openMobCardNo);
+        }
+      }
+    } else {
+      if (rightPane.dataset.renderedMobNo !== "none") {
+        rightPane.innerHTML = '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>';
+        rightPane.dataset.renderedMobNo = "none";
+      }
     }
-    
-    if (navigator.userAgent.includes("Safari") && !navigator.userAgent.includes("Chrome")) {
-      const headers = DOM.pcLeftList.querySelectorAll(".text-xs");
-      headers.forEach(header => {
-        header.style.transform = "translateZ(0)";
-      });
-    }
-  
+  }
+
+  if (navigator.userAgent.includes("Safari") && !navigator.userAgent.includes("Chrome")) {
+    const headers = DOM.pcLeftList.querySelectorAll(".text-xs");
+    headers.forEach(header => {
+      header.style.transform = "translateZ(0)";
+    });
+  }
+
   lastRenderedOrderStr = sortedMobs.map(m => m.No).join(",");
   lastRenderedGroupStr = sortedMobs.map(m => getGroupKey(m)).join(",");
 
@@ -1203,13 +1203,13 @@ function updateProgressBars() {
 
   const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
   if (rightPane && rightPane.dataset.renderedMobNo && rightPane.dataset.renderedMobNo !== "none") {
-      const detailCard = rightPane.firstElementChild;
-      const mob = mobMap.get(rightPane.dataset.renderedMobNo);
-      if (detailCard && mob) {
-          updateProgressText(detailCard, mob);
-          updateProgressBar(detailCard, mob);
-          updateExpandablePanel(detailCard, mob);
-      }
+    const detailCard = rightPane.firstElementChild;
+    const mob = mobMap.get(rightPane.dataset.renderedMobNo);
+    if (detailCard && mob) {
+      updateProgressText(detailCard, mob);
+      updateProgressBar(detailCard, mob);
+      updateExpandablePanel(detailCard, mob);
+    }
   }
 
   invalidateSortCache();
