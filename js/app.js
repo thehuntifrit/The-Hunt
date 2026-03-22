@@ -251,24 +251,22 @@ export async function renderMaintenanceStatus() {
     const maintPanels = document.querySelectorAll(".js-maintenance-content");
     const telopPanels = document.querySelectorAll(".js-telop-content");
 
-    let hasMaintenance = false;
-    let hasMessage = false;
-    let maintHtml = "";
+    let maintMobileHtml = "";
+    let maintPCHtml = "";
 
-    if (maintenance && maintenance.is_active) {
+    if (maintenance && (maintenance.is_active || maintenance.scheduled)) {
         const start = formatMMDDHHmm(maintenance.start_time);
         const end = formatMMDDHHmm(maintenance.end_time);
-        maintHtml = `🛠️ メンテナンス中: ${start} ～ ${end}`;
-        hasMaintenance = true;
-    } else if (maintenance && maintenance.scheduled) {
-        const start = formatMMDDHHmm(maintenance.start_time);
-        maintHtml = `🛠️ 次回メンテナンス: ${start} ～`;
+        // Mobile layout: One line
+        maintMobileHtml = end ? `${start} ～ ${end}` : `${start} ～`;
+        // PC layout: Two lines with indent
+        maintPCHtml = end ? `${start} ～<br>&nbsp;&nbsp;&nbsp;&nbsp;${end}` : `${start} ～`;
         hasMaintenance = true;
     }
 
     if (maintenanceEl) {
         if (hasMaintenance) {
-            maintenanceEl.textContent = maintHtml;
+            maintenanceEl.textContent = maintMobileHtml;
             maintenanceEl.classList.remove("hidden");
         } else {
             maintenanceEl.textContent = "";
@@ -277,7 +275,13 @@ export async function renderMaintenanceStatus() {
     }
 
     maintPanels.forEach(p => {
-        p.innerHTML = maintHtml || "現在予定されているメンテナンスはありません";
+        if (!hasMaintenance) {
+            p.innerHTML = "現在予定されているメンテナンスはありません";
+            return;
+        }
+        // Check if item is roughly inside PC sidebar
+        const isPC = p.closest('#app-sidebar') || p.closest('.sidebar-panel-content');
+        p.innerHTML = isPC ? maintPCHtml : maintMobileHtml;
     });
 
     const telopMsg = (maintenance && maintenance.message && maintenance.message.trim() !== "") ? maintenance.message : "";
