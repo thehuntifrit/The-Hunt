@@ -196,7 +196,6 @@ export function updateStatusContainerVisibility() {
 
 function renderMaintenanceStatus() {
     const maintenance = getState().maintenance;
-    updateMaintenanceLabels(maintenance);
     const maintenanceEl = document.getElementById("status-message-maintenance");
     const telopEl = document.getElementById("status-message-telop");
 
