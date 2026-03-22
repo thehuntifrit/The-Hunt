@@ -599,7 +599,7 @@ body::before {
     border-top: 1px solid rgba(6, 182, 212, 0.12);
 }
 
-.mobile-expand-grid {
+.detail-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
@@ -607,7 +607,7 @@ body::before {
     padding-top: 0.5rem;
 }
 
-.mobile-expand-info-item {
+.detail-info-item {
     text-align: center;
     background: rgba(6, 182, 212, 0.04);
     border: 1px solid rgba(6, 182, 212, 0.08);
@@ -615,7 +615,7 @@ body::before {
     padding: 6px 4px;
 }
 
-.mobile-expand-info-item .label {
+.detail-info-item .label {
     font-size: 9px;
     font-weight: 800;
     color: rgba(6, 182, 212, 0.5);
@@ -624,7 +624,7 @@ body::before {
     margin-bottom: 2px;
 }
 
-.mobile-expand-info-item .value {
+.detail-info-item .value {
     font-size: 12px;
     font-weight: 700;
     color: #e2e8f0;
@@ -632,25 +632,25 @@ body::before {
     font-variant-numeric: tabular-nums;
 }
 
-.mobile-expand-info-item.highlight {
+.detail-info-item.highlight {
     border-color: rgba(251, 191, 36, 0.15);
     background: rgba(251, 191, 36, 0.04);
 }
 
-.mobile-expand-info-item.highlight .label {
+.detail-info-item.highlight .label {
     color: rgba(251, 191, 36, 0.5);
 }
 
-.mobile-expand-info-item.highlight .value {
+.detail-info-item.highlight .value {
     color: var(--accent-gold);
     text-shadow: 0 0 8px rgba(251, 191, 36, 0.25);
 }
 
-.mobile-expand-section {
+.detail-section {
     margin-bottom: 0.75rem;
 }
 
-.mobile-expand-section .section-label {
+.detail-section .section-label {
     font-size: 10px;
     font-weight: 800;
     color: rgba(6, 182, 212, 0.6);
@@ -662,7 +662,7 @@ body::before {
     text-shadow: 0 0 8px rgba(6, 182, 212, 0.2);
 }
 
-.mobile-expand-section .condition {
+.detail-section .condition {
     font-size: 12px;
     line-height: 1.5;
     color: rgba(234, 179, 8, 0.9);
@@ -673,7 +673,7 @@ body::before {
     text-shadow: 0 0 6px rgba(234, 179, 8, 0.15);
 }
 
-.mobile-expand-memo-box {
+.detail-memo-box {
     background: rgba(6, 182, 212, 0.03);
     padding: 6px 10px;
     border-radius: 6px;
@@ -681,12 +681,12 @@ body::before {
     transition: border-color 0.2s;
 }
 
-.mobile-expand-memo-box:focus-within {
+.detail-memo-box:focus-within {
     border-color: rgba(6, 182, 212, 0.3);
     box-shadow: 0 0 10px rgba(6, 182, 212, 0.08);
 }
 
-.mobile-expand-memo-input {
+.detail-memo-input {
     width: 100%;
     background: transparent;
     border: none;

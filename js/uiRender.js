@@ -160,7 +160,7 @@ export function createMobCard(mob, isDetailView = false) {
     }
 
     const mapImg = card.querySelector('.mob-map-img');
-    const mapSection = mapImg?.closest('.mobile-expand-section');
+    const mapSection = mapImg?.closest('.map-section');
     if (mapImg && mob.Map) {
         mapImg.src = `./maps/${mob.Map}`;
         mapImg.alt = `${mob.Area} Map`;
@@ -189,12 +189,19 @@ export function createPCDetailCard(mob) {
     const fmt = (val) => val ? formatMMDDHHmm(val) : "--/-- --:--";
 
     card.dataset.mobNo = mob.No;
+    card.dataset.rank = rank;
+
+    const nameEl = card.querySelector('.pc-detail-name');
+    if (nameEl) {
+        nameEl.textContent = mob.Name;
+        nameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
+    }
 
     const rankEl = card.querySelector('.pc-detail-rank');
-    rankEl.textContent = rank;
-    rankEl.dataset.rank = rank;
-    card.querySelector('.pc-detail-area').textContent = mob.Area || "";
-    card.querySelector('.pc-detail-expansion').textContent = mob.Expansion || "";
+    if (rankEl) {
+        rankEl.textContent = rank;
+        rankEl.dataset.rank = rank;
+    }
 
     const progressBar = card.querySelector('.pc-detail-progress-bar');
     if (progressBar) progressBar.style.width = `${elapsedPercent || 0}%`;
@@ -239,6 +246,8 @@ export function createPCDetailCard(mob) {
         reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
         reportSidebar.dataset.mobNo = mob.No;
     }
+
+    updateAreaInfo(card, mob);
 
     return card;
 }
@@ -440,24 +449,26 @@ export function updateMobCount(card, mob) {
 }
 
 export function updateAreaInfo(card, mob) {
+    const areaName = mob.Area || "";
+    const expName = mob.Expansion || "";
+    
     const areaInfoContainer = card.querySelector('.area-info-container');
-    if (areaInfoContainer && (mob.Area || mob.Expansion)) {
-        areaInfoContainer.innerHTML = `<div class="font-numeric text-slate-400 mb-1 leading-tight">${mob.Area}</div><div class="flex items-center justify-end gap-1 font-numeric text-slate-500 leading-none"><span>${mob.Expansion}</span><span class="inline-flex items-center justify-center w-3 h-3 border border-current rounded-sm text-[8px] leading-none font-bold">${mob.Rank}</span></div>`;
+    if (areaInfoContainer && (areaName || expName)) {
+        areaInfoContainer.innerHTML = `<div class="font-numeric text-slate-400 mb-1 leading-tight">${areaName}</div><div class="flex items-center justify-end gap-1 font-numeric text-slate-500 leading-none"><span>${expName}</span><span class="inline-flex items-center justify-center w-3 h-3 border border-current rounded-sm text-[8px] leading-none font-bold">${mob.Rank}</span></div>`;
     }
 
-    const headerArea = card.querySelector('.mobile-header-area-text');
-    if (headerArea) headerArea.textContent = mob.Area || "";
+    // Now covers both PC detail card and Mobile expand panel
+    card.querySelectorAll('.detail-area').forEach(el => el.textContent = areaName);
+    card.querySelectorAll('.detail-expansion').forEach(el => el.textContent = expName ? `| ${expName}` : "");
 
-    const mobileAreaText = card.querySelector('.mobile-expand-area-text');
-    const mobileExpansionText = card.querySelector('.mobile-expand-expansion-text');
-    if (mobileAreaText) mobileAreaText.textContent = mob.Area || "";
-    if (mobileExpansionText) mobileExpansionText.textContent = mob.Expansion ? ` | ${mob.Expansion}` : "";
+    const headerArea = card.querySelector('.mobile-header-area-text');
+    if (headerArea) headerArea.textContent = `${areaName} ${expName ? '| ' + expName : ''}`;
 }
 
 export function updateMapOverlay(card, mob) {
-    const mapContainer = card.querySelector('.map-container') || card.querySelector('.pc-detail-map-container');
+    const mapContainer = card.querySelector('.map-container');
     if (!mapContainer) return;
-    const mapImg = mapContainer.querySelector('.mob-map-img') || mapContainer.querySelector('.pc-detail-map');
+    const mapImg = mapContainer.querySelector('.mob-map-img');
     if (mapImg && mob.Map && mapImg.dataset.mobMap !== mob.Map) {
         mapImg.src = `./maps/${mob.Map}`;
         mapImg.alt = `${mob.Area} Map`;
@@ -466,7 +477,7 @@ export function updateMapOverlay(card, mob) {
         delete mapContainer.dataset.locationLoading;
     }
     if (mapContainer.classList.contains('hidden')) return;
-    const mapOverlay = mapContainer.querySelector('.map-overlay') || mapContainer.querySelector('.pc-detail-map-overlay');
+    const mapOverlay = mapContainer.querySelector('.map-overlay');
     if (!mapOverlay) return;
     let spawnPointsHtml = "";
     if (mob.Map && mob.spawn_points) {

@@ -368,44 +368,44 @@
                 <div class="expandable-panel">
                     <div class="mobile-expand-inner relative z-10 px-2 py-3">
                         <!-- 1. エリア名 拡張名 ランク -->
-                        <div class="mobile-expand-row flex justify-between items-center mb-4">
+                        <div class="detail-area-row flex justify-between items-center mb-4">
                             <div class="text-[12px] font-bold text-yellow-500 truncate flex items-baseline gap-1.5">
-                                <span class="mobile-expand-area-text"></span>
-                                <span class="mobile-expand-expansion-text text-slate-400 text-[10px]"></span>
+                                <span class="detail-area"></span>
+                                <span class="detail-expansion text-slate-400 text-[10px]"></span>
                             </div>
                             <span class="mob-rank-badge font-bold text-[12px] px-1.5 py-0.5 border border-current rounded flex-shrink-0 ml-2"></span>
                         </div>
 
                         <!-- 2. 時間4種 -->
-                        <div class="mobile-expand-grid mb-4">
-                            <div class="mobile-expand-info-item">
+                        <div class="detail-grid mb-4">
+                            <div class="detail-info-item">
                                 <div class="label">最短POP</div>
                                 <div class="value" data-min-repop>--/-- --:--</div>
                             </div>
-                            <div class="mobile-expand-info-item">
+                            <div class="detail-info-item">
                                 <div class="label">最大POP</div>
                                 <div class="value" data-max-repop>--/-- --:--</div>
                             </div>
-                            <div class="mobile-expand-info-item highlight">
+                            <div class="detail-info-item highlight">
                                 <div class="label">次回POP可能</div>
                                 <div class="value" data-next-possible>--/-- --:--</div>
                             </div>
-                            <div class="mobile-expand-info-item">
+                            <div class="detail-info-item">
                                 <div class="label">前回討伐</div>
                                 <div class="value" data-last-kill>--/-- --:--</div>
                             </div>
                         </div>
 
                         <!-- 3. メモ -->
-                        <div class="mobile-expand-section mb-4">
+                        <div class="detail-section mb-4">
                             <div class="section-label">MEMO</div>
-                            <div class="mobile-expand-memo-box">
-                                <input type="text" class="memo-input mobile-expand-memo-input" placeholder="全角30文字まで" maxlength="30" data-action="save-memo">
+                            <div class="detail-memo-box">
+                                <input type="text" class="memo-input detail-memo-input" placeholder="全角30文字まで" maxlength="30" data-action="save-memo">
                             </div>
                         </div>
 
                         <!-- 4. 出現マップ -->
-                        <div class="mobile-expand-section mb-4">
+                        <div class="detail-section map-section mb-4">
                             <div class="section-label">出現マップ</div>
                             <div class="map-container relative w-full bg-slate-950 rounded border border-white/10 overflow-hidden">
                                 <img class="mob-map-img w-full h-full object-contain opacity-90 transition-opacity">
@@ -414,7 +414,7 @@
                         </div>
 
                         <!-- 5. 出現条件 -->
-                        <div class="mobile-expand-section">
+                        <div class="detail-section">
                             <div class="section-label">出現条件</div>
                             <div class="condition-text section-content condition"></div>
                         </div>
@@ -432,9 +432,9 @@
                     <div class="pc-detail-rank font-bold px-1.5 py-0.5 border rounded" data-rank=""></div>
                 </div>
                 <div class="flex items-center justify-between mb-2">
-                    <div class="pc-detail-area-row m-0 p-0 text-[11px] text-slate-400">
-                        <span class="pc-detail-area"></span>
-                        <span class="pc-detail-expansion opacity-70"></span>
+                    <div class="detail-area-row m-0 p-0 text-[11px] text-slate-400">
+                        <span class="detail-area"></span>
+                        <span class="detail-expansion opacity-70"></span>
                     </div>
                     <div class="pc-detail-progress-text text-[14px]">
                         <span class="percent">0%</span>
@@ -447,37 +447,37 @@
 
             <div class="pc-detail-content overflow-y-auto pr-1">
                 <!-- 2. MEMO -->
-                <div class="pc-detail-section mb-5">
+                <div class="detail-section mb-5">
                     <div class="section-label">MEMO</div>
-                    <div class="pc-detail-memo-box">
-                        <input type="text" class="memo-input pc-detail-memo-input" placeholder="全角30文字まで" maxlength="30" data-action="save-memo">
+                    <div class="detail-memo-box">
+                        <input type="text" class="memo-input detail-memo-input" placeholder="全角30文字まで" maxlength="30" data-action="save-memo">
                     </div>
                 </div>
                 
                 <!-- 3. 時間4種 -->
-                <div class="pc-detail-grid mb-5">
-                    <div class="pc-detail-info-item">
+                <div class="detail-grid mb-5">
+                    <div class="detail-info-item">
                         <div class="label">最短POP</div>
                         <div class="value" data-min-repop>--/-- --:--</div>
                     </div>
-                    <div class="pc-detail-info-item">
+                    <div class="detail-info-item">
                         <div class="label">最大POP</div>
                         <div class="value" data-max-repop>--/-- --:--</div>
                     </div>
-                    <div class="pc-detail-info-item highlight">
+                    <div class="detail-info-item highlight">
                         <div class="label">次回POP可能</div>
                         <div class="value" data-next-possible>--/-- --:--</div>
                     </div>
-                    <div class="pc-detail-info-item">
+                    <div class="detail-info-item">
                         <div class="label">前回討伐</div>
                         <div class="value" data-last-kill>--/-- --:--</div>
                     </div>
                 </div>
 
                 <!-- 4. 出現マップ -->
-                <div class="pc-detail-section pc-detail-map-section mb-5">
+                <div class="detail-section detail-map-section mb-5">
                     <div class="section-label">出現マップ</div>
-                    <div class="pc-detail-map-container mt-2">
+                    <div class="detail-map-container mt-2">
                         <img class="pc-detail-map" src="" alt="">
                         <div class="pc-detail-map-overlay"></div>
                     </div>
