@@ -131,15 +131,49 @@
         background: rgba(129, 140, 248, 0.05);
     }
 
-    .pc-detail-card[data-rank="S"] { box-shadow: 0 8px 32px -8px rgba(0,0,0,0.8), 0 0 20px rgba(251, 191, 36, 0.15) inset; }
-    .pc-detail-card[data-rank="A"] { box-shadow: 0 8px 32px -8px rgba(0,0,0,0.8), 0 0 20px rgba(107, 163, 122, 0.15) inset; }
-    .pc-detail-card[data-rank="F"] { box-shadow: 0 8px 32px -8px rgba(0,0,0,0.8), 0 0 20px rgba(129, 140, 248, 0.15) inset; }
-    .pc-detail-card[data-rank="B"] { box-shadow: 0 8px 32px -8px rgba(0,0,0,0.8), 0 0 20px rgba(100, 149, 237, 0.15) inset; }
+    .pc-detail-card[data-rank="S"] {
+        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(251, 191, 36, 0.15) inset;
+    }
 
-    .pc-detail-rank[data-rank="S"] { color: var(--rank-s); border-color: var(--rank-s); background-color: rgba(251, 191, 36, 0.1); border-radius: 2px; }
-    .pc-detail-rank[data-rank="A"] { color: var(--rank-a); border-color: var(--rank-a); background-color: rgba(107, 163, 122, 0.1); border-radius: 2px; }
-    .pc-detail-rank[data-rank="F"] { color: var(--rank-f); border-color: var(--rank-f); background-color: rgba(129, 140, 248, 0.1); border-radius: 2px; }
-    .pc-detail-rank[data-rank="B"] { color: var(--rank-b); border-color: var(--rank-b); background-color: rgba(100, 149, 237, 0.1); border-radius: 2px; }
+    .pc-detail-card[data-rank="A"] {
+        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(107, 163, 122, 0.15) inset;
+    }
+
+    .pc-detail-card[data-rank="F"] {
+        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(129, 140, 248, 0.15) inset;
+    }
+
+    .pc-detail-card[data-rank="B"] {
+        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(100, 149, 237, 0.15) inset;
+    }
+
+    .pc-detail-rank[data-rank="S"] {
+        color: var(--rank-s);
+        border-color: var(--rank-s);
+        background-color: rgba(251, 191, 36, 0.1);
+        border-radius: 2px;
+    }
+
+    .pc-detail-rank[data-rank="A"] {
+        color: var(--rank-a);
+        border-color: var(--rank-a);
+        background-color: rgba(107, 163, 122, 0.1);
+        border-radius: 2px;
+    }
+
+    .pc-detail-rank[data-rank="F"] {
+        color: var(--rank-f);
+        border-color: var(--rank-f);
+        background-color: rgba(129, 140, 248, 0.1);
+        border-radius: 2px;
+    }
+
+    .pc-detail-rank[data-rank="B"] {
+        color: var(--rank-b);
+        border-color: var(--rank-b);
+        background-color: rgba(100, 149, 237, 0.1);
+        border-radius: 2px;
+    }
 
     .pc-clocks-header {
         display: flex;
@@ -254,7 +288,7 @@
         align-items: center;
         justify-content: flex-end;
         white-space: pre;
-        margin-right: 4px;
+        margin-right: 0px;
     }
 
     .pc-list-time .timer-label {
@@ -365,12 +399,12 @@
 
     /* PC版リストのアイコン整列精緻化 */
     .progress-info-group {
-        width: 106px !important;
+        width: 132px !important;
         flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        gap: 4px;
+        gap: 0 !important;
     }
 
     .js-mobile-icon {
@@ -381,7 +415,7 @@
     }
 
     .js-mobile-time {
-        width: 84px !important;
+        width: 114px !important;
         flex-shrink: 0;
         text-align: right;
     }
