@@ -196,6 +196,7 @@ export function updateStatusContainerVisibility() {
 
 function renderMaintenanceStatus() {
     const maintenance = getState().maintenance;
+    updateMaintenanceLabels(maintenance);
     const maintenanceEl = document.getElementById("status-message-maintenance");
     const telopEl = document.getElementById("status-message-telop");
 
@@ -241,18 +242,20 @@ function renderMaintenanceStatus() {
 
     if (sidebarMaint) {
         if (hasMaintenance) {
-            const start = formatDate(new Date(maintenance.start));
-            const end = formatDate(new Date(maintenance.end));
-            sidebarMaint.innerHTML = `<div class="maintenance-box"><div class="time-val">${start}</div><div class="time-sep">～</div><div class="time-val">${end}</div></div>`;
+            const startStr = formatDate(new Date(maintenance.start));
+            const endStr = formatDate(new Date(maintenance.end));
+            sidebarMaint.innerHTML = `<div class="maintenance-box"><div class="time-val">${startStr}</div><div class="time-sep">～</div><div class="time-val">${endStr}</div></div>`;
         } else {
             sidebarMaint.textContent = "現在予定されているメンテナンスはありません。";
         }
-        sidebarMaintBtn?.classList.toggle("has-alert", hasMaintenance);
+        document.querySelectorAll('.sidebar-icon-btn[data-panel="maintenance"], .mobile-footer-btn[data-panel="maintenance"]')
+            .forEach(btn => btn.classList.toggle("has-alert", hasMaintenance));
     }
 
     if (sidebarTelop) {
         sidebarTelop.textContent = hasMessage ? maintenance.message : "";
-        sidebarTelopBtn?.classList.toggle("has-alert", hasMessage);
+        document.querySelectorAll('.sidebar-icon-btn[data-panel="telop"], .mobile-footer-btn[data-panel="telop"]')
+            .forEach(btn => btn.classList.toggle("has-alert", hasMessage));
     }
 
     updateStatusContainerVisibility();

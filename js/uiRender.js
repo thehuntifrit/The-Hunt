@@ -317,7 +317,17 @@ export function updateProgressText(card, mob) {
         if (mobNameEl) mobNameEl.style.color = `var(--rank-${mob.Rank.toLowerCase()})`;
     }
 
-    if (isMaint) card.classList.add("maintenance-gray-out");
+    if (isMaint) {
+        card.classList.add("maintenance-gray-out");
+        const formatHMin = (ts) => {
+            if (!ts) return "--:--";
+            const d = new Date(ts * 1000);
+            return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+        };
+        const startStr = formatHMin(mob.repopInfo?.maintStart);
+        const endStr = formatHMin(mob.repopInfo?.maintEnd);
+        repopTimeStr = `${startStr} ～ ${endStr}`;
+    }
     else card.classList.remove("maintenance-gray-out");
 
     let rightStr = (isInConditionWindow && conditionRemaining) ? conditionRemaining : (repopTimeStr || "未確定");
@@ -603,6 +613,25 @@ const GROUP_LABELS = {
   NEXT: "Before Respawn",
   MAINTENANCE: "Maintenance"
 };
+
+export function updateMaintenanceLabels(maintenance) {
+    if (maintenance && maintenance.start && maintenance.end) {
+        const start = new Date(maintenance.start);
+        const end = new Date(maintenance.end);
+        const formatHM = (d) => `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+        const newLabel = `${formatHM(start)} ～ ${formatHM(end)}`;
+        GROUP_LABELS.MAINTENANCE = newLabel;
+        
+        // Update existing cache if present
+        const cached = groupSectionCache.get("MAINTENANCE");
+        if (cached && cached.section) {
+            const labelEl = cached.section.querySelector(".status-group-label");
+            if (labelEl) labelEl.textContent = newLabel;
+        }
+    } else {
+        GROUP_LABELS.MAINTENANCE = "Maintenance";
+    }
+}
 
 function getOrCreateGroupSection(groupKey) {
   if (groupSectionCache.has(groupKey)) return groupSectionCache.get(groupKey);

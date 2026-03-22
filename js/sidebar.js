@@ -51,8 +51,11 @@ function updateErrorPanel() {
 }
 
 function updateErrorBadge() {
-    const btn = document.querySelector('.sidebar-icon-btn[data-panel="error"]');
-    if (btn) btn.classList.toggle("has-alert", errorLog.length > 0);
+    const pcBtn = document.querySelector('.sidebar-icon-btn[data-panel="error"]');
+    const mobileBtn = document.querySelector('.mobile-footer-btn[data-panel="error"]');
+    const hasError = errorLog.length > 0;
+    if (pcBtn) pcBtn.classList.toggle("has-alert", hasError);
+    if (mobileBtn) mobileBtn.classList.toggle("has-alert", hasError);
 }
 
 function escapeHtml(str) {

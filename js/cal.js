@@ -577,7 +577,9 @@ export function calculateRepop(mob, maintenance, options = {}) {
     conditionWindowEnd,
     isInConditionWindow,
     isMaintenanceStop,
-    isBlockedByMaintenance
+    isBlockedByMaintenance,
+    maintStart: maintenanceStart,
+    maintEnd: serverUp || (parseDate(maint.end)?.getTime() / 1000 || 0)
   };
 }
 
