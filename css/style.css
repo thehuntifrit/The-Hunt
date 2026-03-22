@@ -348,12 +348,10 @@ body::before {
 }
 
 .report-side-bar:hover {
-    transform: scale(1.1) translateZ(0);
     filter: brightness(1.2);
 }
 
 .report-side-bar:active {
-    transform: scale(0.9) translateZ(0) !important;
     background: rgba(255, 255, 255, 0.2) !important;
 }
 
@@ -804,4 +802,20 @@ html body.magnifier-active .mob-card-inner * {
 .mob-card.is-floating-active .expandable-panel {
     max-height: none !important;
 }
-
+
+.condition-section-neon {
+    border-color: rgba(251, 191, 36, 0.4) !important;
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.1) inset, 0 0 10px rgba(251, 191, 36, 0.2) !important;
+    background: rgba(251, 191, 36, 0.05) !important;
+}
+
+.condition-section-neon .section-label {
+    color: var(--accent-gold) !important;
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.5) !important;
+}
+
+.condition-section-neon .section-content {
+    color: #fff !important;
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.6) !important;
+    font-weight: 600;
+}

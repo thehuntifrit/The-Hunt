@@ -250,7 +250,7 @@ export function updateProgressBar(card, mob) {
 
     bars.forEach(bar => {
         bar.style.width = `${elapsedPercent || 0}%`;
-        bar.style.backgroundColor = `var(--progress-${status === "MaxOver" ? "max-over" : status === "ConditionActive" ? "condition" : "normal"})`;
+        bar.style.background = `var(--progress-${status === "MaxOver" ? "max-over" : status === "ConditionActive" ? "condition" : "normal"})`;
         bar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100, PROGRESS_CLASSES.MAX_OVER);
         if (elapsedPercent < 60) bar.classList.add(PROGRESS_CLASSES.P0_60);
         else if (elapsedPercent < 80) bar.classList.add(PROGRESS_CLASSES.P60_80);
@@ -280,10 +280,10 @@ export function updateProgressText(card, mob) {
     const { label, timeValue, isSpecialCondition, isTimeOver } = computeTimeLabel(mob);
     const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
     const nowSec = Date.now() / 1000;
-    let leftStr = label === "未確定" ? label : 
-        `<div class="flex items-center justify-end gap-1.5">
-            <span class="detail-label-icon text-[12px] opacity-80">${label}</span>
-            <span class="detail-time-val font-bold text-[13px] min-w-[45px] text-right ${isSpecialCondition ? 'label-next' : ''}">${timeValue}</span>
+    let leftStr = label === "未確定" ? `<div class="w-[100px] text-right">${label}</div>` : 
+        `<div class="flex items-center justify-between w-[100px]">
+            <span class="detail-label-icon text-[12px] opacity-80 text-left shrink-0">${label}</span>
+            <span class="detail-time-val font-bold text-[13px] text-right ${isSpecialCondition ? 'label-next' : ''}">${timeValue}</span>
         </div>`;
     
     // パーセンテージは常に0-100%で算出
@@ -381,9 +381,15 @@ export function updateExpandablePanel(card, mob) {
     
     // Condition
     const elCondition = card.querySelector(".condition-text");
-    if (elCondition && mob.Condition) {
-        const processed = processText(mob.Condition);
-        if (elCondition.innerHTML !== processed) elCondition.innerHTML = processed;
+    if (elCondition) {
+        const conditionText = mob.Condition ? processText(mob.Condition) : "特別な出現条件はありません。";
+        if (elCondition.innerHTML !== conditionText) elCondition.innerHTML = conditionText;
+        
+        const section = elCondition.closest('.detail-section');
+        if (section) {
+            if (mob.Condition) section.classList.add('condition-section-neon');
+            else section.classList.remove('condition-section-neon');
+        }
     }
 
 
@@ -518,7 +524,16 @@ export function updateSimpleMobItem(item, mob) {
     const { countHtml } = getSpawnCountInfo(mob);
     const { label, timeValue, isSpecialCondition, isTimeOver } = computeTimeLabel(mob);
 
-    if (timeEl) timeEl.innerHTML = `${countHtml}<span class="timer-label">${label}</span><span class="timer-value ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>`;
+    if (timeEl) {
+        timeEl.innerHTML = `
+        <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-1.5 shrink-0">
+                <div class="w-3 flex justify-center">${countHtml}</div>
+                <span class="timer-label text-[11px] opacity-80">${label}</span>
+            </div>
+            <span class="timer-value font-bold text-right ml-1 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
+        </div>`;
+    }
     if (progressEl) {
         const currentWidth = parseFloat(progressEl.style.width) || 0;
         if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
