@@ -60,9 +60,9 @@ export function getSpawnCountInfo(mob) {
     let countHtml = "";
     if (remainingCount === 1) {
         const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-        countHtml = `<span class="text-[10px] text-yellow-500 font-bold mr-1 opacity-80">${pointNumber}#</span>`;
+        countHtml = `<span class="pc-count-val font-bold text-yellow-500">${pointNumber}版</span>`;
     } else if (remainingCount > 1) {
-        countHtml = `<span class="text-[10px] text-slate-400 mr-1 opacity-70">@${remainingCount}</span>`;
+        countHtml = `<span class="pc-count-val font-bold text-slate-400">@ ${remainingCount}</span>`;
     }
     return { countHtml, remainingCount, spawnCullStatus, validSpawnPoints };
 }
@@ -237,6 +237,7 @@ export function createPCDetailCard(mob) {
     }
 
     updateAreaInfo(card, mob);
+    updateExpandablePanel(card, mob);
 
     return card;
 }
@@ -250,7 +251,13 @@ export function updateProgressBar(card, mob) {
 
     bars.forEach(bar => {
         bar.style.width = `${elapsedPercent || 0}%`;
-        bar.style.background = `var(--progress-${status === "MaxOver" ? "max-over" : status === "ConditionActive" ? "condition" : "normal"})`;
+        const color = `var(--progress-${status === "MaxOver" ? "max-over" : status === "ConditionActive" ? "condition" : "normal"})`;
+        if (bar.classList.contains('pc-detail-progress-bar')) {
+            bar.style.background = color;
+        } else {
+            bar.style.backgroundColor = color;
+            bar.style.background = ""; // モバイル版などは背景指定をクリア
+        }
         bar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100, PROGRESS_CLASSES.MAX_OVER);
         if (elapsedPercent < 60) bar.classList.add(PROGRESS_CLASSES.P0_60);
         else if (elapsedPercent < 80) bar.classList.add(PROGRESS_CLASSES.P60_80);
@@ -385,10 +392,14 @@ export function updateExpandablePanel(card, mob) {
         const conditionText = mob.Condition ? processText(mob.Condition) : "特別な出現条件はありません。";
         if (elCondition.innerHTML !== conditionText) elCondition.innerHTML = conditionText;
         
-        const section = elCondition.closest('.detail-section');
+        const section = elCondition.closest('.detail-section') || elCondition.closest('.pc-detail-section');
+        const isPCDetail = card.classList.contains('pc-detail-card');
         if (section) {
-            if (mob.Condition) section.classList.add('condition-section-neon');
-            else section.classList.remove('condition-section-neon');
+            if (isPCDetail && mob.Condition) {
+                section.classList.add('condition-section-neon');
+            } else {
+                section.classList.remove('condition-section-neon');
+            }
         }
     }
 
@@ -504,6 +515,7 @@ export function createSimpleMobItem(mob) {
     item.dataset.rank = mob.Rank;
     item.innerHTML = `
         <div class="pc-list-name font-bold" style="color: #fff;"></div>
+        <div class="pc-list-count"></div>
         <div class="pc-list-time"></div>
         <div class="pc-list-progress-container"><div class="pc-list-progress-bar" style="width: 0%"></div></div>
         <div class="pc-list-percent">0%</div>
@@ -526,13 +538,14 @@ export function updateSimpleMobItem(item, mob) {
 
     if (timeEl) {
         timeEl.innerHTML = `
-        <div class="flex items-center justify-between w-full">
-            <div class="flex items-center gap-1.5 shrink-0">
-                <div class="w-3 flex justify-center">${countHtml}</div>
-                <span class="timer-label text-[11px] opacity-80">${label}</span>
-            </div>
-            <span class="timer-value font-bold text-right ml-1 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
+        <div class="flex items-center justify-end gap-1.5">
+            <span class="timer-label text-[12px] opacity-90">${label}</span>
+            <span class="timer-value font-bold text-right ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
         </div>`;
+    }
+    const countEl = item.querySelector('.pc-list-count');
+    if (countEl) {
+        countEl.innerHTML = countHtml;
     }
     if (progressEl) {
         const currentWidth = parseFloat(progressEl.style.width) || 0;
@@ -1172,6 +1185,7 @@ function updateProgressBars() {
       if (detailCard && mob) {
           updateProgressText(detailCard, mob);
           updateProgressBar(detailCard, mob);
+          updateExpandablePanel(detailCard, mob);
       }
   }
 

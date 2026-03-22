@@ -217,8 +217,20 @@
         color: #f1f5f9;
     }
 
+    .pc-list-count {
+        flex: 0 0 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        white-space: nowrap;
+        margin-right: 4px;
+        font-variant-numeric: tabular-nums;
+    }
+
     .pc-list-time {
-        flex: 0 0 110px;
+        flex: 0 0 82px;
         font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
         font-size: 13px;
         font-weight: 500;
@@ -230,8 +242,8 @@
 
     .pc-list-time .timer-label {
         text-align: center;
-        font-size: 12px;
-        margin-right: 4px;
+        font-size: 13px;
+        margin-right: 0px;
     }
 
     .pc-list-time .timer-value {

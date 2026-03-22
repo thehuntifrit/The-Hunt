@@ -98,6 +98,10 @@ async function initApp() {
         attachLocationEvents();
         attachGlobalEventListeners();
 
+        window.addEventListener('maintenanceUpdated', () => {
+            renderMaintenanceStatus();
+        });
+
         window.addEventListener('pageshow', (event) => {
             if (event.persisted) {
                 setOpenMobCardNo(null);
@@ -210,6 +214,7 @@ export function updateStatusContainerVisibility() {
 }
 
 function renderMaintenanceStatus() {
+    window.renderMaintenanceStatus = renderMaintenanceStatus;
     const maintenance = getState().maintenance;
     const maintenanceEl = document.getElementById("status-message-maintenance");
     const telopEl = document.getElementById("status-message-telop");
@@ -251,14 +256,18 @@ function renderMaintenanceStatus() {
 
     const sidebarMaint = document.getElementById("sidebar-maintenance-content");
     const sidebarTelop = document.getElementById("sidebar-telop-content");
-    const sidebarMaintBtn = document.querySelector('.sidebar-icon-btn[data-panel="maintenance"]');
-    const sidebarTelopBtn = document.querySelector('.sidebar-icon-btn[data-panel="telop"]');
+    const isMobile = window.innerWidth < 1024;
 
     if (sidebarMaint) {
         if (hasMaintenance) {
             const startStr = formatDate(new Date(maintenance.start));
             const endStr = formatDate(new Date(maintenance.end));
-            sidebarMaint.innerHTML = `<div class="maintenance-box"><div class="time-val">${startStr}</div><div class="time-sep">～</div><div class="time-val">${endStr}</div></div>`;
+            if (isMobile) {
+                // モバイル版は1行で表示
+                sidebarMaint.innerHTML = `<div class="maintenance-box-mobile text-[12px] py-1 border-b border-white/5">${startStr} ～ ${endStr}</div>`;
+            } else {
+                sidebarMaint.innerHTML = `<div class="maintenance-box"><div class="time-val">${startStr}</div><div class="time-sep">～</div><div class="time-val">${endStr}</div></div>`;
+            }
         } else {
             sidebarMaint.textContent = "現在予定されているメンテナンスはありません。";
         }
@@ -271,6 +280,20 @@ function renderMaintenanceStatus() {
         document.querySelectorAll('.sidebar-icon-btn[data-panel="telop"], .mobile-footer-btn[data-panel="telop"]')
             .forEach(btn => btn.classList.toggle("has-alert", hasMessage));
     }
+
+    // エラーバッジの更新もここで行うか、個別に呼ぶ
+    const errorLogCount = window.errorLog ? window.errorLog.length : 0;
+    const hasError = errorLogCount > 0;
+    document.querySelectorAll('.sidebar-icon-btn[data-panel="error"], .mobile-footer-btn[data-panel="error"]')
+        .forEach(btn => btn.classList.toggle("has-alert", hasError));
+
+    // それ以外のパネル（選択、説明等）からは強制的に has-alert を除去してユーザー要望の「他には必要ない」を徹底
+    document.querySelectorAll('.sidebar-icon-btn, .mobile-footer-btn').forEach(btn => {
+        const panel = btn.dataset.panel;
+        if (panel !== "error" && panel !== "telop" && panel !== "maintenance") {
+            btn.classList.remove("has-alert");
+        }
+    });
 
     updateStatusContainerVisibility();
 }

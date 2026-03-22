@@ -6,6 +6,7 @@ let currentPanel = null;
 const PANELS = ["error", "telop", "maintenance", "rank", "manual"];
 
 const errorLog = [];
+window.errorLog = errorLog;
 const MAX_ERROR_LOG = 50;
 let manualLoaded = false;
 
@@ -51,11 +52,10 @@ function updateErrorPanel() {
 }
 
 function updateErrorBadge() {
-    const pcBtn = document.querySelector('.sidebar-icon-btn[data-panel="error"]');
-    const mobileBtn = document.querySelector('.mobile-footer-btn[data-panel="error"]');
-    const hasError = errorLog.length > 0;
-    if (pcBtn) pcBtn.classList.toggle("has-alert", hasError);
-    if (mobileBtn) mobileBtn.classList.toggle("has-alert", hasError);
+    // バッジ更新は app.js の renderMaintenanceStatus 内で一括管理するように変更
+    if (typeof window.renderMaintenanceStatus === "function") {
+        window.renderMaintenanceStatus();
+    }
 }
 
 function escapeHtml(str) {
