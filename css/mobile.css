@@ -27,6 +27,26 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
 
+    .mob-name {
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .mob-rank-badge {
+        font-size: 12px;
+        min-width: 14px;
+        text-align: right;
+    }
+
+    .mobile-expand-row {
+        width: 100%;
+    }
+
+    .mobile-expand-percent-text {
+        text-align: right;
+    }
+
     .mobile-top-title {
         font-size: 14px;
         font-weight: 800;

@@ -96,12 +96,13 @@ export function createMobCard(mob, isDetailView = false) {
         mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
     }
 
-    const reportSidebar = card.querySelector('.report-side-bar');
-    if (reportSidebar) {
-        reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
-        reportSidebar.dataset.mobNo = mob.No;
-        reportSidebar.classList.add(`rank-${rank.toLowerCase()}`);
+    const mobRankBadge = card.querySelector('.mob-rank-badge');
+    if (mobRankBadge) {
+        mobRankBadge.textContent = rank;
+        mobRankBadge.style.color = `var(--rank-${rank.toLowerCase()})`;
     }
+
+    const reportSidebar = card.querySelector('.report-side-bar');
 
     const expandablePanel = card.querySelector('.expandable-panel');
     if (isOpen && expandablePanel) {
@@ -142,13 +143,6 @@ export function createPCDetailCard(mob) {
     // Time formatters
     const fmt = (val) => val ? formatMMDDHHmm(val) : "--/-- --:--";
     
-    let nextPossibleTime = "--/-- --:--";
-    if (nextConditionSpawnDate) {
-        nextPossibleTime = formatMMDDHHmm(nextConditionSpawnDate);
-    } else if (minRepop) {
-        nextPossibleTime = formatMMDDHHmm(minRepop);
-    }
-
     const mapFile = mob.Map;
 
     const layout = `
@@ -177,19 +171,19 @@ export function createPCDetailCard(mob) {
         <div class="pc-detail-grid">
             <div class="pc-detail-info-item">
                 <div class="label">最短POP</div>
-                <div class="value">${fmt(minRepop)}</div>
+                <div class="value" data-min-repop>${fmt(minRepop)}</div>
             </div>
             <div class="pc-detail-info-item">
                 <div class="label">最大POP</div>
-                <div class="value">${fmt(maxRepop)}</div>
+                <div class="value" data-max-repop>${fmt(maxRepop)}</div>
             </div>
             <div class="pc-detail-info-item highlight">
                 <div class="label">次回POP可能</div>
-                <div class="value">${nextPossibleTime}</div>
+                <div class="value" data-next-possible>${nextPossibleTime}</div>
             </div>
             <div class="pc-detail-info-item">
                 <div class="label">前回討伐</div>
-                <div class="value">${fmt(mob.last_kill_time)}</div>
+                <div class="value" data-last-kill>${fmt(mob.last_kill_time)}</div>
             </div>
         </div>
 
@@ -317,17 +311,7 @@ export function updateProgressText(card, mob) {
         if (mobNameEl) mobNameEl.style.color = `var(--rank-${mob.Rank.toLowerCase()})`;
     }
 
-    if (isMaint) {
-        card.classList.add("maintenance-gray-out");
-        const formatHMin = (ts) => {
-            if (!ts) return "--:--";
-            const d = new Date(ts * 1000);
-            return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-        };
-        const startStr = formatHMin(mob.repopInfo?.maintStart);
-        const endStr = formatHMin(mob.repopInfo?.maintEnd);
-        repopTimeStr = `${startStr} ～ ${endStr}`;
-    }
+    if (isMaint) card.classList.add("maintenance-gray-out");
     else card.classList.remove("maintenance-gray-out");
 
     let rightStr = (isInConditionWindow && conditionRemaining) ? conditionRemaining : (repopTimeStr || "未確定");
@@ -357,15 +341,18 @@ export function updateProgressText(card, mob) {
     if (status === "MaxOver") text.classList.add("max-over");
     else text.classList.remove("max-over");
 
-    
+    const percentEl = card.querySelector('.mobile-expand-percent-text');
+    if (percentEl) {
+        percentEl.textContent = `${Math.floor(elapsedPercent || 0)}%`;
+    }
+
     if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) card.classList.add("blink-border-white");
     else card.classList.remove("blink-border-white");
 }
 
 export function updateExpandablePanel(card, mob) {
-    const { minRepop, maxRepop, nextConditionSpawnDate, elapsedPercent } = mob.repopInfo || {};
+    const { minRepop, maxRepop, nextConditionSpawnDate } = mob.repopInfo || {};
     
-    // Metrics
     const elMin = card.querySelector("[data-min-repop]");
     const elMax = card.querySelector("[data-max-repop]");
     const elNext = card.querySelector("[data-next-possible]");
@@ -376,17 +363,15 @@ export function updateExpandablePanel(card, mob) {
     if (elMin) elMin.textContent = fmt(minRepop);
     if (elMax) elMax.textContent = fmt(maxRepop);
     
-    let nextPossibleTime = "--/-- --:--";
-    if (nextConditionSpawnDate) {
-        nextPossibleTime = formatMMDDHHmm(nextConditionSpawnDate);
-    } else if (minRepop) {
-        nextPossibleTime = formatMMDDHHmm(minRepop);
+    if (elNext) {
+        let npt = "--/-- --:--";
+        if (nextConditionSpawnDate) npt = formatMMDDHHmm(nextConditionSpawnDate);
+        else if (minRepop) npt = formatMMDDHHmm(minRepop);
+        elNext.textContent = npt;
     }
-    if (elNext) elNext.textContent = nextPossibleTime;
     
-    const lastStr = formatLastKillTime(mob.last_kill_time);
-    if (elLast) elLast.textContent = `前回: ${lastStr}`;
-    
+    if (elLast) elLast.textContent = fmt(mob.last_kill_time);
+
     // Memo
     const elMemoInput = card.querySelector("input[data-action='save-memo']");
     if (elMemoInput) {
@@ -483,12 +468,10 @@ export function updateMobCount(card, mob) {
 }
 
 export function updateAreaInfo(card, mob) {
-    const areaInfoContainer = card.querySelector('.area-info-container');
-    if (!areaInfoContainer) return;
-    if (areaInfoContainer.dataset.initialized === "true") return;
-    areaInfoContainer.dataset.initialized = "true";
-    const areaInfoHtml = `<div class="truncate text-gray-300 leading-none mb-[3px]">${mob.Area}</div><div class="flex items-center justify-end gap-0.5 leading-none"><span>${mob.Expansion}</span><span class="inline-flex items-center justify-center w-[11px] h-[11px] border border-current rounded-[1px] text-[7px] leading-none">${mob.Rank}</span></div>`;
-    areaInfoContainer.innerHTML = areaInfoHtml;
+    const areaEl = card.querySelector('.mobile-expand-area-text');
+    if (areaEl) {
+        areaEl.textContent = `${mob.Area} (${mob.Expansion})`;
+    }
 }
 
 export function updateMapOverlay(card, mob) {
@@ -615,21 +598,12 @@ const GROUP_LABELS = {
 };
 
 export function updateMaintenanceLabels(maintenance) {
-    if (maintenance && maintenance.start && maintenance.end) {
-        const start = new Date(maintenance.start);
-        const end = new Date(maintenance.end);
-        const formatHM = (d) => `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-        const newLabel = `${formatHM(start)} ～ ${formatHM(end)}`;
-        GROUP_LABELS.MAINTENANCE = newLabel;
-        
-        // Update existing cache if present
-        const cached = groupSectionCache.get("MAINTENANCE");
-        if (cached && cached.section) {
-            const labelEl = cached.section.querySelector(".status-group-label");
-            if (labelEl) labelEl.textContent = newLabel;
-        }
-    } else {
-        GROUP_LABELS.MAINTENANCE = "Maintenance";
+    // Label is now static as per user request
+    GROUP_LABELS.MAINTENANCE = "Maintenance";
+    const cached = groupSectionCache.get("MAINTENANCE");
+    if (cached && cached.section) {
+        const labelEl = cached.section.querySelector(".status-group-label");
+        if (labelEl) labelEl.textContent = "Maintenance";
     }
 }
 
