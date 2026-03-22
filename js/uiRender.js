@@ -49,7 +49,7 @@ export function computeTimeLabel(mob) {
     if (isTimedMob) { timeValue = formatDurationM(maxRepop - now); isSpecialCondition = true; }
     else { timeValue = formatDurationColon(maxRepop - now); }
   } else if (maxRepop) {
-    label = "🔚";
+    label = "🚨";
     if (isTimedMob) { timeValue = formatDurationM(now - maxRepop); isSpecialCondition = true; }
     else { timeValue = formatDurationColon(now - maxRepop); }
     isTimeOver = true;
@@ -491,7 +491,7 @@ export function updateAreaInfo(card, mob) {
 
   const headerArea = card.querySelector('.mobile-header-area-text');
   if (headerArea) {
-    headerArea.textContent = `\u00A0\u00A0${areaName} | ${expName}`;
+    headerArea.textContent = `${areaName} | ${expName}`;
   }
 }
 
@@ -551,9 +551,9 @@ export function updateSimpleMobItem(item, mob) {
 
   if (timeEl) {
     timeEl.innerHTML = `
-        <div class="grid items-center w-full h-full" style="grid-template-columns: 24px 75px; gap: 2px;">
+        <div class="grid items-center w-full h-full" style="grid-template-columns: auto auto; gap: 2px;">
             <span class="timer-label text-[14px] text-right opacity-90">${label}</span>
-            <span class="timer-value font-bold text-[14px] text-left ml-1 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
+            <span class="timer-value font-bold text-[14px] text-left ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
         </div>`;
   }
   const countEl = item.querySelector('.pc-list-count');

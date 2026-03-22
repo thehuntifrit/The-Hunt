@@ -5,11 +5,17 @@
     }
 
     .mob-card.is-expanded .mob-card-inner {
-        max-height: 75vh;
+        flex: 1 !important;
         height: auto !important;
-        overflow-y: auto;
+        overflow-y: auto !important;
         overscroll-behavior: contain;
         -webkit-overflow-scrolling: touch;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    .mob-card.is-expanded .expandable-panel {
+        flex: 1 !important;
+        overflow-y: auto !important;
     }
 
     .mob-card.is-expanded .mob-card-header {
@@ -22,6 +28,11 @@
 
     .mob-card.is-floating-active {
         top: 40px !important;
+        bottom: 70px !important;
+        z-index: 60 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
     }
 
     #mobile-top-bar {
@@ -60,7 +71,7 @@
 
     .mobile-grid-upper,
     .mobile-grid-lower {
-        grid-template-columns: 1fr 20px 60px;
+        grid-template-columns: 1fr 20px 85px;
         gap: 2px;
         width: 100%;
     }
@@ -195,7 +206,7 @@
         font-size: 12px !important;
     }
     .list-rank-badge {
-        margin-right: 0.75rem !important;
+        margin-right: 0.4rem !important;
     }
 
     @keyframes mobile-alert-pulse {
@@ -467,8 +478,18 @@
     .mob-card.open .mob-card-inner {
         border-radius: 12px !important;
         background: rgba(15, 23, 42, 0.95);
+    }
+
+    .mob-card.is-floating-active .mob-card-inner {
+        border-radius: 12px !important;
+        background: rgba(15, 23, 42, 0.95);
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
         box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6);
+    }
+
+    .detail-info-item.highlight .value {
+        color: #facc15 !important;
+        font-weight: bold;
     }
 
     #pc-layout {

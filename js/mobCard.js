@@ -114,7 +114,7 @@ export function openCard(card, mobNo) {
     card.style.top = `${targetTop}px`;
     card.style.left = `${targetLeft}px`;
     card.style.width = `${width}px`;
-    card.style.zIndex = "45";
+    card.style.zIndex = "60";
     card.style.margin = "0";
     card.dataset.isTransitioning = "true";
 
