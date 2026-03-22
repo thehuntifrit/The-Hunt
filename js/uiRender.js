@@ -51,7 +51,7 @@ export function computeTimeLabel(mob) {
     if (isTimedMob) { timeValue = formatDurationM(maxRepop - now); isSpecialCondition = true; }
     else { timeValue = formatDurationColon(maxRepop - now); }
   } else if (maxRepop) {
-    label = "READY";
+    label = "🔚";
     if (isTimedMob) { timeValue = formatDurationM(now - maxRepop); isSpecialCondition = true; }
     else { timeValue = formatDurationColon(now - maxRepop); }
     isTimeOver = true;
@@ -272,12 +272,16 @@ export function updateProgressBar(card, mob) {
       bar.style.transition = (currentWidth === 0 || elapsedPercent < currentWidth) ? "none" : "width 10s linear";
       bar.style.width = `${elapsedPercent || 0}%`;
     }
-    const color = `var(--progress-${status === "MaxOver" ? "max-over" : status === "ConditionActive" ? "condition" : "normal"})`;
+    let color = "rgba(107, 114, 128, 0.1)"; // Default gray
+    if (status === "MaxOver") color = "rgba(30, 58, 138, 0.2)"; // Muted blue
+    else if (status === "ConditionActive") color = "rgba(251, 191, 36, 0.2)"; // Muted gold
+    else if (status === "PopWindow") color = "rgba(59, 130, 246, 0.2)"; // Muted blue-fill
+
     if (bar.classList.contains('pc-detail-progress-bar')) {
       bar.style.background = color;
     } else {
       bar.style.backgroundColor = color;
-      bar.style.background = ""; // モバイル版などは背景指定をクリア
+      bar.style.background = "none"; 
     }
     bar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100, PROGRESS_CLASSES.MAX_OVER);
     if (elapsedPercent < 60) bar.classList.add(PROGRESS_CLASSES.P0_60);
@@ -393,7 +397,10 @@ export function updateExpandablePanel(card, mob) {
     // 特殊条件がない場合は強調（highlight）を外す
     const parent = elNext.closest('.detail-info-item');
     if (parent) {
-      if (mob.repopInfo?.isInConditionWindow || mob.repopInfo?.nextConditionSpawnDate) {
+      // isInConditionWindow は PopWindow 基準、nextConditionSpawnDate は将来の沸き
+      // これらが "特殊条件" によるもの（TimedMob）である場合のみハイライト
+      const isActuallyTimed = mob.repopInfo?.nextConditionSpawnDate || mob.repopInfo?.isInConditionWindow;
+      if (isActuallyTimed) {
         parent.classList.add('highlight');
       } else {
         parent.classList.remove('highlight');
@@ -634,10 +641,10 @@ function getGroupKey(mob) {
 }
 
 const GROUP_LABELS = {
-  MAX_OVER: "Time Over",
-  WINDOW: "Pop Window",
-  NEXT: "Before Respawn",
-  MAINTENANCE: "Maintenance"
+  MAX_OVER: "🔚 Time Over",
+  WINDOW: "⏳ Pop Window",
+  NEXT: "🔜 Respawning",
+  MAINTENANCE: "🛠️ Maintenance"
 };
 
 function getOrCreateGroupSection(groupKey) {
