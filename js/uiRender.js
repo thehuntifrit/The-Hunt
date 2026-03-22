@@ -498,11 +498,9 @@ export function createSimpleMobItem(mob) {
     item.dataset.rank = mob.Rank;
     item.innerHTML = `
         <div class="pc-list-name font-bold" style="color: #fff;"></div>
-        <div class="pc-list-time-col flex flex-col items-end justify-center leading-tight">
-            <div class="pc-list-time"></div>
-            <div class="pc-list-percent text-[10px] text-gray-300 font-mono tracking-wider opacity-80">0%</div>
-        </div>
+        <div class="pc-list-time"></div>
         <div class="pc-list-progress-container"><div class="pc-list-progress-bar" style="width: 0%"></div></div>
+        <div class="pc-list-percent">0%</div>
         <button class="pc-list-report-btn">REPORT</button>`;
     const nameEl = item.querySelector('.pc-list-name');
     if (nameEl) nameEl.textContent = mob.Name;

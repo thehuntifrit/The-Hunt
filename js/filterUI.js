@@ -168,7 +168,7 @@ export const updateFilterUI = () => {
   });
 };
 
-const handleRankTabClick = (rank) => {
+export const handleRankTabClick = (rank) => {
   const state = getState();
   const prevRank = state.filter.rank;
 

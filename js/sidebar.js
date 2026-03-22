@@ -1,5 +1,5 @@
 import { getState, EXPANSION_MAP } from "./dataManager.js";
-import { renderAreaFilterPanel } from "./filterUI.js";
+import { renderAreaFilterPanel, handleRankTabClick } from "./filterUI.js";
 
 let currentPanel = null;
 
@@ -197,8 +197,7 @@ function renderMobileFilterAccordion(panel) {
     panel.querySelectorAll(".rank-header").forEach(header => {
         header.addEventListener("click", () => {
             const rankKey = header.closest(".rank-accordion-item").dataset.rank;
-            const origBtn = document.querySelector(`#rank-tabs .tab-button[data-rank="${rankKey}"]`);
-            if (origBtn) origBtn.click();
+            handleRankTabClick(rankKey);
             setTimeout(() => renderMobileFilterAccordion(panel), 50);
         });
     });
@@ -357,8 +356,7 @@ function renderSidebarFilterAccordion() {
     container.querySelectorAll(".rank-header").forEach(header => {
         header.addEventListener("click", () => {
             const rankKey = header.closest(".rank-accordion-item").dataset.rank;
-            const origBtn = document.querySelector(`#rank-tabs .tab-button[data-rank="${rankKey}"]`);
-            if (origBtn) origBtn.click();
+            handleRankTabClick(rankKey);
         });
     });
 
