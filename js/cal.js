@@ -564,6 +564,11 @@ export function calculateRepop(mob, maintenance, options = {}) {
     }
   }
 
+  // メンテナンス中のステータス上書き（他の状態に優先させる）
+  if (isMaintenanceStop || isBlockedByMaintenance) {
+    status = "Maintenance";
+  }
+
   return {
     minRepop,
     maxRepop,

@@ -138,6 +138,7 @@ export function openCard(card, mobNo) {
         setTimeout(() => {
             delete card.dataset.isTransitioning;
             card.style.transform = "";
+            card.classList.add("is-expanded");
         }, 500);
     });
 }
@@ -219,6 +220,7 @@ function finishClose(card, placeholder) {
 
     card.style = "";
     card.classList.remove("is-floating-active");
+    card.classList.remove("is-expanded");
     delete card.dataset.placeholderId;
     delete card.dataset.isTransitioning;
 

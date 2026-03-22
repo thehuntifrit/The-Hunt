@@ -33,10 +33,15 @@ export function computeTimeLabel(mob) {
     const isTimedMob = !!(isInConditionWindow || nextConditionSpawnDate);
     
     // メンテナンス中
-    if (isMaint && maintStart && maintEnd) {
-        const startStr = formatMMDDHHmm(maintStart).split(' ')[1];
-        const endStr = formatMMDDHHmm(maintEnd).split(' ')[1];
-        return { label: "🛠️", timeValue: `${startStr}~${endStr}`, isSpecialCondition: false, isTimeOver: false, isTimedMob: false };
+    if (isMaint) {
+        let maintStr = "メンテ中";
+        if (maintStart && maintEnd) {
+            const startStr = formatMMDDHHmm(maintStart).split(' ')[1];
+            const endStr = formatMMDDHHmm(maintEnd).split(' ')[1];
+            maintStr = `${startStr}~${endStr}`;
+        }
+        // モブリスト内には詳細時間は出さず、アイコンのみにする方針（ユーザー要望）
+        return { label: "🛠️", timeValue: "メンテ中", isSpecialCondition: false, isTimeOver: false, isTimedMob: false };
     }
 
     // 全ての値がない場合は未確定
@@ -57,7 +62,7 @@ export function computeTimeLabel(mob) {
         if (isTimedMob) { timeValue = formatDurationM(maxRepop - now); isSpecialCondition = true; }
         else { timeValue = formatDurationColon(maxRepop - now); }
     } else if (maxRepop) {
-        label = "💯";
+        label = "READY";
         if (isTimedMob) { timeValue = formatDurationM(now - maxRepop); isSpecialCondition = true; }
         else { timeValue = formatDurationColon(now - maxRepop); }
         isTimeOver = true;
@@ -317,13 +322,9 @@ export function updateProgressText(card, mob) {
     // モバイル用新レイアウトへの割当 (Icon 000:00 形式で整列)
     if (timeArea && percentArea) {
         timeArea.innerHTML = `
-            <div class="flex items-center justify-end">
-                <div class="w-[18px] flex justify-center shrink-0">
-                    ${label ? `<span class="detail-label-icon text-[13px] opacity-100 text-yellow-500">${label}</span>` : ''}
-                </div>
-                <div class="w-[100px] text-right ml-1">
-                    <span class="detail-time-val font-bold text-[12px] text-gray-100 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</span>
-                </div>
+            <div class="flex items-center justify-end h-full">
+                <span class="detail-label-icon text-[13px] opacity-100 text-yellow-500 mr-1">${label}</span>
+                <span class="detail-time-val font-bold text-[12px] text-gray-100 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</span>
             </div>`;
         percentArea.textContent = percentStr;
         percentArea.classList.add("text-gray-300");
@@ -560,13 +561,9 @@ export function updateSimpleMobItem(item, mob) {
 
     if (timeEl) {
         timeEl.innerHTML = `
-        <div class="flex items-center justify-end">
-            <div class="w-[24px] flex justify-center shrink-0">
-                ${label ? `<span class="timer-label text-[12px] opacity-90">${label}</span>` : ''}
-            </div>
-            <div class="w-[100px] text-right ml-1.5">
-                <span class="timer-value font-bold text-[12px] ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
-            </div>
+        <div class="flex items-center justify-end w-full h-full">
+            <span class="timer-label text-[12px] opacity-90 mr-1">${label}</span>
+            <span class="timer-value font-bold text-[12px] ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
         </div>`;
     }
     const countEl = item.querySelector('.pc-list-count');

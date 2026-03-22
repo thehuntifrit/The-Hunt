@@ -232,7 +232,9 @@ function renderMaintenanceStatus() {
         const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
         const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
 
-        if (now >= showFrom && now <= showUntil) {
+        const isWithinDisplayWindow = now >= showFrom && now <= showUntil;
+
+        if (isWithinDisplayWindow) {
             maintenanceEl.innerHTML = `
                 <div class="font-semibold text-red-500">
                     ${formatDate(start)} ～ ${formatDate(end)}
@@ -241,6 +243,20 @@ function renderMaintenanceStatus() {
             hasMaintenance = true;
         } else {
             maintenanceEl.innerHTML = "";
+        }
+        
+        // パネル内（サイドバー/フッター）には常に情報を出す
+        const sidebarMaint = document.getElementById("sidebar-maintenance-content");
+        if (sidebarMaint) {
+            const startStr = formatDate(start);
+            const endStr = formatDate(end);
+            sidebarMaint.innerHTML = `
+                <div class="maintenance-info-rich p-2 bg-red-900/20 border border-red-500/30 rounded">
+                    <div class="text-[14px] font-bold text-red-400 mb-1">🛠️ メンテナンス予定</div>
+                    <div class="text-[13px] text-gray-100">${startStr} ～ ${endStr}</div>
+                    <div class="text-[11px] text-gray-400 mt-2">※メンテナンス中はタイマーが一時停止し、終了後に再開されます。</div>
+                </div>
+            `;
         }
     } else {
         maintenanceEl.innerHTML = "";
@@ -259,21 +275,12 @@ function renderMaintenanceStatus() {
     const sidebarTelop = document.getElementById("sidebar-telop-content");
     const isMobile = window.innerWidth < 1024;
 
-    if (sidebarMaint) {
-        if (hasMaintenance) {
-            const startStr = formatDate(new Date(maintenance.start));
-            const endStr = formatDate(new Date(maintenance.end));
-            if (isMobile) {
-                // モバイル版は1行で表示
-                sidebarMaint.innerHTML = `<div class="maintenance-box-mobile text-[12px] py-1 border-b border-white/5">${startStr} ～ ${endStr}</div>`;
-            } else {
-                sidebarMaint.innerHTML = `<div class="maintenance-box"><div class="time-val">${startStr}</div><div class="time-sep">～</div><div class="time-val">${endStr}</div></div>`;
-            }
-        } else {
-            sidebarMaint.textContent = "現在予定されているメンテナンスはありません。";
-        }
-        document.querySelectorAll('.sidebar-icon-btn[data-panel="maintenance"], .mobile-footer-btn[data-panel="maintenance"]')
-            .forEach(btn => btn.classList.toggle("has-alert", hasMaintenance));
+    // アイコンのバッジ更新（既存ロジック維持）
+    document.querySelectorAll('.sidebar-icon-btn[data-panel="maintenance"], .mobile-footer-btn[data-panel="maintenance"]')
+        .forEach(btn => btn.classList.toggle("has-alert", hasMaintenance));
+
+    if (sidebarMaint && !maintenance) {
+        sidebarMaint.textContent = "現在予定されているメンテナンスはありません。";
     }
 
     if (sidebarTelop) {

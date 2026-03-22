@@ -294,24 +294,24 @@
                         <div class="progress-bar-bg absolute left-0 top-0 h-full transition-all duration-100 ease-linear" style="width: 0%"></div>
                     </div>
                     
-                    <div class="pl-2 pr-3 py-1.5 flex flex-col min-w-0 flex-1 content-area relative z-10">
-                        <!-- Row 1: Mob Name & Time Info -->
-                        <div class="flex items-center justify-between w-full min-w-0 mb-0.5">
-                            <div class="flex items-center gap-1.5 min-w-0">
-                                <span class="mob-name font-bold truncate text-gray-100 min-w-0"></span>
+                    <div class="px-2 py-1.5 grid grid-rows-2 gap-y-0.5 content-area relative z-10">
+                        <!-- Upper Row: Grid Column for alignment -->
+                        <div class="mobile-grid-upper grid items-center w-full min-w-0">
+                            <div class="flex items-center gap-1.5 min-w-0 overflow-hidden">
+                                <span class="mob-name font-bold truncate text-gray-100"></span>
                                 <span class="mob-count-container text-[10px] whitespace-nowrap text-slate-400"></span>
                                 <span class="memo-icon-container text-xs"></span>
                             </div>
-                            <div class="mobile-time-area flex items-center justify-end gap-1.5 text-[12px] whitespace-nowrap pointer-events-none text-right"></div>
+                            <div class="mobile-time-area flex items-center justify-end"></div>
                         </div>
 
-                        <!-- Row 2: Rank/Area & Percentage -->
-                        <div class="flex items-center justify-between w-full min-w-0">
-                            <div class="flex items-center min-w-0 flex-1 mr-2 overflow-hidden">
+                        <!-- Lower Row: Grid Column for alignment -->
+                        <div class="mobile-grid-lower grid items-center w-full min-w-0">
+                            <div class="flex items-center min-w-0 overflow-hidden">
                                 <span class="list-rank-badge font-bold text-[9px] px-1 border border-current rounded mr-1.5 flex-shrink-0"></span>
                                 <div class="mobile-header-area-text text-[10px] text-yellow-600/80 truncate leading-none"></div>
                             </div>
-                            <div class="mobile-percent-area text-[12px] font-bold text-right text-gray-400 flex-shrink-0 pointer-events-none"></div>
+                            <div class="mobile-percent-area text-[12px] font-bold text-right text-gray-400 flex-shrink-0"></div>
                         </div>
                     </div>
                     
