@@ -260,7 +260,7 @@ body::before {
 }
 
 .content-area {
-    padding-right: 48px !important;
+    padding-right: 42px !important;
 }
 
 .mob-card-header {
@@ -285,23 +285,51 @@ body::before {
 
 .report-side-bar {
     position: absolute;
-    top: 6px;
-    bottom: 6px;
-    right: 8px;
-    width: 32px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 38px;
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
     cursor: pointer;
     z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-    transform: translateZ(0);
+    transition: all 0.2s ease;
 }
 
+.report-side-bar::after {
+    content: '報告';
+    font-size: 10px;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.9);
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    letter-spacing: 0.1em;
+}
+
+.report-side-bar.is-active-neon {
+    background: rgba(255, 255, 255, 0.12);
+    border-left: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: -2px 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.report-side-bar:active {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.detail-label-icon {
+    display: inline-block;
+    min-width: 1.2em;
+    text-align: center;
+}
+
+.detail-time-val {
+    font-family: 'Inter', monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+}
 .report-side-bar::before {
     content: '';
     width: 5px;

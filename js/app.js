@@ -289,6 +289,8 @@ function attachGlobalEventListeners() {
     });
 
     DOM.colContainer.addEventListener("click", (e) => {
+        if (e.target.closest(".report-side-bar")) return; // 報告ボタン時は展開しない
+        
         if (e.target.closest("[data-toggle='card-header']")) {
             const card = e.target.closest(".mob-card");
             if (card) {

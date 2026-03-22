@@ -220,25 +220,12 @@ export function createPCDetailCard(mob) {
         memoInput.value = mob.memo_text || '';
     }
 
-    const mapSection = card.querySelector('.pc-detail-map-section');
+    const mapSection = card.querySelector('.map-section');
     if (mob.Map && mapSection) {
         mapSection.classList.remove('hidden');
-        const mapImg = card.querySelector('.pc-detail-map');
-        if (mapImg) {
-            mapImg.src = `./maps/${mob.Map}`;
-            mapImg.dataset.mobMap = mob.Map;
-            mapImg.alt = `${mob.Name} Map`;
-        }
-        const mapOverlay = card.querySelector('.pc-detail-map-overlay');
-        if (mapOverlay && mob.spawn_points) {
-            const { spawnCullStatus, validSpawnPoints } = getSpawnCountInfo(mob);
-            const isOneLeft = (validSpawnPoints?.length || 0) === 1;
-            mapOverlay.innerHTML = (mob.spawn_points || []).map(p => {
-                const isLastOne = isOneLeft && p.id === validSpawnPoints[0]?.id;
-                const rankToPass = p.mob_ranks.includes("B2") ? "B2" : p.mob_ranks.includes("B1") ? "B1" : p.mob_ranks[0];
-                return drawSpawnPoint(p, spawnCullStatus, mob.No, rankToPass, isLastOne, isOneLeft);
-            }).join("");
-        }
+        updateMapOverlay(card, mob);
+    } else if (mapSection) {
+        mapSection.classList.add('hidden');
     }
 
     const reportSidebar = card.querySelector('.report-side-bar');
@@ -290,9 +277,11 @@ export function updateProgressText(card, mob) {
     const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, status, isInConditionWindow, repopTimeStr } = mob.repopInfo || {};
     const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
     const nowSec = Date.now() / 1000;
-    let { label, timeValue, isSpecialCondition, isTimeOver } = computeTimeLabel(mob);
-
-    let leftStr = label === "未確定" ? label : `${label} <span class="${isSpecialCondition ? 'label-next' : ''}">${timeValue}</span>`;
+    let leftStr = label === "未確定" ? label : 
+        `<div class="flex items-center justify-end gap-1.5">
+            <span class="detail-label-icon text-[12px] opacity-80">${label}</span>
+            <span class="detail-time-val font-bold text-[13px] min-w-[45px] text-right ${isSpecialCondition ? 'label-next' : ''}">${timeValue}</span>
+        </div>`;
     
     // パーセンテージは常に0-100%で算出
     let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
@@ -332,9 +321,9 @@ export function updateProgressText(card, mob) {
         newHTML = `<span class="percent">${percentStr}</span>`;
     } else {
         newHTML = `
-            <div class="flex flex-col items-end justify-center leading-[1.1] text-[11px] gap-[2px]">
+            <div class="flex flex-col items-end justify-center leading-none gap-[1px]">
                 <div class="${isTimeOver ? 'time-over' : 'time-normal'}">${leftStr}</div>
-                <div class="text-[10px] text-gray-300 font-mono tracking-wider opacity-80">${percentStr}</div>
+                <div class="text-[10px] text-gray-400 font-mono tracking-tight opacity-70">${percentStr}</div>
             </div>
             <div class="hidden lg:block text-right"><span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span></div>`;
     }
@@ -458,11 +447,19 @@ export function updateAreaInfo(card, mob) {
     }
 
     // Now covers both PC detail card and Mobile expand panel
-    card.querySelectorAll('.detail-area').forEach(el => el.textContent = areaName);
-    card.querySelectorAll('.detail-expansion').forEach(el => el.textContent = expName ? `| ${expName}` : "");
+    card.querySelectorAll('.detail-area').forEach(el => {
+        el.textContent = areaName;
+        el.classList.add('text-[10px]', 'opacity-80'); // マップ表示時のエリア名を縮小
+    });
+    card.querySelectorAll('.detail-expansion').forEach(el => {
+        el.textContent = expName ? `| ${expName}` : "";
+        el.classList.add('text-[10px]', 'opacity-60');
+    });
 
     const headerArea = card.querySelector('.mobile-header-area-text');
-    if (headerArea) headerArea.textContent = `${areaName} ${expName ? '| ' + expName : ''}`;
+    if (headerArea) {
+        headerArea.textContent = `${areaName} ${expName ? '| ' + expName : ''}`;
+    }
 }
 
 export function updateMapOverlay(card, mob) {
