@@ -71,7 +71,7 @@
 
     .mobile-grid-upper,
     .mobile-grid-lower {
-        grid-template-columns: 1fr 20px 85px;
+        grid-template-columns: 1fr 50px 40px;
         gap: 2px;
         width: 100%;
     }
@@ -79,7 +79,7 @@
     .mobile-time-area {
         flex-shrink: 0;
         min-width: 0;
-        justify-content: flex-start !important;
+        justify-content: flex-end !important;
     }
 
     .mobile-percent-area {
