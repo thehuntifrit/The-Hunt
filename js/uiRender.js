@@ -1221,17 +1221,8 @@ function updateProgressBars() {
     updateStatusContainerVisibility();
   }
 
-  const hasActiveAlpha = state.mobs.some(m => {
-    const isS = m.Rank === "S";
-    const isA = m.Rank === "A";
-    if (!isS && !isA) return false;
-    const { status, nextConditionSpawnDate } = m.repopInfo || {};
-    if (status === "MaxOver") return true;
-    if (isS && nextConditionSpawnDate && Date.now() >= nextConditionSpawnDate.getTime()) return true;
-    return false;
-  });
   const rankBtn = document.querySelector('.mobile-footer-btn[data-panel="rank"]');
-  if (rankBtn) rankBtn.classList.toggle("has-alert", hasActiveAlpha);
+  if (rankBtn) rankBtn.classList.remove("has-alert");
 }
 
 setInterval(() => {

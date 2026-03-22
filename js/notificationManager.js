@@ -8,12 +8,22 @@ export function initNotification() {
     audio = new Audio(SOUND_FILE);
     audio.load();
 
-    const toggle = document.getElementById('notification-toggle');
+    const sidebarToggle = document.getElementById('sidebar-notification-toggle');
+    const mobileToggle = document.getElementById('mobile-notification-toggle');
+    const toggles = [sidebarToggle, mobileToggle].filter(t => t !== null);
 
-    if (toggle) {
-        toggle.checked = getState().notificationEnabled;
-        toggle.addEventListener('change', (e) => {
+    const isEnabled = getState().notificationEnabled;
+
+    toggles.forEach(t => {
+        t.checked = isEnabled;
+        t.addEventListener('change', (e) => {
             const enabled = e.target.checked;
+            
+            // Sync other toggle
+            toggles.forEach(other => {
+                if (other !== t) other.checked = enabled;
+            });
+
             import("./dataManager.js").then(m => m.setNotificationEnabled(enabled));
 
             if (enabled) {
@@ -21,7 +31,7 @@ export function initNotification() {
                 playNotificationSound(true);
             }
         });
-    }
+    });
 }
 
 async function requestNotificationPermission() {

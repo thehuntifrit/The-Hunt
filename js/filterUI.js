@@ -140,6 +140,10 @@ export const updateFilterUI = () => {
       }
 
       const panels = [FilterDOM.areaFilterPanelMobile, FilterDOM.areaFilterPanelDesktop];
+      
+      // Step 1: Switch Rank (Hidden Area)
+      // Step 2: Same Rank Clicked (Show Area)
+      // Step 3: Same Rank Clicked (Hide Area)
       if (clickStep === 1 || clickStep === 3) {
         panels.forEach(p => {
           p?.classList.add("hidden");
@@ -171,16 +175,25 @@ export const handleRankTabClick = (rank) => {
   const prevRank = state.filter.rank;
 
   const stored = JSON.parse(localStorage.getItem("huntUIState")) || {};
-  let clickStep = 2;
+  let clickStep = stored.clickStep || 1;
 
-  setFilter({
-    rank,
-    areaSets: state.filter.areaSets
-  });
+  if (rank === prevRank) {
+    // Already in this rank. Toggle between step 2 (show) and 3 (hide).
+    if (clickStep === 1) clickStep = 2; // Was hidden, now show
+    else if (clickStep === 2) clickStep = 3; // Was shown, now hide
+    else if (clickStep === 3) clickStep = 2; // Was hidden again, now show
+  } else {
+    // Rank changed. Reset to step 1 (hidden).
+    clickStep = 1;
+    setFilter({
+      rank,
+      areaSets: state.filter.areaSets
+    });
+  }
 
   localStorage.setItem("huntUIState", JSON.stringify({
     ...stored,
-    rank,
+    rank: state.filter.rank,
     clickStep
   }));
 
