@@ -425,6 +425,73 @@
         </div>
     </template>
 
+    <template id="pc-detail-card-template">
+        <div class="pc-detail-card pc-detail-card-inner relative h-full flex flex-col">
+            <div class="pc-detail-header">
+                <div class="flex items-center justify-between mb-1">
+                    <h2 class="pc-detail-name"></h2>
+                    <div class="pc-detail-rank"></div>
+                </div>
+                <div class="flex items-center justify-between mb-1">
+                    <div class="pc-detail-area-row m-0 p-0">
+                        <span class="pc-detail-area text-yellow-500 font-bold"></span>
+                        <span class="pc-detail-expansion text-gray-500 font-normal"></span>
+                    </div>
+                    <div class="pc-detail-progress-text">
+                        <span class="percent">0%</span>
+                    </div>
+                </div>
+                <div class="pc-detail-progress-container">
+                    <div class="pc-detail-progress-bar" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="pc-detail-grid">
+                <div class="pc-detail-info-item">
+                    <div class="label">最短POP</div>
+                    <div class="value" data-min-repop>--/-- --:--</div>
+                </div>
+                <div class="pc-detail-info-item">
+                    <div class="label">最大POP</div>
+                    <div class="value" data-max-repop>--/-- --:--</div>
+                </div>
+                <div class="pc-detail-info-item highlight">
+                    <div class="label">次回POP可能</div>
+                    <div class="value" data-next-possible>--/-- --:--</div>
+                </div>
+                <div class="pc-detail-info-item">
+                    <div class="label">前回討伐</div>
+                    <div class="value" data-last-kill>--/-- --:--</div>
+                </div>
+            </div>
+
+            <div class="pc-detail-content">
+                <div class="pc-detail-section">
+                    <div class="section-label">出現条件</div>
+                    <div class="section-content condition"></div>
+                </div>
+
+                <div class="pc-detail-section">
+                    <div class="section-label">MEMO</div>
+                    <div class="pc-detail-memo-box">
+                        <input type="text" class="memo-input pc-detail-memo-input"
+                            placeholder="全角30文字まで" maxlength="30" data-action="save-memo">
+                    </div>
+                </div>
+
+                <div class="pc-detail-section pc-detail-map-section hidden">
+                    <div class="section-label">出現マップ</div>
+                    <div class="pc-detail-map-container">
+                        <img class="pc-detail-map mob-map-img" alt="">
+                        <div class="pc-detail-map-overlay map-overlay"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-side-bar absolute top-0 right-0 w-12 bottom-0 opacity-0 cursor-pointer pointer-events-auto z-10"></div>
+        </div>
+    </template>
+
     <div id="global-magnifier"
         class="map-magnifier fixed hidden pointer-events-none z-[10000] w-48 h-48 rounded-full border-4 border-cyan-500 shadow-[0_0_40px_rgba(0,0,0,0.8),0_0_20px_rgba(6,182,212,0.4)] overflow-hidden bg-slate-950">
         <div class="magnifier-content-wrapper absolute w-full h-full"></div>

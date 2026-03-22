@@ -4,7 +4,7 @@ import { attachMobCardEvents, toggleCardExpand, closeCard } from "./mobCard.js";
 import { attachLocationEvents } from "./location.js";
 import { openReportModal, closeReportModal, initModal, openAuthModal } from "./modal.js";
 import { renderRankTabs, handleAreaFilterClick, updateFilterUI } from "./filterUI.js";
-import { DOM, sortAndRedistribute, showColumnContainer, updateHeaderTime, updateMaintenanceLabels } from "./uiRender.js";
+import { DOM, sortAndRedistribute, showColumnContainer, updateHeaderTime } from "./uiRender.js";
 import { debounce } from "./cal.js";
 import { initTooltip } from "./tooltip.js";
 import { initGlobalMagnifier } from "./magnifier.js";

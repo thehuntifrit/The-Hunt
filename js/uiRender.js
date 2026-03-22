@@ -176,112 +176,63 @@ export function createMobCard(mob, isDetailView = false) {
 }
 
 export function createPCDetailCard(mob) {
-    const card = document.createElement("div");
+    const template = document.getElementById('pc-detail-card-template');
+    const clone = template.content.cloneNode(true);
+    const card = clone.querySelector('.pc-detail-card');
+
     const rank = mob.Rank;
-    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, conditionWindowEnd, minRepop, maxRepop, status, isInConditionWindow, timeRemaining } = mob.repopInfo || {};
-    
-    // Time formatters
+    const { elapsedPercent, nextConditionSpawnDate, minRepop, maxRepop } = mob.repopInfo || {};
     const fmt = (val) => val ? formatMMDDHHmm(val) : "--/-- --:--";
-    
-    const mapFile = mob.Map;
 
-    let nextPossibleTime = "--/-- --:--";
-    if (nextConditionSpawnDate) {
-        nextPossibleTime = fmt(nextConditionSpawnDate);
-    } else if (minRepop) {
-        nextPossibleTime = fmt(minRepop);
-    }
-
-    const layout = `
-        <div class="pc-detail-header">
-            <div class="flex items-center justify-between mb-1">
-                <h2 class="pc-detail-name">${mob.Name}</h2>
-                <div class="pc-detail-rank">${mob.Rank}</div>
-            </div>
-            <div class="flex items-center justify-between mb-1">
-                <div class="pc-detail-area-row m-0 p-0">
-                    <span class="text-yellow-500 font-bold">${mob.Area}</span>
-                    <span class="text-gray-500 font-normal">${mob.Expansion}</span>
-                </div>
-                <div class="pc-detail-progress-text">
-                    <span class="percent">${Math.floor(elapsedPercent || 0)}%</span>
-                </div>
-            </div>
-            <div class="pc-detail-progress-container">
-                <div class="pc-detail-progress-bar" style="width: ${elapsedPercent || 0}%"></div>
-            </div>
-        </div>
-
-        <div class="pc-detail-grid">
-            <div class="pc-detail-info-item">
-                <div class="label">最短POP</div>
-                <div class="value" data-min-repop>${fmt(minRepop)}</div>
-            </div>
-            <div class="pc-detail-info-item">
-                <div class="label">最大POP</div>
-                <div class="value" data-max-repop>${fmt(maxRepop)}</div>
-            </div>
-            <div class="pc-detail-info-item highlight">
-                <div class="label">次回POP可能</div>
-                <div class="value" data-next-possible>${nextPossibleTime}</div>
-            </div>
-            <div class="pc-detail-info-item">
-                <div class="label">前回討伐</div>
-                <div class="value" data-last-kill>${fmt(mob.last_kill_time)}</div>
-            </div>
-        </div>
-
-        <div class="pc-detail-content">
-            <div class="pc-detail-section">
-                <div class="section-label">出現条件</div>
-                <div class="section-content condition">
-                    ${processText(mob.Condition || "特殊な出現条件はありません。")}
-                </div>
-            </div>
-
-            <div class="pc-detail-section">
-                <div class="section-label">MEMO</div>
-                <div class="pc-detail-memo-box">
-                    <input type="text" class="memo-input pc-detail-memo-input"
-                        placeholder="全角30文字まで" maxlength="30" data-action="save-memo" data-mob-no="${mob.No}"
-                        value="${mob.memo_text || ''}">
-                </div>
-            </div>
-
-            ${mapFile ? `
-            <div class="pc-detail-section">
-                <div class="section-label">出現マップ</div>
-                <div class="pc-detail-map-container">
-                    <img src="./maps/${mapFile}" class="pc-detail-map mob-map-img" 
-                        data-mob-map="${mapFile}" alt="${mob.Name} Map">
-                    <div class="pc-detail-map-overlay map-overlay"></div>
-                </div>
-            </div>
-            ` : ''}
-        </div>
-
-        <div class="report-side-bar absolute top-0 right-0 w-12 bottom-0 opacity-0 cursor-pointer pointer-events-auto z-10" 
-            data-report-type="${rank === 'A' ? 'instant' : 'modal'}" data-mob-no="${mob.No}">
-        </div>
-    `;
-
-    card.innerHTML = layout;
-    card.className = "pc-detail-card pc-detail-card-inner relative h-full flex flex-col";
     card.dataset.mobNo = mob.No;
 
-    const mapOverlay = card.querySelector(".pc-detail-map-overlay");
-    if (mapOverlay && mob.spawn_points) {
-        const state = getState();
-        const mobLocationsData = state.mobLocations?.[mob.No];
-        const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
-        const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
-        const isOneLeft = validSpawnPoints.length === 1;
+    card.querySelector('.pc-detail-name').textContent = mob.Name;
+    card.querySelector('.pc-detail-rank').textContent = rank;
+    card.querySelector('.pc-detail-area').textContent = mob.Area || "";
+    card.querySelector('.pc-detail-expansion').textContent = mob.Expansion || "";
 
-        mapOverlay.innerHTML = (mob.spawn_points || []).map(p => {
-            const isLastOne = isOneLeft && p.id === validSpawnPoints[0]?.id;
-            const rankToPass = p.mob_ranks.includes("B2") ? "B2" : p.mob_ranks.includes("B1") ? "B1" : p.mob_ranks[0];
-            return drawSpawnPoint(p, spawnCullStatus, mob.No, rankToPass, isLastOne, isOneLeft);
-        }).join("");
+    const progressBar = card.querySelector('.pc-detail-progress-bar');
+    if (progressBar) progressBar.style.width = `${elapsedPercent || 0}%`;
+
+    card.querySelector('[data-min-repop]').textContent = fmt(minRepop);
+    card.querySelector('[data-max-repop]').textContent = fmt(maxRepop);
+    card.querySelector('[data-next-possible]').textContent = nextConditionSpawnDate ? fmt(nextConditionSpawnDate) : fmt(minRepop);
+    card.querySelector('[data-last-kill]').textContent = fmt(mob.last_kill_time);
+
+    const conditionEl = card.querySelector('.section-content.condition');
+    if (conditionEl) conditionEl.innerHTML = processText(mob.Condition || "\u7279\u6b8a\u306a\u51fa\u73fe\u6761\u4ef6\u306f\u3042\u308a\u307e\u305b\u3093\u3002");
+
+    const memoInput = card.querySelector('.memo-input');
+    if (memoInput) {
+        memoInput.dataset.mobNo = mob.No;
+        memoInput.value = mob.memo_text || '';
+    }
+
+    const mapSection = card.querySelector('.pc-detail-map-section');
+    if (mob.Map && mapSection) {
+        mapSection.classList.remove('hidden');
+        const mapImg = card.querySelector('.pc-detail-map');
+        if (mapImg) {
+            mapImg.src = `./maps/${mob.Map}`;
+            mapImg.dataset.mobMap = mob.Map;
+            mapImg.alt = `${mob.Name} Map`;
+        }
+        const mapOverlay = card.querySelector('.pc-detail-map-overlay');
+        if (mapOverlay && mob.spawn_points) {
+            const { spawnCullStatus, validSpawnPoints } = getSpawnCountInfo(mob);
+            const isOneLeft = (validSpawnPoints?.length || 0) === 1;
+            mapOverlay.innerHTML = (mob.spawn_points || []).map(p => {
+                const isLastOne = isOneLeft && p.id === validSpawnPoints[0]?.id;
+                const rankToPass = p.mob_ranks.includes("B2") ? "B2" : p.mob_ranks.includes("B1") ? "B1" : p.mob_ranks[0];
+                return drawSpawnPoint(p, spawnCullStatus, mob.No, rankToPass, isLastOne, isOneLeft);
+            }).join("");
+        }
+    }
+
+    const reportSidebar = card.querySelector('.report-side-bar');
+    if (reportSidebar) {
+        reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
+        reportSidebar.dataset.mobNo = mob.No;
     }
 
     return card;
@@ -613,16 +564,6 @@ const GROUP_LABELS = {
   MAINTENANCE: "Maintenance"
 };
 
-export function updateMaintenanceLabels(maintenance) {
-    // Label is now static as per user request
-    GROUP_LABELS.MAINTENANCE = "Maintenance";
-    const cached = groupSectionCache.get("MAINTENANCE");
-    if (cached && cached.section) {
-        const labelEl = cached.section.querySelector(".status-group-label");
-        if (labelEl) labelEl.textContent = "Maintenance";
-    }
-}
-
 function getOrCreateGroupSection(groupKey) {
   if (groupSectionCache.has(groupKey)) return groupSectionCache.get(groupKey);
 
@@ -710,40 +651,20 @@ export function updateHeaderTime() {
 
   const now = new Date();
   const et = getEorzeaTime(now);
-  const ltHours = String(now.getHours()).padStart(2, "0");
-  const ltMinutes = String(now.getMinutes()).padStart(2, "0");
-  const name = state.characterName || "";
-  const elLT = document.getElementById("header-time-lt");
-  const elET = document.getElementById("header-time-et");
-  const elPCLT = document.getElementById("pc-time-lt");
-  const elPCET = document.getElementById("pc-time-et");
+  const lt = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  const etStr = `${et.hours}:${et.minutes}`;
+
+  ["header-time-lt", "pc-time-lt", "mobile-time-lt", "sidebar-lt-persistent"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = lt;
+  });
+  ["header-time-et", "pc-time-et", "mobile-time-et", "sidebar-et-persistent"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = etStr;
+  });
+
   const elWelcome = document.getElementById("header-welcome-message");
-
-  const elSidebarLT = document.getElementById("sidebar-lt-persistent");
-  const elSidebarET = document.getElementById("sidebar-et-persistent");
-  
-  if (elLT && elET) {
-    elLT.textContent = `${ltHours}:${ltMinutes}`;
-    elET.textContent = `${et.hours}:${et.minutes}`;
-  }
-  if (elPCLT && elPCET) {
-    elPCLT.textContent = `${ltHours}:${ltMinutes}`;
-    elPCET.textContent = `${et.hours}:${et.minutes}`;
-  }
-  const elMobileLT = document.getElementById("mobile-time-lt");
-  const elMobileET = document.getElementById("mobile-time-et");
-  if (elMobileLT) elMobileLT.textContent = `${ltHours}:${ltMinutes}`;
-  if (elMobileET) elMobileET.textContent = `${et.hours}:${et.minutes}`;
-  if (elSidebarLT) elSidebarLT.textContent = `${ltHours}:${ltMinutes}`;
-  if (elSidebarET) elSidebarET.textContent = `${et.hours}:${et.minutes}`;
-
-  if (elWelcome) {
-    if (name) {
-      elWelcome.textContent = `ようこそ ${name}`;
-    } else {
-      elWelcome.textContent = "";
-    }
-  }
+  if (elWelcome) elWelcome.textContent = state.characterName ? `ようこそ ${state.characterName}` : "";
 }
 
 setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
@@ -1058,13 +979,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
             item = createSimpleMobItem(mob);
           } else {
             updateSimpleMobItem(item, mob);
-          }
-          
-          const state = getState();
-          if (state.openMobCardNo === mob.No) {
-            item.classList.add("selected");
-          } else {
-            item.classList.remove("selected");
           }
           nextChildren.push(item);
         });
