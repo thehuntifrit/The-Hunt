@@ -136,6 +136,7 @@ async function initApp() {
         window.addEventListener('initialSortComplete', () => {
             clearTimeout(loadingTimeout);
             try {
+                renderMaintenanceStatus();
                 showColumnContainer();
 
                 const isFirstVisit = !localStorage.getItem("has_visited");

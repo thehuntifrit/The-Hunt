@@ -131,11 +131,11 @@
         color: #facc15;
     }
 
-    .mobile-footer-btn.has-alert::after {
+    .mobile-footer-btn.has-alert::before {
         content: '';
         position: absolute;
         top: 6px;
-        right: 25%;
+        right: 12px;
         width: 7px;
         height: 7px;
         background: #ff4d4d;
