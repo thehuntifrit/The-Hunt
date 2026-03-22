@@ -323,22 +323,25 @@ export function updateProgressText(card, mob) {
   }
 
   const pcProgressTextHTML = `<span class="font-bold text-[14px] text-gray-100">${percentStr}</span>`;
-  const defaultProgressTextHTML = `
-        <div class="flex items-center justify-start w-full font-numeric tabular-nums gap-1">
-            <div class="flex-shrink-0 w-[14px] flex justify-center opacity-70 detail-label-icon">${label || ''}</div>
-            <div class="flex-shrink-0 w-[52px] text-right font-bold text-[13px] detail-time-val ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</div>
-            <div class="flex-shrink-0 w-[44px] text-right text-[11px] text-gray-400">(${percentStr.padStart(4, '\u00A0')})</div>
-        </div>`;
+  const iconEl = card.querySelector('.js-mobile-icon');
+  const timeEl = card.querySelector('.js-mobile-time');
+  const pcDetailEl = card.querySelector('.pc-detail-progress-text');
 
-  progressTextNodes.forEach(text => {
-    if (text.classList.contains('pc-detail-progress-text')) {
-      text.innerHTML = pcProgressTextHTML;
-    } else {
-      text.innerHTML = defaultProgressTextHTML;
-    }
-    if (status === "MaxOver") text.classList.add("max-over");
-    else text.classList.remove("max-over");
-  });
+  if (iconEl) {
+    iconEl.textContent = label || '';
+  }
+  if (timeEl) {
+    timeEl.innerHTML = `
+      <span class="detail-time-val ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</span>
+      <span class="text-[11px] text-gray-400 opacity-80">(${percentStr.padStart(4, '\u00A0')})</span>`;
+    if (status === "MaxOver") timeEl.classList.add("max-over");
+    else timeEl.classList.remove("max-over");
+  }
+  if (pcDetailEl) {
+    pcDetailEl.innerHTML = pcProgressTextHTML;
+    if (status === "MaxOver") pcDetailEl.classList.add("max-over");
+    else pcDetailEl.classList.remove("max-over");
+  }
 
   const mobNameEl = card.querySelector('.mob-name');
   const shouldDimCard = isMaint || status === "Next" || (status === "NextCondition" && nowSec < (mob.repopInfo?.minRepop || 0));
