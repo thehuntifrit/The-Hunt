@@ -131,6 +131,11 @@
         color: #facc15;
     }
 
+    .mobile-time-area {
+        width: 85px;
+        flex-shrink: 0;
+    }
+
     .mobile-footer-btn.has-alert::before {
         content: '';
         position: absolute;

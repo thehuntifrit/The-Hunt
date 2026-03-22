@@ -307,14 +307,19 @@ export function updateProgressText(card, mob) {
     const percentArea = card.querySelector('.mobile-percent-area');
     const progressTextNodes = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
     
-    // モバイル用新レイアウトへの割当
+    // モバイル用新レイアウトへの割当 (Icon 000:00 形式で整列)
     if (timeArea && percentArea) {
-        timeArea.innerHTML = label ? `
-            <span class="detail-label-icon text-[13px] opacity-100 text-yellow-500 mr-1.5">${label}</span>
-            <span class="detail-time-val font-bold text-[13px] text-gray-100 ${isSpecialCondition ? 'label-next' : ''}">${timeValue}</span>
-        ` : `<span class="detail-time-val font-bold text-[13px] text-gray-400">${timeValue}</span>`;
+        timeArea.innerHTML = `
+            <div class="flex items-center justify-end">
+                <div class="w-[20px] flex justify-center shrink-0">
+                    ${label ? `<span class="detail-label-icon text-[13px] opacity-100 text-yellow-500">${label}</span>` : ''}
+                </div>
+                <div class="w-[60px] text-right ml-1">
+                    <span class="detail-time-val font-bold text-[13px] text-gray-100 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</span>
+                </div>
+            </div>`;
         percentArea.textContent = percentStr;
-        percentArea.classList.add("text-gray-300"); // 視認性確保
+        percentArea.classList.add("text-gray-300");
     }
     
     // 既存/PC詳細用への割当
@@ -549,10 +554,10 @@ export function updateSimpleMobItem(item, mob) {
     if (timeEl) {
         timeEl.innerHTML = `
         <div class="flex items-center justify-end">
-            <div class="w-6 flex justify-center shrink-0">
-                <span class="timer-label text-[12px] opacity-90">${label}</span>
+            <div class="w-[24px] flex justify-center shrink-0">
+                ${label ? `<span class="timer-label text-[12px] opacity-90">${label}</span>` : ''}
             </div>
-            <div class="w-16 text-right">
+            <div class="w-[64px] text-right ml-1.5">
                 <span class="timer-value font-bold ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
             </div>
         </div>`;

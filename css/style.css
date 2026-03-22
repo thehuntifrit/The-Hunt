@@ -599,33 +599,6 @@ body::before {
     text-shadow: 0 0 8px rgba(251, 191, 36, 0.25);
 }
 
-.detail-section {
-    margin-bottom: 0.75rem;
-}
-
-.detail-section .section-label {
-    font-size: 10px;
-    font-weight: 800;
-    color: rgba(6, 182, 212, 0.6);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 0.4rem;
-    padding-left: 0.5rem;
-    border-left: 2px solid var(--accent-cyan);
-    text-shadow: 0 0 8px rgba(6, 182, 212, 0.2);
-}
-
-.detail-section .condition {
-    font-size: 12px;
-    line-height: 1.5;
-    color: rgba(234, 179, 8, 0.9);
-    background: rgba(234, 179, 8, 0.04);
-    padding: 0.5rem 0.6rem;
-    border-radius: 6px;
-    border: 1px solid rgba(234, 179, 8, 0.1);
-    text-shadow: 0 0 6px rgba(234, 179, 8, 0.15);
-}
-
 .detail-memo-box {
     background: rgba(6, 182, 212, 0.03);
     padding: 6px 10px;
@@ -803,21 +776,45 @@ html body.magnifier-active .mob-card-inner * {
     max-height: none !important;
 }
 
+.detail-section {
+    margin-bottom: 0.75rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 0.5rem;
+}
+
+.detail-section .section-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: rgba(6, 182, 212, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+    padding-left: 0.5rem;
+    border-left: 2px solid var(--accent-cyan);
+    text-shadow: 0 0 8px rgba(6, 182, 212, 0.2);
+}
+
 .condition-section-neon {
     border-color: rgba(251, 191, 36, 0.4) !important;
     box-shadow: none !important;
-    background: none !important;
 }
 
 .condition-section-neon .section-label {
     color: #fbbf24 !important;
+    border-left-color: #fbbf24 !important;
     text-shadow: none !important;
 }
 
-.condition-section-neon .section-content,
-.condition-section-neon .detail-memo-input,
-.condition-section-neon .condition-text {
-    color: #fbbf24 !important;
-    text-shadow: 0 0 10px rgba(251, 191, 36, 0.4) !important;
-    font-weight: 600;
-}
+.section-content,
+.detail-memo-input,
+.condition-text {
+    color: #fff !important;
+    text-shadow: none !important;
+    font-weight: 500;
+}
+
+::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+    opacity: 1;
+}

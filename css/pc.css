@@ -227,19 +227,20 @@
     }
 
     .pc-list-count {
-        flex: 0 0 32px;
+        flex: 0 0 40px;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-end;
         font-family: 'JetBrains Mono', monospace;
         font-size: 13px;
         white-space: nowrap;
-        margin-right: 4px;
+        margin-right: 8px;
         font-variant-numeric: tabular-nums;
+        color: #94a3b8;
     }
 
     .pc-list-time {
-        flex: 0 0 88px;
+        flex: 0 0 92px;
         font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
         font-size: 13px;
         font-weight: 500;
@@ -247,6 +248,7 @@
         align-items: center;
         justify-content: flex-end;
         white-space: pre;
+        margin-right: 4px;
     }
 
     .pc-list-time .timer-label {
