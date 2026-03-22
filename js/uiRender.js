@@ -461,9 +461,15 @@ export function updateMobCount(card, mob) {
 }
 
 export function updateAreaInfo(card, mob) {
-    if (areaEl) {
-        areaEl.textContent = `${mob.Area} (${mob.Expansion})`;
+    const areaInfoContainer = card.querySelector('.area-info-container');
+    if (areaInfoContainer && (mob.Area || mob.Expansion)) {
+        areaInfoContainer.innerHTML = `<div class="font-numeric text-slate-400 mb-1 leading-tight">${mob.Area}</div><div class="flex items-center justify-end gap-1 font-numeric text-slate-500 leading-none"><span>${mob.Expansion}</span><span class="inline-flex items-center justify-center w-3 h-3 border border-current rounded-sm text-[8px] leading-none font-bold">${mob.Rank}</span></div>`;
     }
+
+    const mobileAreaText = card.querySelector('.mobile-expand-area-text');
+    const mobileExpansionText = card.querySelector('.mobile-expand-expansion-text');
+    if (mobileAreaText) mobileAreaText.textContent = mob.Area || "";
+    if (mobileExpansionText) mobileExpansionText.textContent = mob.Expansion ? `(${mob.Expansion})` : "";
 }
 
 export function updateMapOverlay(card, mob) {
