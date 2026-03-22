@@ -251,6 +251,8 @@ export async function renderMaintenanceStatus() {
     const maintPanels = document.querySelectorAll(".js-maintenance-content");
     const telopPanels = document.querySelectorAll(".js-telop-content");
 
+    let hasMaintenance = false;
+    let hasMessage = false;
     let maintMobileHtml = "";
     let maintPCHtml = "";
 
