@@ -551,7 +551,7 @@ export function updateSimpleMobItem(item, mob) {
 
   if (timeEl) {
     timeEl.innerHTML = `
-        <div class="grid items-center w-full h-full" style="grid-template-columns: auto auto; gap: 2px;">
+        <div class="grid items-center w-full h-full" style="grid-template-columns: 30px 75px; gap: 1px;">
             <span class="timer-label text-[14px] text-right opacity-90">${label}</span>
             <span class="timer-value font-bold text-[14px] text-left ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
         </div>`;

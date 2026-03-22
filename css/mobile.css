@@ -5,7 +5,6 @@
     }
 
     .mob-card.is-expanded .mob-card-inner {
-        flex: 1 !important;
         height: auto !important;
         overflow-y: auto !important;
         overscroll-behavior: contain;
@@ -14,7 +13,7 @@
         flex-direction: column !important;
     }
     .mob-card.is-expanded .expandable-panel {
-        flex: 1 !important;
+        height: auto !important;
         overflow-y: auto !important;
     }
 
@@ -28,7 +27,8 @@
 
     .mob-card.is-floating-active {
         top: 40px !important;
-        bottom: 70px !important;
+        height: auto !important;
+        max-height: calc(100svh - 120px) !important;
         z-index: 60 !important;
         display: flex !important;
         flex-direction: column !important;
@@ -182,7 +182,6 @@
     }
 
     .mobile-time-area {
-        width: 120px;
         flex-shrink: 0;
     }
 
