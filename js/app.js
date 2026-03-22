@@ -115,7 +115,22 @@ async function initApp() {
             }
         }, { once: true });
 
+        const loadingTimeout = setTimeout(() => {
+            const overlay = document.getElementById("loading-overlay");
+            if (overlay && !overlay.classList.contains("hidden")) {
+                console.warn("Loading timeout: Forcing UI display.");
+                // レンダリングが開始されていない場合に備え、イベントを強制発火
+                if (!getState().initialLoadComplete) {
+                    window.dispatchEvent(new CustomEvent('initialDataLoaded'));
+                }
+                showColumnContainer();
+                overlay.classList.add("hidden");
+                showToast("データ同期がタイムアウトしました。既存のデータで表示します。", "info");
+            }
+        }, 10000);
+
         window.addEventListener('initialSortComplete', () => {
+            clearTimeout(loadingTimeout);
             try {
                 showColumnContainer();
 

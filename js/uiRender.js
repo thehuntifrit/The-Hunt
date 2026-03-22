@@ -275,6 +275,7 @@ export function updateProgressBar(card, mob) {
 
 export function updateProgressText(card, mob) {
     const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, status, isInConditionWindow, repopTimeStr } = mob.repopInfo || {};
+    const { label, timeValue, isSpecialCondition, isTimeOver } = computeTimeLabel(mob);
     const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
     const nowSec = Date.now() / 1000;
     let leftStr = label === "未確定" ? label : 
