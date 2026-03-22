@@ -162,20 +162,20 @@
         align-items: center;
         justify-content: flex-end;
         white-space: pre;
-        gap: 2px;
+        gap: 6px;
     }
 
     .pc-list-time .timer-label {
-        flex: 0 0 20px;
+        flex: 0 0 16px;
         text-align: center;
         font-size: 13px;
     }
 
     .pc-list-time .timer-value {
-        flex: 1;
-        text-align: right;
+        flex: 0 0 52px;
         color: rgba(226, 215, 197, 0.9);
         font-variant-numeric: tabular-nums;
+        text-align: right;
     }
 
     .pc-list-time .timer-value.label-next {
