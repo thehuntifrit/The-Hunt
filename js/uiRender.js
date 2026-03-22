@@ -618,7 +618,7 @@ function getOrCreateGroupSection(groupKey) {
       <div class="status-group-separator">
           <span class="status-group-label">${GROUP_LABELS[groupKey]}</span>
       </div>
-      <div class="group-columns grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="group-columns grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div class="col-1 flex flex-col gap-4"></div>
           <div class="col-2 flex flex-col gap-4"></div>
           <div class="col-3 flex flex-col gap-4"></div>

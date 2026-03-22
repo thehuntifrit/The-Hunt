@@ -297,7 +297,7 @@ body::before {
 }
 
 .report-side-bar::after {
-    content: '報告';
+    content: '';
     font-size: 10px;
     font-weight: 900;
     color: rgba(255, 255, 255, 0.9);

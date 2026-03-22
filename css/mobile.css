@@ -1,6 +1,7 @@
 @media (max-width: 1023px) {
     .mob-card {
         scroll-margin-top: 40px;
+        margin-bottom: 1px !important;
     }
 
     .mob-card.is-floating-active {
@@ -382,6 +383,9 @@
 
     .mob-card-inner {
         background: rgba(15, 23, 42, 0.85);
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
     }
 
     #pc-layout {
