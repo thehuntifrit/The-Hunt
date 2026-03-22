@@ -411,12 +411,13 @@
         width: 18px !important;
         flex-shrink: 0;
         display: flex;
-        justify-content: center;
+        justify-content: flex-end !important;
+        padding-right: 2px !important;
     }
 
     .js-mobile-time {
         width: 114px !important;
         flex-shrink: 0;
-        text-align: right;
+        text-align: left !important;
     }
 }
