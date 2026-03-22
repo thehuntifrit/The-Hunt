@@ -281,11 +281,26 @@ export function updateProgressBar(card, mob) {
 }
 
 export function updateProgressText(card, mob) {
-    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, minRepop, status, isInConditionWindow, timeRemaining, conditionRemaining, repopTimeStr } = mob.repopInfo || {};
+    const { elapsedPercent, nextMinRepopDate, nextConditionSpawnDate, conditionWindowEnd, minRepop, maxRepop, status, isInConditionWindow, repopTimeStr } = mob.repopInfo || {};
     const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
     const nowSec = Date.now() / 1000;
-    let leftStr = timeRemaining || "未確定";
-    const percentStr = (status !== "MaxOver" && ((minRepop && nowSec >= minRepop) || status === "PopWindow" || status === "ConditionActive")) ? ` (${Number(elapsedPercent || 0).toFixed(0)}%)` : "";
+    
+    // PC版と同じ時間優先判定ロジック
+    const isTimedMob = !!(isInConditionWindow || nextConditionSpawnDate);
+    let label = "未確定", timeValue = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
+    if (isInConditionWindow && conditionWindowEnd) {
+        label = "⏳"; timeValue = formatDurationM((conditionWindowEnd.getTime() / 1000) - nowSec); isSpecialCondition = true;
+    } else if (nextConditionSpawnDate && nowSec >= minRepop) {
+        label = "🔜"; timeValue = formatDurationColon((nextConditionSpawnDate.getTime() / 1000) - nowSec); isSpecialCondition = true;
+    } else if (minRepop && nowSec < minRepop) { label = "🔜"; timeValue = formatDurationColon(minRepop - nowSec); if (isTimedMob) isSpecialCondition = true;
+    } else if (maxRepop && nowSec < maxRepop) { label = "⏳"; if (isTimedMob) { timeValue = formatDurationM(maxRepop - nowSec); isSpecialCondition = true; } else { timeValue = formatDurationColon(maxRepop - nowSec); }
+    } else if (maxRepop) { label = "💯"; if (isTimedMob) { timeValue = formatDurationM(nowSec - maxRepop); isSpecialCondition = true; } else { timeValue = formatDurationColon(nowSec - maxRepop); } isTimeOver = true; }
+
+    let leftStr = label === "未確定" ? label : `${label} <span class="${isSpecialCondition ? 'label-next' : ''}">${timeValue}</span>`;
+    
+    // パーセンテージは常に0-100%で算出
+    let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
+    const percentStr = isTimeOver ? "100%" : `${safePercent}%`;
     
     const mobNameEl = card.querySelector('.mob-name');
     const shouldDimCard = isMaint || status === "Next" || (status === "NextCondition" && nowSec < (mob.repopInfo?.minRepop || 0));
@@ -299,15 +314,14 @@ export function updateProgressText(card, mob) {
         card.classList.remove("is-pre-repop");
         card.classList.add("is-active-neon");
         if (reportSidebar) reportSidebar.classList.add("is-active-neon");
-        if (mobNameEl) mobNameEl.style.color = `var(--rank-${mob.Rank.toLowerCase()})`;
     }
+    // モブ名は常に白に固定
+    if (mobNameEl) mobNameEl.style.color = '#fff';
 
     if (isMaint) card.classList.add("maintenance-gray-out");
     else card.classList.remove("maintenance-gray-out");
 
-    let rightStr = (isInConditionWindow && conditionRemaining) ? conditionRemaining : (repopTimeStr || "未確定");
-    let isSpecialCondition = isInConditionWindow;
-    
+    let rightStr = repopTimeStr || "未確定";
     if (!isSpecialCondition) {
         if (nextConditionSpawnDate) {
             try { rightStr = `🔔 ${dateFormatter.format(nextConditionSpawnDate)}`; isSpecialCondition = true; } catch { rightStr = "未確定"; }
@@ -319,9 +333,14 @@ export function updateProgressText(card, mob) {
     const isDetail = card.classList.contains("pc-detail-card");
     let newHTML = "";
     if (isDetail) {
-        newHTML = `<span class="percent">${Math.floor(elapsedPercent || 0)}%</span>`;
+        newHTML = `<span class="percent">${percentStr}</span>`;
     } else {
-        newHTML = `<div class="${status === "MaxOver" ? 'time-over' : 'time-normal'}">${leftStr}${percentStr}</div><div class="hidden lg:block text-right"><span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span></div>`;
+        newHTML = `
+            <div class="flex flex-col items-end justify-center leading-[1.1] text-[11px] gap-[2px]">
+                <div class="${isTimeOver ? 'time-over' : 'time-normal'}">${leftStr}</div>
+                <div class="text-[10px] text-gray-300 font-mono tracking-wider opacity-80">${percentStr}</div>
+            </div>
+            <div class="hidden lg:block text-right"><span class="${isSpecialCondition ? 'label-next' : ''}">${rightStr}</span></div>`;
     }
     
     const cacheKey = `${leftStr}|${percentStr}|${rightStr}|${isSpecialCondition}|${status}|${isDetail}`;
@@ -488,9 +507,6 @@ export function updateMapOverlay(card, mob) {
         const state = getState();
         const mobLocationsData = state.mobLocations?.[mob.No];
         const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
-        const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
-        const remainingCount = validSpawnPoints.length;
-        const isLastOne = remainingCount === 1;
         spawnPointsHtml = (mob.spawn_points ?? []).map(point => {
             const isThisPointTheLastOne = isLastOne && point.id === validSpawnPoints[0]?.id;
             return drawSpawnPoint(point, spawnCullStatus, mob.No, point.mob_ranks.includes("B2") ? "B2" : point.mob_ranks.includes("B1") ? "B1" : point.mob_ranks[0], isThisPointTheLastOne, isLastOne);
@@ -504,7 +520,14 @@ export function createSimpleMobItem(mob) {
     item.className = `pc-list-item rank-${mob.Rank.toLowerCase()}`;
     item.dataset.mobNo = mob.No;
     item.dataset.rank = mob.Rank;
-    item.innerHTML = `<div class="pc-list-name"></div><div class="pc-list-time"></div><div class="pc-list-progress-container"><div class="pc-list-progress-bar" style="width: 0%"></div></div><div class="pc-list-percent">0%</div><button class="pc-list-report-btn">REPORT</button>`;
+    item.innerHTML = `
+        <div class="pc-list-name font-bold" style="color: #fff;"></div>
+        <div class="pc-list-time-col flex flex-col items-end justify-center leading-tight">
+            <div class="pc-list-time"></div>
+            <div class="pc-list-percent text-[10px] text-gray-300 font-mono tracking-wider opacity-80">0%</div>
+        </div>
+        <div class="pc-list-progress-container"><div class="pc-list-progress-bar" style="width: 0%"></div></div>
+        <button class="pc-list-report-btn">REPORT</button>`;
     const nameEl = item.querySelector('.pc-list-name');
     if (nameEl) nameEl.textContent = mob.Name;
     updateSimpleMobItem(item, mob);
@@ -554,8 +577,8 @@ export function updateSimpleMobItem(item, mob) {
         progressEl.style.background = isTimeOver ? "var(--progress-max-over)" : "var(--progress-fill)";
     }
     if (percentEl) {
-        let percentStr = status === "MaxOver" ? "100%" : (((minRepop && now >= minRepop) || status === "PopWindow" || status === "ConditionActive") ? `${Number(elapsedPercent || 0).toFixed(0)}%` : "0%");
-        percentEl.textContent = percentStr;
+        let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
+        percentEl.textContent = isTimeOver ? "100%" : `${safePercent}%`;
     }
     item.style.opacity = (isMaint || status === "Next" || (status === "NextCondition" && now < (mob.repopInfo?.minRepop || 0))) ? "0.4" : "1";
     item.style.filter = (isMaint || status === "Next" || (status === "NextCondition" && now < (mob.repopInfo?.minRepop || 0))) ? "grayscale(1)" : "none";

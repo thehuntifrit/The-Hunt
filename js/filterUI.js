@@ -193,6 +193,7 @@ const handleRankTabClick = (rank) => {
 export function handleAreaFilterClick(e) {
   const btn = e.target.closest(".area-filter-btn");
   if (!btn) return;
+  const customContainer = btn.closest(".area-grid-container");
 
   const state = getState();
   const uiRank = state.filter.rank;
@@ -219,7 +220,8 @@ export function handleAreaFilterClick(e) {
     });
 
     filterAndRender();
-    renderAreaFilterPanel();
+    renderAreaFilterPanel(customContainer);
+    if (customContainer) renderAreaFilterPanel(); // グローバル設定用にも呼び出し
     return;
   }
 
@@ -254,7 +256,8 @@ export function handleAreaFilterClick(e) {
   });
 
   filterAndRender();
-  renderAreaFilterPanel();
+  renderAreaFilterPanel(customContainer);
+  if (customContainer) renderAreaFilterPanel(); // グローバル設定用にも呼び出し
 }
 
 export function filterMobsByRankAndArea(mobs) {
