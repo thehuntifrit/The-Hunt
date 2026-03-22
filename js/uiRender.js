@@ -311,15 +311,23 @@ export function updateProgressText(card, mob) {
   let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
   const percentStr = isTimeOver ? "100%" : `${safePercent}%`;
   const progressTextNodes = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
+  const rankBadge = card.querySelector('.list-rank-badge');
+  const areaEl = card.querySelector('.mobile-header-area-text');
+
+  if (rankBadge) {
+    rankBadge.textContent = mob.Rank;
+    rankBadge.dataset.rank = mob.Rank;
+  }
+  if (areaEl) {
+    areaEl.textContent = ` ${mob.Area} | ${mob.Expansion}`;
+  }
 
   const pcProgressTextHTML = `<span class="font-bold text-[14px] text-gray-100">${percentStr}</span>`;
   const defaultProgressTextHTML = `
-        <div class="flex items-center justify-between w-full">
-            <div class="flex items-center gap-1.5">
-                ${label ? `<span class="detail-label-icon text-[12px] opacity-80">${label}</span>` : ''}
-                <span class="detail-time-val font-bold text-[13px] ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</span>
-            </div>
-            <span class="font-bold text-[13px] ml-4">${percentStr}</span>
+        <div class="flex items-center justify-end w-full gap-0.5 font-numeric">
+            <div class="flex-shrink-0 w-[14px] flex justify-center opacity-70 detail-label-icon">${label || ''}</div>
+            <div class="flex-shrink-0 w-[52px] text-right font-bold text-[13px] detail-time-val ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</div>
+            <div class="flex-shrink-0 w-[42px] text-right text-[11px] text-gray-400">(${percentStr.padStart(4, '\u00A0')})</div>
         </div>`;
 
   progressTextNodes.forEach(text => {

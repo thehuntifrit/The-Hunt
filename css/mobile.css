@@ -69,11 +69,25 @@
         opacity: 0.8;
     }
 
-    .mobile-header-area-text {
-        opacity: 0.8;
-        font-weight: 600;
-        max-width: 60%;
+    .mobile-left-lower {
+        flex: 1;
+        min-width: 0;
     }
+
+    .list-rank-badge {
+        font-size: 10px !important;
+        padding: 0px 4px !important;
+        height: 14px;
+        line-height: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .list-rank-badge[data-rank="S"] { color: var(--rank-s); border-color: var(--rank-s); }
+    .list-rank-badge[data-rank="A"] { color: var(--rank-a); border-color: var(--rank-a); }
+    .list-rank-badge[data-rank="F"] { color: var(--rank-f); border-color: var(--rank-f); }
+    .list-rank-badge[data-rank="B"] { color: var(--rank-b); border-color: var(--rank-b); }
 
     .progress-text {
         font-size: 11px !important;
@@ -84,13 +98,12 @@
     }
 
     .progress-text .detail-time-val {
-        font-size: 11px !important;
+        font-size: 12px !important;
         letter-spacing: -0.01em;
     }
 
     .progress-text .detail-label-icon {
-        font-size: 11px !important;
-        margin-right: 2px;
+        font-size: 12px !important;
     }
 
     .expandable-panel {

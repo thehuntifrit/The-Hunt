@@ -293,19 +293,21 @@
                         <div class="progress-bar-bg absolute left-0 top-0 h-full" style="width: 0%"></div>
                     </div>
                     <div class="px-2 py-1.5 flex flex-col gap-y-0.5 content-area relative z-10">
-                        <!-- Upper Row -->
+                        <!-- Upper Row: Name(Left), Memo/Report(Right) -->
                         <div class="flex items-center justify-between w-full min-w-0">
-                            <div class="flex items-center gap-1.5 min-w-0 overflow-hidden">
-                                <span class="mob-name font-bold truncate text-gray-100"></span>
+                            <span class="mob-name font-bold truncate text-gray-100 flex-1 min-w-0"></span>
+                            <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
                                 <span class="mob-count-container text-[10px] whitespace-nowrap text-slate-400"></span>
                                 <span class="memo-icon-container text-xs"></span>
                             </div>
-                            <span class="list-rank-badge font-bold text-[9px] px-1 border border-current rounded flex-shrink-0"></span>
                         </div>
 
-                        <!-- Lower Row -->
+                        <!-- Lower Row: Rank + Area/Exp(Left), Progress/Time(Right) -->
                         <div class="flex items-center justify-between w-full min-w-0 gap-2">
-                            <div class="mobile-header-area-text text-[10px] text-yellow-600/80 truncate leading-none flex-shrink-0"></div>
+                            <div class="mobile-left-lower flex items-center min-w-0 overflow-hidden">
+                                <span class="list-rank-badge font-bold text-[10px] px-1 border border-current rounded flex-shrink-0"></span>
+                                <div class="mobile-header-area-text text-[10px] text-yellow-600/80 truncate leading-none ml-1"></div>
+                            </div>
                             <div class="progress-text flex-1 min-w-0"></div>
                         </div>
                     </div>
