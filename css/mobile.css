@@ -141,13 +141,22 @@
         position: absolute;
         top: 6px;
         right: 12px;
-        width: 7px;
-        height: 7px;
+        width: 10px;
+        height: 10px;
         background: #ff4d4d;
         border-radius: 50%;
-        box-shadow: 0 0 8px #ff4d4d;
+        box-shadow: 0 0 10px #ff4d4d;
         z-index: 10;
         animation: mobile-alert-pulse 1.5s infinite;
+    }
+
+    .mobile-percent-area {
+        opacity: 0.9 !important;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .list-rank-badge {
+        margin-right: 0.75rem !important; /* mr-3 */
     }
 
     @keyframes mobile-alert-pulse {

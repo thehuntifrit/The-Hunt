@@ -27,10 +27,18 @@ export function shouldDisplayMemo(mob) {
 }
 
 export function computeTimeLabel(mob) {
-    const { minRepop, maxRepop, status, isInConditionWindow, conditionWindowEnd, nextConditionSpawnDate } = mob.repopInfo || {};
+    const { minRepop, maxRepop, status, isInConditionWindow, conditionWindowEnd, nextConditionSpawnDate, isMaintenanceStop, isBlockedByMaintenance, maintStart, maintEnd } = mob.repopInfo || {};
     const now = Date.now() / 1000;
+    const isMaint = !!(isMaintenanceStop || isBlockedByMaintenance);
     const isTimedMob = !!(isInConditionWindow || nextConditionSpawnDate);
     
+    // メンテナンス中
+    if (isMaint && maintStart && maintEnd) {
+        const startStr = formatMMDDHHmm(maintStart).split(' ')[1];
+        const endStr = formatMMDDHHmm(maintEnd).split(' ')[1];
+        return { label: "🛠️", timeValue: `${startStr}~${endStr}`, isSpecialCondition: false, isTimeOver: false, isTimedMob: false };
+    }
+
     // 全ての値がない場合は未確定
     if (!minRepop && !maxRepop && !isTimedMob) {
         return { label: "", timeValue: "--/-- --:--", isSpecialCondition: false, isTimeOver: false, isTimedMob: false };
@@ -54,7 +62,6 @@ export function computeTimeLabel(mob) {
         else { timeValue = formatDurationColon(now - maxRepop); }
         isTimeOver = true;
     } else {
-        // フォールバック
         label = ""; timeValue = "--/-- --:--"; isSpecialCondition = false; isTimedMob = false;
     }
     
@@ -490,10 +497,10 @@ export function updateAreaInfo(card, mob) {
     card.querySelectorAll('.detail-area').forEach(el => el.textContent = areaName);
     card.querySelectorAll('.detail-expansion').forEach(el => el.textContent = `| ${expName}`);
 
-    // モバイル版リストヘッダーのエリアテキスト
+    // モバイル版リストヘッダーのエリアテキスト (Rank との間に &nbsp; を追加)
     const headerArea = card.querySelector('.mobile-header-area-text');
     if (headerArea) {
-        headerArea.textContent = ` ${areaName} | ${expName}`; // 前方にスペース追加
+        headerArea.textContent = `\u00A0\u00A0${areaName} | ${expName}`;
     }
 }
 
