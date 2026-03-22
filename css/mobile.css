@@ -90,11 +90,14 @@
     .list-rank-badge[data-rank="B"] { color: var(--rank-b); border-color: var(--rank-b); }
 
     .progress-text {
+        width: 114px;
+        flex-shrink: 0;
         font-size: 11px !important;
         line-height: 1;
         display: flex;
         align-items: center;
         justify-content: flex-end;
+        font-variant-numeric: tabular-nums;
     }
 
     .progress-text .detail-time-val {

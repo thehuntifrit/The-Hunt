@@ -324,10 +324,10 @@ export function updateProgressText(card, mob) {
 
   const pcProgressTextHTML = `<span class="font-bold text-[14px] text-gray-100">${percentStr}</span>`;
   const defaultProgressTextHTML = `
-        <div class="flex items-center justify-end w-full gap-0.5 font-numeric">
+        <div class="flex items-center justify-end w-full font-numeric tabular-nums">
             <div class="flex-shrink-0 w-[14px] flex justify-center opacity-70 detail-label-icon">${label || ''}</div>
-            <div class="flex-shrink-0 w-[52px] text-right font-bold text-[13px] detail-time-val ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</div>
-            <div class="flex-shrink-0 w-[42px] text-right text-[11px] text-gray-400">(${percentStr.padStart(4, '\u00A0')})</div>
+            <div class="flex-shrink-0 w-[56px] text-right font-bold text-[13px] detail-time-val ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</div>
+            <div class="flex-shrink-0 w-[44px] text-right text-[11px] text-gray-400">(${percentStr.padStart(4, '\u00A0')})</div>
         </div>`;
 
   progressTextNodes.forEach(text => {

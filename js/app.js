@@ -311,6 +311,23 @@ export async function renderMaintenanceStatus() {
     updateStatusContainerVisibility();
 }
 
+export function updateStatusContainerVisibility() {
+    const container = document.getElementById("status-message");
+    if (!container) return;
+
+    const maintenanceEl = document.getElementById("status-message-maintenance");
+    const telopEl = document.getElementById("status-message-telop");
+
+    const hasVisibleMaintenance = maintenanceEl && !maintenanceEl.classList.contains("hidden");
+    const hasVisibleTelop = telopEl && !telopEl.classList.contains("hidden");
+
+    if (hasVisibleMaintenance || hasVisibleTelop) {
+        container.classList.remove("hidden");
+    } else {
+        container.classList.add("hidden");
+    }
+}
+
 function formatDate(date) {
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
