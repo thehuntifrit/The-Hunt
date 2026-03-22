@@ -194,85 +194,107 @@ function initHeaderObserver() {
     window.addEventListener("resize", adjustPadding);
 }
 
-export function updateStatusContainerVisibility() {
-    const container = document.getElementById("status-message");
-    if (!container) return;
+async function getMaintenanceStatus() {
+    const state = getState();
+    const maintenance = state.maintenance;
 
-    const maintenanceEl = document.getElementById("status-message-maintenance");
-    const telopEl = document.getElementById("status-message-telop");
-    const tempEl = document.getElementById("status-message-temp");
-
-    const hasMaintenance = maintenanceEl && maintenanceEl.innerHTML.trim() !== "";
-    const hasTelop = telopEl && telopEl.textContent.trim() !== "";
-    const hasTemp = tempEl && tempEl.textContent.trim() !== "" && !tempEl.classList.contains("hidden");
-
-    if (hasMaintenance || hasTelop || hasTemp) {
-        container.classList.remove("hidden");
-    } else {
-        container.classList.add("hidden");
+    if (!maintenance || !maintenance.start || !maintenance.end) {
+        return {
+            is_active: false,
+            scheduled: false,
+            message: maintenance ? maintenance.message : ""
+        };
     }
+
+    const now = new Date();
+    const start = new Date(maintenance.start);
+    const end = new Date(maintenance.end);
+    const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
+
+    const isWithinDisplayWindow = now >= showFrom && now <= showUntil;
+
+    let status = {
+        is_active: false,
+        scheduled: false,
+        start_time: maintenance.start,
+        end_time: maintenance.end,
+        message: maintenance.message || ""
+    };
+
+    if (isWithinDisplayWindow) {
+        if (now >= start && now <= end) {
+            status.is_active = true;
+        } else if (now < start) {
+            status.scheduled = true;
+        }
+    }
+
+    return status;
 }
 
-function renderMaintenanceStatus() {
-    window.renderMaintenanceStatus = renderMaintenanceStatus;
-    const maintenance = getState().maintenance;
+function formatMMDDHHmm(isoString) {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    const h = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    return `${m}/${d} ${h}:${min}`;
+}
+
+export async function renderMaintenanceStatus() {
+    const maintenance = await getMaintenanceStatus();
     const maintenanceEl = document.getElementById("status-message-maintenance");
     const telopEl = document.getElementById("status-message-telop");
 
     const maintPanels = document.querySelectorAll(".js-maintenance-content");
     const telopPanels = document.querySelectorAll(".js-telop-content");
 
-    if (!maintenanceEl) return;
-
     let hasMaintenance = false;
     let hasMessage = false;
+    let maintHtml = "";
 
-    if (maintenance && maintenance.start && maintenance.end) {
-        const now = new Date();
-        const start = new Date(maintenance.start);
-        const end = new Date(maintenance.end);
-        const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
-        const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
-
-        const isWithinDisplayWindow = now >= showFrom && now <= showUntil;
-
-        if (isWithinDisplayWindow) {
-            maintenanceEl.innerHTML = `
-                <div class="font-semibold text-red-500">
-                    ${formatDate(start)} ～ ${formatDate(end)}
-                </div>
-            `;
-            hasMaintenance = true;
-        } else {
-            maintenanceEl.innerHTML = "";
-        }
-
-        const startStr = formatDate(start);
-        const endStr = formatDate(end);
-        const maintHtml = `
-            <div class="maintenance-info-rich p-2 bg-red-900/20 border border-red-500/30 rounded">
-                <div class="text-[14px] font-bold text-red-400 mb-1">🛠️ メンテナンス予定</div>
-                <div class="text-[13px] text-gray-100">${startStr} ～ ${endStr}</div>
-                <div class="text-[11px] text-gray-400 mt-2">※メンテナンス中はタイマーが一時停止し、終了後に再開されます。</div>
-            </div>
-        `;
-        maintPanels.forEach(p => { p.innerHTML = maintHtml; });
-    } else {
-        maintenanceEl.innerHTML = "";
-        maintPanels.forEach(p => { p.textContent = "現在予定されているメンテナンスはありません。"; });
+    if (maintenance && maintenance.is_active) {
+        const start = formatMMDDHHmm(maintenance.start_time);
+        const end = formatMMDDHHmm(maintenance.end_time);
+        maintHtml = `🛠️ メンテナンス中: ${start} ～ ${end}`;
+        hasMaintenance = true;
+    } else if (maintenance && maintenance.scheduled) {
+        const start = formatMMDDHHmm(maintenance.start_time);
+        maintHtml = `🛠️ 次回メンテナンス: ${start} ～`;
+        hasMaintenance = true;
     }
 
+    if (maintenanceEl) {
+        if (hasMaintenance) {
+            maintenanceEl.textContent = maintHtml;
+            maintenanceEl.classList.remove("hidden");
+        } else {
+            maintenanceEl.textContent = "";
+            maintenanceEl.classList.add("hidden");
+        }
+    }
+
+    maintPanels.forEach(p => {
+        p.innerHTML = maintHtml || "現在予定されているメンテナンスはありません";
+    });
+
+    const telopMsg = (maintenance && maintenance.message && maintenance.message.trim() !== "") ? maintenance.message : "";
+    hasMessage = telopMsg !== "";
+
     if (telopEl) {
-        if (maintenance && maintenance.message && maintenance.message.trim() !== "") {
-            telopEl.textContent = maintenance.message;
-            hasMessage = true;
+        if (hasMessage) {
+            telopEl.textContent = telopMsg;
+            telopEl.classList.remove("hidden");
         } else {
             telopEl.textContent = "";
+            telopEl.classList.add("hidden");
         }
     }
 
     telopPanels.forEach(p => {
-        p.textContent = hasMessage ? maintenance.message : "";
+        p.textContent = telopMsg;
     });
 
     document.querySelectorAll('.sidebar-icon-btn[data-panel="maintenance"], .mobile-footer-btn[data-panel="maintenance"]')
@@ -283,12 +305,8 @@ function renderMaintenanceStatus() {
 
     const errorLogCount = window.errorLog ? window.errorLog.length : 0;
     const hasError = errorLogCount > 0;
-    document.querySelectorAll('.sidebar-icon-btn, .mobile-footer-btn').forEach(btn => {
-        const panel = btn.dataset.panel;
-        if (panel !== "error" && panel !== "telop" && panel !== "maintenance") {
-            btn.classList.remove("has-alert");
-        }
-    });
+    document.querySelectorAll('.sidebar-icon-btn[data-panel="error"], .mobile-footer-btn[data-panel="error"]')
+        .forEach(btn => btn.classList.toggle("has-alert", hasError));
 
     updateStatusContainerVisibility();
 }

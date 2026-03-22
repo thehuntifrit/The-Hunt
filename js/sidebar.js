@@ -40,15 +40,16 @@ function captureErrors() {
 }
 
 function updateErrorPanel() {
-    const el = document.getElementById("sidebar-error-content");
-    if (!el) return;
-    if (errorLog.length === 0) {
-        el.innerHTML = "";
-        return;
-    }
-    el.innerHTML = errorLog.map(e =>
+    const panels = document.querySelectorAll(".js-error-content");
+    if (panels.length === 0) return;
+    
+    const html = errorLog.length === 0 ? "" : errorLog.map(e =>
         `<div class="sidebar-error-item"><span class="error-time">${e.time}</span><span class="error-msg">${escapeHtml(e.msg)}</span></div>`
     ).join("");
+
+    panels.forEach(el => {
+        el.innerHTML = html;
+    });
 }
 
 function updateErrorBadge() {

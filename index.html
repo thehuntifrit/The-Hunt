@@ -67,7 +67,7 @@
                 <div id="sidebar-panel-error" class="sidebar-panel-content hidden">
                     <div class="sidebar-section">
                         <div class="sidebar-section-title">ERRORS</div>
-                        <div id="sidebar-error-content" class="sidebar-alert-content"></div>
+                        <div id="sidebar-error-content" class="sidebar-alert-content js-error-content"></div>
                     </div>
                 </div>
                 <div id="sidebar-panel-telop" class="sidebar-panel-content hidden">
@@ -90,7 +90,10 @@
         </div>
     </aside>
 
-    <div id="sidebar-status-bar"></div>
+    <div id="sidebar-status-bar">
+        <div id="status-message-maintenance" class="hidden"></div>
+        <div id="status-message-telop" class="hidden"></div>
+    </div>
 
     <div id="mobile-top-bar">
         <div class="mobile-top-title">
