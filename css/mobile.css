@@ -59,21 +59,17 @@
     }
 
     /* Grid Layout for vertical alignment with proportional columns */
-    .mobile-grid-upper {
-        grid-template-columns: 7fr 3fr;
-        gap: 4px;
-        width: 100%;
-    }
-    
+    .mobile-grid-upper,
     .mobile-grid-lower {
-        grid-template-columns: 1fr 7.5fr 1.5fr;
-        gap: 4px;
+        grid-template-columns: 1fr 20px 60px;
+        gap: 2px;
         width: 100%;
     }
 
     .mobile-time-area {
         flex-shrink: 0;
         min-width: 0;
+        justify-content: flex-start !important;
     }
 
     .mobile-percent-area {

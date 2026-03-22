@@ -317,17 +317,15 @@ export function updateProgressText(card, mob) {
   let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
   const percentStr = isTimeOver ? "100%" : `${safePercent}%`;
 
+  const iconArea = card.querySelector('.mobile-icon-area');
   const timeArea = card.querySelector('.mobile-time-area');
   const percentArea = card.querySelector('.mobile-percent-area');
   const progressTextNodes = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
 
-  // モバイル用新レイアウトへの割当 (Icon 000:00 形式で整列)
-  if (timeArea && percentArea) {
-    timeArea.innerHTML = `
-            <div class="flex items-center justify-end h-full">
-                <span class="detail-label-icon text-[13px] opacity-100 text-yellow-500 mr-1">${label}</span>
-                <span class="detail-time-val font-bold text-[12px] text-gray-100 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</span>
-            </div>`;
+  // モバイル用新レイアウトへの割当 (Icon と Time を分離し、左寄せで垂直整列と密着を両立)
+  if (timeArea && iconArea && percentArea) {
+    iconArea.innerHTML = `<span class="detail-label-icon text-[13px] text-yellow-500">${label}</span>`;
+    timeArea.innerHTML = `<span class="detail-time-val font-bold text-[12px] text-gray-100 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</span>`;
     percentArea.textContent = percentStr;
     percentArea.classList.add("text-gray-300");
   }
@@ -388,25 +386,24 @@ export function updateExpandablePanel(card, mob) {
   if (elMin) elMin.textContent = fmt(minRepop);
   if (elMax) elMax.textContent = fmt(maxRepop);
 
-  if (elNext) {
-    let npt = "--/-- --:--";
-    if (nextConditionSpawnDate) npt = formatMMDDHHmm(nextConditionSpawnDate);
-    else if (minRepop) npt = formatMMDDHHmm(minRepop);
-    elNext.textContent = npt;
+    // 名称の更新
+    if (elNext) {
+      let npt = "--/-- --:--";
+      if (mob.repopInfo?.nextConditionSpawnDate) npt = formatMMDDHHmm(mob.repopInfo.nextConditionSpawnDate);
+      else if (minRepop) npt = formatMMDDHHmm(minRepop);
+      elNext.textContent = npt;
 
-    // 特殊条件がない場合は強調（highlight）を外す
-    const parent = elNext.closest('.detail-info-item');
-    if (parent) {
-      // isInConditionWindow は PopWindow 基準、nextConditionSpawnDate は将来の沸き
-      // これらが "特殊条件" によるもの（TimedMob）である場合のみハイライト
-      const isActuallyTimed = mob.repopInfo?.nextConditionSpawnDate || mob.repopInfo?.isInConditionWindow;
-      if (isActuallyTimed) {
-        parent.classList.add('highlight');
-      } else {
-        parent.classList.remove('highlight');
+      // 特殊条件がない場合は強調（highlight）を外す
+      const parent = elNext.closest('.detail-info-item');
+      if (parent) {
+        const isActuallyTimed = !!(mob.repopInfo?.nextConditionSpawnDate || mob.repopInfo?.isInConditionWindow);
+        if (isActuallyTimed) {
+          parent.classList.add('highlight');
+        } else {
+          parent.classList.remove('highlight');
+        }
       }
     }
-  }
 
   if (elLast) elLast.textContent = fmt(mob.last_kill_time);
 
@@ -576,9 +573,9 @@ export function updateSimpleMobItem(item, mob) {
 
   if (timeEl) {
     timeEl.innerHTML = `
-        <div class="flex items-center justify-end w-full h-full">
-            <span class="timer-label text-[12px] opacity-90 mr-1">${label}</span>
-            <span class="timer-value font-bold text-[12px] ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
+        <div class="grid grid-cols-[20px_55px] items-center w-full h-full">
+            <span class="timer-label text-[12px] text-right opacity-90">${label}</span>
+            <span class="timer-value font-bold text-[12px] text-left ml-1 ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span>
         </div>`;
   }
   const countEl = item.querySelector('.pc-list-count');
