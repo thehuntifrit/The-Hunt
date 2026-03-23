@@ -88,8 +88,6 @@ async function initApp() {
         }
         setOpenMobCardNo(null);
 
-        renderRankTabs();
-        updateFilterUI();
         initModal();
         renderMaintenanceStatus();
         updateHeaderTime();

@@ -573,20 +573,20 @@ export function updateSimpleMobItem(item, mob) {
 const FIFTEEN_MINUTES_SEC = 15 * 60;
 
 export const DOM = {
-  masterContainer: document.getElementById('master-mob-container'),
+  masterContainer: null,
   colContainer: document.getElementById('column-container'),
   cols: [],
-  rankTabs: document.getElementById('rank-tabs'),
-  areaFilterWrapper: document.getElementById('area-filter-wrapper'),
-  areaFilterPanel: document.getElementById('area-filter-panel'),
-  statusMessage: document.getElementById('status-message'),
+  rankTabs: null,
+  areaFilterWrapper: null,
+  areaFilterPanel: null,
+  statusMessage: null,
   reportModal: document.getElementById('report-modal'),
   reportForm: document.getElementById('report-form'),
   modalMobName: document.getElementById('modal-mob-name'),
   modalStatus: document.getElementById('modal-status'),
   modalTimeInput: document.getElementById('report-datetime'),
   modalForceSubmit: document.getElementById('report-force-submit'),
-  statusMessageTemp: document.getElementById('status-message-temp'),
+  statusMessageTemp: null,
   authModal: document.getElementById('auth-modal'),
   authLodestoneId: document.getElementById('auth-lodestone-id'),
   authVCode: document.getElementById('auth-v-code'),
@@ -1193,22 +1193,6 @@ function updateProgressBars() {
     }
   }
 
-  if (DOM.statusMessageTemp) {
-    if (conditionMobs.length > 0) {
-      const newText = `🔜 ${conditionMobs.join(" / ")}`;
-      if (DOM.statusMessageTemp.textContent !== newText) {
-        DOM.statusMessageTemp.textContent = newText;
-        DOM.statusMessageTemp.className = "text-amber-400 font-bold animate-pulse";
-        DOM.statusMessageTemp.classList.remove("hidden");
-      }
-    } else {
-      if (!DOM.statusMessageTemp.classList.contains("hidden")) {
-        DOM.statusMessageTemp.textContent = "";
-        DOM.statusMessageTemp.classList.add("hidden");
-      }
-    }
-    updateStatusContainerVisibility();
-  }
 
   const rankBtn = document.querySelector('.mobile-footer-btn[data-panel="rank"]');
   if (rankBtn) rankBtn.classList.remove("has-alert");
