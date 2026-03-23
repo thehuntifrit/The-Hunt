@@ -227,7 +227,7 @@
 
     .pc-list-item {
         display: grid;
-        grid-template-columns: 1fr 70px 90px 45px 70px;
+        grid-template-columns: 160px 65px 85px 40px 70px;
         align-items: center;
         background: rgba(30, 41, 59, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.03);
