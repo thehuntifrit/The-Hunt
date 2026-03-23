@@ -14,9 +14,22 @@ const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
   timeZone: "Asia/Tokyo"
 });
 
+export function escapeHtml(str) {
+  if (typeof str !== "string") return str;
+  return str.replace(/[&<>"']/g, function(m) {
+    return {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[m];
+  });
+}
+
 export function processText(text) {
   if (typeof text !== "string" || !text) return "";
-  return text.replace(/\/\//g, "<br>");
+  return escapeHtml(text).replace(/\/\//g, "<br>");
 }
 
 export function shouldDisplayMemo(mob) {

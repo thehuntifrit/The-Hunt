@@ -1,16 +1,22 @@
 const GOOGLE_KEYS_URL = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
 const PROJECT_ID = 'the-hunt-ifrit';
-const ALLOWED_ORIGIN = '*';
+const ALLOWED_ORIGINS = [
+    'https://the-hunt-ifrit.firebaseapp.com',
+    'https://the-hunt-ifrit.web.app'
+];
 
 let publicKeysCache = null;
 let keysExpiresAt = 0;
 
 export default {
     async fetch(request, env, ctx) {
+        const origin = request.headers.get('Origin');
+        const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+
         if (request.method === 'OPTIONS') {
             return new Response(null, {
                 headers: {
-                    'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+                    'Access-Control-Allow-Origin': allowedOrigin,
                     'Access-Control-Allow-Methods': 'GET, OPTIONS',
                     'Access-Control-Allow-Headers': 'Authorization',
                 }
@@ -23,7 +29,7 @@ export default {
         if (!lodestoneId || !/^\d+$/.test(lodestoneId)) {
             return new Response('Invalid or missing lodestoneId', {
                 status: 400,
-                headers: { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN }
+                headers: { 'Access-Control-Allow-Origin': allowedOrigin }
             });
         }
 
@@ -31,7 +37,7 @@ export default {
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return new Response('Unauthorized: Missing token', {
                 status: 401,
-                headers: { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN }
+                headers: { 'Access-Control-Allow-Origin': allowedOrigin }
             });
         }
         const token = authHeader.split(' ')[1];
@@ -41,7 +47,7 @@ export default {
         } catch (e) {
             return new Response(`Unauthorized: ${e.message}`, {
                 status: 401,
-                headers: { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN }
+                headers: { 'Access-Control-Allow-Origin': allowedOrigin }
             });
         }
 
@@ -59,7 +65,7 @@ export default {
                 if (response.status === 404) {
                     return new Response('Character not found', {
                         status: 404,
-                        headers: { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN }
+                        headers: { 'Access-Control-Allow-Origin': allowedOrigin }
                     });
                 }
                 throw new Error(`Upstream error: ${response.status}`);
@@ -69,7 +75,7 @@ export default {
 
             return new Response(body, {
                 headers: {
-                    'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+                    'Access-Control-Allow-Origin': allowedOrigin,
                     'Content-Type': 'text/html; charset=UTF-8',
                     'Cache-Control': 'no-cache'
                 }
@@ -78,7 +84,7 @@ export default {
         } catch (e) {
             return new Response(e.message, {
                 status: 500,
-                headers: { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN }
+                headers: { 'Access-Control-Allow-Origin': allowedOrigin }
             });
         }
     }

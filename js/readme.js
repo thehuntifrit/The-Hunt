@@ -28,7 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     breaks: true,
                     gfm: true
                 });
-                container.innerHTML = marked.parse(text);
+                const html = marked.parse(text);
+                container.innerHTML = DOMPurify.sanitize(html);
                 isLoaded = true;
                 updateAuthUI();
             } catch (error) {

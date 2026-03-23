@@ -24,7 +24,8 @@ export function showToast(message, type = "error") {
     const toast = document.createElement("div");
     const bgColor = type === "error" ? "bg-red-900/90 border-red-500" : "bg-cyan-900/90 border-cyan-500";
     toast.className = `px-4 py-3 rounded shadow-2xl border ${bgColor} text-white text-sm font-bold transform transition-all duration-300 translate-x-full opacity-0 max-w-sm break-words`;
-    toast.innerHTML = message.replace(/\n/g, "<br>");
+    toast.textContent = message;
+    toast.style.whiteSpace = "pre-wrap";
 
     container.appendChild(toast);
 

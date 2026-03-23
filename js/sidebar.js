@@ -222,7 +222,8 @@ async function loadMobileManual(panel) {
         const text = await response.text();
         if (typeof marked !== "undefined") {
             marked.setOptions({ breaks: true, gfm: true });
-            panel.innerHTML = `<div class="sidebar-manual-content">${marked.parse(text)}</div>`;
+            const html = marked.parse(text);
+            panel.innerHTML = `<div class="sidebar-manual-content">${DOMPurify.sanitize(html)}</div>`;
         } else {
             panel.querySelector(".sidebar-manual-content").textContent = text;
         }
@@ -305,7 +306,8 @@ async function loadManualContent() {
         const text = await response.text();
         if (typeof marked !== "undefined") {
             marked.setOptions({ breaks: true, gfm: true });
-            container.innerHTML = marked.parse(text);
+            const html = marked.parse(text);
+            container.innerHTML = DOMPurify.sanitize(html);
         } else {
             container.textContent = text;
         }
