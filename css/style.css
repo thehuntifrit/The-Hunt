@@ -78,10 +78,10 @@
     --rank-f-tab: #4338ca;
 
     --progress-bg: rgba(0, 0, 0, 0.4);
-    --progress-fill: linear-gradient(90deg, #3b82f6, #1d4ed8);
-    --progress-pop-window: linear-gradient(90deg, #0ea5e9, #38bdf8);
-    --progress-condition-active: linear-gradient(90deg, #f59e0b, #fbbf24);
-    --progress-max-over: linear-gradient(90deg, #1e3a8a, #1e40af);
+    --progress-fill: rgba(59, 130, 246, 0.2);
+    --progress-pop-window: rgba(14, 165, 233, 0.35);
+    --progress-condition-active: rgba(245, 158, 11, 0.35);
+    --progress-max-over: rgba(30, 58, 138, 0.4);
 
     --color-b1: #4494f7;
     --color-b2: #fd5c5c;
@@ -260,7 +260,7 @@ body::before {
 .progress-bar-bg.status-max-over { background: var(--progress-max-over); }
 .progress-bar-bg.status-condition-active { background: var(--progress-condition-active); }
 .progress-bar-bg.status-pop-window { background: var(--progress-pop-window); }
-.progress-bar-bg.status-next { background: rgba(59, 130, 246, 0.15); }
+.progress-bar-bg.status-next { background: rgba(59, 130, 246, 0.1); }
 
 .progress-bar-wrapper {
     position: absolute;

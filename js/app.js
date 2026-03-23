@@ -109,8 +109,6 @@ async function initApp() {
             }
         });
 
-        initHeaderObserver();
-
         window.addEventListener('initialDataLoaded', () => {
             try {
                 renderMaintenanceStatus();
@@ -165,34 +163,6 @@ async function initApp() {
     }
 }
 
-function initHeaderObserver() {
-    const header = document.getElementById("main-header");
-    const main = document.querySelector("main");
-    if (!header || !main) return;
-
-    const adjustPadding = () => {
-        const headerHeight = header.offsetHeight;
-        const isMobile = window.innerWidth < 1024;
-
-        if (isMobile) {
-            main.style.paddingTop = "1rem";
-            main.style.paddingBottom = "2.5rem";
-            document.body.style.paddingBottom = `${headerHeight + 20}px`;
-        } else {
-            main.style.paddingTop = `${headerHeight + 10}px`;
-            main.style.paddingBottom = "2.5rem";
-            document.body.style.paddingBottom = "0";
-        }
-    };
-
-    adjustPadding();
-    const resizeObserver = new ResizeObserver(() => {
-        adjustPadding();
-    });
-    resizeObserver.observe(header);
-
-    window.addEventListener("resize", adjustPadding);
-}
 
 async function getMaintenanceStatus() {
     const state = getState();
@@ -313,25 +283,6 @@ export async function renderMaintenanceStatus() {
 
     document.querySelectorAll('.sidebar-icon-btn[data-panel="rank"], .mobile-footer-btn[data-panel="rank"]')
         .forEach(btn => btn.classList.remove("has-alert"));
-
-    updateStatusContainerVisibility();
-}
-
-export function updateStatusContainerVisibility() {
-    const container = document.getElementById("status-message");
-    if (!container) return;
-
-    const maintenanceEl = document.getElementById("status-message-maintenance");
-    const telopEl = document.getElementById("status-message-telop");
-
-    const hasVisibleMaintenance = maintenanceEl && !maintenanceEl.classList.contains("hidden");
-    const hasVisibleTelop = telopEl && !telopEl.classList.contains("hidden");
-
-    if (hasVisibleMaintenance || hasVisibleTelop) {
-        container.classList.remove("hidden");
-    } else {
-        container.classList.add("hidden");
-    }
 }
 
 function formatDate(date) {

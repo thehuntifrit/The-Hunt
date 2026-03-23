@@ -100,11 +100,6 @@
         border-color: var(--rank-f);
     }
 
-    .list-rank-badge[data-rank="B"] {
-        color: var(--rank-b);
-        border-color: var(--rank-b);
-    }
-
     .progress-info-group {
         width: 118px;
         flex-shrink: 0;

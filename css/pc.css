@@ -143,10 +143,6 @@
         box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(129, 140, 248, 0.15) inset;
     }
 
-    .pc-detail-card[data-rank="B"] {
-        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(100, 149, 237, 0.15) inset;
-    }
-
     .pc-detail-rank[data-rank="S"] {
         color: var(--rank-s);
         border-color: var(--rank-s);
@@ -168,12 +164,6 @@
         border-radius: 2px;
     }
 
-    .pc-detail-rank[data-rank="B"] {
-        color: var(--rank-b);
-        border-color: var(--rank-b);
-        background-color: rgba(100, 149, 237, 0.1);
-        border-radius: 2px;
-    }
 
     .pc-clocks-header {
         display: flex;
@@ -336,7 +326,7 @@
     .pc-list-progress-bar.status-max-over { background: var(--progress-max-over); }
     .pc-list-progress-bar.status-condition-active { background: var(--progress-condition-active); }
     .pc-list-progress-bar.status-pop-window { background: var(--progress-pop-window); }
-    .pc-list-progress-bar.status-next { background: rgba(59, 130, 246, 0.15); }
+    .pc-list-progress-bar.status-next { background: rgba(59, 130, 246, 0.1); }
 
     .pc-list-percent {
         font-family: 'Inter', ui-monospace, SFMono-Regular, monospace;

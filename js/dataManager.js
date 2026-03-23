@@ -51,12 +51,6 @@ export const state = {
 
 export const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
 
-export const PROGRESS_CLASSES = {
-    TEXT_NEXT: "text-next",
-    TEXT_POP: "text-pop",
-    BLINK_WHITE: "progress-blink-white"
-};
-
 if (state.filter.areaSets) {
     for (const k in state.filter.areaSets) {
         const v = state.filter.areaSets[k];

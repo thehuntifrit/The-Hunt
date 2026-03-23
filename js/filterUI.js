@@ -2,41 +2,12 @@ import { getState, EXPANSION_MAP, setFilter } from "./dataManager.js";
 import { filterAndRender } from "./uiRender.js";
 
 const FilterDOM = {
-  rankTabs: document.getElementById('rank-tabs'),
   areaFilterPanelMobile: document.getElementById('area-filter-panel-mobile'),
   areaFilterPanelDesktop: document.getElementById('area-filter-panel-desktop')
 };
 
 const getAllAreas = () => {
   return Array.from(new Set(Object.values(EXPANSION_MAP)));
-};
-
-export const renderRankTabs = () => {
-  const state = getState();
-  const rankList = ["ALL", "S", "A", "F.A.T.E."];
-  const container = FilterDOM.rankTabs;
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  const indicator = document.createElement("div");
-  indicator.className = "tab-indicator";
-  container.appendChild(indicator);
-
-  rankList.forEach(rank => {
-    const btn = document.createElement("button");
-    btn.dataset.rank = rank;
-    btn.textContent = rank;
-    btn.className = "tab-button filter-tab-base transition-colors duration-300";
-
-    btn.addEventListener("click", () => {
-      handleRankTabClick(rank);
-    });
-
-    container.appendChild(btn);
-  });
-
-  updateFilterUI();
 };
 
 export const renderAreaFilterPanel = (customContainer = null) => {
@@ -105,68 +76,6 @@ export const renderAreaFilterPanel = (customContainer = null) => {
   }
 };
 
-export const updateFilterUI = () => {
-  const state = getState();
-  const rankTabs = FilterDOM.rankTabs;
-  if (!rankTabs) return;
-
-  const indicator = rankTabs.querySelector(".tab-indicator");
-  const buttons = Array.from(rankTabs.querySelectorAll(".tab-button"));
-  const stored = JSON.parse(localStorage.getItem("huntUIState")) || {};
-  const clickStep = stored.clickStep || 1;
-  const isMobile = window.matchMedia("(max-width: 1023px)").matches;
-
-  buttons.forEach((btn, idx) => {
-    const btnRank = btn.dataset.rank;
-    const isCurrent = btnRank === state.filter.rank;
-
-    if (isCurrent) {
-      btn.style.color = "#fff";
-      btn.style.zIndex = "2";
-
-      if (indicator) {
-        const rect = btn.getBoundingClientRect();
-        const parentRect = rankTabs.getBoundingClientRect();
-        indicator.style.width = `${rect.width}px`;
-        indicator.style.left = `${rect.left - parentRect.left}px`;
-
-        const colorClass = btnRank === "ALL" ? "bg-rose-500"
-          : btnRank === "S" ? "bg-rank-s"
-            : btnRank === "A" ? "bg-rank-a"
-              : btnRank === "F.A.T.E." ? "bg-rank-f"
-                : "bg-cyan-600";
-
-        indicator.className = `tab-indicator ${colorClass} transition-all duration-300 ease-out`;
-      }
-
-      const panels = [FilterDOM.areaFilterPanelMobile, FilterDOM.areaFilterPanelDesktop];
-
-      if (clickStep === 1 || clickStep === 3) {
-        panels.forEach(p => {
-          p?.classList.add("hidden");
-          p?.classList.remove("flex", "block");
-        });
-      } else if (clickStep === 2) {
-        renderAreaFilterPanel();
-        if (isMobile) {
-          FilterDOM.areaFilterPanelMobile?.classList.remove("hidden");
-          FilterDOM.areaFilterPanelMobile?.classList.add("block");
-          FilterDOM.areaFilterPanelDesktop?.classList.add("hidden");
-          FilterDOM.areaFilterPanelDesktop?.classList.remove("flex");
-        } else {
-          FilterDOM.areaFilterPanelDesktop?.classList.remove("hidden");
-          FilterDOM.areaFilterPanelDesktop?.classList.add("flex");
-          FilterDOM.areaFilterPanelMobile?.classList.add("hidden");
-          FilterDOM.areaFilterPanelMobile?.classList.remove("block");
-        }
-      }
-    } else {
-      btn.style.color = "#94a3b8";
-      btn.style.zIndex = "1";
-    }
-  });
-};
-
 export const handleRankTabClick = (rank) => {
   const state = getState();
   const prevRank = state.filter.rank;
@@ -188,7 +97,6 @@ export const handleRankTabClick = (rank) => {
   }
 
   filterAndRender();
-  updateFilterUI();
 };
 
 export function handleAreaFilterClick(e) {

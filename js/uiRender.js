@@ -270,15 +270,11 @@ export function updateProgressBar(card, mob) {
       bar.style.width = `${elapsedPercent || 0}%`;
     }
     bar.classList.remove('status-max-over', 'status-condition-active', 'status-pop-window', 'status-next');
-    if (bar.classList.contains('pc-detail-progress-bar')) {
-      bar.style.background = status === "MaxOver" ? "var(--progress-max-over)" : "var(--progress-fill)";
-    } else {
-      if (status === "MaxOver") bar.classList.add("status-max-over");
-      else if (status === "ConditionActive") bar.classList.add("status-condition-active");
-      else if (status === "PopWindow") bar.classList.add("status-pop-window");
-      else if (status === "Next" || status === "NextCondition") bar.classList.add("status-next");
-      bar.style.background = "";
-    }
+    bar.style.background = ""; 
+    if (status === "MaxOver") bar.classList.add("status-max-over");
+    else if (status === "ConditionActive") bar.classList.add("status-condition-active");
+    else if (status === "PopWindow") bar.classList.add("status-pop-window");
+    else if (status === "Next" || status === "NextCondition") bar.classList.add("status-next");
   });
 
   texts.forEach(text => {
@@ -709,24 +705,17 @@ export function updateHeaderTime() {
   const lt = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   const etStr = `${et.hours}:${et.minutes}`;
 
-  ["header-time-lt", "pc-time-lt", "mobile-time-lt", "sidebar-lt-persistent"].forEach(id => {
+  ["pc-time-lt", "mobile-time-lt"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = lt;
   });
-  ["header-time-et", "pc-time-et", "mobile-time-et", "sidebar-et-persistent"].forEach(id => {
+  ["pc-time-et", "mobile-time-et"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = etStr;
   });
-
-  const elWelcome = document.getElementById("header-welcome-message");
-  if (elWelcome) elWelcome.textContent = state.characterName ? `ようこそ ${state.characterName}` : "";
 }
 
 setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
-
-window.addEventListener('characterNameSet', () => {
-  updateHeaderTime();
-});
 
 window.addEventListener('initialDataLoaded', () => {
   updateHeaderTime();
