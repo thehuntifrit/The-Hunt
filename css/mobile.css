@@ -139,7 +139,8 @@
     .detail-percent-val {
         width: 44px;
         text-align: right;
-        font-size: 11px;
+        font-family: inherit;
+        font-size: 13px;
         color: rgba(156, 163, 175, 0.8);
     }
 
