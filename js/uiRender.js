@@ -534,8 +534,8 @@ export function createSimpleMobItem(mob) {
         <div class="pc-list-name font-bold flex items-center min-w-0" style="color: #fff;">
           <span class="truncate"></span>
           <span class="memo-icon-container ml-1 flex-shrink-0 text-[12px] h-4 flex items-center"></span>
+          <span class="pc-list-count-inner ml-1 flex-shrink-0"></span>
         </div>
-        <div class="pc-list-count"></div>
         <div class="pc-list-time"></div>
         <div class="pc-list-progress-container"><div class="pc-list-progress-bar" style="width: 0%"></div></div>
         <div class="pc-list-percent">0%</div>
@@ -559,9 +559,9 @@ export function updateSimpleMobItem(item, mob) {
   if (timeEl) {
     timeEl.innerHTML = `<div class="grid items-center w-full h-full" style="grid-template-columns:18px 52px;gap:0;"><span class="timer-label text-[14px] text-right opacity-90">${label}</span><span class="timer-value font-bold text-[14px] text-right ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span></div>`;
   }
-  const countEl = item.querySelector('.pc-list-count');
-  if (countEl) {
-    countEl.innerHTML = countHtml;
+  const countInner = item.querySelector('.pc-list-count-inner');
+  if (countInner) {
+    countInner.innerHTML = countHtml;
   }
   if (progressEl) {
     const currentWidth = parseFloat(progressEl.style.width) || 0;
