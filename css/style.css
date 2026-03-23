@@ -260,7 +260,7 @@ body::before {
 .progress-bar-bg.status-max-over { background: var(--progress-max-over); }
 .progress-bar-bg.status-condition-active { background: var(--progress-ready); }
 .progress-bar-bg.status-pop-window { background: var(--progress-ready); }
-.progress-bar-bg.status-next { background: rgba(59, 130, 246, 0.1); }
+.progress-bar-bg.status-next { background: var(--progress-fill); }
 
 .progress-bar-wrapper {
     position: absolute;

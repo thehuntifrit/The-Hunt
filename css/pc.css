@@ -75,7 +75,7 @@
     .pc-detail-progress-bar.status-max-over { background: var(--progress-max-over); }
     .pc-detail-progress-bar.status-condition-active { background: var(--progress-ready); }
     .pc-detail-progress-bar.status-pop-window { background: var(--progress-ready); }
-    .pc-detail-progress-bar.status-next { background: rgba(59, 130, 246, 0.1); }
+    .pc-detail-progress-bar.status-next { background: var(--progress-fill); }
 
     .pc-detail-content {
         @supports (scrollbar-color: auto) {
@@ -348,7 +348,7 @@
     .pc-list-progress-bar.status-max-over { background: var(--progress-max-over); }
     .pc-list-progress-bar.status-condition-active { background: var(--progress-ready); }
     .pc-list-progress-bar.status-pop-window { background: var(--progress-ready); }
-    .pc-list-progress-bar.status-next { background: rgba(59, 130, 246, 0.1); }
+    .pc-list-progress-bar.status-next { background: var(--progress-fill); }
 
     .pc-list-percent {
         font-family: 'Inter', ui-monospace, SFMono-Regular, monospace;
