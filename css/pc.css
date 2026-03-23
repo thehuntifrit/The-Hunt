@@ -415,7 +415,7 @@
 
     /* PC版リストのアイコン整列精緻化 */
     .progress-info-group {
-        width: 110px !important;
+        width: 102px !important;
         flex-shrink: 0;
         display: flex;
         align-items: center;
