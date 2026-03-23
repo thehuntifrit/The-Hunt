@@ -424,14 +424,14 @@
     }
 
     .js-mobile-icon {
-        width: 18px !important;
+        width: 10px !important;
         flex-shrink: 0;
         display: flex;
         justify-content: center;
     }
     
     .js-mobile-time {
-        width: 92px !important;
+        width: 100px !important;
         flex-shrink: 0;
         text-align: right;
     }
