@@ -1,4 +1,30 @@
 @media (min-width: 1024px) {
+    /* PC版グローバルスクロールバー設定 */
+    @supports (scrollbar-color: auto) {
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: #3b82f6 transparent;
+        }
+    }
+
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+        border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, #60a5fa, #3b82f6);
+    }
+
     #mobile-layout {
         display: none !important;
     }
@@ -76,7 +102,7 @@
     .pc-detail-content {
         @supports (scrollbar-color: auto) {
             scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
+            scrollbar-color: #3b82f6 transparent;
         }
         padding-top: 0 !important;
         border-top: none !important;
@@ -87,7 +113,7 @@
     }
 
     .pc-detail-content::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.05);
+        background: linear-gradient(180deg, #3b82f6, #1d4ed8);
         border-radius: 3px;
     }
 
@@ -128,7 +154,7 @@
         overflow-y: auto;
         @supports (scrollbar-color: auto) {
             scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+            scrollbar-color: #3b82f6 transparent;
         }
     }
 
@@ -137,7 +163,7 @@
     }
 
     #pc-right-pane::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.1);
+        background: linear-gradient(180deg, #3b82f6, #1d4ed8);
         border-radius: 4px;
     }
 
@@ -146,7 +172,7 @@
     }
 
     .pc-detail-content::-webkit-scrollbar-thumb:hover {
-        background: rgba(129, 140, 248, 0.05);
+        background: linear-gradient(180deg, #60a5fa, #3b82f6);
     }
 
     .pc-detail-card[data-rank="S"] {
