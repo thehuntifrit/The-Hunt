@@ -16,7 +16,7 @@ const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
 
 export function escapeHtml(str) {
   if (typeof str !== "string") return str;
-  return str.replace(/[&<>"']/g, function(m) {
+  return str.replace(/[&<>"']/g, function (m) {
     return {
       '&': '&amp;',
       '<': '&lt;',
@@ -282,7 +282,7 @@ export function updateProgressBar(card, mob) {
       bar.style.width = `${elapsedPercent || 0}%`;
     }
     bar.classList.remove('status-max-over', 'status-condition-active', 'status-pop-window', 'status-next');
-    bar.style.background = ""; 
+    bar.style.background = "";
     if (status === "MaxOver") bar.classList.add("status-max-over");
     else if (status === "ConditionActive") bar.classList.add("status-condition-active");
     else if (status === "PopWindow") bar.classList.add("status-pop-window");
@@ -534,8 +534,8 @@ export function createSimpleMobItem(mob) {
         <div class="pc-list-name font-bold flex items-center min-w-0" style="color: #fff;">
           <span class="truncate"></span>
           <span class="memo-icon-container ml-1 flex-shrink-0 text-[12px] h-4 flex items-center"></span>
+          <span class="pc-list-count ml-1 flex-shrink-0"></span>
         </div>
-        <div class="pc-list-count"></div>
         <div class="pc-list-time"></div>
         <div class="pc-list-progress-container"><div class="pc-list-progress-bar" style="width: 0%"></div></div>
         <div class="pc-list-percent">0%</div>
@@ -563,19 +563,19 @@ export function updateSimpleMobItem(item, mob) {
   if (countEl) {
     countEl.innerHTML = countHtml;
   }
-    if (progressEl) {
-      const currentWidth = parseFloat(progressEl.style.width) || 0;
-      if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
-        progressEl.style.transition = (currentWidth === 0 || elapsedPercent < currentWidth) ? "none" : "width linear 60s";
-        progressEl.style.width = `${elapsedPercent}%`;
-      }
-      progressEl.classList.remove('status-max-over', 'status-condition-active', 'status-pop-window', 'status-next');
-      if (isTimeOver) progressEl.classList.add("status-max-over");
-      else if (status === "ConditionActive") progressEl.classList.add("status-condition-active");
-      else if (status === "PopWindow") progressEl.classList.add("status-pop-window");
-      else if (status === "Next" || status === "NextCondition") progressEl.classList.add("status-next");
-      progressEl.style.background = "";
+  if (progressEl) {
+    const currentWidth = parseFloat(progressEl.style.width) || 0;
+    if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
+      progressEl.style.transition = (currentWidth === 0 || elapsedPercent < currentWidth) ? "none" : "width linear 60s";
+      progressEl.style.width = `${elapsedPercent}%`;
     }
+    progressEl.classList.remove('status-max-over', 'status-condition-active', 'status-pop-window', 'status-next');
+    if (isTimeOver) progressEl.classList.add("status-max-over");
+    else if (status === "ConditionActive") progressEl.classList.add("status-condition-active");
+    else if (status === "PopWindow") progressEl.classList.add("status-pop-window");
+    else if (status === "Next" || status === "NextCondition") progressEl.classList.add("status-next");
+    progressEl.style.background = "";
+  }
   if (percentEl) {
     let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
     percentEl.textContent = isTimeOver ? "100%" : `${safePercent}%`;

@@ -73,16 +73,29 @@
         transition: width 0.5s ease-out;
         box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
     }
-    .pc-detail-progress-bar.status-max-over { background: var(--progress-ready); }
-    .pc-detail-progress-bar.status-condition-active { background: var(--progress-fill); }
-    .pc-detail-progress-bar.status-pop-window { background: var(--progress-fill); }
-    .pc-detail-progress-bar.status-next { background: var(--progress-fill); }
+
+    .pc-detail-progress-bar.status-max-over {
+        background: var(--progress-ready);
+    }
+
+    .pc-detail-progress-bar.status-condition-active {
+        background: var(--progress-fill);
+    }
+
+    .pc-detail-progress-bar.status-pop-window {
+        background: var(--progress-fill);
+    }
+
+    .pc-detail-progress-bar.status-next {
+        background: var(--progress-fill);
+    }
 
     .pc-detail-content {
         @supports (scrollbar-color: auto) {
             scrollbar-width: thin;
             scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
         }
+
         padding-top: 0 !important;
         border-top: none !important;
     }
@@ -131,6 +144,7 @@
         padding-left: 12px;
         max-height: calc(100vh - 1rem);
         overflow-y: auto;
+
         @supports (scrollbar-color: auto) {
             scrollbar-width: thin;
             scrollbar-color: #3b82f6 transparent;
@@ -284,11 +298,9 @@
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 13px;
+        font-size: 14px;
         white-space: nowrap;
         padding-right: 8px;
-        font-variant-numeric: tabular-nums;
         color: #94a3b8;
     }
 
@@ -345,10 +357,22 @@
         box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
         transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .pc-list-progress-bar.status-max-over { background: var(--progress-ready); }
-    .pc-list-progress-bar.status-condition-active { background: var(--progress-fill); }
-    .pc-list-progress-bar.status-pop-window { background: var(--progress-fill); }
-    .pc-list-progress-bar.status-next { background: var(--progress-fill); }
+
+    .pc-list-progress-bar.status-max-over {
+        background: var(--progress-ready);
+    }
+
+    .pc-list-progress-bar.status-condition-active {
+        background: var(--progress-fill);
+    }
+
+    .pc-list-progress-bar.status-pop-window {
+        background: var(--progress-fill);
+    }
+
+    .pc-list-progress-bar.status-next {
+        background: var(--progress-fill);
+    }
 
     .pc-list-percent {
         font-family: 'Inter', ui-monospace, SFMono-Regular, monospace;
@@ -429,7 +453,7 @@
         display: flex;
         justify-content: center;
     }
-    
+
     .js-mobile-time {
         width: 105px !important;
         flex-shrink: 0;
