@@ -272,17 +272,18 @@ export function updateProgressBar(card, mob) {
     if (bar.classList.contains('pc-detail-progress-bar')) {
       bar.style.background = status === "MaxOver" ? "var(--progress-max-over)" : "var(--progress-fill)";
     } else {
-      let color = "rgba(107, 114, 128, 0.2)";
-      if (status === "MaxOver") color = "rgba(30, 58, 138, 0.3)";
-      else if (status === "ConditionActive") color = "rgba(251, 191, 36, 0.3)";
-      else if (status === "PopWindow") color = "rgba(59, 130, 246, 0.3)";
-      bar.style.background = color;
+      let bg = "var(--progress-fill)";
+      if (status === "MaxOver") {
+        bg = "var(--progress-max-over)";
+      } else if (status === "ConditionActive") {
+        bg = "var(--progress-condition-active)";
+      } else if (status === "PopWindow") {
+        bg = "var(--progress-pop-window)";
+      } else if (status === "Next" || status === "NextCondition") {
+        bg = "rgba(255, 255, 255, 0.08)";
+      }
+      bar.style.background = bg;
     }
-    bar.classList.remove(PROGRESS_CLASSES.P0_60, PROGRESS_CLASSES.P60_80, PROGRESS_CLASSES.P80_100, PROGRESS_CLASSES.MAX_OVER);
-    if (elapsedPercent < 60) bar.classList.add(PROGRESS_CLASSES.P0_60);
-    else if (elapsedPercent < 80) bar.classList.add(PROGRESS_CLASSES.P60_80);
-    else if (elapsedPercent < 100) bar.classList.add(PROGRESS_CLASSES.P80_100);
-    if (status === "MaxOver") bar.classList.add(PROGRESS_CLASSES.MAX_OVER);
   });
 
   texts.forEach(text => {

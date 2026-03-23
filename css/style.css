@@ -79,6 +79,8 @@
 
     --progress-bg: rgba(0, 0, 0, 0.4);
     --progress-fill: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    --progress-pop-window: linear-gradient(90deg, #0ea5e9, #38bdf8);
+    --progress-condition-active: linear-gradient(90deg, #f59e0b, #fbbf24);
     --progress-max-over: linear-gradient(90deg, #1e3a8a, #1e40af);
 
     --color-b1: #4494f7;
@@ -245,11 +247,11 @@ body::before {
 
 .progress-bar-bg {
     background: var(--progress-fill);
-    box-shadow: 0 0 15px rgba(30, 144, 255, 0.6);
+    box-shadow: 0 0 15px rgba(30, 144, 255, 0.4);
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: width 1s linear;
+    border-right: 1px solid rgba(255, 255, 255, 0.3);
+    transition: width 1s linear, background 0.3s ease;
 }
 
 .progress-bar-wrapper {
