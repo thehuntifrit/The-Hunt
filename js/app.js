@@ -213,6 +213,7 @@ function formatMMDDHHmm(isoString) {
 }
 
 export async function renderMaintenanceStatus() {
+    const state = getState();
     const maintenance = await getMaintenanceStatus();
     const maintenanceEl = document.getElementById("status-message-maintenance");
     const telopEl = document.getElementById("status-message-telop");
@@ -265,15 +266,20 @@ export async function renderMaintenanceStatus() {
         }
     }
 
+    let welcomeHtml = "";
+    if (state.characterName) {
+        welcomeHtml = `<div class="sidebar-welcome-msg" style="color:var(--accent-cyan); font-weight:bold; margin-bottom:8px; border-bottom:1px solid rgba(34,211,238,0.2); padding-bottom:4px;">ようこそ ${state.characterName}</div>`;
+    }
+
     telopPanels.forEach(p => {
-        p.textContent = telopMsg;
+        p.innerHTML = welcomeHtml + (telopMsg ? telopMsg.replace(/\/\//g, "<br>") : "");
     });
 
     document.querySelectorAll('.sidebar-icon-btn[data-panel="maintenance"], .mobile-footer-btn[data-panel="maintenance"]')
         .forEach(btn => btn.classList.toggle("has-alert", hasMaintenance));
 
     document.querySelectorAll('.sidebar-icon-btn[data-panel="telop"], .mobile-footer-btn[data-panel="telop"]')
-        .forEach(btn => btn.classList.toggle("has-alert", hasMessage));
+        .forEach(btn => btn.classList.toggle("has-alert", hasMessage || !!state.characterName));
 
     const errorLogCount = window.errorLog ? window.errorLog.length : 0;
     const hasError = errorLogCount > 0;
@@ -283,6 +289,10 @@ export async function renderMaintenanceStatus() {
     document.querySelectorAll('.sidebar-icon-btn[data-panel="rank"], .mobile-footer-btn[data-panel="rank"]')
         .forEach(btn => btn.classList.remove("has-alert"));
 }
+
+window.addEventListener('characterNameSet', () => {
+    renderMaintenanceStatus();
+});
 
 function formatDate(date) {
     const m = String(date.getMonth() + 1).padStart(2, '0');

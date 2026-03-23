@@ -7,20 +7,12 @@ const ALLOWED_ORIGINS = [
 
 let publicKeysCache = null;
 let keysExpiresAt = 0;
-// 修正1: キャッシュスタンピード防止用のフェッチ中 Promise
 let keysFetchingPromise = null;
+
+const BOT_UA_PATTERN = /^(python-requests|python\/|curl\/|wget\/)/i;
 
 export default {
     async fetch(request, env, ctx) {
-        // 簡易ボット・地域制限 (クォータ保護)
-        const country = request.cf?.country;
-        const ua = request.headers.get('User-Agent') || "";
-        const isBot = /python|curl|wget|bot/i.test(ua);
-
-        if (isBot || (country && country !== 'JP')) {
-            return new Response('Forbidden', { status: 403 });
-        }
-
         const origin = request.headers.get('Origin');
         const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
 
@@ -31,6 +23,22 @@ export default {
                     'Access-Control-Allow-Methods': 'GET, OPTIONS',
                     'Access-Control-Allow-Headers': 'Authorization',
                 }
+            });
+        }
+
+        const ua = request.headers.get('User-Agent') || '';
+        if (BOT_UA_PATTERN.test(ua)) {
+            return new Response('Forbidden', {
+                status: 403,
+                headers: { 'Access-Control-Allow-Origin': allowedOrigin }
+            });
+        }
+
+        const country = request.cf?.country;
+        if (country && country !== 'JP') {
+            return new Response('Forbidden', {
+                status: 403,
+                headers: { 'Access-Control-Allow-Origin': allowedOrigin }
             });
         }
 
@@ -56,7 +64,6 @@ export default {
         try {
             await verifyFirebaseToken(token);
         } catch (e) {
-            // 修正4: エラー詳細を攻撃者に伝えないよう汎用メッセージに統一
             return new Response('Unauthorized', {
                 status: 401,
                 headers: { 'Access-Control-Allow-Origin': allowedOrigin }
@@ -103,7 +110,6 @@ export default {
 };
 
 async function verifyFirebaseToken(token) {
-    // 修正3: トークンの構造を事前検証
     if (!token || typeof token !== 'string') throw new Error('Missing token');
     const parts = token.split('.');
     if (parts.length !== 3) throw new Error('Malformed token');
@@ -135,7 +141,6 @@ async function verifyFirebaseToken(token) {
     if (payload.iss !== `https://securetoken.google.com/${PROJECT_ID}`) throw new Error('Invalid issuer');
     if (payload.exp < now) throw new Error('Token expired');
     if (payload.iat > now) throw new Error('Token issued in future');
-    // 修正2: nbf クレームの検証を追加
     if (payload.nbf !== undefined && payload.nbf > now) throw new Error('Token not yet valid');
     if (!payload.sub) throw new Error('Empty subject');
 }
@@ -146,7 +151,6 @@ async function getPublicKeys() {
         return publicKeysCache;
     }
 
-    // 修正1: 既にフェッチ中なら同じ Promise を使い回してスタンピードを防ぐ
     if (keysFetchingPromise) {
         return keysFetchingPromise;
     }
@@ -183,7 +187,6 @@ async function getPublicKeys() {
 }
 
 function atobUrl(str) {
-    // 修正3: null / undefined ガード
     if (typeof str !== 'string') throw new Error('Invalid base64url input');
     let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
     switch (base64.length % 4) {
@@ -205,7 +208,6 @@ async function verifySignature(jwk, headerB64, payloadB64, signatureB64) {
     );
 
     const data = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
-    // 修正5: charCodeAt ベースの変換を Uint8Array.from に置き換え
     const signature = Uint8Array.from(atobUrl(signatureB64), c => c.charCodeAt(0));
 
     return await crypto.subtle.verify(
