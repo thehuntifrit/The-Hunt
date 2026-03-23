@@ -239,10 +239,22 @@ body::before {
     filter: none !important;
 }
 
-.progress-text .time-over { color: #f87171; text-shadow: 0 0 8px rgba(248, 113, 113, 0.4); }
-.progress-text .time-normal { color: inherit; }
-.text-pop { color: #e2e8f0; }
-.text-next { color: #94a3b8; }
+.progress-text .time-over {
+    color: #f87171;
+    text-shadow: 0 0 8px rgba(248, 113, 113, 0.4);
+}
+
+.progress-text .time-normal {
+    color: inherit;
+}
+
+.text-pop {
+    color: #e2e8f0;
+}
+
+.text-next {
+    color: #94a3b8;
+}
 
 .progress-bar-bg {
     position: absolute;
@@ -254,13 +266,24 @@ body::before {
     overflow: hidden;
     border-right: 1px solid rgba(255, 255, 255, 0.3);
     transition: width 1s linear, background 0.3s ease;
-    opacity: 0.15;
+    opacity: 0.3;
 }
 
-.progress-bar-bg.status-max-over { background: var(--progress-ready); }
-.progress-bar-bg.status-condition-active { background: var(--progress-fill); }
-.progress-bar-bg.status-pop-window { background: var(--progress-fill); }
-.progress-bar-bg.status-next { background: var(--progress-fill); }
+.progress-bar-bg.status-max-over {
+    background: var(--progress-ready);
+}
+
+.progress-bar-bg.status-condition-active {
+    background: var(--progress-fill);
+}
+
+.progress-bar-bg.status-pop-window {
+    background: var(--progress-fill);
+}
+
+.progress-bar-bg.status-next {
+    background: var(--progress-fill);
+}
 
 .progress-bar-wrapper {
     position: absolute;
@@ -822,6 +845,7 @@ html body.magnifier-active .mob-card-inner * {
     border-left-color: var(--accent-cyan) !important;
     text-shadow: 0 0 8px rgba(34, 211, 238, 0.4) !important;
 }
+
 .detail-info-item.highlight .value {
     color: #facc15 !important;
     font-weight: bold;
