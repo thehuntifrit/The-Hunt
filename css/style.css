@@ -568,8 +568,6 @@ body::before {
     padding: 0.75rem;
     background: rgba(8, 15, 30, 0.97);
     border-top: 1px solid rgba(6, 182, 212, 0.12);
-    border-bottom-left-radius: 0.5rem;
-    border-bottom-right-radius: 0.5rem;
 }
 
 .detail-grid {

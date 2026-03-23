@@ -23,6 +23,8 @@
         z-index: 30;
         background: rgba(15, 23, 42, 0.98);
         border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
     }
 
     .mob-card.is-floating-active {
@@ -507,6 +509,7 @@
     .mob-card.open .mob-card-inner {
         border-radius: 12px !important;
         background: rgba(15, 23, 42, 0.95);
+        overflow: hidden !important;
     }
 
     .mob-card.is-floating-active .mob-card-inner {
@@ -514,6 +517,7 @@
         background: rgba(15, 23, 42, 0.95);
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
         box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6);
+        overflow: hidden !important;
     }
 
     .detail-info-item.highlight .value {
