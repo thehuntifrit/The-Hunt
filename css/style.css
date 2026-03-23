@@ -257,9 +257,9 @@ body::before {
     opacity: 0.15;
 }
 
-.progress-bar-bg.status-max-over { background: var(--progress-max-over); }
-.progress-bar-bg.status-condition-active { background: var(--progress-ready); }
-.progress-bar-bg.status-pop-window { background: var(--progress-ready); }
+.progress-bar-bg.status-max-over { background: var(--progress-ready); }
+.progress-bar-bg.status-condition-active { background: var(--progress-fill); }
+.progress-bar-bg.status-pop-window { background: var(--progress-fill); }
 .progress-bar-bg.status-next { background: var(--progress-fill); }
 
 .progress-bar-wrapper {

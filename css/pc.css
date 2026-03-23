@@ -72,9 +72,9 @@
         transition: width 0.5s ease-out;
         box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
     }
-    .pc-detail-progress-bar.status-max-over { background: var(--progress-max-over); }
-    .pc-detail-progress-bar.status-condition-active { background: var(--progress-ready); }
-    .pc-detail-progress-bar.status-pop-window { background: var(--progress-ready); }
+    .pc-detail-progress-bar.status-max-over { background: var(--progress-ready); }
+    .pc-detail-progress-bar.status-condition-active { background: var(--progress-fill); }
+    .pc-detail-progress-bar.status-pop-window { background: var(--progress-fill); }
     .pc-detail-progress-bar.status-next { background: var(--progress-fill); }
 
     .pc-detail-content {
@@ -345,9 +345,9 @@
         box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
         transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .pc-list-progress-bar.status-max-over { background: var(--progress-max-over); }
-    .pc-list-progress-bar.status-condition-active { background: var(--progress-ready); }
-    .pc-list-progress-bar.status-pop-window { background: var(--progress-ready); }
+    .pc-list-progress-bar.status-max-over { background: var(--progress-ready); }
+    .pc-list-progress-bar.status-condition-active { background: var(--progress-fill); }
+    .pc-list-progress-bar.status-pop-window { background: var(--progress-fill); }
     .pc-list-progress-bar.status-next { background: var(--progress-fill); }
 
     .pc-list-percent {
