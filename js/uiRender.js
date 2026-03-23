@@ -14,11 +14,6 @@ const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
   timeZone: "Asia/Tokyo"
 });
 
-export function toFullWidth(str) {
-  if (str === null || str === undefined) return "";
-  return str.toString().replace(/[!-~]/g, s => String.fromCharCode(s.charCodeAt(0) + 0xFEE0));
-}
-
 export function escapeHtml(str) {
   if (typeof str !== "string") return str;
   return str.replace(/[&<>"']/g, function(m) {
@@ -91,11 +86,9 @@ export function getSpawnCountInfo(mob) {
   let countHtml = "";
   if (remainingCount === 1) {
     const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-    const pointNumberFull = toFullWidth(pointNumber);
-    countHtml = `<span class="pc-count-val font-bold text-yellow-500">&nbsp;${pointNumberFull}番</span>`;
+    countHtml = `<span class="pc-count-val font-bold text-yellow-500">${pointNumber}番</span>`;
   } else if (remainingCount > 1) {
-    const remainingCountFull = toFullWidth(remainingCount);
-    countHtml = `<span class="pc-count-val font-bold text-slate-400">&nbsp;＠${remainingCountFull}</span>`;
+    countHtml = `<span class="pc-count-val font-bold text-slate-400">@ ${remainingCount}</span>`;
   }
   return { countHtml, remainingCount, spawnCullStatus, validSpawnPoints };
 }
@@ -541,8 +534,8 @@ export function createSimpleMobItem(mob) {
         <div class="pc-list-name font-bold flex items-center min-w-0" style="color: #fff;">
           <span class="truncate"></span>
           <span class="memo-icon-container ml-1 flex-shrink-0 text-[12px] h-4 flex items-center"></span>
-          <span class="pc-list-count flex-shrink-0"></span>
         </div>
+        <div class="pc-list-count"></div>
         <div class="pc-list-time"></div>
         <div class="pc-list-progress-container"><div class="pc-list-progress-bar" style="width: 0%"></div></div>
         <div class="pc-list-percent">0%</div>
