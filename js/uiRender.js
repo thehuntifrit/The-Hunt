@@ -531,13 +531,16 @@ export function createSimpleMobItem(mob) {
   item.dataset.mobNo = mob.No;
   item.dataset.rank = mob.Rank;
   item.innerHTML = `
-        <div class="pc-list-name font-bold" style="color: #fff;"></div>
+        <div class="pc-list-name font-bold flex items-center min-w-0" style="color: #fff;">
+          <span class="truncate"></span>
+          <span class="memo-icon-container ml-1 flex-shrink-0 text-[12px] h-4 flex items-center"></span>
+        </div>
         <div class="pc-list-count"></div>
         <div class="pc-list-time"></div>
         <div class="pc-list-progress-container"><div class="pc-list-progress-bar" style="width: 0%"></div></div>
         <div class="pc-list-percent">0%</div>
         <button class="pc-list-report-btn">REPORT</button>`;
-  const nameEl = item.querySelector('.pc-list-name');
+  const nameEl = item.querySelector('.pc-list-name span:first-child');
   if (nameEl) nameEl.textContent = mob.Name;
   updateSimpleMobItem(item, mob);
   return item;
@@ -581,6 +584,7 @@ export function updateSimpleMobItem(item, mob) {
   item.style.filter = (isMaint || status === "Next" || (status === "NextCondition" && now < (mob.repopInfo?.minRepop || 0))) ? "grayscale(1)" : "none";
   if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) item.classList.add("blink-active");
   else item.classList.remove("blink-active");
+  updateMemoIcon(item, mob);
 }
 
 const FIFTEEN_MINUTES_SEC = 15 * 60;
