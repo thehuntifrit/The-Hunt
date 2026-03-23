@@ -226,7 +226,7 @@
 
     .pc-list-item {
         display: grid;
-        grid-template-columns: 1fr 50px 70px 90px 45px 70px;
+        grid-template-columns: 1fr 50px 62px 90px 45px 70px;
         align-items: center;
         background: rgba(30, 41, 59, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.03);
@@ -415,7 +415,7 @@
 
     /* PC版リストのアイコン整列精緻化 */
     .progress-info-group {
-        width: 118px !important;
+        width: 110px !important;
         flex-shrink: 0;
         display: flex;
         align-items: center;
@@ -431,7 +431,7 @@
     }
     
     .js-mobile-time {
-        width: 100px !important;
+        width: 92px !important;
         flex-shrink: 0;
         text-align: right;
     }
