@@ -533,8 +533,8 @@ export function createSimpleMobItem(mob) {
   item.innerHTML = `
         <div class="pc-list-name font-bold flex items-center min-w-0" style="color: #fff;">
           <span class="truncate"></span>
-          <span class="memo-icon-container ml-1 flex-shrink-0 text-[12px] h-4 flex items-center"></span>
-          <span class="pc-list-count-inner ml-1 flex-shrink-0"></span>
+          <span class="memo-icon-container flex-shrink-0 text-[12px] h-4 flex items-center"></span>
+          <span class="pc-list-count-inner flex-shrink-0"></span>
         </div>
         <div class="pc-list-time"></div>
         <div class="pc-list-progress-container"><div class="pc-list-progress-bar" style="width: 0%"></div></div>
