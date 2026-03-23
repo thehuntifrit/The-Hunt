@@ -58,33 +58,33 @@ export const renderAreaFilterPanel = (customContainer = null) => {
     isAllSelected = items.length > 0 && currentSet.size === items.length;
   }
 
-    const createPanelContent = () => {
-        const fragment = document.createDocumentFragment();
-        const allBtn = document.createElement("button");
-        allBtn.className = `area-filter-btn area-select-all ${isAllSelected ? 'is-selected' : ''}`;
-        allBtn.textContent = isAllSelected ? "全解除" : "全選択";
-        allBtn.dataset.value = "ALL";
-        allBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            handleAreaFilterClick(e);
-        });
-        fragment.appendChild(allBtn);
+  const createPanelContent = () => {
+    const fragment = document.createDocumentFragment();
+    const allBtn = document.createElement("button");
+    allBtn.className = `area-filter-btn area-select-all ${isAllSelected ? 'is-selected' : ''}`;
+    allBtn.textContent = isAllSelected ? "全解除" : "全選択";
+    allBtn.dataset.value = "ALL";
+    allBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      handleAreaFilterClick(e);
+    });
+    fragment.appendChild(allBtn);
 
-        items.forEach(item => {
-            const isSelected = currentSet.has(item);
-            const btn = document.createElement("button");
-            btn.className = `area-filter-btn ${isSelected ? 'is-selected' : ''}`;
-            btn.textContent = (state.filter.rank === 'F.A.T.E.' && item === 'F') ? 'F.A.T.E.' : (state.filter.rank === 'ALL' ? (item === 'F' ? 'F.A.T.E.' : `${item} RANK`) : item);
-            btn.dataset.value = item;
-            btn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                handleAreaFilterClick(e);
-            });
-            fragment.appendChild(btn);
-        });
+    items.forEach(item => {
+      const isSelected = currentSet.has(item);
+      const btn = document.createElement("button");
+      btn.className = `area-filter-btn ${isSelected ? 'is-selected' : ''}`;
+      btn.textContent = (state.filter.rank === 'F.A.T.E.' && item === 'F') ? 'F.A.T.E.' : (state.filter.rank === 'ALL' ? (item === 'F' ? 'F.A.T.E.' : `${item} RANK`) : item);
+      btn.dataset.value = item;
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        handleAreaFilterClick(e);
+      });
+      fragment.appendChild(btn);
+    });
 
-        return fragment;
-    };
+    return fragment;
+  };
 
   if (customContainer) {
     customContainer.innerHTML = "";
@@ -129,21 +129,18 @@ export const updateFilterUI = () => {
         const parentRect = rankTabs.getBoundingClientRect();
         indicator.style.width = `${rect.width}px`;
         indicator.style.left = `${rect.left - parentRect.left}px`;
-        
+
         const colorClass = btnRank === "ALL" ? "bg-rose-500"
-                         : btnRank === "S" ? "bg-rank-s"
-                         : btnRank === "A" ? "bg-rank-a"
-                         : btnRank === "F.A.T.E." ? "bg-rank-f"
-                         : "bg-cyan-600";
-        
+          : btnRank === "S" ? "bg-rank-s"
+            : btnRank === "A" ? "bg-rank-a"
+              : btnRank === "F.A.T.E." ? "bg-rank-f"
+                : "bg-cyan-600";
+
         indicator.className = `tab-indicator ${colorClass} transition-all duration-300 ease-out`;
       }
 
       const panels = [FilterDOM.areaFilterPanelMobile, FilterDOM.areaFilterPanelDesktop];
-      
-      // Step 1: Switch Rank (Hidden Area)
-      // Step 2: Same Rank Clicked (Show Area)
-      // Step 3: Same Rank Clicked (Hide Area)
+
       if (clickStep === 1 || clickStep === 3) {
         panels.forEach(p => {
           p?.classList.add("hidden");
@@ -176,14 +173,12 @@ export const handleRankTabClick = (rank) => {
   let clickStep = state.filter.clickStep || 1;
 
   if (rank === prevRank) {
-    // Already in this rank. Toggle between step 2 (show) and 3 (hide).
-    if (clickStep === 1) clickStep = 2; // Was hidden, now show
-    else if (clickStep === 2) clickStep = 3; // Was shown, now hide
-    else if (clickStep === 3) clickStep = 2; // Was hidden again, now show
-    
+    if (clickStep === 1) clickStep = 2;
+    else if (clickStep === 2) clickStep = 3;
+    else if (clickStep === 3) clickStep = 2;
+
     setFilter({ clickStep });
   } else {
-    // Rank changed. Reset to step 1 (hidden).
     clickStep = 1;
     setFilter({
       rank,
@@ -323,6 +318,6 @@ export function filterMobsByRankAndArea(mobs) {
 }
 
 function normalizeRank(rank) {
-    if (rank === 'F.A.T.E.' || rank === 'FATE') return 'F';
-    return rank;
+  if (rank === 'F.A.T.E.' || rank === 'FATE') return 'F';
+  return rank;
 }

@@ -269,20 +269,15 @@ export function updateProgressBar(card, mob) {
       bar.style.transition = (currentWidth === 0 || elapsedPercent < currentWidth) ? "none" : "width 10s linear";
       bar.style.width = `${elapsedPercent || 0}%`;
     }
+    bar.classList.remove('status-max-over', 'status-condition-active', 'status-pop-window', 'status-next');
     if (bar.classList.contains('pc-detail-progress-bar')) {
       bar.style.background = status === "MaxOver" ? "var(--progress-max-over)" : "var(--progress-fill)";
     } else {
-      let bg = "var(--progress-fill)";
-      if (status === "MaxOver") {
-        bg = "var(--progress-max-over)";
-      } else if (status === "ConditionActive") {
-        bg = "var(--progress-condition-active)";
-      } else if (status === "PopWindow") {
-        bg = "var(--progress-pop-window)";
-      } else if (status === "Next" || status === "NextCondition") {
-        bg = "rgba(255, 255, 255, 0.08)";
-      }
-      bar.style.background = bg;
+      if (status === "MaxOver") bar.classList.add("status-max-over");
+      else if (status === "ConditionActive") bar.classList.add("status-condition-active");
+      else if (status === "PopWindow") bar.classList.add("status-pop-window");
+      else if (status === "Next" || status === "NextCondition") bar.classList.add("status-next");
+      bar.style.background = "";
     }
   });
 
@@ -557,14 +552,19 @@ export function updateSimpleMobItem(item, mob) {
   if (countEl) {
     countEl.innerHTML = countHtml;
   }
-  if (progressEl) {
-    const currentWidth = parseFloat(progressEl.style.width) || 0;
-    if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
-      progressEl.style.transition = (currentWidth === 0 || elapsedPercent < currentWidth) ? "none" : "width linear 60s";
-      progressEl.style.width = `${elapsedPercent}%`;
+    if (progressEl) {
+      const currentWidth = parseFloat(progressEl.style.width) || 0;
+      if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
+        progressEl.style.transition = (currentWidth === 0 || elapsedPercent < currentWidth) ? "none" : "width linear 60s";
+        progressEl.style.width = `${elapsedPercent}%`;
+      }
+      progressEl.classList.remove('status-max-over', 'status-condition-active', 'status-pop-window', 'status-next');
+      if (isTimeOver) progressEl.classList.add("status-max-over");
+      else if (status === "ConditionActive") progressEl.classList.add("status-condition-active");
+      else if (status === "PopWindow") progressEl.classList.add("status-pop-window");
+      else if (status === "Next" || status === "NextCondition") progressEl.classList.add("status-next");
+      progressEl.style.background = "";
     }
-    progressEl.style.background = isTimeOver ? "var(--progress-max-over)" : "var(--progress-fill)";
-  }
   if (percentEl) {
     let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
     percentEl.textContent = isTimeOver ? "100%" : `${safePercent}%`;

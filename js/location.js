@@ -145,7 +145,6 @@ export function isCulled(pointStatus, mobNo, mob = null) {
     return false;
 }
 
-
 export function attachLocationEvents() {
     if (locationEventsAttached) return;
 

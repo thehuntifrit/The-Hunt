@@ -259,9 +259,7 @@ export async function renderMaintenanceStatus() {
     if (maintenance && (maintenance.is_active || maintenance.scheduled)) {
         const start = formatMMDDHHmm(maintenance.start_time);
         const end = formatMMDDHHmm(maintenance.end_time);
-        // Mobile layout: One line
         maintMobileHtml = end ? `${start} ～ ${end}` : `${start} ～`;
-        // PC layout: Two lines with indent
         maintPCHtml = end ? `${start} ～<br>&nbsp;&nbsp;&nbsp;&nbsp;${end}` : `${start} ～`;
         hasMaintenance = true;
     }
@@ -281,7 +279,6 @@ export async function renderMaintenanceStatus() {
             p.innerHTML = "現在予定されているメンテナンスはありません";
             return;
         }
-        // Check if item is roughly inside PC sidebar
         const isPC = p.closest('#app-sidebar') || p.closest('.sidebar-panel-content');
         p.innerHTML = isPC ? maintPCHtml : maintMobileHtml;
     });
@@ -367,7 +364,7 @@ function attachGlobalEventListeners() {
 
     DOM.colContainer.addEventListener("click", (e) => {
         if (e.target.closest(".report-side-bar")) return;
-        
+
         if (e.target.closest("[data-toggle='card-header']")) {
             const card = e.target.closest(".mob-card");
             if (card) {

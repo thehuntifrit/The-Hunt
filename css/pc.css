@@ -328,11 +328,15 @@
 
     .pc-list-progress-bar {
         height: 100%;
-        background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        background: var(--progress-fill);
         border-radius: 4px;
         box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
         transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
+    .pc-list-progress-bar.status-max-over { background: var(--progress-max-over); }
+    .pc-list-progress-bar.status-condition-active { background: var(--progress-condition-active); }
+    .pc-list-progress-bar.status-pop-window { background: var(--progress-pop-window); }
+    .pc-list-progress-bar.status-next { background: rgba(59, 130, 246, 0.15); }
 
     .pc-list-percent {
         font-family: 'Inter', ui-monospace, SFMono-Regular, monospace;

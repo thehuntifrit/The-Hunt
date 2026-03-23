@@ -18,8 +18,7 @@ export function initNotification() {
         t.checked = isEnabled;
         t.addEventListener('change', (e) => {
             const enabled = e.target.checked;
-            
-            // Sync other toggle
+
             toggles.forEach(other => {
                 if (other !== t) other.checked = enabled;
             });

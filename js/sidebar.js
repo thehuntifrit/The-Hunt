@@ -42,7 +42,7 @@ function captureErrors() {
 function updateErrorPanel() {
     const panels = document.querySelectorAll(".js-error-content");
     if (panels.length === 0) return;
-    
+
     const html = errorLog.length === 0 ? "" : errorLog.map(e =>
         `<div class="sidebar-error-item"><span class="error-time">${e.time}</span><span class="error-msg">${escapeHtml(e.msg)}</span></div>`
     ).join("");
@@ -344,7 +344,7 @@ function renderSidebarFilterAccordion() {
     const state = getState();
     const activeRank = state.filter.rank || "ALL";
     const clickStep = state.filter.clickStep || 1;
- 
+
     let html = `<div class="sidebar-section-title" style="text-align: center; margin-bottom: 12px; opacity: 0.6;">Filter</div>`;
     html += ranks.map(r => {
         const isActive = r.key === activeRank;
@@ -360,7 +360,7 @@ function renderSidebarFilterAccordion() {
             </div>
         `;
     }).join("");
-     
+
     container.innerHTML = html;
 
     container.querySelectorAll(".rank-header").forEach(header => {
