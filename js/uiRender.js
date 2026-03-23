@@ -4,7 +4,6 @@ import { getState, recalculateMob, requestWorkerCalculation, PROGRESS_CLASSES, E
 import { filterMobsByRankAndArea } from "./filterUI.js";
 import { openReportModal } from "./modal.js";
 import { allTabComparator } from "./mobSorter.js";
-import { updateStatusContainerVisibility } from "./app.js";
 import { checkAndNotify } from "./notificationManager.js";
 
 const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
