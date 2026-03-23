@@ -7,6 +7,8 @@ const ALLOWED_ORIGINS = [
 
 let publicKeysCache = null;
 let keysExpiresAt = 0;
+// 修正1: キャッシュスタンピード防止用のフェッチ中 Promise
+let keysFetchingPromise = null;
 
 export default {
     async fetch(request, env, ctx) {
@@ -35,7 +37,7 @@ export default {
 
         const authHeader = request.headers.get('Authorization');
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return new Response('Unauthorized: Missing token', {
+            return new Response('Unauthorized', {
                 status: 401,
                 headers: { 'Access-Control-Allow-Origin': allowedOrigin }
             });
@@ -45,7 +47,8 @@ export default {
         try {
             await verifyFirebaseToken(token);
         } catch (e) {
-            return new Response(`Unauthorized: ${e.message}`, {
+            // 修正4: エラー詳細を攻撃者に伝えないよう汎用メッセージに統一
+            return new Response('Unauthorized', {
                 status: 401,
                 headers: { 'Access-Control-Allow-Origin': allowedOrigin }
             });
@@ -82,7 +85,7 @@ export default {
             });
 
         } catch (e) {
-            return new Response(e.message, {
+            return new Response('Internal Server Error', {
                 status: 500,
                 headers: { 'Access-Control-Allow-Origin': allowedOrigin }
             });
@@ -91,10 +94,20 @@ export default {
 };
 
 async function verifyFirebaseToken(token) {
-    const [headerB64, payloadB64, signatureB64] = token.split('.');
+    // 修正3: トークンの構造を事前検証
+    if (!token || typeof token !== 'string') throw new Error('Missing token');
+    const parts = token.split('.');
+    if (parts.length !== 3) throw new Error('Malformed token');
 
-    const header = JSON.parse(atobUrl(headerB64));
-    const payload = JSON.parse(atobUrl(payloadB64));
+    const [headerB64, payloadB64, signatureB64] = parts;
+
+    let header, payload;
+    try {
+        header = JSON.parse(atobUrl(headerB64));
+        payload = JSON.parse(atobUrl(payloadB64));
+    } catch {
+        throw new Error('Failed to parse token');
+    }
 
     if (header.alg !== 'RS256') throw new Error('Invalid algorithm');
 
@@ -113,6 +126,8 @@ async function verifyFirebaseToken(token) {
     if (payload.iss !== `https://securetoken.google.com/${PROJECT_ID}`) throw new Error('Invalid issuer');
     if (payload.exp < now) throw new Error('Token expired');
     if (payload.iat > now) throw new Error('Token issued in future');
+    // 修正2: nbf クレームの検証を追加
+    if (payload.nbf !== undefined && payload.nbf > now) throw new Error('Token not yet valid');
     if (!payload.sub) throw new Error('Empty subject');
 }
 
@@ -122,30 +137,45 @@ async function getPublicKeys() {
         return publicKeysCache;
     }
 
-    const resp = await fetch(GOOGLE_KEYS_URL);
-    if (!resp.ok) throw new Error('Failed to fetch public keys');
-
-    const cacheControl = resp.headers.get('Cache-Control');
-    let maxAge = 3600;
-    if (cacheControl) {
-        const match = cacheControl.match(/max-age=(\d+)/);
-        if (match) maxAge = parseInt(match[1], 10);
+    // 修正1: 既にフェッチ中なら同じ Promise を使い回してスタンピードを防ぐ
+    if (keysFetchingPromise) {
+        return keysFetchingPromise;
     }
 
-    const data = await resp.json();
-    const keysMap = {};
-    if (data.keys) {
-        for (const key of data.keys) {
-            keysMap[key.kid] = key;
+    keysFetchingPromise = (async () => {
+        try {
+            const resp = await fetch(GOOGLE_KEYS_URL);
+            if (!resp.ok) throw new Error('Failed to fetch public keys');
+
+            const cacheControl = resp.headers.get('Cache-Control');
+            let maxAge = 3600;
+            if (cacheControl) {
+                const match = cacheControl.match(/max-age=(\d+)/);
+                if (match) maxAge = parseInt(match[1], 10);
+            }
+
+            const data = await resp.json();
+            const keysMap = {};
+            if (data.keys) {
+                for (const key of data.keys) {
+                    keysMap[key.kid] = key;
+                }
+            }
+
+            publicKeysCache = keysMap;
+            keysExpiresAt = Date.now() + (maxAge * 1000);
+            return publicKeysCache;
+        } finally {
+            keysFetchingPromise = null;
         }
-    }
+    })();
 
-    publicKeysCache = keysMap;
-    keysExpiresAt = now + (maxAge * 1000);
-    return publicKeysCache;
+    return keysFetchingPromise;
 }
 
 function atobUrl(str) {
+    // 修正3: null / undefined ガード
+    if (typeof str !== 'string') throw new Error('Invalid base64url input');
     let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
     switch (base64.length % 4) {
         case 0: break;
@@ -166,7 +196,8 @@ async function verifySignature(jwk, headerB64, payloadB64, signatureB64) {
     );
 
     const data = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
-    const signature = str2ab(atobUrl(signatureB64));
+    // 修正5: charCodeAt ベースの変換を Uint8Array.from に置き換え
+    const signature = Uint8Array.from(atobUrl(signatureB64), c => c.charCodeAt(0));
 
     return await crypto.subtle.verify(
         'RSASSA-PKCS1-v1_5',
@@ -174,13 +205,4 @@ async function verifySignature(jwk, headerB64, payloadB64, signatureB64) {
         signature,
         data
     );
-}
-
-function str2ab(str) {
-    const buf = new ArrayBuffer(str.length);
-    const bufView = new Uint8Array(buf);
-    for (let i = 0, strLen = str.length; i < strLen; i++) {
-        bufView[i] = str.charCodeAt(i);
-    }
-    return buf;
 }
