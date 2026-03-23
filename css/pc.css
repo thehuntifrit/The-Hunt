@@ -74,14 +74,25 @@
     }
 
     .pc-detail-content {
-        scrollbar-width: thin;
-        scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
+        @supports (scrollbar-color: auto) {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
+        }
         padding-top: 0 !important;
         border-top: none !important;
     }
 
     .pc-detail-content::-webkit-scrollbar {
         width: 3px;
+    }
+
+    .pc-detail-content::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 3px;
+    }
+
+    .pc-detail-content::-webkit-scrollbar-track {
+        background: transparent;
     }
 
     #pc-layout {
@@ -115,12 +126,19 @@
         padding-left: 12px;
         max-height: calc(100vh - 1rem);
         overflow-y: auto;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+        @supports (scrollbar-color: auto) {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+        }
     }
 
     #pc-right-pane::-webkit-scrollbar {
         width: 4px;
+    }
+
+    #pc-right-pane::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
     }
 
     #pc-right-pane::-webkit-scrollbar-track {
@@ -319,7 +337,6 @@
     .pc-list-progress-bar {
         height: 100%;
         background: var(--progress-fill);
-        opacity: 0.15;
         border-radius: 4px;
         box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
         transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -327,7 +344,7 @@
     .pc-list-progress-bar.status-max-over { background: var(--progress-max-over); }
     .pc-list-progress-bar.status-condition-active { background: var(--progress-condition-active); }
     .pc-list-progress-bar.status-pop-window { background: var(--progress-pop-window); }
-    .pc-list-progress-bar.status-next { background: rgba(59, 130, 246, 0.15); }
+    .pc-list-progress-bar.status-next { background: rgba(59, 130, 246, 0.1); }
 
     .pc-list-percent {
         font-family: 'Inter', ui-monospace, SFMono-Regular, monospace;

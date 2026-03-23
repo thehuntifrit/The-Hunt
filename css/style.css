@@ -251,7 +251,7 @@ body::before {
     top: 0;
     height: 100%;
     background: var(--progress-fill);
-    box-shadow: 0 0 15px rgba(30, 144, 255, 0.4);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
     overflow: hidden;
     border-right: 1px solid rgba(255, 255, 255, 0.3);
     transition: width 1s linear, background 0.3s ease;
@@ -261,7 +261,7 @@ body::before {
 .progress-bar-bg.status-max-over { background: var(--progress-max-over); }
 .progress-bar-bg.status-condition-active { background: var(--progress-condition-active); }
 .progress-bar-bg.status-pop-window { background: var(--progress-pop-window); }
-.progress-bar-bg.status-next { background: rgba(59, 130, 246, 0.15); }
+.progress-bar-bg.status-next { background: rgba(59, 130, 246, 0.1); }
 
 .progress-bar-wrapper {
     position: absolute;

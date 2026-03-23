@@ -8,7 +8,6 @@
         height: auto !important;
         overflow-y: auto !important;
         overscroll-behavior: contain;
-        -webkit-overflow-scrolling: touch;
         display: flex !important;
         flex-direction: column !important;
     }
