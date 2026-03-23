@@ -883,10 +883,8 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     if (mobileLayout) mobileLayout.classList.remove("hidden");
   }
 
-  const md = 768;
   let numCols = 1;
-  if (width >= lg) numCols = 3;
-  else if (width >= md) numCols = 2;
+  if (isPC) numCols = 3;
 
   const groups = {
     MAX_OVER: [],
