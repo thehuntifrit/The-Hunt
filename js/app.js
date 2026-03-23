@@ -324,6 +324,7 @@ function attachGlobalEventListeners() {
 
     DOM.colContainer.addEventListener("click", (e) => {
         if (e.target.closest(".report-side-bar")) return;
+        if (e.target.closest(".expandable-panel")) return;
 
         if (e.target.closest("[data-toggle='card-header']")) {
             const card = e.target.closest(".mob-card");
