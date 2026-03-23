@@ -12,6 +12,15 @@ let keysFetchingPromise = null;
 
 export default {
     async fetch(request, env, ctx) {
+        // 簡易ボット・地域制限 (クォータ保護)
+        const country = request.cf?.country;
+        const ua = request.headers.get('User-Agent') || "";
+        const isBot = /python|curl|wget|bot/i.test(ua);
+
+        if (isBot || (country && country !== 'JP')) {
+            return new Response('Forbidden', { status: 403 });
+        }
+
         const origin = request.headers.get('Origin');
         const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
 
