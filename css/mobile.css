@@ -120,11 +120,27 @@
     }
 
     .js-mobile-time {
-        width: 100px;
+        width: 105px !important;
         flex-shrink: 0;
-        text-align: right;
-        font-variant-numeric: tabular-nums;
+        display: flex !important;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+        font-family: 'JetBrains Mono', monospace;
         font-weight: 700;
+        font-size: 13px;
+    }
+
+    .detail-time-val {
+        width: 52px;
+        text-align: right;
+    }
+
+    .detail-percent-val {
+        width: 44px;
+        text-align: right;
+        font-size: 11px;
+        color: rgba(156, 163, 175, 0.8);
     }
 
     .expandable-panel {

@@ -337,7 +337,7 @@ export function updateProgressText(card, mob) {
   if (timeEl) {
     timeEl.innerHTML = `
       <span class="detail-time-val ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</span>
-      <span class="text-[11px] text-gray-400 opacity-80">(${percentStr.padStart(4, '\u00A0')})</span>`;
+      <span class="detail-percent-val">(${percentStr})</span>`;
     if (status === "MaxOver") timeEl.classList.add("max-over");
     else timeEl.classList.remove("max-over");
   }
@@ -534,8 +534,8 @@ export function createSimpleMobItem(mob) {
         <div class="pc-list-name font-bold flex items-center min-w-0" style="color: #fff;">
           <span class="truncate"></span>
           <span class="memo-icon-container ml-1 flex-shrink-0 text-[12px] h-4 flex items-center"></span>
+          <span class="pc-list-count ml-1.5 flex-shrink-0"></span>
         </div>
-        <div class="pc-list-count"></div>
         <div class="pc-list-time"></div>
         <div class="pc-list-progress-container"><div class="pc-list-progress-bar" style="width: 0%"></div></div>
         <div class="pc-list-percent">0%</div>
