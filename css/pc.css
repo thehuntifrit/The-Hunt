@@ -283,10 +283,8 @@
     .pc-list-count {
         display: flex;
         align-items: center;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 13px;
+        font-size: 14px;
         white-space: nowrap;
-        font-variant-numeric: tabular-nums;
         color: #94a3b8;
     }
 
