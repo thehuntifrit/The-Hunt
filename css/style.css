@@ -386,6 +386,8 @@ body::before {
 }
 
 .report-side-bar.is-active-neon::before {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
     animation: pulse-sync 2s infinite ease-in-out;
 }
 
