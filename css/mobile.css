@@ -32,6 +32,7 @@
         height: auto !important;
         max-height: calc(100svh - 120px) !important;
         z-index: 60 !important;
+        border-radius: 12px !important;
         display: flex !important;
         flex-direction: column !important;
         overflow: hidden !important;
@@ -521,6 +522,7 @@
     .mob-card.open {
         margin: 8px 4px !important;
         z-index: 20;
+        border-radius: 12px !important;
     }
 
     .mob-card.open .mob-card-inner {
