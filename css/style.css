@@ -211,9 +211,14 @@ body::before {
 .mob-card.is-pre-repop .area-info-container,
 .mob-card.is-pre-repop .progress-bar-bg,
 .mob-card.is-pre-repop .progress-text>div,
-.mob-card.is-pre-repop .report-side-bar,
 .mob-card.is-pre-repop .memo-icon-container {
     opacity: 0.3 !important;
+    filter: grayscale(100%) !important;
+}
+
+/* 報告ボタンは待機中でも少し見やすくする */
+.mob-card.is-pre-repop .report-side-bar {
+    opacity: 0.6 !important;
     filter: grayscale(100%) !important;
 }
 
@@ -327,7 +332,7 @@ body::before {
     bottom: 0;
     right: 0;
     width: 38px;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.2);
     border-left: 1px solid rgba(255, 255, 255, 0.4);
     color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
@@ -349,9 +354,9 @@ body::before {
 }
 
 .report-side-bar.is-active-neon {
-    background: rgba(255, 255, 255, 0.12);
-    border-left: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: -2px 0 10px rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.6);
+    border-left: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: -2px 0 15px rgba(255, 255, 255, 0.3);
 }
 
 .report-side-bar:active {
