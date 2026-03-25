@@ -108,8 +108,7 @@
         align-items: center;
         justify-content: flex-end;
         line-height: 1;
-        gap: 8px;
-        min-width: 110px;
+        gap: 12px;
     }
 
     .js-mobile-icon {

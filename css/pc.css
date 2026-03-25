@@ -201,7 +201,6 @@
         border-radius: 2px;
     }
 
-
     .pc-clocks-header {
         display: flex;
         flex-direction: row;
@@ -241,7 +240,7 @@
 
     .pc-list-item {
         display: grid;
-        grid-template-columns: 310px 93px 102px 45px 82px; /* Narrowed time from 105 to 93, balanced next col */
+        grid-template-columns: 310px 88px 107px 45px 82px;
         align-items: center;
         background: rgba(30, 41, 59, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.03);
@@ -338,7 +337,7 @@
         display: inline-flex;
         align-items: baseline;
         justify-content: flex-end;
-        min-width: 3ch; /* Align parts vertically */
+        min-width: 3ch;
     }
 
     .timer-num {
@@ -348,13 +347,12 @@
     }
 
     .timer-unit {
-        color: rgba(255, 255, 255, 0.55); /* Increased from 0.35 */
+        color: rgba(255, 255, 255, 0.55);
         font-size: 0.85em;
         margin-left: 1px;
         font-weight: 500;
     }
 
-    /* Timed/Special mob color */
     .special-timer .timer-num,
     .pc-list-time .timer-value.label-next .timer-num {
         color: var(--accent-gold) !important;
@@ -474,7 +472,6 @@
         border-color: rgba(255, 255, 255, 0.2);
     }
 
-    /* PC版リストのアイコン整列精緻化 */
     .progress-info-group {
         width: 102px !important;
         flex-shrink: 0;
@@ -485,14 +482,14 @@
     }
 
     .js-mobile-icon {
-        width: 10px !important;
+        width: 18px !important;
         flex-shrink: 0;
         display: flex;
         justify-content: center;
     }
 
     .js-mobile-time {
-        width: 93px !important; /* Reduction to match list view (~1.5 chars) */
+        width: 88px !important;
         flex-shrink: 0;
         display: flex !important;
         align-items: center;
