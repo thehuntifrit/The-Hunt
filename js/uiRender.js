@@ -568,7 +568,7 @@ export function updateSimpleMobItem(item, mob) {
 
   if (timeEl) {
     const timerHTML = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver);
-    timeEl.innerHTML = `<div class="grid items-center w-full h-full" style="grid-template-columns:18px 70px;gap:0;"><span class="timer-label text-[14px] text-right opacity-90">${label}</span>${timerHTML}</div>`;
+    timeEl.innerHTML = `<div class="grid items-center w-full h-full" style="grid-template-columns:18px 75px;gap:0;"><span class="timer-label text-[14px] text-right opacity-90">${label}</span>${timerHTML}</div>`;
   }
   const countInner = item.querySelector('.pc-list-count-inner');
   if (countInner) {

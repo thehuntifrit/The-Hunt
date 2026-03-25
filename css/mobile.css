@@ -103,12 +103,13 @@
     }
 
     .progress-info-group {
+        width: 126px;
         flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: flex-end;
         line-height: 1;
-        gap: 12px;
+        gap: 0;
     }
 
     .js-mobile-icon {
@@ -120,12 +121,12 @@
     }
 
     .js-mobile-time {
+        width: 108px !important;
         flex-shrink: 0;
         display: flex !important;
         align-items: center;
         justify-content: flex-end;
         font-family: 'JetBrains Mono', monospace;
-        min-width: 84px;
     }
 
     .js-mobile-time-inner {

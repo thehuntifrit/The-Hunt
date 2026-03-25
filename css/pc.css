@@ -240,7 +240,7 @@
 
     .pc-list-item {
         display: grid;
-        grid-template-columns: 310px 88px 107px 45px 82px;
+        grid-template-columns: 310px 93px 107px 45px 82px;
         align-items: center;
         background: rgba(30, 41, 59, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.03);
@@ -489,7 +489,7 @@
     }
 
     .js-mobile-time {
-        width: 88px !important;
+        width: 93px !important;
         flex-shrink: 0;
         display: flex !important;
         align-items: center;
