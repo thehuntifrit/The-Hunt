@@ -103,13 +103,13 @@
     }
 
     .progress-info-group {
-        width: 118px;
         flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: flex-end;
         line-height: 1;
-        gap: 0;
+        gap: 8px;
+        min-width: 110px;
     }
 
     .js-mobile-icon {
@@ -121,13 +121,12 @@
     }
 
     .js-mobile-time {
-        width: 108px !important; /* Reduced from 120px by ~1.5 chars (12px) to match request */
         flex-shrink: 0;
         display: flex !important;
         align-items: center;
         justify-content: flex-end;
-        gap: 4px;
         font-family: 'JetBrains Mono', monospace;
+        min-width: 84px;
     }
 
     .js-mobile-time-inner {
@@ -147,7 +146,7 @@
         display: inline-flex;
         align-items: baseline;
         justify-content: flex-end;
-        min-width: 2.8ch; /* Slightly narrower for mobile */
+        min-width: 2.8ch;
     }
 
     .timer-num {
@@ -157,14 +156,13 @@
     }
 
     .timer-unit {
-        color: rgba(255, 255, 255, 0.55); /* Increased visibility from 0.3 */
+        color: rgba(255, 255, 255, 0.55);
         font-size: 10px;
         margin-left: 1px;
     }
 
-    /* Timed/Special mob color */
     .special-timer .timer-num {
-        color: #fbbf24 !important; /* Gold */
+        color: #fbbf24 !important;
         text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
     }
 
@@ -274,7 +272,6 @@
     .mobile-footer-btn.has-alert {
         color: #facc15;
     }
-
 
     .mobile-footer-btn.has-alert::before {
         content: '';
