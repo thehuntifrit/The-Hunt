@@ -315,7 +315,7 @@ export function updateProgressBar(card, mob) {
 
 export function updateProgressText(card, mob) {
   const { elapsedPercent, status, isInConditionWindow, repopTimeStr } = mob.repopInfo || {};
-  const { label, timeValue, isSpecialCondition, isTimeOver } = computeTimeLabel(mob);
+  const { label, timeValue, isSpecialCondition, isTimeOver, dhm } = computeTimeLabel(mob);
   const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
   const nowSec = Date.now() / 1000;
 
@@ -564,7 +564,7 @@ export function updateSimpleMobItem(item, mob) {
   const progressEl = item.querySelector('.pc-list-progress-bar');
   const percentEl = item.querySelector('.pc-list-percent');
   const { countHtml } = getSpawnCountInfo(mob);
-  const { label, timeValue, isSpecialCondition, isTimeOver } = computeTimeLabel(mob);
+  const { label, timeValue, isSpecialCondition, isTimeOver, dhm } = computeTimeLabel(mob);
 
   if (timeEl) {
     const timerHTML = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver);
