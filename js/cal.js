@@ -25,16 +25,21 @@ export function formatDurationHM(seconds) {
 
 export function formatDurationDHM(seconds) {
   if (seconds < 0) seconds = 0;
+  const { d, h, m } = getDurationDHMParts(seconds);
+  const parts = [];
+  if (parseInt(d) > 0) parts.push(`${d.trim()}d`);
+  if (parseInt(h) > 0) parts.push(`${h.trim()}h`);
+  parts.push(`${m.trim()}m`);
+  return parts.join("/");
+}
+
+export function getDurationDHMParts(seconds) {
+  if (seconds < 0) seconds = 0;
   const d = Math.floor(seconds / 86400);
   const h = Math.floor((seconds % 86400) / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-
-  const parts = [];
-  if (d > 0) parts.push(`${d}\u2009d`);
-  if (h > 0) parts.push(`${h}\u2009h`);
-  parts.push(`${m}\u2009m`);
-
-  return parts.join("\u202F");
+  const pad = (v) => v.toString().padStart(2, "\u00A0");
+  return { d: pad(d), h: pad(h), m: pad(m), rawD: d, rawH: h, rawM: m };
 }
 
 export function formatDurationColon(seconds) {

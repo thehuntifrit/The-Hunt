@@ -1,4 +1,4 @@
-import { calculateRepop, formatDurationHM, formatDurationDHM, formatDurationColon, formatDurationM, formatLastKillTime, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
+import { calculateRepop, getDurationDHMParts, formatDurationHM, formatDurationDHM, formatDurationColon, formatDurationM, formatLastKillTime, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
 import { isCulled, attachLocationEvents } from "./location.js";
 import { getState, recalculateMob, requestWorkerCalculation, PROGRESS_CLASSES, EXPANSION_MAP } from "./dataManager.js";
 import { filterMobsByRankAndArea } from "./filterUI.js";
@@ -39,41 +39,48 @@ export function shouldDisplayMemo(mob) {
 }
 
 export function computeTimeLabel(mob) {
-  const { minRepop, maxRepop, status, isInConditionWindow, conditionWindowEnd, nextConditionSpawnDate, isMaintenanceStop, isBlockedByMaintenance, maintStart, maintEnd } = mob.repopInfo || {};
+  const { minRepop, maxRepop, status, isInConditionWindow, conditionWindowEnd, nextConditionSpawnDate, isMaintenanceStop, isBlockedByMaintenance } = mob.repopInfo || {};
   const now = Date.now() / 1000;
   const isMaint = !!(isMaintenanceStop || isBlockedByMaintenance);
   const isTimedMob = !!(isInConditionWindow || nextConditionSpawnDate);
 
   if (!minRepop && !maxRepop && !isTimedMob) {
-    return { label: "", timeValue: "--/-- --:--", isSpecialCondition: false, isTimeOver: false, isTimedMob: false };
+    return { label: "", timeValue: "--/-- --:--", isSpecialCondition: false, isTimeOver: false, isTimedMob: false, dhm: null };
   }
 
-  let label = "", timeValue = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
+  let label = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
+  let secondsRemaining = 0;
 
   if (isInConditionWindow && conditionWindowEnd) {
-    label = "⏳"; timeValue = formatDurationDHM((conditionWindowEnd.getTime() / 1000) - now); isSpecialCondition = true;
+    label = "⏳"; secondsRemaining = (conditionWindowEnd.getTime() / 1000) - now; isSpecialCondition = true;
   } else if (nextConditionSpawnDate) {
-    label = "🔜"; timeValue = formatDurationDHM((nextConditionSpawnDate.getTime() / 1000) - now); isSpecialCondition = true;
+    label = "🔜"; secondsRemaining = (nextConditionSpawnDate.getTime() / 1000) - now; isSpecialCondition = true;
   } else if (minRepop && now < minRepop) {
-    label = "🔜"; timeValue = formatDurationDHM(minRepop - now); if (isTimedMob) isSpecialCondition = true;
+    label = "🔜"; secondsRemaining = minRepop - now; if (isTimedMob) isSpecialCondition = true;
   } else if (maxRepop && now < maxRepop) {
-    label = "⏳";
-    if (isTimedMob) { timeValue = formatDurationDHM(maxRepop - now); isSpecialCondition = true; }
-    else { timeValue = formatDurationDHM(maxRepop - now); }
+    label = "⏳"; secondsRemaining = maxRepop - now; if (isTimedMob) isSpecialCondition = true;
   } else if (maxRepop) {
-    label = "🚨";
-    if (isTimedMob) { timeValue = formatDurationDHM(now - maxRepop); isSpecialCondition = true; }
-    else { timeValue = formatDurationDHM(now - maxRepop); }
+    label = "🚨"; secondsRemaining = now - maxRepop; if (isTimedMob) isSpecialCondition = true;
     isTimeOver = true;
-  } else {
-    label = ""; timeValue = "--/-- --:--"; isSpecialCondition = false; isTimedMob = false;
   }
 
-  if (isMaint) {
-    label = "🛠️";
-  }
+  const dhm = secondsRemaining >= 0 ? getDurationDHMParts(secondsRemaining) : null;
+  const timeValue = dhm ? formatDurationDHM(secondsRemaining) : "--/-- --:--";
 
-  return { label, timeValue, isSpecialCondition, isTimeOver, isTimedMob };
+  if (isMaint) label = "🛠️";
+
+  return { label, timeValue, isSpecialCondition, isTimeOver, isTimedMob, dhm };
+}
+
+function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver) {
+  if (!dhm) return `<div class="timer-value">--/-- --:--</div>`;
+  const { d, h, m, rawD, rawH } = dhm;
+  let html = '';
+  if (rawD > 0) html += `<span class="timer-part d-part"><span class="timer-num">${d}</span><span class="timer-unit">d</span></span>`;
+  if (rawH > 0 || rawD > 0) html += `<span class="timer-part h-part"><span class="timer-num">${h}</span><span class="timer-unit">h</span></span>`;
+  html += `<span class="timer-part m-part"><span class="timer-num">${m}</span><span class="timer-unit">m</span></span>`;
+  
+  return `<span class="timer-value ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${html}</span>`;
 }
 
 export function getSpawnCountInfo(mob) {
@@ -335,9 +342,12 @@ export function updateProgressText(card, mob) {
     iconEl.textContent = label || '';
   }
   if (timeEl) {
+    const timerHTML = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver);
     timeEl.innerHTML = `
-      <span class="detail-time-val ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'text-red-400' : ''}">${timeValue}</span>
-      <span class="detail-percent-val">(${percentStr})</span>`;
+      <div class="js-mobile-time-inner">
+        ${timerHTML}
+        <span class="detail-percent-val">(${percentStr})</span>
+      </div>`;
     if (status === "MaxOver") timeEl.classList.add("max-over");
     else timeEl.classList.remove("max-over");
   }
@@ -557,7 +567,8 @@ export function updateSimpleMobItem(item, mob) {
   const { label, timeValue, isSpecialCondition, isTimeOver } = computeTimeLabel(mob);
 
   if (timeEl) {
-    timeEl.innerHTML = `<div class="grid items-center w-full h-full" style="grid-template-columns:18px 87px;gap:0;"><span class="timer-label text-[14px] text-right opacity-90">${label}</span><span class="timer-value font-bold text-[14px] text-right ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span></div>`;
+    const timerHTML = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver);
+    timeEl.innerHTML = `<div class="grid items-center w-full h-full" style="grid-template-columns:18px 87px;gap:0;"><span class="timer-label text-[14px] text-right opacity-90">${label}</span>${timerHTML}</div>`;
   }
   const countInner = item.querySelector('.pc-list-count-inner');
   if (countInner) {

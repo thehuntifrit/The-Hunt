@@ -328,18 +328,48 @@
         color: rgba(226, 215, 197, 0.9);
         font-variant-numeric: tabular-nums;
         text-align: right;
+        display: flex;
+        justify-content: flex-end;
+        align-items: baseline;
+        font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
     }
 
-    .pc-list-time .timer-value.label-next {
+    .timer-part {
+        display: inline-flex;
+        align-items: baseline;
+        justify-content: flex-end;
+        min-width: 3ch; /* Align parts vertically */
+    }
+
+    .timer-num {
+        color: #ffffff;
+        font-weight: 700;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+
+    .timer-unit {
+        color: rgba(255, 255, 255, 0.35);
+        font-size: 0.85em;
+        margin-left: 1px;
+        font-weight: 500;
+    }
+
+    .pc-list-time .timer-value.label-next .timer-num {
         color: var(--accent-gold) !important;
         text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
-        font-weight: 600;
     }
 
-    .pc-list-time .time-over {
+    .pc-list-time .timer-value.label-next .timer-unit {
+        color: rgba(251, 191, 36, 0.5);
+    }
+
+    .pc-list-time .time-over .timer-num {
         color: #ffb1b6;
-        font-weight: bold;
         text-shadow: 0 0 8px rgba(233, 139, 145, 0.4);
+    }
+
+    .pc-list-time .time-over .timer-unit {
+        color: rgba(233, 139, 145, 0.5);
     }
 
     .pc-list-progress-container {
