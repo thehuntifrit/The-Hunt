@@ -121,7 +121,7 @@
     }
 
     .js-mobile-time {
-        width: 86px !important; /* Reduced from 120px to close the gap (~1.5 chars) */
+        width: 108px !important; /* Reduced from 120px by ~1.5 chars (12px) to match request */
         flex-shrink: 0;
         display: flex !important;
         align-items: center;

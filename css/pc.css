@@ -241,7 +241,7 @@
 
     .pc-list-item {
         display: grid;
-        grid-template-columns: 310px 105px 90px 45px 82px;
+        grid-template-columns: 310px 93px 102px 45px 82px; /* Narrowed time from 105 to 93, balanced next col */
         align-items: center;
         background: rgba(30, 41, 59, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.03);
@@ -492,7 +492,7 @@
     }
 
     .js-mobile-time {
-        width: 105px !important;
+        width: 93px !important; /* Reduction to match list view (~1.5 chars) */
         flex-shrink: 0;
         display: flex !important;
         align-items: center;
