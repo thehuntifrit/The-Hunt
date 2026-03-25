@@ -34,7 +34,7 @@ export function formatDurationDHM(seconds) {
   if (h > 0) parts.push(`${h}\u2009h`);
   parts.push(`${m}\u2009m`);
   
-  return parts.join(" ");
+  return parts.join("\u202F");
 }
 
 export function formatDurationColon(seconds) {
