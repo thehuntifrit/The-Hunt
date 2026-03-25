@@ -52,7 +52,7 @@ export function computeTimeLabel(mob) {
 
   if (isInConditionWindow && conditionWindowEnd) {
     label = "⏳"; timeValue = formatDurationM((conditionWindowEnd.getTime() / 1000) - now); isSpecialCondition = true;
-  } else if (nextConditionSpawnDate && now >= (minRepop || 0)) {
+  } else if (nextConditionSpawnDate) {
     label = "🔜"; timeValue = formatDurationColon((nextConditionSpawnDate.getTime() / 1000) - now); isSpecialCondition = true;
   } else if (minRepop && now < minRepop) {
     label = "🔜"; timeValue = formatDurationColon(minRepop - now); if (isTimedMob) isSpecialCondition = true;
