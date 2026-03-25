@@ -241,7 +241,7 @@
 
     .pc-list-item {
         display: grid;
-        grid-template-columns: 310px 70px 90px 45px 70px;
+        grid-template-columns: 310px 85px 90px 45px 70px;
         align-items: center;
         background: rgba(30, 41, 59, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.03);
@@ -470,7 +470,7 @@
     }
 
     .detail-time-val {
-        width: 52px;
+        width: 67px;
         text-align: right;
     }
 

@@ -121,7 +121,7 @@
     }
 
     .js-mobile-time {
-        width: 105px !important;
+        width: 120px !important;
         flex-shrink: 0;
         display: flex !important;
         align-items: center;
@@ -133,7 +133,7 @@
     }
 
     .detail-time-val {
-        width: 52px;
+        width: 67px;
         text-align: right;
     }
 
