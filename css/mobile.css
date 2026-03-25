@@ -121,7 +121,7 @@
     }
 
     .js-mobile-time {
-        width: 120px !important;
+        width: 86px !important; /* Reduced from 120px to close the gap (~1.5 chars) */
         flex-shrink: 0;
         display: flex !important;
         align-items: center;
@@ -157,9 +157,15 @@
     }
 
     .timer-unit {
-        color: rgba(255, 255, 255, 0.3);
+        color: rgba(255, 255, 255, 0.55); /* Increased visibility from 0.3 */
         font-size: 10px;
         margin-left: 1px;
+    }
+
+    /* Timed/Special mob color */
+    .special-timer .timer-num {
+        color: #fbbf24 !important; /* Gold */
+        text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
     }
 
     .js-mobile-time.max-over .timer-num {

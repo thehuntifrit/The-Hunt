@@ -348,17 +348,20 @@
     }
 
     .timer-unit {
-        color: rgba(255, 255, 255, 0.35);
+        color: rgba(255, 255, 255, 0.55); /* Increased from 0.35 */
         font-size: 0.85em;
         margin-left: 1px;
         font-weight: 500;
     }
 
+    /* Timed/Special mob color */
+    .special-timer .timer-num,
     .pc-list-time .timer-value.label-next .timer-num {
         color: var(--accent-gold) !important;
         text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
     }
 
+    .special-timer .timer-unit,
     .pc-list-time .timer-value.label-next .timer-unit {
         color: rgba(251, 191, 36, 0.5);
     }
