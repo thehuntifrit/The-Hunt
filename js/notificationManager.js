@@ -57,9 +57,13 @@ export function playNotificationSound(isSilent = false) {
     }
 
     audio.currentTime = 0;
-    audio.play().catch(err => {
-        console.warn("Notification sound play failed:", err);
-    });
+    try {
+        audio.play().catch(err => {
+            console.error("通知音の再生に失敗しました:", err);
+        });
+    } catch (err) {
+        console.error("通知音の再生エラー:", err);
+    }
 }
 
 export async function sendBrowserNotification(title, body) {
@@ -75,7 +79,8 @@ export async function sendBrowserNotification(title, body) {
         } else {
             new Notification(title, options);
         }
-    } catch {
+    } catch (err) {
+        console.error("システム通知の表示に失敗しました:", err);
     }
 }
 

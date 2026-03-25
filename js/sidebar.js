@@ -218,7 +218,7 @@ async function loadMobileManual(panel) {
     panel.innerHTML = '<div class="sidebar-manual-content"><p style="text-align:center;color:rgba(255,255,255,0.4)">読み込み中...</p></div>';
     try {
         const response = await fetch("./README.md");
-        if (!response.ok) throw new Error("Failed");
+        if (!response.ok) throw new Error("マニュアル取得失敗");
         const text = await response.text();
         if (typeof marked !== "undefined") {
             marked.setOptions({ breaks: true, gfm: true });
@@ -302,7 +302,7 @@ async function loadManualContent() {
 
     try {
         const response = await fetch("./README.md");
-        if (!response.ok) throw new Error("Failed to load");
+        if (!response.ok) throw new Error("マニュアル読み込み失敗");
         const text = await response.text();
         if (typeof marked !== "undefined") {
             marked.setOptions({ breaks: true, gfm: true });

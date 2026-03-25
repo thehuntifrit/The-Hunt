@@ -111,8 +111,10 @@ export function initModal() {
                     verifyBtn.disabled = false;
                 }, 1500);
             } else {
-                UiDOM.authStatus.textContent = result.error;
+                const errorMsg = result.error || "検証に失敗しました";
+                UiDOM.authStatus.textContent = errorMsg;
                 UiDOM.authStatus.style.color = "#ef4444";
+                console.error("認証失敗:", errorMsg);
                 verifyBtn.disabled = false;
             }
         });

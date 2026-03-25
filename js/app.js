@@ -13,6 +13,9 @@ import "./readme.js";
 import { initNotification } from "./notificationManager.js";
 
 export function showToast(message, type = "error") {
+    if (type === "error") {
+        console.error(message);
+    }
     let container = document.getElementById("toast-container");
     if (!container) {
         container = document.createElement("div");
@@ -411,10 +414,10 @@ function attachGlobalEventListeners() {
 export function handleReportResult(result) {
     if (!result.success) {
         if (result.code === "permission-denied" || (result.error && result.error.includes("permission"))) {
-            showToast("認証情報の同期エラーが発生しました。\nお手数ですが、再度認証を行ってください。", "error");
+            showToast("アクセス権限エラーが発生しました。\n再度認証を行ってください。", "error");
             openAuthModal();
         } else {
-            showToast("レポート送信エラー: " + result.error, "error");
+            showToast("報告エラー: " + (result.error || "不明なエラー"), "error");
         }
     } else {
         showToast("討伐報告を送信しました", "success");

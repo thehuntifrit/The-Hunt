@@ -326,7 +326,7 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
             if (response.status === 404) {
                 return { success: false, error: "キャラクターが見つかりませんでした。" };
             }
-            throw new Error(`Proxy error: ${response.status}`);
+            throw new Error(`プロキシ・サーバーエラー: ${response.status}`);
         }
 
         const html = await response.text();

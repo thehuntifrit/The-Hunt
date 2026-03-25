@@ -152,7 +152,7 @@ function initWorker() {
             }
         } else if (type === "ERROR") {
             state.pendingCalculationMobs.delete(mobNo);
-            console.error(`Worker error calculating mob ${mobNo}:`, error);
+            console.error(`時間計算エラー (Mob ${mobNo}):`, error);
         }
     };
 }
@@ -212,7 +212,7 @@ async function loadMaintenance() {
         state.maintenance = (data && data.maintenance) ? data.maintenance : data;
         return state.maintenance;
     } catch (e) {
-        console.error("Maintenance load error:", e);
+        console.error("メンテ情報読み込み失敗:", e);
         return null;
     }
 }
