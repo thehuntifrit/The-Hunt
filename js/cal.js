@@ -20,7 +20,7 @@ export function formatDurationHM(seconds) {
   if (seconds < 0) seconds = 0;
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  return `${String(h).padStart(2, "0")}h${String(m).padStart(2, "0")}m`;
+  return `${String(h).padStart(2, "0")}\u2009h${String(m).padStart(2, "0")}\u2009m`;
 }
 
 export function formatDurationDHM(seconds) {
@@ -28,7 +28,13 @@ export function formatDurationDHM(seconds) {
   const d = Math.floor(seconds / 86400);
   const h = Math.floor((seconds % 86400) / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  return `${d}d${h}h${m}m`;
+  
+  const parts = [];
+  if (d > 0) parts.push(`${d}\u2009d`);
+  if (h > 0) parts.push(`${h}\u2009h`);
+  parts.push(`${m}\u2009m`);
+  
+  return parts.join(" ");
 }
 
 export function formatDurationColon(seconds) {

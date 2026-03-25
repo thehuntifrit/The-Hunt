@@ -557,7 +557,7 @@ export function updateSimpleMobItem(item, mob) {
   const { label, timeValue, isSpecialCondition, isTimeOver } = computeTimeLabel(mob);
 
   if (timeEl) {
-    timeEl.innerHTML = `<div class="grid items-center w-full h-full" style="grid-template-columns:18px 67px;gap:0;"><span class="timer-label text-[14px] text-right opacity-90">${label}</span><span class="timer-value font-bold text-[14px] text-right ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span></div>`;
+    timeEl.innerHTML = `<div class="grid items-center w-full h-full" style="grid-template-columns:18px 87px;gap:0;"><span class="timer-label text-[14px] text-right opacity-90">${label}</span><span class="timer-value font-bold text-[14px] text-right ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${timeValue}</span></div>`;
   }
   const countInner = item.querySelector('.pc-list-count-inner');
   if (countInner) {
