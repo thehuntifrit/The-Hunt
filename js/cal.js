@@ -28,12 +28,12 @@ export function formatDurationDHM(seconds) {
   const d = Math.floor(seconds / 86400);
   const h = Math.floor((seconds % 86400) / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  
+
   const parts = [];
   if (d > 0) parts.push(`${d}\u2009d`);
   if (h > 0) parts.push(`${h}\u2009h`);
   parts.push(`${m}\u2009m`);
-  
+
   return parts.join("\u202F");
 }
 
@@ -599,13 +599,13 @@ export function calculateRepop(mob, maintenance, options = {}) {
 }
 
 export function formatMMDDHHmm(input) {
-    if (!input) return "--/-- --:--";
-    const date = (input instanceof Date) ? input : new Date(input * 1000);
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    const hh = String(date.getHours()).padStart(2, "0");
-    const mm = String(date.getMinutes()).padStart(2, "0");
-    return `${m}/${d} ${hh}:${mm}`;
+  if (!input) return "--/-- --:--";
+  const date = (input instanceof Date) ? input : new Date(input * 1000);
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  return `${m}/${d} ${hh}:${mm}`;
 }
 
 function baseResult(status) {
