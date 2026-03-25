@@ -214,7 +214,7 @@ export const submitReport = async (mobNo, timeISO) => {
             }
         };
 
-        await updateDoc(docRef, newData);
+        await setDoc(docRef, newData, { merge: true });
 
         return { success: true };
 
