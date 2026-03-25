@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p class="text-xs text-yellow-500 font-bold uppercase tracking-wider">認証手続き</p>
                 
                 <div class="space-y-2">
-                    <label class="block text-xs text-gray-400">STEP 1: 検証コードをコピー</label>
+                    <div class="block text-xs text-gray-400">STEP 1: 検証コードをコピー</div>
                     <div class="flex gap-2">
                         <code class="flex-1 p-2 bg-gray-950 rounded border border-gray-800 text-center font-mono text-yellow-500 font-bold select-all tracking-widest">${currentVCode}</code>
                         <button id="readme-auth-copy" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs transition">Copy</button>
@@ -83,13 +83,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <div class="space-y-2">
-                    <label class="block text-xs text-gray-400">STEP 2: Lodestoneプロフィールに貼り付け</label>
+                    <div class="block text-xs text-gray-400">STEP 2: Lodestoneプロフィールに貼り付け</div>
                     <a href="https://jp.finalfantasyxiv.com/lodestone/my/setting/profile/" target="_blank" rel="noopener noreferrer" 
                        class="text-cyan-400 underline text-sm block hover:text-cyan-300">プロフィール編集画面を開く 🔗</a>
                 </div>
 
                 <div class="space-y-2">
-                    <label class="block text-xs text-gray-400">STEP 3: キャラクターIDを入力して検証</label>
+                    <label for="readme-auth-id" class="block text-xs text-gray-400">STEP 3: キャラクターIDを入力して検証</label>
                     <div class="flex flex-col gap-2">
                         <input type="text" id="readme-auth-id" placeholder="IDまたはURL" 
                                class="w-full p-2 rounded bg-gray-900 border border-gray-700 text-sm focus:ring-1 focus:ring-yellow-500 outline-none">
