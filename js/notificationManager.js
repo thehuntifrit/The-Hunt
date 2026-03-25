@@ -42,7 +42,24 @@ async function requestNotificationPermission() {
 }
 
 export function playNotificationSound(isSilent = false) {
-    return;
+    const isMobile = window.innerWidth < 1024;
+    if (!isMobile) return;
+
+    if (!audio) return;
+
+    if (isSilent) {
+        audio.muted = true;
+        audio.play().then(() => {
+            audio.pause();
+            audio.muted = false;
+        }).catch(() => {});
+        return;
+    }
+
+    audio.currentTime = 0;
+    audio.play().catch(err => {
+        console.warn("Notification sound play failed:", err);
+    });
 }
 
 export async function sendBrowserNotification(title, body) {
