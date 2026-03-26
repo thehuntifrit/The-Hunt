@@ -27,16 +27,7 @@
         border-top-right-radius: 12px;
     }
 
-    .mob-card.is-floating-active {
-        top: 40px !important;
-        height: auto !important;
-        max-height: calc(100svh - 120px) !important;
-        z-index: 60 !important;
-        border-radius: 12px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        overflow: hidden !important;
-    }
+
 
     #mobile-top-bar {
         position: fixed;
