@@ -759,8 +759,6 @@ html body.magnifier-active .mob-card-inner * {
 #card-overlay-backdrop {
     display: none;
     background-color: rgba(0, 0, 0, 0.4);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
     z-index: 65;
     cursor: pointer;
     opacity: 0;
@@ -770,6 +768,15 @@ html body.magnifier-active .mob-card-inner * {
 #card-overlay-backdrop.active {
     display: block;
     opacity: 1;
+}
+
+/* メインコンテンツのみをぼかすためのクラス */
+#mobile-layout.content-blurred .main-content-area {
+    filter: blur(4px);
+    transition: filter 0.15s ease-out;
+    pointer-events: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .mob-card {

@@ -326,6 +326,7 @@ function attachGlobalEventListeners() {
             setOpenMobCardNo(null);
             document.body.style.overflow = '';
             DOM.cardOverlayBackdrop.classList.remove('active');
+            DOM.mobileLayout?.classList.remove('content-blurred');
             
             // モバイル版ではバックドロップを閉じる際、その場でクラスを外してsnappyにする
             const openCard = document.querySelector('.mob-card.open');
@@ -338,7 +339,7 @@ function attachGlobalEventListeners() {
             setTimeout(() => {
                 if (!DOM.cardOverlayBackdrop.classList.contains('active')) {
                     DOM.cardOverlayBackdrop.classList.add('hidden');
-                    DOM.cardOverlayBackdrop.style.display = '';
+                    DOM.cardOverlayBackdrop.style.display = 'none';
                     sortAndRedistribute({ immediate: true });
                 }
             }, 160);
@@ -364,7 +365,8 @@ function attachGlobalEventListeners() {
                         DOM.cardOverlayBackdrop?.classList.remove('hidden');
                         if (DOM.cardOverlayBackdrop) DOM.cardOverlayBackdrop.style.display = 'block';
                         
-                        // 即座にカードを展開表示
+                        // 即座にカードを展開表示し、背景をぼかす
+                        DOM.mobileLayout?.classList.add('content-blurred');
                         const card = document.querySelector(`.mob-card[data-mob-no="${nextOpen}"]`);
                         if (card) {
                             card.classList.add('open', 'is-expanded');
@@ -376,11 +378,12 @@ function attachGlobalEventListeners() {
                             DOM.cardOverlayBackdrop?.classList.add('active');
                         });
                         
-                        // 重い再描画は少し遅らせて実行することで、初期アニメーションの処理落ちを防ぐ
+                        // 重い再描画は少し遅らせて実行
                         setTimeout(() => sortAndRedistribute({ immediate: true }), 50);
                     } else {
                         document.body.style.overflow = '';
                         DOM.cardOverlayBackdrop?.classList.remove('active');
+                        DOM.mobileLayout?.classList.remove('content-blurred');
                         
                         const card = document.querySelector(`.mob-card[data-mob-no="${mobNo}"]`);
                         if (card) {
@@ -392,7 +395,7 @@ function attachGlobalEventListeners() {
                         setTimeout(() => {
                             if (!DOM.cardOverlayBackdrop?.classList.contains('active')) {
                                 DOM.cardOverlayBackdrop?.classList.add('hidden');
-                                if (DOM.cardOverlayBackdrop) DOM.cardOverlayBackdrop.style.display = '';
+                                if (DOM.cardOverlayBackdrop) DOM.cardOverlayBackdrop.style.display = 'none';
                                 sortAndRedistribute({ immediate: true });
                             }
                         }, 160);
