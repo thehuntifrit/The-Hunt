@@ -112,16 +112,8 @@
         gap: 0;
     }
 
-    .js-mobile-icon {
-        width: 18px;
-        flex-shrink: 0;
-        display: flex;
-        justify-content: center;
-        font-size: 11px !important;
-    }
-
     .js-mobile-time {
-        width: 112px !important;
+        width: 130px !important;
         flex-shrink: 0;
         display: flex !important;
         align-items: center;
@@ -165,6 +157,11 @@
     .label-next .timer-num {
         color: #fbbf24 !important;
         text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+    }
+
+    .special-timer .timer-unit,
+    .label-next .timer-unit {
+        color: rgba(251, 191, 36, 0.5);
     }
 
     .js-mobile-time.max-over .timer-num {

@@ -39,7 +39,7 @@ export function getDurationDHMParts(seconds) {
   const h = Math.floor((seconds % 86400) / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const toString = (v) => v.toString();
-  return { d: toString(d), h: toString(h), m: toString(m), rawD: d, rawH: h, rawM: m };
+  return { d: toString(d), h: toString(h), m: toString(m), rawD: d, rawH: h, rawM: m, rawS: seconds };
 }
 
 export function formatDurationColon(seconds) {

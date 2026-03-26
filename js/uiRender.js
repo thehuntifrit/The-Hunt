@@ -52,7 +52,9 @@ export function computeTimeLabel(mob) {
   let secondsRemaining = 0;
 
   if (isInConditionWindow && conditionWindowEnd) {
-    label = "⏳"; secondsRemaining = (conditionWindowEnd.getTime() / 1000) - now; isSpecialCondition = true;
+    label = ""; // Hide emoji when showing "残り n分" in the timer part
+    secondsRemaining = (conditionWindowEnd.getTime() / 1000) - now;
+    isSpecialCondition = true;
   } else if (nextConditionSpawnDate) {
     label = "🔜"; secondsRemaining = (nextConditionSpawnDate.getTime() / 1000) - now; isSpecialCondition = true;
   } else if (minRepop && now < minRepop) {
@@ -69,18 +71,25 @@ export function computeTimeLabel(mob) {
 
   if (isMaint) label = "🛠️";
 
-  return { label, timeValue, isSpecialCondition, isTimeOver, isTimedMob, dhm };
+  return { label, timeValue, isSpecialCondition, isTimeOver, isTimedMob, dhm, isInWindow: !!isInConditionWindow };
 }
 
-function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver) {
+function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow) {
   if (!dhm) return `<div class="timer-value">--/-- --:--</div>`;
-  const { d, h, m, rawD, rawH } = dhm;
+  const { d, h, m, rawS, rawD, rawH } = dhm;
   let html = '';
-  if (rawD > 0) html += `<span class="timer-part d-part"><span class="timer-num">${d}</span><span class="timer-unit">d</span></span>`;
-  if (rawH > 0 || rawD > 0) html += `<span class="timer-part h-part"><span class="timer-num">${h}</span><span class="timer-unit">h</span></span>`;
-  html += `<span class="timer-part m-part"><span class="timer-num">${m}</span><span class="timer-unit">m</span></span>`;
-  
-  return `<span class="timer-value ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${html}</span>`;
+
+  if (isInWindow) {
+    // Show "残り n分" (Remaining n minutes) for timed mobs in window
+    const totalMinutes = Math.ceil((dhm.rawS || 0) / 60);
+    html = `<span class="timer-part"><span class="timer-unit" style="font-size: 11px; margin-right: 2px;">残り</span><span class="timer-num">${totalMinutes}</span><span class="timer-unit">分</span></span>`;
+  } else {
+    if (rawD > 0) html += `<span class="timer-part d-part"><span class="timer-num">${d}</span><span class="timer-unit">d</span></span>`;
+    if (rawH > 0 || rawD > 0) html += `<span class="timer-part h-part"><span class="timer-num">${h}</span><span class="timer-unit">h</span></span>`;
+    html += `<span class="timer-part m-part"><span class="timer-num">${m}</span><span class="timer-unit">m</span></span>`;
+  }
+
+  return `<span class="timer-value ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''} ${isInWindow ? 'special-timer' : ''}">${html}</span>`;
 }
 
 export function getSpawnCountInfo(mob) {
@@ -315,7 +324,7 @@ export function updateProgressBar(card, mob) {
 
 export function updateProgressText(card, mob) {
   const { elapsedPercent, status, isInConditionWindow, repopTimeStr } = mob.repopInfo || {};
-  const { label, timeValue, isSpecialCondition, isTimeOver, dhm } = computeTimeLabel(mob);
+  const { label, timeValue, isSpecialCondition, isTimeOver, dhm, isInWindow } = computeTimeLabel(mob);
   const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
   const nowSec = Date.now() / 1000;
 
@@ -334,18 +343,16 @@ export function updateProgressText(card, mob) {
   }
 
   const pcProgressTextHTML = `<span class="font-bold text-[14px] text-gray-100">${percentStr}</span>`;
-  const iconEl = card.querySelector('.js-mobile-icon');
   const timeEl = card.querySelector('.js-mobile-time');
   const pcDetailEl = card.querySelector('.pc-detail-progress-text');
 
-  if (iconEl) {
-    iconEl.textContent = label || '';
-  }
   if (timeEl) {
-    const timerHTML = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver);
+    const timerHTML = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
+    const unifiedHTML = renderTimerGroupHTML(label, timerHTML, '112px');
+
     timeEl.innerHTML = `
       <div class="js-mobile-time-inner">
-        ${timerHTML}
+        ${unifiedHTML}
         <span class="detail-percent-val">(${percentStr})</span>
       </div>`;
     if (status === "MaxOver") timeEl.classList.add("max-over");
@@ -564,10 +571,10 @@ export function updateSimpleMobItem(item, mob) {
   const progressEl = item.querySelector('.pc-list-progress-bar');
   const percentEl = item.querySelector('.pc-list-percent');
   const { countHtml } = getSpawnCountInfo(mob);
-  const { label, timeValue, isSpecialCondition, isTimeOver, dhm } = computeTimeLabel(mob);
+  const { label, timeValue, isSpecialCondition, isTimeOver, dhm, isInWindow } = computeTimeLabel(mob);
 
   if (timeEl) {
-    const timerHTML = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver);
+    const timerHTML = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
     timeEl.innerHTML = `<div class="grid items-center w-full h-full" style="grid-template-columns:18px 75px;gap:0;"><span class="timer-label text-[14px] text-right opacity-90">${label}</span>${timerHTML}</div>`;
   }
   const countInner = item.querySelector('.pc-list-count-inner');
