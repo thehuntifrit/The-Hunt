@@ -571,7 +571,7 @@ body::before {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.3rem;
     padding-top: 0.5rem;
 }
 
@@ -793,7 +793,7 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .detail-section {
-    margin-bottom: 0.75rem !important;
+    margin-bottom: 0.3rem !important;
     padding: 2px 0;
 }
 
@@ -803,7 +803,7 @@ html body.magnifier-active .mob-card-inner * {
     color: var(--accent-cyan);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.2rem;
     padding-left: 0.5rem;
     border-left: 2px solid var(--accent-cyan);
     text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
