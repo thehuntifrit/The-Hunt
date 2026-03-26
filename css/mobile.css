@@ -148,7 +148,7 @@
         display: inline-flex;
         align-items: baseline;
         justify-content: flex-end;
-        min-width: 4ch;
+        min-width: 3ch;
     }
 
     .timer-num {
