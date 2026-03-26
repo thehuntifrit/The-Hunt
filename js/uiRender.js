@@ -92,6 +92,10 @@ function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWin
   return `<span class="timer-value ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''} ${isInWindow ? 'special-timer' : ''}">${html}</span>`;
 }
 
+function renderTimerGroupHTML(label, timerHTML, timerWidth = '75px') {
+  return `<div class="grid items-center w-full h-full" style="grid-template-columns:18px ${timerWidth};gap:0;"><span class="timer-label text-[14px] text-right opacity-90">${label}</span>${timerHTML}</div>`;
+}
+
 export function getSpawnCountInfo(mob) {
   const state = getState();
   const mobLocationsData = state.mobLocations?.[mob.No];
