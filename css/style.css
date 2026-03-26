@@ -757,10 +757,10 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 #card-overlay-backdrop {
-    background-color: rgba(0, 0, 0, 0.7);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
-    z-index: 55;
+    background-color: rgba(0, 0, 0, 0.1);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    z-index: 65;
     cursor: pointer;
 }
 

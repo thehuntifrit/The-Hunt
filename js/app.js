@@ -322,6 +322,12 @@ function attachGlobalEventListeners() {
             handleAreaFilterClick(e);
             return;
         }
+        if (e.target === DOM.cardOverlayBackdrop) {
+            setOpenMobCardNo(null);
+            document.body.style.overflow = '';
+            DOM.cardOverlayBackdrop.classList.add('hidden');
+            sortAndRedistribute();
+        }
     });
 
     DOM.colContainer.addEventListener("click", (e) => {
@@ -340,8 +346,10 @@ function attachGlobalEventListeners() {
                 if (window.innerWidth < 1024) {
                     if (nextOpen !== null) {
                         document.body.style.overflow = 'hidden';
+                        DOM.cardOverlayBackdrop?.classList.remove('hidden');
                     } else {
                         document.body.style.overflow = '';
+                        DOM.cardOverlayBackdrop?.classList.add('hidden');
                     }
                 }
 

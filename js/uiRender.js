@@ -630,6 +630,7 @@ export const DOM = {
   pcRightDetail: document.getElementById('pc-right-detail'),
   pcLayout: document.getElementById('pc-layout'),
   mobileLayout: document.getElementById('mobile-layout'),
+  cardOverlayBackdrop: document.getElementById('card-overlay-backdrop'),
 };
 
 const groupSectionCache = new Map();
