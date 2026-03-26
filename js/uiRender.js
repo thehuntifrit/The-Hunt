@@ -193,6 +193,7 @@ export function createMobCard(mob, isDetailView = false) {
 
   const expandablePanel = card.querySelector('.expandable-panel');
   if (isOpen && expandablePanel) {
+    card.classList.add('open');
     expandablePanel.classList.add('open');
   }
 
