@@ -112,8 +112,16 @@
         gap: 0;
     }
 
+    .js-mobile-icon {
+        width: 18px;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: center;
+        font-size: 11px !important;
+    }
+
     .js-mobile-time {
-        width: 130px !important;
+        width: 112px !important;
         flex-shrink: 0;
         display: flex !important;
         align-items: center;
@@ -138,7 +146,7 @@
         display: inline-flex;
         align-items: baseline;
         justify-content: flex-end;
-        min-width: 2.8ch;
+        min-width: 3ch;
     }
 
     .timer-num {
