@@ -550,15 +550,70 @@
     }
 
     .mob-card.open {
-        margin: 8px 4px !important;
-        z-index: 20;
-        border-radius: 12px !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100dvh !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        z-index: 100 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        background: #0f172a;
+        animation: cardOverlayFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes cardOverlayFadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.98) translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    .mobile-close-btn {
+        display: none;
+        width: 24px;
+        height: 24px;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        color: #fff;
+        font-size: 14px;
+        transition: transform 0.2s;
+    }
+
+    .mob-card.open .mobile-close-btn {
+        display: flex;
+    }
+
+    .mob-card.open .mobile-close-btn:active {
+        transform: scale(0.9);
+        background: rgba(255, 255, 255, 0.2);
     }
 
     .mob-card.open .mob-card-inner {
-        border-radius: 12px !important;
-        background: rgba(15, 23, 42, 0.95);
-        overflow: hidden !important;
+        height: 100% !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        overflow-y: auto !important;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .mob-card.open .expandable-panel {
+        max-height: none !important;
+        padding-bottom: 40px !important;
     }
 
     .mob-card.is-floating-active .mob-card-inner {

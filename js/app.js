@@ -333,7 +333,18 @@ function attachGlobalEventListeners() {
             if (card) {
                 const mobNo = parseInt(card.dataset.mobNo, 10);
                 const currentOpen = getState().openMobCardNo;
-                setOpenMobCardNo(currentOpen === mobNo ? null : mobNo);
+                const nextOpen = (currentOpen === mobNo) ? null : mobNo;
+                
+                setOpenMobCardNo(nextOpen);
+
+                if (window.innerWidth < 1024) {
+                    if (nextOpen !== null) {
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        document.body.style.overflow = '';
+                    }
+                }
+
                 sortAndRedistribute();
             }
         }
