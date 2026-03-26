@@ -42,7 +42,7 @@ function handlePCListClick(e) {
     } else {
         const currentOpen = getState().openMobCardNo;
         setOpenMobCardNo(currentOpen === mobNo ? null : mobNo);
-        sortAndRedistribute();
+        sortAndRedistribute({ immediate: true });
     }
 }
 

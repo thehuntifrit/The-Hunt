@@ -325,8 +325,8 @@ function attachGlobalEventListeners() {
         if (e.target === DOM.cardOverlayBackdrop) {
             setOpenMobCardNo(null);
             document.body.style.overflow = '';
-            DOM.cardOverlayBackdrop.classList.add('hidden');
-            sortAndRedistribute();
+            DOM.cardOverlayBackdrop.classList.remove('active');
+            sortAndRedistribute({ immediate: true });
         }
     });
 
@@ -346,14 +346,14 @@ function attachGlobalEventListeners() {
                 if (window.innerWidth < 1024) {
                     if (nextOpen !== null) {
                         document.body.style.overflow = 'hidden';
-                        DOM.cardOverlayBackdrop?.classList.remove('hidden');
+                        DOM.cardOverlayBackdrop?.classList.add('active');
                     } else {
                         document.body.style.overflow = '';
-                        DOM.cardOverlayBackdrop?.classList.add('hidden');
+                        DOM.cardOverlayBackdrop?.classList.remove('active');
                     }
                 }
 
-                sortAndRedistribute();
+                sortAndRedistribute({ immediate: true });
             }
         }
     });

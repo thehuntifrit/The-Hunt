@@ -758,10 +758,18 @@ html body.magnifier-active .mob-card-inner * {
 
 #card-overlay-backdrop {
     background-color: rgba(0, 0, 0, 0.1);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
     z-index: 65;
     cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s, visibility 0.15s;
+}
+
+#card-overlay-backdrop.active {
+    opacity: 1;
+    visibility: visible;
 }
 
 .mob-card {
