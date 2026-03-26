@@ -1064,7 +1064,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
     }
 
-
     Array.from(DOM.pcLeftList.children).forEach(child => {
       if (child.dataset.mobNo) {
         if (parseInt(child.dataset.mobNo, 10) === state.openMobCardNo) {
@@ -1223,7 +1222,6 @@ function updateProgressBars() {
       sortAndRedistribute();
     }
   }
-
 
   const rankBtn = document.querySelector('.mobile-footer-btn[data-panel="rank"]');
   if (rankBtn) rankBtn.classList.remove("has-alert");

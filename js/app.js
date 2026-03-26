@@ -165,7 +165,6 @@ async function initApp() {
     }
 }
 
-
 async function getMaintenanceStatus() {
     const state = getState();
     const maintenance = state.maintenance;

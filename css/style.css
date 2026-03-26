@@ -175,8 +175,6 @@ body::before {
     transform: none;
 }
 
-
-
 .mob-card.is-pre-repop .area-info-container,
 .mob-card.is-pre-repop .progress-bar-bg,
 .mob-card.is-pre-repop .progress-text>div,
@@ -185,7 +183,6 @@ body::before {
     filter: grayscale(100%) !important;
 }
 
-/* 報告ボタンは待機中でも少し見やすくする */
 .mob-card.is-pre-repop .report-side-bar {
     opacity: 0.6 !important;
     filter: grayscale(100%) !important;
