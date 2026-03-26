@@ -1,6 +1,6 @@
 import { loadBaseMobData, startRealtime, setOpenMobCardNo, getState, setUserId, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
 import { initializeAuth, getUserData, submitReport, submitMemo } from "./server.js";
-import { attachMobCardEvents, toggleCardExpand, closeCard } from "./mobCard.js";
+import { attachMobCardEvents } from "./mobCard.js";
 import { attachLocationEvents } from "./location.js";
 import { openReportModal, closeReportModal, initModal, openAuthModal } from "./modal.js";
 import { handleAreaFilterClick } from "./filterUI.js";
@@ -333,7 +333,9 @@ function attachGlobalEventListeners() {
             const card = e.target.closest(".mob-card");
             if (card) {
                 const mobNo = parseInt(card.dataset.mobNo, 10);
-                toggleCardExpand(card, mobNo);
+                const currentOpen = getState().openMobCardNo;
+                setOpenMobCardNo(currentOpen === mobNo ? null : mobNo);
+                sortAndRedistribute();
             }
         }
     });

@@ -337,7 +337,7 @@
         display: inline-flex;
         align-items: baseline;
         justify-content: flex-end;
-        min-width: 3ch;
+        min-width: 2.8ch;
     }
 
     .timer-num {
