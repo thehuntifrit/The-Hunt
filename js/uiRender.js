@@ -1036,7 +1036,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     });
   });
 
-  if (DOM.pcLeftList) {
+  if (isPC && DOM.pcLeftList) {
     const currentNodes = Array.from(DOM.pcLeftList.children);
     const currentMap = new Map();
     currentNodes.forEach(node => {

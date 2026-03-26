@@ -757,19 +757,19 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 #card-overlay-backdrop {
-    background-color: rgba(0, 0, 0, 0.1);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
+    display: none;
+    background-color: rgba(0, 0, 0, 0.4);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
     z-index: 65;
     cursor: pointer;
     opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.15s, visibility 0.15s;
+    transition: opacity 0.15s ease-out;
 }
 
 #card-overlay-backdrop.active {
+    display: block;
     opacity: 1;
-    visibility: visible;
 }
 
 .mob-card {

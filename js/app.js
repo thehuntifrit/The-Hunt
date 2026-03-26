@@ -326,7 +326,22 @@ function attachGlobalEventListeners() {
             setOpenMobCardNo(null);
             document.body.style.overflow = '';
             DOM.cardOverlayBackdrop.classList.remove('active');
-            sortAndRedistribute({ immediate: true });
+            
+            // モバイル版ではバックドロップを閉じる際、その場でクラスを外してsnappyにする
+            const openCard = document.querySelector('.mob-card.open');
+            if (openCard) {
+                openCard.classList.remove('open', 'is-expanded');
+                const panel = openCard.querySelector('.expandable-panel');
+                if (panel) panel.classList.remove('open');
+            }
+
+            setTimeout(() => {
+                if (!DOM.cardOverlayBackdrop.classList.contains('active')) {
+                    DOM.cardOverlayBackdrop.classList.add('hidden');
+                    DOM.cardOverlayBackdrop.style.display = '';
+                    sortAndRedistribute({ immediate: true });
+                }
+            }, 160);
         }
     });
 
@@ -346,14 +361,45 @@ function attachGlobalEventListeners() {
                 if (window.innerWidth < 1024) {
                     if (nextOpen !== null) {
                         document.body.style.overflow = 'hidden';
-                        DOM.cardOverlayBackdrop?.classList.add('active');
+                        DOM.cardOverlayBackdrop?.classList.remove('hidden');
+                        if (DOM.cardOverlayBackdrop) DOM.cardOverlayBackdrop.style.display = 'block';
+                        
+                        // 即座にカードを展開表示
+                        const card = document.querySelector(`.mob-card[data-mob-no="${nextOpen}"]`);
+                        if (card) {
+                            card.classList.add('open', 'is-expanded');
+                            const panel = card.querySelector('.expandable-panel');
+                            if (panel) panel.classList.add('open');
+                        }
+
+                        requestAnimationFrame(() => {
+                            DOM.cardOverlayBackdrop?.classList.add('active');
+                        });
+                        
+                        // 重い再描画は少し遅らせて実行することで、初期アニメーションの処理落ちを防ぐ
+                        setTimeout(() => sortAndRedistribute({ immediate: true }), 50);
                     } else {
                         document.body.style.overflow = '';
                         DOM.cardOverlayBackdrop?.classList.remove('active');
-                    }
-                }
+                        
+                        const card = document.querySelector(`.mob-card[data-mob-no="${mobNo}"]`);
+                        if (card) {
+                            card.classList.remove('open', 'is-expanded');
+                            const panel = card.querySelector('.expandable-panel');
+                            if (panel) panel.classList.remove('open');
+                        }
 
-                sortAndRedistribute({ immediate: true });
+                        setTimeout(() => {
+                            if (!DOM.cardOverlayBackdrop?.classList.contains('active')) {
+                                DOM.cardOverlayBackdrop?.classList.add('hidden');
+                                if (DOM.cardOverlayBackdrop) DOM.cardOverlayBackdrop.style.display = '';
+                                sortAndRedistribute({ immediate: true });
+                            }
+                        }, 160);
+                    }
+                } else {
+                    sortAndRedistribute({ immediate: true });
+                }
             }
         }
     });
