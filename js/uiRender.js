@@ -179,7 +179,7 @@ export function createMobCard(mob, isDetailView = false) {
     mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
   }
 
-  const mobRankBadge = card.querySelector('.mob-rank-badge');
+  const mobRankBadge = card.querySelector('.list-rank-badge');
   if (mobRankBadge) {
     mobRankBadge.textContent = rank;
     mobRankBadge.style.color = `var(--rank-${rank.toLowerCase()})`;
@@ -811,6 +811,20 @@ const cardObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0 });
 
 function updateCardFull(card, mob) {
+  const { openMobCardNo } = getState();
+  const isOpen = mob.No === openMobCardNo;
+  const expandablePanel = card.querySelector('.expandable-panel');
+
+  if (isOpen && expandablePanel) {
+    card.classList.add('is-expanded');
+    card.classList.add('open');
+    expandablePanel.classList.add('open');
+  } else if (expandablePanel) {
+    card.classList.remove('is-expanded');
+    card.classList.remove('open');
+    expandablePanel.classList.remove('open');
+  }
+
   updateProgressText(card, mob);
   updateProgressBar(card, mob);
   updateMobCount(card, mob);

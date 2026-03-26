@@ -398,18 +398,6 @@ function attachGlobalEventListeners() {
         }
     });
 
-    const backdrop = document.getElementById("card-overlay-backdrop");
-    if (backdrop) {
-        backdrop.addEventListener("click", () => {
-            closeCard();
-        });
-    }
-
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-            closeCard();
-        }
-    });
 }
 
 export function handleReportResult(result) {
