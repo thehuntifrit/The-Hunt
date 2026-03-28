@@ -232,6 +232,7 @@ body::before {
     left: 0;
     top: 0;
     height: 100%;
+    width: 0;
     background: var(--progress-fill);
     box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
     overflow: hidden;
@@ -266,6 +267,36 @@ body::before {
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
     z-index: 0;
     pointer-events: none;
+}
+
+.progress-info-group {
+    width: 145px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    line-height: 1;
+    gap: 0;
+}
+
+.js-mobile-icon {
+    width: 18px;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    font-size: 11px !important;
+}
+
+.js-mobile-time {
+    width: 127px !important;
+    flex-shrink: 0;
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-end;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    gap: 4px;
 }
 
 .content-area {
@@ -758,6 +789,11 @@ html body.magnifier-active .mob-card-inner * {
 
 #card-overlay-backdrop {
     display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: rgba(0, 0, 0, 0.4);
     z-index: 65;
     cursor: pointer;
@@ -765,12 +801,14 @@ html body.magnifier-active .mob-card-inner * {
     transition: opacity 0.15s ease-out;
 }
 
-#card-overlay-backdrop.active {
+#card-overlay-backdrop.visible {
     display: block;
+}
+
+#card-overlay-backdrop.active {
     opacity: 1;
 }
 
-/* メインコンテンツのみをぼかすためのクラス */
 #mobile-layout.content-blurred .main-content-area {
     filter: blur(4px);
     transition: filter 0.15s ease-out;

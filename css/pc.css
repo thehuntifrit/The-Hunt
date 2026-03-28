@@ -68,6 +68,7 @@
 
     .pc-detail-progress-bar {
         height: 100%;
+        width: 0;
         background: var(--progress-fill);
         border-radius: 5px;
         transition: width 0.5s ease-out;
@@ -465,7 +466,6 @@
     }
 
     .progress-info-group {
-        width: 125px !important;
         flex-shrink: 0;
         display: flex;
         align-items: center;
@@ -474,22 +474,16 @@
     }
 
     .js-mobile-icon {
-        width: 18px !important;
         flex-shrink: 0;
         display: flex;
         justify-content: center;
     }
 
     .js-mobile-time {
-        width: 108px !important;
         flex-shrink: 0;
         display: flex !important;
         align-items: center;
         justify-content: flex-end;
-        gap: 4px;
-        font-family: 'JetBrains Mono', monospace;
-        font-weight: 700;
-        font-size: 13px;
     }
 
     .detail-time-val {

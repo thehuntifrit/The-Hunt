@@ -338,8 +338,7 @@ function attachGlobalEventListeners() {
 
             setTimeout(() => {
                 if (!DOM.cardOverlayBackdrop.classList.contains('active')) {
-                    DOM.cardOverlayBackdrop.classList.add('hidden');
-                    DOM.cardOverlayBackdrop.style.display = 'none';
+                    DOM.cardOverlayBackdrop.classList.remove('visible');
                     sortAndRedistribute({ immediate: true });
                 }
             }, 160);
@@ -362,10 +361,6 @@ function attachGlobalEventListeners() {
                 if (window.innerWidth < 1024) {
                     if (nextOpen !== null) {
                         document.body.style.overflow = 'hidden';
-                        DOM.cardOverlayBackdrop?.classList.remove('hidden');
-                        if (DOM.cardOverlayBackdrop) DOM.cardOverlayBackdrop.style.display = 'block';
-                        
-                        // 即座にカードを展開表示し、背景をぼかす
                         DOM.mobileLayout?.classList.add('content-blurred');
                         const card = document.querySelector(`.mob-card[data-mob-no="${nextOpen}"]`);
                         if (card) {
@@ -374,9 +369,12 @@ function attachGlobalEventListeners() {
                             if (panel) panel.classList.add('open');
                         }
 
-                        requestAnimationFrame(() => {
-                            DOM.cardOverlayBackdrop?.classList.add('active');
-                        });
+                        if (DOM.cardOverlayBackdrop) {
+                            DOM.cardOverlayBackdrop.classList.add('visible');
+                            requestAnimationFrame(() => {
+                                DOM.cardOverlayBackdrop.classList.add('active');
+                            });
+                        }
                         
                         // 重い再描画は少し遅らせて実行
                         setTimeout(() => sortAndRedistribute({ immediate: true }), 50);
@@ -394,8 +392,7 @@ function attachGlobalEventListeners() {
 
                         setTimeout(() => {
                             if (!DOM.cardOverlayBackdrop?.classList.contains('active')) {
-                                DOM.cardOverlayBackdrop?.classList.add('hidden');
-                                if (DOM.cardOverlayBackdrop) DOM.cardOverlayBackdrop.style.display = 'none';
+                                DOM.cardOverlayBackdrop?.classList.remove('visible');
                                 sortAndRedistribute({ immediate: true });
                             }
                         }, 160);

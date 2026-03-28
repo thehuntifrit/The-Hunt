@@ -102,9 +102,9 @@ export function getSpawnCountInfo(mob) {
   let countHtml = "";
   if (remainingCount === 1) {
     const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-    countHtml = `<span class="pc-count-val font-bold text-yellow-500">${pointNumber}番</span>`;
+    countHtml = `<span class="pc-count-val font-bold text-yellow-500">📍${pointNumber}番</span>`;
   } else if (remainingCount > 1) {
-    countHtml = `<span class="pc-count-val font-bold text-slate-400">@ ${remainingCount}</span>`;
+    countHtml = `<span class="pc-count-val font-bold text-slate-400">📍@ ${remainingCount}</span>`;
   }
   return { countHtml, remainingCount, spawnCullStatus, validSpawnPoints };
 }
@@ -575,7 +575,7 @@ export function updateSimpleMobItem(item, mob) {
 
   if (timeEl) {
     const timerHTML = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
-    timeEl.innerHTML = `<div class="grid items-center w-full h-full" style="grid-template-columns:18px 90px;gap:0;"><span class="timer-label text-[14px] text-right opacity-90">${label}</span>${timerHTML}</div>`;
+    timeEl.innerHTML = `<div class="grid items-center w-full h-full" style="grid-template-columns:18px 109px;gap:0;"><span class="timer-label text-[14px] text-right opacity-90">${label}</span>${timerHTML}</div>`;
   }
   const countInner = item.querySelector('.pc-list-count-inner');
   if (countInner) {

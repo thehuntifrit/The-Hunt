@@ -173,7 +173,7 @@
         </div>
     </main>
 
-    <div id="card-overlay-backdrop" class="fixed inset-0 hidden z-40" style="display: none;"></div>
+    <div id="card-overlay-backdrop"></div>
 
     <div id="manual-modal" class="hidden">
         <div id="manual-modal-backdrop"></div>
@@ -269,9 +269,11 @@
                     </div>
 
                     <div>
-                        <label for="auth-lodestone-id" class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 3:
+                        <label for="auth-lodestone-id"
+                            class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 3:
                             認証コードが正しく表示されるか確認し、開いているキャラクターページのURL、もしくはURL末尾の数字をコピーして貼り付け</label>
-                        <input type="text" id="auth-lodestone-id" name="lodestone-id" aria-label="LodestoneキャラクターページのURL、またはキャラクターIDを入力"
+                        <input type="text" id="auth-lodestone-id" name="lodestone-id"
+                            aria-label="LodestoneキャラクターページのURL、またはキャラクターIDを入力"
                             class="w-full p-2 rounded bg-gray-900 border border-gray-700 text-sm focus:ring-1 focus:ring-yellow-500 outline-none transition-all">
                     </div>
                 </div>
@@ -294,13 +296,13 @@
                 <div class="mob-card-header p-0 relative bg-transparent z-10" data-toggle="card-header">
                     <div
                         class="progress-bar-wrapper absolute top-0 bottom-0 left-0 right-[38px] z-0 pointer-events-none">
-                        <div class="progress-bar-bg absolute left-0 top-0 h-full" style="width: 0%"></div>
+                        <div class="progress-bar-bg absolute left-0 top-0 h-full"></div>
                     </div>
                     <div class="px-2 py-1.5 flex flex-col gap-y-0.5 content-area relative z-10">
                         <!-- Upper Row: Name(Left), Memo/Report(Right) -->
-                        <div class="flex items-center justify-between w-full min-w-0">
-                            <span class="mob-name font-bold truncate text-gray-100 flex-1 min-w-0"></span>
-                            <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                        <div class="flex items-center w-full min-w-0 gap-2">
+                            <span class="mob-name font-bold truncate text-gray-100 min-w-0"></span>
+                            <div class="flex items-center gap-2 flex-shrink-0">
                                 <span class="mob-count-container text-[10px] whitespace-nowrap text-slate-400"></span>
                                 <span class="memo-icon-container text-xs"></span>
                             </div>
@@ -316,7 +318,8 @@
                                 </div>
                             </div>
                             <div class="progress-info-group flex items-center justify-end flex-shrink-0 ml-auto gap-0">
-                                <div class="js-mobile-icon w-[18px] flex justify-center flex-shrink-0 text-[11px] opacity-70">
+                                <div
+                                    class="js-mobile-icon w-[18px] flex justify-center flex-shrink-0 text-[11px] opacity-70">
                                 </div>
                                 <div class="js-mobile-time flex-shrink-0">
                                 </div>
@@ -356,8 +359,9 @@
                             <div class="detail-memo-box">
                                 <label>
                                     <span class="sr-only">メモ入力</span>
-                                    <input type="text" name="memo" aria-label="メモを入力" class="memo-input detail-memo-input" placeholder="全角30文字まで"
-                                        maxlength="30" data-action="save-memo">
+                                    <input type="text" name="memo" aria-label="メモを入力"
+                                        class="memo-input detail-memo-input" placeholder="全角30文字まで" maxlength="30"
+                                        data-action="save-memo">
                                 </label>
                             </div>
                         </div>
@@ -400,7 +404,7 @@
                     </div>
                 </div>
                 <div class="pc-detail-progress-container">
-                    <div class="pc-detail-progress-bar" style="width: 0%"></div>
+                    <div class="pc-detail-progress-bar"></div>
                 </div>
             </div>
 
@@ -411,8 +415,8 @@
                     <div class="detail-memo-box">
                         <label>
                             <span class="sr-only">メモ入力</span>
-                            <input type="text" name="memo" aria-label="メモを入力" class="memo-input detail-memo-input" placeholder="全角30文字まで" maxlength="30"
-                                data-action="save-memo">
+                            <input type="text" name="memo" aria-label="メモを入力" class="memo-input detail-memo-input"
+                                placeholder="全角30文字まで" maxlength="30" data-action="save-memo">
                         </label>
                     </div>
                 </div>
