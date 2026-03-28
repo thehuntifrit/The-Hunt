@@ -1,4 +1,4 @@
-import { calculateRepop, getDurationDHMParts, formatDurationHM, formatDurationDHM, formatDurationColon, formatDurationM, formatLastKillTime, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
+import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
 import { isCulled, attachLocationEvents } from "./location.js";
 import { getState, recalculateMob, requestWorkerCalculation, PROGRESS_CLASSES, EXPANSION_MAP } from "./dataManager.js";
 import { filterMobsByRankAndArea } from "./filterUI.js";

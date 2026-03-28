@@ -16,13 +16,6 @@ function parseDate(input) {
   return isNaN(d.getTime()) ? null : d;
 }
 
-export function formatDurationHM(seconds) {
-  if (seconds < 0) seconds = 0;
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  return `${String(h).padStart(2, "0")}\u2009h${String(m).padStart(2, "0")}\u2009m`;
-}
-
 export function formatDurationDHM(seconds) {
   if (seconds < 0) seconds = 0;
   const { d, h, m } = getDurationDHMParts(seconds);
@@ -49,11 +42,6 @@ export function formatDurationColon(seconds) {
   return `${String(h).padStart(3, '\u00A0')}:${String(m).padStart(2, "0")}`;
 }
 
-export function formatDurationM(seconds) {
-  if (seconds < 0) seconds = 0;
-  const m = Math.ceil(seconds / 60);
-  return `${m}分`;
-}
 
 export function debounce(func, wait) {
   let timeout;
@@ -63,29 +51,6 @@ export function debounce(func, wait) {
   };
 }
 
-export function formatLastKillTime(timestamp) {
-  if (timestamp === 0) return "未報告";
-  const aligned = Math.floor(timestamp / 60) * 60;
-  const killTimeMs = aligned * 1000;
-  const nowMs = Date.now();
-  const diffSeconds = Math.floor((nowMs - killTimeMs) / 1000);
-
-  if (diffSeconds < 3600) {
-    if (diffSeconds < 60) return `Just now`;
-    const minutes = Math.floor(diffSeconds / 60);
-    return `${minutes}m ago`;
-  }
-
-  const options = {
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Tokyo"
-  };
-  const date = new Date(killTimeMs);
-  return new Intl.DateTimeFormat("ja-JP", options).format(date);
-}
 
 export function getEorzeaTime(date = new Date()) {
   const unixMs = date.getTime();
@@ -118,9 +83,6 @@ function alignToWeatherCycle(realSec) {
   return Math.floor(realSec / WEATHER_CYCLE_SEC) * WEATHER_CYCLE_SEC;
 }
 
-function ceilToWeatherCycle(realSec) {
-  return Math.ceil(realSec / WEATHER_CYCLE_SEC) * WEATHER_CYCLE_SEC;
-}
 
 function getEorzeaMoonInfo(date = new Date()) {
   const unixSeconds = date.getTime() / 1000;

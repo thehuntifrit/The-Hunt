@@ -295,14 +295,6 @@ window.addEventListener('characterNameSet', () => {
     renderMaintenanceStatus();
 });
 
-function formatDate(date) {
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    const h = String(date.getHours()).padStart(2, '0');
-    const min = String(date.getMinutes()).padStart(2, '0');
-    return `${m}/${d} ${h}:${min}`;
-}
-
 function attachGlobalEventListeners() {
     let prevWidth = window.innerWidth;
     window.addEventListener("resize", debounce(() => {
