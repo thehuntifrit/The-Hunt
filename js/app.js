@@ -268,20 +268,19 @@ export async function renderMaintenanceStatus() {
         }
     }
 
-    let welcomeHtml = "";
-    if (state.characterName) {
-        welcomeHtml = `<div class="sidebar-welcome-msg" style="color:var(--accent-cyan); font-weight:bold; margin-bottom:8px; border-bottom:1px solid rgba(34,211,238,0.2); padding-bottom:4px;">ようこそ ${state.characterName}</div>`;
-    }
+    const nameToDisplay = (state.isVerified && state.characterName) ? state.characterName : "名無しさん";
+    const welcomeHtml = `<div class="sidebar-welcome-msg" style="color:var(--accent-cyan); font-weight:bold; margin-bottom:8px; border-bottom:1px solid rgba(34,211,238,0.2); padding-bottom:4px;">ようこそ ${nameToDisplay}</div>`;
 
     telopPanels.forEach(p => {
-        p.innerHTML = welcomeHtml + (telopMsg ? telopMsg.replace(/\/\//g, "<br>") : "");
+        const displayMessage = telopMsg ? telopMsg.replace(/\/\//g, "<br>") : "メッセージはありません。";
+        p.innerHTML = welcomeHtml + displayMessage;
     });
 
     document.querySelectorAll('.sidebar-icon-btn[data-panel="maintenance"], .mobile-footer-btn[data-panel="maintenance"]')
         .forEach(btn => btn.classList.toggle("has-alert", hasMaintenance));
 
     document.querySelectorAll('.sidebar-icon-btn[data-panel="telop"], .mobile-footer-btn[data-panel="telop"]')
-        .forEach(btn => btn.classList.toggle("has-alert", hasMessage || !!state.characterName));
+        .forEach(btn => btn.classList.toggle("has-alert", hasMessage));
 
     const errorLogCount = window.errorLog ? window.errorLog.length : 0;
     const hasError = errorLogCount > 0;
