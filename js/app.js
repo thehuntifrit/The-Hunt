@@ -341,7 +341,7 @@ function attachGlobalEventListeners() {
                     DOM.cardOverlayBackdrop.classList.remove('visible');
                     sortAndRedistribute({ immediate: true });
                 }
-            }, 160);
+            }, 200);
         }
     });
 
@@ -395,7 +395,7 @@ function attachGlobalEventListeners() {
                                 DOM.cardOverlayBackdrop?.classList.remove('visible');
                                 sortAndRedistribute({ immediate: true });
                             }
-                        }, 160);
+                        }, 200);
                     }
                 } else {
                     sortAndRedistribute({ immediate: true });

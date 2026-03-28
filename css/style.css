@@ -301,6 +301,8 @@ body::before {
 
 .content-area {
     padding-right: 42px !important;
+    position: relative;
+    z-index: 10;
 }
 
 .mob-card-header {
