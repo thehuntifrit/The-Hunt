@@ -465,7 +465,7 @@
     }
 
     .progress-info-group {
-        width: 102px !important;
+        width: 125px !important;
         flex-shrink: 0;
         display: flex;
         align-items: center;
@@ -481,7 +481,7 @@
     }
 
     .js-mobile-time {
-        width: 93px !important;
+        width: 108px !important;
         flex-shrink: 0;
         display: flex !important;
         align-items: center;
