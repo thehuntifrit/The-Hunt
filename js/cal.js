@@ -42,7 +42,6 @@ export function formatDurationColon(seconds) {
   return `${String(h).padStart(3, '\u00A0')}:${String(m).padStart(2, "0")}`;
 }
 
-
 export function debounce(func, wait) {
   let timeout;
   return function executed(...args) {
@@ -50,7 +49,6 @@ export function debounce(func, wait) {
     timeout = setTimeout(() => func(...args), wait);
   };
 }
-
 
 export function getEorzeaTime(date = new Date()) {
   const unixMs = date.getTime();
@@ -82,7 +80,6 @@ function alignToEtHour(realSec) {
 function alignToWeatherCycle(realSec) {
   return Math.floor(realSec / WEATHER_CYCLE_SEC) * WEATHER_CYCLE_SEC;
 }
-
 
 function getEorzeaMoonInfo(date = new Date()) {
   const unixSeconds = date.getTime() / 1000;
@@ -495,10 +492,8 @@ export function calculateRepop(mob, maintenance, options = {}) {
     const effective = result || staleCache;
     if (effective) {
       const { start, end } = effective;
-
       nextConditionSpawnDate = new Date(start * 1000);
       conditionWindowEnd = new Date(end * 1000);
-
       isInConditionWindow = (now >= start && now < end && now >= minRepop);
 
       if (isInConditionWindow) {
@@ -591,4 +586,3 @@ function baseResult(status) {
     isBlockedByMaintenance: false
   };
 }
-

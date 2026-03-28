@@ -343,7 +343,6 @@ function attachGlobalEventListeners() {
     DOM.colContainer.addEventListener("click", (e) => {
         if (e.target.closest(".report-side-bar")) return;
 
-        // 閉じるボタンのハンドリング
         const closeBtn = e.target.closest("[data-action='close-card']");
         if (closeBtn) {
             const card = closeBtn.closest(".mob-card");
@@ -383,7 +382,6 @@ function attachGlobalEventListeners() {
                             });
                         }
                         
-                        // 重い再描画は少し遅らせて実行
                         setTimeout(() => sortAndRedistribute({ immediate: true }), 50);
                     } else {
                         closeMobileCard(mobNo);

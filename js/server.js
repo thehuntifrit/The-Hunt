@@ -148,9 +148,8 @@ export const submitReport = async (mobNo, timeISO) => {
     const isForceSubmit = forceSubmitEl ? forceSubmitEl.checked : false;
     const nowMs = Date.now();
     if (killTimeDate.getTime() > nowMs + 600000) {
-        const msg = "現在時刻より10分以上未来の時刻は報告できません。";
         if (modalStatusEl) {
-            modalStatusEl.textContent = msg;
+            modalStatusEl.textContent = "現在時刻より10分以上未来の時刻は報告できません。";
             modalStatusEl.style.color = "#ef4444";
         }
         return;
@@ -182,9 +181,8 @@ export const submitReport = async (mobNo, timeISO) => {
             const allowedDate = new Date(allowedTimeMs);
             const timeStr = allowedDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
 
-            const msg = `まだ湧き時間になっていません。\n最短でも ${timeStr} 以降である必要があります。\n(強制送信する場合はチェックを入れてください)`;
             if (modalStatusEl) {
-                modalStatusEl.textContent = msg;
+                modalStatusEl.textContent = `まだ湧き時間になっていません。\n最短でも ${timeStr} 以降である必要があります。\n(強制送信する場合はチェックを入れてください)`;
                 modalStatusEl.style.color = "#ef4444";
                 modalStatusEl.style.whiteSpace = "pre-wrap";
             }
@@ -215,7 +213,6 @@ export const submitReport = async (mobNo, timeISO) => {
         };
 
         await setDoc(docRef, newData, { merge: true });
-
         return { success: true };
 
     } catch (error) {
@@ -258,8 +255,7 @@ export const submitMemo = async (mobNo, memoText) => {
         return { success: true };
 
     } catch (error) {
-        const userFriendlyError = error.message || "通信または認証に失敗しました。";
-        return { success: false, error: userFriendlyError };
+        return { success: false, error: error.message || "通信または認証に失敗しました。" };
     }
 };
 

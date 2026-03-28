@@ -1,5 +1,3 @@
-
-
 import { DOM as UiDOM } from "./uiRender.js";
 import { getState, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
 import { verifyLodestoneCharacter, registerUserToFirestore } from "./server.js";

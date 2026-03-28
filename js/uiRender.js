@@ -52,7 +52,7 @@ export function computeTimeLabel(mob) {
   let secondsRemaining = 0;
 
   if (isInConditionWindow && conditionWindowEnd) {
-    label = ""; // Hide emoji when showing "残り n分" in the timer part
+    label = "";
     secondsRemaining = (conditionWindowEnd.getTime() / 1000) - now;
     isSpecialCondition = true;
   } else if (nextConditionSpawnDate) {
@@ -80,7 +80,6 @@ function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWin
   let html = '';
 
   if (isInWindow) {
-    // Show "残り n分" (Remaining n minutes) for timed mobs in window
     const totalMinutes = Math.ceil((dhm.rawS || 0) / 60);
     html = `<span class="timer-part"><span class="timer-unit" style="font-size: 11px; margin-right: 2px;">残り</span><span class="timer-num">${totalMinutes}</span><span class="timer-unit">分</span></span>`;
   } else {
@@ -325,14 +324,12 @@ export function updateProgressBar(card, mob) {
 }
 
 export function updateProgressText(card, mob) {
-  const { elapsedPercent, status, isInConditionWindow, repopTimeStr } = mob.repopInfo || {};
+  const { elapsedPercent, status, isInConditionWindow } = mob.repopInfo || {};
   const { label, timeValue, isSpecialCondition, isTimeOver, dhm, isInWindow } = computeTimeLabel(mob);
   const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
-  const nowSec = Date.now() / 1000;
 
   let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
   const percentStr = isTimeOver ? "100%" : `${safePercent}%`;
-  const progressTextNodes = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
   const rankBadge = card.querySelector('.list-rank-badge');
   const areaEl = card.querySelector('.mobile-header-area-text');
 
@@ -370,7 +367,6 @@ export function updateProgressText(card, mob) {
 
   const mobNameEl = card.querySelector('.mob-name');
   const shouldDimCard = isMaint;
-  const reportSidebar = card.querySelector('.report-side-bar');
 
   if (shouldDimCard) {
     card.classList.add("is-pre-repop");
@@ -566,7 +562,6 @@ export function createSimpleMobItem(mob) {
 export function updateSimpleMobItem(item, mob) {
   const { elapsedPercent, status, isInConditionWindow } = mob.repopInfo || {};
   const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
-  const now = Date.now() / 1000;
   const timeEl = item.querySelector('.pc-list-time');
   const progressEl = item.querySelector('.pc-list-progress-bar');
   const percentEl = item.querySelector('.pc-list-percent');
@@ -592,7 +587,6 @@ export function updateSimpleMobItem(item, mob) {
     else if (status === "ConditionActive") progressEl.classList.add("status-condition-active");
     else if (status === "PopWindow") progressEl.classList.add("status-pop-window");
     else if (status === "Next" || status === "NextCondition") progressEl.classList.add("status-next");
-    progressEl.style.background = "";
   }
   if (percentEl) {
     let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
@@ -685,7 +679,6 @@ let sortCacheValid = false;
 let lastRenderedOrderStr = "";
 let lastRenderedGroupStr = "";
 let cachedMobMap = null;
-let mobMapVersion = -1;
 let currentMobsRef = null;
 
 function getFilteredMobs() {
@@ -854,7 +847,6 @@ function updateDetailCardRealtime(mobMap) {
 }
 
 const cardCache = new Map();
-const simpleItemCache = new Map();
 
 export const sortAndRedistribute = (options = {}) => {
   const { immediate = false } = options;
@@ -947,7 +939,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     groups[getGroupKey(mob)].push(mob);
   });
 
-  const renderPromises = ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].map(key => {
+  ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
     const groupMobs = groups[key];
     const { section, cols } = getOrCreateGroupSection(key);
 
@@ -1018,15 +1010,10 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       let j = col.children.length - 1;
       while (j >= limit) {
         const child = col.children[j];
-        if (child?.classList.contains("mob-card-placeholder")) {
+        if (child?.classList.contains("mob-card-placeholder") || child?.classList.contains("is-floating-active")) {
           j--;
           continue;
         }
-        if (child?.classList.contains("is-floating-active")) {
-          j--;
-          continue;
-        }
-
         if (child?.classList.contains('mob-card')) {
           visibleCards.delete(child.dataset.mobNo);
         }
@@ -1094,7 +1081,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 
   const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
   if (rightPane) {
-
     if (state.openMobCardNo) {
       if (rightPane.dataset.renderedMobNo !== String(state.openMobCardNo)) {
         const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
@@ -1171,7 +1157,6 @@ let isInitialSortingSuppressed = false;
 
 function updateProgressBars() {
   const state = getState();
-  const conditionMobs = [];
   const nowSec = Date.now() / 1000;
   const mobMap = getMobMap();
 
@@ -1194,17 +1179,6 @@ function updateProgressBars() {
       mob.repopInfo = calculateRepop(mob, state.maintenance, {
         skipConditionCalc: true
       });
-    }
-
-    if (mob.repopInfo?.nextConditionSpawnDate && mob.repopInfo?.conditionWindowEnd) {
-      const spawnSec = mob.repopInfo.nextConditionSpawnDate.getTime() / 1000;
-      const endSec = mob.repopInfo.conditionWindowEnd.getTime() / 1000;
-      if (nowSec >= (spawnSec - FIFTEEN_MINUTES_SEC) && nowSec <= endSec) {
-        if (nowSec < spawnSec) {
-          const diffMin = Math.ceil((spawnSec - nowSec) / 60);
-          conditionMobs.push(`${mob.Name} (${diffMin}分前)`);
-        }
-      }
     }
   });
 

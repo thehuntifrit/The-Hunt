@@ -360,7 +360,7 @@ body::before {
 }
 
 .progress-info-group {
-    width: 145px;
+    width: 118px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -378,7 +378,7 @@ body::before {
 }
 
 .js-mobile-time {
-    width: 127px !important;
+    width: 100px !important;
     flex-shrink: 0;
     display: flex !important;
     align-items: center;
@@ -387,6 +387,20 @@ body::before {
     font-weight: 700;
     font-size: 13px;
     gap: 4px;
+}
+
+.js-mobile-time-inner {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.detail-percent-val {
+    margin-left: 4px;
+    font-size: 11px;
+    color: rgba(156, 163, 175, 0.8);
+    font-weight: 400;
 }
 
 .content-area {
