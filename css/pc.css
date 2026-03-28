@@ -29,14 +29,6 @@
         height: min-content;
     }
 
-    .pc-detail-card .detail-info-item .label {
-        font-size: 11px;
-    }
-
-    .pc-detail-card .detail-info-item .value {
-        font-size: 14px;
-    }
-
     .pc-detail-rank[data-rank="S"] {
         color: var(--rank-s);
         border-color: rgba(245, 158, 11, 0.3);
@@ -73,22 +65,6 @@
         border-radius: 5px;
         transition: width 0.5s ease-out;
         box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
-    }
-
-    .pc-detail-progress-bar.status-max-over {
-        background: var(--progress-ready);
-    }
-
-    .pc-detail-progress-bar.status-condition-active {
-        background: var(--progress-fill);
-    }
-
-    .pc-detail-progress-bar.status-pop-window {
-        background: var(--progress-fill);
-    }
-
-    .pc-detail-progress-bar.status-next {
-        background: var(--progress-fill);
     }
 
     .pc-detail-content {
@@ -322,54 +298,6 @@
         z-index: 10;
     }
 
-    .pc-list-time .timer-label {
-        text-align: right;
-        font-size: 13px;
-        padding-right: 2px;
-    }
-
-    .pc-list-time .timer-value {
-        color: rgba(226, 215, 197, 0.9);
-        font-variant-numeric: tabular-nums;
-        text-align: right;
-        display: flex;
-        justify-content: flex-end;
-        align-items: baseline;
-        font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
-    }
-
-    .timer-part {
-        display: inline-flex;
-        align-items: baseline;
-        justify-content: flex-end;
-        min-width: 2.8ch;
-        margin-right: 2px;
-    }
-
-    .timer-num {
-        color: #ffffff;
-        font-weight: 700;
-        text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-    }
-
-    .timer-unit {
-        color: rgba(255, 255, 255, 0.4);
-        font-size: 0.85em;
-        margin-left: 2px;
-        font-weight: 500;
-    }
-
-    .special-timer .timer-num,
-    .pc-list-time .timer-value.label-next .timer-num {
-        color: var(--accent-gold) !important;
-        text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
-    }
-
-    .pc-list-time .time-over .timer-num {
-        color: #ffb1b6;
-        text-shadow: 0 0 8px rgba(233, 139, 145, 0.4);
-    }
-
     .pc-list-progress-container {
         height: 8px;
         background: rgba(15, 23, 42, 0.8);
@@ -388,22 +316,6 @@
         border-radius: 4px;
         box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
         transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .pc-list-progress-bar.status-max-over {
-        background: var(--progress-ready);
-    }
-
-    .pc-list-progress-bar.status-condition-active {
-        background: var(--progress-fill);
-    }
-
-    .pc-list-progress-bar.status-pop-window {
-        background: var(--progress-fill);
-    }
-
-    .pc-list-progress-bar.status-next {
-        background: var(--progress-fill);
     }
 
     .pc-list-percent {

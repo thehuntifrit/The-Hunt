@@ -93,82 +93,6 @@
         border-color: var(--rank-f);
     }
 
-    .progress-info-group {
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        line-height: 1;
-        gap: 0;
-    }
-
-    .js-mobile-icon {
-        flex-shrink: 0;
-        display: flex;
-        justify-content: center;
-        font-size: 11px !important;
-    }
-
-    .js-mobile-time {
-        flex-shrink: 0;
-        display: flex !important;
-        align-items: center;
-        justify-content: flex-end;
-        font-family: 'JetBrains Mono', monospace;
-    }
-
-    .js-mobile-time-inner {
-        display: flex;
-        align-items: baseline;
-        justify-content: flex-end;
-    }
-
-    .timer-value {
-        display: flex;
-        justify-content: flex-end;
-        align-items: baseline;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 13px;
-        font-variant-numeric: tabular-nums;
-    }
-
-    .timer-part {
-        display: inline-flex;
-        align-items: baseline;
-        justify-content: flex-end;
-        min-width: 2.5ch;
-        margin-right: 2px;
-    }
-
-    .timer-num {
-        color: #fff;
-        font-weight: 700;
-    }
-
-    .timer-unit {
-        color: rgba(255, 255, 255, 0.4);
-        font-size: 0.85em;
-        margin-left: 2px;
-    }
-
-    .special-timer .timer-num,
-    .label-next .timer-num {
-        color: #fbbf24 !important;
-        text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
-    }
-
-    .js-mobile-time.max-over .timer-num {
-        color: #f87171;
-    }
-
-    .detail-percent-val {
-        width: 44px;
-        text-align: right;
-        font-family: inherit;
-        font-size: 11px;
-        color: rgba(156, 163, 175, 0.8);
-        margin-left: 2px;
-    }
 
     .expandable-panel {
         background: transparent !important;
@@ -623,14 +547,6 @@
     main.main-content-area {
         padding-top: 38px !important;
         padding-bottom: 60px !important;
-    }
-
-    .detail-info-item .label {
-        font-size: 10px !important;
-    }
-
-    .detail-info-item .value {
-        font-size: 14px !important;
     }
 
     .detail-section .section-label {
