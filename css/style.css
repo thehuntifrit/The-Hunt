@@ -378,7 +378,7 @@ body::before {
 }
 
 .js-mobile-time {
-    width: 100px !important;
+    width: 100px;
     flex-shrink: 0;
     display: flex !important;
     align-items: center;

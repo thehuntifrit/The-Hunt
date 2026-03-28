@@ -571,6 +571,25 @@
     footer {
         display: none !important;
     }
+
+    .progress-info-group {
+        width: 148px !important;
+    }
+
+    .js-mobile-icon {
+        width: 20px !important;
+    }
+
+    .js-mobile-time {
+        width: 128px !important;
+    }
+
+    .js-mobile-time-inner {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        align-items: baseline;
+    }
 }
 
 @media (min-width: 1024px) {
