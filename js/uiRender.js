@@ -598,8 +598,8 @@ export function updateSimpleMobItem(item, mob) {
     let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
     percentEl.textContent = isTimeOver ? "100%" : `${safePercent}%`;
   }
-  item.style.opacity = (isMaint || status === "Next" || (status === "NextCondition" && now < (mob.repopInfo?.minRepop || 0))) ? "0.4" : "1";
-  item.style.filter = (isMaint || status === "Next" || (status === "NextCondition" && now < (mob.repopInfo?.minRepop || 0))) ? "grayscale(1)" : "none";
+  item.style.opacity = isMaint ? "0.4" : "1";
+  item.style.filter = isMaint ? "grayscale(1)" : "none";
   if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) item.classList.add("blink-active");
   else item.classList.remove("blink-active");
   updateMemoIcon(item, mob);
