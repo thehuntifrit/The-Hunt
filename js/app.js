@@ -322,30 +322,46 @@ function attachGlobalEventListeners() {
             return;
         }
         if (e.target === DOM.cardOverlayBackdrop) {
-            setOpenMobCardNo(null);
-            document.body.style.overflow = '';
-            DOM.cardOverlayBackdrop.classList.remove('active');
-            DOM.mobileLayout?.classList.remove('content-blurred');
-            
-            // モバイル版ではバックドロップを閉じる際、その場でクラスを外してsnappyにする
-            const openCard = document.querySelector('.mob-card.open');
-            if (openCard) {
-                openCard.classList.remove('open', 'is-expanded');
-                const panel = openCard.querySelector('.expandable-panel');
-                if (panel) panel.classList.remove('open');
-            }
-
-            setTimeout(() => {
-                if (!DOM.cardOverlayBackdrop.classList.contains('active')) {
-                    DOM.cardOverlayBackdrop.classList.remove('visible');
-                    sortAndRedistribute({ immediate: true });
-                }
-            }, 200);
+            const currentOpen = getState().openMobCardNo;
+            closeMobileCard(currentOpen);
         }
     });
 
+    function closeMobileCard(mobNo) {
+        setOpenMobCardNo(null);
+        document.body.style.overflow = '';
+        DOM.cardOverlayBackdrop?.classList.remove('active');
+        DOM.mobileLayout?.classList.remove('content-blurred');
+        
+        const card = document.querySelector(`.mob-card[data-mob-no="${mobNo}"]`);
+        if (card) {
+            card.classList.remove('open', 'is-expanded');
+            const panel = card.querySelector('.expandable-panel');
+            if (panel) panel.classList.remove('open');
+        }
+
+        setTimeout(() => {
+            if (!DOM.cardOverlayBackdrop?.classList.contains('active')) {
+                DOM.cardOverlayBackdrop?.classList.remove('visible');
+                sortAndRedistribute({ immediate: true });
+            }
+        }, 200);
+    }
+
     DOM.colContainer.addEventListener("click", (e) => {
         if (e.target.closest(".report-side-bar")) return;
+
+        // 閉じるボタンのハンドリング
+        const closeBtn = e.target.closest("[data-action='close-card']");
+        if (closeBtn) {
+            const card = closeBtn.closest(".mob-card");
+            if (card) {
+                const mobNo = parseInt(card.dataset.mobNo, 10);
+                closeMobileCard(mobNo);
+            }
+            return;
+        }
+
         if (e.target.closest(".expandable-panel")) return;
 
         if (e.target.closest("[data-toggle='card-header']")) {
@@ -378,23 +394,7 @@ function attachGlobalEventListeners() {
                         // 重い再描画は少し遅らせて実行
                         setTimeout(() => sortAndRedistribute({ immediate: true }), 50);
                     } else {
-                        document.body.style.overflow = '';
-                        DOM.cardOverlayBackdrop?.classList.remove('active');
-                        DOM.mobileLayout?.classList.remove('content-blurred');
-                        
-                        const card = document.querySelector(`.mob-card[data-mob-no="${mobNo}"]`);
-                        if (card) {
-                            card.classList.remove('open', 'is-expanded');
-                            const panel = card.querySelector('.expandable-panel');
-                            if (panel) panel.classList.remove('open');
-                        }
-
-                        setTimeout(() => {
-                            if (!DOM.cardOverlayBackdrop?.classList.contains('active')) {
-                                DOM.cardOverlayBackdrop?.classList.remove('visible');
-                                sortAndRedistribute({ immediate: true });
-                            }
-                        }, 200);
+                        closeMobileCard(mobNo);
                     }
                 } else {
                     sortAndRedistribute({ immediate: true });

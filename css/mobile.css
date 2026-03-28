@@ -595,7 +595,7 @@
 
     .mob-card.open .expandable-panel {
         max-height: none !important;
-        padding-bottom: 20px !important;
+        padding-bottom: 0 !important;
     }
 
     .mob-card.is-floating-active .mob-card-inner {
@@ -635,6 +635,21 @@
 
     .detail-section .section-label {
         font-size: 11px !important;
+    }
+
+    .mobile-detail-close-btn {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+    }
+
+    .mobile-detail-close-btn:active {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.25);
+        color: #fff;
     }
 
     footer {
