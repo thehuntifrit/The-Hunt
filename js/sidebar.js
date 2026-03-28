@@ -82,7 +82,7 @@ export function initSidebar() {
     document.body.classList.add("has-sidebar");
 
     const stored = getStoredState();
-    if (stored.panel) {
+    if (stored.panel && stored.panel !== "manual") {
         currentPanel = stored.panel;
         sidebar.classList.add("expanded");
         document.body.classList.add("sidebar-expanded");
@@ -106,7 +106,9 @@ export function initSidebar() {
         });
     }
 
-    renderSidebarFilterAccordion();
+    if (currentPanel !== "rank") {
+        renderSidebarFilterAccordion();
+    }
     setupSidebarNotification();
     initMobileFooter();
 }

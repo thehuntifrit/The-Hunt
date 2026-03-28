@@ -148,7 +148,7 @@
     }
 
     .timer-unit {
-        color: rgba(255, 255, 255, 0.55);
+        color: rgba(255, 255, 255, 0.4);
         font-size: 0.85em;
     }
 
@@ -156,11 +156,6 @@
     .label-next .timer-num {
         color: #fbbf24 !important;
         text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
-    }
-
-    .special-timer .timer-unit,
-    .label-next .timer-unit {
-        color: rgba(251, 191, 36, 0.5);
     }
 
     .js-mobile-time.max-over .timer-num {
