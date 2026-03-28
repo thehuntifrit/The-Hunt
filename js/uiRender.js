@@ -369,7 +369,7 @@ export function updateProgressText(card, mob) {
   }
 
   const mobNameEl = card.querySelector('.mob-name');
-  const shouldDimCard = isMaint || status === "Next" || (status === "NextCondition" && nowSec < (mob.repopInfo?.minRepop || 0));
+  const shouldDimCard = isMaint;
   const reportSidebar = card.querySelector('.report-side-bar');
 
   if (shouldDimCard) {
