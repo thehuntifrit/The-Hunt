@@ -398,7 +398,7 @@ body::before {
 
 .detail-percent-val {
     display: inline-block;
-    width: 44px;
+    width: 36px;
     text-align: right;
     margin-left: 4px;
     font-size: 11px;
