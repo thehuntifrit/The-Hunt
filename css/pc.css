@@ -338,6 +338,7 @@
         align-items: baseline;
         justify-content: flex-end;
         min-width: 2.8ch;
+        margin-right: 2px;
     }
 
     .timer-num {
@@ -349,7 +350,7 @@
     .timer-unit {
         color: rgba(255, 255, 255, 0.4);
         font-size: 0.85em;
-        margin-left: 1px;
+        margin-left: 2px;
         font-weight: 500;
     }
 
