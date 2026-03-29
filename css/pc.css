@@ -408,9 +408,10 @@
         text-align: right;
     }
 
+    .pc-detail-progress-text,
     .detail-percent-val {
-        width: 36px;
         text-align: right;
+        width: 44px;
         font-size: 11px;
         color: rgba(156, 163, 175, 0.8);
     }

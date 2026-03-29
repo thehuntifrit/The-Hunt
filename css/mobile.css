@@ -590,6 +590,11 @@
         justify-content: flex-end;
         align-items: baseline;
     }
+
+    .detail-percent-val {
+        width: 36px !important;
+        text-align: right;
+    }
 }
 
 @media (min-width: 1024px) {
