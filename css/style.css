@@ -132,6 +132,7 @@ body::before {
     cursor: pointer;
     z-index: 1;
     scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 8px);
+    contain: content;
 }
 
 .mob-card-inner {
@@ -145,6 +146,7 @@ body::before {
     overflow: hidden;
     width: 100%;
     height: 100%;
+    contain: layout style;
 }
 
 .mob-card-inner,
@@ -716,6 +718,10 @@ body::before {
 
 .expandable-panel.open {
     max-height: none;
+}
+
+.expandable-panel.is-animating {
+    overflow: hidden;
 }
 
 .memo-input {

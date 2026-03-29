@@ -9,6 +9,7 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
         box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.82);
+        contain: layout style;
     }
 
     .pc-detail-name {
@@ -214,6 +215,7 @@
         position: relative;
         overflow: hidden;
         width: 100%;
+        contain: content;
     }
 
     .pc-list-item::before {

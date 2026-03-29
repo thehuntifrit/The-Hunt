@@ -356,7 +356,18 @@ export function updateProgressText(card, mob) {
   if (pcDetailEl) {
     const pcText = percentStr;
     if (pcDetailEl._lastPercent !== pcText) {
-      pcDetailEl.innerHTML = `<span class="text-[13px] text-gray-100">${pcText}</span>`;
+      let span = pcDetailEl._cachedSpan;
+      if (!span) {
+        span = pcDetailEl.querySelector('span');
+        if (!span) {
+          span = document.createElement('span');
+          span.className = 'text-[13px] text-gray-100';
+          pcDetailEl.textContent = '';
+          pcDetailEl.appendChild(span);
+        }
+        pcDetailEl._cachedSpan = span;
+      }
+      span.textContent = pcText;
       pcDetailEl._lastPercent = pcText;
     }
     if (status === "MaxOver") pcDetailEl.classList.add("max-over");
@@ -803,15 +814,47 @@ function updateCardFull(card, mob) {
   const { openMobCardNo } = getState();
   const isOpen = mob.No === openMobCardNo;
   const expandablePanel = card.querySelector('.expandable-panel');
+  const isMobile = window.innerWidth < 1024;
 
   if (isOpen && expandablePanel) {
     card.classList.add('is-expanded');
     card.classList.add('open');
-    expandablePanel.classList.add('open');
+    if (!expandablePanel.classList.contains('open')) {
+      if (isMobile) {
+        expandablePanel.classList.add('open');
+      } else {
+        expandablePanel.classList.add('is-animating');
+        expandablePanel.classList.add('open');
+        expandablePanel.style.maxHeight = expandablePanel.scrollHeight + 'px';
+        const onEnd = () => {
+          expandablePanel.style.maxHeight = 'none';
+          expandablePanel.classList.remove('is-animating');
+          expandablePanel.removeEventListener('transitionend', onEnd);
+        };
+        expandablePanel.addEventListener('transitionend', onEnd, { once: true });
+      }
+    }
   } else if (expandablePanel) {
+    if (expandablePanel.classList.contains('open')) {
+      if (isMobile || expandablePanel.style.maxHeight === 'none' || expandablePanel.style.maxHeight === '') {
+        expandablePanel.style.maxHeight = '';
+        expandablePanel.classList.remove('open', 'is-animating');
+      } else {
+        expandablePanel.style.maxHeight = expandablePanel.scrollHeight + 'px';
+        requestAnimationFrame(() => {
+          expandablePanel.style.maxHeight = '0px';
+          expandablePanel.classList.add('is-animating');
+          const onEnd = () => {
+            expandablePanel.classList.remove('open', 'is-animating');
+            expandablePanel.style.maxHeight = '';
+            expandablePanel.removeEventListener('transitionend', onEnd);
+          };
+          expandablePanel.addEventListener('transitionend', onEnd, { once: true });
+        });
+      }
+    }
     card.classList.remove('is-expanded');
     card.classList.remove('open');
-    expandablePanel.classList.remove('open');
   }
 
   updateProgressText(card, mob);
