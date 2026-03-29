@@ -217,7 +217,7 @@
 
     .pc-list-item {
         display: grid;
-        grid-template-columns: 320px 96px 108px 36px 80px;
+        grid-template-columns: 320px 96px 104px 40px 80px;
         align-items: center;
         background: rgba(30, 41, 59, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.03);
@@ -323,6 +323,9 @@
         font-size: 14px;
         font-weight: 900;
         color: #ffffff;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
         text-align: right;
         font-variant-numeric: tabular-nums;
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
