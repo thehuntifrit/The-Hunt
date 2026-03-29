@@ -515,7 +515,7 @@
         border-radius: 12px !important;
         background: rgba(15, 23, 42, 0.98) !important;
         border: none !important;
-        overflow: hidden !important; /* 子要素でスクロールさせる */
+        overflow: hidden !important;
     }
 
     .mob-card.open .expandable-panel {
@@ -558,7 +558,7 @@
     }
 
     .mobile-detail-actions {
-        display: none; /* デフォルトは非表示（リスト表示時） */
+        display: none;
         flex-shrink: 0;
         background: rgba(15, 23, 42, 1);
         border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -566,6 +566,17 @@
         z-index: 60;
         position: relative;
         overflow: hidden;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .mobile-detail-actions:active {
+        background: rgba(30, 41, 59, 1);
+    }
+
+    .mobile-detail-actions:active .mobile-detail-close-btn {
+        transform: scale(0.98);
+        background: rgba(255, 255, 255, 0.12);
     }
 
     .mobile-detail-actions::before {
@@ -585,22 +596,18 @@
 
     .mob-card.open .mobile-detail-actions,
     .mob-card.is-expanded .mobile-detail-actions {
-        display: block; /* 詳細展開時のみ表示 */
+        display: block;
     }
 
     .mobile-detail-close-btn {
-        background: rgba(255, 255, 255, 0.08); /* 視認性向上のため少し明るく */
+        background: rgba(255, 255, 255, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.15);
         color: #fff;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         -webkit-backdrop-filter: blur(8px);
         backdrop-filter: blur(8px);
-    }
-
-    .mobile-detail-close-btn:active {
-        background: rgba(255, 255, 255, 0.15);
-        border-color: rgba(255, 255, 255, 0.3);
-        transform: scale(0.98);
+        transition: all 0.2s ease;
+        pointer-events: none;
     }
 
     footer {

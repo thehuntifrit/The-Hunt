@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net https://*.workers.dev wss://*.firebaseio.com; img-src 'self' data:;">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net https://*.workers.dev wss://*.firebaseio.com; img-src 'self' data:;">
     <link rel="icon" type="image/png" href="./icon/The_Hunt.png">
     <title>The Hunt</title>
     <link rel="stylesheet" href="css/tailwind.css">
@@ -382,17 +383,18 @@
                             <div class="section-label">出現条件</div>
                             <div class="condition-text section-content condition"></div>
                         </div>
-                        </div>
-                    </div>
-
-                    <!-- 6. 閉じるボタン (モバイル専用: 固定フッター) -->
-                    <div class="mobile-detail-actions lg:hidden">
-                        <button class="mobile-detail-close-btn w-full py-4 rounded-xl font-bold transition-all active:scale-95" data-action="close-card">
-                            この詳細を閉じる
-                        </button>
                     </div>
                 </div>
+
+                <!-- 6. 閉じるボタン (モバイル専用: 固定フッター全体をボタン化) -->
+                <div class="mobile-detail-actions lg:hidden cursor-pointer" data-action="close-card">
+                    <button
+                        class="mobile-detail-close-btn w-full py-4 rounded-xl font-bold transition-all pointer-events-none">
+                        この詳細を閉じる
+                    </button>
+                </div>
             </div>
+        </div>
         </div>
     </template>
 
