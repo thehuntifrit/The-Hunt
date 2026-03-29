@@ -4,7 +4,7 @@ import { attachMobCardEvents } from "./mobCard.js";
 import { attachLocationEvents } from "./location.js";
 import { openReportModal, closeReportModal, initModal, openAuthModal } from "./modal.js";
 import { handleAreaFilterClick } from "./filterUI.js";
-import { DOM, sortAndRedistribute, showColumnContainer, updateHeaderTime } from "./uiRender.js";
+import { DOM, sortAndRedistribute, showColumnContainer, updateHeaderTime, escapeHtml } from "./uiRender.js";
 import { debounce, formatMMDDHHmm } from "./cal.js";
 import { initTooltip } from "./tooltip.js";
 import { initGlobalMagnifier } from "./magnifier.js";
@@ -258,11 +258,11 @@ export async function renderMaintenanceStatus() {
         }
     }
 
-    const nameToDisplay = (state.isVerified && state.characterName) ? state.characterName : "名無しさん";
+    const nameToDisplay = (state.isVerified && state.characterName) ? escapeHtml(state.characterName) : "名無しさん";
     const welcomeHtml = `<div class="sidebar-welcome-msg" style="color:var(--accent-cyan); font-weight:bold; margin-bottom:8px; border-bottom:1px solid rgba(34,211,238,0.2); padding-bottom:4px;">ようこそ ${nameToDisplay}</div>`;
 
     telopPanels.forEach(p => {
-        const displayMessage = telopMsg ? telopMsg.replace(/\/\//g, "<br>") : "メッセージはありません。";
+        const displayMessage = telopMsg ? escapeHtml(telopMsg).replace(/\/\//g, "<br>") : "メッセージはありません。";
         p.innerHTML = welcomeHtml + displayMessage;
     });
 

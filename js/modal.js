@@ -83,7 +83,7 @@ export function initModal() {
             const idMatch = rawInput.match(/character\/(\d+)/);
             const lodestoneId = idMatch ? idMatch[1] : rawInput.match(/^\d+$/) ? rawInput : null;
 
-            if (!lodestoneId) {
+            if (!lodestoneId || lodestoneId.length > 20) {
                 UiDOM.authStatus.textContent = "正しいロードストーンのIDまたはURLを入力してください。";
                 UiDOM.authStatus.style.color = "#ef4444";
                 return;

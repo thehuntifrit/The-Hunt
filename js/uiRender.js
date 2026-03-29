@@ -132,10 +132,10 @@ export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, i
   return `
     <div class="spawn-point ${colorClass}"
         style="left:${point.x}%; top:${point.y}%;"
-        data-tooltip="${titleText}"
-        data-location-id="${point.id}"
+        data-tooltip="${escapeHtml(titleText)}"
+        data-location-id="${escapeHtml(point.id)}"
         data-mob-no="${mobNo}"
-        data-rank="${rank}"
+        data-rank="${escapeHtml(rank)}"
         data-is-culled="${isCulledFlag}"
         data-is-lastone="${isLastOne ? "true" : "false"}"
         data-is-interactive="${dataIsInteractive}"

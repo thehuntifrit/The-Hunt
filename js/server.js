@@ -232,6 +232,10 @@ export const submitMemo = async (mobNo, memoText) => {
     const mob = mobs.find(m => m.No === mobNo);
     if (!mob) return { success: false, error: "Mobデータエラー" };
 
+    if (memoText && memoText.length > 30) {
+        return { success: false, error: "メモは30文字以内で入力してください" };
+    }
+
     try {
         const docRef = doc(db, "shared_data", "memo");
 
@@ -311,7 +315,7 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
 
     try {
         const token = await auth.currentUser.getIdToken();
-        const fetchUrl = `${VERIFICATION_PROXY_URL}?lodestoneId=${lodestoneId}`;
+        const fetchUrl = `${VERIFICATION_PROXY_URL}?lodestoneId=${encodeURIComponent(lodestoneId)}`;
 
         const response = await fetch(fetchUrl, {
             headers: {
@@ -341,9 +345,10 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
             return { success: false, error: "検証コードが自己紹介文に見つかりませんでした。保存されているか確認してください。" };
         }
     } catch (error) {
+        console.error("Lodestone verification failed:", error);
         return {
             success: false,
-            error: `認証に失敗しました。時間をおいて再試行してください。(Error: ${error.message})`
+            error: "認証に失敗しました。時間をおいて再試行してください。"
         };
     }
 }
