@@ -350,16 +350,18 @@
         border-color: rgba(255, 255, 255, 0.3);
     }
 
-    .pc-list-item[data-rank="A"] .pc-list-name {
+    /* Aランク、F/FATEランクのみランク色を適用。Sランクは白色。 */
+    #pc-left-list .pc-list-item[data-rank="A"] .pc-list-name {
         color: var(--rank-a) !important;
     }
 
-    .pc-list-item[data-rank="F"] .pc-list-name {
+    #pc-left-list .pc-list-item[data-rank="F"] .pc-list-name,
+    #pc-left-list .pc-list-item[data-rank="F.A.T.E."] .pc-list-name {
         color: var(--rank-f) !important;
     }
 
-    .pc-list-item[data-rank="S"] .pc-list-name {
-        color: #fff !important;
+    #pc-left-list .pc-list-item[data-rank="S"] .pc-list-name {
+        color: #ffffff !important;
     }
 
     .pc-list-report-btn {

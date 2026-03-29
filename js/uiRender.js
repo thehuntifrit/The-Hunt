@@ -544,7 +544,7 @@ export function createSimpleMobItem(mob) {
   item.dataset.mobNo = mob.No;
   item.dataset.rank = mob.Rank;
   item.innerHTML = `
-        <div class="pc-list-name font-bold flex items-center min-w-0" style="color: #fff;">
+        <div class="pc-list-name font-bold flex items-center min-w-0">
           <span class="truncate"></span>
           <span class="memo-icon-container flex-shrink-0 text-[12px] h-4 flex items-center"></span>
           <span class="pc-list-count-inner flex-shrink-0"></span>
