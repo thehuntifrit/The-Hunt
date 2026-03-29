@@ -160,9 +160,6 @@
         box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(129, 140, 248, 0.15) inset;
     }
 
-
-
-
     .pc-clocks-header {
         display: flex;
         flex-direction: row;
@@ -202,7 +199,7 @@
 
     .pc-list-item {
         display: grid;
-        grid-template-columns: 320px 96px 104px 40px 80px;
+        grid-template-columns: 312px 104px 104px 40px 80px;
         align-items: center;
         background: rgba(30, 41, 59, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.03);
@@ -305,15 +302,15 @@
 
     .pc-list-percent {
         font-family: 'Inter', ui-monospace, SFMono-Regular, monospace;
-        font-size: 14px;
-        font-weight: 900;
+        font-size: 13px;
+        font-weight: 500;
         color: #ffffff;
         display: flex;
         justify-content: flex-end;
         align-items: center;
         text-align: right;
         font-variant-numeric: tabular-nums;
-        text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
     }
 
     @keyframes pc-glow-bg {
@@ -335,7 +332,6 @@
         border-color: rgba(255, 255, 255, 0.3);
     }
 
-    /* Aランク、F/FATEランクのみランク色を適用。Sランクは白色。 */
     #pc-left-list .pc-list-item[data-rank="A"] .pc-list-name {
         color: var(--rank-a) !important;
     }

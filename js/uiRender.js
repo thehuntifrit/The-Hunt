@@ -44,24 +44,24 @@ export function computeTimeLabel(mob) {
   let secondsRemaining = 0;
 
   if (isInConditionWindow && conditionWindowEnd) {
-    label = "";
+    label = "残り";
     secondsRemaining = (conditionWindowEnd.getTime() / 1000) - now;
     isSpecialCondition = true;
   } else if (nextConditionSpawnDate) {
-    label = "🔜"; secondsRemaining = (nextConditionSpawnDate.getTime() / 1000) - now; isSpecialCondition = true;
+    label = "次回"; secondsRemaining = (nextConditionSpawnDate.getTime() / 1000) - now; isSpecialCondition = true;
   } else if (minRepop && now < minRepop) {
-    label = "🔜"; secondsRemaining = minRepop - now; if (isTimedMob) isSpecialCondition = true;
+    label = "次回"; secondsRemaining = minRepop - now; if (isTimedMob) isSpecialCondition = true;
   } else if (maxRepop && now < maxRepop) {
-    label = "⏳"; secondsRemaining = maxRepop - now; if (isTimedMob) isSpecialCondition = true;
+    label = "残り"; secondsRemaining = maxRepop - now; if (isTimedMob) isSpecialCondition = true;
   } else if (maxRepop) {
-    label = "🚨"; secondsRemaining = now - maxRepop; if (isTimedMob) isSpecialCondition = true;
+    label = "超過"; secondsRemaining = now - maxRepop; if (isTimedMob) isSpecialCondition = true;
     isTimeOver = true;
   }
 
   const dhm = secondsRemaining >= 0 ? getDurationDHMParts(secondsRemaining) : null;
   const timeValue = dhm ? formatDurationDHM(secondsRemaining) : "--/-- --:--";
 
-  if (isMaint) label = "🛠️";
+  if (isMaint) label = "中止";
 
   return { label, timeValue, isSpecialCondition, isTimeOver, isTimedMob, dhm, isInWindow: !!isInConditionWindow };
 }
@@ -339,6 +339,9 @@ export function updateProgressText(card, mob) {
 
   if (iconEl) {
     iconEl.textContent = label || '';
+    iconEl.className = 'js-mobile-icon timer-label-base';
+    if (status) iconEl.classList.add(`status-${status.toLowerCase()}`);
+    if (isSpecialCondition) iconEl.classList.add('is-special');
   }
   if (timeEl) {
     const timerHTML = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
@@ -353,7 +356,7 @@ export function updateProgressText(card, mob) {
   if (pcDetailEl) {
     const pcText = percentStr;
     if (pcDetailEl._lastPercent !== pcText) {
-      pcDetailEl.innerHTML = `<span class="font-bold text-[14px] text-gray-100">${pcText}</span>`;
+      pcDetailEl.innerHTML = `<span class="text-[13px] text-gray-100">${pcText}</span>`;
       pcDetailEl._lastPercent = pcText;
     }
     if (status === "MaxOver") pcDetailEl.classList.add("max-over");
@@ -564,7 +567,7 @@ export function updateSimpleMobItem(item, mob) {
 
   if (timeEl) {
     const timerHTML = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
-    timeEl.innerHTML = `<div class="grid items-center w-full h-full" style="grid-template-columns:18px 1fr;gap:0;"><span class="timer-label text-[14px] text-right opacity-90">${label}</span>${timerHTML}</div>`;
+    timeEl.innerHTML = `<div class="grid items-center w-full h-full" style="grid-template-columns:auto 1fr;gap:8px;"><span class="timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''} text-[11px] text-center opacity-90">${label}</span>${timerHTML}</div>`;
   }
   const countInner = item.querySelector('.pc-list-count-inner');
   if (countInner) {

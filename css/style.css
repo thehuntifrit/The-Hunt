@@ -370,11 +370,46 @@ body::before {
 }
 
 .js-mobile-icon {
-    width: 18px;
+    width: 34px;
     flex-shrink: 0;
     display: flex;
     justify-content: center;
     font-size: 11px !important;
+}
+
+.timer-label-base {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    padding: 0px 3px;
+    font-size: 10px !important;
+    height: 15px;
+    min-width: 28px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.timer-label-base.status-next {
+    background: rgba(148, 163, 184, 0.2) !important;
+}
+
+.timer-label-base.status-popwindow,
+.timer-label-base.status-conditionactive,
+.timer-label-base.status-nextcondition {
+    background: rgba(16, 185, 129, 0.2) !important;
+}
+
+.timer-label-base.status-maxover {
+    background: rgba(239, 68, 68, 0.2) !important;
+}
+
+.timer-label-base.is-special {
+    color: var(--accent-gold) !important;
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
 }
 
 .js-mobile-time {

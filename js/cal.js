@@ -508,14 +508,14 @@ export function calculateRepop(mob, maintenance, options = {}) {
   if (now >= maxRepop) {
     status = "MaxOver";
     elapsedPercent = 100;
-    timeRemaining = `🔚 ${formatDurationColon(now - maxRepop)}`;
+    timeRemaining = `超過 ${formatDurationColon(now - maxRepop)}`;
   } else if (now < minRepop) {
     status = "Next";
-    timeRemaining = `🔜 ${formatDurationColon(minRepop - now)}`;
+    timeRemaining = `次回 ${formatDurationColon(minRepop - now)}`;
   } else {
     status = "PopWindow";
     elapsedPercent = Math.min(((now - minRepop) / (maxRepop - minRepop)) * 100, 100);
-    timeRemaining = `⏳ ${formatDurationColon(maxRepop - now)}`;
+    timeRemaining = `残り ${formatDurationColon(maxRepop - now)}`;
   }
 
   if (isInConditionWindow && now >= minRepop) {
