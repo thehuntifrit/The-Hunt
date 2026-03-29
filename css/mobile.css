@@ -508,16 +508,20 @@
     }
 
     .mob-card.open .mob-card-inner {
+        display: flex !important;
+        flex-direction: column !important;
         height: auto !important;
         max-height: calc(100dvh - 110px) !important;
         border-radius: 12px !important;
-        background: transparent !important;
+        background: rgba(15, 23, 42, 0.98) !important;
         border: none !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch;
+        overflow: hidden !important; /* 子要素でスクロールさせる */
     }
 
     .mob-card.open .expandable-panel {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
         max-height: none !important;
         padding-bottom: 0 !important;
     }
@@ -553,19 +557,33 @@
         font-size: 11px !important;
     }
 
+    .mobile-detail-actions {
+        display: none; /* デフォルトは非表示（リスト表示時） */
+        flex-shrink: 0;
+        background: rgba(15, 23, 42, 1);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 12px;
+        z-index: 60;
+    }
+
+    .mob-card.open .mobile-detail-actions,
+    .mob-card.is-expanded .mobile-detail-actions {
+        display: block; /* 詳細展開時のみ表示 */
+    }
+
     .mobile-detail-close-btn {
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        color: rgba(255, 255, 255, 0.9);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        -webkit-backdrop-filter: blur(4px);
-        backdrop-filter: blur(4px);
+        background: rgba(255, 255, 255, 0.08); /* 視認性向上のため少し明るく */
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #fff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px);
     }
 
     .mobile-detail-close-btn:active {
-        background: rgba(255, 255, 255, 0.12);
-        border-color: rgba(255, 255, 255, 0.25);
-        color: #fff;
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: scale(0.98);
     }
 
     footer {

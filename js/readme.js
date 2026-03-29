@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="space-y-2">
                     <label for="readme-auth-id" class="block text-xs text-gray-400">STEP 3: キャラクターIDを入力して検証</label>
                     <div class="flex flex-col gap-2">
-                        <input type="text" id="readme-auth-id" placeholder="IDまたはURL" 
+                        <input type="text" id="readme-auth-id" placeholder="IDまたはURL" maxlength="200"
                                class="w-full p-2 rounded bg-gray-900 border border-gray-700 text-sm focus:ring-1 focus:ring-yellow-500 outline-none">
                         <div id="readme-auth-status" class="text-xs min-h-[1em]"></div>
                         <button id="readme-auth-verify" class="w-full py-2 rounded bg-yellow-600 hover:bg-yellow-500 font-bold text-white transition text-sm">検証して登録</button>
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const idMatch = raw.match(/character\/(\d+)/);
             const lodestoneId = idMatch ? idMatch[1] : raw.match(/^\d+$/) ? raw : null;
 
-            if (!lodestoneId) {
+            if (!lodestoneId || lodestoneId.length > 20) {
                 statusEl.textContent = "正しいIDまたはURLを入力してください";
                 statusEl.className = "text-xs text-red-400";
                 return;

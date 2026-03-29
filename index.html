@@ -273,7 +273,7 @@
                         <label for="auth-lodestone-id"
                             class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 3:
                             認証コードが正しく表示されるか確認し、開いているキャラクターページのURL、もしくはURL末尾の数字をコピーして貼り付け</label>
-                        <input type="text" id="auth-lodestone-id" name="lodestone-id"
+                        <input type="text" id="auth-lodestone-id" name="lodestone-id" maxlength="200"
                             aria-label="LodestoneキャラクターページのURL、またはキャラクターIDを入力"
                             class="w-full p-2 rounded bg-gray-900 border border-gray-700 text-sm focus:ring-1 focus:ring-yellow-500 outline-none transition-all">
                     </div>
@@ -382,13 +382,14 @@
                             <div class="section-label">出現条件</div>
                             <div class="condition-text section-content condition"></div>
                         </div>
-
-                        <!-- 6. 閉じるボタン (モバイル専用) -->
-                        <div class="mobile-detail-actions mt-6 mb-2 lg:hidden">
-                            <button class="mobile-detail-close-btn w-full py-4 rounded-xl font-bold transition-all active:scale-95" data-action="close-card">
-                                この詳細を閉じる
-                            </button>
                         </div>
+                    </div>
+
+                    <!-- 6. 閉じるボタン (モバイル専用: 固定フッター) -->
+                    <div class="mobile-detail-actions lg:hidden">
+                        <button class="mobile-detail-close-btn w-full py-4 rounded-xl font-bold transition-all active:scale-95" data-action="close-card">
+                            この詳細を閉じる
+                        </button>
                     </div>
                 </div>
             </div>
