@@ -6,14 +6,6 @@ import { openReportModal } from "./modal.js";
 import { allTabComparator } from "./mobSorter.js";
 import { checkAndNotify } from "./notificationManager.js";
 
-const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "Asia/Tokyo"
-});
-
 export function escapeHtml(str) {
   if (typeof str !== "string") return str;
   return str.replace(/[&<>"']/g, function (m) {
@@ -341,7 +333,6 @@ export function updateProgressText(card, mob) {
     areaEl.textContent = ` ${mob.Area} | ${mob.Expansion}`;
   }
 
-  const pcProgressTextHTML = `<span class="font-bold text-[14px] text-gray-100">${percentStr}</span>`;
   const iconEl = card.querySelector('.js-mobile-icon');
   const timeEl = card.querySelector('.js-mobile-time');
   const pcDetailEl = card.querySelector('.pc-detail-progress-text');
@@ -351,16 +342,20 @@ export function updateProgressText(card, mob) {
   }
   if (timeEl) {
     const timerHTML = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
-    timeEl.innerHTML = `
-      <div class="js-mobile-time-inner">
-        ${timerHTML}
-        <span class="detail-percent-val">(${percentStr})</span>
-      </div>`;
+    const newHTML = `<div class="js-mobile-time-inner">${timerHTML}<span class="detail-percent-val">(${percentStr})</span></div>`;
+    if (timeEl._lastHTML !== newHTML) {
+      timeEl.innerHTML = newHTML;
+      timeEl._lastHTML = newHTML;
+    }
     if (status === "MaxOver") timeEl.classList.add("max-over");
     else timeEl.classList.remove("max-over");
   }
   if (pcDetailEl) {
-    pcDetailEl.innerHTML = pcProgressTextHTML;
+    const pcText = percentStr;
+    if (pcDetailEl._lastPercent !== pcText) {
+      pcDetailEl.innerHTML = `<span class="font-bold text-[14px] text-gray-100">${pcText}</span>`;
+      pcDetailEl._lastPercent = pcText;
+    }
     if (status === "MaxOver") pcDetailEl.classList.add("max-over");
     else pcDetailEl.classList.remove("max-over");
   }
@@ -473,11 +468,10 @@ export function getValidSpawnPoints(mob, spawnCullStatus) {
 export function updateMobCount(card, mob) {
   const countContainer = card.querySelector('.mob-count-container');
   if (!countContainer) return;
-  const { remainingCount } = getSpawnCountInfo(mob);
+  const { remainingCount, validSpawnPoints } = getSpawnCountInfo(mob);
   let displayCountText = "";
   if (mob.Map && mob.spawn_points) {
     if (remainingCount === 1) {
-      const { validSpawnPoints } = getSpawnCountInfo(mob);
       const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
       displayCountText = `<span class="text-sm text-yellow-400 font-bold text-glow">${pointNumber}&thinsp;番</span>`;
     } else if (remainingCount > 1) {
@@ -598,8 +592,6 @@ export function updateSimpleMobItem(item, mob) {
   else item.classList.remove("blink-active");
   updateMemoIcon(item, mob);
 }
-
-const FIFTEEN_MINUTES_SEC = 15 * 60;
 
 export const DOM = {
   masterContainer: null,
@@ -1098,11 +1090,12 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     }
   }
 
-  if (navigator.userAgent.includes("Safari") && !navigator.userAgent.includes("Chrome")) {
+  if (_isSafari && !_safariHackApplied && DOM.pcLeftList) {
     const headers = DOM.pcLeftList.querySelectorAll(".text-xs");
     headers.forEach(header => {
       header.style.transform = "translateZ(0)";
     });
+    _safariHackApplied = true;
   }
 
   lastRenderedOrderStr = sortedMobs.map(m => m.No).join(",");
@@ -1154,13 +1147,17 @@ export function showColumnContainer() {
 }
 
 let isInitialSortingSuppressed = false;
+const _isSafari = navigator.userAgent.includes("Safari") && !navigator.userAgent.includes("Chrome");
+let _safariHackApplied = false;
 
 function updateProgressBars() {
   const state = getState();
   const nowSec = Date.now() / 1000;
   const mobMap = getMobMap();
+  const filtered = getFilteredMobs();
 
-  state.mobs.forEach(mob => {
+
+  filtered.forEach(mob => {
     let needsWorkerRecalc = false;
     if (mob.repopInfo?.conditionWindowEnd && nowSec > mob.repopInfo.conditionWindowEnd.getTime() / 1000) {
       recalculateMob(mob.No);

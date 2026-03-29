@@ -32,19 +32,22 @@
     .pc-detail-rank[data-rank="S"] {
         color: var(--rank-s);
         border-color: rgba(245, 158, 11, 0.3);
-        background: rgba(245, 158, 11, 0.05);
+        background: rgba(251, 191, 36, 0.1);
+        border-radius: 2px;
     }
 
     .pc-detail-rank[data-rank="A"] {
         color: var(--rank-a);
         border-color: rgba(107, 163, 122, 0.3);
-        background: rgba(107, 163, 122, 0.05);
+        background: rgba(107, 163, 122, 0.1);
+        border-radius: 2px;
     }
 
     .pc-detail-rank[data-rank="F"] {
         color: var(--rank-f);
         border-color: rgba(129, 140, 248, 0.3);
-        background: rgba(129, 140, 248, 0.05);
+        background: rgba(129, 140, 248, 0.1);
+        border-radius: 2px;
     }
 
     .pc-detail-progress-container {
@@ -157,26 +160,8 @@
         box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(129, 140, 248, 0.15) inset;
     }
 
-    .pc-detail-rank[data-rank="S"] {
-        color: var(--rank-s);
-        border-color: var(--rank-s);
-        background-color: rgba(251, 191, 36, 0.1);
-        border-radius: 2px;
-    }
 
-    .pc-detail-rank[data-rank="A"] {
-        color: var(--rank-a);
-        border-color: var(--rank-a);
-        background-color: rgba(107, 163, 122, 0.1);
-        border-radius: 2px;
-    }
 
-    .pc-detail-rank[data-rank="F"] {
-        color: var(--rank-f);
-        border-color: var(--rank-f);
-        background-color: rgba(129, 140, 248, 0.1);
-        border-radius: 2px;
-    }
 
     .pc-clocks-header {
         display: flex;

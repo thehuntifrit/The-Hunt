@@ -5,7 +5,7 @@ import { attachLocationEvents } from "./location.js";
 import { openReportModal, closeReportModal, initModal, openAuthModal } from "./modal.js";
 import { handleAreaFilterClick } from "./filterUI.js";
 import { DOM, sortAndRedistribute, showColumnContainer, updateHeaderTime } from "./uiRender.js";
-import { debounce } from "./cal.js";
+import { debounce, formatMMDDHHmm } from "./cal.js";
 import { initTooltip } from "./tooltip.js";
 import { initGlobalMagnifier } from "./magnifier.js";
 import { initSidebar } from "./sidebar.js";
@@ -152,9 +152,7 @@ async function initApp() {
             }
         }, { once: true });
 
-        window.addEventListener('maintenanceUpdated', () => {
-            renderMaintenanceStatus();
-        });
+
 
     } catch (e) {
         console.error("App initialization failed:", e);
@@ -204,15 +202,7 @@ async function getMaintenanceStatus() {
     return status;
 }
 
-function formatMMDDHHmm(isoString) {
-    if (!isoString) return "";
-    const date = new Date(isoString);
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    const h = String(date.getHours()).padStart(2, '0');
-    const min = String(date.getMinutes()).padStart(2, '0');
-    return `${m}/${d} ${h}:${min}`;
-}
+
 
 export async function renderMaintenanceStatus() {
     const state = getState();

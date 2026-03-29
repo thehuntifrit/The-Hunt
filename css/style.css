@@ -888,8 +888,11 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .mob-card {
-    will-change: transform;
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mob-card:hover {
+    will-change: transform;
 }
 
 .mob-card-placeholder {

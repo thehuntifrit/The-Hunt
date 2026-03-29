@@ -1,5 +1,6 @@
 import { getState, EXPANSION_MAP } from "./dataManager.js";
 import { renderAreaFilterPanel, handleRankTabClick } from "./filterUI.js";
+import { escapeHtml } from "./uiRender.js";
 
 let currentPanel = null;
 
@@ -58,9 +59,7 @@ function updateErrorBadge() {
     }
 }
 
-function escapeHtml(str) {
-    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
+
 
 function getStoredState() {
     try {

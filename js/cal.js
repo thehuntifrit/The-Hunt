@@ -562,7 +562,10 @@ export function calculateRepop(mob, maintenance, options = {}) {
 
 export function formatMMDDHHmm(input) {
   if (!input) return "--/-- --:--";
-  const date = (input instanceof Date) ? input : new Date(input * 1000);
+  let date;
+  if (input instanceof Date) date = input;
+  else if (typeof input === "string") date = new Date(input);
+  else date = new Date(input * 1000);
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
   const hh = String(date.getHours()).padStart(2, "0");
