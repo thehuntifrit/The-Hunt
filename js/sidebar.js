@@ -348,7 +348,7 @@ function renderSidebarFilterAccordion() {
     const activeRank = state.filter.rank || "ALL";
     const clickStep = state.filter.clickStep || 1;
 
-    let html = `<div class="sidebar-section-title" style="text-align: center; margin-bottom: 12px; opacity: 0.6;">Filter</div>`;
+    let html = `<div class="sidebar-filter-title">Filter</div>`;
     html += ranks.map(r => {
         const isActive = r.key === activeRank;
         const isExpanded = isActive && clickStep === 2;
