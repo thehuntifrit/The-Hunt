@@ -6,6 +6,15 @@ import { openReportModal } from "./modal.js";
 import { allTabComparator } from "./mobSorter.js";
 import { checkAndNotify } from "./notificationManager.js";
 
+function updateEl(parent, selector, props = {}, dataset = {}) {
+  const el = parent.querySelector(selector);
+  if (!el) return;
+  Object.assign(el, props);
+  for (const [key, val] of Object.entries(dataset)) {
+    el.dataset[key] = val;
+  }
+}
+
 export function escapeHtml(str) {
   if (typeof str !== "string") return str;
   return str.replace(/[&<>"']/g, function (m) {
@@ -158,40 +167,19 @@ export function createMobCard(mob, isDetailView = false) {
   card.dataset.mobNo = mob.No;
   card.dataset.rank = rank;
 
-  const memoInput = card.querySelector('.memo-input');
-  if (memoInput) {
-    memoInput.dataset.mobNo = mob.No;
-    memoInput.value = mob.memo_text || "";
-  }
-
-  const mobNameEl = card.querySelector('.mob-name');
-  if (mobNameEl) {
-    mobNameEl.textContent = mob.Name;
-    mobNameEl.dataset.rank = rank;
-  }
-
-  const mobRankBadge = card.querySelector('.list-rank-badge');
-  if (mobRankBadge) {
-    mobRankBadge.textContent = rank;
-    mobRankBadge.dataset.rank = rank;
-  }
-
-  const reportSidebar = card.querySelector('.report-side-bar');
-  if (reportSidebar) {
-    reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
-    reportSidebar.dataset.mobNo = mob.No;
-  }
+  updateEl(card, '.memo-input', { value: mob.memo_text || "" }, { mobNo: mob.No });
+  updateEl(card, '.mob-name', { textContent: mob.Name }, { rank });
+  updateEl(card, '.list-rank-badge', { textContent: rank }, { rank });
+  updateEl(card, '.report-side-bar', {}, { reportType: rank === 'A' ? 'instant' : 'modal', mobNo: mob.No });
 
   const expandablePanel = card.querySelector('.expandable-panel');
   if (isOpen && expandablePanel) {
-    card.classList.add('is-expanded');
-    card.classList.add('open');
+    card.classList.add('is-expanded', 'open');
     expandablePanel.classList.add('open');
   }
 
-  const conditionText = card.querySelector('.condition-text');
-  if (conditionText && mob.Condition) {
-    conditionText.innerHTML = processText(mob.Condition);
+  if (mob.Condition) {
+    updateEl(card, '.condition-text', { innerHTML: processText(mob.Condition) });
   }
 
   const mapImg = card.querySelector('.mob-map-img');
@@ -226,34 +214,22 @@ export function createPCDetailCard(mob) {
   card.dataset.mobNo = mob.No;
   card.dataset.rank = rank;
 
+  updateEl(card, '.pc-detail-name', { textContent: mob.Name });
   const nameEl = card.querySelector('.pc-detail-name');
-  if (nameEl) {
-    nameEl.textContent = mob.Name;
-    nameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
-  }
+  if (nameEl) nameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
 
-  const rankEl = card.querySelector('.pc-detail-rank');
-  if (rankEl) {
-    rankEl.textContent = rank;
-    rankEl.dataset.rank = rank;
-  }
+  updateEl(card, '.pc-detail-rank', { textContent: rank }, { rank });
 
   const progressBar = card.querySelector('.pc-detail-progress-bar');
   if (progressBar) progressBar.style.width = `${elapsedPercent || 0}%`;
 
-  card.querySelector('[data-min-repop]').textContent = fmt(minRepop);
-  card.querySelector('[data-max-repop]').textContent = fmt(maxRepop);
-  card.querySelector('[data-next-possible]').textContent = nextConditionSpawnDate ? fmt(nextConditionSpawnDate) : "--/-- --:--";
-  card.querySelector('[data-last-kill]').textContent = fmt(mob.last_kill_time);
+  updateEl(card, '[data-min-repop]', { textContent: fmt(minRepop) });
+  updateEl(card, '[data-max-repop]', { textContent: fmt(maxRepop) });
+  updateEl(card, '[data-next-possible]', { textContent: nextConditionSpawnDate ? fmt(nextConditionSpawnDate) : "--/-- --:--" });
+  updateEl(card, '[data-last-kill]', { textContent: fmt(mob.last_kill_time) });
 
-  const conditionEl = card.querySelector('.section-content.condition');
-  if (conditionEl) conditionEl.innerHTML = processText(mob.Condition || "\u7279\u6b8a\u306a\u51fa\u73fe\u6761\u4ef6\u306f\u3042\u308a\u307e\u305b\u3093\u3002");
-
-  const memoInput = card.querySelector('.memo-input');
-  if (memoInput) {
-    memoInput.dataset.mobNo = mob.No;
-    memoInput.value = mob.memo_text || '';
-  }
+  updateEl(card, '.section-content.condition', { innerHTML: processText(mob.Condition || "\u7279\u6b8a\u306a\u51fa\u73fe\u6761\u4ef6\u306f\u3042\u308a\u307e\u305b\u3093\u3002") });
+  updateEl(card, '.memo-input', { value: mob.memo_text || '' }, { mobNo: mob.No });
 
   const mapSection = card.querySelector('.map-section');
   if (mapSection) {

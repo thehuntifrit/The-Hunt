@@ -113,7 +113,7 @@
    .sidebar-notification-toggle input:checked + .sidebar-notification-label {
         opacity: 1;
         color: var(--accent-gold);
-        text-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+        text-shadow: 0 0 8px rgba(var(--rank-s-rgb), 0.5);
     }
 
     .sidebar-icon-btn {
@@ -158,9 +158,9 @@
     }
 
     .sidebar-icon-btn.active {
-        background: rgba(6, 182, 212, 0.15);
+        background: rgba(var(--cyan-rgb), 0.15);
         color: var(--accent-cyan);
-        box-shadow: 0 0 12px rgba(6, 182, 212, 0.2);
+        box-shadow: 0 0 12px rgba(var(--cyan-rgb), 0.2);
     }
 
     .sidebar-icon-btn.active::before {
@@ -176,7 +176,7 @@
 
     .sidebar-icon-btn.has-alert {
         color: var(--accent-gold);
-        text-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
+        text-shadow: 0 0 10px rgba(var(--rank-s-rgb), 0.6);
         animation: sidebar-alert-pulse 2s infinite ease-in-out;
     }
 
@@ -221,7 +221,7 @@
     }
 
     .sidebar-alert-content:empty::before {
-        content: '現在情報はありません';
+        content: '現在該当する情報はありません。';
         color: rgba(255, 255, 255, 0.6);
         font-style: italic;
         font-weight: 500;
@@ -307,7 +307,7 @@
         opacity: 1;
         filter: grayscale(0);
         color: var(--accent-gold);
-        text-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+        text-shadow: 0 0 8px rgba(var(--rank-s-rgb), 0.5);
     }
 
     .sidebar-notification-toggle input:checked ~ .sidebar-label {
@@ -384,7 +384,7 @@
     .rank-accordion-item[data-rank="F.A.T.E."].active .rank-header {
         border-left: 3px solid var(--rank-f);
         color: var(--rank-f);
-        background: rgba(6, 182, 212, 0.1);
+        background: rgba(var(--cyan-rgb), 0.1);
     }
 
     .rank-header:hover {
@@ -405,8 +405,8 @@
     }
 
     .area-expansion .area-filter-btn {
-        width: 100% !important;
-        margin: 0 !important;
+        width: 100%;
+        margin: 0;
         font-size: 15px;
         font-weight: 700;
         padding: 10px 4px;
@@ -414,7 +414,7 @@
         background: rgba(255, 255, 255, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 6px;
-        color: rgba(255, 255, 255, 0.95) !important;
+        color: rgba(255, 255, 255, 0.95);
         cursor: pointer;
         transition: all 0.2s;
         display: flex;
@@ -426,34 +426,34 @@
 
     .area-expansion .area-filter-btn:hover {
         background: rgba(255, 255, 255, 0.18);
-        color: #fff !important;
+        color: #fff;
         border-color: rgba(255, 255, 255, 0.25);
     }
 
     .area-expansion .area-filter-btn.is-selected {
-        background: var(--accent-cyan) !important;
-        color: #0c121e !important;
+        background: var(--accent-cyan);
+        color: #0c121e;
         font-weight: 800;
-        border-color: var(--accent-cyan) !important;
+        border-color: var(--accent-cyan);
         box-shadow: 0 0 15px rgba(34, 211, 238, 0.4);
     }
 
     .area-grid {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 8px !important;
-        width: 100% !important;
-        margin-top: 8px !important;
-        box-sizing: border-box !important;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        width: 100%;
+        margin-top: 8px;
+        box-sizing: border-box;
     }
 
     .area-select-all {
-        grid-column: span 2 !important;
-        width: 100% !important;
-        margin-bottom: 8px !important;
-        background: rgba(34, 211, 238, 0.15) !important;
-        border-color: rgba(34, 211, 238, 0.4) !important;
-        color: var(--accent-cyan) !important;
+        grid-column: span 2;
+        width: 100%;
+        margin-bottom: 8px;
+        background: rgba(34, 211, 238, 0.15);
+        border-color: rgba(34, 211, 238, 0.4);
+        color: var(--accent-cyan);
         font-weight: 800;
     }
 
@@ -479,7 +479,7 @@
     }
 
     #sidebar-area-filter .area-filter-btn.active {
-        background: rgba(6, 182, 212, 0.15);
+        background: rgba(var(--cyan-rgb), 0.15);
         border-color: var(--accent-cyan);
         color: var(--accent-cyan);
     }
@@ -526,7 +526,7 @@
 
     body.has-sidebar main.main-content-area {
         margin-left: 56px;
-        padding-top: 32px !important;
+        padding-top: 32px;
         transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -622,6 +622,6 @@
 
     #app-sidebar,
     #sidebar-status-bar {
-        display: none !important;
+        display: none;
     }
 }

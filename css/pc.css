@@ -1,7 +1,4 @@
 @media (min-width: 1024px) {
-    #mobile-layout {
-        display: none !important;
-    }
 
     .pc-detail-card {
         padding: 0.75rem 1rem;
@@ -77,8 +74,8 @@
             scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
         }
 
-        padding-top: 0 !important;
-        border-top: none !important;
+        padding-top: 0;
+        border-top: none;
     }
 
     .pc-detail-content::-webkit-scrollbar {
@@ -95,7 +92,7 @@
     }
 
     #pc-layout {
-        display: flex !important;
+        display: flex;
         flex-direction: row;
         width: 100%;
         max-width: 1200px;
@@ -146,7 +143,7 @@
     }
 
     .pc-detail-content::-webkit-scrollbar-thumb:hover {
-        background: rgba(129, 140, 248, 0.05);
+        background: rgba(var(--rank-f-rgb), 0.05);
     }
 
     .pc-detail-card[data-rank="S"] {
@@ -236,8 +233,8 @@
 
     .pc-list-item.selected {
         background: rgba(15, 23, 42, 0.8);
-        border-color: rgba(6, 182, 212, 0.4);
-        box-shadow: inset 0 0 10px rgba(6, 182, 212, 0.1);
+        border-color: rgba(var(--cyan-rgb), 0.4);
+        box-shadow: inset 0 0 10px rgba(var(--cyan-rgb), 0.1);
     }
 
     .pc-list-item.selected::before {
@@ -335,22 +332,22 @@
     }
 
     #pc-left-list .pc-list-item[data-rank="A"] .pc-list-name {
-        color: var(--rank-a) !important;
+        color: var(--rank-a);
     }
 
     #pc-left-list .pc-list-item[data-rank="F"] .pc-list-name,
     #pc-left-list .pc-list-item[data-rank="F.A.T.E."] .pc-list-name {
-        color: var(--rank-f) !important;
+        color: var(--rank-f);
     }
 
     #pc-left-list .pc-list-item[data-rank="S"] .pc-list-name {
-        color: #ffffff !important;
+        color: #ffffff;
     }
 
     .pc-list-report-btn {
         width: 58px;
         height: 22px;
-        background: rgba(6, 182, 212, 0.1);
+        background: rgba(var(--cyan-rgb), 0.1);
         border: 1px solid var(--accent-cyan);
         border-radius: 4px;
         color: var(--accent-cyan);

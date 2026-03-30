@@ -144,12 +144,9 @@
         <div id="mobile-footer-panel" class="mobile-footer-panel hidden"></div>
     </nav>
 
+    <main class="mx-auto px-2 py-2 sm:px-4 pt-[38px] lg:pt-24 pb-[60px] lg:pb-10 main-content-area">
 
-
-    <main class="mx-auto px-2 py-2 sm:px-4 pb-10 pt-24 main-content-area">
-
-        <!-- PC Layout (3/5 and 2/5 split pane) -->
-        <div id="pc-layout" class="hidden">
+        <div id="pc-layout" class="hidden lg:block w-full max-w-7xl mx-auto">
             <div id="pc-left-list"></div>
             <div id="pc-right-pane">
                 <div id="pc-clocks-header" class="pc-clocks-header">
@@ -166,8 +163,7 @@
             </div>
         </div>
 
-        <!-- Mobile Layout (Original column structure) -->
-        <div id="mobile-layout" class="block w-full">
+        <div id="mobile-layout" class="block lg:hidden w-full">
             <div id="column-container"
                 class="flex flex-col gap-3 max-w-6xl mx-auto opacity-0 transition-opacity duration-300"
                 data-breakpoint-md="768" data-breakpoint-lg="1024">
@@ -299,8 +295,8 @@
                     <div class="progress-bar-wrapper absolute top-0 left-0 right-[38px] z-0 pointer-events-none">
                         <div class="progress-bar-bg absolute left-0 top-0 h-full"></div>
                     </div>
-                    <div class="px-2 py-1 flex flex-col gap-y-0.5 content-area relative z-10">
-                        <div class="mob-name-shift-up flex items-center w-full min-w-0 gap-2">
+                    <div class="px-2 flex flex-col gap-y-0.5 content-area relative z-10">
+                        <div class="flex items-center w-full min-w-0 gap-2">
                             <span class="mob-name font-bold truncate text-gray-100 min-w-0"></span>
                             <div class="flex items-center gap-2 flex-shrink-0">
                                 <span class="mob-count-container text-[10px] whitespace-nowrap text-slate-400"></span>
