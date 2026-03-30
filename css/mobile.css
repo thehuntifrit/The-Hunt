@@ -348,27 +348,10 @@
         color: #fff;
     }
 
-    .mobile-footer-panel .rank-accordion-item[data-rank="S"].active .rank-header {
-        border-left: 3px solid var(--rank-s);
-        color: var(--rank-s);
-        background: rgba(var(--rank-s-rgb), 0.1);
-    }
-
-    .mobile-footer-panel .rank-accordion-item[data-rank="A"].active .rank-header {
-        border-left: 3px solid var(--rank-a);
-        color: var(--rank-a);
-        background: rgba(var(--rank-a-rgb), 0.1);
-    }
-
-    .mobile-footer-panel .rank-accordion-item[data-rank="F.A.T.E."].active .rank-header {
-        border-left: 3px solid var(--rank-f);
-        color: var(--rank-f);
-        background: rgba(var(--rank-f-rgb), 0.1);
-    }
-
-    .mobile-footer-panel .rank-accordion-item[data-rank="ALL"].active .rank-header {
-        border-left: 3px solid #f43f5e;
-        background: rgba(244, 63, 94, 0.1);
+    .mobile-footer-panel .rank-accordion-item[data-rank].active .rank-header {
+        border-left: 3px solid var(--current-rank);
+        color: var(--current-rank);
+        background: rgba(var(--current-rank-rgb), 0.1);
     }
 
     .mobile-footer-panel .area-expansion {

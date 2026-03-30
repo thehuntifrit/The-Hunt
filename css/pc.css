@@ -25,26 +25,9 @@
     .pc-detail-rank {
         font-size: 12px;
         height: min-content;
-    }
-
-    .pc-detail-rank[data-rank="S"] {
-        color: var(--rank-s);
-        border-color: rgba(var(--rank-s-rgb), 0.3);
-        background: rgba(var(--rank-s-rgb), 0.1);
-        border-radius: 2px;
-    }
-
-    .pc-detail-rank[data-rank="A"] {
-        color: var(--rank-a);
-        border-color: rgba(var(--rank-a-rgb), 0.3);
-        background: rgba(var(--rank-a-rgb), 0.1);
-        border-radius: 2px;
-    }
-
-    .pc-detail-rank[data-rank="F"] {
-        color: var(--rank-f);
-        border-color: rgba(var(--rank-f-rgb), 0.3);
-        background: rgba(var(--rank-f-rgb), 0.1);
+        color: var(--current-rank);
+        border-color: rgba(var(--current-rank-rgb), 0.3);
+        background: rgba(var(--current-rank-rgb), 0.1);
         border-radius: 2px;
     }
 
@@ -146,16 +129,8 @@
         background: rgba(var(--rank-f-rgb), 0.05);
     }
 
-    .pc-detail-card[data-rank="S"] {
-        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(var(--rank-s-rgb), 0.15) inset;
-    }
-
-    .pc-detail-card[data-rank="A"] {
-        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(var(--rank-a-rgb), 0.15) inset;
-    }
-
-    .pc-detail-card[data-rank="F"] {
-        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(var(--rank-f-rgb), 0.15) inset;
+    .pc-detail-card {
+        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(var(--current-rank-rgb), 0.15) inset;
     }
 
     .pc-clocks-header {
@@ -331,17 +306,8 @@
         border-color: rgba(255, 255, 255, 0.3);
     }
 
-    #pc-left-list .pc-list-item[data-rank="A"] .pc-list-name {
-        color: var(--rank-a);
-    }
-
-    #pc-left-list .pc-list-item[data-rank="F"] .pc-list-name,
-    #pc-left-list .pc-list-item[data-rank="F.A.T.E."] .pc-list-name {
-        color: var(--rank-f);
-    }
-
-    #pc-left-list .pc-list-item[data-rank="S"] .pc-list-name {
-        color: #ffffff;
+    #pc-left-list .pc-list-item .pc-list-name {
+        color: var(--rank-text, #f1f5f9);
     }
 
     .pc-list-report-btn {

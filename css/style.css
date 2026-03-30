@@ -105,6 +105,30 @@
     background-color: var(--rank-f-tab);
 }
 
+[data-rank="S"] {
+    --current-rank: var(--rank-s);
+    --current-rank-rgb: var(--rank-s-rgb);
+    --rank-text: #ffffff;
+}
+
+[data-rank="A"] {
+    --current-rank: var(--rank-a);
+    --current-rank-rgb: var(--rank-a-rgb);
+    --rank-text: var(--rank-a);
+}
+
+[data-rank="F"],
+[data-rank="F.A.T.E."] {
+    --current-rank: var(--rank-f);
+    --current-rank-rgb: var(--rank-f-rgb);
+    --rank-text: var(--rank-f);
+}
+
+[data-rank="ALL"] {
+    --current-rank: #f43f5e;
+    --current-rank-rgb: 244, 63, 94;
+}
+
 body {
     background-color: var(--bg-dark);
     color: var(--text-primary);
@@ -160,20 +184,16 @@ body::before {
 }
 
 /* Rank Colors */
-.mob-name[data-rank="S"] {
-    color: #ffffff;
+.mob-name {
+    color: var(--rank-text, #e2e8f0);
+    text-shadow: none;
+    transition: text-shadow 0.4s ease, color 0.4s ease;
 }
-.mob-rank-badge[data-rank="S"], .list-rank-badge[data-rank="S"] {
-    color: var(--rank-s);
-    border-color: var(--rank-s);
-}
-.mob-name[data-rank="A"], .mob-rank-badge[data-rank="A"], .list-rank-badge[data-rank="A"] {
-    color: var(--rank-a);
-    border-color: var(--rank-a);
-}
-.mob-name[data-rank="F"], .mob-rank-badge[data-rank="F"], .list-rank-badge[data-rank="F"] {
-    color: var(--rank-f);
-    border-color: var(--rank-f);
+
+.mob-rank-badge, 
+.list-rank-badge {
+    color: var(--current-rank);
+    border-color: var(--current-rank);
 }
 
 .mob-name {
@@ -270,21 +290,7 @@ body::before {
     box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
 }
 
-.progress-bar-bg.status-max-over {
-    background: var(--progress-ready);
-}
 
-.progress-bar-bg.status-condition-active {
-    background: var(--progress-fill);
-}
-
-.progress-bar-bg.status-pop-window {
-    background: var(--progress-fill);
-}
-
-.progress-bar-bg.status-next {
-    background: var(--progress-fill);
-}
 
 .progress-bar-wrapper {
     position: absolute;
@@ -353,8 +359,8 @@ body::before {
 
 .detail-info-item {
     text-align: center;
-    background: rgba(var(--cyan-rgb), 0.04);
-    border: 1px solid rgba(var(--cyan-rgb), 0.08);
+    background: rgba(var(--cyan-rgb), 0.08);
+    border: 1px solid rgba(var(--cyan-rgb), 0.2);
     border-radius: 6px;
     padding: 6px 4px;
 }
@@ -789,10 +795,10 @@ body::before {
 
 
 .detail-memo-box {
-    background: rgba(var(--cyan-rgb), 0.03);
+    background: rgba(var(--cyan-rgb), 0.1);
     padding: 6px 10px;
     border-radius: 6px;
-    border: 1px solid rgba(var(--cyan-rgb), 0.1);
+    border: 1px solid rgba(var(--cyan-rgb), 0.25);
     transition: border-color 0.2s;
 }
 
@@ -815,7 +821,7 @@ body::before {
 }
 
 .detail-memo-input::placeholder {
-    color: rgba(var(--cyan-rgb), 0.2);
+    color: rgba(255, 255, 255, 0.45);
 }
 
 .spawn-point {
@@ -897,12 +903,6 @@ body::before {
 .custom-tooltip.hidden {
     opacity: 0;
     visibility: hidden;
-}
-
-@media (max-width: 1023px) {
-    .mob-card-inner {
-        background: rgba(15, 23, 42, 0.85);
-    }
 }
 
 #status-message-telop {
