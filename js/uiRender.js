@@ -96,7 +96,7 @@ export function getSpawnCountInfo(mob) {
   const state = getState();
   const mobLocationsData = state.mobLocations?.[mob.No];
   const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
-  if (!mob.Map || !mob.spawn_points) return { countHtml: "", remainingCount: 0, spawnCullStatus };
+  if (!mob.Map || !mob.spawn_points || mob.Rank === 'F') return { countHtml: "", remainingCount: 0, spawnCullStatus };
   const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
   const remainingCount = validSpawnPoints.length;
   let countHtml = "";
@@ -184,7 +184,7 @@ export function createMobCard(mob, isDetailView = false) {
 
   const mapImg = card.querySelector('.mob-map-img');
   const mapSection = mapImg?.closest('.map-section');
-  if (mapImg && mob.Map) {
+  if (mapImg && mob.Map && mob.Rank !== 'F') {
     mapImg.src = `./maps/${mob.Map}`;
     mapImg.alt = `${mob.Area} Map`;
     mapImg.dataset.mobMap = mob.Map;
@@ -233,7 +233,7 @@ export function createPCDetailCard(mob) {
 
   const mapSection = card.querySelector('.map-section');
   if (mapSection) {
-    if (mob.Map) {
+    if (mob.Map && mob.Rank !== 'F') {
       mapSection.classList.remove('hidden');
       updateMapOverlay(card, mob);
     } else {
@@ -496,6 +496,12 @@ export function updateAreaInfo(card, mob) {
 export function updateMapOverlay(card, mob) {
   const mapContainer = card.querySelector('.map-container');
   if (!mapContainer) return;
+  if (mob.Rank === 'F') {
+    mapContainer.classList.add('hidden');
+    const mapSection = mapContainer.closest('.map-section');
+    if (mapSection) mapSection.classList.add('hidden');
+    return;
+  }
   const mapImg = mapContainer.querySelector('.mob-map-img');
   if (mapImg && mob.Map && mapImg.dataset.mobMap !== mob.Map) {
     mapImg.src = `./maps/${mob.Map}`;

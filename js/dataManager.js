@@ -466,7 +466,7 @@ async function loadLocationData() {
         const locationsData = await res.json();
 
         state.baseMobData.forEach(mob => {
-            const locInfo = locationsData[mob.No];
+            const locInfo = locationsData[mob.Area];
             if (locInfo) {
                 mob.spawn_points = locInfo.locations || [];
                 mob.Map = locInfo.mapImage || "";
@@ -474,7 +474,7 @@ async function loadLocationData() {
         });
 
         state.mobs.forEach(mob => {
-            const locInfo = locationsData[mob.No];
+            const locInfo = locationsData[mob.Area];
             if (locInfo) {
                 mob.spawn_points = locInfo.locations || [];
                 mob.Map = locInfo.mapImage || "";
