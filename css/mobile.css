@@ -50,6 +50,10 @@
         letter-spacing: -0.02em;
     }
 
+    .mob-name-shift-up {
+        transform: translateY(-2px);
+    }
+
     .mob-rank-badge {
         font-size: 12px;
         min-width: 14px;
@@ -503,6 +507,10 @@
             opacity: 1;
             transform: scale(1) translateY(0);
         }
+    }
+
+    .mob-name-shift-up {
+        transform: translateY(-2px);
     }
 
     .mob-card.open .mob-card-inner {
