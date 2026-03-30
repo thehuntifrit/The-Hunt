@@ -70,8 +70,11 @@
     --text-secondary: #94a3b8;
 
     --rank-s: #fbbf24;
+    --rank-s-rgb: 251, 191, 36;
     --rank-a: #6ba37a;
+    --rank-a-rgb: 107, 163, 122;
     --rank-f: #818cf8;
+    --rank-f-rgb: 129, 140, 248;
 
     --rank-s-tab: #d97706;
     --rank-a-tab: #15803d;
@@ -154,6 +157,23 @@ body::before {
     cursor: pointer !important;
 }
 
+/* Rank Colors */
+.mob-name[data-rank="S"] {
+    color: #ffffff !important;
+}
+.mob-rank-badge[data-rank="S"], .list-rank-badge[data-rank="S"] {
+    color: var(--rank-s) !important;
+    border-color: var(--rank-s) !important;
+}
+.mob-name[data-rank="A"], .mob-rank-badge[data-rank="A"], .list-rank-badge[data-rank="A"] {
+    color: var(--rank-a) !important;
+    border-color: var(--rank-a) !important;
+}
+.mob-name[data-rank="F"], .mob-rank-badge[data-rank="F"], .list-rank-badge[data-rank="F"] {
+    color: var(--rank-f) !important;
+    border-color: var(--rank-f) !important;
+}
+
 .mob-name {
     text-shadow: none;
     transition: text-shadow 0.4s ease, color 0.4s ease;
@@ -188,6 +208,11 @@ body::before {
 .mob-card.is-pre-repop .report-side-bar {
     opacity: 0.6 !important;
     filter: grayscale(100%) !important;
+}
+
+.pc-list-item.maintenance-gray-out {
+    opacity: 0.4;
+    filter: grayscale(100%);
 }
 
 .mob-card.maintenance-gray-out .mob-card-inner {

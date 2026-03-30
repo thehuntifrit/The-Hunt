@@ -1,5 +1,3 @@
-
-
 export function initGlobalMagnifier() {
     if (window.magnifierInitialized) return;
     window.magnifierInitialized = true;

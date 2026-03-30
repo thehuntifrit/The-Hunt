@@ -32,22 +32,22 @@
 
     .pc-detail-rank[data-rank="S"] {
         color: var(--rank-s);
-        border-color: rgba(245, 158, 11, 0.3);
-        background: rgba(251, 191, 36, 0.1);
+        border-color: rgba(var(--rank-s-rgb), 0.3);
+        background: rgba(var(--rank-s-rgb), 0.1);
         border-radius: 2px;
     }
 
     .pc-detail-rank[data-rank="A"] {
         color: var(--rank-a);
-        border-color: rgba(107, 163, 122, 0.3);
-        background: rgba(107, 163, 122, 0.1);
+        border-color: rgba(var(--rank-a-rgb), 0.3);
+        background: rgba(var(--rank-a-rgb), 0.1);
         border-radius: 2px;
     }
 
     .pc-detail-rank[data-rank="F"] {
         color: var(--rank-f);
-        border-color: rgba(129, 140, 248, 0.3);
-        background: rgba(129, 140, 248, 0.1);
+        border-color: rgba(var(--rank-f-rgb), 0.3);
+        background: rgba(var(--rank-f-rgb), 0.1);
         border-radius: 2px;
     }
 
@@ -150,15 +150,15 @@
     }
 
     .pc-detail-card[data-rank="S"] {
-        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(251, 191, 36, 0.15) inset;
+        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(var(--rank-s-rgb), 0.15) inset;
     }
 
     .pc-detail-card[data-rank="A"] {
-        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(107, 163, 122, 0.15) inset;
+        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(var(--rank-a-rgb), 0.15) inset;
     }
 
     .pc-detail-card[data-rank="F"] {
-        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(129, 140, 248, 0.15) inset;
+        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(var(--rank-f-rgb), 0.15) inset;
     }
 
     .pc-clocks-header {
@@ -378,34 +378,12 @@
         border-color: rgba(255, 255, 255, 0.2);
     }
 
-    .progress-info-group {
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 0 !important;
-    }
-
-    .js-mobile-icon {
-        flex-shrink: 0;
-        display: flex;
-        justify-content: center;
-    }
-
-    .js-mobile-time {
-        flex-shrink: 0;
-        display: flex !important;
-        align-items: center;
-        justify-content: flex-end;
-    }
-
     .detail-time-val {
         width: 67px;
         text-align: right;
     }
 
-    .pc-detail-progress-text,
-    .detail-percent-val {
+    .pc-detail-progress-text {
         text-align: right;
         width: 44px;
         font-size: 11px;

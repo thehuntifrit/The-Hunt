@@ -1,5 +1,3 @@
-
-
 let tooltip = null;
 let currentTarget = null;
 

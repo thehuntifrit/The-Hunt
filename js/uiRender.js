@@ -167,13 +167,13 @@ export function createMobCard(mob, isDetailView = false) {
   const mobNameEl = card.querySelector('.mob-name');
   if (mobNameEl) {
     mobNameEl.textContent = mob.Name;
-    mobNameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
+    mobNameEl.dataset.rank = rank;
   }
 
   const mobRankBadge = card.querySelector('.list-rank-badge');
   if (mobRankBadge) {
     mobRankBadge.textContent = rank;
-    mobRankBadge.style.color = `var(--rank-${rank.toLowerCase()})`;
+    mobRankBadge.dataset.rank = rank;
   }
 
   const reportSidebar = card.querySelector('.report-side-bar');
@@ -382,7 +382,6 @@ export function updateProgressText(card, mob) {
   } else {
     card.classList.remove("is-pre-repop");
   }
-  if (mobNameEl) mobNameEl.style.color = '#fff';
 
   if (isMaint) card.classList.add("maintenance-gray-out");
   else card.classList.remove("maintenance-gray-out");
@@ -506,9 +505,7 @@ export function updateAreaInfo(card, mob) {
 
   card.querySelectorAll('.mob-rank-badge, .list-rank-badge').forEach(badge => {
     badge.textContent = rank;
-    const color = `var(--rank-${rank.toLowerCase()})`;
-    badge.style.color = color;
-    badge.style.borderColor = color;
+    badge.dataset.rank = rank;
   });
 
   card.querySelectorAll('.detail-area').forEach(el => el.textContent = areaName);
@@ -600,8 +597,9 @@ export function updateSimpleMobItem(item, mob) {
     let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
     percentEl.textContent = isTimeOver ? "100%" : `${safePercent}%`;
   }
-  item.style.opacity = isMaint ? "0.4" : "1";
-  item.style.filter = isMaint ? "grayscale(1)" : "none";
+  if (isMaint) item.classList.add("maintenance-gray-out");
+  else item.classList.remove("maintenance-gray-out");
+
   if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) item.classList.add("blink-active");
   else item.classList.remove("blink-active");
   updateMemoIcon(item, mob);
