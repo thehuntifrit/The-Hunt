@@ -77,19 +77,26 @@ export function computeTimeLabel(mob) {
 
 function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow) {
   if (!dhm) return `<div class="timer-value">--/-- --:--</div>`;
-  const { d, h, m, rawS, rawD, rawH } = dhm;
-  let html = '';
+  const { d, h, m } = dhm;
 
   if (isInWindow) {
     const totalMinutes = Math.ceil((dhm.rawS || 0) / 60);
-    html = `<span class="timer-part"><span class="timer-unit" style="font-size: 11px; margin-right: 2px;">残り</span><span class="timer-num">${totalMinutes}</span><span class="timer-unit">分</span></span>`;
-  } else {
-    if (rawD > 0) html += `<span class="timer-part d-part"><span class="timer-num">${d}</span><span class="timer-unit">d</span></span>`;
-    if (rawH > 0 || rawD > 0) html += `<span class="timer-part h-part"><span class="timer-num">${h}</span><span class="timer-unit">h</span></span>`;
-    html += `<span class="timer-part m-part"><span class="timer-num">${m}</span><span class="timer-unit">m</span></span>`;
+    return `<span class="timer-value special-timer"><span class="timer-part"><span class="timer-num">${totalMinutes}</span><span class="timer-unit">分</span></span></span>`;
   }
 
-  return `<span class="timer-value ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''} ${isInWindow ? 'special-timer' : ''}">${html}</span>`;
+  const format = (num, unit) => {
+    if (Number(num) === 0 && unit !== 'm') return '&nbsp;&nbsp;&nbsp;';
+    const s = String(num).padStart(2, '0').replace(/^0/, '&nbsp;');
+    return `<span class="timer-num">${s}</span><span class="timer-unit">${unit}</span>`;
+  };
+
+  const html = `
+    <span class="timer-part d-part">${format(d, 'd')}</span>
+    <span class="timer-part h-part">${format(h, 'h')}</span>
+    <span class="timer-part m-part">${format(m, 'm')}</span>
+  `;
+
+  return `<span class="timer-value ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${html}</span>`;
 }
 
 export function getSpawnCountInfo(mob) {

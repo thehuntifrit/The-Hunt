@@ -50,10 +50,14 @@
         letter-spacing: -0.02em;
     }
 
-    /* ボックスモデルによる正規の余白調整（合計8px/カード高さを変えずに中身だけを2px上に詰める） */
     .mob-card-inner .content-area {
-        padding-top: 2px;
-        padding-bottom: 6px;
+        padding-top: 4px;
+        padding-bottom: 4px;
+    }
+
+    .mob-card-inner .content-area > div:first-child {
+        margin-top: -2px;
+        margin-bottom: 2px;
     }
 
     .mob-rank-badge {

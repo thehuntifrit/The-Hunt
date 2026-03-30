@@ -259,9 +259,12 @@ body::before {
     filter: none;
 }
 
-.progress-text .time-over {
-    color: #f87171;
+.timer-value.time-over {
     text-shadow: 0 0 8px rgba(248, 113, 113, 0.4);
+}
+
+.timer-unit {
+    color: #fff;
 }
 
 .progress-text .time-normal {
@@ -290,8 +293,6 @@ body::before {
     box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
 }
 
-
-
 .progress-bar-wrapper {
     position: absolute;
     top: 0;
@@ -302,10 +303,6 @@ body::before {
     z-index: 0;
     pointer-events: none;
     transition: box-shadow 0.3s ease;
-}
-
-.progress-blink-white {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .timer-value {
@@ -322,7 +319,11 @@ body::before {
     align-items: baseline;
     justify-content: flex-end;
     min-width: 2.5ch;
-    margin-right: 2px;
+    margin-right: 0.3ch;
+}
+
+.timer-part:last-child {
+    margin-right: 0;
 }
 
 .timer-num {
@@ -336,15 +337,19 @@ body::before {
     margin-left: 2px;
 }
 
-.special-timer .timer-num,
-.timer-value.label-next .timer-num {
-    color: var(--accent-gold);
-    text-shadow: 0 0 10px rgba(var(--rank-s-rgb), 0.4);
+/* 根本的な配色固定: 単位は目立たない透過白 */
+.timer-value.label-next .timer-unit,
+.timer-value.time-over .timer-unit,
+.timer-value .timer-unit {
+    color: rgba(255, 255, 255, 0.4);
 }
 
-.timer-value.time-over .timer-num {
-    color: #ffb1b6;
-    text-shadow: 0 0 8px rgba(233, 139, 145, 0.4);
+/* 時限モブの数字は、あらゆる状態下で金色を最優先 */
+.special-timer .timer-num,
+.timer-value.label-next .timer-num,
+.timer-value.label-next.time-over .timer-num {
+    color: var(--accent-gold);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(234, 179, 8, 0.5);
 }
 
 .status-max-over {
@@ -589,14 +594,14 @@ body::before {
     color: #f1f5f9;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
     font-size: 13px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
     letter-spacing: 0.03em;
 }
 
 .font-numeric {
-    font-family: 'Inter', sans-serif;
+    font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
     letter-spacing: 0.02em;
@@ -607,8 +612,19 @@ body::before {
     box-shadow: none;
 }
 
+@keyframes blink-white-light {
+    0%, 100% { 
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); 
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+    50% { 
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.4); 
+        border-color: rgba(255, 255, 255, 0.6);
+    }
+}
+
 .mob-card.blink-border-white .mob-card-inner {
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+    animation: blink-white-light 3s infinite ease-in-out;
 }
 
 .text-glow {
