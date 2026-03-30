@@ -305,7 +305,9 @@ export function updateProgressText(card, mob) {
   const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
 
   let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
-  const percentStr = isTimeOver ? "100%" : `${safePercent}%`;
+  const isPCDetail = !!(card.id === 'pc-right-detail' || card.closest('#pc-right-detail') || card.classList.contains('pc-detail-card'));
+  const percentValue = isTimeOver ? "100" : String(safePercent);
+  const percentStr = isPCDetail ? `${percentValue}<span class="percent-unit">%</span>` : `${percentValue}%`;
   const rankBadge = card.querySelector('.list-rank-badge');
   const areaEl = card.querySelector('.mobile-header-area-text');
 
@@ -585,7 +587,8 @@ export function updateSimpleMobItem(item, mob) {
   }
   if (percentEl) {
     let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
-    percentEl.textContent = isTimeOver ? "100%" : `${safePercent}%`;
+    const percentValue = isTimeOver ? "100" : String(safePercent);
+    percentEl.innerHTML = `${percentValue}<span class="percent-unit">%</span>`;
   }
   if (isMaint) item.classList.add("maintenance-gray-out");
   else item.classList.remove("maintenance-gray-out");

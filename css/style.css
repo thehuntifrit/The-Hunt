@@ -383,7 +383,7 @@ body::before {
     font-size: 14px;
     font-weight: 700;
     color: #e2e8f0;
-    font-family: 'Inter', monospace;
+    font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
     font-variant-numeric: tabular-nums;
 }
 
@@ -556,7 +556,7 @@ body::before {
 }
 
 .detail-time-val {
-    font-family: 'Inter', monospace;
+    font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
 }
