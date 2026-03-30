@@ -75,6 +75,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-right: 0.4rem !important;
     }
 
     .list-rank-badge[data-rank="S"] {
@@ -199,10 +200,6 @@
         box-shadow: 0 0 10px #ff4d4d;
         z-index: 10;
         animation: mobile-alert-pulse 1.5s infinite;
-    }
-
-    .list-rank-badge {
-        margin-right: 0.4rem !important;
     }
 
     @keyframes mobile-alert-pulse {
