@@ -283,10 +283,11 @@ export function updateProgressBar(card, mob) {
 
   wrappers.forEach(wrapper => {
     wrapper.classList.remove(PROGRESS_CLASSES.BLINK_WHITE);
-    if ((status === "PopWindow" || status === "ConditionActive") && elapsedPercent > 90 && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) {
+    if (isInCondition && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) {
       wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
-    } else if (status === "MaxOver" && isInCondition && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) {
-      wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
+      card.classList.add('blink-border-white');
+    } else {
+      card.classList.remove('blink-border-white');
     }
   });
 }
