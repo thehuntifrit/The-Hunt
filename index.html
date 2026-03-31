@@ -328,7 +328,6 @@
 
                 <div class="expandable-panel relative z-10">
                     <div class="mobile-expand-inner relative z-10 px-2 py-3">
-                        <!-- 2. 時間4種 -->
                         <div class="detail-grid">
                             <div class="detail-info-item">
                                 <div class="label">最短POP</div>
@@ -348,7 +347,6 @@
                             </div>
                         </div>
 
-                        <!-- 3. メモ -->
                         <div class="detail-section mb-4">
                             <div class="section-label">MEMO</div>
                             <div class="detail-memo-box">
@@ -361,7 +359,6 @@
                             </div>
                         </div>
 
-                        <!-- 4. 出現マップ -->
                         <div class="detail-section map-section mb-4">
                             <div class="section-label">出現マップ</div>
                             <div
@@ -371,7 +368,6 @@
                             </div>
                         </div>
 
-                        <!-- 5. 出現条件 -->
                         <div class="detail-section">
                             <div class="section-label">出現条件</div>
                             <div class="condition-text section-content condition"></div>
@@ -379,11 +375,10 @@
                     </div>
                 </div>
 
-                <!-- 6. 閉じるボタン (モバイル専用: 固定フッター全体をボタン化) -->
-                <div class="mobile-detail-actions lg:hidden cursor-pointer" data-action="close-card">
+                <div class="mobile-detail-actions lg:hidden" data-action="close-card">
                     <button
-                        class="mobile-detail-close-btn w-full py-4 rounded-xl font-bold transition-all pointer-events-none">
-                        この詳細を閉じる
+                        class="w-full bg-slate-800 border border-slate-700 py-3 rounded-lg text-gray-100 text-[15px] font-black tracking-widest active:scale-95 shadow-lg">
+                        CLOSE
                     </button>
                 </div>
             </div>

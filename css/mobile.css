@@ -62,7 +62,7 @@
         padding-bottom: 4px;
     }
 
-    .mob-card-inner .content-area > div:first-child {
+    .mob-card-inner .content-area>div:first-child {
         margin-top: -2px;
         margin-bottom: 2px;
     }
@@ -154,12 +154,14 @@
         bottom: 0;
         left: 0;
         right: 0;
-        z-index: 100;
-        background: rgba(10, 15, 30, 0.95);
+        z-index: 1000;
+        background: rgba(10, 15, 25, 0.96);
         -webkit-backdrop-filter: blur(16px);
         backdrop-filter: blur(16px);
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
-        height: var(--mobile-footer-height);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        height: auto;
+        display: flex;
+        flex-direction: column-reverse;
         padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
@@ -233,6 +235,7 @@
             transform: scale(0.8);
         }
     }
+
 
     .mobile-footer-icon {
         font-size: 18px;
@@ -471,19 +474,15 @@
         top: var(--mobile-header-height);
         left: 8px;
         right: 8px;
-        bottom: var(--mobile-footer-height);
-        width: auto;
-        height: auto;
-        max-height: calc(100dvh - var(--mobile-header-height) - var(--mobile-footer-height) - 16px);
+        z-index: 1000;
         margin: 8px 0;
         border-radius: 12px;
-        z-index: 90;
-        display: flex;
-        flex-direction: column;
+        height: auto;
+        max-height: calc(100svh - var(--mobile-header-height) - var(--mobile-footer-height) - 16px);
         background: rgba(15, 23, 42, 0.98);
         border: 1px solid rgba(255, 255, 255, 0.15);
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-        animation: cardOverlayFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        overflow-y: auto;
     }
 
     .mob-card.open::before {
@@ -510,7 +509,8 @@
         display: flex;
         flex-direction: column;
         height: auto;
-        max-height: calc(100dvh - 110px);
+        min-height: 0;
+        max-height: calc(100svh - var(--mobile-header-height) - var(--mobile-footer-height) - 40px);
         border-radius: 0 0 12px 12px;
         background: rgba(15, 23, 42, 0.98);
         border: none;
@@ -518,11 +518,45 @@
     }
 
     .mob-card.open .expandable-panel {
-        flex: 1;
+        height: auto;
+        max-height: none;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
-        max-height: none;
         padding-bottom: 0;
+    }
+
+    .mob-card.is-floating-active .mobile-detail-actions {
+        display: none;
+        height: 48px;
+        align-items: center;
+        justify-content: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 900;
+        letter-spacing: 0.2em;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .mob-card.is-floating-active    .mobile-detail-actions {
+        display: none;
+        height: 48px;
+        align-items: center;
+        justify-content: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 900;
+        letter-spacing: 0.2em;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .mob-card.open .mobile-detail-actions {
+        display: flex !important;
+    }
+
+    .mobile-detail-actions::before {
+        display: none !important;
     }
 
     .mob-card.is-floating-active .mob-card-inner {
@@ -560,24 +594,15 @@
         background: rgba(255, 255, 255, 0.12);
     }
 
-    .mobile-detail-actions::before {
-        content: "CLOSE";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 32px;
-        font-weight: 900;
-        color: rgba(255, 255, 255, 0.08);
-        letter-spacing: 0.15em;
-        z-index: -1;
-        pointer-events: none;
-        white-space: nowrap;
+    .mob-card.open .mobile-detail-actions {
+        display: block;
+        padding: 8px;
+        background: rgba(15, 23, 42, 1);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .mob-card.open .mobile-detail-actions,
-    .mob-card.is-expanded .mobile-detail-actions {
-        display: block;
+    .mobile-detail-actions::before {
+        display: none;
     }
 
     .main-content-area {

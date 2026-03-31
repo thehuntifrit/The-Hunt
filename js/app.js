@@ -205,6 +205,7 @@ async function getMaintenanceStatus() {
 
 
 export async function renderMaintenanceStatus() {
+    window.renderMaintenanceStatus = renderMaintenanceStatus;
     const state = getState();
     const maintenance = await getMaintenanceStatus();
     const maintenanceEl = document.getElementById("status-message-maintenance");

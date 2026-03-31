@@ -173,6 +173,12 @@ function toggleMobilePanel(panelName) {
 
     panel.classList.remove("hidden");
     panel.classList.add("open");
+
+    if (panelName === "telop" || panelName === "maintenance") {
+        if (typeof window.renderMaintenanceStatus === "function") {
+            window.renderMaintenanceStatus();
+        }
+    }
 }
 
 function renderMobileFilterAccordion(panel) {

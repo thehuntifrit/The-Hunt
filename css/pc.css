@@ -10,7 +10,7 @@
     }
 
     .pc-detail-name {
-        font-size: 1.15rem;
+        font-size: 16px;
         font-weight: 800;
         letter-spacing: -0.01em;
         white-space: nowrap;
@@ -356,7 +356,11 @@
     .pc-detail-progress-text {
         text-align: right;
         width: 44px;
-        font-size: 11px;
+        font-size: 12px;
         color: rgba(156, 163, 175, 0.8);
+    }
+
+    .detail-area-row {
+        font-size: 12px;
     }
 }

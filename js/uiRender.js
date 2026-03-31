@@ -347,13 +347,13 @@ export function updateProgressText(card, mob) {
         span = pcDetailEl.querySelector('span');
         if (!span) {
           span = document.createElement('span');
-          span.className = 'text-[13px] text-gray-100';
+          span.className = 'text-[12px] text-gray-100';
           pcDetailEl.textContent = '';
           pcDetailEl.appendChild(span);
         }
         pcDetailEl._cachedSpan = span;
       }
-      span.textContent = pcText;
+      span.innerHTML = pcText;
       pcDetailEl._lastPercent = pcText;
     }
     if (status === "MaxOver") pcDetailEl.classList.add("max-over");
