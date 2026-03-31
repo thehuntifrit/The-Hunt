@@ -260,7 +260,7 @@ body::before {
 }
 
 .timer-value.time-over {
-    text-shadow: 0 0 8px rgba(248, 113, 113, 0.4);
+    text-shadow: none;
 }
 
 .timer-unit {
