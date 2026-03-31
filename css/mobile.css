@@ -520,7 +520,7 @@
     .mob-card.open .expandable-panel {
         height: auto;
         max-height: none;
-        overflow-y: auto;
+        overflow-y: visible;
         -webkit-overflow-scrolling: touch;
         padding-bottom: 0;
     }
@@ -528,8 +528,8 @@
     .mobile-detail-actions {
         display: none;
         height: 32px;
-        width: 66%;
-        margin: 0 auto;
+        width: 100%;
+        margin: 0;
         align-items: center;
         justify-content: center;
         color: rgba(255, 255, 255, 0.6);
@@ -537,6 +537,7 @@
         letter-spacing: 0.2em;
         font-size: 13px;
         cursor: pointer;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .mob-card.open .mobile-detail-actions {
