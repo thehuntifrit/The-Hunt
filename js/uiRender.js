@@ -85,16 +85,12 @@ function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWin
   }
 
   const format = (num, unit) => {
-    if (Number(num) === 0) {
-      if (unit === 'd') return '&nbsp;&nbsp;&nbsp;';
-      if (unit === 'h' && Number(d) === 0) return '&nbsp;&nbsp;&nbsp;';
-    }
+    if (unit === 'h' && Number(num) === 0) return '&nbsp;&nbsp;&nbsp;';
     const s = String(num).padStart(2, '0').replace(/^0/, '&nbsp;');
     return `<span class="timer-num">${s}</span><span class="timer-unit">${unit}</span>`;
   };
 
   const html = `
-    <span class="timer-part d-part">${format(d, 'd')}</span>
     <span class="timer-part h-part">${format(h, 'h')}</span>
     <span class="timer-part m-part">${format(m, 'm')}</span>
   `;

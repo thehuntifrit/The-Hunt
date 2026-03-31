@@ -18,9 +18,8 @@ function parseDate(input) {
 
 export function formatDurationDHM(seconds) {
   if (seconds < 0) seconds = 0;
-  const { d, h, m } = getDurationDHMParts(seconds);
+  const { h, m } = getDurationDHMParts(seconds);
   const parts = [];
-  if (parseInt(d) > 0) parts.push(`${d.trim()}d`);
   if (parseInt(h) > 0) parts.push(`${h.trim()}h`);
   parts.push(`${m.trim()}m`);
   return parts.join("/");
@@ -28,11 +27,10 @@ export function formatDurationDHM(seconds) {
 
 export function getDurationDHMParts(seconds) {
   if (seconds < 0) seconds = 0;
-  const d = Math.floor(seconds / 86400);
-  const h = Math.floor((seconds % 86400) / 3600);
+  const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const toString = (v) => v.toString();
-  return { d: toString(d), h: toString(h), m: toString(m), rawD: d, rawH: h, rawM: m, rawS: seconds };
+  return { d: "0", h: toString(h), m: toString(m), rawD: 0, rawH: h, rawM: m, rawS: seconds };
 }
 
 export function formatDurationColon(seconds) {

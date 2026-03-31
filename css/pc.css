@@ -243,7 +243,7 @@
 
     .pc-list-time {
         font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 500;
         display: flex;
         align-items: center;
@@ -276,7 +276,7 @@
 
     .pc-list-percent {
         font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 500;
         color: #ffffff;
         display: flex;
