@@ -328,7 +328,19 @@
 
                 <div class="expandable-panel relative z-10">
                     <div class="mobile-expand-inner relative z-10 px-2 py-3">
-                        <div class="detail-grid">
+                        <div class="detail-section mb-4">
+                            <div class="section-label">MEMO</div>
+                            <div class="detail-memo-box">
+                                <label>
+                                    <span class="sr-only">メモ入力</span>
+                                    <input type="text" name="memo" aria-label="メモを入力"
+                                        class="memo-input detail-memo-input" placeholder="全角30文字まで" maxlength="30"
+                                        data-action="save-memo">
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="detail-grid mb-4">
                             <div class="detail-info-item">
                                 <div class="label">最短POP</div>
                                 <div class="value" data-min-repop>--/-- --:--</div>
@@ -344,18 +356,6 @@
                             <div class="detail-info-item">
                                 <div class="label">前回討伐</div>
                                 <div class="value" data-last-kill>--/-- --:--</div>
-                            </div>
-                        </div>
-
-                        <div class="detail-section mb-4">
-                            <div class="section-label">MEMO</div>
-                            <div class="detail-memo-box">
-                                <label>
-                                    <span class="sr-only">メモ入力</span>
-                                    <input type="text" name="memo" aria-label="メモを入力"
-                                        class="memo-input detail-memo-input" placeholder="全角30文字まで" maxlength="30"
-                                        data-action="save-memo">
-                                </label>
                             </div>
                         </div>
 
@@ -379,7 +379,6 @@
                     CLOSE
                 </div>
             </div>
-        </div>
         </div>
     </template>
 

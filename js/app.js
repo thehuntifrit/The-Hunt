@@ -152,8 +152,6 @@ async function initApp() {
             }
         }, { once: true });
 
-
-
     } catch (e) {
         console.error("App initialization failed:", e);
         const overlay = document.getElementById("loading-overlay");
@@ -202,10 +200,7 @@ async function getMaintenanceStatus() {
     return status;
 }
 
-
-
 export async function renderMaintenanceStatus() {
-    window.renderMaintenanceStatus = renderMaintenanceStatus;
     const state = getState();
     const maintenance = await getMaintenanceStatus();
     const maintenanceEl = document.getElementById("status-message-maintenance");
@@ -315,7 +310,7 @@ function attachGlobalEventListeners() {
         document.body.style.overflow = '';
         DOM.cardOverlayBackdrop?.classList.remove('active');
         DOM.mobileLayout?.classList.remove('content-blurred');
-        
+
         const card = document.querySelector(`.mob-card[data-mob-no="${mobNo}"]`);
         if (card) {
             card.classList.remove('open', 'is-expanded');
@@ -352,7 +347,7 @@ function attachGlobalEventListeners() {
                 const mobNo = parseInt(card.dataset.mobNo, 10);
                 const currentOpen = getState().openMobCardNo;
                 const nextOpen = (currentOpen === mobNo) ? null : mobNo;
-                
+
                 setOpenMobCardNo(nextOpen);
 
                 if (window.innerWidth < 1024) {
@@ -372,7 +367,7 @@ function attachGlobalEventListeners() {
                                 DOM.cardOverlayBackdrop.classList.add('active');
                             });
                         }
-                        
+
                         setTimeout(() => sortAndRedistribute({ immediate: true }), 50);
                     } else {
                         closeMobileCard(mobNo);
