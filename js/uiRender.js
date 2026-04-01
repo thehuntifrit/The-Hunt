@@ -1,6 +1,6 @@
 import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
 import { isCulled, attachLocationEvents } from "./location.js";
-import { getState, recalculateMob, requestWorkerCalculation, PROGRESS_CLASSES, EXPANSION_MAP } from "./dataManager.js";
+import { getState, recalculateMob, requestWorkerCalculation, PROGRESS_CLASSES, EXPANSION_MAP, updateAllMobCullStatuses } from "./dataManager.js";
 import { filterMobsByRankAndArea } from "./filterUI.js";
 import { openReportModal } from "./modal.js";
 import { allTabComparator } from "./mobSorter.js";
@@ -100,7 +100,8 @@ function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWin
 
 export function getSpawnCountInfo(mob) {
   const state = getState();
-  const mobLocationsData = state.mobLocations?.[mob.No];
+  const key = `${mob.Area}_${state.selectedInstance}`;
+  const mobLocationsData = state.mobLocations?.[key];
   const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
   if (!mob.Map || !mob.spawn_points || mob.Rank === 'F') return { countHtml: "", remainingCount: 0, spawnCullStatus };
   const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
@@ -456,8 +457,8 @@ export function updateMemoIcon(card, mob) {
 
 export function getValidSpawnPoints(mob, spawnCullStatus) {
   return (mob.spawn_points ?? []).filter(point => {
-    const isS_SpawnPoint = point.mob_ranks.includes("S");
-    if (!isS_SpawnPoint) return false;
+    const isTargetRank = point.mob_ranks.some(r => r === "S" || r === "A");
+    if (!isTargetRank) return false;
     const pointStatus = spawnCullStatus?.[point.id];
     return !isCulled(pointStatus, mob.No, mob);
   });
@@ -511,6 +512,37 @@ export function updateMapOverlay(card, mob) {
     if (mapSection) mapSection.classList.add('hidden');
     return;
   }
+
+  let instanceSelector = mapContainer.querySelector('.instance-selector');
+  if (!instanceSelector) {
+    instanceSelector = document.createElement('div');
+    instanceSelector.className = 'instance-selector absolute top-1 right-1 flex gap-1 z-20';
+    [1, 2, 3].forEach(num => {
+      const btn = document.createElement('button');
+      btn.className = 'instance-btn w-6 h-6 rounded bg-slate-900/80 border border-slate-700 text-[10px] font-bold text-gray-400 hover:bg-slate-700 transition-colors';
+      btn.textContent = num;
+      btn.dataset.instance = num;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const state = getState();
+        state.selectedInstance = num;
+        updateAllMobCullStatuses();
+        document.querySelectorAll('.instance-btn').forEach(b => {
+          b.classList.toggle('active', parseInt(b.dataset.instance) === num);
+        });
+        window.dispatchEvent(new CustomEvent('locationsUpdated'));
+      });
+      instanceSelector.appendChild(btn);
+    });
+    mapContainer.appendChild(instanceSelector);
+  }
+
+  const selected = getState().selectedInstance;
+  instanceSelector.querySelectorAll('.instance-btn').forEach(btn => {
+    const isActive = parseInt(btn.dataset.instance) === selected;
+    btn.classList.toggle('active', isActive);
+  });
+
   const mapImg = mapContainer.querySelector('.mob-map-img');
   if (mapImg && mob.Map && mapImg.dataset.mobMap !== mob.Map) {
     mapImg.src = `./maps/${mob.Map}`;

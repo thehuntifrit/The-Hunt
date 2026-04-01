@@ -39,26 +39,28 @@ function applyOptimisticDOM(point, nextCulled) {
     point.dataset.tooltip = `${pointNumber}${nextCulled ? " (済)" : ""}`;
 }
 
-function applyOptimisticState(mobNo, locationId, nextCulled) {
+function applyOptimisticState(area, instance, locationId, nextCulled) {
     const state = getState();
-    if (!state.mobLocations[mobNo]) {
-        state.mobLocations[mobNo] = {};
+    const key = `${area}_${instance}`;
+    if (!state.mobLocations[key]) {
+        state.mobLocations[key] = {};
     }
-    if (!state.mobLocations[mobNo][locationId]) {
-        state.mobLocations[mobNo][locationId] = {};
+    if (!state.mobLocations[key][locationId]) {
+        state.mobLocations[key][locationId] = {};
     }
 
     const now = { toMillis: () => Date.now() };
     if (nextCulled) {
-        state.mobLocations[mobNo][locationId].culled_at = now;
+        state.mobLocations[key][locationId].culled_at = now;
     } else {
-        state.mobLocations[mobNo][locationId].uncull_at = now;
+        state.mobLocations[key][locationId].uncull_at = now;
     }
 
-    const mob = state.mobs.find(m => m.No === mobNo);
-    if (mob) {
-        mob.spawn_cull_status = state.mobLocations[mobNo];
-    }
+    state.mobs.forEach(m => {
+        if (m.Area === area) {
+            m.spawn_cull_status = state.mobLocations[key];
+        }
+    });
 
     window.dispatchEvent(new CustomEvent("locationsUpdated", {
         detail: { locationsMap: state.mobLocations }
@@ -69,7 +71,8 @@ function handleCrushToggle(e) {
     const point = e.target.closest(".spawn-point");
     if (!point) return;
 
-    if (!getState().isVerified) {
+    const state = getState();
+    if (!state.isVerified) {
         openAuthModal();
         return;
     }
@@ -84,7 +87,12 @@ function handleCrushToggle(e) {
     e.stopPropagation();
 
     const mobNo = parseInt(card.dataset.mobNo, 10);
+    const mob = state.mobs.find(m => m.No === mobNo);
+    if (!mob) return;
+
     const locationId = point.dataset.locationId;
+    const area = mob.Area;
+    const instance = state.selectedInstance;
 
     const isTouchDevice = window.matchMedia("(hover: none)").matches;
     if (isTouchDevice) {
@@ -106,12 +114,12 @@ function handleCrushToggle(e) {
     const nextCulled = !isCurrentlyCulled;
 
     applyOptimisticDOM(point, nextCulled);
-    applyOptimisticState(mobNo, locationId, nextCulled);
+    applyOptimisticState(area, instance, locationId, nextCulled);
 
-    toggleCrushStatus(mobNo, locationId, nextCulled).then(result => {
+    toggleCrushStatus(area, instance, locationId, nextCulled).then(result => {
         if (!result?.success) {
             applyOptimisticDOM(point, !nextCulled);
-            applyOptimisticState(mobNo, locationId, !nextCulled);
+            applyOptimisticState(area, instance, locationId, !nextCulled);
         }
     });
 }

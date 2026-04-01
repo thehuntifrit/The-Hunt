@@ -101,10 +101,10 @@ export function subscribeMobLocations(onUpdate) {
     const unsub = onSnapshot(collection(db, "mob_locations"), snapshot => {
         const map = {};
         snapshot.forEach(docSnap => {
-            const mobNo = parseInt(docSnap.id, 10);
+            const docId = docSnap.id;
             const data = docSnap.data();
             const normalized = normalizePoints(data);
-            map[mobNo] = normalized;
+            map[docId] = normalized;
         });
         onUpdate(map);
     });
@@ -263,16 +263,15 @@ export const submitMemo = async (mobNo, memoText) => {
     }
 };
 
-export const toggleCrushStatus = async (mobNo, locationId, nextCulled) => {
+export const toggleCrushStatus = async (area, instance, locationId, nextCulled) => {
     const authData = ensureAuth();
     if (!authData) return { success: false };
 
-    const { lodestoneId, mobs } = authData;
-    const mob = mobs.find(m => m.No === mobNo);
-    if (!mob) return { success: false };
+    const { lodestoneId } = authData;
+    if (!area) return { success: false };
 
     try {
-        const docRef = doc(db, "mob_locations", mobNo.toString());
+        const docRef = doc(db, "mob_locations", `${area}_${instance}`);
         const fieldName = nextCulled ? "culled_at" : "uncull_at";
         const updateKey = `points.${locationId}.${fieldName}`;
 

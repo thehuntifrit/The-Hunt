@@ -8,8 +8,8 @@ export const state = {
     isVerified: localStorage.getItem("is_verified") === "true",
     baseMobData: [],
     mobs: [],
-    mobLocations: {},
     maintenance: null,
+    selectedInstance: 1,
     pendingInitialLoads: 0,
     initialLoadComplete: false,
     worker: null,
@@ -402,7 +402,8 @@ function applyPendingRealtimeData() {
     if (state.pendingLocationsMap) {
         state.mobLocations = state.pendingLocationsMap;
         current.forEach(m => {
-            const dyn = state.pendingLocationsMap[m.No];
+            const key = `${m.Area}_${state.selectedInstance}`;
+            const dyn = state.pendingLocationsMap[key];
             m.spawn_cull_status = dyn || {};
         });
         initialLoadState.location = true;
@@ -537,6 +538,16 @@ export function recalculateMob(mobNo) {
     return mob;
 }
 
+export function updateAllMobCullStatuses(locationsMap = state.mobLocations) {
+    const current = state.mobs;
+    state.mobLocations = locationsMap;
+    current.forEach(m => {
+        const key = `${m.Area}_${state.selectedInstance}`;
+        const dyn = locationsMap[key];
+        m.spawn_cull_status = dyn || {};
+    });
+}
+
 export function startRealtime() {
     unsubscribes.forEach(fn => fn && fn());
     unsubscribes = [];
@@ -621,19 +632,13 @@ export function startRealtime() {
             return;
         }
 
-        const current = state.mobs;
-        state.mobLocations = locationsMap;
-
-        current.forEach(m => {
-            const dyn = locationsMap[m.No];
-            m.spawn_cull_status = dyn || {};
-        });
+        updateAllMobCullStatuses(locationsMap);
 
         if (!state.initialLoadComplete) {
             initialLoadState.location = true;
             checkInitialLoadComplete();
         }
-        setMobs([...current]);
+        setMobs([...state.mobs]);
         window.dispatchEvent(new CustomEvent('locationsUpdated', { detail: { locationsMap } }));
     });
     unsubscribes.push(unsubLoc);

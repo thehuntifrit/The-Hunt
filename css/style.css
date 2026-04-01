@@ -337,14 +337,12 @@ body::before {
     margin-left: 2px;
 }
 
-/* 根本的な配色固定: 単位は目立たない透過白 */
 .timer-value.label-next .timer-unit,
 .timer-value.time-over .timer-unit,
 .timer-value .timer-unit {
     color: rgba(255, 255, 255, 0.4);
 }
 
-/* 時限モブの数字は、あらゆる状態下で金色を最優先 */
 .special-timer .timer-num,
 .timer-value.label-next .timer-num,
 .timer-value.label-next.time-over .timer-num {
@@ -1051,4 +1049,32 @@ html body.magnifier-active .mob-card-inner * {
 ::placeholder {
     color: rgba(255, 255, 255, 0.3);
     opacity: 1;
+}
+.instance-selector {
+    pointer-events: auto;
+}
+
+.instance-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 23, 42, 0.9);
+    cursor: pointer;
+}
+
+.instance-btn:hover {
+    background: rgba(30, 41, 59, 1);
+    color: #fff;
+    border-color: rgba(var(--cyan-rgb), 0.5);
+}
+
+.instance-btn.active {
+    background: rgba(var(--cyan-rgb), 0.2);
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+    box-shadow: 0 0 10px rgba(var(--cyan-rgb), 0.4);
+    text-shadow: 0 0 5px rgba(var(--cyan-rgb), 0.5);
 }
