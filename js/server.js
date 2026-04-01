@@ -263,7 +263,7 @@ export const submitMemo = async (mobNo, memoText) => {
     }
 };
 
-export const toggleCrushStatus = async (area, instance, locationId, nextCulled) => {
+export const toggleCrushStatus = async (mobNo, area, locationId, nextCulled) => {
     const authData = ensureAuth();
     if (!authData) return { success: false };
 
@@ -271,6 +271,7 @@ export const toggleCrushStatus = async (area, instance, locationId, nextCulled) 
     if (!area) return { success: false };
 
     try {
+        const instance = mobNo % 10;
         const docRef = doc(db, "mob_locations", `${area}_${instance}`);
         const fieldName = nextCulled ? "culled_at" : "uncull_at";
         const updateKey = `points.${locationId}.${fieldName}`;

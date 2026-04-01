@@ -9,7 +9,6 @@ export const state = {
     baseMobData: [],
     mobs: [],
     maintenance: null,
-    selectedInstance: 1,
     pendingInitialLoads: 0,
     initialLoadComplete: false,
     worker: null,
@@ -402,7 +401,8 @@ function applyPendingRealtimeData() {
     if (state.pendingLocationsMap) {
         state.mobLocations = state.pendingLocationsMap;
         current.forEach(m => {
-            const key = `${m.Area}_${state.selectedInstance}`;
+            const instance = m.No % 10;
+            const key = `${m.Area}_${instance}`;
             const dyn = state.pendingLocationsMap[key];
             m.spawn_cull_status = dyn || {};
         });
@@ -542,7 +542,8 @@ export function updateAllMobCullStatuses(locationsMap = state.mobLocations) {
     const current = state.mobs;
     state.mobLocations = locationsMap;
     current.forEach(m => {
-        const key = `${m.Area}_${state.selectedInstance}`;
+        const instance = m.No % 10;
+        const key = `${m.Area}_${instance}`;
         const dyn = locationsMap[key];
         m.spawn_cull_status = dyn || {};
     });

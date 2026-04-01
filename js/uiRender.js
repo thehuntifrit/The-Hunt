@@ -100,7 +100,8 @@ function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWin
 
 export function getSpawnCountInfo(mob) {
   const state = getState();
-  const key = `${mob.Area}_${state.selectedInstance}`;
+  const instance = mob.No % 10;
+  const key = `${mob.Area}_${instance}`;
   const mobLocationsData = state.mobLocations?.[key];
   const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
   if (!mob.Map || !mob.spawn_points || mob.Rank === 'F') return { countHtml: "", remainingCount: 0, spawnCullStatus };
@@ -513,35 +514,13 @@ export function updateMapOverlay(card, mob) {
     return;
   }
 
-  let instanceSelector = mapContainer.querySelector('.instance-selector');
-  if (!instanceSelector) {
-    instanceSelector = document.createElement('div');
-    instanceSelector.className = 'instance-selector absolute top-1 right-1 flex gap-1 z-20';
-    [1, 2, 3].forEach(num => {
-      const btn = document.createElement('button');
-      btn.className = 'instance-btn w-6 h-6 rounded bg-slate-900/80 border border-slate-700 text-[10px] font-bold text-gray-400 hover:bg-slate-700 transition-colors';
-      btn.textContent = num;
-      btn.dataset.instance = num;
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const state = getState();
-        state.selectedInstance = num;
-        updateAllMobCullStatuses();
-        document.querySelectorAll('.instance-btn').forEach(b => {
-          b.classList.toggle('active', parseInt(b.dataset.instance) === num);
-        });
-        window.dispatchEvent(new CustomEvent('locationsUpdated'));
-      });
-      instanceSelector.appendChild(btn);
-    });
-    mapContainer.appendChild(instanceSelector);
+  let instanceLabel = mapContainer.querySelector('.instance-label');
+  if (!instanceLabel) {
+    instanceLabel = document.createElement('div');
+    instanceLabel.className = 'instance-label absolute top-1 right-1 px-2 py-0.5 rounded bg-slate-900/80 border border-slate-700 text-[10px] font-bold text-cyan-400 z-20';
+    mapContainer.appendChild(instanceLabel);
   }
-
-  const selected = getState().selectedInstance;
-  instanceSelector.querySelectorAll('.instance-btn').forEach(btn => {
-    const isActive = parseInt(btn.dataset.instance) === selected;
-    btn.classList.toggle('active', isActive);
-  });
+  instanceLabel.textContent = `Instance ${mob.No % 10}`;
 
   const mapImg = mapContainer.querySelector('.mob-map-img');
   if (mapImg && mob.Map && mapImg.dataset.mobMap !== mob.Map) {

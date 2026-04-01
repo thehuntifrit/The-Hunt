@@ -39,8 +39,9 @@ function applyOptimisticDOM(point, nextCulled) {
     point.dataset.tooltip = `${pointNumber}${nextCulled ? " (済)" : ""}`;
 }
 
-function applyOptimisticState(area, instance, locationId, nextCulled) {
+function applyOptimisticState(mobNo, area, locationId, nextCulled) {
     const state = getState();
+    const instance = mobNo % 10;
     const key = `${area}_${instance}`;
     if (!state.mobLocations[key]) {
         state.mobLocations[key] = {};
@@ -57,7 +58,7 @@ function applyOptimisticState(area, instance, locationId, nextCulled) {
     }
 
     state.mobs.forEach(m => {
-        if (m.Area === area) {
+        if (m.Area === area && (m.No % 10) === instance) {
             m.spawn_cull_status = state.mobLocations[key];
         }
     });
@@ -92,7 +93,6 @@ function handleCrushToggle(e) {
 
     const locationId = point.dataset.locationId;
     const area = mob.Area;
-    const instance = state.selectedInstance;
 
     const isTouchDevice = window.matchMedia("(hover: none)").matches;
     if (isTouchDevice) {
@@ -114,12 +114,12 @@ function handleCrushToggle(e) {
     const nextCulled = !isCurrentlyCulled;
 
     applyOptimisticDOM(point, nextCulled);
-    applyOptimisticState(area, instance, locationId, nextCulled);
+    applyOptimisticState(mobNo, area, locationId, nextCulled);
 
-    toggleCrushStatus(area, instance, locationId, nextCulled).then(result => {
+    toggleCrushStatus(mobNo, area, locationId, nextCulled).then(result => {
         if (!result?.success) {
             applyOptimisticDOM(point, !nextCulled);
-            applyOptimisticState(area, instance, locationId, !nextCulled);
+            applyOptimisticState(mobNo, area, locationId, !nextCulled);
         }
     });
 }
