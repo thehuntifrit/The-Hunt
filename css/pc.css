@@ -36,7 +36,7 @@
         background: rgba(0, 0, 0, 0.6);
         border-radius: 5px;
         overflow: hidden;
-        margin-top: 6px;
+        margin-top: 2px;
         margin-bottom: 12px;
         box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
         border: 1px solid rgba(255, 255, 255, 0.05);
@@ -93,7 +93,7 @@
     }
 
     #pc-right-pane {
-        width: 380px;
+        width: 420px;
         flex-shrink: 0;
         align-self: flex-start;
         position: sticky;
@@ -367,5 +367,17 @@
 
     .pc-detail-card .detail-memo-input {
         font-size: 14px;
+    }
+
+    .pc-detail-header .pc-list-report-btn {
+        position: absolute;
+        top: 0;
+        right: 0;
+        margin: 0;
+        z-index: 20;
+    }
+
+    .pc-detail-card .condition-text {
+        font-size: 13px !important;
     }
 }

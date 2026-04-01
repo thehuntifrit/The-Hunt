@@ -387,7 +387,7 @@ body::before {
     background: rgba(var(--cyan-rgb), 0.08);
     border: 1px solid rgba(var(--cyan-rgb), 0.2);
     border-radius: 6px;
-    padding: 6px 4px;
+    padding: 5px 4px;
 }
 
 .detail-info-item .label {
@@ -400,7 +400,7 @@ body::before {
 }
 
 .detail-info-item .value {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 700;
     color: #e2e8f0;
     font-family: 'JetBrains Mono', 'Roboto Mono', monospace;

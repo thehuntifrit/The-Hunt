@@ -53,7 +53,7 @@ function handleMobCardClick(e) {
     const mobNo = parseInt(card.dataset.mobNo, 10);
     const rank = card.dataset.rank;
 
-    const reportBtn = e.target.closest(".report-side-bar");
+    const reportBtn = e.target.closest(".report-side-bar, .pc-list-report-btn");
     if (reportBtn) {
         e.stopPropagation();
         if (!getState().isVerified) {

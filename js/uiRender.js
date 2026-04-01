@@ -249,10 +249,10 @@ export function createPCDetailCard(mob) {
     }
   }
 
-  const reportSidebar = card.querySelector('.report-side-bar');
-  if (reportSidebar) {
-    reportSidebar.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
-    reportSidebar.dataset.mobNo = mob.No;
+  const reportBtn = card.querySelector('.pc-list-report-btn');
+  if (reportBtn) {
+    reportBtn.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
+    reportBtn.dataset.mobNo = mob.No;
   }
 
   updateAreaInfo(card, mob);

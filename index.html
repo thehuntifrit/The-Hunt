@@ -384,17 +384,20 @@
 
     <template id="pc-detail-card-template">
         <div class="pc-detail-card pc-detail-card-inner relative h-full flex flex-col">
-            <div class="pc-detail-header">
-                <div class="flex items-center justify-start mb-1" style="gap: 0.5em;">
-                    <h2 class="pc-detail-name" style="flex: 0 1 auto; min-width: 0;"></h2>
-                    <div class="pc-detail-rank font-bold px-1.5 py-0.5 border rounded flex-none" data-rank=""></div>
+            <div class="pc-detail-header pt-1 relative">
+                <div class="flex items-center justify-start pr-[65px]" style="margin-bottom: 6px;">
+                    <div class="flex items-center min-w-0" style="gap: 0.5em;">
+                        <h2 class="pc-detail-name" style="flex: 0 1 auto; min-width: 0;"></h2>
+                        <div class="pc-detail-rank font-bold px-1.5 py-0.5 border rounded flex-none" data-rank=""></div>
+                    </div>
                 </div>
+                <button class="pc-list-report-btn" data-report-type="" data-mob-no="">REPORT</button>
                 <div class="flex items-center justify-between mb-2">
                     <div class="detail-area-row m-0 p-0 text-[10px] text-yellow-500/50 font-medium">
                         <span class="detail-area"></span>
                         <span class="detail-expansion opacity-60"></span>
                     </div>
-                    <div class="pc-detail-progress-text text-[14px]">
+                    <div class="pc-detail-progress-text text-[16px]">
                         <span class="percent">0%</span>
                     </div>
                 </div>
@@ -453,9 +456,6 @@
                 </div>
             </div>
 
-            <div
-                class="report-side-bar absolute top-0 right-0 w-12 bottom-0 opacity-0 cursor-pointer pointer-events-auto z-10">
-            </div>
         </div>
     </template>
 
