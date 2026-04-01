@@ -350,7 +350,7 @@ export function updateProgressText(card, mob) {
         span = pcDetailEl.querySelector('span');
         if (!span) {
           span = document.createElement('span');
-          span.className = 'text-[12px] text-gray-100';
+          span.className = 'pc-percent-inner';
           pcDetailEl.textContent = '';
           pcDetailEl.appendChild(span);
         }
@@ -470,11 +470,11 @@ export function updateMobCount(card, mob) {
   if (mob.Map && mob.spawn_points) {
     if (remainingCount === 1) {
       const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-      displayCountText = `<span class="text-sm text-yellow-400 font-bold text-glow">${pointNumber}番</span>`;
+      displayCountText = `<span class="count-num-yellow">${pointNumber}番</span>`;
     } else if (remainingCount > 1) {
-      displayCountText = `<span class="text-sm text-gray-400 relative -top-[0.12rem]">@</span><span class="text-base text-gray-400 font-bold text-glow relative top-[0.04rem]">${remainingCount}</span>`;
+      displayCountText = `<span class="count-at">@</span><span class="count-num-label">${remainingCount}</span>`;
     }
-    if (displayCountText) displayCountText = `<span class="text-sm">📍</span>${displayCountText}`;
+    if (displayCountText) displayCountText = `<span class="count-prefix-icon">📍</span>${displayCountText}`;
   }
   if (countContainer.dataset.cacheKey !== displayCountText) {
     countContainer.dataset.cacheKey = displayCountText;
@@ -514,7 +514,7 @@ export function updateMapOverlay(card, mob) {
   let instanceLabel = mapContainer.querySelector('.instance-label');
   if (!instanceLabel) {
     instanceLabel = document.createElement('div');
-    instanceLabel.className = 'instance-label absolute top-1 right-1 px-2 py-0.5 rounded bg-slate-900/80 border border-slate-700 text-[10px] font-bold text-cyan-400 z-20';
+    instanceLabel.className = 'instance-label absolute top-1 right-1 px-2 py-0.5 rounded bg-slate-900/80 border border-slate-700 font-bold text-cyan-400 z-20';
     mapContainer.appendChild(instanceLabel);
   }
   instanceLabel.textContent = `Instance ${mob.No % 10}`;
@@ -565,7 +565,7 @@ export function updateSimpleMobItem(item, mob) {
 
   if (timeEl) {
     const timerHTML = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
-    timeEl.innerHTML = `<div class="grid items-center w-full h-full" style="grid-template-columns:auto 1fr;gap:8px;"><span class="timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''} text-[11px] text-center opacity-90">${label}</span>${timerHTML}</div>`;
+    timeEl.innerHTML = `<div class="grid items-center w-full h-full" style="grid-template-columns:auto 1fr;gap:8px;"><span class="timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''} text-center opacity-90">${label}</span>${timerHTML}</div>`;
   }
   const countInner = item.querySelector('.pc-list-count-inner');
   if (countInner) {

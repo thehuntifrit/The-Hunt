@@ -77,11 +77,16 @@
         font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
         letter-spacing: -0.02em;
         opacity: 0.8;
+        font-size: 10px;
     }
 
     .mobile-left-lower {
         flex: 1;
         min-width: 0;
+    }
+
+    .mobile-header-area-text {
+        font-size: 10px;
     }
 
     .list-rank-badge {
