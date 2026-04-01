@@ -296,9 +296,9 @@
                         <div class="progress-bar-bg absolute left-0 top-0 h-full"></div>
                     </div>
                     <div class="px-2 flex flex-col gap-y-0.5 content-area relative z-10">
-                        <div class="flex items-center w-full min-w-0 gap-2">
+                        <div class="flex items-center w-full min-w-0">
                             <span class="mob-name font-bold truncate text-gray-100 min-w-0"></span>
-                            <div class="flex items-center gap-2 flex-shrink-0">
+                            <div class="flex items-center flex-shrink-0" style="margin-left: 0.5em; gap: 0.25em;">
                                 <span class="mob-count-container text-[10px] whitespace-nowrap text-slate-400"></span>
                                 <span class="memo-icon-container text-xs"></span>
                             </div>
@@ -385,9 +385,9 @@
     <template id="pc-detail-card-template">
         <div class="pc-detail-card pc-detail-card-inner relative h-full flex flex-col">
             <div class="pc-detail-header">
-                <div class="flex items-center justify-between mb-1">
-                    <h2 class="pc-detail-name"></h2>
-                    <div class="pc-detail-rank font-bold px-1.5 py-0.5 border rounded" data-rank=""></div>
+                <div class="flex items-center justify-start mb-1" style="gap: 0.5em;">
+                    <h2 class="pc-detail-name" style="flex: 0 1 auto; min-width: 0;"></h2>
+                    <div class="pc-detail-rank font-bold px-1.5 py-0.5 border rounded flex-none" data-rank=""></div>
                 </div>
                 <div class="flex items-center justify-between mb-2">
                     <div class="detail-area-row m-0 p-0 text-[10px] text-yellow-500/50 font-medium">

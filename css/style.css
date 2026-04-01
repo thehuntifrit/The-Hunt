@@ -232,8 +232,9 @@ body::before {
     filter: grayscale(100%);
 }
 
-.pc-list-item.maintenance-gray-out {
-    opacity: 0.4;
+.pc-list-item.maintenance-gray-out,
+.pc-list-item.is-pre-repop {
+    opacity: 0.5;
     filter: grayscale(100%);
 }
 

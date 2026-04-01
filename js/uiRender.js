@@ -112,7 +112,7 @@ export function getSpawnCountInfo(mob) {
     const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
     countHtml = `<span class="pc-count-val font-bold text-yellow-500">📍${pointNumber}番</span>`;
   } else if (remainingCount > 1) {
-    countHtml = `<span class="pc-count-val font-bold text-slate-400">📍@ ${remainingCount}</span>`;
+    countHtml = `<span class="pc-count-val font-bold text-slate-400">📍@${remainingCount}</span>`;
   }
   return { countHtml, remainingCount, spawnCullStatus, validSpawnPoints };
 }
@@ -267,6 +267,8 @@ export function updateProgressBar(card, mob) {
   const texts = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
   const wrappers = card.querySelectorAll('.progress-bar-wrapper, .pc-detail-progress-container');
   const isInCondition = !!mob.repopInfo.isInConditionWindow;
+  const isPreRepop = status === "Next" || status === "Maintenance";
+  card.classList.toggle('is-pre-repop', isPreRepop);
 
   bars.forEach(bar => {
     const currentWidth = parseFloat(bar.style.width) || 0;
@@ -443,15 +445,10 @@ export function updateMemoIcon(card, mob) {
   if (memoIconContainer.dataset.memoState === newState) return;
   memoIconContainer.dataset.memoState = newState;
   if (shouldShowMemo) {
-    let span = memoIconContainer.querySelector('span');
-    if (!span) {
-      span = document.createElement('span');
-      span.style.fontSize = '1rem';
-      span.textContent = '📝';
-      memoIconContainer.appendChild(span);
-    }
-    if (span.getAttribute('data-tooltip') !== mob.memo_text) span.setAttribute('data-tooltip', mob.memo_text);
+    memoIconContainer.style.display = '';
+    memoIconContainer.innerHTML = `<span style="font-size: 1rem;" data-tooltip="${mob.memo_text}">📝</span>`;
   } else {
+    memoIconContainer.style.display = 'none';
     memoIconContainer.innerHTML = '';
   }
 }
@@ -473,9 +470,9 @@ export function updateMobCount(card, mob) {
   if (mob.Map && mob.spawn_points) {
     if (remainingCount === 1) {
       const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-      displayCountText = `<span class="text-sm text-yellow-400 font-bold text-glow">${pointNumber}&thinsp;番</span>`;
+      displayCountText = `<span class="text-sm text-yellow-400 font-bold text-glow">${pointNumber}番</span>`;
     } else if (remainingCount > 1) {
-      displayCountText = `<span class="text-sm text-gray-400 relative -top-[0.12rem]">@</span><span class="text-base text-gray-400 font-bold text-glow relative top-[0.04rem]">&thinsp;${remainingCount}</span>`;
+      displayCountText = `<span class="text-sm text-gray-400 relative -top-[0.12rem]">@</span><span class="text-base text-gray-400 font-bold text-glow relative top-[0.04rem]">${remainingCount}</span>`;
     }
     if (displayCountText) displayCountText = `<span class="text-sm">📍</span>${displayCountText}`;
   }
@@ -550,16 +547,7 @@ export function createSimpleMobItem(mob) {
   item.className = `pc-list-item rank-${mob.Rank.toLowerCase()}`;
   item.dataset.mobNo = mob.No;
   item.dataset.rank = mob.Rank;
-  item.innerHTML = `
-        <div class="pc-list-name font-bold flex items-center min-w-0">
-          <span class="truncate"></span>
-          <span class="memo-icon-container flex-shrink-0 text-[12px] h-4 flex items-center"></span>
-          <span class="pc-list-count-inner flex-shrink-0"></span>
-        </div>
-        <div class="pc-list-time"></div>
-        <div class="pc-list-progress-container"><div class="pc-list-progress-bar" style="width: 0%"></div></div>
-        <div class="pc-list-percent">0%</div>
-        <button class="pc-list-report-btn">REPORT</button>`;
+  item.innerHTML = `<div class="pc-list-name font-bold flex items-center min-w-0" style="gap:0.5em;"><span class="truncate" style="flex:0 1 auto;min-width:0;"></span><div class="flex items-center flex-none" style="gap:0.25em;"><span class="memo-icon-container text-[12px] h-4 flex items-center"></span><span class="pc-list-count-inner"></span></div></div><div class="pc-list-time"></div><div class="pc-list-progress-container"><div class="pc-list-progress-bar" style="width: 0%"></div></div><div class="pc-list-percent">0%</div><button class="pc-list-report-btn">REPORT</button>`;
   const nameEl = item.querySelector('.pc-list-name span:first-child');
   if (nameEl) nameEl.textContent = mob.Name;
   updateSimpleMobItem(item, mob);
@@ -583,6 +571,9 @@ export function updateSimpleMobItem(item, mob) {
   if (countInner) {
     countInner.innerHTML = countHtml;
   }
+
+  const isPreRepop = status === "Next" || status === "Maintenance";
+  item.classList.toggle('is-pre-repop', isPreRepop);
   if (progressEl) {
     const currentWidth = parseFloat(progressEl.style.width) || 0;
     if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
