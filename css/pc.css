@@ -364,4 +364,8 @@
     .detail-area-row {
         font-size: 12px;
     }
+
+    .pc-detail-card .detail-memo-input {
+        font-size: 14px;
+    }
 }
