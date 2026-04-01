@@ -547,7 +547,7 @@ export function createSimpleMobItem(mob) {
   item.className = `pc-list-item rank-${mob.Rank.toLowerCase()}`;
   item.dataset.mobNo = mob.No;
   item.dataset.rank = mob.Rank;
-  item.innerHTML = `<div class="pc-list-name font-bold flex items-center min-w-0" style="gap:0.5em;"><span class="truncate" style="flex:0 1 auto;min-width:0;"></span><div class="flex items-center flex-none" style="gap:0.25em;"><span class="memo-icon-container text-[12px] h-4 flex items-center"></span><span class="pc-list-count-inner"></span></div></div><div class="pc-list-time"></div><div class="pc-list-progress-container"><div class="pc-list-progress-bar" style="width: 0%"></div></div><div class="pc-list-percent">0%</div><button class="pc-list-report-btn">REPORT</button>`;
+  item.innerHTML = `<div class="pc-list-name font-bold"><span class="truncate"></span><span class="memo-icon-container text-[12px] h-4 flex items-center"></span><span class="pc-list-count-inner"></span></div><div class="pc-list-time"></div><div class="pc-list-progress-container"><div class="pc-list-progress-bar" style="width: 0%"></div></div><div class="pc-list-percent">0%</div><button class="pc-list-report-btn">REPORT</button>`;
   const nameEl = item.querySelector('.pc-list-name span:first-child');
   if (nameEl) nameEl.textContent = mob.Name;
   updateSimpleMobItem(item, mob);

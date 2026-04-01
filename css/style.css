@@ -232,10 +232,10 @@ body::before {
     filter: grayscale(100%);
 }
 
-.pc-list-item.maintenance-gray-out,
-.pc-list-item.is-pre-repop {
+.pc-list-item.is-pre-repop .truncate {
     opacity: 0.5;
     filter: grayscale(100%);
+    color: #94a3b8;
 }
 
 .mob-card.maintenance-gray-out .mob-card-inner {
@@ -256,8 +256,7 @@ body::before {
 .mob-card.is-pre-repop .mob-name {
     color: #fff;
     text-shadow: none;
-    opacity: 1;
-    filter: none;
+    opacity: 0.5;
 }
 
 .timer-value.time-over {
@@ -1056,4 +1055,22 @@ html body.magnifier-active .mob-card-inner * {
     -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     pointer-events: none;
+}
+
+/* PCリスト アイテム間隔の強制固定 */
+.pc-list-name {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.4em !important; /* 全角の半分(約0.5em)より若干タイト目に設定 */
+    justify-content: flex-start !important;
+}
+
+.pc-list-name .truncate {
+    flex: 0 1 auto !important; /* 名前が短ければ幅を占有しない */
+    min-width: 0 !important;
+}
+
+.pc-list-count-inner {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
 }
