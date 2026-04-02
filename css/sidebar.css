@@ -184,46 +184,93 @@
     }
 
     @keyframes sidebar-alert-pulse {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.1); opacity: 0.8; }
-    }
 
-    .sidebar-alert-content {
-        font-size: 12px !important;
-        line-height: 1.5 !important;
-        color: #f1f5f9 !important;
-        background: rgba(255, 255, 255, 0.04) !important;
-        padding: var(--s-3) !important;
-        border-radius: var(--r-md);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        white-space: normal;
-        word-break: break-all;
-        text-align: center;
-        inline-size: 100%;
-        box-sizing: border-box;
-
-        &:empty::before {
-            content: '現在該当する情報はありません。';
-            color: rgba(255, 255, 255, 0.6);
-            font-style: normal !important;
-            font-weight: 500;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 1;
         }
-    }
 
-    .sidebar-section {
-        margin-bottom: 12px;
+        50% {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
     }
 
     .sidebar-section-title {
         font-size: 11px !important;
         font-weight: 800 !important;
         font-style: normal !important;
-        color: rgba(255, 255, 255, 0.4) !important;
+        color: #ffffff !important;
         letter-spacing: 0.15em;
         margin-bottom: 12px;
         text-align: center;
         text-transform: uppercase;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+
+    .sidebar-alert-content,
+    .sidebar-error-item,
+    .error-msg {
+        font-size: 11.5px !important;
+        line-height: 1.4 !important;
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        text-align: center !important;
+        opacity: 1 !important;
+        filter: none !important;
+        -webkit-font-smoothing: subpixel-antialiased !important;
+    }
+
+    .sidebar-error-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: var(--s-2) 0 !important;
+        border-block-end: 1px solid rgba(255, 255, 255, 0.08);
+
+        &:last-child {
+            border-block-end: none;
+        }
+
+        .error-time {
+            color: #f1f5f9 !important;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+    }
+
+    .sidebar-alert-content,
+    #sidebar-error-content,
+    .js-error-content {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border-radius: var(--r-md);
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        padding: var(--s-3) !important;
+        box-sizing: border-box;
+        max-block-size: 400px;
+        overflow-y: auto;
+    }
+
+    .sidebar-alert-content {
+        white-space: normal;
+        word-break: break-all;
+        text-align: center;
+        inline-size: 100%;
+
+        &:empty::before {
+            content: '現在該当する情報はありません';
+            color: #f1f5f9 !important;
+            font-style: normal !important;
+            font-weight: 700;
+            opacity: 1 !important;
+        }
+    }
+
+    .sidebar-section {
+        margin-bottom: 12px;
     }
 
     .sidebar-filter-title {
@@ -436,7 +483,9 @@
         min-block-size: 0;
         transition: inset-inline-start 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
-        &:empty { display: none; }
+        &:empty {
+            display: none;
+        }
     }
 
     #app-sidebar.expanded~#sidebar-status-bar {
@@ -453,43 +502,6 @@
         margin-inline-start: calc(var(--sidebar-w) + var(--panel-w));
     }
 
-    .sidebar-error-item {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        padding: var(--s-2) 0 !important;
-        border-block-end: 1px solid rgba(255, 255, 255, 0.04);
-        font-size: 12px !important;
-        line-height: 1.5 !important;
-        color: #f1f5f9 !important;
-        background: transparent !important;
-        text-align: center !important;
-
-        &:last-child { border-block-end: none; }
-
-        .error-time {
-            color: rgba(255, 255, 255, 0.6);
-            font-family: var(--font-mono);
-            font-size: 10px;
-        }
-
-        .error-msg {
-            color: #f1f5f9 !important;
-            font-weight: 600;
-            word-break: break-all;
-            font-size: 12px !important;
-            line-height: 1.5;
-        }
-    }
-
-    #sidebar-error-content {
-        max-block-size: 400px;
-        overflow-y: auto;
-        background: rgba(255, 255, 255, 0.04) !important;
-        padding: var(--s-2) !important;
-        border-radius: var(--r-md);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
 
     .sidebar-manual-content {
         font-size: 12px;
@@ -499,25 +511,57 @@
         overflow-y: auto;
         padding: var(--s-1);
 
-        h1, h2, h3 {
+        h1,
+        h2,
+        h3 {
             color: var(--accent-cyan);
             margin-block-start: 1em;
             margin-block-end: 0.4em;
             font-weight: 800;
         }
 
-        h1 { font-size: 16px; }
-        h2 { font-size: 14px; }
-        h3 { font-size: 13px; }
-        p { margin-block-end: 0.5em; }
-        code { background: var(--bg-glass); padding: 1px 4px; border-radius: 3px; font-size: 11px; }
-        a { color: var(--accent-cyan); text-decoration: underline; }
-        ul, ol { padding-inline-start: 1.2em; margin-block-end: 0.5em; }
-        li { margin-block-end: 0.2em; }
+        h1 {
+            font-size: 16px;
+        }
+
+        h2 {
+            font-size: 14px;
+        }
+
+        h3 {
+            font-size: 13px;
+        }
+
+        p {
+            margin-block-end: 0.5em;
+        }
+
+        code {
+            background: var(--bg-glass);
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        a {
+            color: var(--accent-cyan);
+            text-decoration: underline;
+        }
+
+        ul,
+        ol {
+            padding-inline-start: 1.2em;
+            margin-block-end: 0.5em;
+        }
+
+        li {
+            margin-block-end: 0.2em;
+        }
     }
 }
 
 @media (max-width: 1023px) {
+
     #app-sidebar,
     #sidebar-status-bar {
         display: none;

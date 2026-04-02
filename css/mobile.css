@@ -305,34 +305,78 @@
             max-block-size: 50vh;
         }
 
+        /* Shared Title Style in Mobile Footer Panels */
+        .sidebar-section-title {
+            font-size: 11px !important;
+            font-weight: 800 !important;
+            font-style: normal !important;
+            color: #ffffff !important;
+            letter-spacing: 0.15em;
+            margin-block-end: 12px;
+            text-align: center;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Shared Content Style in Mobile Footer Panels (REUSE) */
+        .sidebar-alert-content,
+        .sidebar-error-item,
+        .error-msg {
+            font-size: 11.5px !important;
+            line-height: 1.4 !important;
+            color: #ffffff !important;
+            font-weight: 800 !important;
+            text-align: center !important;
+            opacity: 1 !important;
+            filter: none !important;
+            -webkit-font-smoothing: subpixel-antialiased !important;
+        }
+
+        .sidebar-error-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: var(--s-2) 0 !important;
+            border-block-end: 1px solid rgba(255, 255, 255, 0.08);
+
+            &:last-child {
+                border-block-end: none;
+            }
+
+            .error-time {
+                color: #f1f5f9 !important;
+                font-family: var(--font-mono);
+                font-size: 10px;
+                font-weight: 700;
+                margin-bottom: 2px;
+            }
+        }
+
+        /* Shared Container Style in Mobile Footer Panels */
+        #sidebar-error-content,
+        .js-error-content,
+        .sidebar-alert-content {
+            background: rgba(255, 255, 255, 0.04) !important;
+            border-radius: var(--r-md);
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            min-height: 50px !important; /* Guarantee visibility even when empty */
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+        }
+
         .sidebar-section {
             padding: var(--s-3) var(--s-4);
 
-            .sidebar-section-title {
-                font-size: 11px !important;
-                font-weight: 800 !important;
-                font-style: normal !important;
-                color: rgba(255, 255, 255, 0.4) !important;
-                letter-spacing: 0.15em;
-                margin-block-end: 12px;
-                text-align: center;
-                text-transform: uppercase;
-            }
-
             .sidebar-alert-content {
-                font-size: 12px !important;
-                line-height: 1.5 !important;
-                color: #f1f5f9 !important;
-                background: rgba(255, 255, 255, 0.04) !important;
                 padding: var(--s-3) !important;
-                border-radius: var(--r-md);
-                border: 1px solid rgba(255, 255, 255, 0.05);
-                text-align: center;
 
                 &:empty::before {
                     content: '現在該当する情報はありません。';
-                    color: rgba(255, 255, 255, 0.6);
+                    color: #f1f5f9 !important;
                     font-style: normal !important;
+                    font-weight: 700;
+                    opacity: 1 !important;
                 }
             }
         }
@@ -413,36 +457,6 @@
             }
         }
 
-        .sidebar-error-item {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            padding: var(--s-2) 0 !important;
-            border-block-end: 1px solid rgba(255, 255, 255, 0.04);
-            font-size: 12px !important;
-            line-height: 1.5 !important;
-            color: #f1f5f9 !important;
-            text-align: center !important;
-
-            .error-time {
-                color: rgba(255, 255, 255, 0.6);
-                font-size: 10px;
-            }
-
-            .error-msg {
-                color: #f1f5f9 !important;
-                word-break: break-all;
-                font-size: 12px !important;
-            }
-        }
-
-        #sidebar-error-content {
-            background: rgba(255, 255, 255, 0.04) !important;
-            margin: var(--s-2);
-            padding: var(--s-2);
-            border-radius: var(--r-md);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
 
         .sidebar-manual-content {
             font-size: 12px;

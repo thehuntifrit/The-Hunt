@@ -233,6 +233,8 @@ export function createMobCard(mob, isDetailView = false) {
     mapImg.src = `./maps/${mob.Map}`;
     mapImg.alt = `${mob.Area} Map`;
     mapImg.dataset.mobMap = mob.Map;
+    mapImg.decoding = "async";
+    mapImg.loading = "lazy";
   } else if (mapSection) {
     mapSection.classList.add('hidden');
   }
@@ -581,6 +583,8 @@ export function updateMapOverlay(card, mob) {
     mapImg.src = `./maps/${mob.Map}`;
     mapImg.alt = `${mob.Area} Map`;
     mapImg.dataset.mobMap = mob.Map;
+    mapImg.decoding = "async";
+    mapImg.loading = "lazy";
     mapContainer.classList.remove('hidden');
     delete mapContainer.dataset.locationLoading;
   }

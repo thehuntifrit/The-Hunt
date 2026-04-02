@@ -1,4 +1,4 @@
-import { getState, EXPANSION_MAP } from "./dataManager.js";
+import { getState } from "./dataManager.js";
 import { renderAreaFilterPanel, handleRankTabClick } from "./filterUI.js";
 import { escapeHtml, cloneTemplate } from "./uiRender.js";
 
@@ -243,7 +243,17 @@ async function loadMobileManual(panel) {
 function renderMobileErrors(panel) {
     const el = document.getElementById("sidebar-error-content");
     if (el) {
-        panel.innerHTML = `<div class="sidebar-section"><div class="sidebar-section-title">ERRORS</div><div class="sidebar-alert-content">${el.innerHTML}</div></div>`;
+        panel.innerHTML = "";
+        const section = document.createElement("div");
+        section.className = "sidebar-section";
+        // REMOVE WHITESPACE to allow :empty CSS to work correctly
+        section.innerHTML = `
+            <div class="sidebar-section-title">ERRORS</div>
+            <div class="sidebar-alert-content js-error-content">${el.innerHTML.trim()}</div>
+        `;
+        panel.appendChild(section);
+        // FORCE SYNC immediately after construction
+        updateErrorPanel();
     }
 }
 

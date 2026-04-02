@@ -37,6 +37,12 @@
     cursor: crosshair;
 }
 
+.mob-map-img {
+    aspect-ratio: 1 / 1;
+    background: rgba(0, 0, 0, 0.2);
+    object-fit: contain;
+}
+
 .loading-spinner {
     width: 48px;
     height: 48px;

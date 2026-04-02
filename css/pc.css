@@ -148,7 +148,6 @@
         .pc-list-name {
             display: flex;
             align-items: center;
-            gap: 0.75em;
             min-inline-size: 0;
             font-weight: 700;
             font-size: 15px;
@@ -161,6 +160,7 @@
         .pc-list-count-inner {
             font-size: 14px;
             color: #94a3b8;
+            margin-inline-start: 0.5em;
         }
 
         .pc-list-time {
