@@ -1195,12 +1195,6 @@ html body.magnifier-active .mob-card-inner * {
     box-shadow: none;
 }
 
-#card-overlay-backdrop {
-    background-color: rgba(0, 0, 0, 0.6);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-}
-
 #pc-right-detail,
 #mobile-detail-overlay {
     background: none !important;
