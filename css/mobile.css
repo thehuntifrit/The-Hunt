@@ -1,4 +1,4 @@
-@media (max-width: 1023px) {
+﻿@media (max-width: 1023px) {
     .mob-card {
         scroll-margin-top: 40px;
         margin-bottom: 1px;
@@ -38,7 +38,7 @@
         top: 0;
         left: 0;
         right: 0;
-        z-index: 40;
+        z-index: 100;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -155,7 +155,7 @@
         bottom: 0;
         left: 0;
         right: 0;
-        z-index: 40;
+        z-index: 100;
         background: rgba(10, 15, 25, 0.96);
         -webkit-backdrop-filter: blur(16px);
         backdrop-filter: blur(16px);

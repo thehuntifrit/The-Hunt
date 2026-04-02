@@ -188,6 +188,7 @@ export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, i
   return el;
 }
 
+
 export function createMobCard(mob, isDetailView = false) {
   if (isDetailView) return createPCDetailCard(mob);
 
@@ -334,10 +335,7 @@ export function updateProgressText(card, mob) {
   const { label, timeValue, isSpecialCondition, isTimeOver, dhm, isInWindow } = computeTimeLabel(mob);
   const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
 
-  let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
   const isPCDetail = !!(card.id === 'pc-right-detail' || card.closest('#pc-right-detail') || card.classList.contains('pc-detail-card'));
-  const percentValue = isTimeOver ? "100" : String(safePercent);
-  const percentStr = isPCDetail ? `${percentValue}<span class="percent-unit">%</span>` : `${percentValue}%`;
   const rankBadge = card.querySelector('.list-rank-badge');
   const areaEl = card.querySelector('.mobile-header-area-text');
 
@@ -361,7 +359,7 @@ export function updateProgressText(card, mob) {
   }
   if (timeEl) {
     const timerNode = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
-    const cacheKey = `${label}-${isSpecialCondition}-${isTimeOver}-${isInWindow}-${dhm?.rawS || 0}-${percentValue}`;
+    const cacheKey = `${label}-${isSpecialCondition}-${isTimeOver}-${isInWindow}-${dhm?.rawS || 0}`;
 
     if (timeEl._lastCacheKey !== cacheKey) {
       timeEl.innerHTML = "";
@@ -371,7 +369,12 @@ export function updateProgressText(card, mob) {
 
       const percentSpan = document.createElement("span");
       percentSpan.className = "detail-percent-val";
-      percentSpan.innerHTML = `(${percentStr})`;
+
+      const { elapsedPercent } = mob.repopInfo || {};
+      const isTimeOverVal = status === "MaxOver";
+      const percentValue = isTimeOverVal ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
+      percentSpan.innerHTML = `(${percentValue}%)`;
+
       inner.appendChild(percentSpan);
 
       timeEl.appendChild(inner);
@@ -380,8 +383,13 @@ export function updateProgressText(card, mob) {
     if (status === "MaxOver") timeEl.classList.add("max-over");
     else timeEl.classList.remove("max-over");
   }
+
   if (pcDetailEl) {
-    const pcText = percentStr;
+    const { elapsedPercent } = mob.repopInfo || {};
+    const isTimeOverVal = status === "MaxOver";
+    const percentValue = isTimeOverVal ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
+    const pcText = `${percentValue}<span class="percent-unit">%</span>`;
+
     if (pcDetailEl._lastPercent !== pcText) {
       let span = pcDetailEl._cachedSpan;
       if (!span) {
@@ -658,8 +666,9 @@ export function updateSimpleMobItem(item, mob) {
     else if (status === "Next" || status === "NextCondition") progressEl.classList.add("status-next");
   }
   if (percentEl) {
-    let safePercent = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
-    const percentValue = isTimeOver ? "100" : String(safePercent);
+    const { elapsedPercent, status: listStatus } = mob.repopInfo || {};
+    const isTimeOverVal = listStatus === "MaxOver";
+    const percentValue = isTimeOverVal ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
     percentEl.innerHTML = `${percentValue}<span class="percent-unit">%</span>`;
   }
   if (isMaint) item.classList.add("maintenance-gray-out");
@@ -1095,9 +1104,8 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
         colPointers[colIdx]++;
       }
 
-      if (isInitialLoad || visibleCards.has(String(mob.No))) {
-        updateCardFull(card, mob);
-      }
+      // 常に最新数値での更新を保証（PC版リストと同じ動作）
+      updateCardFull(card, mob);
     });
 
     cols.forEach((col, i) => {
@@ -1198,7 +1206,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     }
     if (overlayBackdrop) overlayBackdrop.classList.add("hidden");
   } else {
-    // Mobile Overlay Rendering
     if (mobileOverlay && overlayBackdrop) {
       if (state.openMobCardNo) {
         if (mobileOverlay.dataset.renderedMobNo !== String(state.openMobCardNo)) {
@@ -1208,7 +1215,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
             mobileOverlay.appendChild(createMobCard(targetMob, true));
             mobileOverlay.dataset.renderedMobNo = String(state.openMobCardNo);
 
-            // Show backdrop
             overlayBackdrop.classList.remove("hidden");
             document.body.style.overflow = "hidden";
           }
@@ -1288,38 +1294,14 @@ function updateProgressBars() {
   const mobMap = getMobMap();
   const filtered = getFilteredMobs();
 
-
   filtered.forEach(mob => {
-    let needsWorkerRecalc = false;
-    if (mob.repopInfo?.conditionWindowEnd && nowSec > mob.repopInfo.conditionWindowEnd.getTime() / 1000) {
-      recalculateMob(mob.No);
-      needsWorkerRecalc = true;
-    }
-
-    if (!needsWorkerRecalc && mob.repopInfo?.nextConditionSpawnDate && mob.repopInfo?.minRepop) {
-      const spawnSec = mob.repopInfo.nextConditionSpawnDate.getTime() / 1000;
-      if (nowSec >= mob.repopInfo.minRepop && spawnSec > nowSec) {
-        recalculateMob(mob.No);
-        needsWorkerRecalc = true;
-      }
-    }
-
-    if (!needsWorkerRecalc) {
-      mob.repopInfo = calculateRepop(mob, state.maintenance, {
-        skipConditionCalc: true
-      });
-    }
-  });
-
-  for (const mobNoStr of visibleCards) {
-    const card = cardCache.get(mobNoStr);
-    const mob = mobMap.get(mobNoStr);
-    if (card && mob) {
+    const card = cardCache.get(String(mob.No));
+    if (card) {
       checkAndNotify(mob);
       updateProgressText(card, mob);
       updateProgressBar(card, mob);
     }
-  }
+  });
 
   const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
   const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");
@@ -1353,4 +1335,4 @@ function updateProgressBars() {
 
 setInterval(() => {
   updateProgressBars();
-}, EORZEA_MINUTE_MS);
+}, 1000);

@@ -102,7 +102,6 @@ function handleCrushToggle(e) {
         if (locationId === lastClickLocationId && timeDiff < 1000) {
             lastClickTime = 0;
             lastClickLocationId = null;
-            hideTooltip();
         } else {
             lastClickTime = now;
             lastClickLocationId = locationId;
@@ -164,6 +163,11 @@ export function attachLocationEvents() {
     const pcRightPane = document.getElementById("pc-right-detail");
     if (pcRightPane) {
         pcRightPane.addEventListener("click", handleCrushToggle, { capture: true });
+    }
+
+    const mobileOverlay = document.getElementById("mobile-detail-overlay");
+    if (mobileOverlay) {
+        mobileOverlay.addEventListener("click", handleCrushToggle, { capture: true });
     }
 
     locationEventsAttached = true;

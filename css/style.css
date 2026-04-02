@@ -165,7 +165,7 @@ body::before {
 }
 
 .mob-card-inner {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.7));
+    background: linear-gradient(135deg, #1e293b, #0f172a);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-top: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 0.5rem;
@@ -182,7 +182,6 @@ body::before {
 .mob-card-inner :not(input):not(textarea) {
     cursor: pointer;
 }
-
 
 .mob-name {
     color: var(--rank-text, #e2e8f0);
@@ -212,7 +211,7 @@ body::before {
 }
 
 .mob-card:hover .mob-card-inner {
-    background: linear-gradient(135deg, rgba(63, 76, 107, 0.5), rgba(15, 23, 42, 0.4));
+    background: linear-gradient(135deg, #3f4c6b, #0f172a);
 }
 
 .mob-card.is-floating-active:hover .mob-card-inner {
@@ -289,7 +288,6 @@ body::before {
 .timer-unit {
     color: #fff;
 }
-
 
 .text-pop {
     color: #e2e8f0;
@@ -567,7 +565,6 @@ body::before {
     background: rgba(255, 255, 255, 0.3);
 }
 
-
 .report-side-bar::before {
     content: '';
     width: 5px;
@@ -607,7 +604,6 @@ body::before {
     letter-spacing: 0.03em;
 }
 
-
 @keyframes blink-white-light {
 
     0%,
@@ -630,10 +626,8 @@ body::before {
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
-/* 冗長コード削除：JS 内の数値を CSS クラスへ集約 */
 .count-at {
     font-size: 0.875rem;
-    /* text-sm */
     color: #94a3b8;
     position: relative;
     top: -0.12rem;
@@ -641,7 +635,6 @@ body::before {
 
 .count-num-label {
     font-size: 1rem;
-    /* text-base */
     font-weight: 700;
     color: #94a3b8;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
@@ -651,7 +644,6 @@ body::before {
 
 .count-num-yellow {
     font-size: 0.875rem;
-    /* text-sm */
     font-weight: 700;
     color: #facc15;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
@@ -659,12 +651,10 @@ body::before {
 
 .count-prefix-icon {
     font-size: 0.875rem;
-    /* text-sm */
 }
 
 .pc-percent-inner {
     font-size: inherit;
-    /* 親の定義に従う */
     color: #f1f5f9;
 }
 
@@ -674,7 +664,7 @@ body::before {
 }
 
 #report-modal {
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: #000000;
     -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     z-index: 90;
@@ -986,8 +976,6 @@ html body.magnifier-active .mob-card-inner * {
     cursor: none;
 }
 
-
-
 .mob-card {
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1153,7 +1141,6 @@ html body.magnifier-active .mob-card-inner * {
     color: rgba(255, 255, 255, 0.95);
 }
 
-/* PC版と同等の REPORT ボタン装飾をモバイル環境でも有効化 */
 .pc-list-report-btn {
     width: 58px;
     height: 22px;
@@ -1197,6 +1184,26 @@ html body.magnifier-active .mob-card-inner * {
 
 .pc-detail-card .detail-memo-input {
     font-size: 14px;
+}
+
+.pc-detail-card,
+#pc-right-detail>.pc-detail-card,
+#mobile-detail-overlay .pc-detail-card {
+    background-color: #0a0f1a !important;
+    background-image: none !important;
+    border: 1px solid rgba(var(--cyan-rgb), 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(var(--cyan-rgb), 0.1);
+}
+
+#card-overlay-backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+
+#pc-right-detail,
+#mobile-detail-overlay {
+    background: none !important;
 }
 
 .pc-detail-card .condition-text {
@@ -1251,4 +1258,4 @@ html body.magnifier-active .mob-card-inner * {
 
 .pc-detail-content::-webkit-scrollbar-track {
     background: transparent;
-}
+}
