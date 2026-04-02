@@ -1,7 +1,7 @@
 @media (min-width: 1024px) {
     #app-sidebar {
         --sidebar-w: 56px;
-        --panel-w: 200px;
+        --panel-w: 220px;
         --sidebar-bg: rgba(10, 15, 30, 0.95);
 
         position: fixed;
@@ -108,12 +108,16 @@
             }
 
             .sidebar-label {
-                font-size: 9px;
+                font-size: 9px !important;
                 font-weight: 800;
                 letter-spacing: 0.1em;
                 line-height: 1;
                 color: rgba(255, 255, 255, 0.35);
                 transition: color var(--t-fast);
+                white-space: nowrap !important;
+                text-align: center;
+                display: block;
+                width: 100%;
             }
 
             &:hover {
@@ -127,19 +131,33 @@
                 }
             }
 
+            &:active {
+                transform: scale(0.95) !important;
+                transition: none !important;
+            }
+
             &.active {
-                background: rgba(var(--cyan-rgb), 0.15);
-                color: var(--accent-cyan);
-                box-shadow: 0 0 12px rgba(var(--cyan-rgb), 0.2);
+                background: rgba(var(--cyan-rgb), 0.12) !important;
+                color: var(--accent-cyan) !important;
+                box-shadow: none !important;
+                border-radius: 6px !important;
+                margin-inline: 4px !important;
+                inline-size: 48px !important;
+                block-size: 48px !important;
+                margin-block: 2px !important;
+                position: relative;
+                align-self: center;
+                transition: none !important;
 
                 &::before {
                     content: '';
                     position: absolute;
-                    inset-inline-start: 0;
+                    inset-inline-start: 2px;
                     inset-block: 25%;
                     inline-size: 3px;
                     background: var(--accent-cyan);
-                    border-radius: 0 2px 2px 0;
+                    border-radius: 4px;
+                    transition: none !important;
                 }
             }
 
@@ -267,12 +285,21 @@
         }
 
         .sidebar-notification-icon {
-            font-size: 20px;
+            font-size: 18px !important;
             line-height: 1;
             margin-block-end: 2px;
             transition: all var(--t-fast);
             filter: grayscale(1);
             opacity: 0.3;
+        }
+
+        .sidebar-label {
+            font-size: 9px !important;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            line-height: 1;
+            color: rgba(255, 255, 255, 0.35);
+            transition: color var(--t-fast);
         }
     }
 
@@ -521,6 +548,8 @@
             margin-block-end: 0.2em;
         }
     }
+}
+}
 }
 
 @media (max-width: 1023px) {

@@ -188,6 +188,7 @@
         }
 
         .pc-list-progress-bar {
+            inline-size: 0;
             block-size: 100%;
             background: var(--progress-fill);
             border-radius: var(--r-sm);
