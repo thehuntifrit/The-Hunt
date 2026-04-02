@@ -460,7 +460,7 @@
 
     body.has-sidebar main.main-content-area {
         margin-left: 56px;
-        padding-top: 32px;
+        padding-top: 0;
         transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
