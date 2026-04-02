@@ -1,4 +1,4 @@
-﻿@media (max-width: 1023px) {
+@media (max-width: 1023px) {
     .mob-card {
         scroll-margin-top: 40px;
         margin-bottom: 1px;
@@ -476,7 +476,25 @@
 
     #card-overlay-backdrop {
         z-index: 80;
+        top: var(--mobile-header-height);
+        bottom: var(--mobile-footer-height);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden; /* コンテナ自体はスクロールさせない */
         transition: opacity 0.3s ease;
+    }
+
+    #mobile-detail-overlay {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 0;
+        pointer-events: auto;
     }
 
     @keyframes cardOverlayFadeIn {
@@ -498,6 +516,31 @@
     #mobile-detail-overlay .pc-detail-card {
         animation: cardOverlayFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         max-width: calc(100vw - 16px);
+        max-height: calc(100% - 16px); /* 最大高さを表示エリアに制限 */
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    #mobile-detail-overlay .mobile-detail-actions {
+        position: sticky;
+        bottom: 0;
+        background: #0a0f1a;
+        z-index: 30;
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        flex-shrink: 0;
+        transition: all 0.2s;
+    }
+
+    #mobile-detail-overlay .mobile-detail-actions:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+    }
+
+    #mobile-detail-overlay .mobile-detail-actions:active {
+        background: rgba(var(--cyan-rgb), 0.2);
+        color: var(--accent-cyan);
     }
 
     .main-content-area {

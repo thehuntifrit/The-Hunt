@@ -1216,14 +1216,12 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
             mobileOverlay.dataset.renderedMobNo = String(state.openMobCardNo);
 
             overlayBackdrop.classList.remove("hidden");
-            document.body.style.overflow = "hidden";
           }
         }
       } else {
         mobileOverlay.innerHTML = "";
         mobileOverlay.dataset.renderedMobNo = "none";
         overlayBackdrop.classList.add("hidden");
-        document.body.style.overflow = "";
       }
     }
   }
