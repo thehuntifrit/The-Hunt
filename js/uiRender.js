@@ -379,9 +379,8 @@ export function updateProgressText(card, mob) {
       const percentSpan = document.createElement("span");
       percentSpan.className = "detail-percent-val";
 
-      const { elapsedPercent } = mob.repopInfo || {};
-      const isTimeOverVal = status === "MaxOver";
-      const percentValue = isTimeOverVal ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
+      const { elapsedPercent, status: pStatus } = mob.repopInfo || {};
+      const percentValue = pStatus === "MaxOver" ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
       percentSpan.innerHTML = `(${percentValue}%)`;
 
       inner.appendChild(percentSpan);
@@ -394,9 +393,8 @@ export function updateProgressText(card, mob) {
   }
 
   if (pcDetailEl) {
-    const { elapsedPercent } = mob.repopInfo || {};
-    const isTimeOverVal = status === "MaxOver";
-    const percentValue = isTimeOverVal ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
+    const { elapsedPercent, status: dStatus } = mob.repopInfo || {};
+    const percentValue = dStatus === "MaxOver" ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
     const pcText = `${percentValue}<span class="percent-unit">%</span>`;
 
     if (pcDetailEl._lastPercent !== pcText) {
