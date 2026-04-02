@@ -58,18 +58,26 @@ export function computeTimeLabel(mob) {
   let label = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
   let secondsRemaining = 0;
 
-  if (isInConditionWindow && conditionWindowEnd) {
+  if (isInConditionWindow && conditionWindowEnd && now < (conditionWindowEnd.getTime() / 1000)) {
     label = "残り";
     secondsRemaining = (conditionWindowEnd.getTime() / 1000) - now;
     isSpecialCondition = true;
-  } else if (nextConditionSpawnDate) {
-    label = "次回"; secondsRemaining = (nextConditionSpawnDate.getTime() / 1000) - now; isSpecialCondition = true;
+  } else if (nextConditionSpawnDate && now < (nextConditionSpawnDate.getTime() / 1000)) {
+    label = "次回";
+    secondsRemaining = (nextConditionSpawnDate.getTime() / 1000) - now;
+    isSpecialCondition = true;
   } else if (minRepop && now < minRepop) {
-    label = "次回"; secondsRemaining = minRepop - now; if (isTimedMob) isSpecialCondition = true;
+    label = "次回";
+    secondsRemaining = minRepop - now;
+    if (isTimedMob) isSpecialCondition = true;
   } else if (maxRepop && now < maxRepop) {
-    label = "残り"; secondsRemaining = maxRepop - now; if (isTimedMob) isSpecialCondition = true;
+    label = "残り";
+    secondsRemaining = maxRepop - now;
+    if (isTimedMob) isSpecialCondition = true;
   } else if (maxRepop) {
-    label = "超過"; secondsRemaining = now - maxRepop; if (isTimedMob) isSpecialCondition = true;
+    label = "超過";
+    secondsRemaining = now - maxRepop;
+    if (isTimedMob) isSpecialCondition = true;
     isTimeOver = true;
   }
 
@@ -107,10 +115,11 @@ function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWin
 
   const format = (elPart, num, unit) => {
     const numEl = elPart.querySelector('.timer-num');
-    if (unit === 'h' && Number(num) === 0) {
-      numEl.innerHTML = '&nbsp;&nbsp;&nbsp;';
+    if (unit === 'h' && (Number(num) === 0 || !num)) {
+      elPart.style.display = 'none';
     } else {
-      numEl.innerHTML = String(num).padStart(2, '0').replace(/^0/, '&nbsp;');
+      elPart.style.display = 'inline-flex';
+      numEl.innerHTML = String(num || 0).padStart(2, '0').replace(/^0/, '&nbsp;');
     }
   };
 
@@ -948,6 +957,15 @@ function updateDetailCardRealtime(mobMap) {
     const mob = mobMap.get(rightPane.dataset.renderedMobNo);
     if (detailCard && mob) updateCardFull(detailCard, mob);
   }
+
+  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");
+  if (mobileOverlay && mobileOverlay.dataset.renderedMobNo && mobileOverlay.dataset.renderedMobNo !== "none") {
+    const detailCard = mobileOverlay.querySelector('.pc-detail-card');
+    const mob = mobMap.get(mobileOverlay.dataset.renderedMobNo);
+    if (detailCard && mob) {
+      updateCardFull(detailCard, mob);
+    }
+  }
 }
 
 const cardCache = new Map();
@@ -1315,6 +1333,18 @@ function updateProgressBars() {
       }
     }
   });
+
+  // モブリストの項目（左側のリスト等）も更新
+  if (DOM.pcLeftList) {
+    const listItems = DOM.pcLeftList.querySelectorAll('.pc-list-item');
+    listItems.forEach(item => {
+      const mobNo = item.dataset.mobNo;
+      const mob = mobMap.get(String(mobNo));
+      if (mob) {
+        updateSimpleMobItem(item, mob);
+      }
+    });
+  }
 
   invalidateSortCache();
   const sorted = getSortedFilteredMobs();

@@ -200,6 +200,7 @@ const MOB_DATA_URL = "./json/mob_data.json";
 const MOB_LOCATIONS_URL = "./json/mob_locations.json";
 const MAINTENANCE_URL = "./json/maintenance.json";
 const MOB_DATA_CACHE_KEY = "mobDataCache";
+const MOB_STATUS_CACHE_KEY = "mobStatusCache";
 
 async function loadMaintenance() {
     try {
@@ -311,11 +312,23 @@ export async function loadBaseMobData() {
             cachedData = JSON.parse(cachedDataStr);
             const processed = processMobData(cachedData, maintenance, { skipConditionCalc: true });
 
+            // ステータスキャッシュを読み込む
+            const cachedStatus = await idb.get(MOB_STATUS_CACHE_KEY);
+            if (cachedStatus) {
+                processed.forEach(m => {
+                    const s = cachedStatus[m.No];
+                    if (s) {
+                        m.last_kill_time = s.last_kill_time || 0;
+                        m.prev_kill_time = s.prev_kill_time || 0;
+                    }
+                });
+            }
+
             processed.forEach(mob => {
                 if (memorySpawnCache[mob.No]) {
                     mob._spawnCache = memorySpawnCache[mob.No];
-                    mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
                 }
+                mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
             });
 
             state.baseMobData = processed;
@@ -620,6 +633,12 @@ export function startRealtime() {
             });
 
             if (hasChanges) {
+                const statusToCache = current.reduce((acc, m) => {
+                    acc[m.No] = { last_kill_time: m.last_kill_time, prev_kill_time: m.prev_kill_time };
+                    return acc;
+                }, {});
+                idb.set(MOB_STATUS_CACHE_KEY, statusToCache);
+
                 setMobs([...current]);
                 window.dispatchEvent(new CustomEvent('mobsUpdated'));
             }
