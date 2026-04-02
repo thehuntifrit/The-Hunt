@@ -319,46 +319,13 @@ function attachGlobalEventListeners() {
             return;
         }
         if (e.target === DOM.cardOverlayBackdrop) {
-            const currentOpen = getState().openMobCardNo;
-            closeMobileCard(currentOpen);
+            setOpenMobCardNo(null);
+            sortAndRedistribute({ immediate: true });
         }
     });
 
-    function closeMobileCard(mobNo) {
-        setOpenMobCardNo(null);
-        document.body.style.overflow = '';
-        DOM.cardOverlayBackdrop?.classList.remove('active');
-        DOM.mobileLayout?.classList.remove('content-blurred');
-
-        const card = document.querySelector(`.mob-card[data-mob-no="${mobNo}"]`);
-        if (card) {
-            card.classList.remove('open', 'is-expanded');
-            const panel = card.querySelector('.expandable-panel');
-            if (panel) panel.classList.remove('open');
-        }
-
-        setTimeout(() => {
-            if (!DOM.cardOverlayBackdrop?.classList.contains('active')) {
-                DOM.cardOverlayBackdrop?.classList.remove('visible');
-                sortAndRedistribute({ immediate: true });
-            }
-        }, 200);
-    }
-
     DOM.colContainer.addEventListener("click", (e) => {
         if (e.target.closest(".report-side-bar")) return;
-
-        const closeBtn = e.target.closest("[data-action='close-card']");
-        if (closeBtn) {
-            const card = closeBtn.closest(".mob-card");
-            if (card) {
-                const mobNo = parseInt(card.dataset.mobNo, 10);
-                closeMobileCard(mobNo);
-            }
-            return;
-        }
-
-        if (e.target.closest(".expandable-panel")) return;
 
         if (e.target.closest("[data-toggle='card-header']")) {
             const card = e.target.closest(".mob-card");
@@ -368,32 +335,7 @@ function attachGlobalEventListeners() {
                 const nextOpen = (currentOpen === mobNo) ? null : mobNo;
 
                 setOpenMobCardNo(nextOpen);
-
-                if (window.innerWidth < 1024) {
-                    if (nextOpen !== null) {
-                        document.body.style.overflow = 'hidden';
-                        DOM.mobileLayout?.classList.add('content-blurred');
-                        const card = document.querySelector(`.mob-card[data-mob-no="${nextOpen}"]`);
-                        if (card) {
-                            card.classList.add('open', 'is-expanded');
-                            const panel = card.querySelector('.expandable-panel');
-                            if (panel) panel.classList.add('open');
-                        }
-
-                        if (DOM.cardOverlayBackdrop) {
-                            DOM.cardOverlayBackdrop.classList.add('visible');
-                            requestAnimationFrame(() => {
-                                DOM.cardOverlayBackdrop.classList.add('active');
-                            });
-                        }
-
-                        setTimeout(() => sortAndRedistribute({ immediate: true }), 50);
-                    } else {
-                        closeMobileCard(mobNo);
-                    }
-                } else {
-                    sortAndRedistribute({ immediate: true });
-                }
+                sortAndRedistribute({ immediate: true });
             }
         }
     });

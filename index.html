@@ -171,7 +171,11 @@
         </div>
     </main>
 
-    <div id="card-overlay-backdrop"></div>
+    <div id="card-overlay-backdrop" class="fixed inset-0 bg-black/60 hidden">
+        <div id="mobile-detail-overlay" class="w-full h-full flex items-center justify-center p-4 pointer-events-none">
+            <!-- PC版テンプレートから生成されたカードがここに挿入されます -->
+        </div>
+    </div>
 
     <div id="manual-modal" class="hidden">
         <div id="manual-modal-backdrop"></div>
@@ -192,7 +196,7 @@
         </div>
     </div>
 
-    <div id="report-modal" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
+    <div id="report-modal" class="fixed inset-0 hidden items-center justify-center p-4 z-[1200]">
         <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-md border border-gray-600 text-white 
             relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-600"></div>
@@ -228,7 +232,7 @@
         </div>
     </div>
 
-    <div id="auth-modal" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
+    <div id="auth-modal" class="fixed inset-0 hidden items-center justify-center p-4 z-[1200]">
         <div
             class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-lg border border-gray-600 text-white relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-orange-600"></div>
@@ -323,59 +327,6 @@
                     <div class="report-side-bar transition-colors duration-200 z-10 absolute" data-report-type=""
                         data-mob-no=""></div>
                 </div>
-
-                <div class="expandable-panel relative z-10">
-                    <div class="mobile-expand-inner relative z-10 px-2 py-3">
-                        <div class="detail-section mb-4">
-                            <div class="section-label">MEMO</div>
-                            <div class="detail-memo-box">
-                                <label>
-                                    <span class="sr-only">メモ入力</span>
-                                    <input type="text" name="memo" aria-label="メモを入力"
-                                        class="memo-input detail-memo-input" placeholder="全角30文字まで" maxlength="30"
-                                        data-action="save-memo">
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="detail-grid mb-4">
-                            <div class="detail-info-item">
-                                <div class="label">最短POP</div>
-                                <div class="value" data-min-repop>--/-- --:--</div>
-                            </div>
-                            <div class="detail-info-item">
-                                <div class="label">最大POP</div>
-                                <div class="value" data-max-repop>--/-- --:--</div>
-                            </div>
-                            <div class="detail-info-item highlight">
-                                <div class="label">次回POP可能</div>
-                                <div class="value" data-next-possible>--/-- --:--</div>
-                            </div>
-                            <div class="detail-info-item">
-                                <div class="label">前回討伐</div>
-                                <div class="value" data-last-kill>--/-- --:--</div>
-                            </div>
-                        </div>
-
-                        <div class="detail-section map-section mb-4">
-                            <div class="section-label">出現マップ</div>
-                            <div
-                                class="map-container relative w-full bg-slate-950 rounded border border-white/10 overflow-hidden">
-                                <img class="mob-map-img w-full h-full object-contain opacity-90 transition-opacity">
-                                <div class="map-overlay absolute inset-0"></div>
-                            </div>
-                        </div>
-
-                        <div class="detail-section">
-                            <div class="section-label">出現条件</div>
-                            <div class="condition-text section-content condition"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mobile-detail-actions" data-action="close-card">
-                    CLOSE
-                </div>
             </div>
         </div>
     </template>
@@ -454,6 +405,9 @@
                 </div>
             </div>
 
+            <div class="mobile-detail-actions" data-action="close-card">
+                CLOSE
+            </div>
         </div>
     </template>
 

@@ -694,6 +694,7 @@ export const DOM = {
   pcLayout: document.getElementById('pc-layout'),
   mobileLayout: document.getElementById('mobile-layout'),
   cardOverlayBackdrop: document.getElementById('card-overlay-backdrop'),
+  mobileDetailOverlay: document.getElementById('mobile-detail-overlay'),
 };
 
 const groupSectionCache = new Map();
@@ -1174,20 +1175,49 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   }
 
   const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
-  if (rightPane) {
-    if (state.openMobCardNo) {
-      if (rightPane.dataset.renderedMobNo !== String(state.openMobCardNo)) {
-        const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
-        if (targetMob) {
-          rightPane.innerHTML = "";
-          rightPane.appendChild(createMobCard(targetMob, true));
-          rightPane.dataset.renderedMobNo = String(state.openMobCardNo);
+  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");
+  const overlayBackdrop = DOM.cardOverlayBackdrop || document.getElementById("card-overlay-backdrop");
+
+  if (isPC) {
+    if (rightPane) {
+      if (state.openMobCardNo) {
+        if (rightPane.dataset.renderedMobNo !== String(state.openMobCardNo)) {
+          const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
+          if (targetMob) {
+            rightPane.innerHTML = "";
+            rightPane.appendChild(createMobCard(targetMob, true));
+            rightPane.dataset.renderedMobNo = String(state.openMobCardNo);
+          }
+        }
+      } else {
+        if (rightPane.dataset.renderedMobNo !== "none") {
+          rightPane.innerHTML = '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>';
+          rightPane.dataset.renderedMobNo = "none";
         }
       }
-    } else {
-      if (rightPane.dataset.renderedMobNo !== "none") {
-        rightPane.innerHTML = '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>';
-        rightPane.dataset.renderedMobNo = "none";
+    }
+    if (overlayBackdrop) overlayBackdrop.classList.add("hidden");
+  } else {
+    // Mobile Overlay Rendering
+    if (mobileOverlay && overlayBackdrop) {
+      if (state.openMobCardNo) {
+        if (mobileOverlay.dataset.renderedMobNo !== String(state.openMobCardNo)) {
+          const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
+          if (targetMob) {
+            mobileOverlay.innerHTML = "";
+            mobileOverlay.appendChild(createMobCard(targetMob, true));
+            mobileOverlay.dataset.renderedMobNo = String(state.openMobCardNo);
+
+            // Show backdrop
+            overlayBackdrop.classList.remove("hidden");
+            document.body.style.overflow = "hidden";
+          }
+        }
+      } else {
+        mobileOverlay.innerHTML = "";
+        mobileOverlay.dataset.renderedMobNo = "none";
+        overlayBackdrop.classList.add("hidden");
+        document.body.style.overflow = "";
       }
     }
   }
@@ -1292,15 +1322,19 @@ function updateProgressBars() {
   }
 
   const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
-  if (rightPane && rightPane.dataset.renderedMobNo && rightPane.dataset.renderedMobNo !== "none") {
-    const detailCard = rightPane.firstElementChild;
-    const mob = mobMap.get(rightPane.dataset.renderedMobNo);
-    if (detailCard && mob) {
-      updateProgressText(detailCard, mob);
-      updateProgressBar(detailCard, mob);
-      updateExpandablePanel(detailCard, mob);
+  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");
+
+  [rightPane, mobileOverlay].forEach(container => {
+    if (container && container.dataset.renderedMobNo && container.dataset.renderedMobNo !== "none") {
+      const detailCard = container.firstElementChild;
+      const mob = mobMap.get(container.dataset.renderedMobNo);
+      if (detailCard && mob) {
+        updateProgressText(detailCard, mob);
+        updateProgressBar(detailCard, mob);
+        updateExpandablePanel(detailCard, mob);
+      }
     }
-  }
+  });
 
   invalidateSortCache();
   const sorted = getSortedFilteredMobs();

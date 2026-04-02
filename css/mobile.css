@@ -38,7 +38,7 @@
         top: 0;
         left: 0;
         right: 0;
-        z-index: 100;
+        z-index: 40;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -49,7 +49,6 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         height: var(--mobile-header-height);
     }
-
 
     .mob-name {
         font-size: 14px;
@@ -156,7 +155,7 @@
         bottom: 0;
         left: 0;
         right: 0;
-        z-index: 1000;
+        z-index: 40;
         background: rgba(10, 15, 25, 0.96);
         -webkit-backdrop-filter: blur(16px);
         backdrop-filter: blur(16px);
@@ -237,7 +236,6 @@
             transform: scale(0.8);
         }
     }
-
 
     .mobile-footer-icon {
         font-size: 18px;
@@ -471,28 +469,14 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .mob-card.open {
-        position: fixed;
-        top: calc(var(--mobile-header-height) + 4px);
-        left: 4px;
-        right: 4px;
-        z-index: 1000;
-        margin: 0;
-        border-radius: 12px;
-        height: auto;
-        max-height: calc(100svh - var(--mobile-header-height) - var(--mobile-footer-height) - 8px);
-        background: rgba(15, 23, 42, 0.98);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-        overflow-y: auto;
+    .mob-card.selected .mob-card-inner {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(var(--cyan-rgb), 0.3);
     }
 
-    .mob-card.open::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        background: transparent;
-        z-index: -1;
+    #card-overlay-backdrop {
+        z-index: 80;
+        transition: opacity 0.3s ease;
     }
 
     @keyframes cardOverlayFadeIn {
@@ -507,47 +491,13 @@
         }
     }
 
-    .mob-card.open .mob-card-inner {
-        display: flex;
-        flex-direction: column;
-        height: auto;
-        min-height: 0;
-        max-height: none;
-        border-radius: 12px;
-        background: rgba(15, 23, 42, 0.98);
-        border: none;
-        overflow: hidden;
-    }
-
-    .mob-card.open .expandable-panel {
-        height: auto;
-        max-height: none;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 0;
-    }
-
-    .mobile-detail-actions {
-        display: none;
-        height: 32px;
-        width: 100%;
-        margin: 0;
-        align-items: center;
-        justify-content: center;
-        color: rgba(255, 255, 255, 0.6);
-        font-weight: 900;
-        letter-spacing: 0.2em;
-        font-size: 13px;
-        cursor: pointer;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .mob-card.open .mobile-detail-actions {
-        display: flex !important;
-    }
-
-    .mobile-detail-actions::before {
+    #card-overlay-backdrop.hidden {
         display: none !important;
+    }
+
+    #mobile-detail-overlay .pc-detail-card {
+        animation: cardOverlayFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        max-width: calc(100vw - 16px);
     }
 
     .main-content-area {

@@ -9,7 +9,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 10000;
+    z-index: 100;
     transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
@@ -23,7 +23,7 @@
     position: fixed;
     transform: translate(-50%, -50%);
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(var(--cyan-rgb), 0.4), inset 0 0 15px rgba(0, 0, 0, 0.5);
-    z-index: 10000;
+    z-index: 100;
     pointer-events: none;
 }
 
@@ -89,7 +89,7 @@
     --color-b2: #fd5c5c;
     --color-culled: #dadada;
     --color-lastone: #34d399;
-    
+
     --cyan-rgb: 6, 182, 212;
 }
 
@@ -190,7 +190,7 @@ body::before {
     transition: text-shadow 0.4s ease, color 0.4s ease;
 }
 
-.mob-rank-badge, 
+.mob-rank-badge,
 .list-rank-badge {
     color: var(--current-rank);
     border-color: var(--current-rank);
@@ -231,6 +231,7 @@ body::before {
     opacity: 0.6;
     filter: grayscale(100%);
 }
+
 .pc-list-item.maintenance-gray-out {
     opacity: 0.5;
     filter: grayscale(100%);
@@ -505,13 +506,13 @@ body::before {
 .content-area {
     padding-right: 42px;
     position: relative;
-    z-index: 10;
+    z-index: 5;
 }
 
 .mob-card-header {
     background: transparent;
     position: relative;
-    z-index: 10;
+    z-index: 5;
 }
 
 @keyframes pulse-sync {
@@ -608,12 +609,15 @@ body::before {
 
 
 @keyframes blink-white-light {
-    0%, 100% { 
-        box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); 
+
+    0%,
+    100% {
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
         border-color: rgba(255, 255, 255, 0.2);
     }
-    50% { 
-        box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.4); 
+
+    50% {
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.4);
         border-color: rgba(255, 255, 255, 0.6);
     }
 }
@@ -628,14 +632,16 @@ body::before {
 
 /* 冗長コード削除：JS 内の数値を CSS クラスへ集約 */
 .count-at {
-    font-size: 0.875rem; /* text-sm */
+    font-size: 0.875rem;
+    /* text-sm */
     color: #94a3b8;
     position: relative;
     top: -0.12rem;
 }
 
 .count-num-label {
-    font-size: 1rem; /* text-base */
+    font-size: 1rem;
+    /* text-base */
     font-weight: 700;
     color: #94a3b8;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
@@ -644,18 +650,21 @@ body::before {
 }
 
 .count-num-yellow {
-    font-size: 0.875rem; /* text-sm */
+    font-size: 0.875rem;
+    /* text-sm */
     font-weight: 700;
     color: #facc15;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 .count-prefix-icon {
-    font-size: 0.875rem; /* text-sm */
+    font-size: 0.875rem;
+    /* text-sm */
 }
 
 .pc-percent-inner {
-    font-size: inherit; /* 親の定義に従う */
+    font-size: inherit;
+    /* 親の定義に従う */
     color: #f1f5f9;
 }
 
@@ -668,7 +677,11 @@ body::before {
     background-color: rgba(0, 0, 0, 0.8);
     -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
-    z-index: 100;
+    z-index: 90;
+}
+
+#auth-modal {
+    z-index: 90;
 }
 
 #report-modal .bg-gray-800 {
@@ -696,7 +709,7 @@ body::before {
 #manual-modal {
     position: fixed;
     inset: 0;
-    z-index: 60;
+    z-index: 80;
     align-items: center;
     justify-content: center;
     padding: 1rem;
@@ -712,7 +725,7 @@ body::before {
 
 .manual-modal-content {
     position: relative;
-    z-index: 61;
+    z-index: 81;
     background: #0f172a;
     border-radius: 0.75rem;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
@@ -930,7 +943,7 @@ body::before {
 
 .custom-tooltip {
     position: fixed;
-    z-index: 9999;
+    z-index: 95;
     background: rgba(15, 23, 42, 0.95);
     color: #fff;
     padding: 0.5rem 0.75rem;
@@ -973,35 +986,7 @@ html body.magnifier-active .mob-card-inner * {
     cursor: none;
 }
 
-#card-overlay-backdrop {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.4);
-    z-index: 65;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.15s ease-out;
-}
 
-#card-overlay-backdrop.visible {
-    display: block;
-}
-
-#card-overlay-backdrop.active {
-    opacity: 1;
-}
-
-#mobile-layout.content-blurred .main-content-area {
-    filter: blur(4px);
-    transition: filter 0.15s ease-out;
-    pointer-events: none;
-    -webkit-user-select: none;
-    user-select: none;
-}
 
 .mob-card {
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1018,7 +1003,7 @@ html body.magnifier-active .mob-card-inner * {
 
 .mob-card.is-floating-active {
     position: fixed;
-    z-index: 45;
+    z-index: 80;
     max-width: 95vw;
 }
 
@@ -1080,6 +1065,7 @@ html body.magnifier-active .mob-card-inner * {
     color: rgba(255, 255, 255, 0.3);
     opacity: 1;
 }
+
 .instance-label {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     -webkit-backdrop-filter: blur(4px);
@@ -1087,4 +1073,182 @@ html body.magnifier-active .mob-card-inner * {
     pointer-events: none;
 }
 
+.pc-detail-card {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.82), 0 0 20px rgba(var(--current-rank-rgb), 0.15) inset;
+    contain: layout style;
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    max-height: 90vh;
+    pointer-events: auto;
+}
 
+.pc-detail-header {
+    padding: 0.75rem 1rem 0;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.pc-detail-header .pc-list-report-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+    margin: 0;
+    z-index: 20;
+}
+
+.pc-detail-name {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+    color: #fff;
+    line-height: 1.2;
+}
+
+.pc-detail-rank {
+    font-size: 12px;
+    height: min-content;
+    color: var(--current-rank);
+    border-color: rgba(var(--current-rank-rgb), 0.3);
+    background: rgba(var(--current-rank-rgb), 0.1);
+    border-radius: 2px;
+}
+
+.pc-detail-progress-container {
+    height: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 0px !important;
+    margin-bottom: 12px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pc-detail-progress-bar {
+    height: 100%;
+    width: 0;
+    background: var(--progress-fill);
+    border-radius: 5px;
+    transition: width 0.5s ease-out;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+.pc-detail-progress-text {
+    text-align: right;
+    width: 44px;
+    font-size: 14px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+/* PC版と同等の REPORT ボタン装飾をモバイル環境でも有効化 */
+.pc-list-report-btn {
+    width: 58px;
+    height: 22px;
+    background: rgba(var(--cyan-rgb), 0.12);
+    border: 1px solid var(--accent-cyan);
+    border-radius: 4px;
+    color: var(--accent-cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 0;
+    text-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+    box-shadow: 0 0 5px rgba(34, 211, 238, 0.2);
+}
+
+.pc-list-report-btn:hover {
+    background: var(--accent-cyan);
+    color: #0f172a;
+    box-shadow: 0 0 15px var(--accent-cyan);
+    transform: translateY(-1px);
+}
+
+.pc-detail-header .pc-list-report-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+}
+
+.pc-detail-content {
+    padding: 0 1rem 0.75rem;
+    border-top: none;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.pc-detail-card .detail-memo-input {
+    font-size: 14px;
+}
+
+.pc-detail-card .condition-text {
+    font-size: 13px !important;
+}
+
+.mobile-detail-actions {
+    display: flex;
+    height: 32px;
+    width: 100%;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    font-size: 13px;
+    cursor: pointer;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.mobile-detail-actions:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+.pc-detail-header>.flex.justify-start {
+    margin-bottom: 6px !important;
+}
+
+.pc-detail-header>.flex.justify-between {
+    margin-bottom: 0px !important;
+}
+
+@supports (scrollbar-color: auto) {
+    .pc-detail-content {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
+    }
+}
+
+.pc-detail-content::-webkit-scrollbar {
+    width: 3px;
+}
+
+.pc-detail-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+.pc-detail-content::-webkit-scrollbar-track {
+    background: transparent;
+}
