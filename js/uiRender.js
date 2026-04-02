@@ -1120,7 +1120,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
         colPointers[colIdx]++;
       }
 
-      // 常に最新数値での更新を保証（PC版リストと同じ動作）
       updateCardFull(card, mob);
     });
 
@@ -1242,14 +1241,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     }
   }
 
-  if (_isSafari && !_safariHackApplied && DOM.pcLeftList) {
-    const headers = DOM.pcLeftList.querySelectorAll(".text-xs");
-    headers.forEach(header => {
-      header.style.transform = "translateZ(0)";
-    });
-    _safariHackApplied = true;
-  }
-
   lastRenderedOrderStr = sortedMobs.map(m => m.No).join(",");
   lastRenderedGroupStr = sortedMobs.map(m => getGroupKey(m)).join(",");
 
@@ -1299,8 +1290,6 @@ export function showColumnContainer() {
 }
 
 let isInitialSortingSuppressed = false;
-const _isSafari = navigator.userAgent.includes("Safari") && !navigator.userAgent.includes("Chrome");
-let _safariHackApplied = false;
 
 function updateProgressBars() {
   const state = getState();
@@ -1332,7 +1321,6 @@ function updateProgressBars() {
     }
   });
 
-  // モブリストの項目（左側のリスト等）も更新
   if (DOM.pcLeftList) {
     const listItems = DOM.pcLeftList.querySelectorAll('.pc-list-item');
     listItems.forEach(item => {

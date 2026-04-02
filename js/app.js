@@ -76,22 +76,7 @@ async function initApp() {
         });
 
         startRealtime();
-
-        let storedUI = {};
-        try {
-            storedUI = JSON.parse(localStorage.getItem("huntUIState")) || {};
-        } catch (e) {
-            console.warn("huntUIState parse error", e);
-        }
-
-        if (storedUI.openMobCardNo !== undefined) {
-            delete storedUI.openMobCardNo;
-            try {
-                localStorage.setItem("huntUIState", JSON.stringify(storedUI));
-            } catch (e) { }
-        }
         setOpenMobCardNo(null);
-
         initModal();
         renderMaintenanceStatus();
         updateHeaderTime();
@@ -201,6 +186,8 @@ async function getMaintenanceStatus() {
 }
 
 export async function renderMaintenanceStatus() {
+    window.renderMaintenanceStatus = renderMaintenanceStatus;
+
     const state = getState();
     const maintenance = await getMaintenanceStatus();
     const maintenanceEl = document.getElementById("status-message-maintenance");

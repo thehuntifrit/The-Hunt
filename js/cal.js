@@ -398,10 +398,7 @@ export function calculateRepop(mob, maintenance, options = {}) {
   const repopSec = mob.REPOP_s;
   const maxSec = mob.MAX_s;
 
-  let maint = maintenance;
-  if (maint && typeof maint === "object" && "maintenance" in maint && maint.maintenance) {
-    maint = maint.maintenance;
-  }
+  const maint = maintenance;
   if (!maint || !maint.start) return baseResult("Unknown");
 
   const serverUpDate = parseDate(maint.serverUp || maint.end);

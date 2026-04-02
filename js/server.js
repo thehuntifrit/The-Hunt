@@ -126,17 +126,13 @@ export const submitReport = async (mobNo, timeISO) => {
     if (!mob) return;
 
     let killTimeDate;
-    if (timeISO && typeof timeISO === "string") {
-        const m = timeISO.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
-        if (m) {
-            const [, y, mo, d, h, mi, s] = m;
-            killTimeDate = new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), s ? Number(s) : 0, 0);
-        } else {
-            const modalDate = new Date(timeISO);
-            if (!isNaN(modalDate.getTime())) {
-                killTimeDate = modalDate;
-            }
+    if (timeISO) {
+        killTimeDate = new Date(timeISO);
+        if (isNaN(killTimeDate.getTime())) {
+            killTimeDate = new Date();
         }
+    } else {
+        killTimeDate = new Date();
     }
 
     if (!killTimeDate) {

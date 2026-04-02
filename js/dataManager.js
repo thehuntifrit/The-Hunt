@@ -9,7 +9,6 @@ export const state = {
     baseMobData: [],
     mobs: [],
     maintenance: null,
-    pendingInitialLoads: 0,
     initialLoadComplete: false,
     worker: null,
 
@@ -311,8 +310,6 @@ export async function loadBaseMobData() {
         try {
             cachedData = JSON.parse(cachedDataStr);
             const processed = processMobData(cachedData, maintenance, { skipConditionCalc: true });
-
-            // ステータスキャッシュを読み込む
             const cachedStatus = await idb.get(MOB_STATUS_CACHE_KEY);
             if (cachedStatus) {
                 processed.forEach(m => {
@@ -692,9 +689,11 @@ export function startRealtime() {
     unsubscribes.push(unsubMemo);
 
     const unsubMaintenance = subscribeMaintenance(async maintenanceData => {
+        const normalized = (maintenanceData && maintenanceData.maintenance) ? maintenanceData.maintenance : maintenanceData;
+        
         if (state.mobs.length === 0) {
-            state.pendingMaintenanceData = maintenanceData;
-            if (!maintenanceData) {
+            state.pendingMaintenanceData = normalized;
+            if (!normalized) {
                 const fallback = await loadMaintenance();
                 if (fallback) {
                     state.pendingMaintenanceData = fallback;
@@ -704,8 +703,8 @@ export function startRealtime() {
         }
 
         if (!state.initialLoadComplete) {
-            if (maintenanceData) {
-                state.maintenance = maintenanceData;
+            if (normalized) {
+                state.maintenance = normalized;
             } else {
                 const fallback = await loadMaintenance();
                 if (fallback) {
@@ -715,12 +714,12 @@ export function startRealtime() {
             initialLoadState.maintenance = true;
             checkInitialLoadComplete();
         } else {
-            if (!maintenanceData) return;
-            state.maintenance = maintenanceData;
+            if (!normalized) return;
+            state.maintenance = normalized;
 
             const current = state.mobs;
             current.forEach(mob => {
-                requestWorkerCalculation(mob, maintenanceData);
+                requestWorkerCalculation(mob, normalized);
             });
             setMobs([...current]);
             window.dispatchEvent(new CustomEvent('filterChanged'));

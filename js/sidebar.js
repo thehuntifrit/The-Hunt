@@ -117,7 +117,6 @@ export function initSidebar() {
     if (currentPanel !== "rank") {
         renderSidebarFilterAccordion();
     }
-    setupSidebarNotification();
     initMobileFooter();
 }
 
@@ -132,19 +131,6 @@ function initMobileFooter() {
             toggleMobilePanel(btn.dataset.panel);
         });
     });
-
-    const origToggle = document.getElementById("notification-toggle");
-    const mobileToggle = document.getElementById("mobile-notification-toggle");
-    if (mobileToggle && origToggle) {
-        mobileToggle.checked = origToggle.checked;
-        mobileToggle.addEventListener("change", () => {
-            origToggle.checked = mobileToggle.checked;
-            origToggle.dispatchEvent(new Event("change"));
-        });
-        origToggle.addEventListener("change", () => {
-            mobileToggle.checked = origToggle.checked;
-        });
-    }
 }
 
 function toggleMobilePanel(panelName) {
@@ -339,20 +325,7 @@ async function loadManualContent() {
     }
 }
 
-function setupSidebarNotification() {
-    const origToggle = document.getElementById("notification-toggle");
-    const sidebarToggle = document.getElementById("sidebar-notification-toggle");
-    if (sidebarToggle && origToggle) {
-        sidebarToggle.checked = origToggle.checked;
-        sidebarToggle.addEventListener("change", () => {
-            origToggle.checked = sidebarToggle.checked;
-            origToggle.dispatchEvent(new Event("change"));
-        });
-        origToggle.addEventListener("change", () => {
-            sidebarToggle.checked = origToggle.checked;
-        });
-    }
-}
+
 
 function renderSidebarFilterAccordion() {
     const container = document.getElementById("sidebar-filter-accordion");
