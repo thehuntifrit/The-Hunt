@@ -17,7 +17,8 @@
           "-webkit-overflow-scrolling",
           "backdrop-filter",
           "scrollbar-gutter",
-          "scrollbar-gutter: stable"
+          "scrollbar-gutter: stable",
+          "inline-size: fit-content"
         ]
       }
     ]
