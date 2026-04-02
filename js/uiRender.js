@@ -593,7 +593,7 @@ export function updateMapOverlay(card, mob) {
     const isOneLeft = (validSpawnPoints?.length || 0) === 1;
 
     // Check if spawn points need update by simple hash or similar
-    const currentPointsHash = (mob.spawn_points ?? []).map(p => `${p.id}-${isCulled(spawnCullStatus?.[p.id], mob.No)}`).join("|");
+    const currentPointsHash = (mob.spawn_points ?? []).map(p => `${p.id}-${isCulled(spawnCullStatus?.[p.id], mob.No)}`).join("|") + `|${isOneLeft}`;
     if (mapOverlay._lastPointsHash !== currentPointsHash) {
       mapOverlay.innerHTML = "";
       const fragment = document.createDocumentFragment();
@@ -857,15 +857,7 @@ window.addEventListener('locationDataReady', () => {
 
 window.addEventListener('locationsUpdated', () => {
   invalidateFilterCache();
-  const mobMap = getMobMap();
-
-  cardCache.forEach((card, mobNoStr) => {
-    const mob = mobMap.get(mobNoStr);
-    if (mob) {
-      updateMobCount(card, mob);
-      updateMapOverlay(card, mob);
-    }
-  });
+  updateVisibleCards();
 });
 
 const visibleCards = new Set();
