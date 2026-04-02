@@ -18,7 +18,8 @@
           "backdrop-filter",
           "scrollbar-gutter",
           "scrollbar-gutter: stable",
-          "inline-size: fit-content"
+          "inline-size: fit-content",
+          "user-select"
         ]
       }
     ]

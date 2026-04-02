@@ -248,9 +248,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-    }
 
-    .mobile-footer-notify {
         label {
             display: flex;
             flex-direction: column;
@@ -311,24 +309,30 @@
             padding: var(--s-3) var(--s-4);
 
             .sidebar-section-title {
-                font-size: 11px;
-                font-weight: 800;
-                color: rgba(255, 255, 255, 0.7);
+                font-size: 11px !important;
+                font-weight: 800 !important;
+                font-style: normal !important;
+                color: rgba(255, 255, 255, 0.4) !important;
                 letter-spacing: 0.15em;
-                margin-block-end: var(--s-2);
+                margin-block-end: 12px;
                 text-align: center;
+                text-transform: uppercase;
             }
 
             .sidebar-alert-content {
-                font-size: 13px;
-                line-height: 1.4;
-                color: #e2e8f0;
+                font-size: 12px !important;
+                line-height: 1.5 !important;
+                color: #f1f5f9 !important;
+                background: rgba(255, 255, 255, 0.04) !important;
+                padding: var(--s-3) !important;
+                border-radius: var(--r-md);
+                border: 1px solid rgba(255, 255, 255, 0.05);
                 text-align: center;
 
                 &:empty::before {
                     content: '現在該当する情報はありません。';
-                    color: rgba(255, 255, 255, 0.2);
-                    font-style: italic;
+                    color: rgba(255, 255, 255, 0.6);
+                    font-style: normal !important;
                 }
             }
         }
@@ -363,7 +367,7 @@
                 &[data-rank].active .rank-header {
                     border-inline-start: 3px solid var(--current-rank);
                     color: var(--current-rank);
-                    background: rgba(var(--current-rank-rgb), 0.1);
+                    background: rgba(var(--current-rank-rgb), 0.22) !important;
                 }
 
                 &.is-expanded .area-expansion {
@@ -396,9 +400,11 @@
                 cursor: pointer;
 
                 &.is-selected {
-                    background: var(--accent-cyan);
-                    color: #0c121e;
-                    border-color: var(--accent-cyan);
+                    background: rgba(var(--cyan-rgb), 0.12) !important;
+                    color: var(--accent-cyan) !important;
+                    border-color: rgba(var(--cyan-rgb), 0.4) !important;
+                    font-weight: 800;
+                    box-shadow: none !important;
                 }
 
                 &.area-select-all {
@@ -411,19 +417,31 @@
             display: flex;
             flex-direction: column;
             gap: 2px;
-            padding: var(--s-1) var(--s-2);
+            padding: var(--s-2) 0 !important;
             border-block-end: 1px solid rgba(255, 255, 255, 0.04);
-            font-size: 11px;
+            font-size: 12px !important;
+            line-height: 1.5 !important;
+            color: #f1f5f9 !important;
+            text-align: center !important;
 
             .error-time {
-                color: rgba(255, 255, 255, 0.3);
+                color: rgba(255, 255, 255, 0.6);
                 font-size: 10px;
             }
 
             .error-msg {
-                color: #f87171;
+                color: #f1f5f9 !important;
                 word-break: break-all;
+                font-size: 12px !important;
             }
+        }
+
+        #sidebar-error-content {
+            background: rgba(255, 255, 255, 0.04) !important;
+            margin: var(--s-2);
+            padding: var(--s-2);
+            border-radius: var(--r-md);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .sidebar-manual-content {
@@ -482,6 +500,10 @@
         justify-content: center;
         overflow: hidden;
         transition: opacity 0.3s ease;
+
+        &.hidden {
+            display: none !important;
+        }
     }
 
     #mobile-detail-overlay {
@@ -493,6 +515,36 @@
         justify-content: center;
         padding: 8px 0;
         pointer-events: auto;
+
+        .pc-detail-card {
+            animation: cardOverlayFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: calc(100vw - 16px);
+            max-height: calc(100% - 16px);
+            height: auto;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .mobile-detail-actions {
+            position: sticky;
+            bottom: 0;
+            background: #0a0f1a;
+            z-index: 30;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            flex-shrink: 0;
+            transition: all 0.2s;
+
+            &:hover {
+                background: var(--bg-glass);
+                color: #fff;
+            }
+
+            &:active {
+                background: rgba(var(--cyan-rgb), 0.2);
+                color: var(--accent-cyan);
+            }
+        }
     }
 
     @keyframes cardOverlayFadeIn {
@@ -505,40 +557,6 @@
             opacity: 1;
             transform: scale(1) translateY(0);
         }
-    }
-
-    #card-overlay-backdrop.hidden {
-        display: none !important;
-    }
-
-    #mobile-detail-overlay .pc-detail-card {
-        animation: cardOverlayFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        max-width: calc(100vw - 16px);
-        max-height: calc(100% - 16px);
-        height: auto;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-
-    #mobile-detail-overlay .mobile-detail-actions {
-        position: sticky;
-        bottom: 0;
-        background: #0a0f1a;
-        z-index: 30;
-        border-top: 1px solid rgba(255, 255, 255, 0.15);
-        flex-shrink: 0;
-        transition: all 0.2s;
-    }
-
-    #mobile-detail-overlay .mobile-detail-actions:hover {
-        background: var(--bg-glass);
-        color: #fff;
-    }
-
-    #mobile-detail-overlay .mobile-detail-actions:active {
-        background: rgba(var(--cyan-rgb), 0.2);
-        color: var(--accent-cyan);
     }
 
     .main-content-area {
