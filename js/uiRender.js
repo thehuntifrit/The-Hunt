@@ -583,7 +583,7 @@ export function updateMapOverlay(card, mob) {
     mapImg.alt = `${mob.Area} Map`;
     mapImg.dataset.mobMap = mob.Map;
     mapImg.decoding = "async";
-    mapImg.loading = "lazy";
+    mapImg.loading = "eager";
     mapContainer.classList.remove('hidden');
     delete mapContainer.dataset.locationLoading;
   }
@@ -595,7 +595,6 @@ export function updateMapOverlay(card, mob) {
     const { spawnCullStatus, validSpawnPoints } = getSpawnCountInfo(mob);
     const isOneLeft = (validSpawnPoints?.length || 0) === 1;
 
-    // Check if spawn points need update by simple hash or similar
     const currentPointsHash = (mob.spawn_points ?? []).map(p => `${p.id}-${isCulled(spawnCullStatus?.[p.id], mob.No)}`).join("|") + `|${isOneLeft}`;
     if (mapOverlay._lastPointsHash !== currentPointsHash) {
       mapOverlay.innerHTML = "";
