@@ -15,6 +15,12 @@ function updateEl(parent, selector, props = {}, dataset = {}) {
   }
 }
 
+export function cloneTemplate(id) {
+  const template = document.getElementById(id);
+  if (!template) return null;
+  return template.content.cloneNode(true).firstElementChild;
+}
+
 export function escapeHtml(str) {
   if (typeof str !== "string") return str;
   return str.replace(/[&<>"']/g, function (m) {
@@ -76,26 +82,42 @@ export function computeTimeLabel(mob) {
 }
 
 function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow) {
-  if (!dhm) return `<div class="timer-value">--/-- --:--</div>`;
-  const { d, h, m } = dhm;
+  if (!dhm) {
+    const fallback = document.createElement('div');
+    fallback.className = 'timer-value';
+    fallback.textContent = "--/-- --:--";
+    return fallback;
+  }
 
   if (isInWindow) {
     const totalMinutes = Math.ceil((dhm.rawS || 0) / 60);
-    return `<span class="timer-value special-timer"><span class="timer-part"><span class="timer-num">${totalMinutes}</span><span class="timer-unit">分</span></span></span>`;
+    const span = document.createElement('span');
+    span.className = 'timer-value special-timer';
+    span.innerHTML = `<span class="timer-part"><span class="timer-num">${totalMinutes}</span><span class="timer-unit">分</span></span>`;
+    return span;
   }
 
-  const format = (num, unit) => {
-    if (unit === 'h' && Number(num) === 0) return '&nbsp;&nbsp;&nbsp;';
-    const s = String(num).padStart(2, '0').replace(/^0/, '&nbsp;');
-    return `<span class="timer-num">${s}</span><span class="timer-unit">${unit}</span>`;
+  const el = cloneTemplate('timer-rich-template');
+  if (!el) return document.createElement('span');
+
+  if (isSpecialCondition) el.classList.add('label-next');
+  if (isTimeOver) el.classList.add('time-over');
+
+  const { d, h, m } = dhm;
+
+  const format = (elPart, num, unit) => {
+    const numEl = elPart.querySelector('.timer-num');
+    if (unit === 'h' && Number(num) === 0) {
+      numEl.innerHTML = '&nbsp;&nbsp;&nbsp;';
+    } else {
+      numEl.innerHTML = String(num).padStart(2, '0').replace(/^0/, '&nbsp;');
+    }
   };
 
-  const html = `
-    <span class="timer-part h-part">${format(h, 'h')}</span>
-    <span class="timer-part m-part">${format(m, 'm')}</span>
-  `;
+  format(el.querySelector('.h-part'), h, 'h');
+  format(el.querySelector('.m-part'), m, 'm');
 
-  return `<span class="timer-value ${isSpecialCondition ? 'label-next' : ''} ${isTimeOver ? 'time-over' : ''}">${html}</span>`;
+  return el;
 }
 
 export function getSpawnCountInfo(mob) {
@@ -118,6 +140,9 @@ export function getSpawnCountInfo(mob) {
 }
 
 export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, isS_LastOne) {
+  const el = cloneTemplate('spawn-point-template');
+  if (!el) return null;
+
   const pointStatus = spawnCullStatus?.[point.id];
   const isCulledFlag = isCulled(pointStatus, mobNo);
   const isS_A_Cullable = point.mob_ranks.some(r => r === "S" || r === "A");
@@ -143,22 +168,24 @@ export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, i
     dataIsInteractive = "false";
   }
 
+  el.className = `spawn-point ${colorClass}`;
+  el.style.left = `${point.x}%`;
+  el.style.top = `${point.y}%`;
+
   const pointNumber = parseInt(point.id.slice(-2), 10);
   const titleText = `${pointNumber}${isCulledFlag ? " (済)" : ""}`;
 
-  return `
-    <div class="spawn-point ${colorClass}"
-        style="left:${point.x}%; top:${point.y}%;"
-        data-tooltip="${escapeHtml(titleText)}"
-        data-location-id="${escapeHtml(point.id)}"
-        data-mob-no="${mobNo}"
-        data-rank="${escapeHtml(rank)}"
-        data-is-culled="${isCulledFlag}"
-        data-is-lastone="${isLastOne ? "true" : "false"}"
-        data-is-interactive="${dataIsInteractive}"
-        tabindex="0">
-    </div>
-    `;
+  Object.assign(el.dataset, {
+    tooltip: titleText,
+    locationId: point.id,
+    mobNo: mobNo,
+    rank: rank,
+    isCulled: isCulledFlag,
+    isLastone: isLastOne ? "true" : "false",
+    isInteractive: dataIsInteractive
+  });
+
+  return el;
 }
 
 export function createMobCard(mob, isDetailView = false) {
@@ -333,11 +360,22 @@ export function updateProgressText(card, mob) {
     if (isSpecialCondition) iconEl.classList.add('is-special');
   }
   if (timeEl) {
-    const timerHTML = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
-    const newHTML = `<div class="js-mobile-time-inner">${timerHTML}<span class="detail-percent-val">(${percentStr})</span></div>`;
-    if (timeEl._lastHTML !== newHTML) {
-      timeEl.innerHTML = newHTML;
-      timeEl._lastHTML = newHTML;
+    const timerNode = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
+    const cacheKey = `${label}-${isSpecialCondition}-${isTimeOver}-${isInWindow}-${dhm?.rawS || 0}-${percentValue}`;
+
+    if (timeEl._lastCacheKey !== cacheKey) {
+      timeEl.innerHTML = "";
+      const inner = document.createElement("div");
+      inner.className = "js-mobile-time-inner";
+      inner.appendChild(timerNode);
+
+      const percentSpan = document.createElement("span");
+      percentSpan.className = "detail-percent-val";
+      percentSpan.innerHTML = `(${percentStr})`;
+      inner.appendChild(percentSpan);
+
+      timeEl.appendChild(inner);
+      timeEl._lastCacheKey = cacheKey;
     }
     if (status === "MaxOver") timeEl.classList.add("max-over");
     else timeEl.classList.remove("max-over");
@@ -444,12 +482,16 @@ export function updateMemoIcon(card, mob) {
   const newState = shouldShowMemo ? mob.memo_text : "";
   if (memoIconContainer.dataset.memoState === newState) return;
   memoIconContainer.dataset.memoState = newState;
+  memoIconContainer.innerHTML = '';
   if (shouldShowMemo) {
     memoIconContainer.style.display = '';
-    memoIconContainer.innerHTML = `<span style="font-size: 1rem;" data-tooltip="${mob.memo_text}">📝</span>`;
+    const span = document.createElement('span');
+    span.style.fontSize = '1rem';
+    span.dataset.tooltip = mob.memo_text;
+    span.textContent = '📝';
+    memoIconContainer.appendChild(span);
   } else {
     memoIconContainer.style.display = 'none';
-    memoIconContainer.innerHTML = '';
   }
 }
 
@@ -530,26 +572,38 @@ export function updateMapOverlay(card, mob) {
   if (mapContainer.classList.contains('hidden')) return;
   const mapOverlay = mapContainer.querySelector('.map-overlay');
   if (!mapOverlay) return;
-  let spawnPointsHtml = "";
+
   if (mob.Map && mob.spawn_points) {
     const { spawnCullStatus, validSpawnPoints } = getSpawnCountInfo(mob);
     const isOneLeft = (validSpawnPoints?.length || 0) === 1;
-    spawnPointsHtml = (mob.spawn_points ?? []).map(point => {
-      const isThisPointTheLastOne = isOneLeft && point.id === validSpawnPoints[0]?.id;
-      return drawSpawnPoint(point, spawnCullStatus, mob.No, point.mob_ranks.includes("B2") ? "B2" : point.mob_ranks.includes("B1") ? "B1" : point.mob_ranks[0], isThisPointTheLastOne, isOneLeft);
-    }).join("");
+
+    // Check if spawn points need update by simple hash or similar
+    const currentPointsHash = (mob.spawn_points ?? []).map(p => `${p.id}-${isCulled(spawnCullStatus?.[p.id], mob.No)}`).join("|");
+    if (mapOverlay._lastPointsHash !== currentPointsHash) {
+      mapOverlay.innerHTML = "";
+      const fragment = document.createDocumentFragment();
+      (mob.spawn_points ?? []).forEach(point => {
+        const isThisPointTheLastOne = isOneLeft && point.id === validSpawnPoints[0]?.id;
+        const pointEl = drawSpawnPoint(point, spawnCullStatus, mob.No, point.mob_ranks.includes("B2") ? "B2" : point.mob_ranks.includes("B1") ? "B1" : point.mob_ranks[0], isThisPointTheLastOne, isOneLeft);
+        if (pointEl) fragment.appendChild(pointEl);
+      });
+      mapOverlay.appendChild(fragment);
+      mapOverlay._lastPointsHash = currentPointsHash;
+    }
   }
-  if (mapOverlay.innerHTML !== spawnPointsHtml) mapOverlay.innerHTML = spawnPointsHtml;
 }
 
 export function createSimpleMobItem(mob) {
-  const item = document.createElement('div');
-  item.className = `pc-list-item rank-${mob.Rank.toLowerCase()}`;
+  const item = cloneTemplate('pc-list-item-template');
+  if (!item) return document.createElement('div');
+
+  item.classList.add(`rank-${mob.Rank.toLowerCase()}`);
   item.dataset.mobNo = mob.No;
   item.dataset.rank = mob.Rank;
-  item.innerHTML = `<div class="pc-list-name font-bold"><span class="truncate"></span><span class="memo-icon-container text-[12px] h-4 flex items-center"></span><span class="pc-list-count-inner"></span></div><div class="pc-list-time"></div><div class="pc-list-progress-container"><div class="pc-list-progress-bar"></div></div><div class="pc-list-percent">0%</div><button class="pc-list-report-btn">REPORT</button>`;
-  const nameEl = item.querySelector('.pc-list-name span:first-child');
+
+  const nameEl = item.querySelector('.pc-list-name .truncate');
   if (nameEl) nameEl.textContent = mob.Name;
+
   updateSimpleMobItem(item, mob);
   return item;
 }
@@ -564,8 +618,25 @@ export function updateSimpleMobItem(item, mob) {
   const { label, timeValue, isSpecialCondition, isTimeOver, dhm, isInWindow } = computeTimeLabel(mob);
 
   if (timeEl) {
-    const timerHTML = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
-    timeEl.innerHTML = `<div class="grid items-center w-full h-full" style="grid-template-columns:auto 1fr;gap:8px;"><span class="timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''} text-center opacity-90">${label}</span>${timerHTML}</div>`;
+    const timerNode = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
+    const cacheKey = `${label}-${status}-${isSpecialCondition}-${isTimeOver}-${isInWindow}-${dhm?.rawS || 0}`;
+
+    if (timeEl._lastCacheKey !== cacheKey) {
+      timeEl.innerHTML = "";
+      const inner = document.createElement("div");
+      inner.className = "grid items-center w-full h-full";
+      inner.style.gridTemplateColumns = "auto 1fr";
+      inner.style.gap = "8px";
+
+      const labelSpan = document.createElement("span");
+      labelSpan.className = `timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''} text-center opacity-90`;
+      labelSpan.textContent = label;
+
+      inner.appendChild(labelSpan);
+      inner.appendChild(timerNode);
+      timeEl.appendChild(inner);
+      timeEl._lastCacheKey = cacheKey;
+    }
   }
   const countInner = item.querySelector('.pc-list-count-inner');
   if (countInner) {
@@ -645,18 +716,11 @@ const GROUP_LABELS = {
 function getOrCreateGroupSection(groupKey) {
   if (groupSectionCache.has(groupKey)) return groupSectionCache.get(groupKey);
 
-  const section = document.createElement("section");
-  section.className = "status-group w-full hidden";
-  section.innerHTML = `
-      <div class="status-group-separator">
-          <span class="status-group-label">${GROUP_LABELS[groupKey]}</span>
-      </div>
-      <div class="group-columns grid grid-cols-1 lg:grid-cols-3 gap-0.5 lg:gap-4">
-          <div class="col-1 flex flex-col gap-0.5 lg:gap-4"></div>
-          <div class="col-2 flex flex-col gap-0.5 lg:gap-4"></div>
-          <div class="col-3 flex flex-col gap-0.5 lg:gap-4"></div>
-      </div>
-  `;
+  const section = cloneTemplate('status-group-template');
+  if (!section) return { section: document.createElement('section'), cols: [] };
+
+  const labelEl = section.querySelector(".status-group-label");
+  if (labelEl) labelEl.textContent = GROUP_LABELS[groupKey];
 
   const cols = [
     section.querySelector(".col-1"),

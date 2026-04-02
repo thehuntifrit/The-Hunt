@@ -462,6 +462,104 @@
         <div class="magnifier-content-wrapper absolute w-full h-full"></div>
     </div>
 
+    <template id="timer-rich-template">
+        <span class="timer-value">
+            <span class="timer-part h-part">
+                <span class="timer-num"></span><span class="timer-unit">h</span>
+            </span>
+            <span class="timer-part m-part">
+                <span class="timer-num"></span><span class="timer-unit">m</span>
+            </span>
+        </span>
+    </template>
+
+    <template id="spawn-point-template">
+        <div class="spawn-point" tabindex="0"></div>
+    </template>
+
+    <template id="pc-list-item-template">
+        <div class="pc-list-item">
+            <div class="pc-list-name font-bold">
+                <span class="truncate"></span>
+                <span class="memo-icon-container text-[12px] h-4 flex items-center"></span>
+                <span class="pc-list-count-inner"></span>
+            </div>
+            <div class="pc-list-time"></div>
+            <div class="pc-list-progress-container">
+                <div class="pc-list-progress-bar"></div>
+            </div>
+            <div class="pc-list-percent">0%</div>
+            <button class="pc-list-report-btn">REPORT</button>
+        </div>
+    </template>
+
+    <template id="status-group-template">
+        <section class="status-group w-full hidden">
+            <div class="status-group-separator">
+                <span class="status-group-label"></span>
+            </div>
+            <div class="group-columns grid grid-cols-1 lg:grid-cols-3 gap-0.5 lg:gap-4">
+                <div class="col-1 flex flex-col gap-0.5 lg:gap-4"></div>
+                <div class="col-2 flex flex-col gap-0.5 lg:gap-4"></div>
+                <div class="col-3 flex flex-col gap-0.5 lg:gap-4"></div>
+            </div>
+        </section>
+    </template>
+
+    <template id="sidebar-error-item-template">
+        <div class="sidebar-error-item">
+            <span class="error-time"></span>
+            <span class="error-msg"></span>
+        </div>
+    </template>
+
+    <template id="rank-accordion-item-template">
+        <div class="rank-accordion-item">
+            <button class="rank-header"></button>
+            <div class="area-expansion">
+                <div class="area-grid-container"></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="auth-verified-template">
+        <div class="bg-emerald-900/20 border border-emerald-500/50 p-4 rounded-lg my-4 text-center">
+            <p class="text-emerald-400 font-bold">✓ 認証済みです</p>
+        </div>
+    </template>
+
+    <template id="auth-form-template">
+        <div class="bg-slate-800/50 border border-gray-700 p-4 rounded-lg my-4 space-y-4 text-left">
+            <p class="text-xs text-yellow-500 font-bold uppercase tracking-wider">認証手続き</p>
+            <div class="space-y-2">
+                <div class="block text-xs text-gray-400">STEP 1: 検証コードをコピー</div>
+                <div class="flex gap-2">
+                    <code
+                        class="flex-1 p-2 bg-gray-950 rounded border border-gray-800 text-center font-mono text-yellow-500 font-bold select-all tracking-widest auth-vcode-display"></code>
+                    <button
+                        class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs transition auth-copy-btn">Copy</button>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <div class="block text-xs text-gray-400">STEP 2: Lodestoneプロフィールに貼り付け</div>
+                <a href="https://jp.finalfantasyxiv.com/lodestone/my/setting/profile/" target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-cyan-400 underline text-sm block hover:text-cyan-300">プロフィール編集画面を開く 🔗</a>
+            </div>
+            <div class="space-y-2">
+                <label class="block text-xs text-gray-400">STEP 3: キャラクターIDを入力して検証</label>
+                <div class="flex flex-col gap-2">
+                    <input type="text"
+                        class="w-full p-2 rounded bg-gray-900 border border-gray-700 text-sm focus:ring-1 focus:ring-yellow-500 outline-none auth-id-input"
+                        placeholder="IDまたはURL" maxlength="200">
+                    <div class="text-xs min-h-[1em] auth-status-msg"></div>
+                    <button
+                        class="w-full py-2 rounded bg-yellow-600 hover:bg-yellow-500 font-bold text-white transition text-sm auth-verify-btn">検証して登録</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
     <script type="module" src="./js/app.js"></script>
 
 </body>

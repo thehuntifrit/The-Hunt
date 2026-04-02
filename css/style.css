@@ -289,9 +289,6 @@ body::before {
     color: #fff;
 }
 
-.progress-text .time-normal {
-    color: inherit;
-}
 
 .text-pop {
     color: #e2e8f0;
@@ -569,17 +566,6 @@ body::before {
     background: rgba(255, 255, 255, 0.3);
 }
 
-.detail-label-icon {
-    display: inline-block;
-    min-width: 1.2em;
-    text-align: center;
-}
-
-.detail-time-val {
-    font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
-}
 
 .report-side-bar::before {
     content: '';
@@ -620,17 +606,6 @@ body::before {
     letter-spacing: 0.03em;
 }
 
-.font-numeric {
-    font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum";
-    letter-spacing: 0.02em;
-}
-
-.progress-max-over {
-    background: var(--progress-max-over);
-    box-shadow: none;
-}
 
 @keyframes blink-white-light {
     0%, 100% { 

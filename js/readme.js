@@ -1,6 +1,6 @@
-
 import { getState, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
 import { verifyLodestoneCharacter, registerUserToFirestore } from "./server.js";
+import { cloneTemplate } from "./uiRender.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('manual-modal');
@@ -57,12 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!authContainer) return;
 
         const state = getState();
+        authContainer.innerHTML = "";
+
         if (state.isVerified) {
-            authContainer.innerHTML = `
-                <div class="bg-emerald-900/20 border border-emerald-500/50 p-4 rounded-lg my-4 text-center">
-                    <p class="text-emerald-400 font-bold">✓ 認証済みです</p>
-                </div>
-            `;
+            const verifiedEl = cloneTemplate('auth-verified-template');
+            if (verifiedEl) authContainer.appendChild(verifiedEl);
             return;
         }
 
@@ -70,47 +69,23 @@ document.addEventListener('DOMContentLoaded', () => {
             currentVCode = "HUNT-" + Math.random().toString(36).substring(2, 10).toUpperCase();
         }
 
-        authContainer.innerHTML = `
-            <div class="bg-slate-800/50 border border-gray-700 p-4 rounded-lg my-4 space-y-4">
-                <p class="text-xs text-yellow-500 font-bold uppercase tracking-wider">認証手続き</p>
-                
-                <div class="space-y-2">
-                    <div class="block text-xs text-gray-400">STEP 1: 検証コードをコピー</div>
-                    <div class="flex gap-2">
-                        <code class="flex-1 p-2 bg-gray-950 rounded border border-gray-800 text-center font-mono text-yellow-500 font-bold select-all tracking-widest">${currentVCode}</code>
-                        <button id="readme-auth-copy" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs transition">Copy</button>
-                    </div>
-                </div>
+        const formEl = cloneTemplate('auth-form-template');
+        if (!formEl) return;
 
-                <div class="space-y-2">
-                    <div class="block text-xs text-gray-400">STEP 2: Lodestoneプロフィールに貼り付け</div>
-                    <a href="https://jp.finalfantasyxiv.com/lodestone/my/setting/profile/" target="_blank" rel="noopener noreferrer" 
-                       class="text-cyan-400 underline text-sm block hover:text-cyan-300">プロフィール編集画面を開く 🔗</a>
-                </div>
+        const vcodeDisplay = formEl.querySelector('.auth-vcode-display');
+        const copyBtn = formEl.querySelector('.auth-copy-btn');
+        const verifyBtn = formEl.querySelector('.auth-verify-btn');
+        const idInput = formEl.querySelector('.auth-id-input');
+        const statusEl = formEl.querySelector('.auth-status-msg');
 
-                <div class="space-y-2">
-                    <label for="readme-auth-id" class="block text-xs text-gray-400">STEP 3: キャラクターIDを入力して検証</label>
-                    <div class="flex flex-col gap-2">
-                        <input type="text" id="readme-auth-id" placeholder="IDまたはURL" maxlength="200"
-                               class="w-full p-2 rounded bg-gray-900 border border-gray-700 text-sm focus:ring-1 focus:ring-yellow-500 outline-none">
-                        <div id="readme-auth-status" class="text-xs min-h-[1em]"></div>
-                        <button id="readme-auth-verify" class="w-full py-2 rounded bg-yellow-600 hover:bg-yellow-500 font-bold text-white transition text-sm">検証して登録</button>
-                    </div>
-                </div>
-            </div>
-        `;
+        if (vcodeDisplay) vcodeDisplay.textContent = currentVCode;
 
-        const copyBtn = document.getElementById('readme-auth-copy');
         copyBtn?.addEventListener('click', () => {
             navigator.clipboard.writeText(currentVCode);
             const original = copyBtn.textContent;
             copyBtn.textContent = "Done!";
             setTimeout(() => copyBtn.textContent = original, 2000);
         });
-
-        const verifyBtn = document.getElementById('readme-auth-verify');
-        const idInput = document.getElementById('readme-auth-id');
-        const statusEl = document.getElementById('readme-auth-status');
 
         verifyBtn?.addEventListener('click', async () => {
             const raw = idInput.value.trim();
@@ -126,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             statusEl.textContent = "検証中...";
-            statusEl.className = "text-xs text-cyan-400";
+            statusEl.className = "text-xs text-cyan-400 auth-status-msg";
             verifyBtn.disabled = true;
 
             try {
@@ -140,14 +115,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateAuthUI();
                 } else {
                     statusEl.textContent = result.error;
-                    statusEl.className = "text-xs text-red-400";
+                    statusEl.className = "text-xs text-red-400 auth-status-msg";
                     verifyBtn.disabled = false;
                 }
             } catch (err) {
                 statusEl.textContent = "エラーが発生しました";
-                statusEl.className = "text-xs text-red-400";
+                statusEl.className = "text-xs text-red-400 auth-status-msg";
                 verifyBtn.disabled = false;
             }
         });
+
+        authContainer.appendChild(formEl);
     }
 });

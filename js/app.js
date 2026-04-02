@@ -234,11 +234,15 @@ export async function renderMaintenanceStatus() {
 
     maintPanels.forEach(p => {
         if (!hasMaintenance) {
-            p.innerHTML = "現在予定されているメンテナンスはありません";
+            p.textContent = "現在予定されているメンテナンスはありません";
             return;
         }
         const isPC = p.closest('#app-sidebar') || p.closest('.sidebar-panel-content');
-        p.innerHTML = isPC ? maintPCHtml : maintMobileHtml;
+        if (isPC) {
+            p.innerHTML = maintPCHtml;
+        } else {
+            p.textContent = maintMobileHtml;
+        }
     });
 
     const telopMsg = (maintenance && maintenance.message && maintenance.message.trim() !== "") ? maintenance.message : "";
@@ -254,12 +258,27 @@ export async function renderMaintenanceStatus() {
         }
     }
 
-    const nameToDisplay = (state.isVerified && state.characterName) ? escapeHtml(state.characterName) : "名無しさん";
-    const welcomeHtml = `<div class="sidebar-welcome-msg" style="color:var(--accent-cyan); font-weight:bold; margin-bottom:8px; border-bottom:1px solid rgba(34,211,238,0.2); padding-bottom:4px;">ようこそ ${nameToDisplay}</div>`;
+    const nameToDisplay = (state.isVerified && state.characterName) ? state.characterName : "名無しさん";
 
     telopPanels.forEach(p => {
-        const displayMessage = telopMsg ? escapeHtml(telopMsg).replace(/\/\//g, "<br>") : "メッセージはありません。";
-        p.innerHTML = welcomeHtml + displayMessage;
+        p.innerHTML = "";
+        const welcome = document.createElement("div");
+        welcome.className = "sidebar-welcome-msg";
+        welcome.style.color = "var(--accent-cyan)";
+        welcome.style.fontWeight = "bold";
+        welcome.style.marginBottom = "8px";
+        welcome.style.borderBottom = "1px solid rgba(34,211,238,0.2)";
+        welcome.style.paddingBottom = "4px";
+        welcome.textContent = `ようこそ ${nameToDisplay}`;
+        p.appendChild(welcome);
+
+        const msgSpan = document.createElement("span");
+        if (telopMsg) {
+            msgSpan.innerHTML = escapeHtml(telopMsg).replace(/\/\//g, "<br>");
+        } else {
+            msgSpan.textContent = "メッセージはありません。";
+        }
+        p.appendChild(msgSpan);
     });
 
     document.querySelectorAll('.sidebar-icon-btn[data-panel="maintenance"], .mobile-footer-btn[data-panel="maintenance"]')

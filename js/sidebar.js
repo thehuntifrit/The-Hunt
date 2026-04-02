@@ -1,6 +1,6 @@
 import { getState, EXPANSION_MAP } from "./dataManager.js";
 import { renderAreaFilterPanel, handleRankTabClick } from "./filterUI.js";
-import { escapeHtml } from "./uiRender.js";
+import { escapeHtml, cloneTemplate } from "./uiRender.js";
 
 let currentPanel = null;
 
@@ -44,12 +44,21 @@ function updateErrorPanel() {
     const panels = document.querySelectorAll(".js-error-content");
     if (panels.length === 0) return;
 
-    const html = errorLog.length === 0 ? "" : errorLog.map(e =>
-        `<div class="sidebar-error-item"><span class="error-time">${e.time}</span><span class="error-msg">${escapeHtml(e.msg)}</span></div>`
-    ).join("");
+    const fragment = document.createDocumentFragment();
+    errorLog.forEach(e => {
+        const el = cloneTemplate('sidebar-error-item-template');
+        if (el) {
+            const timeEl = el.querySelector(".error-time");
+            const msgEl = el.querySelector(".error-msg");
+            if (timeEl) timeEl.textContent = e.time;
+            if (msgEl) msgEl.textContent = e.msg;
+            fragment.appendChild(el);
+        }
+    });
 
     panels.forEach(el => {
-        el.innerHTML = html;
+        el.innerHTML = "";
+        el.appendChild(fragment.cloneNode(true));
     });
 }
 
@@ -192,27 +201,33 @@ function renderMobileFilterAccordion(panel) {
     const activeRank = state.filter.rank || "ALL";
     const clickStep = state.filter.clickStep || 1;
 
-    let html = `<div class="sidebar-filter-accordion">`;
-    html += ranks.map(r => {
+    let container = document.createElement("div");
+    container.className = "sidebar-filter-accordion";
+    ranks.forEach(r => {
         const isActive = r.key === activeRank;
         const isExpanded = isActive && clickStep === 2;
-        return `
-            <div class="rank-accordion-item ${isActive ? 'active' : ''} ${isExpanded ? 'is-expanded' : ''}" data-rank="${r.key}">
-                <button class="rank-header" style="color: ${r.color};">${r.label}</button>
-                <div class="area-expansion"><div class="area-grid-container"></div></div>
-            </div>
-        `;
-    }).join("");
-    html += `</div>`;
-    panel.innerHTML = html;
 
-    panel.querySelectorAll(".rank-header").forEach(header => {
-        header.addEventListener("click", () => {
-            const rankKey = header.closest(".rank-accordion-item").dataset.rank;
-            handleRankTabClick(rankKey);
-            setTimeout(() => renderMobileFilterAccordion(panel), 50);
-        });
+        const itemEl = cloneTemplate('rank-accordion-item-template');
+        if (itemEl) {
+            if (isActive) itemEl.classList.add('active');
+            if (isExpanded) itemEl.classList.add('is-expanded');
+            itemEl.dataset.rank = r.key;
+
+            const header = itemEl.querySelector(".rank-header");
+            if (header) {
+                header.style.color = r.color;
+                header.textContent = r.label;
+                header.addEventListener("click", () => {
+                    const rankKey = header.closest(".rank-accordion-item").dataset.rank;
+                    handleRankTabClick(rankKey);
+                    setTimeout(() => renderMobileFilterAccordion(panel), 50);
+                });
+            }
+            container.appendChild(itemEl);
+        }
     });
+    panel.innerHTML = "";
+    panel.appendChild(container);
 
     const activeExpansion = panel.querySelector(".rank-accordion-item.active .area-grid-container");
     if (activeExpansion) {
@@ -354,29 +369,33 @@ function renderSidebarFilterAccordion() {
     const activeRank = state.filter.rank || "ALL";
     const clickStep = state.filter.clickStep || 1;
 
-    let html = `<div class="sidebar-filter-title">Filter</div>`;
-    html += ranks.map(r => {
+    container.innerHTML = "";
+    const title = document.createElement("div");
+    title.className = "sidebar-filter-title";
+    title.textContent = "Filter";
+    container.appendChild(title);
+
+    ranks.forEach(r => {
         const isActive = r.key === activeRank;
         const isExpanded = isActive && clickStep === 2;
-        return `
-            <div class="rank-accordion-item ${isActive ? 'active' : ''} ${isExpanded ? 'is-expanded' : ''}" data-rank="${r.key}">
-                <button class="rank-header" style="color: ${r.color};">
-                    ${r.label}
-                </button>
-                <div class="area-expansion">
-                    <div class="area-grid-container"></div>
-                </div>
-            </div>
-        `;
-    }).join("");
 
-    container.innerHTML = html;
+        const itemEl = cloneTemplate('rank-accordion-item-template');
+        if (itemEl) {
+            if (isActive) itemEl.classList.add('active');
+            if (isExpanded) itemEl.classList.add('is-expanded');
+            itemEl.dataset.rank = r.key;
 
-    container.querySelectorAll(".rank-header").forEach(header => {
-        header.addEventListener("click", () => {
-            const rankKey = header.closest(".rank-accordion-item").dataset.rank;
-            handleRankTabClick(rankKey);
-        });
+            const header = itemEl.querySelector(".rank-header");
+            if (header) {
+                header.style.color = r.color;
+                header.textContent = r.label;
+                header.addEventListener("click", () => {
+                    const rankKey = header.closest(".rank-accordion-item").dataset.rank;
+                    handleRankTabClick(rankKey);
+                });
+            }
+            container.appendChild(itemEl);
+        }
     });
 
     const activeExpansion = container.querySelector(".rank-accordion-item.active .area-grid-container");

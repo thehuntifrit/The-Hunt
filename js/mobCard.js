@@ -47,7 +47,7 @@ function handlePCListClick(e) {
 }
 
 function handleMobCardClick(e) {
-    const card = e.target.closest(".mob-card");
+    const card = e.target.closest(".mob-card, .pc-detail-card");
     if (!card) return;
 
     const mobNo = parseInt(card.dataset.mobNo, 10);
