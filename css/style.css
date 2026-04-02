@@ -665,29 +665,6 @@ body::before {
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
-.count-at {
-    font-size: 0.875rem;
-    color: #94a3b8;
-    position: relative;
-    top: -0.12rem;
-}
-
-.count-num-label {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #94a3b8;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-    position: relative;
-    top: 0.04rem;
-}
-
-.count-num-yellow {
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: #facc15;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-}
-
 .count-prefix-icon {
     font-size: 0.875rem;
 }

@@ -158,8 +158,8 @@
         }
 
         .pc-list-count-inner {
-            font-size: 14px;
-            color: #94a3b8;
+            display: flex;
+            align-items: center;
             margin-inline-start: 0.5em;
         }
 
@@ -265,4 +265,11 @@
     .detail-area-row {
         font-size: 12px;
     }
+}
+
+.pc-count-val {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }

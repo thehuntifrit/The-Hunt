@@ -71,10 +71,10 @@
     }
 
     .mob-count-container {
-        font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
         letter-spacing: -0.02em;
-        opacity: 0.8;
-        font-size: 10px;
+        opacity: 0.9;
+        display: flex;
+        align-items: center;
     }
 
     .mobile-left-lower {

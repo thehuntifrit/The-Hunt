@@ -141,9 +141,9 @@ export function getSpawnCountInfo(mob) {
   let countHtml = "";
   if (remainingCount === 1) {
     const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-    countHtml = `<span class="pc-count-val font-bold text-yellow-500">📍${pointNumber}番</span>`;
+    countHtml = `<span class="pc-count-val font-bold text-yellow-500">📍${pointNumber}<span style="margin-left:2px;">番</span></span>`;
   } else if (remainingCount > 1) {
-    countHtml = `<span class="pc-count-val font-bold text-slate-400">📍@${remainingCount}</span>`;
+    countHtml = `<span class="pc-count-val font-bold text-slate-400">📍@<span style="margin-left:2px;">${remainingCount}</span></span>`;
   }
   return { countHtml, remainingCount, spawnCullStatus, validSpawnPoints };
 }
@@ -529,11 +529,10 @@ export function updateMobCount(card, mob) {
   if (mob.Map && mob.spawn_points) {
     if (remainingCount === 1) {
       const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-      displayCountText = `<span class="count-num-yellow">${pointNumber}番</span>`;
+      displayCountText = `<span class="pc-count-val font-bold text-yellow-500">📍${pointNumber}<span style="margin-left:2px;">番</span></span>`;
     } else if (remainingCount > 1) {
-      displayCountText = `<span class="count-at">@</span><span class="count-num-label">${remainingCount}</span>`;
+      displayCountText = `<span class="pc-count-val font-bold text-slate-400">📍@<span style="margin-left:2px;">${remainingCount}</span></span>`;
     }
-    if (displayCountText) displayCountText = `<span class="count-prefix-icon">📍</span>${displayCountText}`;
   }
   if (countContainer.dataset.cacheKey !== displayCountText) {
     countContainer.dataset.cacheKey = displayCountText;
