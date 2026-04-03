@@ -529,7 +529,7 @@ export function updateMobCount(card, mob) {
   if (mob.Map && mob.spawn_points) {
     if (remainingCount === 1) {
       const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-      displayCountText = `<span class="pc-count-val font-bold is-special">📍${pointNumber}<span style="margin-left:2px;">番</span></span>`;
+      displayCountText = `<span class="pc-count-val font-bold count-warn">📍${pointNumber}<span style="margin-left:2px;">番</span></span>`;
     } else if (remainingCount > 1) {
       displayCountText = `<span class="pc-count-val font-bold text-slate-400">📍@<span style="margin-left:2px;">${remainingCount}</span></span>`;
     }
