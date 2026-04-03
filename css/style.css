@@ -73,6 +73,7 @@
     --bg-dark: #0f172a;
     --bg-card: rgba(30, 41, 59, 0.45);
     --accent-cyan: #22d3ee;
+    --cyan-rgb: 34, 211, 238;
     --accent-gold: #fbbf24;
     --accent-crimson: #f87171;
     --text-primary: #f8fafc;
@@ -844,16 +845,16 @@ body::before {
 }
 
 .detail-memo-box {
-    background: rgba(var(--cyan-rgb), 0.1);
+    background: rgba(var(--cyan-rgb), 0.05);
     padding: 6px 10px;
     border-radius: 6px;
-    border: 1px solid rgba(var(--cyan-rgb), 0.25);
+    border: 1px solid rgba(var(--cyan-rgb), 0.5);
     transition: border-color 0.2s;
 }
 
 .detail-memo-box:focus-within {
-    border-color: rgba(var(--cyan-rgb), 0.3);
-    box-shadow: 0 0 10px rgba(var(--cyan-rgb), 0.08);
+    border-color: rgba(var(--cyan-rgb), 0.8);
+    box-shadow: 0 0 10px rgba(var(--cyan-rgb), 0.1);
 }
 
 .detail-memo-input {
@@ -1052,13 +1053,13 @@ html body.magnifier-active .mob-card-inner * {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 4px;
-    padding: 6px 10px;
+    padding: 4px 10px;
     display: flex;
     flex-direction: column;
 }
 
 .detail-info-item .label {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 800;
     color: #94a3b8;
     text-transform: uppercase;
@@ -1066,7 +1067,7 @@ html body.magnifier-active .mob-card-inner * {
 
 .detail-info-item .value {
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 700;
     color: #fff;
 }
@@ -1096,7 +1097,7 @@ html body.magnifier-active .mob-card-inner * {
     display: flex;
     flex-direction: column;
     padding: 0;
-    background: rgba(10, 20, 50, 0.98);
+    background: rgba(24, 38, 66, 0.98);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--r-lg);
     box-shadow: none;
@@ -1219,9 +1220,9 @@ html body.magnifier-active .mob-card-inner * {
 .pc-detail-card,
 #pc-right-detail>.pc-detail-card,
 #mobile-detail-overlay .pc-detail-card {
-    background-color: #08122a !important;
+    background-color: rgba(24, 38, 66, 0.98) !important;
     background-image: none !important;
-    border: 1px solid rgba(var(--cyan-rgb), 0.3);
+    border: 1px solid rgba(var(--cyan-rgb), 0.4);
     box-shadow: none;
 }
 
@@ -1241,7 +1242,8 @@ html body.magnifier-active .mob-card-inner * {
     margin: 0;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.1);
     font-weight: 900;
     letter-spacing: 0.2em;
     font-size: 13px;
@@ -1252,7 +1254,7 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .mobile-detail-actions:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.15);
     color: #fff;
 }
 

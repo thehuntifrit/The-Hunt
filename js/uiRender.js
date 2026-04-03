@@ -864,6 +864,10 @@ window.addEventListener('locationsUpdated', () => {
 
 const visibleCards = new Set();
 const cardObserver = new IntersectionObserver((entries) => {
+  const state = getState();
+  const isMobile = window.innerWidth < 1024;
+  if (isMobile && state.openMobCardNo !== null) return;
+
   const mobMap = getMobMap();
   for (const entry of entries) {
     const mobNo = entry.target.dataset.mobNo;
@@ -1038,9 +1042,14 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     }
     if (mobileLayout) mobileLayout.classList.remove("hidden");
   }
+  const isMobile = !isPC;
+  const isOverlayOpen = state.openMobCardNo !== null;
 
-  let numCols = 1;
-  if (isPC) numCols = 3;
+  if (isMobile && isOverlayOpen) {
+    // Skip full re-render on mobile when overlay is open to avoid background jitter
+  } else {
+    let numCols = 1;
+    if (isPC) numCols = 3;
 
   const groups = {
     MAX_OVER: [],
@@ -1180,16 +1189,8 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
     }
 
-    Array.from(DOM.pcLeftList.children).forEach(child => {
-      if (child.dataset.mobNo) {
-        if (parseInt(child.dataset.mobNo, 10) === state.openMobCardNo) {
-          child.classList.add("selected");
-        } else {
-          child.classList.remove("selected");
-        }
-      }
-    });
   }
+}
 
   const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
   const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");
@@ -1290,50 +1291,55 @@ function updateProgressBars() {
   const nowSec = Date.now() / 1000;
   const mobMap = getMobMap();
   const filtered = getFilteredMobs();
+  const isMobile = window.innerWidth < 1024;
+  const isOverlayOpen = state.openMobCardNo !== null;
 
-  filtered.forEach(mob => {
-    const card = cardCache.get(String(mob.No));
-    if (card) {
-      checkAndNotify(mob);
-      updateProgressText(card, mob);
-      updateProgressBar(card, mob);
+  // Selective update: only update what's visible/needed
+  if (!(isMobile && isOverlayOpen)) {
+    filtered.forEach(mob => {
+      const card = cardCache.get(String(mob.No));
+      if (card) {
+        checkAndNotify(mob);
+        updateProgressText(card, mob);
+        updateProgressBar(card, mob);
+      }
+    });
+
+    if (DOM.pcLeftList) {
+      const listItems = DOM.pcLeftList.querySelectorAll('.pc-list-item');
+      listItems.forEach(item => {
+        const mobNo = item.dataset.mobNo;
+        const mob = mobMap.get(String(mobNo));
+        if (mob) {
+          updateSimpleMobItem(item, mob);
+        }
+      });
     }
-  });
+  }
 
   const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
   const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");
 
   [rightPane, mobileOverlay].forEach(container => {
     if (container && container.dataset.renderedMobNo && container.dataset.renderedMobNo !== "none") {
-      const detailCard = container.firstElementChild;
+      const detailCard = container.querySelector('.pc-detail-card') || container.firstElementChild;
       const mob = mobMap.get(container.dataset.renderedMobNo);
       if (detailCard && mob) {
-        updateProgressText(detailCard, mob);
-        updateProgressBar(detailCard, mob);
-        updateExpandablePanel(detailCard, mob);
+        updateCardFull(detailCard, mob);
       }
     }
   });
 
-  if (DOM.pcLeftList) {
-    const listItems = DOM.pcLeftList.querySelectorAll('.pc-list-item');
-    listItems.forEach(item => {
-      const mobNo = item.dataset.mobNo;
-      const mob = mobMap.get(String(mobNo));
-      if (mob) {
-        updateSimpleMobItem(item, mob);
+  if (!(isMobile && isOverlayOpen)) {
+    invalidateSortCache();
+    const sorted = getSortedFilteredMobs();
+    const currentOrderStr = sorted.map(m => m.No).join(",");
+    const currentGroupStr = sorted.map(m => getGroupKey(m)).join(",");
+
+    if (!isInitialSortingSuppressed) {
+      if (currentOrderStr !== lastRenderedOrderStr || currentGroupStr !== lastRenderedGroupStr) {
+        sortAndRedistribute();
       }
-    });
-  }
-
-  invalidateSortCache();
-  const sorted = getSortedFilteredMobs();
-  const currentOrderStr = sorted.map(m => m.No).join(",");
-  const currentGroupStr = sorted.map(m => getGroupKey(m)).join(",");
-
-  if (!isInitialSortingSuppressed) {
-    if (currentOrderStr !== lastRenderedOrderStr || currentGroupStr !== lastRenderedGroupStr) {
-      sortAndRedistribute();
     }
   }
 
