@@ -143,6 +143,241 @@
     --nav-badge-error: #ff4d4d;
 }
 
+.sidebar-section-title {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    font-style: normal !important;
+    color: #ffffff !important;
+    letter-spacing: 0.15em;
+    margin-bottom: 12px;
+    text-align: center;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-alert-content,
+.sidebar-error-item,
+.error-msg {
+    font-size: 11.5px !important;
+    line-height: 1.4 !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    text-align: center !important;
+    opacity: 1 !important;
+    filter: none !important;
+    -webkit-font-smoothing: subpixel-antialiased !important;
+}
+
+.sidebar-error-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--s-2) 0 !important;
+    border-block-end: 1px solid rgba(255, 255, 255, 0.08);
+
+    &:last-child {
+        border-block-end: none;
+    }
+
+    .error-time {
+        color: #f1f5f9 !important;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+}
+
+.sidebar-alert-content,
+#sidebar-error-content,
+.js-error-content {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-radius: var(--r-md);
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    padding: var(--s-3) !important;
+    box-sizing: border-box;
+}
+
+.sidebar-alert-content {
+    white-space: normal;
+    word-break: break-all;
+    text-align: center;
+    inline-size: 100%;
+
+    &:empty::before {
+        content: '現在該当する情報はありません';
+        color: #f1f5f9 !important;
+        font-style: normal !important;
+        font-weight: 700;
+        opacity: 1 !important;
+    }
+}
+
+.sidebar-section {
+    margin-bottom: 12px;
+}
+
+.sidebar-filter-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 0.15em;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+/* Filter Accordion Styles */
+.sidebar-filter-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .rank-accordion-item {
+        inline-size: 100%;
+        border-radius: var(--r-md);
+        overflow: hidden;
+        margin-block-end: 2px;
+        transition: background var(--t-fast);
+
+        &.active {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .rank-header {
+            inline-size: 100%;
+            padding: var(--s-4) var(--s-2);
+            background: rgba(255, 255, 255, 0.04);
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 16px;
+            font-weight: 800;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--t-fast);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.1);
+                color: #fff;
+            }
+        }
+
+        &.active .rank-header {
+            color: #fff;
+            background: var(--bg-glass);
+            border-block-end: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        &[data-rank].active .rank-header {
+            border-inline-start: 3px solid var(--current-rank);
+            color: var(--current-rank);
+            background: rgba(var(--current-rank-rgb), 0.22) !important;
+            text-shadow: 0 0 10px rgba(var(--current-rank-rgb), 0.4);
+        }
+    }
+}
+
+.area-expansion {
+    max-block-size: 0;
+    overflow: hidden;
+    transition: max-block-size 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(15, 23, 42, 0.3);
+
+    .area-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--s-2);
+        inline-size: 100%;
+        margin-block-start: var(--s-2);
+        box-sizing: border-box;
+    }
+
+    .area-filter-btn {
+        inline-size: 100%;
+        margin: 0;
+        font-size: 15px;
+        font-weight: 700;
+        padding: var(--s-2) var(--s-1);
+        min-block-size: 40px;
+        background: var(--bg-glass);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: var(--r-sm);
+        color: rgba(255, 255, 255, 0.95);
+        cursor: pointer;
+        transition: all var(--t-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        box-sizing: border-box;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        &.is-selected {
+            background: rgba(var(--cyan-rgb), 0.12) !important;
+            color: var(--accent-cyan) !important;
+            font-weight: 800;
+            border-color: rgba(var(--cyan-rgb), 0.4) !important;
+            box-shadow: none !important;
+        }
+    }
+
+    .area-select-all {
+        grid-column: span 2;
+        inline-size: 100%;
+        margin-block-end: var(--s-2);
+        background: rgba(34, 211, 238, 0.15);
+        border-color: rgba(34, 211, 238, 0.4);
+        color: var(--accent-cyan);
+        font-weight: 800;
+    }
+}
+
+/* Manual Content Styles */
+.sidebar-manual-content {
+    font-size: 12px;
+    line-height: 1.6;
+    color: #e2e8f0;
+    padding: var(--s-1);
+
+    h1, h2, h3 {
+        color: var(--accent-cyan);
+        margin-block-start: 1em;
+        margin-block-end: 0.4em;
+        font-weight: 800;
+    }
+
+    h1 { font-size: 16px; }
+    h2 { font-size: 14px; }
+    h3 { font-size: 13px; }
+
+    p { margin-block-end: 0.5em; }
+
+    code {
+        background: var(--bg-glass);
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 11px;
+    }
+
+    a {
+        color: var(--accent-cyan);
+        text-decoration: underline;
+    }
+
+    ul, ol {
+        padding-inline-start: 1.2em;
+        margin-block-end: 0.5em;
+    }
+
+    li { margin-block-end: 0.2em; }
+}
+
 .hidden {
     display: none !important;
 }
