@@ -111,7 +111,6 @@
     --s-4: 1rem;
     --s-5: 1.5rem;
 
-    /* Radius Tokens */
     --r-sm: 4px;
     --r-md: 8px;
     --r-lg: 12px;
@@ -131,6 +130,17 @@
     --bg-glass-heavy: rgba(255, 255, 255, 0.15);
     --bg-dark-panel: rgba(15, 23, 42, 0.85);
     --text-timer: #e2d7c5;
+    --nav-bg: rgba(10, 15, 30, 0.95);
+    --nav-inner-bg: rgba(15, 23, 42, 0.95);
+    --nav-border: rgba(255, 255, 255, 0.05);
+    --nav-border-heavy: rgba(255, 255, 255, 0.15);
+    --nav-text: rgba(255, 255, 255, 0.4);
+    --nav-label: rgba(255, 255, 255, 0.35);
+    --nav-hover-text: rgba(255, 255, 255, 0.9);
+    --nav-active-bg: rgba(var(--cyan-rgb), 0.12);
+    --nav-active-text: var(--accent-cyan);
+    --nav-alert: var(--accent-gold);
+    --nav-badge-error: #ff4d4d;
 }
 
 .hidden {

@@ -6,6 +6,16 @@ let currentPanel = null;
 
 const PANELS = ["error", "telop", "maintenance", "rank", "manual"];
 
+const NAV_ITEMS = [
+    { id: "error", icon: "⚠️", label: "エラー", type: "panel" },
+    { id: "telop", icon: "📢", label: "告知", type: "panel" },
+    { id: "maintenance", icon: "🛠️", label: "メンテ", type: "panel" },
+    { id: "rank", icon: "🏷️", label: "選択", type: "panel" },
+    { id: "divider", type: "divider" },
+    { id: "manual", icon: "📋", label: "説明", type: "panel" },
+    { id: "notify", icon: "🔔", label: "通知", type: "toggle" }
+];
+
 const errorLog = [];
 window.errorLog = errorLog;
 const MAX_ERROR_LOG = 50;
@@ -68,8 +78,6 @@ function updateErrorBadge() {
     }
 }
 
-
-
 function getStoredState() {
     try {
         return JSON.parse(localStorage.getItem("sidebarState")) || {};
@@ -99,11 +107,10 @@ export function initSidebar() {
         showPanel(currentPanel);
     }
 
-    sidebar.querySelectorAll(".sidebar-icon-btn[data-panel]").forEach(btn => {
-        btn.addEventListener("click", () => {
-            togglePanel(btn.dataset.panel);
-        });
-    });
+    const navCol = sidebar.querySelector(".sidebar-icon-col");
+    if (navCol) {
+        renderNavItems(navCol, "sidebar");
+    }
 
     const logo = sidebar.querySelector(".sidebar-logo");
     if (logo) {
@@ -120,17 +127,58 @@ export function initSidebar() {
     initMobileFooter();
 }
 
+function renderNavItems(container, layout) {
+    container.innerHTML = "";
+    NAV_ITEMS.forEach(item => {
+        if (item.type === "divider") {
+            if (layout === "sidebar") {
+                const div = document.createElement("div");
+                div.className = "sidebar-divider";
+                container.appendChild(div);
+            }
+            return;
+        }
+
+        if (item.type === "panel") {
+            const btn = document.createElement("button");
+            btn.className = `${layout === "sidebar" ? "sidebar-icon-btn" : "mobile-footer-btn"} app-nav-btn`;
+            btn.dataset.panel = item.id;
+            btn.innerHTML = `
+                <span class="nav-icon">${item.icon}</span>
+                <span class="nav-label">${item.label}</span>
+            `;
+            btn.addEventListener("click", () => {
+                if (layout === "sidebar") togglePanel(item.id);
+                else toggleMobilePanel(item.id);
+            });
+            container.appendChild(btn);
+        } else if (item.type === "toggle") {
+            const toggleDiv = document.createElement("div");
+            toggleDiv.className = `${layout === "sidebar" ? "sidebar-notification-toggle" : "mobile-footer-notify"} app-nav-toggle`;
+            const id = `${layout === "sidebar" ? "sidebar" : "mobile"}-notification-toggle`;
+            const name = `${layout === "sidebar" ? "sidebar" : "mobile"}-notify`;
+            toggleDiv.innerHTML = `
+                <label for="${id}">
+                    <input type="checkbox" id="${id}" name="${name}">
+                    <span class="nav-icon">${item.icon}</span>
+                    <span class="nav-label">${item.label}</span>
+                </label>
+            `;
+            container.appendChild(toggleDiv);
+        }
+    });
+}
+
 let mobileCurrentPanel = null;
 
 function initMobileFooter() {
     const footerBar = document.getElementById("mobile-footer-bar");
     if (!footerBar) return;
 
-    footerBar.querySelectorAll(".mobile-footer-btn[data-panel]").forEach(btn => {
-        btn.addEventListener("click", () => {
-            toggleMobilePanel(btn.dataset.panel);
-        });
-    });
+    const iconCol = footerBar.querySelector(".mobile-footer-icons");
+    if (iconCol) {
+        renderNavItems(iconCol, "mobile");
+    }
 }
 
 function toggleMobilePanel(panelName) {
@@ -138,7 +186,7 @@ function toggleMobilePanel(panelName) {
     const footerBar = document.getElementById("mobile-footer-bar");
     if (!panel || !footerBar) return;
 
-    footerBar.querySelectorAll(".mobile-footer-btn").forEach(b => b.classList.remove("active"));
+    footerBar.querySelectorAll(".app-nav-btn").forEach(b => b.classList.remove("active"));
 
     if (mobileCurrentPanel === panelName) {
         panel.classList.remove("open");
@@ -273,7 +321,7 @@ function togglePanel(panelName) {
         return;
     }
 
-    sidebar.querySelectorAll(".sidebar-icon-btn").forEach(b => b.classList.remove("active"));
+    sidebar.querySelectorAll(".app-nav-btn").forEach(b => b.classList.remove("active"));
     const btn = sidebar.querySelector(`[data-panel="${panelName}"]`);
     if (btn) btn.classList.add("active");
 
@@ -288,7 +336,7 @@ function closePanel() {
     const sidebar = document.getElementById("app-sidebar");
     if (!sidebar) return;
 
-    sidebar.querySelectorAll(".sidebar-icon-btn").forEach(b => b.classList.remove("active"));
+    sidebar.querySelectorAll(".app-nav-btn").forEach(b => b.classList.remove("active"));
     sidebar.classList.remove("expanded");
     document.body.classList.remove("sidebar-expanded");
     currentPanel = null;

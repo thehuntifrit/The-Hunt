@@ -46,7 +46,6 @@ export function showToast(message, type = "error") {
 
 async function initApp() {
     try {
-        initNotification();
         initTooltip();
         initGlobalMagnifier();
         loadBaseMobData();
@@ -81,6 +80,7 @@ async function initApp() {
         renderMaintenanceStatus();
         updateHeaderTime();
         initSidebar();
+        initNotification();
         attachMobCardEvents();
         attachLocationEvents();
         attachGlobalEventListeners();
