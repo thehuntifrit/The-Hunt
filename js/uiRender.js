@@ -141,9 +141,9 @@ export function getSpawnCountInfo(mob) {
   let countHtml = "";
   if (remainingCount === 1) {
     const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-    countHtml = `<span class="pc-count-val font-bold text-yellow-500">📍${pointNumber}<span style="margin-left:2px;">番</span></span>`;
+    countHtml = `<span class="pc-count-val font-bold text-yellow-500">📍${pointNumber}<span class="ml-0.5">番</span></span>`;
   } else if (remainingCount > 1) {
-    countHtml = `<span class="pc-count-val font-bold text-slate-400">📍@<span style="margin-left:2px;">${remainingCount}</span></span>`;
+    countHtml = `<span class="pc-count-val font-bold text-slate-400">📍@<span class="ml-0.5">${remainingCount}</span></span>`;
   }
   return { countHtml, remainingCount, spawnCullStatus, validSpawnPoints };
 }
@@ -1046,151 +1046,150 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   const isOverlayOpen = state.openMobCardNo !== null;
 
   if (isMobile && isOverlayOpen) {
-    // Skip full re-render on mobile when overlay is open to avoid background jitter
   } else {
     let numCols = 1;
     if (isPC) numCols = 3;
 
-  const groups = {
-    MAX_OVER: [],
-    WINDOW: [],
-    NEXT: [],
-    MAINTENANCE: []
-  };
+    const groups = {
+      MAX_OVER: [],
+      WINDOW: [],
+      NEXT: [],
+      MAINTENANCE: []
+    };
 
-  sortedMobs.forEach(mob => {
-    groups[getGroupKey(mob)].push(mob);
-  });
-
-  ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
-    const groupMobs = groups[key];
-    const { section, cols } = getOrCreateGroupSection(key);
-
-    if (groupMobs.length === 0) {
-      section.classList.add("hidden");
-      return;
-    }
-    section.classList.remove("hidden");
-
-    cols.forEach((col, idx) => {
-      if (idx >= numCols) col.classList.add("hidden");
-      else col.classList.remove("hidden");
+    sortedMobs.forEach(mob => {
+      groups[getGroupKey(mob)].push(mob);
     });
 
-    const colPointers = Array(numCols).fill(0);
-    groupMobs.forEach((mob, index) => {
-      const colIdx = index % numCols;
-      const targetCol = cols[colIdx];
-      let card = cardCache.get(String(mob.No));
+    ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
+      const groupMobs = groups[key];
+      const { section, cols } = getOrCreateGroupSection(key);
 
-      if (!card) {
-        card = createMobCard(mob);
-        cardCache.set(String(mob.No), card);
-        cardObserver.observe(card);
+      if (groupMobs.length === 0) {
+        section.classList.add("hidden");
+        return;
       }
+      section.classList.remove("hidden");
 
-      const isFloating = card.classList.contains("is-floating-active");
+      cols.forEach((col, idx) => {
+        if (idx >= numCols) col.classList.add("hidden");
+        else col.classList.remove("hidden");
+      });
 
-      if (isFloating) {
-        const placeholderId = card.dataset.placeholderId;
-        const placeholder = placeholderId ? document.getElementById(placeholderId) : null;
-        if (placeholder) {
-          const currentAtPos = targetCol.children[colPointers[colIdx]];
-          if (currentAtPos !== placeholder) {
-            targetCol.insertBefore(placeholder, currentAtPos || null);
+      const colPointers = Array(numCols).fill(0);
+      groupMobs.forEach((mob, index) => {
+        const colIdx = index % numCols;
+        const targetCol = cols[colIdx];
+        let card = cardCache.get(String(mob.No));
+
+        if (!card) {
+          card = createMobCard(mob);
+          cardCache.set(String(mob.No), card);
+          cardObserver.observe(card);
+        }
+
+        const isFloating = card.classList.contains("is-floating-active");
+
+        if (isFloating) {
+          const placeholderId = card.dataset.placeholderId;
+          const placeholder = placeholderId ? document.getElementById(placeholderId) : null;
+          if (placeholder) {
+            const currentAtPos = targetCol.children[colPointers[colIdx]];
+            if (currentAtPos !== placeholder) {
+              targetCol.insertBefore(placeholder, currentAtPos || null);
+            }
+            colPointers[colIdx]++;
+
+            if (placeholder.nextSibling !== card) {
+              targetCol.insertBefore(card, placeholder.nextSibling || null);
+            }
+            colPointers[colIdx]++;
+          } else {
+            const currentAtPos = targetCol.children[colPointers[colIdx]];
+            if (currentAtPos !== card) {
+              targetCol.insertBefore(card, currentAtPos || null);
+            }
+            colPointers[colIdx]++;
           }
-          colPointers[colIdx]++;
-
-          if (placeholder.nextSibling !== card) {
-            targetCol.insertBefore(card, placeholder.nextSibling || null);
-          }
-          colPointers[colIdx]++;
         } else {
+          while (targetCol.children[colPointers[colIdx]]?.classList.contains("mob-card-placeholder")) {
+            colPointers[colIdx]++;
+          }
           const currentAtPos = targetCol.children[colPointers[colIdx]];
           if (currentAtPos !== card) {
             targetCol.insertBefore(card, currentAtPos || null);
           }
           colPointers[colIdx]++;
         }
-      } else {
-        while (targetCol.children[colPointers[colIdx]]?.classList.contains("mob-card-placeholder")) {
-          colPointers[colIdx]++;
-        }
-        const currentAtPos = targetCol.children[colPointers[colIdx]];
-        if (currentAtPos !== card) {
-          targetCol.insertBefore(card, currentAtPos || null);
-        }
-        colPointers[colIdx]++;
-      }
 
-      updateCardFull(card, mob);
-    });
+        updateCardFull(card, mob);
+      });
 
-    cols.forEach((col, i) => {
-      const limit = (i < numCols) ? colPointers[i] : 0;
-      let j = col.children.length - 1;
-      while (j >= limit) {
-        const child = col.children[j];
-        if (child?.classList.contains("mob-card-placeholder") || child?.classList.contains("is-floating-active")) {
+      cols.forEach((col, i) => {
+        const limit = (i < numCols) ? colPointers[i] : 0;
+        let j = col.children.length - 1;
+        while (j >= limit) {
+          const child = col.children[j];
+          if (child?.classList.contains("mob-card-placeholder") || child?.classList.contains("is-floating-active")) {
+            j--;
+            continue;
+          }
+          if (child?.classList.contains('mob-card')) {
+            visibleCards.delete(child.dataset.mobNo);
+          }
+          col.removeChild(child);
           j--;
-          continue;
         }
-        if (child?.classList.contains('mob-card')) {
-          visibleCards.delete(child.dataset.mobNo);
-        }
-        col.removeChild(child);
-        j--;
-      }
-    });
-  });
-
-  if (isPC && DOM.pcLeftList) {
-    const currentNodes = Array.from(DOM.pcLeftList.children);
-    const currentMap = new Map();
-    currentNodes.forEach(node => {
-      if (node.dataset.mobNo) currentMap.set(`mob-${node.dataset.mobNo}`, node);
-      else if (node.textContent) currentMap.set(`header-${node.textContent}`, node);
-    });
-
-    const nextChildren = [];
-    ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
-      const groupMobs = groups[key];
-      if (groupMobs.length === 0) return;
-
-      const headerText = GROUP_LABELS[key];
-      const headerKey = `header-${headerText}`;
-      let header = currentMap.get(headerKey);
-      if (!header) {
-        header = document.createElement("div");
-        header.className = "text-xs font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
-        header.textContent = headerText;
-      }
-      nextChildren.push(header);
-
-      groupMobs.forEach(mob => {
-        const mobKey = `mob-${mob.No}`;
-        let item = currentMap.get(mobKey);
-        if (!item) {
-          item = createSimpleMobItem(mob);
-        } else {
-          updateSimpleMobItem(item, mob);
-        }
-        nextChildren.push(item);
       });
     });
 
-    nextChildren.forEach((child, index) => {
-      if (DOM.pcLeftList.children[index] !== child) {
-        DOM.pcLeftList.insertBefore(child, DOM.pcLeftList.children[index] || null);
+    if (isPC && DOM.pcLeftList) {
+      const currentNodes = Array.from(DOM.pcLeftList.children);
+      const currentMap = new Map();
+      currentNodes.forEach(node => {
+        if (node.dataset.mobNo) currentMap.set(`mob-${node.dataset.mobNo}`, node);
+        else if (node.textContent) currentMap.set(`header-${node.textContent}`, node);
+      });
+
+      const nextChildren = [];
+      ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
+        const groupMobs = groups[key];
+        if (groupMobs.length === 0) return;
+
+        const headerText = GROUP_LABELS[key];
+        const headerKey = `header-${headerText}`;
+        let header = currentMap.get(headerKey);
+        if (!header) {
+          header = document.createElement("div");
+          header.className = "text-xs font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
+          header.textContent = headerText;
+        }
+        nextChildren.push(header);
+
+        groupMobs.forEach(mob => {
+          const mobKey = `mob-${mob.No}`;
+          let item = currentMap.get(mobKey);
+          if (!item) {
+            item = createSimpleMobItem(mob);
+          } else {
+            updateSimpleMobItem(item, mob);
+          }
+          nextChildren.push(item);
+        });
+      });
+
+      nextChildren.forEach((child, index) => {
+        if (DOM.pcLeftList.children[index] !== child) {
+          DOM.pcLeftList.insertBefore(child, DOM.pcLeftList.children[index] || null);
+        }
+      });
+
+      while (DOM.pcLeftList.children.length > nextChildren.length) {
+        DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
       }
-    });
 
-    while (DOM.pcLeftList.children.length > nextChildren.length) {
-      DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
     }
-
   }
-}
 
   const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
   const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");

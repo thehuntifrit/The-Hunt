@@ -251,11 +251,6 @@ export async function renderMaintenanceStatus() {
         p.innerHTML = "";
         const welcome = document.createElement("div");
         welcome.className = "sidebar-welcome-msg";
-        welcome.style.color = "var(--accent-cyan)";
-        welcome.style.fontWeight = "bold";
-        welcome.style.marginBottom = "8px";
-        welcome.style.borderBottom = "1px solid rgba(34,211,238,0.2)";
-        welcome.style.paddingBottom = "4px";
         welcome.textContent = `ようこそ ${nameToDisplay}`;
         p.appendChild(welcome);
 

@@ -154,12 +154,13 @@ function renderNavItems(container, layout) {
             container.appendChild(btn);
         } else if (item.type === "toggle") {
             const toggleDiv = document.createElement("div");
-            toggleDiv.className = `${layout === "sidebar" ? "sidebar-notification-toggle" : "mobile-footer-notify"} app-nav-toggle`;
+            const isMobile = layout === "mobile";
+            toggleDiv.className = isMobile ? "mobile-footer-btn mobile-footer-notify" : "sidebar-notification-toggle app-nav-toggle";
             const id = `${layout === "sidebar" ? "sidebar" : "mobile"}-notification-toggle`;
             const name = `${layout === "sidebar" ? "sidebar" : "mobile"}-notify`;
             toggleDiv.innerHTML = `
-                <label for="${id}">
-                    <input type="checkbox" id="${id}" name="${name}">
+                <label for="${id}" class="nav-item-content">
+                    <input type="checkbox" id="${id}" name="${name}" class="hidden-toggle">
                     <span class="nav-icon">${item.icon}</span>
                     <span class="nav-label">${item.label}</span>
                 </label>
@@ -181,7 +182,7 @@ function initMobileFooter() {
     }
 }
 
-function toggleMobilePanel(panelName) {
+async function toggleMobilePanel(panelName) {
     const panel = document.getElementById("mobile-footer-panel");
     const footerBar = document.getElementById("mobile-footer-bar");
     if (!panel || !footerBar) return;
@@ -218,8 +219,9 @@ function toggleMobilePanel(panelName) {
     panel.classList.add("open");
 
     if (panelName === "telop" || panelName === "maintenance") {
-        if (typeof window.renderMaintenanceStatus === "function") {
-            window.renderMaintenanceStatus();
+        const { renderMaintenanceStatus } = await import("./app.js");
+        if (typeof renderMaintenanceStatus === "function") {
+            renderMaintenanceStatus();
         }
     }
 }
@@ -294,13 +296,11 @@ function renderMobileErrors(panel) {
         panel.innerHTML = "";
         const section = document.createElement("div");
         section.className = "sidebar-section";
-        // REMOVE WHITESPACE to allow :empty CSS to work correctly
         section.innerHTML = `
             <div class="sidebar-section-title">ERRORS</div>
             <div class="sidebar-alert-content js-error-content">${el.innerHTML.trim()}</div>
         `;
         panel.appendChild(section);
-        // FORCE SYNC immediately after construction
         updateErrorPanel();
     }
 }

@@ -109,7 +109,7 @@
             }
 
             .nav-label {
-                font-size: 9px !important;
+                font-size: var(--fs-ui-tiny);
                 font-weight: 800;
                 letter-spacing: 0.1em;
                 line-height: 1;
@@ -138,17 +138,17 @@
             }
 
             &.active {
-                background: var(--nav-active-bg) !important;
-                color: var(--nav-active-text) !important;
-                box-shadow: none !important;
-                border-radius: 6px !important;
-                margin-inline: 4px !important;
-                inline-size: 48px !important;
-                block-size: 48px !important;
-                margin-block: 2px !important;
+                background: var(--nav-active-bg);
+                color: var(--nav-active-text);
+                box-shadow: none;
+                border-radius: 6px;
+                margin-inline: 4px;
+                inline-size: 48px;
+                block-size: 48px;
+                margin-block: 2px;
                 position: relative;
                 align-self: center;
-                transition: none !important;
+                transition: none;
 
                 &::before {
                     content: '';
@@ -200,7 +200,7 @@
         display: flex;
         flex-direction: column;
         gap: 4px;
-        padding: var(--s-2) 0 !important;
+        padding: var(--s-2) 0;
         border-block-end: 1px solid rgba(255, 255, 255, 0.08);
 
         &:last-child {
@@ -208,11 +208,11 @@
         }
 
         .error-time {
-            color: #f1f5f9 !important;
+            color: var(--text-primary);
             font-family: var(--font-mono);
-            font-size: 10px;
+            font-size: var(--fs-ui-tiny);
             font-weight: 700;
-            margin-bottom: 2px;
+            margin-bottom: var(--s-1);
         }
     }
 
@@ -223,17 +223,26 @@
         overflow-y: auto;
     }
 
+    .sidebar-welcome-msg {
+        color: var(--accent-cyan);
+        font-weight: 800;
+        margin-bottom: var(--s-2);
+        border-bottom: 1px solid rgba(var(--cyan-rgb), 0.2);
+        padding-bottom: var(--s-1);
+        font-size: var(--fs-ui-sm);
+        text-align: center;
+    }
 
     .sidebar-section {
-        margin-bottom: 12px;
+        margin-bottom: var(--s-3);
     }
 
     .sidebar-filter-title {
-        font-size: 11px;
+        font-size: var(--fs-ui-sm);
         font-weight: 800;
         color: rgba(255, 255, 255, 0.8);
         letter-spacing: 0.15em;
-        margin-bottom: 8px;
+        margin-bottom: var(--s-2);
         text-align: center;
     }
 
@@ -283,7 +292,7 @@
         }
 
         .nav-icon {
-            font-size: 18px !important;
+            font-size: 18px;
             line-height: 1;
             margin-block-end: 2px;
             transition: all var(--t-fast);
@@ -292,7 +301,7 @@
         }
 
         .nav-label {
-            font-size: 9px !important;
+            font-size: var(--fs-ui-tiny);
             font-weight: 800;
             letter-spacing: 0.1em;
             line-height: 1;
@@ -300,9 +309,6 @@
             transition: color var(--t-fast);
         }
     }
-
-/* Unified accordion in style.css handles the toggle logic. */
-
 
     .sidebar-divider {
         block-size: 1px;
@@ -343,7 +349,6 @@
     body.has-sidebar.sidebar-expanded main.main-content-area {
         margin-inline-start: calc(var(--sidebar-w) + var(--panel-w));
     }
-
 
     .sidebar-manual-content {
         max-block-size: calc(100vh - 120px);
