@@ -145,14 +145,13 @@
             }
         }
 
-        .pc-list-name {
+        .pc-list-header-row {
             display: flex;
             align-items: center;
             min-inline-size: 0;
             font-weight: 700;
             font-size: 15px;
             padding-inline-end: var(--s-1);
-            color: var(--rank-text, #f1f5f9);
             position: relative;
             z-index: 10;
         }

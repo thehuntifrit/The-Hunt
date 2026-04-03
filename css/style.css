@@ -161,6 +161,8 @@ body {
     --fs-ui-md: 14px;
 
     --color-ui-unselected: #94a3b8;
+    --color-spawn-count: #f1f5f9;
+    --color-spawn-warn: #eab308;
 }
 
 .sidebar-section-title {
@@ -1645,10 +1647,13 @@ html body.magnifier-active .mob-card-inner * {
     overflow-y: auto;
 }
 
-.pc-list-name[data-rank="S"] { color: var(--rank-s); }
-.pc-list-name[data-rank="A"] { color: var(--rank-a); }
-.pc-list-name[data-rank="F"] { color: var(--rank-f); }
-.pc-list-name[data-rank="S-active"] { color: var(--rank-s); text-shadow: 0 0 10px rgba(var(--rank-s-rgb), 0.4); }
+.pc-list-mob-name[data-rank="S"] { color: #ffffff; }
+.pc-list-mob-name[data-rank="A"] { color: var(--rank-a); }
+.pc-list-mob-name[data-rank="F"] { color: var(--rank-f); }
+.pc-list-mob-name[data-rank="S-active"] { color: #ffffff; text-shadow: 0 0 10px rgba(var(--rank-s-rgb), 0.4); }
+
+.pc-count-val { color: var(--color-spawn-count); }
+.pc-count-val.count-warn { color: var(--color-spawn-warn); }
 
 .pc-detail-card .pc-detail-name[data-rank="F"] { color: var(--rank-f); }
 

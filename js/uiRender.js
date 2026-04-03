@@ -140,9 +140,9 @@ export function getSpawnCountInfo(mob) {
   let countHtml = "";
   if (remainingCount === 1) {
     const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-    countHtml = `<span class="pc-count-val font-bold text-yellow-500">📍${pointNumber}<span class="ml-0.5">番</span></span>`;
+    countHtml = `<span class="pc-count-val count-warn font-bold">📍${pointNumber}<span class="ml-0.5">番</span></span>`;
   } else if (remainingCount > 1) {
-    countHtml = `<span class="pc-count-val font-bold text-slate-400">📍@<span class="ml-0.5">${remainingCount}</span></span>`;
+    countHtml = `<span class="pc-count-val font-bold">📍@<span class="ml-0.5">${remainingCount}</span></span>`;
   }
   return { countHtml, remainingCount, spawnCullStatus, validSpawnPoints };
 }
@@ -617,8 +617,11 @@ export function createSimpleMobItem(mob) {
   item.dataset.mobNo = mob.No;
   item.dataset.rank = mob.Rank;
 
-  const nameEl = item.querySelector('.pc-list-name .truncate');
-  if (nameEl) nameEl.textContent = mob.Name;
+  const nameEl = item.querySelector('.pc-list-mob-name');
+  if (nameEl) {
+    nameEl.textContent = mob.Name;
+    nameEl.dataset.rank = mob.Rank;
+  }
 
   updateSimpleMobItem(item, mob);
   return item;
