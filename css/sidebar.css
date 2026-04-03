@@ -301,10 +301,7 @@
         }
     }
 
-            &.is-expanded .area-expansion {
-                max-block-size: 800px;
-                padding: var(--s-2) var(--s-2);
-            }
+/* Unified accordion in style.css handles the toggle logic. */
 
 
     .sidebar-divider {

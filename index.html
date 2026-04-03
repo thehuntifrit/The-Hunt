@@ -117,14 +117,14 @@
         </div>
     </main>
 
-    <div id="card-overlay-backdrop" class="fixed inset-0 hidden">
+    <div id="card-overlay-backdrop" class="app-backdrop hidden">
         <div id="mobile-detail-overlay" class="w-full h-full flex items-center justify-center p-4 pointer-events-none">
             <!-- PC版テンプレートから生成されたカードがここに挿入されます -->
         </div>
     </div>
 
     <div id="manual-modal" class="hidden">
-        <div id="manual-modal-backdrop"></div>
+        <div id="manual-modal-backdrop" class="app-backdrop"></div>
         <div class="manual-modal-content">
             <div class="manual-modal-top-border"></div>
 
@@ -142,7 +142,7 @@
         </div>
     </div>
 
-    <div id="report-modal" class="fixed inset-0 hidden items-center justify-center p-4">
+    <div id="report-modal" class="app-backdrop hidden items-center justify-center p-4">
         <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-md border border-gray-600 text-white 
             relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-600"></div>
@@ -178,7 +178,7 @@
         </div>
     </div>
 
-    <div id="auth-modal" class="fixed inset-0 hidden items-center justify-center p-4">
+    <div id="auth-modal" class="app-backdrop hidden items-center justify-center p-4">
         <div
             class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-lg border border-gray-600 text-white relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-orange-600"></div>
@@ -286,7 +286,7 @@
                         <div class="pc-detail-rank font-bold px-1.5 py-0.5 border rounded flex-none" data-rank=""></div>
                     </div>
                 </div>
-                <button class="pc-list-report-btn" data-report-type="" data-mob-no="">REPORT</button>
+                <button class="app-btn-outline pc-list-report-btn" data-report-type="" data-mob-no="">REPORT</button>
                 <div class="flex items-center justify-between">
                     <div class="detail-area-row m-0 p-0 text-yellow-500/50 font-medium">
                         <span class="detail-area"></span>
