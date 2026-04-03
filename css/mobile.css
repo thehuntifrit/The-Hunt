@@ -248,18 +248,6 @@
         }
     }
 
-    .mobile-footer-icon {
-        font-size: 18px;
-        line-height: 1;
-    }
-
-    .mobile-footer-label {
-        font-size: 8px;
-        font-weight: 800;
-        letter-spacing: 0.05em;
-        line-height: 1;
-    }
-
     .mobile-footer-notify {
         flex: 1;
         display: flex;
@@ -324,7 +312,6 @@
             max-block-size: 50vh;
         }
 
-        /* Shared Title Style in Mobile Footer Panels */
         .sidebar-section-title {
             font-size: 11px !important;
             font-weight: 800 !important;
@@ -337,7 +324,6 @@
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
         }
 
-        /* Shared Content Style in Mobile Footer Panels (REUSE) */
         .sidebar-alert-content,
         .sidebar-error-item,
         .error-msg {
@@ -371,14 +357,13 @@
             }
         }
 
-        /* Shared Container Style in Mobile Footer Panels */
         #sidebar-error-content,
         .js-error-content,
         .sidebar-alert-content {
             background: rgba(255, 255, 255, 0.04) !important;
             border-radius: var(--r-md);
             border: 1px solid rgba(255, 255, 255, 0.12) !important;
-            min-height: 50px !important; /* Guarantee visibility even when empty */
+            min-height: 50px !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: center !important;

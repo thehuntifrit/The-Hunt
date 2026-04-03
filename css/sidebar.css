@@ -2,7 +2,6 @@
     #app-sidebar {
         --sidebar-w: 56px;
         --panel-w: 220px;
-        --sidebar-bg: var(--nav-bg);
 
         position: fixed;
         inset-block: 0;
