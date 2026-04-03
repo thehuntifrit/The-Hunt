@@ -160,7 +160,7 @@ body {
     --fs-ui-base: 13px;
     --fs-ui-md: 14px;
 
-    --color-ui-unselected: #2d323c;
+    --color-ui-unselected: #94a3b8;
 }
 
 .sidebar-section-title {
@@ -267,9 +267,9 @@ body {
         .rank-header {
             inline-size: 100%;
             padding: var(--s-4) var(--s-2);
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.08);
             border: none;
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--color-ui-unselected);
             font-size: 16px;
             font-weight: 800;
             text-align: center;
