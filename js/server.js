@@ -146,7 +146,7 @@ export const submitReport = async (mobNo, timeISO) => {
     if (killTimeDate.getTime() > nowMs + 600000) {
         if (modalStatusEl) {
             modalStatusEl.textContent = "現在時刻より10分以上未来の時刻は報告できません。";
-            modalStatusEl.style.color = "#ef4444";
+            modalStatusEl.classList.add("text-error");
         }
         return;
     }
@@ -179,8 +179,7 @@ export const submitReport = async (mobNo, timeISO) => {
 
             if (modalStatusEl) {
                 modalStatusEl.textContent = `まだ湧き時間になっていません。\n最短でも ${timeStr} 以降である必要があります。\n(強制送信する場合はチェックを入れてください)`;
-                modalStatusEl.style.color = "#ef4444";
-                modalStatusEl.style.whiteSpace = "pre-wrap";
+                modalStatusEl.classList.add("text-error", "whitespace-pre-wrap");
             }
             return;
         }

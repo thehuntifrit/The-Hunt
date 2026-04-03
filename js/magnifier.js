@@ -55,9 +55,7 @@ export function initGlobalMagnifier() {
         wrapper.innerHTML = '';
         const clone = mapContainer.cloneNode(true);
 
-        clone.style.margin = '0';
-        clone.style.border = 'none';
-        clone.style.boxShadow = 'none';
+        clone.classList.add('magnifier-clone');
         clone.classList.remove('cursor-crosshair', '!cursor-crosshair');
 
         clone.style.width = `${mapContainer.offsetWidth}px`;

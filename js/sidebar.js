@@ -251,7 +251,7 @@ function renderMobileFilterAccordion(panel) {
 
             const header = itemEl.querySelector(".rank-header");
             if (header) {
-                header.style.color = isActive ? r.color : "";
+                header.dataset.rank = isActive ? r.key : "";
                 header.textContent = r.label;
                 header.addEventListener("click", () => {
                     const rankKey = header.closest(".rank-accordion-item").dataset.rank;
@@ -418,7 +418,7 @@ function renderSidebarFilterAccordion() {
 
             const header = itemEl.querySelector(".rank-header");
             if (header) {
-                header.style.color = isActive ? r.color : "";
+                header.dataset.rank = isActive ? r.key : "";
                 header.textContent = r.label;
                 header.addEventListener("click", () => {
                     const rankKey = header.closest(".rank-accordion-item").dataset.rank;

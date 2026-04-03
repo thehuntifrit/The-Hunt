@@ -33,7 +33,7 @@ export function openAuthModal() {
     currentVerificationCode = "HUNT-" + Math.random().toString(36).substring(2, 10).toUpperCase();
     UiDOM.authVCode.textContent = currentVerificationCode;
     UiDOM.authStatus.textContent = "";
-    UiDOM.authStatus.style.color = "";
+    UiDOM.authStatus.classList.remove('text-error', 'text-success');
     UiDOM.authModal.classList.remove("hidden");
     UiDOM.authModal.classList.add("flex");
 }
@@ -76,7 +76,7 @@ export function initModal() {
             const rawInput = UiDOM.authLodestoneId.value.trim();
             if (!rawInput) {
                 UiDOM.authStatus.textContent = "IDまたはURLを入力してください。";
-                UiDOM.authStatus.style.color = "#ef4444";
+                UiDOM.authStatus.classList.add('text-error');
                 return;
             }
 
@@ -85,19 +85,19 @@ export function initModal() {
 
             if (!lodestoneId || lodestoneId.length > 20) {
                 UiDOM.authStatus.textContent = "正しいロードストーンのIDまたはURLを入力してください。";
-                UiDOM.authStatus.style.color = "#ef4444";
+                UiDOM.authStatus.classList.add('text-error');
                 return;
             }
 
             UiDOM.authStatus.textContent = "検証中...";
-            UiDOM.authStatus.style.color = "#34d399";
+            UiDOM.authStatus.classList.add('text-success');
             verifyBtn.disabled = true;
 
             const result = await verifyLodestoneCharacter(lodestoneId, currentVerificationCode);
 
             if (result.success) {
                 UiDOM.authStatus.textContent = `検証成功！ようこそ、${result.characterName}さん。`;
-                UiDOM.authStatus.style.color = "#34d399";
+                UiDOM.authStatus.classList.add('text-success');
 
                 await registerUserToFirestore(lodestoneId, result.characterName);
                 setLodestoneId(lodestoneId);
@@ -111,7 +111,7 @@ export function initModal() {
             } else {
                 const errorMsg = result.error || "検証に失敗しました";
                 UiDOM.authStatus.textContent = errorMsg;
-                UiDOM.authStatus.style.color = "#ef4444";
+                UiDOM.authStatus.classList.add('text-error');
                 console.error("認証失敗:", errorMsg);
                 verifyBtn.disabled = false;
             }

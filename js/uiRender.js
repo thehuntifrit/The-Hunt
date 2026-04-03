@@ -115,10 +115,9 @@ function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWin
 
   const format = (elPart, num, unit) => {
     const numEl = elPart.querySelector('.timer-num');
-    if (unit === 'h' && (Number(num) === 0 || !num)) {
-      elPart.style.display = 'none';
-    } else {
-      elPart.style.display = 'inline-flex';
+    const isHidden = unit === 'h' && (Number(num) === 0 || !num);
+    elPart.classList.toggle('hidden', isHidden);
+    if (!isHidden) {
       numEl.innerHTML = String(num || 0).padStart(2, '0').replace(/^0/, '&nbsp;');
     }
   };
@@ -263,7 +262,7 @@ export function createPCDetailCard(mob) {
 
   updateEl(card, '.pc-detail-name', { textContent: mob.Name });
   const nameEl = card.querySelector('.pc-detail-name');
-  if (nameEl) nameEl.style.color = `var(--rank-${rank.toLowerCase()})`;
+  if (nameEl) nameEl.dataset.rank = rank;
 
   updateEl(card, '.pc-detail-rank', { textContent: rank }, { rank });
 
@@ -501,14 +500,14 @@ export function updateMemoIcon(card, mob) {
   memoIconContainer.dataset.memoState = newState;
   memoIconContainer.innerHTML = '';
   if (shouldShowMemo) {
-    memoIconContainer.style.display = '';
+    memoIconContainer.classList.remove('hidden');
     const span = document.createElement('span');
-    span.style.fontSize = '1rem';
+    span.classList.add('memo-icon');
     span.dataset.tooltip = mob.memo_text;
     span.textContent = '📝';
     memoIconContainer.appendChild(span);
   } else {
-    memoIconContainer.style.display = 'none';
+    memoIconContainer.classList.add('hidden');
   }
 }
 
@@ -641,9 +640,7 @@ export function updateSimpleMobItem(item, mob) {
     if (timeEl._lastCacheKey !== cacheKey) {
       timeEl.innerHTML = "";
       const inner = document.createElement("div");
-      inner.className = "grid items-center w-full h-full";
-      inner.style.gridTemplateColumns = "auto 1fr";
-      inner.style.gap = "8px";
+      inner.className = "timer-inner-grid";
 
       const labelSpan = document.createElement("span");
       labelSpan.className = `timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''} text-center opacity-90`;
@@ -1030,16 +1027,10 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   const mobileLayout = DOM.mobileLayout || document.getElementById("mobile-layout");
 
   if (isPC) {
-    if (pcLayout) {
-      pcLayout.classList.remove("hidden");
-      pcLayout.style.display = "flex";
-    }
+    if (pcLayout) pcLayout.classList.remove("hidden");
     if (mobileLayout) mobileLayout.classList.add("hidden");
   } else {
-    if (pcLayout) {
-      pcLayout.classList.add("hidden");
-      pcLayout.style.display = "none";
-    }
+    if (pcLayout) pcLayout.classList.add("hidden");
     if (mobileLayout) mobileLayout.classList.remove("hidden");
   }
   const isMobile = !isPC;

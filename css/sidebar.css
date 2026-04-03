@@ -115,7 +115,7 @@
                 line-height: 1;
                 color: var(--nav-label);
                 transition: color var(--t-fast);
-                white-space: nowrap !important;
+                white-space: nowrap;
                 text-align: center;
                 display: block;
                 width: 100%;
@@ -133,8 +133,8 @@
             }
 
             &:active {
-                transform: scale(0.95) !important;
-                transition: none !important;
+                transform: scale(0.95);
+                transition: none;
             }
 
             &.active {
@@ -158,7 +158,7 @@
                     inline-size: 3px;
                     background: var(--nav-active-text);
                     border-radius: 4px;
-                    transition: none !important;
+                    transition: none;
                 }
             }
 

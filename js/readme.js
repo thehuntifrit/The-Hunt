@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.openUserManual = async () => {
         modal.classList.remove('hidden');
         modal.classList.add('flex');
-        document.body.style.overflow = 'hidden';
+        document.body.classList.add('overflow-hidden');
 
         if (!isLoaded) {
             try {
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModal = () => {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
-        document.body.style.overflow = '';
+        document.body.classList.remove('overflow-hidden');
     };
 
     closeBtn?.addEventListener('click', closeModal);
