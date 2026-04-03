@@ -935,14 +935,14 @@ body::before {
 }
 
 .js-mobile-time {
-    inline-size: 128px;
+    inline-size: 108px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: flex-end;
     font-family: var(--font-mono);
     font-weight: 700;
-    font-size: var(--fs-sm);
+    font-size: var(--fs-base);
     gap: 4px;
 }
 
@@ -955,7 +955,7 @@ body::before {
 
 .detail-percent-val {
     display: inline-block;
-    width: 40px;
+    width: 36px;
     text-align: right;
     margin-left: 4px;
     font-size: 11px;
@@ -1647,21 +1647,54 @@ html body.magnifier-active .mob-card-inner * {
     overflow-y: auto;
 }
 
-.pc-list-mob-name[data-rank="S"] { color: #ffffff; }
-.pc-list-mob-name[data-rank="A"] { color: var(--rank-a); }
-.pc-list-mob-name[data-rank="F"] { color: var(--rank-f); }
-.pc-list-mob-name[data-rank="S-active"] { color: #ffffff; text-shadow: 0 0 10px rgba(var(--rank-s-rgb), 0.4); }
+.pc-list-mob-name[data-rank="S"] {
+    color: #ffffff;
+}
 
-.pc-count-val { color: var(--color-spawn-count); }
-.pc-count-val.count-warn { color: var(--color-spawn-warn); }
+.pc-list-mob-name[data-rank="A"] {
+    color: var(--rank-a);
+}
 
-.pc-detail-card .pc-detail-name[data-rank="F"] { color: var(--rank-f); }
+.pc-list-mob-name[data-rank="F"] {
+    color: var(--rank-f);
+}
 
-.rank-header[data-rank="S"] { color: var(--rank-s); }
-.rank-header[data-rank="A"] { color: var(--rank-a); }
-.rank-header[data-rank="F"] { color: var(--rank-f); }
-.rank-header[data-rank="F.A.T.E."] { color: var(--rank-f); }
-.rank-header[data-rank="ALL"] { color: #ffffff; }
+.pc-list-mob-name[data-rank="S-active"] {
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(var(--rank-s-rgb), 0.4);
+}
+
+.pc-count-val {
+    color: var(--color-spawn-count);
+}
+
+.pc-count-val.count-warn {
+    color: var(--color-spawn-warn);
+}
+
+.pc-detail-card .pc-detail-name[data-rank="F"] {
+    color: var(--rank-f);
+}
+
+.rank-header[data-rank="S"] {
+    color: var(--rank-s);
+}
+
+.rank-header[data-rank="A"] {
+    color: var(--rank-a);
+}
+
+.rank-header[data-rank="F"] {
+    color: var(--rank-f);
+}
+
+.rank-header[data-rank="F.A.T.E."] {
+    color: var(--rank-f);
+}
+
+.rank-header[data-rank="ALL"] {
+    color: #ffffff;
+}
 
 .timer-inner-grid {
     display: grid;
