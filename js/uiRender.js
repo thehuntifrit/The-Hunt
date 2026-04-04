@@ -140,9 +140,9 @@ export function getSpawnCountInfo(mob) {
   let countHtml = "";
   if (remainingCount === 1) {
     const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-    countHtml = `<span class="pc-count-val count-warn font-bold">📍${pointNumber}<span class="ml-0.5">番</span></span>`;
+    countHtml = `<span class="pc-count-val count-warn font-bold">📍${pointNumber}<span class="u-ml-1">番</span></span>`;
   } else if (remainingCount > 1) {
-    countHtml = `<span class="pc-count-val font-bold">📍@<span class="ml-0.5">${remainingCount}</span></span>`;
+    countHtml = `<span class="pc-count-val font-bold">📍@<span class="u-ml-1">${remainingCount}</span></span>`;
   }
   return { countHtml, remainingCount, spawnCullStatus, validSpawnPoints };
 }
@@ -404,12 +404,12 @@ export function updateExpandablePanel(card, mob) {
   if (elNext) {
     if (mob.repopInfo?.nextConditionSpawnDate) {
       elNext.textContent = formatMMDDHHmm(mob.repopInfo.nextConditionSpawnDate);
-      elNext.classList.add('text-yellow-500');
-      elNext.classList.remove('text-gray-400');
+      elNext.classList.add('text-yellow');
+      elNext.classList.remove('text-secondary');
     } else {
       elNext.textContent = "--/-- --:--";
-      elNext.classList.remove('text-yellow-500');
-      elNext.classList.add('text-gray-400');
+      elNext.classList.remove('text-yellow');
+      elNext.classList.add('text-secondary');
     }
   }
 
@@ -485,7 +485,7 @@ export function updateMobCount(card, mob) {
       const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
       displayCountText = `<span class="pc-count-val font-bold count-warn">📍${pointNumber}<span style="margin-left:2px;">番</span></span>`;
     } else if (remainingCount > 1) {
-      displayCountText = `<span class="pc-count-val font-bold text-slate-400">📍@<span style="margin-left:2px;">${remainingCount}</span></span>`;
+      displayCountText = `<span class="pc-count-val font-bold text-secondary">📍@<span style="margin-left:2px;">${remainingCount}</span></span>`;
     }
   }
   if (countContainer.dataset.cacheKey !== displayCountText) {
@@ -526,7 +526,7 @@ export function updateMapOverlay(card, mob) {
   let instanceLabel = mapContainer.querySelector('.instance-label');
   if (!instanceLabel) {
     instanceLabel = document.createElement('div');
-    instanceLabel.className = 'instance-label absolute top-1 right-1 px-2 py-0.5 rounded bg-slate-900/80 border border-slate-700 font-bold text-cyan-400 z-20';
+    instanceLabel.className = 'instance-label';
     mapContainer.appendChild(instanceLabel);
   }
   instanceLabel.textContent = `Instance ${mob.No % 10}`;
@@ -1182,7 +1182,7 @@ export function showColumnContainer() {
   if (!DOM.colContainer) return;
 
   requestAnimationFrame(() => {
-    DOM.colContainer.classList.remove("opacity-0");
+    DOM.colContainer.classList.add("is-ready");
 
     requestAnimationFrame(() => {
       const overlay = document.getElementById("loading-overlay");

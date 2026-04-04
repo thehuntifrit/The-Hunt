@@ -19,7 +19,9 @@
           "scrollbar-gutter",
           "scrollbar-gutter: stable",
           "inline-size: fit-content",
-          "user-select"
+          "user-select",
+          "scrollbar-width",
+          "scrollbar-width: thin"
         ]
       }
     ]

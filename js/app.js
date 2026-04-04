@@ -20,13 +20,13 @@ export function showToast(message, type = "error") {
     if (!container) {
         container = document.createElement("div");
         container.id = "toast-container";
-        container.className = "fixed top-20 right-4 z-[9999] flex flex-col gap-2 pointer-events-none";
+        container.className = "toast-container-wrapper";
         document.body.appendChild(container);
     }
 
     const toast = document.createElement("div");
-    const bgColor = type === "error" ? "bg-red-900/90 border-red-500" : "bg-cyan-900/90 border-cyan-500";
-    toast.className = `px-4 py-3 rounded shadow-2xl border ${bgColor} text-white text-sm font-bold transform transition-all duration-300 translate-x-full opacity-0 max-w-sm break-words`;
+    const colorClass = type === "error" ? "toast-error" : "toast-success";
+    toast.className = `toast-item-base ${colorClass} opacity-0 translate-x-full`;
     toast.textContent = message;
     toast.classList.add("whitespace-pre-wrap");
 

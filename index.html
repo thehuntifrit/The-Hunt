@@ -12,7 +12,7 @@
     <script src="js/lib/purify.min.js"></script>
 </head>
 
-<body class="leading-relaxed">
+<body class="">
 
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-spinner"></div>
@@ -58,15 +58,15 @@
         </div>
     </aside>
 
-    <div id="sidebar-status-bar" class="lg:hidden">
+    <div id="sidebar-status-bar" class="u-mobile-only">
         <div id="status-message-maintenance" class="hidden"></div>
         <div id="status-message-telop" class="hidden"></div>
     </div>
 
     <div id="mobile-top-bar">
         <div class="mobile-top-title">
-            <span class="text-cyan-400 font-bold">The</span>
-            <span class="text-yellow-400 font-bold">Hunt</span>
+            <span class="text-cyan u-font-bold">The</span>
+            <span class="text-yellow u-font-bold">Hunt</span>
         </div>
         <div class="mobile-top-clocks">
             <span class="mobile-clock-label">ET</span>
@@ -82,9 +82,9 @@
         <div id="mobile-footer-panel" class="mobile-footer-panel hidden"></div>
     </nav>
 
-    <main class="mx-auto sm:px-4 lg:pt-4 lg:pb-10 main-content-area">
+    <main class="main-content-area">
 
-        <div id="pc-layout" class="hidden lg:block w-full max-w-7xl mx-auto">
+        <div id="pc-layout" class="hidden u-pc-only pc-layout-container">
             <div id="pc-left-list"></div>
             <div id="pc-right-pane">
                 <div id="pc-clocks-header" class="pc-clocks-header">
@@ -101,16 +101,15 @@
             </div>
         </div>
 
-        <div id="mobile-layout" class="block lg:hidden w-full">
-            <div id="column-container"
-                class="flex flex-col gap-3 max-w-6xl mx-auto opacity-0 transition-opacity duration-300"
-                data-breakpoint-md="768" data-breakpoint-lg="1024">
+        <div id="mobile-layout" class="u-mobile-only u-w-full">
+            <div id="column-container" class="layout-column-container" data-breakpoint-md="768"
+                data-breakpoint-lg="1024">
             </div>
         </div>
     </main>
 
     <div id="card-overlay-backdrop" class="app-backdrop hidden">
-        <div id="mobile-detail-overlay" class="w-full h-full flex items-center justify-center p-4 pointer-events-none">
+        <div id="mobile-detail-overlay" class="mobile-detail-overlay-wrapper">
         </div>
     </div>
 
@@ -133,72 +132,65 @@
         </div>
     </div>
 
-    <div id="report-modal" class="app-backdrop hidden items-center justify-center p-4">
-        <div class="bg-gray-800">
+    <div id="report-modal" class="app-backdrop hidden report-modal-backdrop">
+        <div class="modal-content-base">
             <div class="modal-top-bar"></div>
 
-            <h2 class="text-xl font-bold mb-4 text-cyan-400 text-glow">討伐報告</h2>
-            <p id="modal-mob-name" class="text-base mb-4 font-semibold text-gray-200 border-b border-gray-700 pb-2"></p>
+            <h2 class="text-xl u-font-bold mb-4 text-cyan text-glow">討伐報告</h2>
+            <p id="modal-mob-name" class="modal-mob-name"></p>
 
             <form id="report-form" data-mob-no="">
                 <div class="mb-4">
-                    <label for="report-datetime" class="block text-sm font-medium mb-1 text-gray-400">討伐日時 (JST)</label>
-                    <input type="datetime-local" id="report-datetime" name="kill-time" required class="w-full p-2 rounded bg-gray-900 border 
-                        border-gray-700 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent 
-                        outline-none transition-all">
+                    <label for="report-datetime" class="u-block u-text-sm font-medium mb-1 text-gray-400">討伐日時 (JST)</label>
+                    <input type="datetime-local" id="report-datetime" name="kill-time" required
+                        class="modal-input-field">
                 </div>
 
-                <div id="modal-status" class="text-sm text-center my-3 text-red-400 font-bold"></div>
+                <div id="modal-status" class="modal-error-display"></div>
 
-                <div class="flex justify-between items-center mt-6">
-                    <div class="flex items-center gap-2">
-                        <input type="checkbox" id="report-force-submit" name="force-submit" class="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded 
-                            focus:ring-blue-600 ring-offset-gray-800">
-                        <label for="report-force-submit" class="text-sm text-gray-300 select-none">修正する</label>
+                <div class="u-flex u-justify-between u-items-center mt-6">
+                    <div class="u-flex u-items-center u-gap-2">
+                        <input type="checkbox" id="report-force-submit" name="force-submit" class="modal-checkbox">
+                        <label for="report-force-submit" class="u-text-sm text-gray-300 select-none">修正する</label>
                     </div>
-                    <div class="flex gap-2">
-                        <button type="button" id="cancel-report" class="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition text-white 
-                            font-medium">キャンセル</button>
-                        <button type="submit" class="px-6 py-2 rounded bg-gradient-to-r from-cyan-600 to-blue-600 
-                        hover:from-cyan-500 hover:to-blue-500 transition font-bold text-white shadow-lg 
-                        shadow-cyan-500/30">送信</button>
+                    <div class="u-flex u-gap-2">
+                        <button type="button" id="cancel-report" class="btn-secondary">キャンセル</button>
+                        <button type="submit" class="btn-primary-cyan">送信</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="auth-modal" class="app-backdrop hidden items-center justify-center p-4">
-        <div class="bg-gray-800">
+    <div id="auth-modal" class="app-backdrop hidden auth-modal-backdrop">
+        <div class="modal-content-base">
             <div class="modal-top-bar"></div>
 
-            <h2 class="text-xl font-bold mb-4 text-yellow-400 text-glow">ユーザー認証 (キャラクター登録)</h2>
-            <div class="text-sm text-gray-300 space-y-4 mb-6">
+            <h2 class="text-xl u-font-bold mb-4 text-yellow text-glow">ユーザー認証 (キャラクター登録)</h2>
+            <div class="modal-auth-description">
                 <p>Lodestoneキャラクターとの紐付けが必要です。</p>
 
-                <div class="bg-slate-900/50 p-4 rounded-lg border border-gray-700 space-y-4">
+                <div class="modal-auth-box">
                     <div>
-                        <div class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 1:
+                        <div class="u-block text-xs font-semibold text-gray-500 uppercase mb-1">Step 1:
                             検証コードをコピー</div>
-                        <div class="flex gap-2">
-                            <code id="auth-v-code"
-                                class="flex-1 p-2 bg-gray-950 rounded border border-gray-800 text-center font-mono text-yellow-500 font-bold select-all tracking-widest text-lg">----</code>
-                            <button id="auth-copy-code"
-                                class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs transition">Copy</button>
+                        <div class="u-flex u-gap-2">
+                            <code id="auth-v-code" class="auth-code-display">----</code>
+                            <button id="auth-copy-code" class="btn-copy">Copy</button>
                         </div>
                     </div>
 
                     <div>
-                        <div class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 2:
+                        <div class="u-block text-xs font-semibold text-gray-500 uppercase mb-1">Step 2:
                             Lodestoneプロフィールに貼り付け</div>
-                        <div class="text-sm text-gray-300 space-y-2 leading-relaxed">
+                        <div class="u-text-sm text-gray-300 space-y-2 leading-relaxed">
                             <p>自己紹介欄に認証コードを貼り付けて保存</p>
                             <a href="https://jp.finalfantasyxiv.com/lodestone/my/setting/profile/" target="_blank"
                                 rel="noopener noreferrer"
-                                class="text-cyan-400 underline inline-flex items-center gap-1 font-bold">
+                                class="text-cyan-400 underline u-inline-flex u-items-center gap-1 u-font-bold">
                                 プロフィール編集画面を開く 🔗
                             </a>
-                            <div class="text-xs text-gray-400 space-y-1 pl-2 border-l-2 border-gray-600">
+                            <div class="modal-auth-note">
                                 <p>※Lodestoneのログイン必須</p>
                                 <p>編集画面で認証コードを入力し、「確認」→「設定」を押して保存後、「自己紹介を確認する」を押してください</p>
                             </div>
@@ -207,38 +199,35 @@
 
                     <div>
                         <label for="auth-lodestone-id"
-                            class="block text-xs font-semibold text-gray-500 uppercase mb-1">Step 3:
+                            class="u-block text-xs font-semibold text-gray-500 uppercase mb-1">Step 3:
                             認証コードが正しく表示されるか確認し、開いているキャラクターページのURL、もしくはURL末尾の数字をコピーして貼り付け</label>
                         <input type="text" id="auth-lodestone-id" name="lodestone-id" maxlength="200"
-                            aria-label="LodestoneキャラクターページのURL、またはキャラクターIDを入力"
-                            class="w-full p-2 rounded bg-gray-900 border border-gray-700 text-sm focus:ring-1 focus:ring-yellow-500 outline-none transition-all">
+                            aria-label="LodestoneキャラクターページのURL、またはキャラクターIDを入力" class="modal-input-field">
                     </div>
                 </div>
             </div>
 
-            <div id="auth-modal-status" class="text-sm text-center mb-4 min-h-[1.25rem]"></div>
+            <div id="auth-modal-status" class="u-text-sm text-center mb-4 min-h-[1.25rem]"></div>
 
-            <div class="flex justify-end gap-3">
-                <button type="button" id="auth-cancel"
-                    class="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition text-sm">キャンセル</button>
-                <button type="button" id="auth-verify"
-                    class="px-6 py-2 rounded bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 transition font-bold shadow-lg shadow-orange-500/20">登録</button>
+            <div class="u-flex justify-end gap-3">
+                <button type="button" id="auth-cancel" class="btn-secondary">キャンセル</button>
+                <button type="button" id="auth-verify" class="btn-primary-yellow">登録</button>
             </div>
         </div>
     </div>
 
     <template id="pc-detail-card-template">
-        <div class="pc-detail-card pc-detail-card-inner relative h-full flex flex-col">
+        <div class="pc-detail-card pc-detail-card-inner">
             <div class="pc-detail-header pt-1 relative">
-                <div class="flex items-center justify-start pr-[65px]">
-                    <div class="flex items-center min-w-0" style="gap: 0.5em;">
+                <div class="u-flex u-items-center u-justify-start pr-[65px]">
+                    <div class="u-flex u-items-center min-w-0" style="gap: 0.5em;">
                         <h2 class="pc-detail-name" style="flex: 0 1 auto; min-width: 0;"></h2>
-                        <div class="pc-detail-rank font-bold px-1.5 py-0.5 border rounded flex-none" data-rank=""></div>
+                        <div class="pc-detail-rank u-font-bold px-1 py-0.5 border rounded u-flex-none" data-rank=""></div>
                     </div>
                 </div>
                 <button class="app-btn-outline pc-list-report-btn" data-report-type="" data-mob-no="">REPORT</button>
-                <div class="flex items-center justify-between">
-                    <div class="detail-area-row m-0 p-0 text-yellow-500/50 font-medium">
+                <div class="u-flex u-items-center u-justify-between">
+                    <div class="detail-area-row m-0 p-0 text-yellow font-medium">
                         <span class="detail-area"></span>
                         <span class="detail-expansion opacity-60"></span>
                     </div>
@@ -284,8 +273,7 @@
 
                 <div class="detail-section map-section">
                     <div class="section-label">出現マップ</div>
-                    <div
-                        class="map-container relative w-full bg-slate-950 rounded border border-white/10 overflow-hidden mt-2">
+                    <div class="map-container relative w-full pc-map-box overflow-hidden mt-2">
                         <img class="mob-map-img w-full h-auto object-contain opacity-90 transition-opacity">
                         <div class="map-overlay absolute inset-0"></div>
                     </div>
@@ -327,9 +315,9 @@
             <div class="pc-list-bg-gauge">
                 <div class="pc-list-bg-bar"></div>
             </div>
-            <div class="pc-list-header-row font-bold">
+            <div class="pc-list-header-row u-font-bold">
                 <span class="pc-list-mob-name truncate"></span>
-                <span class="memo-icon-container h-4 flex items-center"></span>
+                <span class="memo-icon-container h-4 u-flex u-items-center"></span>
                 <span class="pc-list-count-inner"></span>
             </div>
             <div class="pc-list-time"></div>
@@ -339,14 +327,14 @@
     </template>
 
     <template id="status-group-template">
-        <section class="status-group w-full hidden">
+        <section class="status-group u-w-full hidden">
             <div class="status-group-separator">
                 <span class="status-group-label"></span>
             </div>
-            <div class="group-columns grid grid-cols-1 lg:grid-cols-3 gap-0.5 lg:gap-4">
-                <div class="col-1 flex flex-col gap-0.5 lg:gap-4"></div>
-                <div class="col-2 flex flex-col gap-0.5 lg:gap-4"></div>
-                <div class="col-3 flex flex-col gap-0.5 lg:gap-4"></div>
+            <div class="group-columns">
+                <div class="col-1 u-flex u-flex-col u-gap-2"></div>
+                <div class="col-2 u-flex u-flex-col u-gap-2"></div>
+                <div class="col-3 u-flex u-flex-col u-gap-2"></div>
             </div>
         </section>
     </template>
@@ -368,38 +356,33 @@
     </template>
 
     <template id="auth-verified-template">
-        <div class="bg-emerald-900/20 border border-emerald-500/50 p-4 rounded-lg my-4 text-center">
-            <p class="text-emerald-400 font-bold">✓ 認証済みです</p>
+        <div class="auth-verified-box">
+            <p class="text-emerald u-font-bold">✓ 認証済みです</p>
         </div>
     </template>
 
     <template id="auth-form-template">
-        <div class="bg-slate-800/50 border border-gray-700 p-4 rounded-lg my-4 space-y-4 text-left">
-            <p class="text-xs text-yellow-500 font-bold uppercase tracking-wider">認証手続き</p>
+        <div class="modal-auth-box space-y-4 text-left">
+            <p class="text-xs text-yellow u-font-bold uppercase tracking-wider">認証手続き</p>
             <div class="space-y-2">
-                <div class="block text-xs text-gray-400">STEP 1: 検証コードをコピー</div>
-                <div class="flex gap-2">
-                    <code
-                        class="flex-1 p-2 bg-gray-950 rounded border border-gray-800 text-center font-mono text-yellow-500 font-bold select-all tracking-widest auth-vcode-display"></code>
-                    <button
-                        class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs transition auth-copy-btn">Copy</button>
+                <div class="u-block text-xs text-gray-400">STEP 1: 検証コードをコピー</div>
+                <div class="u-flex u-gap-2">
+                    <code class="auth-code-display auth-vcode-display"></code>
+                    <button class="btn-copy auth-copy-btn">Copy</button>
                 </div>
             </div>
             <div class="space-y-2">
-                <div class="block text-xs text-gray-400">STEP 2: Lodestoneプロフィールに貼り付け</div>
+                <div class="u-block text-xs text-gray-400">STEP 2: Lodestoneプロフィールに貼り付け</div>
                 <a href="https://jp.finalfantasyxiv.com/lodestone/my/setting/profile/" target="_blank"
                     rel="noopener noreferrer"
-                    class="text-cyan-400 underline text-sm block hover:text-cyan-300">プロフィール編集画面を開く 🔗</a>
+                    class="text-cyan underline u-text-sm u-block hover:text-cyan-300">プロフィール編集画面を開く 🔗</a>
             </div>
             <div class="space-y-2">
-                <label class="block text-xs text-gray-400">STEP 3: キャラクターIDを入力して検証</label>
-                <div class="flex flex-col gap-2">
-                    <input type="text"
-                        class="w-full p-2 rounded bg-gray-900 border border-gray-700 text-sm focus:ring-1 focus:ring-yellow-500 outline-none auth-id-input"
-                        placeholder="IDまたはURL" maxlength="200">
+                <label class="u-block text-xs text-gray-400">STEP 3: キャラクターIDを入力して検証</label>
+                <div class="u-flex u-flex-col u-gap-2">
+                    <input type="text" class="modal-input-field auth-id-input" placeholder="IDまたはURL" maxlength="200">
                     <div class="text-xs min-h-[1em] auth-status-msg"></div>
-                    <button
-                        class="w-full py-2 rounded bg-yellow-600 hover:bg-yellow-500 font-bold text-white transition text-sm auth-verify-btn">検証して登録</button>
+                    <button class="btn-primary-yellow w-full auth-verify-btn">検証して登録</button>
                 </div>
             </div>
         </div>
