@@ -12,38 +12,6 @@ import { initSidebar } from "./sidebar.js";
 import "./readme.js";
 import { initNotification } from "./notificationManager.js";
 
-export function showToast(message, type = "error") {
-    if (type === "error") {
-        console.error(message);
-    }
-    let container = document.getElementById("toast-container");
-    if (!container) {
-        container = document.createElement("div");
-        container.id = "toast-container";
-        container.className = "toast-container-wrapper";
-        document.body.appendChild(container);
-    }
-
-    const toast = document.createElement("div");
-    const colorClass = type === "error" ? "toast-error" : "toast-success";
-    toast.className = `toast-item-base ${colorClass} opacity-0 translate-x-full`;
-    toast.textContent = message;
-    toast.classList.add("whitespace-pre-wrap");
-
-    container.appendChild(toast);
-
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            toast.classList.remove("translate-x-full", "opacity-0");
-        });
-    });
-
-    setTimeout(() => {
-        toast.classList.add("translate-x-full", "opacity-0");
-        toast.addEventListener("transitionend", () => toast.remove());
-    }, 4000);
-}
-
 async function initApp() {
     try {
         initTooltip();
@@ -146,142 +114,6 @@ async function initApp() {
     }
 }
 
-async function getMaintenanceStatus() {
-    const state = getState();
-    const maintenance = state.maintenance;
-
-    if (!maintenance || !maintenance.start || !maintenance.end) {
-        return {
-            is_active: false,
-            scheduled: false,
-            message: maintenance ? maintenance.message : ""
-        };
-    }
-
-    const now = new Date();
-    const start = new Date(maintenance.start);
-    const end = new Date(maintenance.end);
-    const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
-
-    const isWithinDisplayWindow = now >= showFrom && now <= showUntil;
-
-    let status = {
-        is_active: false,
-        scheduled: false,
-        start_time: maintenance.start,
-        end_time: maintenance.end,
-        message: maintenance.message || ""
-    };
-
-    if (isWithinDisplayWindow) {
-        if (now >= start && now <= end) {
-            status.is_active = true;
-        } else if (now < start) {
-            status.scheduled = true;
-        }
-    }
-
-    return status;
-}
-
-export async function renderMaintenanceStatus() {
-    window.renderMaintenanceStatus = renderMaintenanceStatus;
-
-    const state = getState();
-    const maintenance = await getMaintenanceStatus();
-    const maintenanceEl = document.getElementById("status-message-maintenance");
-    const telopEl = document.getElementById("status-message-telop");
-
-    const maintPanels = document.querySelectorAll(".js-maintenance-content");
-    const telopPanels = document.querySelectorAll(".js-telop-content");
-
-    let hasMaintenance = false;
-    let hasMessage = false;
-    let maintMobileHtml = "";
-    let maintPCHtml = "";
-
-    if (maintenance && (maintenance.is_active || maintenance.scheduled)) {
-        const start = formatMMDDHHmm(maintenance.start_time);
-        const end = formatMMDDHHmm(maintenance.end_time);
-        maintMobileHtml = end ? `${start} ～ ${end}` : `${start} ～`;
-        maintPCHtml = end ? `${start} ～<br>&nbsp;&nbsp;&nbsp;&nbsp;${end}` : `${start} ～`;
-        hasMaintenance = true;
-    }
-
-    if (maintenanceEl) {
-        if (hasMaintenance) {
-            maintenanceEl.textContent = maintMobileHtml;
-            maintenanceEl.classList.remove("hidden");
-        } else {
-            maintenanceEl.textContent = "";
-            maintenanceEl.classList.add("hidden");
-        }
-    }
-
-    maintPanels.forEach(p => {
-        if (!hasMaintenance) {
-            p.textContent = "現在予定されているメンテナンスはありません";
-            return;
-        }
-        const isPC = p.closest('#app-sidebar') || p.closest('.sidebar-panel-content');
-        if (isPC) {
-            p.innerHTML = maintPCHtml;
-        } else {
-            p.textContent = maintMobileHtml;
-        }
-    });
-
-    const telopMsg = (maintenance && maintenance.message && maintenance.message.trim() !== "") ? maintenance.message : "";
-    hasMessage = telopMsg !== "";
-
-    if (telopEl) {
-        if (hasMessage) {
-            telopEl.textContent = telopMsg;
-            telopEl.classList.remove("hidden");
-        } else {
-            telopEl.textContent = "";
-            telopEl.classList.add("hidden");
-        }
-    }
-
-    const nameToDisplay = (state.isVerified && state.characterName) ? state.characterName : "名無しさん";
-
-    telopPanels.forEach(p => {
-        p.innerHTML = "";
-        const welcome = document.createElement("div");
-        welcome.className = "sidebar-welcome-msg";
-        welcome.textContent = `ようこそ ${nameToDisplay}`;
-        p.appendChild(welcome);
-
-        const msgSpan = document.createElement("span");
-        if (telopMsg) {
-            msgSpan.innerHTML = escapeHtml(telopMsg).replace(/\/\//g, "<br>");
-        } else {
-            msgSpan.textContent = "メッセージはありません。";
-        }
-        p.appendChild(msgSpan);
-    });
-
-    document.querySelectorAll('.sidebar-icon-btn[data-panel="maintenance"], .mobile-footer-btn[data-panel="maintenance"]')
-        .forEach(btn => btn.classList.toggle("has-alert", hasMaintenance));
-
-    document.querySelectorAll('.sidebar-icon-btn[data-panel="telop"], .mobile-footer-btn[data-panel="telop"]')
-        .forEach(btn => btn.classList.toggle("has-alert", hasMessage));
-
-    const errorLogCount = window.errorLog ? window.errorLog.length : 0;
-    const hasError = errorLogCount > 0;
-    document.querySelectorAll('.sidebar-icon-btn[data-panel="error"], .mobile-footer-btn[data-panel="error"]')
-        .forEach(btn => btn.classList.toggle("has-alert", hasError));
-
-    document.querySelectorAll('.sidebar-icon-btn[data-panel="rank"], .mobile-footer-btn[data-panel="rank"]')
-        .forEach(btn => btn.classList.remove("has-alert"));
-}
-
-window.addEventListener('characterNameSet', () => {
-    renderMaintenanceStatus();
-});
-
 function attachGlobalEventListeners() {
     let prevWidth = window.innerWidth;
     window.addEventListener("resize", debounce(() => {
@@ -383,6 +215,82 @@ function attachGlobalEventListeners() {
 
 }
 
+document.addEventListener('DOMContentLoaded', initApp);
+
+
+export const sortAndRedistribute = (options = {}) => {
+    const { immediate = false } = options;
+    const run = () => {
+        filterAndRender();
+        if (isInitialLoading) {
+            isInitialLoading = false;
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    window.dispatchEvent(new CustomEvent('initialSortComplete'));
+                });
+            });
+        }
+    };
+
+    if (immediate) {
+        run();
+    } else {
+        debouncedSortAndRedistribute();
+    }
+};
+
+const debouncedSortAndRedistribute = debounce(() => {
+    sortAndRedistribute({ immediate: true });
+}, 200);
+
+let isInitialLoading = false;
+
+window.addEventListener('initialDataLoaded', () => {
+    updateHeaderTime();
+    filterAndRender({ isInitialLoad: true });
+    sortAndRedistribute({ immediate: true });
+    updateProgressBars();
+});
+
+window.addEventListener('mobUpdated', (e) => {
+    const { mobNo, mob } = e.detail;
+    checkAndNotify(mob);
+    const card = cardCache.get(String(mobNo));
+    if (card) {
+        updateCardFull(card, mob);
+        invalidateSortCache();
+        sortAndRedistribute();
+    }
+});
+
+window.addEventListener('filterChanged', () => {
+    invalidateFilterCache();
+    filterAndRender();
+});
+
+window.addEventListener('mobsUpdated', () => {
+    updateProgressBars();
+});
+
+window.addEventListener('locationDataReady', () => {
+    updateVisibleCards();
+});
+
+window.addEventListener('locationsUpdated', () => {
+    invalidateFilterCache();
+    updateVisibleCards();
+});
+
+setInterval(() => {
+    updateProgressBars();
+}, 1000);
+
+setInterval(() => {
+    if (typeof updateHeaderTime === 'function') {
+        updateHeaderTime();
+    }
+}, 2917);
+
 export function handleReportResult(result) {
     if (!result.success) {
         if (result.code === "permission-denied" || (result.error && result.error.includes("permission"))) {
@@ -410,5 +318,3 @@ async function handleReportSubmit(e) {
     handleReportResult(result);
     if (result.success) closeReportModal();
 }
-
-document.addEventListener('DOMContentLoaded', initApp);
