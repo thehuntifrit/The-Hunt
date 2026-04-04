@@ -1293,6 +1293,18 @@ function updateProgressBars() {
     filtered.forEach(mob => {
       const card = cardCache.get(String(mob.No));
       if (card) {
+        // 時限モブの条件ウィンドウ終了または開始時刻に達した場合、再計算をトリガー
+        const info = mob.repopInfo;
+        if (info && (info.nextConditionSpawnDate || info.conditionWindowEnd)) {
+          const nextSpawn = info.nextConditionSpawnDate ? info.nextConditionSpawnDate.getTime() / 1000 : Infinity;
+          const windowEnd = info.conditionWindowEnd ? info.conditionWindowEnd.getTime() / 1000 : 0;
+
+          if ((info.isInConditionWindow && nowSec >= windowEnd) || 
+              (!info.isInConditionWindow && info.nextConditionSpawnDate && nowSec >= nextSpawn)) {
+            recalculateMob(mob.No);
+          }
+        }
+
         checkAndNotify(mob);
         updateProgressText(card, mob);
         updateProgressBar(card, mob);

@@ -451,22 +451,11 @@ export function calculateRepop(mob, maintenance, options = {}) {
 
     if (mob._spawnCache && mob._spawnCache.key === cacheKey) {
       if (mob._spawnCache.result) {
-        if (now < mob._spawnCache.result.end) {
+        if (now < mob._spawnCache.result.end && mob._spawnCache.result.start >= minRepop) {
           useCache = true;
         }
       } else {
         useCache = true;
-      }
-    }
-
-    if (useCache && mob._spawnCache && mob._spawnCache.result) {
-      const cachedStart = mob._spawnCache.result.start;
-      const cachedEnd = mob._spawnCache.result.end;
-      if (cachedEnd <= now || cachedStart < minRepop) {
-        useCache = false;
-      }
-      if (useCache && pointSec < cachedStart && now >= minRepop) {
-        useCache = false;
       }
     }
 
@@ -481,7 +470,7 @@ export function calculateRepop(mob, maintenance, options = {}) {
         result: result
       };
     } else if (mob._spawnCache?.result) {
-      staleCache = mob._spawnCache.result;
+      staleCache = null;
     }
 
     const effective = result || staleCache;
