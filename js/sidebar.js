@@ -50,9 +50,9 @@ function captureErrors() {
     });
 }
 
-function updateErrorPanel() {
-    const panels = document.querySelectorAll(".js-error-content");
-    if (panels.length === 0) return;
+function updateErrorPanel(targetContainer = null) {
+    const panels = targetContainer ? [targetContainer.querySelector(".js-error-content") || targetContainer] : document.querySelectorAll(".js-error-content");
+    if (panels.length === 0 || (panels.length === 1 && !panels[0])) return;
 
     const fragment = document.createDocumentFragment();
     errorLog.forEach(e => {
@@ -67,8 +67,15 @@ function updateErrorPanel() {
     });
 
     panels.forEach(el => {
-        el.innerHTML = "";
-        el.appendChild(fragment.cloneNode(true));
+        if (!el) return;
+        if (el.classList.contains("mobile-footer-panel") || el.id === "mobile-footer-panel") {
+            el.innerHTML = '<div class="sidebar-section"><div class="sidebar-section-title">ERRORS</div><div class="sidebar-alert-content js-error-content"></div></div>';
+            const inner = el.querySelector(".js-error-content");
+            inner.appendChild(fragment.cloneNode(true));
+        } else {
+            el.innerHTML = "";
+            el.appendChild(fragment.cloneNode(true));
+        }
     });
 }
 
@@ -208,11 +215,11 @@ async function toggleMobilePanel(panelName) {
     }
 
     if (panelName === "rank") {
-        renderMobileFilterAccordion(panel);
+        renderSidebarFilterAccordion(panel);
     } else if (panelName === "manual") {
-        loadMobileManual(panel);
+        loadManualContent(panel);
     } else if (panelName === "error") {
-        renderMobileErrors(panel);
+        updateErrorPanel(panel);
     }
 
     panel.classList.remove("hidden");
@@ -226,84 +233,6 @@ async function toggleMobilePanel(panelName) {
     }
 }
 
-function renderMobileFilterAccordion(panel) {
-    const state = getState();
-    const ranks = [
-        { key: "ALL", label: "ALL", color: "#fff" },
-        { key: "S", label: "S RANK", color: "var(--rank-s)" },
-        { key: "A", label: "A RANK", color: "var(--rank-a)" },
-        { key: "F.A.T.E.", label: "F.A.T.E.", color: "var(--rank-f)" },
-    ];
-    const activeRank = state.filter.rank || "ALL";
-    const clickStep = state.filter.clickStep || 1;
-
-    let container = document.createElement("div");
-    container.className = "sidebar-filter-accordion";
-    ranks.forEach(r => {
-        const isActive = r.key === activeRank;
-        const isExpanded = isActive && clickStep === 2;
-
-        const itemEl = cloneTemplate('rank-accordion-item-template');
-        if (itemEl) {
-            if (isActive) itemEl.classList.add('active');
-            if (isExpanded) itemEl.classList.add('is-expanded');
-            itemEl.dataset.rank = r.key;
-
-            const header = itemEl.querySelector(".rank-header");
-            if (header) {
-                header.dataset.rank = isActive ? r.key : "";
-                header.textContent = r.label;
-                header.addEventListener("click", () => {
-                    const rankKey = header.closest(".rank-accordion-item").dataset.rank;
-                    handleRankTabClick(rankKey);
-                    setTimeout(() => renderMobileFilterAccordion(panel), 50);
-                });
-            }
-            container.appendChild(itemEl);
-        }
-    });
-    panel.innerHTML = "";
-    panel.appendChild(container);
-
-    const activeExpansion = panel.querySelector(".rank-accordion-item.active .area-grid-container");
-    if (activeExpansion) {
-        activeExpansion.className = "area-grid-container area-grid";
-        renderAreaFilterPanel(activeExpansion);
-    }
-}
-
-async function loadMobileManual(panel) {
-    panel.innerHTML = '<div class="sidebar-manual-content"><p style="text-align:center;color:rgba(255,255,255,0.4)">読み込み中...</p></div>';
-    try {
-        const response = await fetch("./README.md");
-        if (!response.ok) throw new Error("マニュアル取得失敗");
-        const text = await response.text();
-        if (typeof marked !== "undefined") {
-            marked.setOptions({ breaks: true, gfm: true });
-            const html = marked.parse(text);
-            panel.innerHTML = `<div class="sidebar-manual-content">${DOMPurify.sanitize(html)}</div>`;
-        } else {
-            panel.querySelector(".sidebar-manual-content").textContent = text;
-        }
-    } catch {
-        panel.innerHTML = '<div class="sidebar-manual-content"><p style="color:#ef4444;text-align:center">読み込み失敗</p></div>';
-    }
-}
-
-function renderMobileErrors(panel) {
-    const el = document.getElementById("sidebar-error-content");
-    if (el) {
-        panel.innerHTML = "";
-        const section = document.createElement("div");
-        section.className = "sidebar-section";
-        section.innerHTML = `
-            <div class="sidebar-section-title">ERRORS</div>
-            <div class="sidebar-alert-content js-error-content">${el.innerHTML.trim()}</div>
-        `;
-        panel.appendChild(section);
-        updateErrorPanel();
-    }
-}
 
 function togglePanel(panelName) {
     if (panelName === "manual") {
@@ -351,20 +280,20 @@ function showPanel(panelName) {
     if (target) {
         target.classList.remove("hidden");
         if (panelName === "rank") {
-            renderSidebarFilterAccordion();
-        } else if (panelName === "manual" && !manualLoaded) {
-            loadManualContent();
+            renderSidebarFilterAccordion(target);
+        } else if (panelName === "manual") {
+            loadManualContent(target);
         } else if (panelName === "error") {
-            updateErrorPanel();
+            updateErrorPanel(target);
         }
     }
 }
 
-async function loadManualContent() {
-    const container = document.getElementById("sidebar-manual-content");
+async function loadManualContent(targetContainer = null) {
+    const container = targetContainer || document.getElementById("sidebar-manual-content");
     if (!container) return;
 
-    container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.4)">読み込み中...</p>';
+    container.innerHTML = '<div class="sidebar-manual-content"><p style="text-align:center;color:rgba(255,255,255,0.4)">読み込み中...</p></div>';
 
     try {
         const response = await fetch("./README.md");
@@ -373,20 +302,21 @@ async function loadManualContent() {
         if (typeof marked !== "undefined") {
             marked.setOptions({ breaks: true, gfm: true });
             const html = marked.parse(text);
-            container.innerHTML = DOMPurify.sanitize(html);
+            container.innerHTML = `<div class="sidebar-manual-content">${DOMPurify.sanitize(html)}</div>`;
         } else {
-            container.textContent = text;
+            container.innerHTML = `<div class="sidebar-manual-content">${escapeHtml(text)}</div>`;
         }
         manualLoaded = true;
     } catch {
-        container.innerHTML = '<p style="color:#ef4444;text-align:center">読み込み失敗</p>';
+        container.innerHTML = '<div class="sidebar-manual-content"><p style="color:#ef4444;text-align:center">読み込み失敗</p></div>';
     }
 }
 
 
 
-function renderSidebarFilterAccordion() {
-    const container = document.getElementById("sidebar-filter-accordion");
+function renderSidebarFilterAccordion(targetContainer = null) {
+    const container = targetContainer?.id === "mobile-footer-panel" ? targetContainer : 
+                    (targetContainer?.querySelector(".sidebar-filter-accordion") || document.getElementById("sidebar-filter-accordion"));
     if (!container) return;
 
     const ranks = [
@@ -400,11 +330,11 @@ function renderSidebarFilterAccordion() {
     const activeRank = state.filter.rank || "ALL";
     const clickStep = state.filter.clickStep || 1;
 
-    container.innerHTML = "";
+    const fragment = document.createDocumentFragment();
     const title = document.createElement("div");
     title.className = "sidebar-filter-title";
     title.textContent = "Filter";
-    container.appendChild(title);
+    fragment.appendChild(title);
 
     ranks.forEach(r => {
         const isActive = r.key === activeRank;
@@ -425,9 +355,12 @@ function renderSidebarFilterAccordion() {
                     handleRankTabClick(rankKey);
                 });
             }
-            container.appendChild(itemEl);
+            fragment.appendChild(itemEl);
         }
     });
+
+    container.innerHTML = "";
+    container.appendChild(fragment);
 
     const activeExpansion = container.querySelector(".rank-accordion-item.active .area-grid-container");
     if (activeExpansion) {

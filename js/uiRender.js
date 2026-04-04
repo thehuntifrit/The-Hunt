@@ -199,53 +199,7 @@ export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, i
 
 export function createMobCard(mob, isDetailView = false) {
   if (isDetailView) return createPCDetailCard(mob);
-
-  const template = document.getElementById('mob-card-template');
-  const clone = template.content.cloneNode(true);
-  const card = clone.querySelector('.mob-card');
-
-  const rank = mob.Rank;
-  const { openMobCardNo } = getState();
-  const isOpen = mob.No === openMobCardNo;
-
-  card.dataset.mobNo = mob.No;
-  card.dataset.rank = rank;
-
-  updateEl(card, '.memo-input', { value: mob.memo_text || "" }, { mobNo: mob.No });
-  updateEl(card, '.mob-name', { textContent: mob.Name }, { rank });
-  updateEl(card, '.list-rank-badge', { textContent: rank }, { rank });
-  updateEl(card, '.report-side-bar', {}, { reportType: rank === 'A' ? 'instant' : 'modal', mobNo: mob.No });
-
-  const expandablePanel = card.querySelector('.expandable-panel');
-  if (isOpen && expandablePanel) {
-    card.classList.add('is-expanded', 'open');
-    expandablePanel.classList.add('open');
-  }
-
-  if (mob.Condition) {
-    updateEl(card, '.condition-text', { innerHTML: processText(mob.Condition) });
-  }
-
-  const mapImg = card.querySelector('.mob-map-img');
-  const mapSection = mapImg?.closest('.map-section');
-  if (mapImg && mob.Map && mob.Rank !== 'F') {
-    mapImg.src = `./maps/${mob.Map}`;
-    mapImg.alt = `${mob.Area} Map`;
-    mapImg.dataset.mobMap = mob.Map;
-    mapImg.decoding = "async";
-    mapImg.loading = "lazy";
-  } else if (mapSection) {
-    mapSection.classList.add('hidden');
-  }
-  updateAreaInfo(card, mob);
-  updateMobCount(card, mob);
-  updateMapOverlay(card, mob);
-  updateExpandablePanel(card, mob);
-  updateMemoIcon(card, mob);
-  updateProgressBar(card, mob);
-  updateProgressText(card, mob);
-
-  return card;
+  return createSimpleMobItem(mob);
 }
 
 export function createPCDetailCard(mob) {
@@ -632,7 +586,7 @@ export function updateSimpleMobItem(item, mob) {
   const { elapsedPercent, status, isInConditionWindow } = mob.repopInfo || {};
   const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
   const timeEl = item.querySelector('.pc-list-time');
-  const progressEl = item.querySelector('.pc-list-progress-bar');
+  const progressEl = item.querySelector('.pc-list-bg-bar');
   const percentEl = item.querySelector('.pc-list-percent');
   const { countHtml } = getSpawnCountInfo(mob);
   const { label, timeValue, isSpecialCondition, isTimeOver, dhm, isInWindow } = computeTimeLabel(mob);
@@ -883,58 +837,19 @@ const cardObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0 });
 
 function updateCardFull(card, mob) {
-  const { openMobCardNo } = getState();
-  const isOpen = mob.No === openMobCardNo;
-  const expandablePanel = card.querySelector('.expandable-panel');
-  const isMobile = window.innerWidth < 1024;
+  const isDetail = card.classList.contains('pc-detail-card');
+  const isListItem = card.classList.contains('pc-list-item');
 
-  if (isOpen && expandablePanel) {
-    card.classList.add('is-expanded');
-    card.classList.add('open');
-    if (!expandablePanel.classList.contains('open')) {
-      if (isMobile) {
-        expandablePanel.classList.add('open');
-      } else {
-        expandablePanel.classList.add('is-animating');
-        expandablePanel.classList.add('open');
-        expandablePanel.style.maxHeight = expandablePanel.scrollHeight + 'px';
-        const onEnd = () => {
-          expandablePanel.style.maxHeight = 'none';
-          expandablePanel.classList.remove('is-animating');
-          expandablePanel.removeEventListener('transitionend', onEnd);
-        };
-        expandablePanel.addEventListener('transitionend', onEnd, { once: true });
-      }
-    }
-  } else if (expandablePanel) {
-    if (expandablePanel.classList.contains('open')) {
-      if (isMobile || expandablePanel.style.maxHeight === 'none' || expandablePanel.style.maxHeight === '') {
-        expandablePanel.style.maxHeight = '';
-        expandablePanel.classList.remove('open', 'is-animating');
-      } else {
-        expandablePanel.style.maxHeight = expandablePanel.scrollHeight + 'px';
-        requestAnimationFrame(() => {
-          expandablePanel.style.maxHeight = '0px';
-          expandablePanel.classList.add('is-animating');
-          const onEnd = () => {
-            expandablePanel.classList.remove('open', 'is-animating');
-            expandablePanel.style.maxHeight = '';
-            expandablePanel.removeEventListener('transitionend', onEnd);
-          };
-          expandablePanel.addEventListener('transitionend', onEnd, { once: true });
-        });
-      }
-    }
-    card.classList.remove('is-expanded');
-    card.classList.remove('open');
+  if (isDetail) {
+    updateProgressText(card, mob);
+    updateProgressBar(card, mob);
+    updateMobCount(card, mob);
+    updateMapOverlay(card, mob);
+    updateExpandablePanel(card, mob);
+    updateMemoIcon(card, mob);
+  } else if (isListItem) {
+    updateSimpleMobItem(card, mob);
   }
-
-  updateProgressText(card, mob);
-  updateProgressBar(card, mob);
-  updateMobCount(card, mob);
-  updateMapOverlay(card, mob);
-  updateExpandablePanel(card, mob);
-  updateMemoIcon(card, mob);
 }
 
 function updateVisibleCards() {

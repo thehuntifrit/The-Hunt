@@ -4,16 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="./icon/The_Hunt.png">
     <title>The Hunt</title>
-    <link rel="stylesheet" href="css/tailwind.css">
+    <link rel="icon" type="image/png" href="./icon/The_Hunt.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/all_styles.css">
     <script src="js/lib/marked.min.js"></script>
     <script src="js/lib/purify.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/mobile.css">
-    <link rel="stylesheet" href="css/pc.css">
-    <link rel="stylesheet" href="css/sidebar.css">
 </head>
 
 <body class="leading-relaxed">
@@ -86,7 +82,7 @@
         <div id="mobile-footer-panel" class="mobile-footer-panel hidden"></div>
     </nav>
 
-    <main class="mx-auto px-2 py-2 sm:px-4 lg:pt-4 lg:pb-10 main-content-area">
+    <main class="mx-auto sm:px-4 lg:pt-4 lg:pb-10 main-content-area">
 
         <div id="pc-layout" class="hidden lg:block w-full max-w-7xl mx-auto">
             <div id="pc-left-list"></div>
@@ -138,9 +134,8 @@
     </div>
 
     <div id="report-modal" class="app-backdrop hidden items-center justify-center p-4">
-        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-md border border-gray-600 text-white 
-            relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-600"></div>
+        <div class="bg-gray-800">
+            <div class="modal-top-bar"></div>
 
             <h2 class="text-xl font-bold mb-4 text-cyan-400 text-glow">討伐報告</h2>
             <p id="modal-mob-name" class="text-base mb-4 font-semibold text-gray-200 border-b border-gray-700 pb-2"></p>
@@ -174,9 +169,8 @@
     </div>
 
     <div id="auth-modal" class="app-backdrop hidden items-center justify-center p-4">
-        <div
-            class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-lg border border-gray-600 text-white relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-orange-600"></div>
+        <div class="bg-gray-800">
+            <div class="modal-top-bar"></div>
 
             <h2 class="text-xl font-bold mb-4 text-yellow-400 text-glow">ユーザー認証 (キャラクター登録)</h2>
             <div class="text-sm text-gray-300 space-y-4 mb-6">
@@ -232,45 +226,6 @@
             </div>
         </div>
     </div>
-
-    <template id="mob-card-template">
-        <div class="mob-card">
-            <div class="mob-card-inner relative overflow-hidden transition-all duration-300">
-                <div class="mob-card-header p-0 relative bg-transparent z-10" data-toggle="card-header">
-                    <div class="progress-bar-wrapper absolute top-0 left-0 right-[38px] z-0 pointer-events-none">
-                        <div class="progress-bar-bg absolute left-0 top-0 h-full"></div>
-                    </div>
-                    <div class="px-2 flex flex-col gap-y-0.5 content-area relative z-10">
-                        <div class="flex items-center w-full min-w-0">
-                            <span class="mob-name font-bold truncate text-gray-100 min-w-0"></span>
-                            <div class="flex items-center flex-shrink-0" style="margin-left: 0.5em; gap: 0.25em;">
-                                <span class="mob-count-container whitespace-nowrap text-slate-400"></span>
-                                <span class="memo-icon-container text-xs"></span>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between w-full min-w-0 gap-2">
-                            <div class="mobile-left-lower flex items-center min-w-0 overflow-hidden">
-                                <span
-                                    class="list-rank-badge font-bold px-1 border border-current rounded flex-shrink-0"></span>
-                                <div class="mobile-header-area-text text-yellow-600/80 truncate leading-none ml-1">
-                                </div>
-                            </div>
-                            <div class="progress-info-group flex items-center justify-end flex-shrink-0 ml-auto gap-0">
-                                <div class="js-mobile-icon w-[18px] flex justify-center flex-shrink-0 opacity-70">
-                                </div>
-                                <div class="js-mobile-time flex-shrink-0">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="report-side-bar transition-colors duration-200 z-10 absolute" data-report-type=""
-                        data-mob-no=""></div>
-                </div>
-            </div>
-        </div>
-    </template>
 
     <template id="pc-detail-card-template">
         <div class="pc-detail-card pc-detail-card-inner relative h-full flex flex-col">
@@ -348,8 +303,7 @@
         </div>
     </template>
 
-    <div id="global-magnifier"
-        class="map-magnifier fixed hidden pointer-events-none z-[10000] w-48 h-48 rounded-full border-4 border-cyan-500 shadow-[0_0_40px_rgba(0,0,0,0.8),0_0_20px_rgba(6,182,212,0.4)] overflow-hidden bg-slate-950">
+    <div id="global-magnifier" class="map-magnifier hidden">
         <div class="magnifier-content-wrapper absolute w-full h-full"></div>
     </div>
 
@@ -370,17 +324,17 @@
 
     <template id="pc-list-item-template">
         <div class="pc-list-item">
+            <div class="pc-list-bg-gauge">
+                <div class="pc-list-bg-bar"></div>
+            </div>
             <div class="pc-list-header-row font-bold">
                 <span class="pc-list-mob-name truncate"></span>
                 <span class="memo-icon-container h-4 flex items-center"></span>
                 <span class="pc-list-count-inner"></span>
             </div>
             <div class="pc-list-time"></div>
-            <div class="pc-list-progress-container">
-                <div class="pc-list-progress-bar"></div>
-            </div>
             <div class="pc-list-percent">0%</div>
-            <button class="pc-list-report-btn">REPORT</button>
+            <button class="pc-list-report-btn"></button>
         </div>
     </template>
 
