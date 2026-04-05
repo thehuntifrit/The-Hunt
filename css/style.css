@@ -1,4 +1,3 @@
-/* --- 1. VARIABLES & THEME --- */
 :root {
     --bg-dark: #0f172a;
     --bg-card: rgba(30, 41, 59, 0.45);
@@ -90,7 +89,6 @@
 
     --text-shadow-neon: 0 0 8px rgba(var(--cyan-rgb), 0.4);
 
-    /* New Design Tokens (Zero-Hardcoding) */
     --bg-deeper: #030712;
     --bg-panel: #1e293b;
     --bg-panel-light: #374151;
@@ -140,7 +138,6 @@
     --current-rank-rgb: var(--all-rank-rgb);
 }
 
-/* --- 2. BASE & RESET --- */
 html,
 body {
     margin: 0;
@@ -163,49 +160,14 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-.u-ml-1 { margin-left: 0.25rem; }
-.text-secondary { color: var(--text-secondary) !important; }
-
-.instance-label {
-    position: absolute;
-    top: 0.25rem;
-    right: 0.25rem;
-    padding: 0.125rem 0.5rem;
-    border-radius: var(--r-sm);
-    background-color: rgba(15, 23, 42, 0.8);
-    border: 1px solid var(--border-normal);
-    font-weight: 700;
-    color: var(--accent-cyan);
-    z-index: 20;
+.u-ml-1 {
+    margin-left: 0.25rem;
 }
 
-.u-mobile-only {
-    display: block !important;
+.text-secondary {
+    color: var(--text-secondary);
 }
 
-@media (min-width: 1024px) {
-    .u-mobile-only {
-        display: none !important;
-    }
-}
-
-.u-pc-only {
-    display: none !important;
-}
-
-@media (min-width: 1024px) {
-    .u-pc-only {
-        display: block !important;
-    }
-}
-
-.u-w-full {
-    width: 100% !important;
-}
-
-.hidden {
-    display: none !important;
-}
 
 @supports (scrollbar-width: thin) {
     * {
@@ -227,7 +189,6 @@ body {
     background: transparent;
 }
 
-/* --- 2.2 LAYOUT & CONTAINERS (NEW) --- */
 .main-content-area {
     min-height: 100vh;
     padding: var(--s-4);
@@ -274,7 +235,6 @@ body {
     }
 }
 
-/* --- 2.3 MODALS & UI COMPONENTS (NEW) --- */
 .report-modal-backdrop,
 .auth-modal-backdrop {
     display: flex;
@@ -301,36 +261,68 @@ body {
     padding-bottom: 0.5rem;
 }
 
-/* --- 2.4 CORE UTILITIES (NON-TAILWIND) --- */
-.flex { display: flex; }
-.flex-col { flex-direction: column; }
-.items-center { align-items: center; }
-.justify-center { justify-content: center; }
-.justify-between { justify-content: space-between; }
-.w-full { width: 100% !important; }
-.h-full { height: 100% !important; }
-.font-bold { font-weight: 700 !important; }
-.font-semibold { font-weight: 600 !important; }
-.font-medium { font-weight: 500 !important; }
-.text-cyan { color: var(--accent-cyan) !important; }
-.text-yellow { color: var(--accent-gold) !important; }
-.text-crimson { color: var(--accent-crimson) !important; }
-.text-xs { font-size: var(--fs-xs); }
-.text-sm { font-size: var(--fs-sm); }
-.text-base { font-size: 1rem; }
-.text-xl { font-size: 1.25rem; }
-.mt-6 { margin-top: 1.5rem; }
-.mb-4 { margin-bottom: var(--s-4); }
-.gap-2 { gap: var(--s-2); }
-.gap-3 { gap: 0.75rem; }
-.gap-4 { gap: var(--s-4); }
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+
+.text-xs {
+    font-size: var(--fs-xs);
+}
+
+.text-sm {
+    font-size: var(--fs-sm);
+}
+
+.text-base {
+    font-size: 1rem;
+}
+
+.text-xl {
+    font-size: 1.25rem;
+}
+
+.mt-6 {
+    margin-top: 1.5rem;
+}
+
+.mb-4 {
+    margin-bottom: var(--s-4);
+}
+
+.gap-2 {
+    gap: var(--s-2);
+}
+
+.gap-3 {
+    gap: 0.75rem;
+}
+
+.gap-4 {
+    gap: var(--s-4);
+}
 
 .pc-layout-container {
     width: 100%;
-    max-width: 80rem;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 80px 1fr 400px;
+    grid-template-columns: 450px 1fr;
     gap: var(--s-4);
     align-items: start;
 }
@@ -368,7 +360,7 @@ body {
 
 .pc-list-item {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 92px 40px 28px;
+    grid-template-columns: minmax(0, 1fr) 40px 92px 28px;
     align-items: center;
     padding: 0.5rem 0.75rem;
     background: rgba(31, 41, 55, 0.4);
@@ -390,7 +382,6 @@ body {
     pointer-events: none;
 }
 
-/* Modal Parts */
 .modal-input-field {
     width: 100%;
     padding: var(--s-2);
@@ -423,7 +414,6 @@ body {
     border-radius: var(--r-sm);
 }
 
-/* Buttons */
 .btn-secondary {
     padding: 0.5rem 1rem;
     border-radius: var(--r-sm);
@@ -478,7 +468,6 @@ body {
     background-color: var(--bg-panel-light);
 }
 
-/* Auth Modal Specific */
 .modal-auth-description {
     font-size: var(--fs-sm);
     color: var(--text-dim);
@@ -538,9 +527,13 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.text-emerald { color: var(--color-lastone); }
+.text-emerald {
+    color: var(--color-lastone);
+}
 
-.translate-x-full { transform: translateX(100%); }
+.translate-x-full {
+    transform: translateX(100%);
+}
 
 .toast-container-wrapper {
     position: fixed;
@@ -577,27 +570,6 @@ body {
     border-color: var(--accent-cyan);
 }
 
-/* --- 2.5 CORE UTILITIES (NON-TAILWIND) --- */
-.u-flex { display: flex !important; }
-.u-flex-col { flex-direction: column !important; }
-.u-items-center { align-items: center !important; }
-.u-justify-center { justify-content: center !important; }
-.u-justify-between { justify-content: space-between !important; }
-.u-relative { position: relative !important; }
-.u-absolute { position: absolute !important; }
-.u-hidden { display: none !important; }
-.u-w-full { width: 100% !important; }
-.u-h-full { height: 100% !important; }
-.u-font-bold { font-weight: 700 !important; }
-.u-text-xs { font-size: 0.75rem !important; }
-.u-text-sm { font-size: 0.875rem !important; }
-.u-gap-1 { gap: 0.25rem !important; }
-.u-gap-2 { gap: 0.5rem !important; }
-.u-gap-3 { gap: 0.75rem !important; }
-.u-gap-4 { gap: 1rem !important; }
-.u-mb-4 { margin-bottom: 1rem !important; }
-.u-mb-5 { margin-bottom: 1.25rem !important; }
-.u-p-4 { padding: 1rem !important; }
 
 body {
     background-color: var(--bg-dark);
@@ -655,7 +627,6 @@ body::before {
     background: transparent;
 }
 
-/* --- 3. SHARED COMPONENTS --- */
 .loading-overlay {
     position: fixed;
     inset: 0;
@@ -679,17 +650,13 @@ body::before {
     transform: translate(-50%, -50%);
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(var(--cyan-rgb), 0.4), inset 0 0 15px rgba(0, 0, 0, 0.5);
     z-index: var(--z-modal);
-    /* z-[10000] equivalent */
     width: 12rem;
-    /* w-48 */
     height: 12rem;
-    /* h-48 */
     border: 4px solid var(--accent-cyan);
     border-radius: 9999px;
     overflow: hidden;
     background-color: var(--bg-deeper);
     pointer-events: none;
-    display: none;
 }
 
 .map-magnifier.hidden {
@@ -697,14 +664,14 @@ body::before {
 }
 
 .magnifier-content-wrapper {
+    position: absolute;
     transform-origin: 0 0;
 }
 
-.map-container,
-.mob-map-img,
-.map-overlay {
-    cursor: crosshair;
-    will-change: transform, opacity;
+.map-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
 }
 
 .mob-map-img {
@@ -713,6 +680,13 @@ body::before {
     width: 100%;
     height: auto;
     display: block;
+}
+
+.map-overlay {
+    position: absolute;
+    inset: 0;
+    cursor: crosshair;
+    will-change: transform, opacity;
 }
 
 .loading-spinner {
@@ -943,7 +917,6 @@ html body.magnifier-active .mob-card-inner * {
     color: var(--white);
 }
 
-/* --- 4. MOB CARD SYSTEM --- */
 .mob-card {
     position: relative;
     transform: translateZ(0);
@@ -1544,12 +1517,6 @@ html body.magnifier-active .mob-card-inner * {
     opacity: 1;
 }
 
-.instance-label {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
-    pointer-events: none;
-}
 
 .pc-detail-card {
     display: flex;
@@ -1720,7 +1687,6 @@ html body.magnifier-active .mob-card-inner * {
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
-/* --- 5. MODALS & OVERLAYS --- */
 .app-backdrop {
     position: fixed;
     inset: 0;
@@ -1774,7 +1740,6 @@ html body.magnifier-active .mob-card-inner * {
 
     .bg-gray-800 {
         max-width: 32rem;
-        /* max-w-lg */
     }
 
     .modal-top-bar {
@@ -1926,9 +1891,6 @@ html body.magnifier-active .mob-card-inner * {
     }
 }
 
-
-/* --- 6. RESPONSIVE LAYOUTS --- */
-/* Sidebar Shared */
 .sidebar-section-title {
     font-size: var(--fs-ui-sm);
     font-weight: 800;
@@ -2301,8 +2263,6 @@ html body.magnifier-active .mob-card-inner * {
     color: var(--white);
 }
 
-
-/* PC Layout View */
 #pc-layout {
     display: flex;
 }
@@ -2416,10 +2376,9 @@ html body.magnifier-active .mob-card-inner * {
     }
 }
 
-/* --- Mob List Item (Unified) --- */
 .pc-list-item {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 92px 40px 28px;
+    grid-template-columns: minmax(0, 1fr) 36px 92px 28px;
     align-items: center;
     max-width: 560px;
     width: 100%;
@@ -2969,8 +2928,6 @@ html body.magnifier-active .mob-card-inner * {
     }
 }
 
-
-/* Mobile Layout View */
 @media (max-width: 1023px) {
     .mob-card {
         scroll-margin-top: 40px;
@@ -3436,4 +3393,120 @@ html body.magnifier-active .mob-card-inner * {
     #sidebar-status-bar {
         display: none;
     }
+}
+
+@media (max-width: 1023px) {
+    .u-pc-only {
+        display: none;
+    }
+}
+
+@media (min-width: 1024px) {
+    .u-mobile-only {
+        display: none;
+    }
+}
+
+.hidden,
+.u-hidden {
+    display: none;
+}
+
+.w-full,
+.u-w-full {
+    width: 100%;
+}
+
+.h-full,
+.u-h-full {
+    height: 100%;
+}
+
+.font-bold,
+.u-font-bold {
+    font-weight: 700;
+}
+
+.font-semibold {
+    font-weight: 600;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.text-cyan {
+    color: var(--accent-cyan);
+}
+
+.text-yellow {
+    color: var(--accent-gold);
+}
+
+.text-crimson {
+    color: var(--accent-crimson);
+}
+
+.u-flex {
+    display: flex;
+}
+
+.u-flex-col {
+    flex-direction: column;
+}
+
+.u-items-center {
+    align-items: center;
+}
+
+.u-justify-center {
+    justify-content: center;
+}
+
+.u-justify-between {
+    justify-content: space-between;
+}
+
+.u-relative {
+    position: relative;
+}
+
+.u-absolute {
+    position: absolute;
+}
+
+.u-text-xs {
+    font-size: 0.75rem;
+}
+
+.u-text-sm {
+    font-size: 0.875rem;
+}
+
+.u-gap-1 {
+    gap: 0.25rem;
+}
+
+.u-gap-2 {
+    gap: 0.5rem;
+}
+
+.u-gap-3 {
+    gap: 0.75rem;
+}
+
+.u-gap-4 {
+    gap: 1rem;
+}
+
+.u-mb-4 {
+    margin-bottom: 1rem;
+}
+
+.u-mb-5 {
+    margin-bottom: 1.25rem;
+}
+
+.u-p-4 {
+    padding: 1rem;
 }

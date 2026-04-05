@@ -116,7 +116,7 @@ export function initGlobalMagnifier() {
   const updateMagnifier = (e) => {
     if (!activeMapImg || !activeMapContainer) return;
 
-    const rect = activeMapImg.getBoundingClientRect();
+    const rect = activeMapContainer.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
@@ -158,8 +158,8 @@ export function initGlobalMagnifier() {
     wrapper.innerHTML = '';
     const clone = mapContainer.cloneNode(true);
 
+    clone.classList.remove('w-full', 'u-w-full', 'pc-map-box', 'cursor-crosshair', '!cursor-crosshair');
     clone.classList.add('magnifier-clone');
-    clone.classList.remove('cursor-crosshair', '!cursor-crosshair');
 
     clone.style.width = `${mapContainer.offsetWidth}px`;
     clone.style.height = `${mapContainer.offsetHeight}px`;
@@ -702,14 +702,6 @@ export function updateMapOverlay(card, mob) {
     return;
   }
 
-  let instanceLabel = mapContainer.querySelector('.instance-label');
-  if (!instanceLabel) {
-    instanceLabel = document.createElement('div');
-    instanceLabel.className = 'instance-label';
-    mapContainer.appendChild(instanceLabel);
-  }
-  instanceLabel.textContent = `Instance ${mob.No % 10}`;
-
   const mapImg = mapContainer.querySelector('.mob-map-img');
   if (mapImg && mob.mapImage && mapImg.dataset.mobMap !== mob.mapImage) {
     mapImg.src = `./maps/${mob.mapImage}`;
@@ -865,7 +857,7 @@ function handlePCListClick(e) {
 }
 
 function handleMobCardClick(e) {
-  const card = e.target.closest(".mob-card, .pc-detail-card");
+  const card = e.target.closest(".pc-list-item, .mob-card, .pc-detail-card");
   if (!card) return;
 
   const mobNo = parseInt(card.dataset.mobNo, 10);
@@ -896,5 +888,11 @@ function handleMobCardClick(e) {
     setOpenMobCardNo(null);
     sortAndRedistribute({ immediate: true });
     return;
+  }
+
+  if (card.classList.contains('pc-list-item') || card.classList.contains('mob-card')) {
+    const currentOpen = getState().openMobCardNo;
+    setOpenMobCardNo(currentOpen === mobNo ? null : mobNo);
+    sortAndRedistribute({ immediate: true });
   }
 }

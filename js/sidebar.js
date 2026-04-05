@@ -726,5 +726,12 @@ function renderSidebarFilterAccordion(targetContainer = null) {
 // ─── イベントリスナー ───────────────────────────────────
 
 window.addEventListener("filterChanged", () => {
+    // デスクトップ用サイドバー
     renderSidebarFilterAccordion();
+
+    // モバイル用フッターパネル
+    const mobilePanel = document.getElementById("mobile-footer-panel");
+    if (mobilePanel && mobileCurrentPanel === "rank") {
+        renderSidebarFilterAccordion(mobilePanel);
+    }
 });
