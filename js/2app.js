@@ -5,7 +5,7 @@ import { attachLocationEvents } from "./location.js";
 import { openReportModal, closeReportModal, initModal, openAuthModal } from "./modal.js";
 import { handleAreaFilterClick } from "./filterUI.js";
 import { DOM, sortAndRedistribute, showColumnContainer, updateHeaderTime, escapeHtml } from "./uiRender.js";
-import { debounce, formatMMDDHHmm } from "./cal.js";
+import { debounce, formatMMDDHHmm, EORZEA_MINUTE_MS } from "./cal.js";
 import { initTooltip } from "./tooltip.js";
 import { initGlobalMagnifier } from "./magnifier.js";
 import { initSidebar } from "./sidebar.js";
@@ -285,11 +285,7 @@ setInterval(() => {
     updateProgressBars();
 }, 1000);
 
-setInterval(() => {
-    if (typeof updateHeaderTime === 'function') {
-        updateHeaderTime();
-    }
-}, 2917);
+setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
 
 export function handleReportResult(result) {
     if (!result.success) {

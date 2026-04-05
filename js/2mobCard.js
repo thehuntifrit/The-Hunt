@@ -743,38 +743,47 @@ export function updateSimpleMobItem(item, mob) {
     if (timeEl._lastCacheKey !== cacheKey) {
       timeEl.innerHTML = "";
       const inner = document.createElement("div");
-      inner.className = "js-mobile-time-inner";
+      inner.className = "timer-inner-grid";
+
+      const labelSpan = document.createElement("span");
+      labelSpan.className = `timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''} text-center opacity-90`;
+      labelSpan.textContent = label;
+
+      inner.appendChild(labelSpan);
       inner.appendChild(timerNode);
       timeEl.appendChild(inner);
       timeEl._lastCacheKey = cacheKey;
     }
   }
+  const countInner = item.querySelector('.pc-list-count-inner');
+  if (countInner) {
+    countInner.innerHTML = countHtml;
+  }
 
+  const isPreRepop = status === "Next" || status === "Maintenance";
+  item.classList.toggle('is-pre-repop', isPreRepop);
   if (progressEl) {
-    progressEl.style.width = (status === "MaxOver") ? "100%" : `${elapsedPercent || 0}%`;
+    const currentWidth = parseFloat(progressEl.style.width) || 0;
+    if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
+      progressEl.style.transition = (currentWidth === 0 || elapsedPercent < currentWidth) ? "none" : "width linear 60s";
+      progressEl.style.width = `${elapsedPercent}%`;
+    }
     progressEl.classList.remove('status-max-over', 'status-condition-active', 'status-pop-window', 'status-next');
-    if (status === "MaxOver") progressEl.classList.add("status-max-over");
+    if (isTimeOver) progressEl.classList.add("status-max-over");
     else if (status === "ConditionActive") progressEl.classList.add("status-condition-active");
     else if (status === "PopWindow") progressEl.classList.add("status-pop-window");
-    else progressEl.classList.add("status-next");
+    else if (status === "Next" || status === "NextCondition") progressEl.classList.add("status-next");
   }
-
   if (percentEl) {
-    const percentValue = status === "MaxOver" ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
-    percentEl.textContent = `${percentValue}%`;
+    const { elapsedPercent, status: listStatus } = mob.repopInfo || {};
+    const isTimeOverVal = listStatus === "MaxOver";
+    const percentValue = isTimeOverVal ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
+    percentEl.innerHTML = `${percentValue}<span class="percent-unit">%</span>`;
   }
+  if (isMaint) item.classList.add("maintenance-gray-out");
+  else item.classList.remove("maintenance-gray-out");
 
-  const mobNameEl = item.querySelector('.pc-list-mob-name');
-  if (mobNameEl) {
-    if (isMaint) item.classList.add("maintenance-gray-out");
-    else item.classList.remove("maintenance-gray-out");
-  }
-
-  const countContainer = item.querySelector('.pc-list-count');
-  if (countContainer && countContainer.innerHTML !== countHtml) {
-    countContainer.innerHTML = countHtml;
-  }
-
-  if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) item.classList.add("blink-border-white");
-  else item.classList.remove("blink-border-white");
+  if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) item.classList.add("blink-active");
+  else item.classList.remove("blink-active");
+  updateMemoIcon(item, mob);
 }
