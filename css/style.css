@@ -235,6 +235,12 @@ body {
     }
 }
 
+@media (max-width: 1023px) {
+    .group-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
 .report-modal-backdrop,
 .auth-modal-backdrop {
     display: flex;
@@ -1490,17 +1496,20 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .detail-info-item .label {
-    font-size: var(--fs-ui-sm);
+    font-size: 10px;
     font-weight: 800;
-    color: var(--text-dim);
+    color: var(--accent-cyan);
     text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-block-end: 2px;
 }
 
 .detail-info-item .value {
-    font-family: var(--font-mono);
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
-    color: var(--white);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
 }
 
 .section-content,
@@ -1532,6 +1541,12 @@ html body.magnifier-active .mob-card-inner * {
     block-size: auto;
     max-block-size: 96vh;
     pointer-events: auto;
+
+    @media (max-width: 1023px) {
+        max-inline-size: none;
+        width: 100%;
+        height: auto;
+    }
 
     .pc-detail-header {
         padding: var(--s-3) var(--s-4) 0;
@@ -3332,9 +3347,11 @@ html body.magnifier-active .mob-card-inner * {
 
         .pc-detail-card {
             animation: cardOverlayFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            max-width: calc(100vw - 16px);
+            width: 100%;
+            max-width: none;
             max-height: calc(100% - 16px);
             height: auto;
+            border-radius: 0;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -3395,17 +3412,7 @@ html body.magnifier-active .mob-card-inner * {
     }
 }
 
-@media (max-width: 1023px) {
-    .u-pc-only {
-        display: none;
-    }
-}
 
-@media (min-width: 1024px) {
-    .u-mobile-only {
-        display: none;
-    }
-}
 
 .hidden,
 .u-hidden {
@@ -3445,6 +3452,23 @@ html body.magnifier-active .mob-card-inner * {
 
 .text-crimson {
     color: var(--accent-crimson);
+}
+
+@media (max-width: 1023px) {
+    .u-pc-only {
+        display: none !important;
+    }
+}
+
+@media (min-width: 1024px) {
+    .u-mobile-only {
+        display: none !important;
+    }
+}
+
+.hidden,
+.u-hidden {
+    display: none !important;
 }
 
 .u-flex {

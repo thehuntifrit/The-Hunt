@@ -458,9 +458,8 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     }
   }
 
-  const width = window.innerWidth;
-  const lg = 1024;
-  const isPC = width >= lg;
+  const isPC = window.innerWidth >= 1024;
+  const isMobile = !isPC;
 
   const pcLayout = DOM.pcLayout || document.getElementById("pc-layout");
   const mobileLayout = DOM.mobileLayout || document.getElementById("mobile-layout");
@@ -472,7 +471,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     if (pcLayout) pcLayout.classList.add("hidden");
     if (mobileLayout) mobileLayout.classList.remove("hidden");
   }
-  const isMobile = !isPC;
+
   const isOverlayOpen = state.openMobCardNo !== null;
 
   if (isMobile && isOverlayOpen) {
@@ -617,7 +616,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       while (DOM.pcLeftList.children.length > nextChildren.length) {
         DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
       }
-
     }
   }
 
