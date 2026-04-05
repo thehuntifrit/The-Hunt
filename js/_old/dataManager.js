@@ -1,5 +1,5 @@
-import { calculateRepop } from "./2cal.js";
-import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos, subscribeMaintenance } from "./2server.js";
+import { calculateRepop } from "./cal.js";
+import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos, subscribeMaintenance } from "./server.js";
 
 export const state = {
     userId: localStorage.getItem("user_uuid") || null,

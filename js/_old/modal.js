@@ -1,4 +1,4 @@
-import { DOM as UiDOM } from "./app.js";
+import { DOM as UiDOM } from "./uiRender.js";
 import { getState, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
 import { verifyLodestoneCharacter, registerUserToFirestore } from "./server.js";
 
@@ -12,7 +12,7 @@ export async function openReportModal(mobNo) {
         .slice(0, 16);
 
     UiDOM.reportForm.dataset.mobNo = String(mobNo);
-    UiDOM.modalMobName.textContent = `${mob.name}`;
+    UiDOM.modalMobName.textContent = `${mob.Name}`;
     UiDOM.modalTimeInput.value = localIso;
 
     UiDOM.reportModal.classList.remove("hidden");

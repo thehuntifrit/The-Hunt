@@ -1,4 +1,4 @@
-﻿import { calculateRepop } from "./cal.js";
+import { calculateRepop } from "./cal.js";
 
 self.onmessage = function (e) {
     const { type, mob, maintenance, options } = e.data;

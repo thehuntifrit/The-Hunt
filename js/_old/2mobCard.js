@@ -1,5 +1,5 @@
-import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatMMDDHHmm } from "./2cal.js";
-import { getState, PROGRESS_CLASSES, setOpenMobCardNo } from "./2dataManager.js";
+﻿import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatMMDDHHmm } from "./2cal.js";
+import { getState, PROGRESS_CLASSES, setOpenMobCardNo, isCulled } from "./2dataManager.js";
 import { toggleCrushStatus } from "./2server.js";
 import { openAuthModal, openReportModal } from "./2modal.js";
 import { sortAndRedistribute, handleInstantReport } from "./2app.js";
@@ -304,23 +304,23 @@ export function computeTimeLabel(mob) {
   let secondsRemaining = 0;
 
   if (isInConditionWindow && conditionWindowEnd && now < (conditionWindowEnd.getTime() / 1000)) {
-    label = "残り";
+    label = "谿九ｊ";
     secondsRemaining = (conditionWindowEnd.getTime() / 1000) - now;
     isSpecialCondition = true;
   } else if (nextConditionSpawnDate && now < (nextConditionSpawnDate.getTime() / 1000)) {
-    label = "次回";
+    label = "谺｡蝗・;
     secondsRemaining = (nextConditionSpawnDate.getTime() / 1000) - now;
     isSpecialCondition = true;
   } else if (minRepop && now < minRepop) {
-    label = "次回";
+    label = "谺｡蝗・;
     secondsRemaining = minRepop - now;
     if (isTimedMob) isSpecialCondition = true;
   } else if (maxRepop && now < maxRepop) {
-    label = "残り";
+    label = "谿九ｊ";
     secondsRemaining = maxRepop - now;
     if (isTimedMob) isSpecialCondition = true;
   } else if (maxRepop) {
-    label = "超過";
+    label = "雜・℃";
     secondsRemaining = now - maxRepop;
     if (isTimedMob) isSpecialCondition = true;
     isTimeOver = true;
@@ -329,7 +329,7 @@ export function computeTimeLabel(mob) {
   const dhm = secondsRemaining >= 0 ? getDurationDHMParts(secondsRemaining) : null;
   const timeValue = dhm ? formatDurationDHM(secondsRemaining) : "--/-- --:--";
 
-  if (isMaint) label = "中止";
+  if (isMaint) label = "荳ｭ豁｢";
 
   return { label, timeValue, isSpecialCondition, isTimeOver, isTimedMob, dhm, isInWindow: !!isInConditionWindow };
 }
@@ -346,7 +346,7 @@ function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWin
     const totalMinutes = Math.ceil((dhm.rawS || 0) / 60);
     const span = document.createElement('span');
     span.className = 'timer-value special-timer';
-    span.innerHTML = `<span class="timer-part"><span class="timer-num">${totalMinutes}</span><span class="timer-unit">分</span></span>`;
+    span.innerHTML = `<span class="timer-part"><span class="timer-num">${totalMinutes}</span><span class="timer-unit">蛻・/span></span>`;
     return span;
   }
 
@@ -385,9 +385,9 @@ export function getSpawnCountInfo(mob) {
   let countHtml = "";
   if (remainingCount === 1) {
     const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-    countHtml = `<span class="pc-count-val count-warn font-bold">📍${pointNumber}<span class="u-ml-1">番</span></span>`;
+    countHtml = `<span class="pc-count-val count-warn font-bold">桃${pointNumber}<span class="u-ml-1">逡ｪ</span></span>`;
   } else if (remainingCount > 1) {
-    countHtml = `<span class="pc-count-val font-bold">📍@<span class="u-ml-1">${remainingCount}</span></span>`;
+    countHtml = `<span class="pc-count-val font-bold">桃@<span class="u-ml-1">${remainingCount}</span></span>`;
   }
   return { countHtml, remainingCount, spawnCullStatus, validSpawnPoints };
 }
@@ -426,7 +426,7 @@ export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, i
   el.style.top = `${point.y}%`;
 
   const pointNumber = parseInt(point.id.slice(-2), 10);
-  const titleText = `${pointNumber}${isCulledFlag ? " (済)" : ""}`;
+  const titleText = `${pointNumber}${isCulledFlag ? " (貂・" : ""}`;
 
   Object.assign(el.dataset, {
     tooltip: titleText,
@@ -671,7 +671,7 @@ export function updateExpandablePanel(card, mob) {
 
   const elCondition = card.querySelector(".condition-text");
   if (elCondition) {
-    const conditionText = mob.Condition ? processText(mob.Condition) : "特別な出現条件はありません。";
+    const conditionText = mob.Condition ? processText(mob.Condition) : "迚ｹ蛻･縺ｪ蜃ｺ迴ｾ譚｡莉ｶ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・;
     if (elCondition.innerHTML !== conditionText) elCondition.innerHTML = conditionText;
 
     const isPCDetail = card.classList.contains('pc-detail-card');
@@ -704,7 +704,7 @@ export function updateMemoIcon(card, mob) {
     const span = document.createElement('span');
     span.classList.add('memo-icon');
     span.dataset.tooltip = mob.memo_text;
-    span.textContent = '📝';
+    span.textContent = '統';
     memoIconContainer.appendChild(span);
   } else {
     memoIconContainer.classList.add('hidden');
@@ -728,9 +728,9 @@ export function updateMobCount(card, mob) {
   if (mob.Map && mob.spawn_points) {
     if (remainingCount === 1) {
       const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-      displayCountText = `<span class="pc-count-val font-bold count-warn">📍${pointNumber}<span style="margin-left:2px;">番</span></span>`;
+      displayCountText = `<span class="pc-count-val font-bold count-warn">桃${pointNumber}<span style="margin-left:2px;">逡ｪ</span></span>`;
     } else if (remainingCount > 1) {
-      displayCountText = `<span class="pc-count-val font-bold text-secondary">📍@<span style="margin-left:2px;">${remainingCount}</span></span>`;
+      displayCountText = `<span class="pc-count-val font-bold text-secondary">桃@<span style="margin-left:2px;">${remainingCount}</span></span>`;
     }
   }
   if (countContainer.dataset.cacheKey !== displayCountText) {
@@ -887,620 +887,3 @@ export function updateSimpleMobItem(item, mob) {
   else item.classList.remove("blink-active");
   updateMemoIcon(item, mob);
 }
-
-export const DOM = {
-  masterContainer: null,
-  colContainer: document.getElementById('column-container'),
-  cols: [],
-  rankTabs: null,
-  areaFilterWrapper: null,
-  areaFilterPanel: null,
-  statusMessage: null,
-  reportModal: document.getElementById('report-modal'),
-  reportForm: document.getElementById('report-form'),
-  modalMobName: document.getElementById('modal-mob-name'),
-  modalStatus: document.getElementById('modal-status'),
-  modalTimeInput: document.getElementById('report-datetime'),
-  modalForceSubmit: document.getElementById('report-force-submit'),
-  statusMessageTemp: null,
-  authModal: document.getElementById('auth-modal'),
-  authLodestoneId: document.getElementById('auth-lodestone-id'),
-  authVCode: document.getElementById('auth-v-code'),
-  authStatus: document.getElementById('auth-modal-status'),
-  pcLeftList: document.getElementById('pc-left-list'),
-  pcRightDetail: document.getElementById('pc-right-detail'),
-  pcLayout: document.getElementById('pc-layout'),
-  mobileLayout: document.getElementById('mobile-layout'),
-  cardOverlayBackdrop: document.getElementById('card-overlay-backdrop'),
-  mobileDetailOverlay: document.getElementById('mobile-detail-overlay'),
-};
-
-const groupSectionCache = new Map();
-
-function getGroupKey(mob) {
-  const info = mob.repopInfo || {};
-  if (info.isMaintenanceStop || info.isBlockedByMaintenance) return "MAINTENANCE";
-  if (info.status === "MaxOver") return "MAX_OVER";
-  if (info.status === "PopWindow" || info.status === "ConditionActive" || info.status === "NextCondition") return "WINDOW";
-  return "NEXT";
-}
-
-const GROUP_LABELS = {
-  MAX_OVER: "🔚 Time Over",
-  WINDOW: "⏳ Pop Window",
-  NEXT: "🔜 Respawning",
-  MAINTENANCE: "🛠️ Maintenance"
-};
-
-function getOrCreateGroupSection(groupKey) {
-  if (groupSectionCache.has(groupKey)) return groupSectionCache.get(groupKey);
-
-  const section = cloneTemplate('status-group-template');
-  if (!section) return { section: document.createElement('section'), cols: [] };
-
-  const labelEl = section.querySelector(".status-group-label");
-  if (labelEl) labelEl.textContent = GROUP_LABELS[groupKey];
-
-  const cols = [
-    section.querySelector(".col-1"),
-    section.querySelector(".col-2"),
-    section.querySelector(".col-3")
-  ];
-
-  const result = { section, cols };
-  groupSectionCache.set(groupKey, result);
-  DOM.colContainer.appendChild(section);
-  return result;
-}
-
-let filterCacheVersion = -1;
-let cachedFilteredMobs = null;
-let cachedSortedMobs = null;
-let sortCacheValid = false;
-let lastRenderedOrderStr = "";
-let lastRenderedGroupStr = "";
-let cachedMobMap = null;
-let currentMobsRef = null;
-
-function getFilteredMobs() {
-  const state = getState();
-  const version = state._filterVersion || 0;
-
-  if (filterCacheVersion === version && cachedFilteredMobs) {
-    return cachedFilteredMobs;
-  }
-
-  filterCacheVersion = version;
-  cachedFilteredMobs = filterMobsByRankAndArea(state.mobs);
-  sortCacheValid = false;
-  return cachedFilteredMobs;
-}
-
-function getSortedFilteredMobs() {
-  if (sortCacheValid && cachedSortedMobs) {
-    return cachedSortedMobs;
-  }
-  cachedSortedMobs = getFilteredMobs().slice().sort(allTabComparator);
-  sortCacheValid = true;
-  return cachedSortedMobs;
-}
-
-function invalidateFilterCache() {
-  filterCacheVersion = -1;
-  cachedFilteredMobs = null;
-  cachedSortedMobs = null;
-  sortCacheValid = false;
-}
-
-function getMobMap() {
-  const mobs = getState().mobs;
-  if (mobs === currentMobsRef && cachedMobMap) return cachedMobMap;
-  currentMobsRef = mobs;
-  cachedMobMap = new Map(mobs.map(m => [String(m.No), m]));
-  return cachedMobMap;
-}
-
-function invalidateSortCache() {
-  sortCacheValid = false;
-  cachedSortedMobs = null;
-}
-
-export function updateHeaderTime() {
-  const state = getState();
-  if (!state) return;
-
-  const now = new Date();
-  const et = getEorzeaTime(now);
-  const lt = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-  const etStr = `${et.hours}:${et.minutes}`;
-
-  ["pc-time-lt", "mobile-time-lt"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = lt;
-  });
-  ["pc-time-et", "mobile-time-et"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = etStr;
-  });
-}
-
-setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
-
-window.addEventListener('initialDataLoaded', () => {
-  updateHeaderTime();
-  filterAndRender({ isInitialLoad: true });
-  sortAndRedistribute({ immediate: true });
-  updateProgressBars();
-});
-
-window.addEventListener('mobUpdated', (e) => {
-  const { mobNo, mob } = e.detail;
-  checkAndNotify(mob);
-  const card = cardCache.get(String(mobNo));
-  if (card) {
-    updateCardFull(card, mob);
-    invalidateSortCache();
-    sortAndRedistribute();
-  }
-});
-
-window.addEventListener('filterChanged', () => {
-  invalidateFilterCache();
-  filterAndRender();
-});
-
-window.addEventListener('mobsUpdated', () => {
-  updateProgressBars();
-});
-
-window.addEventListener('locationDataReady', () => {
-  updateVisibleCards();
-});
-
-window.addEventListener('locationsUpdated', () => {
-  invalidateFilterCache();
-  updateVisibleCards();
-});
-
-const visibleCards = new Set();
-const cardObserver = new IntersectionObserver((entries) => {
-  const state = getState();
-  const isMobile = window.innerWidth < 1024;
-  if (isMobile && state.openMobCardNo !== null) return;
-
-  const mobMap = getMobMap();
-  for (const entry of entries) {
-    const mobNo = entry.target.dataset.mobNo;
-    if (entry.isIntersecting) {
-      visibleCards.add(mobNo);
-      const mob = mobMap.get(mobNo);
-      if (mob) updateCardFull(entry.target, mob);
-    } else {
-      visibleCards.delete(mobNo);
-    }
-  }
-}, { threshold: 0 });
-
-function updateCardFull(card, mob) {
-  const isDetail = card.classList.contains('pc-detail-card');
-  const isListItem = card.classList.contains('pc-list-item');
-
-  if (isDetail) {
-    updateProgressText(card, mob);
-    updateProgressBar(card, mob);
-    updateMobCount(card, mob);
-    updateMapOverlay(card, mob);
-    updateExpandablePanel(card, mob);
-    updateMemoIcon(card, mob);
-  } else if (isListItem) {
-    updateSimpleMobItem(card, mob);
-  }
-}
-
-function updateVisibleCards() {
-  const mobMap = getMobMap();
-  for (const mobNoStr of visibleCards) {
-    const card = cardCache.get(mobNoStr);
-    const mob = mobMap.get(mobNoStr);
-    if (card && mob) updateCardFull(card, mob);
-  }
-  updateDetailCardRealtime(mobMap);
-}
-
-function updateDetailCardRealtime(mobMap) {
-  const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
-  if (rightPane && rightPane.dataset.renderedMobNo && rightPane.dataset.renderedMobNo !== "none") {
-    const detailCard = rightPane.firstElementChild;
-    const mob = mobMap.get(rightPane.dataset.renderedMobNo);
-    if (detailCard && mob) updateCardFull(detailCard, mob);
-  }
-
-  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");
-  if (mobileOverlay && mobileOverlay.dataset.renderedMobNo && mobileOverlay.dataset.renderedMobNo !== "none") {
-    const detailCard = mobileOverlay.querySelector('.pc-detail-card');
-    const mob = mobMap.get(mobileOverlay.dataset.renderedMobNo);
-    if (detailCard && mob) {
-      updateCardFull(detailCard, mob);
-    }
-  }
-}
-
-const cardCache = new Map();
-
-export const sortAndRedistribute = (options = {}) => {
-  const { immediate = false } = options;
-  const run = () => {
-    filterAndRender();
-    if (isInitialLoading) {
-      isInitialLoading = false;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          window.dispatchEvent(new CustomEvent('initialSortComplete'));
-        });
-      });
-    }
-  };
-
-  if (immediate) {
-    run();
-  } else {
-    debouncedSortAndRedistribute();
-  }
-};
-
-const debouncedSortAndRedistribute = debounce(() => {
-  sortAndRedistribute({ immediate: true });
-}, 200);
-
-let isInitialLoading = false;
-
-export function filterAndRender({ isInitialLoad = false } = {}) {
-  const state = getState();
-
-  if (!state.initialLoadComplete && !isInitialLoad) {
-    return;
-  }
-
-  if (isInitialLoad) {
-    isInitialLoading = true;
-  }
-
-  invalidateSortCache();
-  const sortedMobs = getSortedFilteredMobs();
-
-  const activeElement = document.activeElement;
-  let focusedMobNo = null;
-  let focusedAction = null;
-  let selectionStart = null;
-  let selectionEnd = null;
-
-  if (activeElement && activeElement.closest('.mob-card')) {
-    focusedMobNo = activeElement.closest('.mob-card').dataset.mobNo;
-    if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
-      focusedAction = activeElement.dataset.action;
-      selectionStart = activeElement.selectionStart;
-      selectionEnd = activeElement.selectionEnd;
-    }
-  }
-
-  const width = window.innerWidth;
-  const lg = 1024;
-  const isPC = width >= lg;
-
-  const pcLayout = DOM.pcLayout || document.getElementById("pc-layout");
-  const mobileLayout = DOM.mobileLayout || document.getElementById("mobile-layout");
-
-  if (isPC) {
-    if (pcLayout) pcLayout.classList.remove("hidden");
-    if (mobileLayout) mobileLayout.classList.add("hidden");
-  } else {
-    if (pcLayout) pcLayout.classList.add("hidden");
-    if (mobileLayout) mobileLayout.classList.remove("hidden");
-  }
-  const isMobile = !isPC;
-  const isOverlayOpen = state.openMobCardNo !== null;
-
-  if (isMobile && isOverlayOpen) {
-  } else {
-    let numCols = 1;
-    if (isPC) numCols = 3;
-
-    const groups = {
-      MAX_OVER: [],
-      WINDOW: [],
-      NEXT: [],
-      MAINTENANCE: []
-    };
-
-    sortedMobs.forEach(mob => {
-      groups[getGroupKey(mob)].push(mob);
-    });
-
-    ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
-      const groupMobs = groups[key];
-      const { section, cols } = getOrCreateGroupSection(key);
-
-      if (groupMobs.length === 0) {
-        section.classList.add("hidden");
-        return;
-      }
-      section.classList.remove("hidden");
-
-      cols.forEach((col, idx) => {
-        if (idx >= numCols) col.classList.add("hidden");
-        else col.classList.remove("hidden");
-      });
-
-      const colPointers = Array(numCols).fill(0);
-      groupMobs.forEach((mob, index) => {
-        const colIdx = index % numCols;
-        const targetCol = cols[colIdx];
-        let card = cardCache.get(String(mob.No));
-
-        if (!card) {
-          card = createMobCard(mob);
-          cardCache.set(String(mob.No), card);
-          cardObserver.observe(card);
-        }
-
-        const isFloating = card.classList.contains("is-floating-active");
-
-        if (isFloating) {
-          const placeholderId = card.dataset.placeholderId;
-          const placeholder = placeholderId ? document.getElementById(placeholderId) : null;
-          if (placeholder) {
-            const currentAtPos = targetCol.children[colPointers[colIdx]];
-            if (currentAtPos !== placeholder) {
-              targetCol.insertBefore(placeholder, currentAtPos || null);
-            }
-            colPointers[colIdx]++;
-
-            if (placeholder.nextSibling !== card) {
-              targetCol.insertBefore(card, placeholder.nextSibling || null);
-            }
-            colPointers[colIdx]++;
-          } else {
-            const currentAtPos = targetCol.children[colPointers[colIdx]];
-            if (currentAtPos !== card) {
-              targetCol.insertBefore(card, currentAtPos || null);
-            }
-            colPointers[colIdx]++;
-          }
-        } else {
-          while (targetCol.children[colPointers[colIdx]]?.classList.contains("mob-card-placeholder")) {
-            colPointers[colIdx]++;
-          }
-          const currentAtPos = targetCol.children[colPointers[colIdx]];
-          if (currentAtPos !== card) {
-            targetCol.insertBefore(card, currentAtPos || null);
-          }
-          colPointers[colIdx]++;
-        }
-
-        updateCardFull(card, mob);
-      });
-
-      cols.forEach((col, i) => {
-        const limit = (i < numCols) ? colPointers[i] : 0;
-        let j = col.children.length - 1;
-        while (j >= limit) {
-          const child = col.children[j];
-          if (child?.classList.contains("mob-card-placeholder") || child?.classList.contains("is-floating-active")) {
-            j--;
-            continue;
-          }
-          if (child?.classList.contains('mob-card')) {
-            visibleCards.delete(child.dataset.mobNo);
-          }
-          col.removeChild(child);
-          j--;
-        }
-      });
-    });
-
-    if (isPC && DOM.pcLeftList) {
-      const currentNodes = Array.from(DOM.pcLeftList.children);
-      const currentMap = new Map();
-      currentNodes.forEach(node => {
-        if (node.dataset.mobNo) currentMap.set(`mob-${node.dataset.mobNo}`, node);
-        else if (node.textContent) currentMap.set(`header-${node.textContent}`, node);
-      });
-
-      const nextChildren = [];
-      ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
-        const groupMobs = groups[key];
-        if (groupMobs.length === 0) return;
-
-        const headerText = GROUP_LABELS[key];
-        const headerKey = `header-${headerText}`;
-        let header = currentMap.get(headerKey);
-        if (!header) {
-          header = document.createElement("div");
-          header.className = "text-xs font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
-          header.textContent = headerText;
-        }
-        nextChildren.push(header);
-
-        groupMobs.forEach(mob => {
-          const mobKey = `mob-${mob.No}`;
-          let item = currentMap.get(mobKey);
-          if (!item) {
-            item = createSimpleMobItem(mob);
-          } else {
-            updateSimpleMobItem(item, mob);
-          }
-          nextChildren.push(item);
-        });
-      });
-
-      nextChildren.forEach((child, index) => {
-        if (DOM.pcLeftList.children[index] !== child) {
-          DOM.pcLeftList.insertBefore(child, DOM.pcLeftList.children[index] || null);
-        }
-      });
-
-      while (DOM.pcLeftList.children.length > nextChildren.length) {
-        DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
-      }
-
-    }
-  }
-
-  const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
-  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");
-  const overlayBackdrop = DOM.cardOverlayBackdrop || document.getElementById("card-overlay-backdrop");
-
-  if (isPC) {
-    if (rightPane) {
-      if (state.openMobCardNo) {
-        if (rightPane.dataset.renderedMobNo !== String(state.openMobCardNo)) {
-          const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
-          if (targetMob) {
-            rightPane.innerHTML = "";
-            rightPane.appendChild(createMobCard(targetMob, true));
-            rightPane.dataset.renderedMobNo = String(state.openMobCardNo);
-          }
-        }
-      } else {
-        if (rightPane.dataset.renderedMobNo !== "none") {
-          rightPane.innerHTML = '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>';
-          rightPane.dataset.renderedMobNo = "none";
-        }
-      }
-    }
-    if (overlayBackdrop) overlayBackdrop.classList.add("hidden");
-  } else {
-    if (mobileOverlay && overlayBackdrop) {
-      if (state.openMobCardNo) {
-        if (mobileOverlay.dataset.renderedMobNo !== String(state.openMobCardNo)) {
-          const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
-          if (targetMob) {
-            mobileOverlay.innerHTML = "";
-            mobileOverlay.appendChild(createMobCard(targetMob, true));
-            mobileOverlay.dataset.renderedMobNo = String(state.openMobCardNo);
-
-            overlayBackdrop.classList.remove("hidden");
-          }
-        }
-      } else {
-        mobileOverlay.innerHTML = "";
-        mobileOverlay.dataset.renderedMobNo = "none";
-        overlayBackdrop.classList.add("hidden");
-      }
-    }
-  }
-
-  lastRenderedOrderStr = sortedMobs.map(m => m.No).join(",");
-  lastRenderedGroupStr = sortedMobs.map(m => getGroupKey(m)).join(",");
-
-  if (isInitialLoad) {
-    isInitialSortingSuppressed = true;
-    attachLocationEvents();
-
-    setTimeout(() => {
-      isInitialSortingSuppressed = false;
-      sortAndRedistribute();
-    }, 100);
-
-    setTimeout(() => {
-      isInitialSortingSuppressed = false;
-    }, 3000);
-  }
-
-  updateVisibleCards();
-
-  if (focusedMobNo) {
-    const card = cardCache.get(String(focusedMobNo));
-    if (card && focusedAction) {
-      const input = card.querySelector(`input[data-action="${focusedAction}"]`);
-      if (input) {
-        input.focus();
-        if (selectionStart !== null && selectionEnd !== null) {
-          try { input.setSelectionRange(selectionStart, selectionEnd); } catch (e) { }
-        }
-      }
-    }
-  }
-}
-
-export function showColumnContainer() {
-  if (!DOM.colContainer) return;
-
-  requestAnimationFrame(() => {
-    DOM.colContainer.classList.add("is-ready");
-
-    requestAnimationFrame(() => {
-      const overlay = document.getElementById("loading-overlay");
-      if (overlay) {
-        overlay.classList.add("hidden");
-      }
-    });
-  });
-}
-
-let isInitialSortingSuppressed = false;
-
-function updateProgressBars() {
-  const state = getState();
-  const nowSec = Date.now() / 1000;
-  const mobMap = getMobMap();
-  const filtered = getFilteredMobs();
-  const isMobile = window.innerWidth < 1024;
-  const isOverlayOpen = state.openMobCardNo !== null;
-
-  // Selective update: only update what's visible/needed
-  if (!(isMobile && isOverlayOpen)) {
-    filtered.forEach(mob => {
-      const card = cardCache.get(String(mob.No));
-      if (card) {
-        checkAndNotify(mob);
-        updateProgressText(card, mob);
-        updateProgressBar(card, mob);
-      }
-    });
-
-    if (DOM.pcLeftList) {
-      const listItems = DOM.pcLeftList.querySelectorAll('.pc-list-item');
-      listItems.forEach(item => {
-        const mobNo = item.dataset.mobNo;
-        const mob = mobMap.get(String(mobNo));
-        if (mob) {
-          updateSimpleMobItem(item, mob);
-        }
-      });
-    }
-  }
-
-  const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
-  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");
-
-  [rightPane, mobileOverlay].forEach(container => {
-    if (container && container.dataset.renderedMobNo && container.dataset.renderedMobNo !== "none") {
-      const detailCard = container.querySelector('.pc-detail-card') || container.firstElementChild;
-      const mob = mobMap.get(container.dataset.renderedMobNo);
-      if (detailCard && mob) {
-        updateCardFull(detailCard, mob);
-      }
-    }
-  });
-
-  if (!(isMobile && isOverlayOpen)) {
-    invalidateSortCache();
-    const sorted = getSortedFilteredMobs();
-    const currentOrderStr = sorted.map(m => m.No).join(",");
-    const currentGroupStr = sorted.map(m => getGroupKey(m)).join(",");
-
-    if (!isInitialSortingSuppressed) {
-      if (currentOrderStr !== lastRenderedOrderStr || currentGroupStr !== lastRenderedGroupStr) {
-        sortAndRedistribute();
-      }
-    }
-  }
-
-  const rankBtn = document.querySelector('.mobile-footer-btn[data-panel="rank"]');
-  if (rankBtn) rankBtn.classList.remove("has-alert");
-}
-
-setInterval(() => {
-  updateProgressBars();
-}, 1000);

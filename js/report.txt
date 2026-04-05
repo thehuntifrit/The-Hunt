@@ -1,5 +1,0 @@
-==== MISSING DEFINITIONS ====
-
-==== MISMATCHED DEFINITIONS ====
-
-SUCCESS: All functions are present and identical!

@@ -1,6 +1,9 @@
-import { getState, setFilter } from "./2dataManager.js";
+import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled } from "./2dataManager.js";
 import { filterAndRender } from "./2app.js";
 import { openUserManual } from "./2readme.js";
+import { cloneTemplate, escapeHtml } from "./2mobCard.js";
+
+let manualLoaded = false;
 
 const FilterDOM = {
   areaFilterPanelMobile: document.getElementById('area-filter-panel-mobile'),
@@ -30,7 +33,7 @@ export function initNotification() {
                 if (other !== t) other.checked = enabled;
             });
 
-            import("./dataManager.js").then(m => m.setNotificationEnabled(enabled));
+            setNotificationEnabled(enabled);
 
             if (enabled) {
                 requestNotificationPermission();
@@ -566,7 +569,7 @@ async function toggleMobilePanel(panelName) {
     panel.classList.add("open");
 
     if (panelName === "telop" || panelName === "maintenance") {
-        const { renderMaintenanceStatus } = await import("./app.js");
+        const { renderMaintenanceStatus } = await import("./2app.js");
         if (typeof renderMaintenanceStatus === "function") {
             renderMaintenanceStatus();
         }
@@ -709,58 +712,3 @@ function renderSidebarFilterAccordion(targetContainer = null) {
 window.addEventListener("filterChanged", () => {
     renderSidebarFilterAccordion();
 });
-
-async function getMaintenanceStatus() {
-    const state = getState();
-    const maintenance = state.maintenance;
-
-    if (!maintenance || !maintenance.start || !maintenance.end) {
-        return {
-            is_active: false,
-            scheduled: false,
-            message: maintenance ? maintenance.message : ""
-        };
-    }
-
-    const now = new Date();
-    const start = new Date(maintenance.start);
-    const end = new Date(maintenance.end);
-    const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
-
-    const isWithinDisplayWindow = now >= showFrom && now <= showUntil;
-
-    let status = {
-        is_active: false,
-        scheduled: false,
-        start_time: maintenance.start,
-        end_time: maintenance.end,
-        message: maintenance.message || ""
-    };
-
-    if (isWithinDisplayWindow) {
-        if (now >= start && now <= end) {
-            status.is_active = true;
-        } else if (now < start) {
-            status.scheduled = true;
-        }
-    }
-
-    return status;
-}
-
-// No modifications beyond removing duplicates and fixing paths as requested
-
-
-// --- APPENDED MISSING FUNCTIONS ---
-
-const PANELS = ["error", "telop", "maintenance", "rank", "manual"];
-
-let manualLoaded = false;
-
-
-// --- APPENDED MISSING FUNCTIONS ---
-
-const PANELS = ["error", "telop", "maintenance", "rank", "manual"];
-
-let manualLoaded = false;

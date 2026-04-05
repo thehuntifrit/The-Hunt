@@ -5,7 +5,7 @@ import { DOM } from "./2app.js";
 
 const mobIdPartsCache = new Map();
 
-function getGroupKey(mob) {
+export function getGroupKey(mob) {
   const info = mob.repopInfo || {};
   if (info.isMaintenanceStop || info.isBlockedByMaintenance) return "MAINTENANCE";
   if (info.status === "MaxOver") return "MAX_OVER";

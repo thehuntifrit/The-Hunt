@@ -1,6 +1,6 @@
-﻿import { getState, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
-import { verifyLodestoneCharacter, registerUserToFirestore } from "./server.js";
-import { cloneTemplate } from "./mobCard.js";
+import { getState, setLodestoneId, setCharacterName, setVerified } from "./2dataManager.js";
+import { verifyLodestoneCharacter, registerUserToFirestore } from "./2server.js";
+import { cloneTemplate } from "./2mobCard.js";
 
 let isLoaded = false;
 let currentVCode = "";
