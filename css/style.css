@@ -28,6 +28,9 @@
     --color-b2: #fd5c5c;
     --color-culled: #dadada;
     --color-lastone: #34d399;
+    --sidebar-w: 56px;
+    --panel-w: 220px;
+    --sidebar-total: var(--sidebar-w);
     --fs-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.875rem);
     --fs-base: clamp(0.9rem, 0.85rem + 0.25vw, 1rem);
     --fs-md: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
@@ -114,6 +117,10 @@
     --transition-transform: transform var(--t-base);
 }
 
+.hidden {
+    display: none !important;
+}
+
 [data-rank="S"] {
     --current-rank: var(--rank-s);
     --current-rank-rgb: var(--rank-s-rgb);
@@ -160,6 +167,10 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+.hidden {
+    display: none !important;
+}
+
 .u-ml-1 {
     margin-left: 0.25rem;
 }
@@ -192,8 +203,12 @@ body {
 .main-content-area {
     min-height: 100vh;
     padding: var(--s-4);
-    margin-left: var(--s-5);
-    transition: margin-left 0.3s;
+    margin-left: var(--sidebar-total);
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.sidebar-expanded .main-content-area {
+    --sidebar-total: calc(var(--sidebar-w) + var(--panel-w));
 }
 
 @media (max-width: 1023px) {
@@ -204,42 +219,6 @@ body {
     }
 }
 
-.layout-column-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    max-width: 72rem;
-    margin: 0 auto;
-    opacity: 1;
-}
-
-.layout-column-container.is-ready {
-    opacity: 1;
-}
-
-.status-group {
-    width: 100%;
-    display: block;
-}
-
-.group-columns {
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: var(--s-2);
-}
-
-@media (min-width: 1024px) {
-    .group-columns {
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--s-4);
-    }
-}
-
-@media (max-width: 1023px) {
-    .group-columns {
-        grid-template-columns: 1fr;
-    }
-}
 
 .report-modal-backdrop,
 .auth-modal-backdrop {
@@ -326,11 +305,36 @@ body {
 
 .pc-layout-container {
     width: 100%;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 450px 1fr;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--s-4);
     align-items: start;
+}
+
+#pc-left-list {
+    flex: 1 1 560px;
+    max-width: 560px;
+    width: 100%;
+}
+
+#pc-right-pane {
+    flex: 1;
+    min-width: 300px;
+}
+
+@media (max-width: 1023px) {
+    .pc-layout-container {
+        flex-direction: column;
+    }
+
+    #pc-left-list {
+        flex: 1 1 100%;
+    }
+
+    #pc-right-pane {
+        display: none;
+    }
 }
 
 .pc-detail-card {
@@ -364,19 +368,7 @@ body {
     margin-bottom: 0.25rem;
 }
 
-.pc-list-item {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 40px 92px 28px;
-    align-items: center;
-    padding: 0.5rem 0.75rem;
-    background: rgba(31, 41, 55, 0.4);
-    border-radius: var(--r-sm);
-    border: 1px solid var(--border-subtle);
-    margin-bottom: 2px;
-    transition: all 0.2s;
-    cursor: pointer;
-    font-size: 0.8125rem;
-}
+/* Duplicated block removed to fix override issue */
 
 .mobile-detail-overlay-wrapper {
     width: 100%;
@@ -2466,6 +2458,7 @@ html body.magnifier-active .mob-card-inner * {
     }
 
     .pc-list-time {
+        grid-column: 3;
         font-family: var(--font-mono);
         font-size: var(--fs-ui-md);
         font-weight: 500;
@@ -2473,9 +2466,11 @@ html body.magnifier-active .mob-card-inner * {
         align-items: center;
         justify-content: flex-end;
         white-space: pre;
-        margin-inline-end: 0;
         position: relative;
         z-index: 10;
+        justify-self: end;
+        width: 100%;
+        text-align: right;
     }
 
     .pc-list-bg-gauge {
@@ -2498,6 +2493,7 @@ html body.magnifier-active .mob-card-inner * {
     }
 
     .pc-list-percent {
+        grid-column: 2;
         font-family: var(--font-mono);
         font-size: var(--fs-ui-md);
         font-weight: 500;
@@ -2511,6 +2507,8 @@ html body.magnifier-active .mob-card-inner * {
         position: relative;
         z-index: 10;
         padding-inline-end: var(--s-2);
+        justify-self: end;
+        width: 100%;
 
         .percent-unit {
             font-size: 0.85em;
@@ -2520,6 +2518,7 @@ html body.magnifier-active .mob-card-inner * {
     }
 
     .pc-list-report-btn {
+        grid-column: 4;
         inline-size: 28px;
         block-size: 28px;
         background: var(--accent-cyan);
@@ -2536,6 +2535,7 @@ html body.magnifier-active .mob-card-inner * {
         overflow: hidden;
         margin: 0;
         padding: 0;
+        justify-self: end;
 
         &::before,
         &::after {

@@ -11,7 +11,6 @@ import { openUserManual } from "./readme.js";
 
 export const DOM = {
   masterContainer: null,
-  colContainer: document.getElementById('column-container'),
   cols: [],
   rankTabs: null,
   areaFilterWrapper: null,
@@ -459,26 +458,18 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   }
 
   const isPC = window.innerWidth >= 1024;
-  const isMobile = !isPC;
-
   const pcLayout = DOM.pcLayout || document.getElementById("pc-layout");
-  const mobileLayout = DOM.mobileLayout || document.getElementById("mobile-layout");
+  if (pcLayout) pcLayout.classList.remove("hidden");
 
-  if (isPC) {
-    if (pcLayout) pcLayout.classList.remove("hidden");
-    if (mobileLayout) mobileLayout.classList.add("hidden");
-  } else {
-    if (pcLayout) pcLayout.classList.add("hidden");
-    if (mobileLayout) mobileLayout.classList.remove("hidden");
-  }
+  if (DOM.pcLeftList) {
+    const currentNodes = Array.from(DOM.pcLeftList.children);
+    const currentMap = new Map();
+    currentNodes.forEach(node => {
+      if (node.dataset.mobNo) currentMap.set(`mob-${node.dataset.mobNo}`, node);
+      else if (node.textContent) currentMap.set(`header-${node.textContent}`, node);
+    });
 
-  const isOverlayOpen = state.openMobCardNo !== null;
-
-  if (isMobile && isOverlayOpen) {
-  } else {
-    let numCols = 1;
-    if (isPC) numCols = 3;
-
+    const nextChildren = [];
     const groups = {
       MAX_OVER: [],
       WINDOW: [],
@@ -492,130 +483,38 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 
     ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
       const groupMobs = groups[key];
-      const { section, cols } = getOrCreateGroupSection(key);
+      if (groupMobs.length === 0) return;
 
-      if (groupMobs.length === 0) {
-        section.classList.add("hidden");
-        return;
+      const headerText = GROUP_LABELS[key];
+      const headerKey = `header-${headerText}`;
+      let header = currentMap.get(headerKey);
+      if (!header) {
+        header = document.createElement("div");
+        header.className = "text-xs font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
+        header.textContent = headerText;
       }
-      section.classList.remove("hidden");
+      nextChildren.push(header);
 
-      cols.forEach((col, idx) => {
-        if (idx >= numCols) col.classList.add("hidden");
-        else col.classList.remove("hidden");
-      });
-
-      const colPointers = Array(numCols).fill(0);
-      groupMobs.forEach((mob, index) => {
-        const colIdx = index % numCols;
-        const targetCol = cols[colIdx];
-        let card = cardCache.get(String(mob.No));
-
-        if (!card) {
-          card = createMobCard(mob);
-          cardCache.set(String(mob.No), card);
-          cardObserver.observe(card);
-        }
-
-        const isFloating = card.classList.contains("is-floating-active");
-
-        if (isFloating) {
-          const placeholderId = card.dataset.placeholderId;
-          const placeholder = placeholderId ? document.getElementById(placeholderId) : null;
-          if (placeholder) {
-            const currentAtPos = targetCol.children[colPointers[colIdx]];
-            if (currentAtPos !== placeholder) {
-              targetCol.insertBefore(placeholder, currentAtPos || null);
-            }
-            colPointers[colIdx]++;
-
-            if (placeholder.nextSibling !== card) {
-              targetCol.insertBefore(card, placeholder.nextSibling || null);
-            }
-            colPointers[colIdx]++;
-          } else {
-            const currentAtPos = targetCol.children[colPointers[colIdx]];
-            if (currentAtPos !== card) {
-              targetCol.insertBefore(card, currentAtPos || null);
-            }
-            colPointers[colIdx]++;
-          }
+      groupMobs.forEach(mob => {
+        const mobKey = `mob-${mob.No}`;
+        let item = currentMap.get(mobKey);
+        if (!item) {
+          item = createSimpleMobItem(mob);
         } else {
-          while (targetCol.children[colPointers[colIdx]]?.classList.contains("mob-card-placeholder")) {
-            colPointers[colIdx]++;
-          }
-          const currentAtPos = targetCol.children[colPointers[colIdx]];
-          if (currentAtPos !== card) {
-            targetCol.insertBefore(card, currentAtPos || null);
-          }
-          colPointers[colIdx]++;
+          updateSimpleMobItem(item, mob);
         }
-
-        updateCardFull(card, mob);
-      });
-
-      cols.forEach((col, i) => {
-        const limit = (i < numCols) ? colPointers[i] : 0;
-        let j = col.children.length - 1;
-        while (j >= limit) {
-          const child = col.children[j];
-          if (child?.classList.contains("mob-card-placeholder") || child?.classList.contains("is-floating-active")) {
-            j--;
-            continue;
-          }
-          if (child?.classList.contains('mob-card')) {
-            visibleCards.delete(child.dataset.mobNo);
-          }
-          col.removeChild(child);
-          j--;
-        }
+        nextChildren.push(item);
       });
     });
 
-    if (isPC && DOM.pcLeftList) {
-      const currentNodes = Array.from(DOM.pcLeftList.children);
-      const currentMap = new Map();
-      currentNodes.forEach(node => {
-        if (node.dataset.mobNo) currentMap.set(`mob-${node.dataset.mobNo}`, node);
-        else if (node.textContent) currentMap.set(`header-${node.textContent}`, node);
-      });
-
-      const nextChildren = [];
-      ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
-        const groupMobs = groups[key];
-        if (groupMobs.length === 0) return;
-
-        const headerText = GROUP_LABELS[key];
-        const headerKey = `header-${headerText}`;
-        let header = currentMap.get(headerKey);
-        if (!header) {
-          header = document.createElement("div");
-          header.className = "text-xs font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
-          header.textContent = headerText;
-        }
-        nextChildren.push(header);
-
-        groupMobs.forEach(mob => {
-          const mobKey = `mob-${mob.No}`;
-          let item = currentMap.get(mobKey);
-          if (!item) {
-            item = createSimpleMobItem(mob);
-          } else {
-            updateSimpleMobItem(item, mob);
-          }
-          nextChildren.push(item);
-        });
-      });
-
-      nextChildren.forEach((child, index) => {
-        if (DOM.pcLeftList.children[index] !== child) {
-          DOM.pcLeftList.insertBefore(child, DOM.pcLeftList.children[index] || null);
-        }
-      });
-
-      while (DOM.pcLeftList.children.length > nextChildren.length) {
-        DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
+    nextChildren.forEach((child, index) => {
+      if (DOM.pcLeftList.children[index] !== child) {
+        DOM.pcLeftList.insertBefore(child, DOM.pcLeftList.children[index] || null);
       }
+    });
+
+    while (DOM.pcLeftList.children.length > nextChildren.length) {
+      DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
     }
   }
 
@@ -678,6 +577,10 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     setTimeout(() => {
       isInitialSortingSuppressed = false;
     }, 3000);
+
+    isInitialLoading = false;
+    const overlay = document.getElementById("loading-overlay");
+    if (overlay) overlay.classList.add("hidden");
   }
 
   updateVisibleCards();
@@ -952,22 +855,6 @@ function attachGlobalEventListeners() {
     if (e.target === DOM.cardOverlayBackdrop) {
       setOpenMobCardNo(null);
       sortAndRedistribute({ immediate: true });
-    }
-  });
-
-  DOM.colContainer.addEventListener("click", (e) => {
-    if (e.target.closest(".report-side-bar")) return;
-
-    if (e.target.closest("[data-toggle='card-header']")) {
-      const card = e.target.closest(".mob-card");
-      if (card) {
-        const mobNo = parseInt(card.dataset.mobNo, 10);
-        const currentOpen = getState().openMobCardNo;
-        const nextOpen = (currentOpen === mobNo) ? null : mobNo;
-
-        setOpenMobCardNo(nextOpen);
-        sortAndRedistribute({ immediate: true });
-      }
     }
   });
 
