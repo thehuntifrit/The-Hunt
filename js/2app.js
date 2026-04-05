@@ -1,16 +1,15 @@
-import { loadBaseMobData, startRealtime, setOpenMobCardNo, getState, setUserId, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
-import { initializeAuth, getUserData, submitReport, submitMemo } from "./server.js";
-import { attachMobCardEvents } from "./mobCard.js";
-import { attachLocationEvents } from "./location.js";
-import { openReportModal, closeReportModal, initModal, openAuthModal } from "./modal.js";
-import { handleAreaFilterClick } from "./filterUI.js";
-import { DOM, sortAndRedistribute, showColumnContainer, updateHeaderTime, escapeHtml } from "./uiRender.js";
-import { debounce, formatMMDDHHmm, EORZEA_MINUTE_MS } from "./cal.js";
-import { initTooltip } from "./tooltip.js";
-import { initGlobalMagnifier } from "./magnifier.js";
-import { initSidebar } from "./sidebar.js";
-import "./readme.js";
-import { initNotification } from "./notificationManager.js";
+import { getState, recalculateMob, requestWorkerCalculation, PROGRESS_CLASSES, EXPANSION_MAP, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified } from "./2dataManager.js";
+import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./2cal.js";
+import { isCulled, attachLocationEvents, attachMobCardEvents, createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml } from "./2mobCard.js";
+import { ALL_RANK_TABS, getGroupKey, GROUP_LABELS, getOrCreateGroupSection, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, allTabComparator } from "./2mobSorter.js";
+import { closeReportModal, openAuthModal, openReportModal, initModal, closeAuthModal } from "./2modal.js";
+import { handleAreaFilterClick, initSidebar, initNotification, checkAndNotify } from "./2sidebar.js";
+import { initializeAuth, getUserData, submitReport, submitMemo } from "./2server.js";
+import { initTooltip } from "./2mobCard.js";
+import { initGlobalMagnifier } from "./2mobCard.js";
+import { initSidebar } from "./2sidebar.js";
+import "./2readme.js";
+import { initNotification } from "./2sidebar.js";
 
 async function initApp() {
     try {
@@ -215,35 +214,460 @@ function attachGlobalEventListeners() {
 
 }
 
+export const DOM = {
+  masterContainer: null,
+  colContainer: document.getElementById('column-container'),
+  cols: [],
+  rankTabs: null,
+  areaFilterWrapper: null,
+  areaFilterPanel: null,
+  statusMessage: null,
+  reportModal: document.getElementById('report-modal'),
+  reportForm: document.getElementById('report-form'),
+  modalMobName: document.getElementById('modal-mob-name'),
+  modalStatus: document.getElementById('modal-status'),
+  modalTimeInput: document.getElementById('report-datetime'),
+  modalForceSubmit: document.getElementById('report-force-submit'),
+  statusMessageTemp: null,
+  authModal: document.getElementById('auth-modal'),
+  authLodestoneId: document.getElementById('auth-lodestone-id'),
+  authVCode: document.getElementById('auth-v-code'),
+  authStatus: document.getElementById('auth-modal-status'),
+  pcLeftList: document.getElementById('pc-left-list'),
+  pcRightDetail: document.getElementById('pc-right-detail'),
+  pcLayout: document.getElementById('pc-layout'),
+  mobileLayout: document.getElementById('mobile-layout'),
+  cardOverlayBackdrop: document.getElementById('card-overlay-backdrop'),
+  mobileDetailOverlay: document.getElementById('mobile-detail-overlay'),
+};
+
+const visibleCards = new Set();
+const cardObserver = new IntersectionObserver((entries) => {
+  const state = getState();
+  const isMobile = window.innerWidth < 1024;
+  if (isMobile && state.openMobCardNo !== null) return;
+
+  const mobMap = getMobMap();
+  for (const entry of entries) {
+    const mobNo = entry.target.dataset.mobNo;
+    if (entry.isIntersecting) {
+      visibleCards.add(mobNo);
+      const mob = mobMap.get(mobNo);
+      if (mob) updateCardFull(entry.target, mob);
+    } else {
+      visibleCards.delete(mobNo);
+    }
+  }
+}, { threshold: 0 });
+
+export function updateCardFull(card, mob) {
+  const isDetail = card.classList.contains('pc-detail-card');
+  const isListItem = card.classList.contains('pc-list-item');
+
+  if (isDetail) {
+    updateProgressText(card, mob);
+    updateProgressBar(card, mob);
+    updateMobCount(card, mob);
+    updateMapOverlay(card, mob);
+    updateExpandablePanel(card, mob);
+    updateMemoIcon(card, mob);
+  } else if (isListItem) {
+    updateSimpleMobItem(card, mob);
+  }
+}
+
+export function updateVisibleCards() {
+  const mobMap = getMobMap();
+  for (const mobNoStr of visibleCards) {
+    const card = cardCache.get(mobNoStr);
+    const mob = mobMap.get(mobNoStr);
+    if (card && mob) updateCardFull(card, mob);
+  }
+  updateDetailCardRealtime(mobMap);
+}
+
+export function updateDetailCardRealtime(mobMap) {
+  const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
+  if (rightPane && rightPane.dataset.renderedMobNo && rightPane.dataset.renderedMobNo !== "none") {
+    const detailCard = rightPane.firstElementChild;
+    const mob = mobMap.get(rightPane.dataset.renderedMobNo);
+    if (detailCard && mob) updateCardFull(detailCard, mob);
+  }
+
+  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");
+  if (mobileOverlay && mobileOverlay.dataset.renderedMobNo && mobileOverlay.dataset.renderedMobNo !== "none") {
+    const detailCard = mobileOverlay.querySelector('.pc-detail-card');
+    const mob = mobMap.get(mobileOverlay.dataset.renderedMobNo);
+    if (detailCard && mob) {
+      updateCardFull(detailCard, mob);
+    }
+  }
+}
+
+export const cardCache = new Map();
+
+function getMobMap() {
+  const mobs = getState().mobs;
+  if (mobs === currentMobsRef && cachedMobMap) return cachedMobMap;
+  currentMobsRef = mobs;
+  cachedMobMap = new Map(mobs.map(m => [String(m.No), m]));
+  return cachedMobMap;
+}
+let cachedMobMap = null;
+let currentMobsRef = null;
+
+export function updateHeaderTime() {
+    const state = getState();
+    if (!state) return;
+
+    const now = new Date();
+    const et = getEorzeaTime(now);
+    const lt = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    const etStr = `${et.hours}:${et.minutes}`;
+
+    ["pc-time-lt", "mobile-time-lt"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = lt;
+    });
+    ["pc-time-et", "mobile-time-et"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = etStr;
+    });
+}
+
 document.addEventListener('DOMContentLoaded', initApp);
 
 
-export const sortAndRedistribute = (options = {}) => {
-    const { immediate = false } = options;
-    const run = () => {
-        filterAndRender();
-        if (isInitialLoading) {
-            isInitialLoading = false;
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    window.dispatchEvent(new CustomEvent('initialSortComplete'));
-                });
-            });
-        }
+let isInitialLoading = false;
+
+export function filterAndRender({ isInitialLoad = false } = {}) {
+  const state = getState();
+
+  if (!state.initialLoadComplete && !isInitialLoad) {
+    return;
+  }
+
+  if (isInitialLoad) {
+    isInitialLoading = true;
+  }
+
+  invalidateSortCache();
+  const sortedMobs = getSortedFilteredMobs();
+
+  const activeElement = document.activeElement;
+  let focusedMobNo = null;
+  let focusedAction = null;
+  let selectionStart = null;
+  let selectionEnd = null;
+
+  if (activeElement && activeElement.closest('.mob-card')) {
+    focusedMobNo = activeElement.closest('.mob-card').dataset.mobNo;
+    if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
+      focusedAction = activeElement.dataset.action;
+      selectionStart = activeElement.selectionStart;
+      selectionEnd = activeElement.selectionEnd;
+    }
+  }
+
+  const width = window.innerWidth;
+  const lg = 1024;
+  const isPC = width >= lg;
+
+  const pcLayout = DOM.pcLayout || document.getElementById("pc-layout");
+  const mobileLayout = DOM.mobileLayout || document.getElementById("mobile-layout");
+
+  if (isPC) {
+    if (pcLayout) pcLayout.classList.remove("hidden");
+    if (mobileLayout) mobileLayout.classList.add("hidden");
+  } else {
+    if (pcLayout) pcLayout.classList.add("hidden");
+    if (mobileLayout) mobileLayout.classList.remove("hidden");
+  }
+  const isMobile = !isPC;
+  const isOverlayOpen = state.openMobCardNo !== null;
+
+  if (isMobile && isOverlayOpen) {
+  } else {
+    let numCols = 1;
+    if (isPC) numCols = 3;
+
+    const groups = {
+      MAX_OVER: [],
+      WINDOW: [],
+      NEXT: [],
+      MAINTENANCE: []
     };
 
-    if (immediate) {
-        run();
-    } else {
-        debouncedSortAndRedistribute();
+    sortedMobs.forEach(mob => {
+      groups[getGroupKey(mob)].push(mob);
+    });
+
+    ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
+      const groupMobs = groups[key];
+      const { section, cols } = getOrCreateGroupSection(key);
+
+      if (groupMobs.length === 0) {
+        section.classList.add("hidden");
+        return;
+      }
+      section.classList.remove("hidden");
+
+      cols.forEach((col, idx) => {
+        if (idx >= numCols) col.classList.add("hidden");
+        else col.classList.remove("hidden");
+      });
+
+      const colPointers = Array(numCols).fill(0);
+      groupMobs.forEach((mob, index) => {
+        const colIdx = index % numCols;
+        const targetCol = cols[colIdx];
+        let card = cardCache.get(String(mob.No));
+
+        if (!card) {
+          card = createMobCard(mob);
+          cardCache.set(String(mob.No), card);
+          cardObserver.observe(card);
+        }
+
+        const isFloating = card.classList.contains("is-floating-active");
+
+        if (isFloating) {
+          const placeholderId = card.dataset.placeholderId;
+          const placeholder = placeholderId ? document.getElementById(placeholderId) : null;
+          if (placeholder) {
+            const currentAtPos = targetCol.children[colPointers[colIdx]];
+            if (currentAtPos !== placeholder) {
+              targetCol.insertBefore(placeholder, currentAtPos || null);
+            }
+            colPointers[colIdx]++;
+
+            if (placeholder.nextSibling !== card) {
+              targetCol.insertBefore(card, placeholder.nextSibling || null);
+            }
+            colPointers[colIdx]++;
+          } else {
+            const currentAtPos = targetCol.children[colPointers[colIdx]];
+            if (currentAtPos !== card) {
+              targetCol.insertBefore(card, currentAtPos || null);
+            }
+            colPointers[colIdx]++;
+          }
+        } else {
+          while (targetCol.children[colPointers[colIdx]]?.classList.contains("mob-card-placeholder")) {
+            colPointers[colIdx]++;
+          }
+          const currentAtPos = targetCol.children[colPointers[colIdx]];
+          if (currentAtPos !== card) {
+            targetCol.insertBefore(card, currentAtPos || null);
+          }
+          colPointers[colIdx]++;
+        }
+
+        updateCardFull(card, mob);
+      });
+
+      cols.forEach((col, i) => {
+        const limit = (i < numCols) ? colPointers[i] : 0;
+        let j = col.children.length - 1;
+        while (j >= limit) {
+          const child = col.children[j];
+          if (child?.classList.contains("mob-card-placeholder") || child?.classList.contains("is-floating-active")) {
+            j--;
+            continue;
+          }
+          if (child?.classList.contains('mob-card')) {
+            visibleCards.delete(child.dataset.mobNo);
+          }
+          col.removeChild(child);
+          j--;
+        }
+      });
+    });
+
+    if (isPC && DOM.pcLeftList) {
+      const currentNodes = Array.from(DOM.pcLeftList.children);
+      const currentMap = new Map();
+      currentNodes.forEach(node => {
+        if (node.dataset.mobNo) currentMap.set(`mob-${node.dataset.mobNo}`, node);
+        else if (node.textContent) currentMap.set(`header-${node.textContent}`, node);
+      });
+
+      const nextChildren = [];
+      ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
+        const groupMobs = groups[key];
+        if (groupMobs.length === 0) return;
+
+        const headerText = GROUP_LABELS[key];
+        const headerKey = `header-${headerText}`;
+        let header = currentMap.get(headerKey);
+        if (!header) {
+          header = document.createElement("div");
+          header.className = "text-xs font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
+          header.textContent = headerText;
+        }
+        nextChildren.push(header);
+
+        groupMobs.forEach(mob => {
+          const mobKey = `mob-${mob.No}`;
+          let item = currentMap.get(mobKey);
+          if (!item) {
+            item = createSimpleMobItem(mob);
+          } else {
+            updateSimpleMobItem(item, mob);
+          }
+          nextChildren.push(item);
+        });
+      });
+
+      nextChildren.forEach((child, index) => {
+        if (DOM.pcLeftList.children[index] !== child) {
+          DOM.pcLeftList.insertBefore(child, DOM.pcLeftList.children[index] || null);
+        }
+      });
+
+      while (DOM.pcLeftList.children.length > nextChildren.length) {
+        DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
+      }
+
     }
-};
+  }
 
-const debouncedSortAndRedistribute = debounce(() => {
-    sortAndRedistribute({ immediate: true });
-}, 200);
+  const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
+  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");
+  const overlayBackdrop = DOM.cardOverlayBackdrop || document.getElementById("card-overlay-backdrop");
 
-let isInitialLoading = false;
+  if (isPC) {
+    if (rightPane) {
+      if (state.openMobCardNo) {
+        if (rightPane.dataset.renderedMobNo !== String(state.openMobCardNo)) {
+          const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
+          if (targetMob) {
+            rightPane.innerHTML = "";
+            rightPane.appendChild(createMobCard(targetMob, true));
+            rightPane.dataset.renderedMobNo = String(state.openMobCardNo);
+          }
+        }
+      } else {
+        if (rightPane.dataset.renderedMobNo !== "none") {
+          rightPane.innerHTML = '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>';
+          rightPane.dataset.renderedMobNo = "none";
+        }
+      }
+    }
+    if (overlayBackdrop) overlayBackdrop.classList.add("hidden");
+  } else {
+    if (mobileOverlay && overlayBackdrop) {
+      if (state.openMobCardNo) {
+        if (mobileOverlay.dataset.renderedMobNo !== String(state.openMobCardNo)) {
+          const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
+          if (targetMob) {
+            mobileOverlay.innerHTML = "";
+            mobileOverlay.appendChild(createMobCard(targetMob, true));
+            mobileOverlay.dataset.renderedMobNo = String(state.openMobCardNo);
+
+            overlayBackdrop.classList.remove("hidden");
+          }
+        }
+      } else {
+        mobileOverlay.innerHTML = "";
+        mobileOverlay.dataset.renderedMobNo = "none";
+        overlayBackdrop.classList.add("hidden");
+      }
+    }
+  }
+
+  updateVisibleCards();
+
+  if (focusedMobNo) {
+    const card = cardCache.get(String(focusedMobNo));
+    if (card && focusedAction) {
+      const input = card.querySelector(`input[data-action="${focusedAction}"]`);
+      if (input) {
+        input.focus();
+        if (selectionStart !== null && selectionEnd !== null) {
+          try { input.setSelectionRange(selectionStart, selectionEnd); } catch (e) { }
+        }
+      }
+    }
+  }
+}
+
+export function showColumnContainer() {
+  if (!DOM.colContainer) return;
+
+  requestAnimationFrame(() => {
+    DOM.colContainer.classList.add("is-ready");
+
+    requestAnimationFrame(() => {
+      const overlay = document.getElementById("loading-overlay");
+      if (overlay) {
+        overlay.classList.add("hidden");
+      }
+    });
+  });
+}
+
+let isInitialSortingSuppressed = false;
+
+export function updateProgressBars() {
+  const state = getState();
+  const mobMap = getMobMap();
+  const filtered = getFilteredMobs();
+  const isMobile = window.innerWidth < 1024;
+  const isOverlayOpen = state.openMobCardNo !== null;
+
+  if (!(isMobile && isOverlayOpen)) {
+    filtered.forEach(mob => {
+      const card = cardCache.get(String(mob.No));
+      if (card) {
+        checkAndNotify(mob);
+        updateProgressText(card, mob);
+        updateProgressBar(card, mob);
+      }
+    });
+
+    if (DOM.pcLeftList) {
+      const listItems = DOM.pcLeftList.querySelectorAll('.pc-list-item');
+      listItems.forEach(item => {
+        const mobNo = item.dataset.mobNo;
+        const mob = mobMap.get(String(mobNo));
+        if (mob) {
+          updateSimpleMobItem(item, mob);
+        }
+      });
+    }
+  }
+
+  const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
+  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");
+
+  [rightPane, mobileOverlay].forEach(container => {
+    if (container && container.dataset.renderedMobNo && container.dataset.renderedMobNo !== "none") {
+      const detailCard = container.querySelector('.pc-detail-card') || container.firstElementChild;
+      const mob = mobMap.get(container.dataset.renderedMobNo);
+      if (detailCard && mob) {
+        updateCardFull(detailCard, mob);
+      }
+    }
+  });
+
+  if (!(isMobile && isOverlayOpen)) {
+    invalidateSortCache();
+    const sorted = getSortedFilteredMobs();
+    const currentOrderStr = sorted.map(m => m.No).join(",");
+    const currentGroupStr = sorted.map(m => getGroupKey(m)).join(",");
+
+    if (!isInitialSortingSuppressed) {
+      if (currentOrderStr !== lastOrderStr || currentGroupStr !== lastGroupStr) {
+        sortAndRedistribute();
+      }
+    }
+    lastOrderStr = currentOrderStr;
+    lastGroupStr = currentGroupStr;
+  }
+}
+let lastOrderStr = "";
+let lastGroupStr = "";
 
 window.addEventListener('initialDataLoaded', () => {
     updateHeaderTime();

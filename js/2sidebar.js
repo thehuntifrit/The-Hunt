@@ -1,5 +1,5 @@
-import { getState, setFilter } from "./dataManager_2.js";
-import { filterAndRender } from "./uiRender_2.js";
+import { getState, setFilter } from "./2dataManager.js";
+import { filterAndRender } from "./2app.js";
 
 const FilterDOM = {
   areaFilterPanelMobile: document.getElementById('area-filter-panel-mobile'),

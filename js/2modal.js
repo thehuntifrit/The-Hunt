@@ -1,6 +1,6 @@
-import { DOM as UiDOM } from "./uiRender.js";
-import { getState, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
-import { verifyLodestoneCharacter, registerUserToFirestore } from "./server.js";
+import { DOM as UiDOM } from "./2app.js";
+import { getState, setLodestoneId, setCharacterName, setVerified } from "./2dataManager.js";
+import { verifyLodestoneCharacter, registerUserToFirestore } from "./2server.js";
 
 export async function openReportModal(mobNo) {
     const mob = getState().mobs.find(m => m.No === mobNo);

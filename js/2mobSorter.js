@@ -1,5 +1,7 @@
-import { getState } from "./dataManager.js";
-import { cloneTemplate } from "./uiRender_2.js";
+import { getState } from "./2dataManager.js";
+import { cloneTemplate } from "./2mobCard.js";
+import { filterMobsByRankAndArea } from "./2sidebar.js";
+import { DOM } from "./2app.js";
 
 const mobIdPartsCache = new Map();
 
@@ -9,6 +11,76 @@ function getGroupKey(mob) {
   if (info.status === "MaxOver") return "MAX_OVER";
   if (info.status === "PopWindow" || info.status === "ConditionActive" || info.status === "NextCondition") return "WINDOW";
   return "NEXT";
+}
+
+export const GROUP_LABELS = {
+  MAX_OVER: "🔚 Time Over",
+  WINDOW: "⏳ Pop Window",
+  NEXT: "🔜 Respawning",
+  MAINTENANCE: "🛠️ Maintenance"
+};
+
+const groupSectionCache = new Map();
+
+export function getOrCreateGroupSection(groupKey) {
+  if (groupSectionCache.has(groupKey)) return groupSectionCache.get(groupKey);
+
+  const section = cloneTemplate('status-group-template');
+  if (!section) return { section: document.createElement('section'), cols: [] };
+
+  const labelEl = section.querySelector(".status-group-label");
+  if (labelEl) labelEl.textContent = GROUP_LABELS[groupKey];
+
+  const cols = [
+    section.querySelector(".col-1"),
+    section.querySelector(".col-2"),
+    section.querySelector(".col-3")
+  ];
+
+  const result = { section, cols };
+  groupSectionCache.set(groupKey, result);
+  DOM.colContainer.appendChild(section);
+  return result;
+}
+
+let filterCacheVersion = -1;
+let cachedFilteredMobs = null;
+let cachedSortedMobs = null;
+let sortCacheValid = false;
+
+export function getFilteredMobs() {
+  const state = getState();
+  const version = state._filterVersion || 0;
+
+  if (filterCacheVersion === version && cachedFilteredMobs) {
+    return cachedFilteredMobs;
+  }
+
+  filterCacheVersion = version;
+  cachedFilteredMobs = filterMobsByRankAndArea(state.mobs);
+  sortCacheValid = false;
+  return cachedFilteredMobs;
+}
+
+export function getSortedFilteredMobs() {
+  if (sortCacheValid && cachedSortedMobs) {
+    return cachedSortedMobs;
+  }
+  cachedSortedMobs = getFilteredMobs().slice().sort(allTabComparator);
+  sortCacheValid = true;
+  return cachedSortedMobs;
+}
+
+export function invalidateFilterCache() {
+  filterCacheVersion = -1;
+  cachedFilteredMobs = null;
+  cachedSortedMobs = null;
+  sortCacheValid = false;
+}
+
+export function invalidateSortCache() {
+  sortCacheValid = false;
+  cachedSortedMobs = null;
 }
 
 export function rankPriority(rank) {

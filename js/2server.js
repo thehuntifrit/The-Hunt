@@ -2,8 +2,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebas
 import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, getDoc, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
-import { getState } from "./dataManager.js";
-import { closeReportModal } from "./modal.js";
+import { getState } from "./2dataManager.js";
+import { closeReportModal } from "./2modal.js";
 
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyBikwjGsjL_PVFhx3Vj-OeJCocKA_hQOgU",
