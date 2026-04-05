@@ -1,0 +1,134 @@
+export async function renderMaintenanceStatus() {
+    window.renderMaintenanceStatus = renderMaintenanceStatus;
+
+    export const state = {
+    userId: localStorage.getItem("user_uuid") || null,
+    lodestoneId: localStorage.getItem("lodestone_id") || null,
+    characterName: localStorage.getItem("character_name") || null,
+    isVerified: localStorage.getItem("is_verified") === "true",
+    baseMobData: [],
+    mobs: [],
+    maintenance: null,
+    initialLoadComplete: false,
+    worker: null,
+
+    filter: (() => {
+        try {
+            const val = localStorage.getItem("huntFilterState");
+            if (val) {
+                const parsed = JSON.parse(val);
+                if (parsed.clickStep === undefined) parsed.clickStep = 1;
+                return parsed;
+            }
+        } catch (e) {
+            console.warn("huntFilterState parse error", e);
+        }
+        return {
+            rank: "ALL",
+            clickStep: 1,
+            areaSets: {
+                S: new Set(),
+                A: new Set(),
+                F: new Set(),
+                ALL: new Set()
+            },
+            allRankSet: new Set()
+        };
+    })(),
+    openMobCardNo: null,
+    notificationEnabled: localStorage.getItem("huntNotificationEnabled") === "true",
+    pendingCalculationMobs: new Set(),
+    pendingStatusMap: null,
+    pendingMaintenanceData: null,
+    pendingLocationsMap: null,
+    pendingMemoData: null,
+    _filterVersion: 0
+}
+    const maintenance = await getMaintenanceStatus();
+    const maintenanceEl = document.getElementById("status-message-maintenance");
+    const telopEl = document.getElementById("status-message-telop");
+
+    const maintPanels = document.querySelectorAll(".js-maintenance-content");
+    const telopPanels = document.querySelectorAll(".js-telop-content");
+
+    let hasMaintenance = false;
+    let hasMessage = false;
+    let maintMobileHtml = "";
+    let maintPCHtml = "";
+
+    if (maintenance && (maintenance.is_active || maintenance.scheduled)) {
+        const start = formatMMDDHHmm(maintenance.start_time);
+        const end = formatMMDDHHmm(maintenance.end_time);
+        maintMobileHtml = end ? `${start} ～ ${end}` : `${start} ～`;
+        maintPCHtml = end ? `${start} ～<br>&nbsp;&nbsp;&nbsp;&nbsp;${end}` : `${start} ～`;
+        hasMaintenance = true;
+    }
+
+    if (maintenanceEl) {
+        if (hasMaintenance) {
+            maintenanceEl.textContent = maintMobileHtml;
+            maintenanceEl.classList.remove("hidden");
+        } else {
+            maintenanceEl.textContent = "";
+            maintenanceEl.classList.add("hidden");
+        }
+    }
+
+    maintPanels.forEach(p => {
+        if (!hasMaintenance) {
+            p.textContent = "現在予定されているメンテナンスはありません";
+            return;
+        }
+        const isPC = p.closest('#app-sidebar') || p.closest('.sidebar-panel-content');
+        if (isPC) {
+            p.innerHTML = maintPCHtml;
+        } else {
+            p.textContent = maintMobileHtml;
+        }
+    });
+
+    const telopMsg = (maintenance && maintenance.message && maintenance.message.trim() !== "") ? maintenance.message : "";
+    hasMessage = telopMsg !== "";
+
+    if (telopEl) {
+        if (hasMessage) {
+            telopEl.textContent = telopMsg;
+            telopEl.classList.remove("hidden");
+        } else {
+            telopEl.textContent = "";
+            telopEl.classList.add("hidden");
+        }
+    }
+
+    const nameToDisplay = (state.isVerified && state.characterName) ? state.characterName : "名無しさん";
+
+    telopPanels.forEach(p => {
+        p.innerHTML = "";
+        const welcome = document.createElement("div");
+        welcome.className = "sidebar-welcome-msg";
+        welcome.textContent = `ようこそ ${nameToDisplay}`;
+        p.appendChild(welcome);
+
+        const msgSpan = document.createElement("span");
+        if (telopMsg) {
+            msgSpan.innerHTML = escapeHtml(telopMsg).replace(/\/\//g, "<br>");
+        } else {
+            msgSpan.textContent = "メッセージはありません。";
+        }
+        p.appendChild(msgSpan);
+    });
+
+    document.querySelectorAll('.sidebar-icon-btn[data-panel="maintenance"], .mobile-footer-btn[data-panel="maintenance"]')
+        .forEach(btn => btn.classList.toggle("has-alert", hasMaintenance));
+
+    document.querySelectorAll('.sidebar-icon-btn[data-panel="telop"], .mobile-footer-btn[data-panel="telop"]')
+        .forEach(btn => btn.classList.toggle("has-alert", hasMessage));
+
+    const errorLogCount = window.errorLog ? window.errorLog.length : 0;
+    const hasError = errorLogCount > 0;
+    document.querySelectorAll('.sidebar-icon-btn[data-panel="error"], .mobile-footer-btn[data-panel="error"]')
+        .forEach(btn => btn.classList.toggle("has-alert", hasError));
+
+    document.querySelectorAll('.sidebar-icon-btn[data-panel="rank"], .mobile-footer-btn[data-panel="rank"]')
+        .forEach(btn => btn.classList.remove("has-alert"));
+}

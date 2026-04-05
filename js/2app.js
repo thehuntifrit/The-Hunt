@@ -226,49 +226,7 @@ async function getMaintenanceStatus() {
 export async function renderMaintenanceStatus() {
     window.renderMaintenanceStatus = renderMaintenanceStatus;
 
-    export const state = {
-    userId: localStorage.getItem("user_uuid") || null,
-    lodestoneId: localStorage.getItem("lodestone_id") || null,
-    characterName: localStorage.getItem("character_name") || null,
-    isVerified: localStorage.getItem("is_verified") === "true",
-    baseMobData: [],
-    mobs: [],
-    maintenance: null,
-    initialLoadComplete: false,
-    worker: null,
-
-    filter: (() => {
-        try {
-            const val = localStorage.getItem("huntFilterState");
-            if (val) {
-                const parsed = JSON.parse(val);
-                if (parsed.clickStep === undefined) parsed.clickStep = 1;
-                return parsed;
-            }
-        } catch (e) {
-            console.warn("huntFilterState parse error", e);
-        }
-        return {
-            rank: "ALL",
-            clickStep: 1,
-            areaSets: {
-                S: new Set(),
-                A: new Set(),
-                F: new Set(),
-                ALL: new Set()
-            },
-            allRankSet: new Set()
-        };
-    })(),
-    openMobCardNo: null,
-    notificationEnabled: localStorage.getItem("huntNotificationEnabled") === "true",
-    pendingCalculationMobs: new Set(),
-    pendingStatusMap: null,
-    pendingMaintenanceData: null,
-    pendingLocationsMap: null,
-    pendingMemoData: null,
-    _filterVersion: 0
-}
+    const state = getState();
     const maintenance = await getMaintenanceStatus();
     const maintenanceEl = document.getElementById("status-message-maintenance");
     const telopEl = document.getElementById("status-message-telop");
