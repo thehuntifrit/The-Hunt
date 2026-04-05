@@ -5,11 +5,40 @@ import { ALL_RANK_TABS, getGroupKey, GROUP_LABELS, getOrCreateGroupSection, getS
 import { closeReportModal, openAuthModal, openReportModal, initModal, closeAuthModal } from "./2modal.js";
 import { handleAreaFilterClick, initSidebar, initNotification, checkAndNotify } from "./2sidebar.js";
 import { initializeAuth, getUserData, submitReport, submitMemo } from "./2server.js";
-import { initTooltip } from "./2mobCard.js";
-import { initGlobalMagnifier } from "./2mobCard.js";
-import { initSidebar } from "./2sidebar.js";
+import { initTooltip, initGlobalMagnifier } from "./2mobCard.js";
 import "./2readme.js";
-import { initNotification } from "./2sidebar.js";
+
+export function showToast(message, type = "error") {
+    if (type === "error") {
+        console.error(message);
+    }
+    let container = document.getElementById("toast-container");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toast-container";
+        container.className = "toast-container-wrapper";
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement("div");
+    const colorClass = type === "error" ? "toast-error" : "toast-success";
+    toast.className = `toast-item-base ${colorClass} opacity-0 translate-x-full`;
+    toast.textContent = message;
+    toast.classList.add("whitespace-pre-wrap");
+
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            toast.classList.remove("translate-x-full", "opacity-0");
+        });
+    });
+
+    setTimeout(() => {
+        toast.classList.add("translate-x-full", "opacity-0");
+        toast.addEventListener("transitionend", () => toast.remove());
+    }, 4000);
+}
 
 async function initApp() {
     try {
@@ -112,6 +141,226 @@ async function initApp() {
         }
     }
 }
+
+async function getMaintenanceStatus() {
+    export const state = {
+    userId: localStorage.getItem("user_uuid") || null,
+    lodestoneId: localStorage.getItem("lodestone_id") || null,
+    characterName: localStorage.getItem("character_name") || null,
+    isVerified: localStorage.getItem("is_verified") === "true",
+    baseMobData: [],
+    mobs: [],
+    maintenance: null,
+    initialLoadComplete: false,
+    worker: null,
+
+    filter: (() => {
+        try {
+            const val = localStorage.getItem("huntFilterState");
+            if (val) {
+                const parsed = JSON.parse(val);
+                if (parsed.clickStep === undefined) parsed.clickStep = 1;
+                return parsed;
+            }
+        } catch (e) {
+            console.warn("huntFilterState parse error", e);
+        }
+        return {
+            rank: "ALL",
+            clickStep: 1,
+            areaSets: {
+                S: new Set(),
+                A: new Set(),
+                F: new Set(),
+                ALL: new Set()
+            },
+            allRankSet: new Set()
+        };
+    })(),
+    openMobCardNo: null,
+    notificationEnabled: localStorage.getItem("huntNotificationEnabled") === "true",
+    pendingCalculationMobs: new Set(),
+    pendingStatusMap: null,
+    pendingMaintenanceData: null,
+    pendingLocationsMap: null,
+    pendingMemoData: null,
+    _filterVersion: 0
+}
+    const maintenance = state.maintenance;
+
+    if (!maintenance || !maintenance.start || !maintenance.end) {
+        return {
+            is_active: false,
+            scheduled: false,
+            message: maintenance ? maintenance.message : ""
+        };
+    }
+
+    const now = new Date();
+    const start = new Date(maintenance.start);
+    const end = new Date(maintenance.end);
+    const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
+
+    const isWithinDisplayWindow = now >= showFrom && now <= showUntil;
+
+    let status = {
+        is_active: false,
+        scheduled: false,
+        start_time: maintenance.start,
+        end_time: maintenance.end,
+        message: maintenance.message || ""
+    };
+
+    if (isWithinDisplayWindow) {
+        if (now >= start && now <= end) {
+            status.is_active = true;
+        } else if (now < start) {
+            status.scheduled = true;
+        }
+    }
+
+    return status;
+}
+
+export async function renderMaintenanceStatus() {
+    window.renderMaintenanceStatus = renderMaintenanceStatus;
+
+    export const state = {
+    userId: localStorage.getItem("user_uuid") || null,
+    lodestoneId: localStorage.getItem("lodestone_id") || null,
+    characterName: localStorage.getItem("character_name") || null,
+    isVerified: localStorage.getItem("is_verified") === "true",
+    baseMobData: [],
+    mobs: [],
+    maintenance: null,
+    initialLoadComplete: false,
+    worker: null,
+
+    filter: (() => {
+        try {
+            const val = localStorage.getItem("huntFilterState");
+            if (val) {
+                const parsed = JSON.parse(val);
+                if (parsed.clickStep === undefined) parsed.clickStep = 1;
+                return parsed;
+            }
+        } catch (e) {
+            console.warn("huntFilterState parse error", e);
+        }
+        return {
+            rank: "ALL",
+            clickStep: 1,
+            areaSets: {
+                S: new Set(),
+                A: new Set(),
+                F: new Set(),
+                ALL: new Set()
+            },
+            allRankSet: new Set()
+        };
+    })(),
+    openMobCardNo: null,
+    notificationEnabled: localStorage.getItem("huntNotificationEnabled") === "true",
+    pendingCalculationMobs: new Set(),
+    pendingStatusMap: null,
+    pendingMaintenanceData: null,
+    pendingLocationsMap: null,
+    pendingMemoData: null,
+    _filterVersion: 0
+}
+    const maintenance = await getMaintenanceStatus();
+    const maintenanceEl = document.getElementById("status-message-maintenance");
+    const telopEl = document.getElementById("status-message-telop");
+
+    const maintPanels = document.querySelectorAll(".js-maintenance-content");
+    const telopPanels = document.querySelectorAll(".js-telop-content");
+
+    let hasMaintenance = false;
+    let hasMessage = false;
+    let maintMobileHtml = "";
+    let maintPCHtml = "";
+
+    if (maintenance && (maintenance.is_active || maintenance.scheduled)) {
+        const start = formatMMDDHHmm(maintenance.start_time);
+        const end = formatMMDDHHmm(maintenance.end_time);
+        maintMobileHtml = end ? `${start} ～ ${end}` : `${start} ～`;
+        maintPCHtml = end ? `${start} ～<br>&nbsp;&nbsp;&nbsp;&nbsp;${end}` : `${start} ～`;
+        hasMaintenance = true;
+    }
+
+    if (maintenanceEl) {
+        if (hasMaintenance) {
+            maintenanceEl.textContent = maintMobileHtml;
+            maintenanceEl.classList.remove("hidden");
+        } else {
+            maintenanceEl.textContent = "";
+            maintenanceEl.classList.add("hidden");
+        }
+    }
+
+    maintPanels.forEach(p => {
+        if (!hasMaintenance) {
+            p.textContent = "現在予定されているメンテナンスはありません";
+            return;
+        }
+        const isPC = p.closest('#app-sidebar') || p.closest('.sidebar-panel-content');
+        if (isPC) {
+            p.innerHTML = maintPCHtml;
+        } else {
+            p.textContent = maintMobileHtml;
+        }
+    });
+
+    const telopMsg = (maintenance && maintenance.message && maintenance.message.trim() !== "") ? maintenance.message : "";
+    hasMessage = telopMsg !== "";
+
+    if (telopEl) {
+        if (hasMessage) {
+            telopEl.textContent = telopMsg;
+            telopEl.classList.remove("hidden");
+        } else {
+            telopEl.textContent = "";
+            telopEl.classList.add("hidden");
+        }
+    }
+
+    const nameToDisplay = (state.isVerified && state.characterName) ? state.characterName : "名無しさん";
+
+    telopPanels.forEach(p => {
+        p.innerHTML = "";
+        const welcome = document.createElement("div");
+        welcome.className = "sidebar-welcome-msg";
+        welcome.textContent = `ようこそ ${nameToDisplay}`;
+        p.appendChild(welcome);
+
+        const msgSpan = document.createElement("span");
+        if (telopMsg) {
+            msgSpan.innerHTML = escapeHtml(telopMsg).replace(/\/\//g, "<br>");
+        } else {
+            msgSpan.textContent = "メッセージはありません。";
+        }
+        p.appendChild(msgSpan);
+    });
+
+    document.querySelectorAll('.sidebar-icon-btn[data-panel="maintenance"], .mobile-footer-btn[data-panel="maintenance"]')
+        .forEach(btn => btn.classList.toggle("has-alert", hasMaintenance));
+
+    document.querySelectorAll('.sidebar-icon-btn[data-panel="telop"], .mobile-footer-btn[data-panel="telop"]')
+        .forEach(btn => btn.classList.toggle("has-alert", hasMessage));
+
+    const errorLogCount = window.errorLog ? window.errorLog.length : 0;
+    const hasError = errorLogCount > 0;
+    document.querySelectorAll('.sidebar-icon-btn[data-panel="error"], .mobile-footer-btn[data-panel="error"]')
+        .forEach(btn => btn.classList.toggle("has-alert", hasError));
+
+    document.querySelectorAll('.sidebar-icon-btn[data-panel="rank"], .mobile-footer-btn[data-panel="rank"]')
+        .forEach(btn => btn.classList.remove("has-alert"));
+}
+
+window.addEventListener('characterNameSet', () => {
+  renderMaintenanceStatus();
+});
 
 function attachGlobalEventListeners() {
     let prevWidth = window.innerWidth;
@@ -243,7 +492,49 @@ export const DOM = {
 
 const visibleCards = new Set();
 const cardObserver = new IntersectionObserver((entries) => {
-  const state = getState();
+  export const state = {
+    userId: localStorage.getItem("user_uuid") || null,
+    lodestoneId: localStorage.getItem("lodestone_id") || null,
+    characterName: localStorage.getItem("character_name") || null,
+    isVerified: localStorage.getItem("is_verified") === "true",
+    baseMobData: [],
+    mobs: [],
+    maintenance: null,
+    initialLoadComplete: false,
+    worker: null,
+
+    filter: (() => {
+        try {
+            const val = localStorage.getItem("huntFilterState");
+            if (val) {
+                const parsed = JSON.parse(val);
+                if (parsed.clickStep === undefined) parsed.clickStep = 1;
+                return parsed;
+            }
+        } catch (e) {
+            console.warn("huntFilterState parse error", e);
+        }
+        return {
+            rank: "ALL",
+            clickStep: 1,
+            areaSets: {
+                S: new Set(),
+                A: new Set(),
+                F: new Set(),
+                ALL: new Set()
+            },
+            allRankSet: new Set()
+        };
+    })(),
+    openMobCardNo: null,
+    notificationEnabled: localStorage.getItem("huntNotificationEnabled") === "true",
+    pendingCalculationMobs: new Set(),
+    pendingStatusMap: null,
+    pendingMaintenanceData: null,
+    pendingLocationsMap: null,
+    pendingMemoData: null,
+    _filterVersion: 0
+}
   const isMobile = window.innerWidth < 1024;
   if (isMobile && state.openMobCardNo !== null) return;
 
@@ -306,42 +597,77 @@ export function updateDetailCardRealtime(mobMap) {
 
 export const cardCache = new Map();
 
-function getMobMap() {
-  const mobs = getState().mobs;
-  if (mobs === currentMobsRef && cachedMobMap) return cachedMobMap;
-  currentMobsRef = mobs;
-  cachedMobMap = new Map(mobs.map(m => [String(m.No), m]));
-  return cachedMobMap;
-}
-let cachedMobMap = null;
-let currentMobsRef = null;
+export const sortAndRedistribute = (options = {}) => {
+  const { immediate = false } = options;
+  const run = () => {
+    filterAndRender();
+    if (isInitialLoading) {
+      isInitialLoading = false;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.dispatchEvent(new CustomEvent('initialSortComplete'));
+        });
+      });
+    }
+  };
 
-export function updateHeaderTime() {
-    const state = getState();
-    if (!state) return;
+  if (immediate) {
+    run();
+  } else {
+    debouncedSortAndRedistribute();
+  }
+};
 
-    const now = new Date();
-    const et = getEorzeaTime(now);
-    const lt = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const etStr = `${et.hours}:${et.minutes}`;
-
-    ["pc-time-lt", "mobile-time-lt"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = lt;
-    });
-    ["pc-time-et", "mobile-time-et"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = etStr;
-    });
-}
-
-document.addEventListener('DOMContentLoaded', initApp);
-
+const debouncedSortAndRedistribute = debounce(() => {
+  sortAndRedistribute({ immediate: true });
+}, 200);
 
 let isInitialLoading = false;
 
 export function filterAndRender({ isInitialLoad = false } = {}) {
-  const state = getState();
+  export const state = {
+    userId: localStorage.getItem("user_uuid") || null,
+    lodestoneId: localStorage.getItem("lodestone_id") || null,
+    characterName: localStorage.getItem("character_name") || null,
+    isVerified: localStorage.getItem("is_verified") === "true",
+    baseMobData: [],
+    mobs: [],
+    maintenance: null,
+    initialLoadComplete: false,
+    worker: null,
+
+    filter: (() => {
+        try {
+            const val = localStorage.getItem("huntFilterState");
+            if (val) {
+                const parsed = JSON.parse(val);
+                if (parsed.clickStep === undefined) parsed.clickStep = 1;
+                return parsed;
+            }
+        } catch (e) {
+            console.warn("huntFilterState parse error", e);
+        }
+        return {
+            rank: "ALL",
+            clickStep: 1,
+            areaSets: {
+                S: new Set(),
+                A: new Set(),
+                F: new Set(),
+                ALL: new Set()
+            },
+            allRankSet: new Set()
+        };
+    })(),
+    openMobCardNo: null,
+    notificationEnabled: localStorage.getItem("huntNotificationEnabled") === "true",
+    pendingCalculationMobs: new Set(),
+    pendingStatusMap: null,
+    pendingMaintenanceData: null,
+    pendingLocationsMap: null,
+    pendingMemoData: null,
+    _filterVersion: 0
+}
 
   if (!state.initialLoadComplete && !isInitialLoad) {
     return;
@@ -576,6 +902,23 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     }
   }
 
+  lastRenderedOrderStr = sortedMobs.map(m => m.No).join(",");
+  lastRenderedGroupStr = sortedMobs.map(m => getGroupKey(m)).join(",");
+
+  if (isInitialLoad) {
+    isInitialSortingSuppressed = true;
+    attachLocationEvents();
+
+    setTimeout(() => {
+      isInitialSortingSuppressed = false;
+      sortAndRedistribute();
+    }, 100);
+
+    setTimeout(() => {
+      isInitialSortingSuppressed = false;
+    }, 3000);
+  }
+
   updateVisibleCards();
 
   if (focusedMobNo) {
@@ -591,6 +934,9 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     }
   }
 }
+
+let lastRenderedOrderStr = "";
+let lastRenderedGroupStr = "";
 
 export function showColumnContainer() {
   if (!DOM.colContainer) return;
@@ -609,8 +955,60 @@ export function showColumnContainer() {
 
 let isInitialSortingSuppressed = false;
 
+function getMobMap() {
+  const mobs = getState().mobs;
+  if (mobs === currentMobsRef && cachedMobMap) return cachedMobMap;
+  currentMobsRef = mobs;
+  cachedMobMap = new Map(mobs.map(m => [String(m.No), m]));
+  return cachedMobMap;
+}
+let cachedMobMap = null;
+let currentMobsRef = null;
+
 export function updateProgressBars() {
-  const state = getState();
+  export const state = {
+    userId: localStorage.getItem("user_uuid") || null,
+    lodestoneId: localStorage.getItem("lodestone_id") || null,
+    characterName: localStorage.getItem("character_name") || null,
+    isVerified: localStorage.getItem("is_verified") === "true",
+    baseMobData: [],
+    mobs: [],
+    maintenance: null,
+    initialLoadComplete: false,
+    worker: null,
+
+    filter: (() => {
+        try {
+            const val = localStorage.getItem("huntFilterState");
+            if (val) {
+                const parsed = JSON.parse(val);
+                if (parsed.clickStep === undefined) parsed.clickStep = 1;
+                return parsed;
+            }
+        } catch (e) {
+            console.warn("huntFilterState parse error", e);
+        }
+        return {
+            rank: "ALL",
+            clickStep: 1,
+            areaSets: {
+                S: new Set(),
+                A: new Set(),
+                F: new Set(),
+                ALL: new Set()
+            },
+            allRankSet: new Set()
+        };
+    })(),
+    openMobCardNo: null,
+    notificationEnabled: localStorage.getItem("huntNotificationEnabled") === "true",
+    pendingCalculationMobs: new Set(),
+    pendingStatusMap: null,
+    pendingMaintenanceData: null,
+    pendingLocationsMap: null,
+    pendingMemoData: null,
+    _filterVersion: 0
+}
   const mobMap = getMobMap();
   const filtered = getFilteredMobs();
   const isMobile = window.innerWidth < 1024;
@@ -658,55 +1056,220 @@ export function updateProgressBars() {
     const currentGroupStr = sorted.map(m => getGroupKey(m)).join(",");
 
     if (!isInitialSortingSuppressed) {
-      if (currentOrderStr !== lastOrderStr || currentGroupStr !== lastGroupStr) {
+      if (currentOrderStr !== lastRenderedOrderStr || currentGroupStr !== lastRenderedGroupStr) {
         sortAndRedistribute();
       }
     }
-    lastOrderStr = currentOrderStr;
-    lastGroupStr = currentGroupStr;
   }
+
+  const rankBtn = document.querySelector('.mobile-footer-btn[data-panel="rank"]');
+  if (rankBtn) rankBtn.classList.remove("has-alert");
 }
-let lastOrderStr = "";
-let lastGroupStr = "";
+
+export function updateHeaderTime() {
+  export const state = {
+    userId: localStorage.getItem("user_uuid") || null,
+    lodestoneId: localStorage.getItem("lodestone_id") || null,
+    characterName: localStorage.getItem("character_name") || null,
+    isVerified: localStorage.getItem("is_verified") === "true",
+    baseMobData: [],
+    mobs: [],
+    maintenance: null,
+    initialLoadComplete: false,
+    worker: null,
+
+    filter: (() => {
+        try {
+            const val = localStorage.getItem("huntFilterState");
+            if (val) {
+                const parsed = JSON.parse(val);
+                if (parsed.clickStep === undefined) parsed.clickStep = 1;
+                return parsed;
+            }
+        } catch (e) {
+            console.warn("huntFilterState parse error", e);
+        }
+        return {
+            rank: "ALL",
+            clickStep: 1,
+            areaSets: {
+                S: new Set(),
+                A: new Set(),
+                F: new Set(),
+                ALL: new Set()
+            },
+            allRankSet: new Set()
+        };
+    })(),
+    openMobCardNo: null,
+    notificationEnabled: localStorage.getItem("huntNotificationEnabled") === "true",
+    pendingCalculationMobs: new Set(),
+    pendingStatusMap: null,
+    pendingMaintenanceData: null,
+    pendingLocationsMap: null,
+    pendingMemoData: null,
+    _filterVersion: 0
+}
+  if (!state) return;
+
+  const now = new Date();
+  const et = getEorzeaTime(now);
+  const lt = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  const etStr = `${et.hours}:${et.minutes}`;
+
+  ["pc-time-lt", "mobile-time-lt"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = lt;
+  });
+  ["pc-time-et", "mobile-time-et"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = etStr;
+  });
+}
 
 window.addEventListener('initialDataLoaded', () => {
-    updateHeaderTime();
-    filterAndRender({ isInitialLoad: true });
-    sortAndRedistribute({ immediate: true });
-    updateProgressBars();
+  updateHeaderTime();
+  filterAndRender({ isInitialLoad: true });
+  sortAndRedistribute({ immediate: true });
+  updateProgressBars();
 });
 
 window.addEventListener('mobUpdated', (e) => {
-    const { mobNo, mob } = e.detail;
-    checkAndNotify(mob);
-    const card = cardCache.get(String(mobNo));
-    if (card) {
-        updateCardFull(card, mob);
-        invalidateSortCache();
-        sortAndRedistribute();
-    }
+  const { mobNo, mob } = e.detail;
+  checkAndNotify(mob);
+  const card = cardCache.get(String(mobNo));
+  if (card) {
+    updateCardFull(card, mob);
+    invalidateSortCache();
+    sortAndRedistribute();
+  }
 });
 
 window.addEventListener('filterChanged', () => {
-    invalidateFilterCache();
-    filterAndRender();
+  invalidateFilterCache();
+  filterAndRender();
 });
 
 window.addEventListener('mobsUpdated', () => {
-    updateProgressBars();
+  updateProgressBars();
 });
 
 window.addEventListener('locationDataReady', () => {
-    updateVisibleCards();
+  updateVisibleCards();
 });
 
 window.addEventListener('locationsUpdated', () => {
-    invalidateFilterCache();
-    updateVisibleCards();
+  invalidateFilterCache();
+  updateVisibleCards();
+});
+
+function attachGlobalEventListeners() {
+    let prevWidth = window.innerWidth;
+    window.addEventListener("resize", debounce(() => {
+        const currentWidth = window.innerWidth;
+        if (currentWidth !== prevWidth) {
+            prevWidth = currentWidth;
+            sortAndRedistribute();
+        }
+    }, 100));
+
+    document.addEventListener("click", (e) => {
+        if (e.target.closest(".tab-button")) {
+            return;
+        }
+        if (e.target.closest(".area-filter-btn")) {
+            handleAreaFilterClick(e);
+            return;
+        }
+        if (e.target === DOM.cardOverlayBackdrop) {
+            setOpenMobCardNo(null);
+            sortAndRedistribute({ immediate: true });
+        }
+    });
+
+    DOM.colContainer.addEventListener("click", (e) => {
+        if (e.target.closest(".report-side-bar")) return;
+
+        if (e.target.closest("[data-toggle='card-header']")) {
+            const card = e.target.closest(".mob-card");
+            if (card) {
+                const mobNo = parseInt(card.dataset.mobNo, 10);
+                const currentOpen = getState().openMobCardNo;
+                const nextOpen = (currentOpen === mobNo) ? null : mobNo;
+
+                setOpenMobCardNo(nextOpen);
+                sortAndRedistribute({ immediate: true });
+            }
+        }
+    });
+
+    if (DOM.reportForm) {
+        DOM.reportForm.addEventListener("submit", handleReportSubmit);
+    }
+
+    document.addEventListener("change", async (e) => {
+        if (e.target.matches("input[data-action='save-memo']")) {
+            const input = e.target;
+            const mobNo = parseInt(input.dataset.mobNo, 10);
+            const text = input.value;
+
+            if (!getState().isVerified) {
+                input.value = "";
+                openAuthModal();
+                return;
+            }
+
+            await submitMemo(mobNo, text);
+        }
+    });
+
+    let touchStartX = 0;
+    document.addEventListener("touchstart", (e) => {
+        const reportBtn = e.target.closest(".report-side-bar");
+        if (reportBtn) {
+            touchStartX = e.changedTouches[0].screenX;
+        }
+    }, { passive: true });
+
+    document.addEventListener("touchend", (e) => {
+        const reportBtn = e.target.closest(".report-side-bar");
+        if (reportBtn) {
+            const touchEndX = e.changedTouches[0].screenX;
+            if (touchEndX - touchStartX > 30) {
+                const mobNo = parseInt(reportBtn.dataset.mobNo, 10);
+                const type = reportBtn.dataset.reportType;
+                if (type === 'modal') {
+                    openReportModal(mobNo);
+                } else {
+                    reportBtn.click();
+                }
+            }
+        }
+    }, { passive: true });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.target.matches("input[data-action='save-memo']")) {
+            if (e.key === "Enter") {
+                e.target.blur();
+            }
+            e.stopPropagation();
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (e.target.matches("input[data-action='save-memo']")) {
+            e.stopPropagation();
+        }
+    });
+
+}
+
+window.addEventListener('characterNameSet', () => {
+    renderMaintenanceStatus();
 });
 
 setInterval(() => {
-    updateProgressBars();
+  updateProgressBars();
 }, 1000);
 
 setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
@@ -737,4 +1300,182 @@ async function handleReportSubmit(e) {
     const result = await submitReport(mobNo, timeISO);
     handleReportResult(result);
     if (result.success) closeReportModal();
+}
+
+document.addEventListener('DOMContentLoaded', initApp);
+
+
+// --- APPENDED MISSING FUNCTIONS ---
+
+let lastClickTime = 0;
+
+let lastClickLocationId = null;
+
+let locationEventsAttached = false;
+
+const CULLED_CLASS_MAP = {
+    "color-b1": "color-b1-culled",
+    "color-b2": "color-b2-culled",
+}
+
+const UNCULLED_CLASS_MAP = {
+    "color-b1-culled": "color-b1",
+    "color-b2-culled": "color-b2",
+}
+
+function applyOptimisticDOM(point, nextCulled) {
+    point.dataset.isCulled = String(nextCulled);
+
+    if (nextCulled) {
+        for (const [from, to] of Object.entries(CULLED_CLASS_MAP)) {
+            if (point.classList.contains(from)) {
+                point.classList.replace(from, to);
+                break;
+            }
+        }
+    } else {
+        for (const [from, to] of Object.entries(UNCULLED_CLASS_MAP)) {
+            if (point.classList.contains(from)) {
+                point.classList.replace(from, to);
+                break;
+            }
+        }
+    }
+
+    const pointNumber = parseInt(point.dataset.locationId?.slice(-2), 10);
+    point.dataset.tooltip = `${pointNumber}${nextCulled ? " (済)" : ""}`;
+}
+
+function applyOptimisticState(mobNo, area, locationId, nextCulled) {
+    const state = getState();
+    const instance = mobNo % 10;
+    const key = `${area}_${instance}`;
+    if (!state.mobLocations[key]) {
+        state.mobLocations[key] = {};
+    }
+    if (!state.mobLocations[key][locationId]) {
+        state.mobLocations[key][locationId] = {};
+    }
+
+    const now = { toMillis: () => Date.now() };
+    if (nextCulled) {
+        state.mobLocations[key][locationId].culled_at = now;
+    } else {
+        state.mobLocations[key][locationId].uncull_at = now;
+    }
+
+    state.mobs.forEach(m => {
+        if (m.Area === area && (m.No % 10) === instance) {
+            m.spawn_cull_status = state.mobLocations[key];
+        }
+    });
+
+    window.dispatchEvent(new CustomEvent("locationsUpdated", {
+        detail: { locationsMap: state.mobLocations }
+    }));
+}
+
+function handleCrushToggle(e) {
+    const point = e.target.closest(".spawn-point");
+    if (!point) return;
+
+    const state = getState();
+    if (!state.isVerified) {
+        openAuthModal();
+        return;
+    }
+
+    if (point.dataset.isInteractive !== "true") return;
+    if (point.dataset.isLastone === "true") return;
+
+    const card = e.target.closest(".mob-card, .pc-detail-card");
+    if (!card) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const mobNo = parseInt(card.dataset.mobNo, 10);
+    const mob = state.mobs.find(m => m.No === mobNo);
+    if (!mob) return;
+
+    const locationId = point.dataset.locationId;
+    const area = mob.Area;
+
+    const isTouchDevice = window.matchMedia("(hover: none)").matches;
+    if (isTouchDevice) {
+        const now = Date.now();
+        const timeDiff = now - lastClickTime;
+
+        if (locationId === lastClickLocationId && timeDiff < 1000) {
+            lastClickTime = 0;
+            lastClickLocationId = null;
+        } else {
+            lastClickTime = now;
+            lastClickLocationId = locationId;
+            return;
+        }
+    }
+
+    const isCurrentlyCulled = point.dataset.isCulled === "true";
+    const nextCulled = !isCurrentlyCulled;
+
+    applyOptimisticDOM(point, nextCulled);
+    applyOptimisticState(mobNo, area, locationId, nextCulled);
+
+    toggleCrushStatus(mobNo, area, locationId, nextCulled).then(result => {
+        if (!result?.success) {
+            applyOptimisticDOM(point, !nextCulled);
+            applyOptimisticState(mobNo, area, locationId, !nextCulled);
+        }
+    });
+}
+
+export function isCulled(pointStatus, mobNo, mob = null) {
+    const state = getState();
+    if (!mob) {
+        mob = state.mobs.find(m => m.No === mobNo);
+    }
+    const mobLastKillTime = mob?.last_kill_time || 0;
+    const serverUpSec = state.maintenance?.serverUp
+        ? new Date(state.maintenance.serverUp).getTime()
+        : 0;
+    const culledMs = pointStatus?.culled_at && typeof pointStatus.culled_at.toMillis === "function"
+        ? pointStatus.culled_at.toMillis()
+        : 0;
+
+    const uncullMs = pointStatus?.uncull_at && typeof pointStatus.uncull_at.toMillis === "function"
+        ? pointStatus.uncull_at.toMillis()
+        : 0;
+    const lastKillMs = typeof mobLastKillTime === "number" ? mobLastKillTime * 1000 : 0;
+    const validCulledMs = culledMs > serverUpSec ? culledMs : 0;
+    const validUnculledMs = uncullMs > serverUpSec ? uncullMs : 0;
+    if (validCulledMs === 0 && validUnculledMs === 0) return false;
+
+    const culledAfterKill = validCulledMs > lastKillMs;
+    const unculledAfterKill = validUnculledMs > lastKillMs;
+    if (culledAfterKill && (!unculledAfterKill || validCulledMs >= validUnculledMs)) return true;
+    if (unculledAfterKill && (!culledAfterKill || validUnculledMs >= validCulledMs)) return false;
+
+    return false;
+}
+
+export function attachLocationEvents() {
+    if (locationEventsAttached) return;
+
+    const colContainer = document.getElementById("column-container");
+    if (colContainer) {
+        colContainer.addEventListener("click", handleCrushToggle, { capture: true });
+    }
+
+    const pcRightPane = document.getElementById("pc-right-detail");
+    if (pcRightPane) {
+        pcRightPane.addEventListener("click", handleCrushToggle, { capture: true });
+    }
+
+    const mobileOverlay = document.getElementById("mobile-detail-overlay");
+    if (mobileOverlay) {
+        mobileOverlay.addEventListener("click", handleCrushToggle, { capture: true });
+    }
+
+    locationEventsAttached = true;
 }

@@ -470,7 +470,7 @@ export function calculateRepop(mob, maintenance, options = {}) {
       }
     }
 
-    let result = null;
+    const result = calculateRepop(mob, maintenance, options);
     let staleCache = null;
     if (useCache) {
       result = mob._spawnCache.result;

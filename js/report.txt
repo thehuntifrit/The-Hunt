@@ -1,0 +1,35 @@
+==== MISSING DEFINITIONS ====
+MISSING: Function/Variable 'lastClickTime' from location.js not found in any 2xxx file.
+MISSING: Function/Variable 'lastClickLocationId' from location.js not found in any 2xxx file.
+MISSING: Function/Variable 'locationEventsAttached' from location.js not found in any 2xxx file.
+MISSING: Function/Variable 'CULLED_CLASS_MAP' from location.js not found in any 2xxx file.
+MISSING: Function/Variable 'UNCULLED_CLASS_MAP' from location.js not found in any 2xxx file.
+MISSING: Function/Variable 'applyOptimisticDOM' from location.js not found in any 2xxx file.
+MISSING: Function/Variable 'applyOptimisticState' from location.js not found in any 2xxx file.
+MISSING: Function/Variable 'handleCrushToggle' from location.js not found in any 2xxx file.
+MISSING: Function/Variable 'isCulled' from location.js not found in any 2xxx file.
+MISSING: Function/Variable 'attachLocationEvents' from location.js not found in any 2xxx file.
+MISSING: Function/Variable 'PANELS' from sidebar.js not found in any 2xxx file.
+MISSING: Function/Variable 'manualLoaded' from sidebar.js not found in any 2xxx file.
+
+==== MISMATCHED DEFINITIONS ====
+MISMATCH: 'showToast' (from app.js, found in 2app.js) has modified code.
+MISMATCH: 'initApp' (from app.js, found in 2app.js) has modified code.
+MISMATCH: 'getMaintenanceStatus' (from app.js, found in 2sidebar.js) has modified code.
+MISMATCH: 'renderMaintenanceStatus' (from app.js, found in 2app.js) has modified code.
+MISMATCH: 'attachGlobalEventListeners' (from app.js, found in 2app.js) has modified code.
+MISMATCH: 'handleReportResult' (from app.js, found in 2app.js) has modified code.
+MISMATCH: 'handleInstantReport' (from app.js, found in 2app.js) has modified code.
+MISMATCH: 'handleReportSubmit' (from app.js, found in 2app.js) has modified code.
+MISMATCH: 'initWorker' (from dataManager.js, found in 2dataManager.js) has modified code.
+MISMATCH: 'getAllAreas' (from filterUI.js, found in 2sidebar.js) has modified code.
+MISMATCH: 'renderAreaFilterPanel' (from filterUI.js, found in 2sidebar.js) has modified code.
+MISMATCH: 'handleAreaFilterClick' (from filterUI.js, found in 2sidebar.js) has modified code.
+MISMATCH: 'filterMobsByRankAndArea' (from filterUI.js, found in 2sidebar.js) has modified code.
+MISMATCH: 'initNotification' (from notificationManager.js, found in 2sidebar.js) has modified code.
+MISMATCH: 'updateErrorPanel' (from sidebar.js, found in 2sidebar.js) has modified code.
+MISMATCH: 'updateErrorBadge' (from sidebar.js, found in 2sidebar.js) has modified code.
+MISMATCH: 'toggleMobilePanel' (from sidebar.js, found in 2sidebar.js) has modified code.
+MISMATCH: 'loadManualContent' (from sidebar.js, found in 2sidebar.js) has modified code.
+MISMATCH: 'renderSidebarFilterAccordion' (from sidebar.js, found in 2sidebar.js) has modified code.
+MISMATCH: 'escapeHtml' (from uiRender.js, found in 2mobCard.js) has modified code.
