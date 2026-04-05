@@ -2,57 +2,59 @@ import { getState, setLodestoneId, setCharacterName, setVerified } from "./2data
 import { verifyLodestoneCharacter, registerUserToFirestore } from "./2server.js";
 import { cloneTemplate } from "./2mobCard.js";
 
-document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.getElementById('manual-modal');
-    const backdrop = document.getElementById('manual-modal-backdrop');
-    const closeBtn = document.getElementById('close-manual-modal');
-    const container = document.getElementById('readme-container');
-    let isLoaded = false;
-    let currentVCode = "";
+let isLoaded = false;
+let currentVCode = "";
 
+export const openUserManual = async () => {
+    const modal = document.getElementById('manual-modal');
+    const container = document.getElementById('readme-container');
     if (!modal || !container) return;
 
-    window.openUserManual = async () => {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        document.body.classList.add('overflow-hidden');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
 
-        if (!isLoaded) {
-            try {
-                container.innerHTML = '<p style="text-align:center;color:#9ca3af">読み込み中...</p>';
-                const response = await fetch('./README.md');
-                if (!response.ok) throw new Error('Failed to load README');
+    if (!isLoaded) {
+        try {
+            container.innerHTML = '<p style="text-align:center;color:#9ca3af">読み込み中...</p>';
+            const response = await fetch('./README.md');
+            if (!response.ok) throw new Error('Failed to load README');
 
-                const text = await response.text();
-                marked.setOptions({
-                    breaks: true,
-                    gfm: true
-                });
-                const html = marked.parse(text);
-                container.innerHTML = DOMPurify.sanitize(html);
-                isLoaded = true;
-                updateAuthUI();
-            } catch (error) {
-                console.error(error);
-                container.innerHTML = '<p style="color:#f87171;text-align:center">マニュアルの読み込みに失敗しました。</p>';
-            }
+            const text = await response.text();
+            marked.setOptions({
+                breaks: true,
+                gfm: true
+            });
+            const html = marked.parse(text);
+            container.innerHTML = DOMPurify.sanitize(html);
+            isLoaded = true;
+            updateAuthUI();
+        } catch (error) {
+            console.error(error);
+            container.innerHTML = '<p style="color:#f87171;text-align:center">マニュアルの読み込みに失敗しました。</p>';
         }
-    };
+    }
+};
 
-    const closeModal = () => {
+const closeModal = () => {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
         document.body.classList.remove('overflow-hidden');
     };
 
+document.addEventListener('DOMContentLoaded', () => {
+    const backdrop = document.getElementById('manual-modal-backdrop');
+    const closeBtn = document.getElementById('close-manual-modal');
+
     closeBtn?.addEventListener('click', closeModal);
     backdrop?.addEventListener('click', closeModal);
+});
 
-    window.addEventListener('characterNameSet', () => {
-        if (isLoaded) updateAuthUI();
-    });
+window.addEventListener('characterNameSet', () => {
+    if (isLoaded) updateAuthUI();
+});
 
-    async function updateAuthUI() {
+async function updateAuthUI() {
         const authContainer = document.getElementById('readme-auth-session');
         if (!authContainer) return;
 
@@ -127,4 +129,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         authContainer.appendChild(formEl);
     }
-});
+
+
+// --- APPENDED MISSING FUNCTIONS ---
+
+const modal = document.getElementById('manual-modal');
+
+const container = document.getElementById('readme-container');
+
+const response = await fetch('./README.md');
+
+const text = await response.text();
+
+const html = marked.parse(text);

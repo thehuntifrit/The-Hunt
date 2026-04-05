@@ -93,6 +93,7 @@ missing_location = [
     'applyOptimisticState', 'handleCrushToggle', 'isCulled', 'attachLocationEvents'
 ]
 missing_sidebar = ['PANELS', 'manualLoaded']
+missing_readme = ['modal', 'container', 'response', 'text', 'html']
 
 # 3. Apply fixes to 2... files
 for f_name in new_files:
@@ -127,6 +128,11 @@ for f_name in new_files:
                 print(f"Adding MISSING: {m} to {f_name}")
     elif f_name == "2sidebar.js":
         for m in missing_sidebar:
+            if m in all_original_blocks:
+                appends.append(all_original_blocks[m])
+                print(f"Adding MISSING: {m} to {f_name}")
+    elif f_name == "2readme.js":
+        for m in missing_readme:
             if m in all_original_blocks:
                 appends.append(all_original_blocks[m])
                 print(f"Adding MISSING: {m} to {f_name}")

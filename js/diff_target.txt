@@ -1,0 +1,5 @@
+--- ORIG ---
+function processMobData(rawMobData, maintenance, options = {}) {
+
+--- NEW ---
+function processMobData(rawMobData, maintenance, options = {}) {

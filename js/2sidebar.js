@@ -1,5 +1,6 @@
 import { getState, setFilter } from "./2dataManager.js";
 import { filterAndRender } from "./2app.js";
+import { openUserManual } from "./2readme.js";
 
 const FilterDOM = {
   areaFilterPanelMobile: document.getElementById('area-filter-panel-mobile'),
@@ -749,6 +750,13 @@ async function getMaintenanceStatus() {
 }
 
 // No modifications beyond removing duplicates and fixing paths as requested
+
+
+// --- APPENDED MISSING FUNCTIONS ---
+
+const PANELS = ["error", "telop", "maintenance", "rank", "manual"];
+
+let manualLoaded = false;
 
 
 // --- APPENDED MISSING FUNCTIONS ---
