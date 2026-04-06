@@ -27,7 +27,7 @@ const notifiedCycles = new Set();
 let manualLoaded = false;
 let currentPanel = null;
 let mobileCurrentPanel = null;
-const errorLog = [];
+window.errorLog = window.errorLog || [];
 const MAX_ERROR_LOG = 50;
 
 // ─── 通知 ───────────────────────────────────────────────
@@ -428,6 +428,7 @@ function renderNavItems(container, layout) {
     container.innerHTML = "";
     NAV_ITEMS.forEach(item => {
         if (item.type === "divider") {
+            if (layout === "mobile") return;
             const div = document.createElement("div");
             div.className = "sidebar-divider";
             container.appendChild(div);
@@ -583,24 +584,24 @@ function captureErrors() {
         origError.apply(console, args);
         const msg = args.map(a => (typeof a === "object" ? JSON.stringify(a, null, 2) : String(a))).join(" ");
         const time = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-        errorLog.unshift({ time, msg });
-        if (errorLog.length > MAX_ERROR_LOG) errorLog.pop();
+        window.errorLog.unshift({ time, msg });
+        if (window.errorLog.length > MAX_ERROR_LOG) window.errorLog.pop();
         updateErrorPanel();
         updateErrorBadge();
     };
 
     window.addEventListener("error", (e) => {
         const time = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-        errorLog.unshift({ time, msg: e.message || "Unknown error" });
-        if (errorLog.length > MAX_ERROR_LOG) errorLog.pop();
+        window.errorLog.unshift({ time, msg: e.message || "Unknown error" });
+        if (window.errorLog.length > MAX_ERROR_LOG) window.errorLog.pop();
         updateErrorPanel();
         updateErrorBadge();
     });
 
     window.addEventListener("unhandledrejection", (e) => {
         const time = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-        errorLog.unshift({ time, msg: String(e.reason) });
-        if (errorLog.length > MAX_ERROR_LOG) errorLog.pop();
+        window.errorLog.unshift({ time, msg: String(e.reason) });
+        if (window.errorLog.length > MAX_ERROR_LOG) window.errorLog.pop();
         updateErrorPanel();
         updateErrorBadge();
     });
@@ -611,16 +612,24 @@ function updateErrorPanel(targetContainer = null) {
     if (panels.length === 0 || (panels.length === 1 && !panels[0])) return;
 
     const fragment = document.createDocumentFragment();
-    errorLog.forEach(e => {
-        const el = cloneTemplate('sidebar-error-item-template');
-        if (el) {
-            const timeEl = el.querySelector(".error-time");
-            const msgEl = el.querySelector(".error-msg");
-            if (timeEl) timeEl.textContent = e.time;
-            if (msgEl) msgEl.textContent = e.msg;
-            fragment.appendChild(el);
-        }
-    });
+    
+    if (!window.errorLog || window.errorLog.length === 0) {
+        const emptyMsg = document.createElement("div");
+        emptyMsg.className = "text-center u-text-sm text-gray-500 mt-10";
+        emptyMsg.textContent = "現在エラーはありません";
+        fragment.appendChild(emptyMsg);
+    } else {
+        window.errorLog.forEach(e => {
+            const el = cloneTemplate('sidebar-error-item-template');
+            if (el) {
+                const timeEl = el.querySelector(".error-time");
+                const msgEl = el.querySelector(".error-msg");
+                if (timeEl) timeEl.textContent = e.time;
+                if (msgEl) msgEl.textContent = e.msg;
+                fragment.appendChild(el);
+            }
+        });
+    }
 
     panels.forEach(el => {
         if (!el) return;

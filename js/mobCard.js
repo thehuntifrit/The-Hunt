@@ -298,9 +298,9 @@ export function getSpawnCountInfo(mob) {
   let countHtml = "";
   if (remainingCount === 1) {
     const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-    countHtml = `<span class="pc-count-val count-warn font-bold">🍑${pointNumber}<span class="u-ml-1">番</span></span>`;
+    countHtml = `<span class="pc-count-val count-warn font-bold">📍${pointNumber}<span class="u-ml-1">番</span></span>`;
   } else if (remainingCount > 1) {
-    countHtml = `<span class="pc-count-val font-bold">🍑@<span class="u-ml-1">${remainingCount}</span></span>`;
+    countHtml = `<span class="pc-count-val font-bold">📍@<span class="u-ml-1">${remainingCount}</span></span>`;
   }
   return { countHtml, remainingCount, spawnCullStatus, validSpawnPoints };
 }
@@ -662,9 +662,9 @@ export function updateMobCount(card, mob) {
   if (mob.mapImage && mob.locations) {
     if (remainingCount === 1) {
       const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-      displayCountText = `<span class="pc-count-val font-bold count-warn">🍑${pointNumber}<span style="margin-left:2px;">番</span></span>`;
+      displayCountText = `<span class="pc-count-val font-bold count-warn">📍${pointNumber}<span style="margin-left:2px;">番</span></span>`;
     } else if (remainingCount > 1) {
-      displayCountText = `<span class="pc-count-val font-bold text-secondary">🍑@<span style="margin-left:2px;">${remainingCount}</span></span>`;
+      displayCountText = `<span class="pc-count-val font-bold text-secondary">📍@<span style="margin-left:2px;">${remainingCount}</span></span>`;
     }
   }
   if (countContainer.dataset.cacheKey !== displayCountText) {

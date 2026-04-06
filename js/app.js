@@ -606,6 +606,26 @@ export function updateProgressBars() {
 
   if (!(isMobile && isOverlayOpen)) {
     filtered.forEach(mob => {
+      const info = mob.repopInfo;
+      if (info) {
+        let needsRecalc = false;
+        const infoNow = nowSec;
+
+        if (info.conditionWindowEnd && infoNow >= (info.conditionWindowEnd.getTime() / 1000) && info.isInConditionWindow) {
+          needsRecalc = true;
+        } else if (info.nextConditionSpawnDate && infoNow >= (info.nextConditionSpawnDate.getTime() / 1000) && info.status === "NextCondition") {
+          needsRecalc = true;
+        } else if (info.minRepop && infoNow >= info.minRepop && info.status === "Next") {
+          needsRecalc = true;
+        } else if (info.maxRepop && infoNow >= info.maxRepop && info.status === "PopWindow") {
+          needsRecalc = true;
+        }
+
+        if (needsRecalc) {
+          recalculateMob(mob.No);
+        }
+      }
+
       const card = cardCache.get(String(mob.No));
       if (card) {
         checkAndNotify(mob);
