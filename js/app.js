@@ -101,6 +101,7 @@ async function initApp() {
     attachMobCardEvents();
     attachLocationEvents();
     attachGlobalEventListeners();
+    window.renderMaintenanceStatus = renderMaintenanceStatus;
 
     window.addEventListener('maintenanceUpdated', () => {
       renderMaintenanceStatus();
@@ -220,8 +221,6 @@ async function getMaintenanceStatus() {
 }
 
 export async function renderMaintenanceStatus() {
-  window.renderMaintenanceStatus = renderMaintenanceStatus;
-
   const state = getState();
   const maintenance = await getMaintenanceStatus();
   const maintenanceEl = document.getElementById("status-message-maintenance");
@@ -574,10 +573,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       sortAndRedistribute();
     }, 100);
 
-    setTimeout(() => {
-      isInitialSortingSuppressed = false;
-    }, 3000);
-
     isInitialLoading = false;
     const overlay = document.getElementById("loading-overlay");
     if (overlay) overlay.classList.add("hidden");
@@ -708,7 +703,7 @@ export function handleReportResult(result) {
   }
 }
 
-export async function handleInstantReport(mobNo, rank) {
+export async function handleInstantReport(mobNo) {
   const result = await submitReport(mobNo, new Date().toISOString());
   handleReportResult(result);
 }
@@ -844,11 +839,11 @@ function attachGlobalEventListeners() {
     }
   }, 100));
 
-  document.addEventListener("click", (e) => {
-    if (e.target.closest(".tab-button")) {
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.tab-button')) {
       return;
     }
-    if (e.target.closest(".area-filter-btn")) {
+    if (e.target.closest('.area-filter-btn')) {
       handleAreaFilterClick(e);
       return;
     }
@@ -856,20 +851,23 @@ function attachGlobalEventListeners() {
       setOpenMobCardNo(null);
       sortAndRedistribute({ immediate: true });
     }
+    if (e.target.matches("input[data-action='save-memo']")) {
+      e.stopPropagation();
+    }
   });
 
   if (DOM.reportForm) {
-    DOM.reportForm.addEventListener("submit", handleReportSubmit);
+    DOM.reportForm.addEventListener('submit', handleReportSubmit);
   }
 
-  document.addEventListener("change", async (e) => {
+  document.addEventListener('change', async (e) => {
     if (e.target.matches("input[data-action='save-memo']")) {
       const input = e.target;
       const mobNo = parseInt(input.dataset.mobNo, 10);
       const text = input.value;
 
       if (!getState().isVerified) {
-        input.value = "";
+        input.value = '';
         openAuthModal();
         return;
       }
@@ -879,15 +877,15 @@ function attachGlobalEventListeners() {
   });
 
   let touchStartX = 0;
-  document.addEventListener("touchstart", (e) => {
-    const reportBtn = e.target.closest(".report-side-bar");
+  document.addEventListener('touchstart', (e) => {
+    const reportBtn = e.target.closest('.report-side-bar');
     if (reportBtn) {
       touchStartX = e.changedTouches[0].screenX;
     }
   }, { passive: true });
 
-  document.addEventListener("touchend", (e) => {
-    const reportBtn = e.target.closest(".report-side-bar");
+  document.addEventListener('touchend', (e) => {
+    const reportBtn = e.target.closest('.report-side-bar');
     if (reportBtn) {
       const touchEndX = e.changedTouches[0].screenX;
       if (touchEndX - touchStartX > 30) {
@@ -902,17 +900,11 @@ function attachGlobalEventListeners() {
     }
   }, { passive: true });
 
-  document.addEventListener("keydown", (e) => {
+  document.addEventListener('keydown', (e) => {
     if (e.target.matches("input[data-action='save-memo']")) {
-      if (e.key === "Enter") {
+      if (e.key === 'Enter') {
         e.target.blur();
       }
-      e.stopPropagation();
-    }
-  });
-
-  document.addEventListener("click", (e) => {
-    if (e.target.matches("input[data-action='save-memo']")) {
       e.stopPropagation();
     }
   });

@@ -119,11 +119,11 @@ function ensureAuth() {
 
 export const submitReport = async (mobNo, timeISO) => {
     const authData = ensureAuth();
-    if (!authData) return;
+    if (!authData) return { success: false, error: "認証エラー" };
 
     const { lodestoneId, mobs } = authData;
     const mob = mobs.find(m => m.No === mobNo);
-    if (!mob) return;
+    if (!mob) return { success: false, error: "Mobデータが見つかりません" };
 
     let killTimeDate;
     if (timeISO) {
@@ -132,10 +132,6 @@ export const submitReport = async (mobNo, timeISO) => {
             killTimeDate = new Date();
         }
     } else {
-        killTimeDate = new Date();
-    }
-
-    if (!killTimeDate) {
         killTimeDate = new Date();
     }
 

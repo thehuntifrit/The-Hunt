@@ -96,7 +96,11 @@ export function getState() {
 
 export function setUserId(uid) {
     state.userId = uid;
-    localStorage.setItem("user_uuid", uid);
+    if (uid) {
+        localStorage.setItem("user_uuid", uid);
+    } else {
+        localStorage.removeItem("user_uuid");
+    }
 }
 
 export function setLodestoneId(id) {
