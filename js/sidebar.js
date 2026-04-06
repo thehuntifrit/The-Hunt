@@ -672,9 +672,9 @@ function renderSidebarFilterAccordion(targetContainer = null) {
 
     const ranks = [
         { key: "ALL", label: "ALL", color: "#fff" },
-        { key: "S", label: "S RANK", color: "var(--rank-s)" },
-        { key: "A", label: "A RANK", color: "var(--rank-a)" },
-        { key: "F.A.T.E.", label: "F.A.T.E.", color: "var(--rank-f)" },
+        { key: "S", label: "S rank", color: "var(--rank-s)" },
+        { key: "A", label: "A rank", color: "var(--rank-a)" },
+        { key: "FATE", label: "FATE", color: "var(--rank-f)" },
     ];
 
     const state = getState();
