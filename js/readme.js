@@ -57,77 +57,77 @@ window.addEventListener('characterNameSet', () => {
 });
 
 async function updateAuthUI() {
-        const authContainer = document.getElementById('readme-auth-session');
-        if (!authContainer) return;
+    const authContainer = document.getElementById('readme-auth-session');
+    if (!authContainer) return;
 
-        const state = getState();
-        authContainer.innerHTML = "";
+    const state = getState();
+    authContainer.innerHTML = "";
 
-        if (state.isVerified) {
-            const verifiedEl = cloneTemplate('auth-verified-template');
-            if (verifiedEl) authContainer.appendChild(verifiedEl);
+    if (state.isVerified) {
+        const verifiedEl = cloneTemplate('auth-verified-template');
+        if (verifiedEl) authContainer.appendChild(verifiedEl);
+        return;
+    }
+
+    if (!currentVCode) {
+        currentVCode = "HUNT-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+    }
+
+    const formEl = cloneTemplate('auth-form-template');
+    if (!formEl) return;
+
+    const vcodeDisplay = formEl.querySelector('.auth-vcode-display');
+    const copyBtn = formEl.querySelector('.auth-copy-btn');
+    const verifyBtn = formEl.querySelector('.auth-verify-btn');
+    const idInput = formEl.querySelector('.auth-id-input');
+    const statusEl = formEl.querySelector('.auth-status-msg');
+
+    if (vcodeDisplay) vcodeDisplay.textContent = currentVCode;
+
+    copyBtn?.addEventListener('click', () => {
+        navigator.clipboard.writeText(currentVCode);
+        const original = copyBtn.textContent;
+        copyBtn.textContent = "Done!";
+        setTimeout(() => copyBtn.textContent = original, 2000);
+    });
+
+    verifyBtn?.addEventListener('click', async () => {
+        const raw = idInput.value.trim();
+        if (!raw) return;
+
+        const idMatch = raw.match(/character\/(\d+)/);
+        const lodestoneId = idMatch ? idMatch[1] : raw.match(/^\d+$/) ? raw : null;
+
+        if (!lodestoneId || lodestoneId.length > 20) {
+            statusEl.textContent = "正しいIDまたはURLを入力してください";
+            statusEl.className = "text-xs text-red-400";
             return;
         }
 
-        if (!currentVCode) {
-            currentVCode = "HUNT-" + Math.random().toString(36).substring(2, 10).toUpperCase();
-        }
+        statusEl.textContent = "検証中...";
+        statusEl.className = "text-xs text-cyan-400 auth-status-msg";
+        verifyBtn.disabled = true;
 
-        const formEl = cloneTemplate('auth-form-template');
-        if (!formEl) return;
-
-        const vcodeDisplay = formEl.querySelector('.auth-vcode-display');
-        const copyBtn = formEl.querySelector('.auth-copy-btn');
-        const verifyBtn = formEl.querySelector('.auth-verify-btn');
-        const idInput = formEl.querySelector('.auth-id-input');
-        const statusEl = formEl.querySelector('.auth-status-msg');
-
-        if (vcodeDisplay) vcodeDisplay.textContent = currentVCode;
-
-        copyBtn?.addEventListener('click', () => {
-            navigator.clipboard.writeText(currentVCode);
-            const original = copyBtn.textContent;
-            copyBtn.textContent = "Done!";
-            setTimeout(() => copyBtn.textContent = original, 2000);
-        });
-
-        verifyBtn?.addEventListener('click', async () => {
-            const raw = idInput.value.trim();
-            if (!raw) return;
-
-            const idMatch = raw.match(/character\/(\d+)/);
-            const lodestoneId = idMatch ? idMatch[1] : raw.match(/^\d+$/) ? raw : null;
-
-            if (!lodestoneId || lodestoneId.length > 20) {
-                statusEl.textContent = "正しいIDまたはURLを入力してください";
-                statusEl.className = "text-xs text-red-400";
-                return;
-            }
-
-            statusEl.textContent = "検証中...";
-            statusEl.className = "text-xs text-cyan-400 auth-status-msg";
-            verifyBtn.disabled = true;
-
-            try {
-                const result = await verifyLodestoneCharacter(lodestoneId, currentVCode);
-                if (result.success) {
-                    statusEl.textContent = "検証成功！登録しています...";
-                    await registerUserToFirestore(lodestoneId, result.characterName);
-                    setLodestoneId(lodestoneId);
-                    setCharacterName(result.characterName);
-                    setVerified(true);
-                    updateAuthUI();
-                } else {
-                    statusEl.textContent = result.error;
-                    statusEl.className = "text-xs text-red-400 auth-status-msg";
-                    verifyBtn.disabled = false;
-                }
-            } catch (err) {
-                statusEl.textContent = "エラーが発生しました";
+        try {
+            const result = await verifyLodestoneCharacter(lodestoneId, currentVCode);
+            if (result.success) {
+                statusEl.textContent = "検証成功！登録しています...";
+                await registerUserToFirestore(lodestoneId, result.characterName);
+                setLodestoneId(lodestoneId);
+                setCharacterName(result.characterName);
+                setVerified(true);
+                updateAuthUI();
+            } else {
+                statusEl.textContent = result.error;
                 statusEl.className = "text-xs text-red-400 auth-status-msg";
                 verifyBtn.disabled = false;
             }
-        });
+        } catch (err) {
+            statusEl.textContent = "エラーが発生しました";
+            statusEl.className = "text-xs text-red-400 auth-status-msg";
+            verifyBtn.disabled = false;
+        }
+    });
 
-        authContainer.appendChild(formEl);
-    }
+    authContainer.appendChild(formEl);
+}
