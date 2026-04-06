@@ -147,7 +147,9 @@ export function checkAndNotify(mob) {
 // ─── フィルタ ───────────────────────────────────────────
 
 function normalizeRank(rank) {
-    if (rank === 'F.A.T.E.' || rank === 'FATE') return 'F';
+    if (rank === 'S rank' || rank === 'S') return 'S';
+    if (rank === 'A rank' || rank === 'A') return 'A';
+    if (rank === 'FATE' || rank === 'F.A.T.E.' || rank === 'F') return 'F';
     return rank;
 }
 
@@ -190,7 +192,7 @@ export const renderAreaFilterPanel = (customContainer = null) => {
             const isSelected = currentSet.has(item);
             const btn = document.createElement("button");
             btn.className = `area-filter-btn ${isSelected ? 'is-selected' : ''}`;
-            btn.textContent = (state.filter.rank === 'F.A.T.E.' && item === 'F') ? 'F.A.T.E.' : (state.filter.rank === 'ALL' ? (item === 'F' ? 'F.A.T.E.' : `${item} RANK`) : item);
+            btn.textContent = (state.filter.rank === 'FATE' && item === 'F') ? 'FATE' : (state.filter.rank === 'ALL' ? (item === 'F' ? 'FATE' : `${item} rank`) : item);
             btn.dataset.value = item;
             btn.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -352,10 +354,11 @@ export function filterMobsByRankAndArea(mobs) {
 
             return targetSet.has(mobExpansion);
         } else {
+            const normUiRank = normalizeRank(uiRank);
             const isRankMatch =
-                (uiRank === 'S' && mobRank === 'S') ||
-                (uiRank === 'A' && (mobRank === 'A' || mobRank.startsWith('B'))) ||
-                (normalizeRank(uiRank) === 'F' && mobRank === 'F');
+                (normUiRank === 'S' && mobRank === 'S') ||
+                (normUiRank === 'A' && (mobRank === 'A' || mobRank.startsWith('B'))) ||
+                (normUiRank === 'F' && mobRank === 'F');
 
             if (!isRankMatch) return false;
 
@@ -671,9 +674,9 @@ function renderSidebarFilterAccordion(targetContainer = null) {
     if (!container) return;
 
     const ranks = [
-        { key: "ALL", label: "ALL", color: "#fff" },
-        { key: "S", label: "S rank", color: "var(--rank-s)" },
-        { key: "A", label: "A rank", color: "var(--rank-a)" },
+        { key: "ALL", label: "ALL", color: "var(--all-rank)" },
+        { key: "S rank", label: "S rank", color: "var(--rank-s)" },
+        { key: "A rank", label: "A rank", color: "var(--rank-a)" },
         { key: "FATE", label: "FATE", color: "var(--rank-f)" },
     ];
 
@@ -696,10 +699,13 @@ function renderSidebarFilterAccordion(targetContainer = null) {
             if (isActive) itemEl.classList.add('active');
             if (isExpanded) itemEl.classList.add('is-expanded');
             itemEl.dataset.rank = r.key;
+            itemEl.style.setProperty('--current-rank', r.color);
+            const rgb = r.color.replace('var(--', '').replace(')', '-rgb');
+            itemEl.style.setProperty('--current-rank-rgb', `var(--${rgb})`);
 
             const header = itemEl.querySelector(".rank-header");
             if (header) {
-                header.dataset.rank = isActive ? r.key : "";
+                header.dataset.rank = r.key;
                 header.textContent = r.label;
                 header.addEventListener("click", () => {
                     const rankKey = header.closest(".rank-accordion-item").dataset.rank;
