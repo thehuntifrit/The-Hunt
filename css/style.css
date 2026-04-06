@@ -115,7 +115,7 @@
 
     --transition-all: all var(--t-base);
     --transition-opacity: opacity var(--t-base);
-    --transition-transform: transform var(--t-base);
+    --transition-transform: none;
 }
 
 @media (max-width: 1023px) {
@@ -260,6 +260,13 @@
             align-items: stretch;
             justify-content: space-around;
             block-size: 52px;
+        }
+
+        .sidebar-divider {
+            inline-size: 1px;
+            block-size: 32px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: auto 4px;
         }
     }
 
@@ -541,40 +548,6 @@ html body.magnifier-active .mob-card-inner * {
         &.active {
             background: rgba(255, 255, 255, 0.03);
         }
-
-        .rank-header {
-            inline-size: 100%;
-            padding: var(--s-4) var(--s-2);
-            background: rgba(255, 255, 255, 0.08);
-            border: none;
-            color: var(--color-ui-unselected);
-            font-size: 16px;
-            font-weight: 800;
-            text-align: center;
-            cursor: pointer;
-            transition: all var(--t-fast);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-
-        }
-
-        .rank-header:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--white);
-        }
-
-        &.active .rank-header {
-            color: var(--white);
-            background: var(--bg-glass);
-            border-block-end: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        &[data-rank].active .rank-header {
-            border-inline-start: 3px solid var(--current-rank);
-            color: var(--current-rank);
-            background: rgba(var(--current-rank-rgb), 0.22);
-            text-shadow: 0 0 10px rgba(var(--current-rank-rgb), 0.4);
-        }
     }
 }
 
@@ -590,6 +563,7 @@ html body.magnifier-active .mob-card-inner * {
         min-block-size: 100vh;
         align-items: flex-start;
     }
+
 
     #pc-left-list {
         inline-size: 655px;
@@ -856,7 +830,7 @@ html body.magnifier-active .mob-card-inner * {
         }
 
         &:active {
-            transform: scale(0.9);
+            transition: none;
         }
     }
 
@@ -963,114 +937,16 @@ html body.magnifier-active .mob-card-inner * {
             }
         }
 
-        .sidebar-icon-btn {
-            inline-size: 100%;
-            min-block-size: 52px;
-            border: none;
-            background: transparent;
-            color: var(--nav-text);
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: all var(--t-fast);
-            position: relative;
-            padding: var(--s-1) 0;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-
-            .nav-icon {
-                font-size: 20px;
-                line-height: 1;
-                margin-block-end: 2px;
-                transition: transform var(--t-fast);
-            }
-
-            .nav-label {
-                font-size: var(--fs-ui-tiny);
-                font-weight: 800;
-                letter-spacing: 0.1em;
-                line-height: 1;
-                color: var(--nav-label);
-                transition: color var(--t-fast);
-                white-space: nowrap;
-                text-align: center;
-                display: block;
-                width: 100%;
-            }
-
-            &:hover {
-                .nav-icon {
-                    transform: scale(1.1);
-                    color: var(--nav-hover-text);
-                }
-
-                .nav-label {
-                    color: var(--nav-hover-text);
-                }
-            }
-
-            &:active {
-                transform: scale(0.95);
-                transition: none;
-            }
-
-            &.active {
-                background: var(--nav-active-bg);
-                color: var(--nav-active-text);
-                box-shadow: none;
-                border-radius: 6px;
-                margin-inline: 4px;
-                inline-size: 48px;
-                block-size: 48px;
-                margin-block: 2px;
-                position: relative;
-                align-self: center;
-                transition: none;
-
-                &::before {
-                    content: '';
-                    position: absolute;
-                    inset-inline-start: 2px;
-                    inset-block: 25%;
-                    inline-size: 3px;
-                    background: var(--nav-active-text);
-                    border-radius: var(--r-sm);
-                    transition: none;
-                }
-            }
-
-            &.has-alert {
-                color: var(--nav-alert);
-                text-shadow: 0 0 10px rgba(var(--rank-s-rgb), 0.6);
-                animation: sidebar-alert-pulse 2s infinite ease-in-out;
-
-                &::after {
-                    content: '';
-                    position: absolute;
-                    inset-block-start: var(--s-1);
-                    inset-inline-end: var(--s-1);
-                    inline-size: 6px;
-                    block-size: 6px;
-                    background: var(--nav-badge-error);
-                    border-radius: 50%;
-                    box-shadow: 0 0 8px var(--nav-badge-error);
-                }
-            }
-        }
     }
 
     @keyframes sidebar-alert-pulse {
 
         0%,
         100% {
-            transform: scale(1);
             opacity: 1;
         }
 
         50% {
-            transform: scale(1.1);
             opacity: 0.8;
         }
     }
@@ -1467,12 +1343,10 @@ html body.magnifier-active .mob-card-inner * {
 
         0%,
         100% {
-            transform: scale(1);
             opacity: 1;
         }
 
         50% {
-            transform: scale(1.1);
             opacity: 0.8;
         }
     }
@@ -1974,7 +1848,7 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .spawn-point:hover {
-    transform: translate(-50%, -50%) scale(1.5);
+    transform: translate(-50%, -50%);
     z-index: 20;
 }
 
@@ -1986,6 +1860,119 @@ html body.magnifier-active .mob-card-inner * {
 
 
 /* --- SECTION: SIDEBAR --- */
+.app-nav-btn {
+    inline-size: 100%;
+    min-block-size: 52px;
+    border: none;
+    background: transparent;
+    color: var(--nav-text);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--t-fast);
+    position: relative;
+    padding: var(--s-1) 0;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+
+    .nav-icon {
+        font-size: 20px;
+        line-height: 1;
+        margin-block-end: 2px;
+    }
+
+    .nav-label {
+        font-size: var(--fs-ui-tiny);
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        line-height: 1;
+        color: var(--nav-label);
+        transition: color var(--t-fast);
+        white-space: nowrap;
+        text-align: center;
+        display: block;
+        width: 100%;
+    }
+
+    &:hover {
+        .nav-icon {
+            color: var(--nav-hover-text);
+        }
+
+        .nav-label {
+            color: var(--nav-hover-text);
+        }
+    }
+
+    &:active {
+        transition: none;
+    }
+
+    &.active {
+        background: var(--nav-active-bg);
+        color: var(--nav-active-text);
+        box-shadow: none;
+        border-radius: 0;
+        margin-inline: 0;
+        inline-size: 100%;
+        block-size: 52px;
+        margin-block: 0;
+        position: relative;
+        align-self: stretch;
+        transition: none;
+
+        &::before {
+            content: '';
+            position: absolute;
+            inset-inline-start: 0;
+            inset-block: 0;
+            inline-size: 3px;
+            background: var(--nav-active-text);
+            transition: none;
+        }
+    }
+
+    &.has-alert {
+        color: var(--nav-alert);
+        text-shadow: 0 0 10px rgba(var(--rank-s-rgb), 0.6);
+        animation: sidebar-alert-pulse 2s infinite ease-in-out;
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset-block-start: var(--s-1);
+            inset-inline-end: var(--s-1);
+            inline-size: 6px;
+            block-size: 6px;
+            background: var(--nav-badge-error);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--nav-badge-error);
+        }
+    }
+
+    /* Notification Toggle Specifics */
+    .hidden-toggle {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+        inline-size: 0;
+        block-size: 0;
+    }
+
+    &:has(input:checked) {
+        .nav-icon {
+            color: var(--accent-gold);
+            text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+        }
+
+        .nav-label {
+            color: var(--white);
+        }
+    }
+}
+
 .sidebar-section-title {
     font-size: var(--fs-ui-sm);
     font-weight: 800;
@@ -2114,27 +2101,37 @@ html body.magnifier-active .mob-card-inner * {
 
 .rank-header {
     inline-size: 100%;
-    padding: 6px 12px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--r-sm);
-    cursor: pointer;
-    font-size: 11px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: var(--color-ui-unselected);
+    font-size: 16px;
     font-weight: 800;
-    text-align: inset-inline-start;
+    text-align: center;
+    cursor: pointer;
     transition: all var(--t-fast);
-    color: var(--white);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
     display: block;
     box-sizing: border-box;
-}
 
-.rank-header:hover {
-    background: rgba(255, 255, 255, 0.08);
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--white);
+    }
 }
 
 .rank-accordion-item.active .rank-header {
-    border-color: rgba(34, 211, 238, 0.4);
-    background: rgba(34, 211, 238, 0.1);
+    color: var(--white);
+    background: var(--bg-glass);
+    border-block-end: 1px solid rgba(255, 255, 255, 0.05);
+
+    &[data-rank] {
+        border-inline-start: 3px solid var(--current-rank);
+        color: var(--current-rank);
+        background: rgba(var(--current-rank-rgb), 0.22);
+        text-shadow: 0 0 10px rgba(var(--current-rank-rgb), 0.4);
+    }
 }
 
 .rank-accordion-item.is-expanded .area-expansion {
@@ -2197,7 +2194,7 @@ html body.magnifier-active .mob-card-inner * {
     contain: content;
     container-type: inline-size;
     container-name: mob-card;
-    transition: transform var(--t-slow) cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity var(--t-slow) cubic-bezier(0.16, 1, 0.3, 1);
 
     .mob-card-inner {
         background: linear-gradient(135deg, #0d1e40, #060f26);
@@ -2506,7 +2503,7 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .mob-card {
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mob-card:hover {
@@ -2657,13 +2654,13 @@ html body.magnifier-active .mob-card-inner * {
     .area-filter-btn {
         inline-size: 100%;
         margin: 0;
-        font-size: 13px;
-        font-weight: 700;
-        padding: var(--s-2) var(--s-1);
+        font-size: 16px;
+        font-weight: 800;
+        padding: 10px 12px;
         min-block-size: 40px;
-        background: var(--bg-glass);
-        border: 1px solid var(--border-normal);
-        border-radius: var(--r-sm);
+        background: rgba(255, 255, 255, 0.08);
+        border: none;
+        border-radius: 0;
         color: var(--color-ui-unselected);
         cursor: pointer;
         transition: all var(--t-fast);
@@ -2674,17 +2671,15 @@ html body.magnifier-active .mob-card-inner * {
         box-sizing: border-box;
 
         &:hover {
-            background: rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.1);
             color: var(--white);
-            border-color: rgba(255, 255, 255, 0.25);
         }
 
         &.is-selected {
-            background: rgba(var(--cyan-rgb), 0.12);
+            border-inline-start: 3px solid var(--accent-cyan);
             color: var(--accent-cyan);
-            font-weight: 800;
-            border-color: var(--accent-cyan);
-            box-shadow: var(--shadow-neon);
+            background: rgba(var(--cyan-rgb), 0.22);
+            text-shadow: 0 0 10px rgba(var(--cyan-rgb), 0.4);
         }
     }
 
@@ -2915,16 +2910,13 @@ html body.magnifier-active .mob-card-inner * {
 
 /* --- SECTION: ANIMATIONS --- */
 @keyframes app-pulse {
-
     0%,
     100% {
         opacity: 1;
-        transform: scale(1);
     }
 
     50% {
         opacity: 0.4;
-        transform: scale(0.85);
     }
 }
 
@@ -2977,6 +2969,21 @@ html body.magnifier-active .mob-card-inner * {
     #mobile-top-bar,
     #mobile-footer-bar {
         display: none;
+    }
+
+    .app-nav-btn.active {
+        inline-size: 48px;
+        block-size: 48px;
+        margin-inline: 4px;
+        margin-block: 2px;
+        border-radius: 6px;
+        align-self: center;
+
+        &::before {
+            inset-inline-start: 2px;
+            inset-block: 25%;
+            border-radius: var(--r-sm);
+        }
     }
 }
 

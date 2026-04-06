@@ -425,49 +425,46 @@ function renderNavItems(container, layout) {
     container.innerHTML = "";
     NAV_ITEMS.forEach(item => {
         if (item.type === "divider") {
-            if (layout === "sidebar") {
-                const div = document.createElement("div");
-                div.className = "sidebar-divider";
-                container.appendChild(div);
-            }
+            const div = document.createElement("div");
+            div.className = "sidebar-divider";
+            container.appendChild(div);
             return;
         }
 
         if (item.type === "panel") {
             const btn = document.createElement("button");
-            btn.className = `${layout === "sidebar" ? "sidebar-icon-btn" : "mobile-footer-btn"} app-nav-btn`;
+            btn.className = "app-nav-btn";
             btn.dataset.panel = item.id;
             btn.innerHTML = `
                 <span class="nav-icon">${item.icon}</span>
                 <span class="nav-label">${item.label}</span>
             `;
             btn.addEventListener("click", () => {
-                if (layout === "sidebar") togglePanel(item.id);
+                const isMobile = window.innerWidth < 1024;
+                if (!isMobile) togglePanel(item.id);
                 else toggleMobilePanel(item.id);
             });
             container.appendChild(btn);
         } else if (item.type === "toggle") {
-            const toggleDiv = document.createElement("div");
-            const isMobile = layout === "mobile";
-            toggleDiv.className = isMobile ? "mobile-footer-btn mobile-footer-notify" : "sidebar-notification-toggle app-nav-toggle";
             const id = `${layout === "sidebar" ? "sidebar" : "mobile"}-notification-toggle`;
             const name = `${layout === "sidebar" ? "sidebar" : "mobile"}-notify`;
-            toggleDiv.innerHTML = `
-                <label for="${id}" class="nav-item-content">
-                    <input type="checkbox" id="${id}" name="${name}" class="hidden-toggle">
-                    <span class="nav-icon">${item.icon}</span>
-                    <span class="nav-label">${item.label}</span>
-                </label>
+            const toggleLabel = document.createElement("label");
+            toggleLabel.className = "app-nav-btn nav-toggle-btn";
+            toggleLabel.setAttribute("for", id);
+            toggleLabel.innerHTML = `
+                <input type="checkbox" id="${id}" name="${name}" class="hidden-toggle">
+                <span class="nav-icon">${item.icon}</span>
+                <span class="nav-label">${item.label}</span>
             `;
-            container.appendChild(toggleDiv);
+            container.appendChild(toggleLabel);
         }
     });
 }
 
 function togglePanel(panelName) {
     if (panelName === "manual") {
-        if (typeof window.openUserManual === "function") {
-            window.openUserManual();
+        if (typeof openUserManual === "function") {
+            openUserManual();
         }
         return;
     }

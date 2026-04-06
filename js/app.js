@@ -297,18 +297,18 @@ export async function renderMaintenanceStatus() {
     p.appendChild(msgSpan);
   });
 
-  document.querySelectorAll('.sidebar-icon-btn[data-panel="maintenance"], .mobile-footer-btn[data-panel="maintenance"]')
+  document.querySelectorAll(`.app-nav-btn[data-panel="maintenance"]`)
     .forEach(btn => btn.classList.toggle("has-alert", hasMaintenance));
 
-  document.querySelectorAll('.sidebar-icon-btn[data-panel="telop"], .mobile-footer-btn[data-panel="telop"]')
+  document.querySelectorAll(`.app-nav-btn[data-panel="telop"]`)
     .forEach(btn => btn.classList.toggle("has-alert", hasMessage));
 
   const errorLogCount = window.errorLog ? window.errorLog.length : 0;
   const hasError = errorLogCount > 0;
-  document.querySelectorAll('.sidebar-icon-btn[data-panel="error"], .mobile-footer-btn[data-panel="error"]')
+  document.querySelectorAll(`.app-nav-btn[data-panel="error"]`)
     .forEach(btn => btn.classList.toggle("has-alert", hasError));
 
-  document.querySelectorAll('.sidebar-icon-btn[data-panel="rank"], .mobile-footer-btn[data-panel="rank"]')
+  document.querySelectorAll(`.app-nav-btn[data-panel="rank"]`)
     .forEach(btn => btn.classList.remove("has-alert"));
 }
 
@@ -657,7 +657,7 @@ export function updateProgressBars() {
     }
   }
 
-  const rankBtn = document.querySelector('.mobile-footer-btn[data-panel="rank"]');
+  const rankBtn = document.querySelector('.app-nav-btn[data-panel="rank"]');
   if (rankBtn) rankBtn.classList.remove("has-alert");
 }
 
