@@ -811,7 +811,7 @@ html body.magnifier-active .mob-card-inner * {
         opacity: 1;
         color: var(--accent-cyan);
         background: var(--nav-active-bg);
-        
+
         &::before {
             content: '';
             position: absolute;
@@ -843,7 +843,7 @@ html body.magnifier-active .mob-card-inner * {
 /* Notification Toggle Specifics */
 .nav-toggle-btn {
     user-select: none;
-    
+
     input {
         opacity: 0;
         position: absolute;
@@ -2670,6 +2670,7 @@ html body.magnifier-active .mob-card-inner * {
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--r-lg);
     box-shadow: none;
+    overflow: hidden;
     contain: layout style;
     inline-size: 100%;
     max-inline-size: 420px;
@@ -2698,7 +2699,7 @@ html body.magnifier-active .mob-card-inner * {
     }
 
     .pc-detail-name {
-        font-size: var(--fs-sm);
+        font-size: 16px;
         font-weight: 800;
         letter-spacing: -0.01em;
         white-space: nowrap;
