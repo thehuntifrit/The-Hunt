@@ -2740,8 +2740,10 @@ html body.magnifier-active .mob-card-inner * {
     pointer-events: auto;
 
     @media (max-width: 1023px) {
-        max-inline-size: none;
+        max-inline-size: 96%;
         width: 100%;
+        margin-inline: auto;
+        margin-block: 2dvh;
         height: auto;
     }
 
@@ -2880,6 +2882,11 @@ html body.magnifier-active .mob-card-inner * {
 #pc-right-detail,
 #mobile-detail-overlay {
     background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    box-sizing: border-box;
 }
 
 /* --- SECTION: SPECIAL --- */
