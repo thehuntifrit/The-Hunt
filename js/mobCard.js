@@ -755,10 +755,11 @@ export function updateSimpleMobItem(item, mob) {
 
       const labelSpan = document.createElement("span");
       labelSpan.className = `timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''} text-center opacity-90`;
+      labelSpan.style.marginInlineStart = "4px";
       labelSpan.textContent = label;
 
-      inner.appendChild(labelSpan);
       inner.appendChild(timerNode);
+      inner.appendChild(labelSpan);
       timeEl.appendChild(inner);
       timeEl._lastCacheKey = cacheKey;
     }

@@ -581,7 +581,7 @@ html body.magnifier-active .mob-card-inner * {
 
 .pc-list-item {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 36px 92px 28px;
+    grid-template-columns: minmax(0, 1fr) 92px 36px 28px;
     align-items: center;
     max-width: 560px;
     width: 100%;
@@ -654,19 +654,19 @@ html body.magnifier-active .mob-card-inner * {
     }
 
     .pc-list-time {
-        grid-column: 3;
+        grid-column: 2;
         font-family: var(--font-mono);
         font-size: var(--fs-ui-md);
         font-weight: 500;
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        white-space: pre;
+        white-space: nowrap;
         position: relative;
         z-index: 10;
-        justify-self: end;
         width: 100%;
         text-align: right;
+        padding-inline-end: var(--s-1);
     }
 
     .pc-list-bg-gauge {
@@ -689,7 +689,7 @@ html body.magnifier-active .mob-card-inner * {
     }
 
     .pc-list-percent {
-        grid-column: 2;
+        grid-column: 3;
         font-family: var(--font-mono);
         font-size: var(--fs-ui-md);
         font-weight: 500;
@@ -2508,12 +2508,20 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .timer-inner-grid {
-    display: grid;
+    display: flex;
     align-items: center;
+    justify-content: flex-end;
     width: 100%;
     height: 100%;
-    grid-template-columns: auto 1fr;
-    gap: var(--s-2);
+    gap: 3px;
+}
+
+.timer-label-base {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .memo-icon {
