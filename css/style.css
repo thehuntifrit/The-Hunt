@@ -585,7 +585,7 @@ html body.magnifier-active .mob-card-inner * {
     background: rgba(48, 64, 94, 0.6);
     border: none;
     border-radius: var(--r-sm);
-    padding: 0 0 0 var(--s-3);
+    padding: 0 0 0 6px;
     cursor: pointer;
     transition: all var(--t-base) cubic-bezier(0.4, 0, 0.2, 1);
     -webkit-user-select: none;
@@ -1092,8 +1092,34 @@ html body.magnifier-active .mob-card-inner * {
     }
 }
 
-.flex {
-    display: flex;
+.list-rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1.6em;
+    block-size: 1.6em;
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1.5px solid currentColor;
+    margin-inline: 0 6px;
+    flex-shrink: 0;
+    box-shadow: 0 0 8px rgba(currentColor, 0.5), inset 0 0 3px rgba(currentColor, 0.3);
+    text-shadow: 0 0 4px currentColor;
+
+    &[data-rank="S"] {
+        color: var(--rank-s);
+    }
+
+    &[data-rank="A"] {
+        color: var(--rank-a);
+    }
+
+    &[data-rank="F"] {
+        color: var(--rank-f);
+    }
 }
 
 .pc-layout-container {
@@ -1334,6 +1360,36 @@ html body.magnifier-active .mob-card-inner * {
 @media (min-width: 1024px) {
     .u-mobile-only {
         display: none !important;
+    }
+}
+
+.list-rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1.6em;
+    block-size: 1.6em;
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1.5px solid currentColor;
+    margin-inline: 0 6px;
+    flex-shrink: 0;
+    box-shadow: 0 0 8px rgba(currentColor, 0.5), inset 0 0 3px rgba(currentColor, 0.3);
+    text-shadow: 0 0 4px currentColor;
+
+    &[data-rank="S"] {
+        color: var(--rank-s);
+    }
+
+    &[data-rank="A"] {
+        color: var(--rank-a);
+    }
+
+    &[data-rank="F"] {
+        color: var(--rank-f);
     }
 }
 
@@ -2472,6 +2528,11 @@ html body.magnifier-active .mob-card-inner * {
     text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
 }
 
+.detail-grid,
+.pc-detail-map {
+    margin-bottom: 8px;
+}
+
 .condition-section-neon {
     border-color: transparent;
     box-shadow: none;
@@ -2498,7 +2559,7 @@ html body.magnifier-active .mob-card-inner * {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--r-sm);
-    padding: 4px 10px;
+    padding: 1px 10px;
     display: flex;
     flex-direction: column;
 }
@@ -2691,7 +2752,7 @@ html body.magnifier-active .mob-card-inner * {
 
         .pc-list-report-btn {
             position: absolute;
-            inset-block-start: var(--s-3);
+            inset-block-start: 8px;
             inset-inline-end: var(--s-4);
             margin: 0;
             z-index: 20;
@@ -2701,6 +2762,8 @@ html body.magnifier-active .mob-card-inner * {
     .pc-detail-name {
         font-size: 16px;
         font-weight: 800;
+        margin: 0;
+        padding: 0;
         letter-spacing: -0.01em;
         white-space: nowrap;
         overflow: hidden;
@@ -2708,16 +2771,37 @@ html body.magnifier-active .mob-card-inner * {
         flex: 1;
         min-inline-size: 0;
         color: var(--white);
-        line-height: 1.2;
+        line-height: 1;
     }
 
     .pc-detail-rank {
-        font-size: var(--fs-xs);
-        block-size: min-content;
-        color: var(--current-rank);
-        border-color: rgba(var(--current-rank-rgb), 0.3);
-        background: rgba(var(--current-rank-rgb), 0.1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        inline-size: 1.62em;
+        block-size: 1.62em;
+        font-size: var(--fs-ui-base);
+        font-weight: 900;
+        line-height: 1;
         border-radius: 2px;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1.5px solid currentColor;
+        margin-inline: 0 0.6em;
+        flex-shrink: 0;
+        box-shadow: 0 0 10px rgba(currentColor, 0.5), inset 0 0 4px rgba(currentColor, 0.3);
+        text-shadow: 0 0 5px currentColor;
+
+        &[data-rank="S"] {
+            color: var(--rank-s);
+        }
+
+        &[data-rank="A"] {
+            color: var(--rank-a);
+        }
+
+        &[data-rank="F"] {
+            color: var(--rank-f);
+        }
     }
 
     .pc-detail-progress-container {
@@ -2725,7 +2809,7 @@ html body.magnifier-active .mob-card-inner * {
         background: rgba(0, 0, 0, 0.6);
         border-radius: 5px;
         overflow: hidden;
-        margin-block: 0 var(--s-2);
+        margin-block: 0;
         box-shadow: none;
         border: 1px solid var(--border-subtle);
     }
@@ -2755,7 +2839,8 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .pc-detail-content {
-    padding: 0 1rem 0.75rem;
+    padding: 0 1rem 0.5rem;
+    margin-top: -12px;
     border-top: none;
     flex: 1;
     min-height: 0;

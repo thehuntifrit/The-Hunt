@@ -436,6 +436,12 @@ export function createSimpleMobItem(mob) {
     nameEl.dataset.rank = mob.rank;
   }
 
+  const rankBadge = item.querySelector('.list-rank-badge');
+  if (rankBadge) {
+    rankBadge.textContent = mob.rank;
+    rankBadge.dataset.rank = mob.rank;
+  }
+
   updateSimpleMobItem(item, mob);
   return item;
 }
@@ -489,7 +495,7 @@ export function updateProgressText(card, mob) {
   const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
 
   const isPCDetail = !!(card.id === 'pc-right-detail' || card.closest('#pc-right-detail') || card.classList.contains('pc-detail-card'));
-  const rankBadge = card.querySelector('.list-rank-badge');
+  const rankBadge = card.querySelector('.list-rank-badge, .pc-detail-rank');
   const areaEl = card.querySelector('.mobile-header-area-text');
 
   if (rankBadge) {
