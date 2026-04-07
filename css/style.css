@@ -318,7 +318,6 @@ body {
     box-sizing: border-box;
 }
 
-
 @supports (scrollbar-width: thin) {
     * {
         scrollbar-width: thin;
@@ -3125,7 +3124,7 @@ html body.magnifier-active .mob-card-inner * {
     font-weight: 700;
     font-size: var(--fs-ui-md);
     color: var(--white);
-    background: #000000;
+    background: #00357a;
     backdrop-filter: none;
     border: 1px solid rgba(var(--cyan-rgb), 0.3);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4),
