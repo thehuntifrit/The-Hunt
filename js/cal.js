@@ -395,8 +395,8 @@ export function calculateRepop(mob, maintenance, options = {}) {
   const { skipConditionCalc = false, forceRecalc = false } = options;
   const now = Date.now() / 1000;
   const lastKill = mob.last_kill_time || 0;
-  const repopSec = mob.REPOP_s;
-  const maxSec = mob.MAX_s;
+  const repopSec = mob.repopSeconds;
+  const maxSec = mob.maxRepopSeconds;
 
   const maint = maintenance;
   if (!maint || !maint.start) return baseResult("Unknown");
@@ -408,7 +408,7 @@ export function calculateRepop(mob, maintenance, options = {}) {
   const serverUp = serverUpDate ? serverUpDate.getTime() / 1000 : 0;
   const maintenanceStart = maintenanceStartDate.getTime() / 1000;
 
-  const isRankF = (mob.Rank === "F" || mob.rank === "F");
+  const isRankF = mob.rank === "F";
 
   let minRepop, maxRepop;
   if (lastKill === 0 || (serverUp > 0 && lastKill <= serverUp)) {

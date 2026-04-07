@@ -119,11 +119,11 @@ function ensureAuth() {
 
 export const submitReport = async (mobNo, timeISO) => {
     const authData = ensureAuth();
-    if (!authData) return;
+    if (!authData) return { success: false, error: "認証エラー" };
 
     const { lodestoneId, mobs } = authData;
     const mob = mobs.find(m => m.No === mobNo);
-    if (!mob) return;
+    if (!mob) return { success: false, error: "Mobデータが見つかりません" };
 
     let killTimeDate;
     if (timeISO) {
@@ -132,10 +132,6 @@ export const submitReport = async (mobNo, timeISO) => {
             killTimeDate = new Date();
         }
     } else {
-        killTimeDate = new Date();
-    }
-
-    if (!killTimeDate) {
         killTimeDate = new Date();
     }
 
@@ -157,7 +153,7 @@ export const submitReport = async (mobNo, timeISO) => {
             maintenance = maintenance.maintenance;
         }
 
-        let repopSeconds = mob.REPOP_s;
+        let repopSeconds = mob.repopSeconds;
         let baseTimeMs = mob.last_kill_time * 1000;
 
         if (maintenance && maintenance.serverUp) {
@@ -189,8 +185,8 @@ export const submitReport = async (mobNo, timeISO) => {
 
     try {
         let collectionSuffix = "s_latest";
-        if (mob.Rank === "A") collectionSuffix = "a_latest";
-        else if (mob.Rank === "F") collectionSuffix = "f_latest";
+        if (mob.rank === "A") collectionSuffix = "a_latest";
+        else if (mob.rank === "F") collectionSuffix = "f_latest";
 
         const docRef = doc(db, "mob_status", collectionSuffix);
 

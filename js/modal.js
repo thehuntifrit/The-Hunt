@@ -1,4 +1,4 @@
-import { DOM as UiDOM } from "./uiRender.js";
+import { DOM as UiDOM } from "./app.js";
 import { getState, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
 import { verifyLodestoneCharacter, registerUserToFirestore } from "./server.js";
 
@@ -12,16 +12,14 @@ export async function openReportModal(mobNo) {
         .slice(0, 16);
 
     UiDOM.reportForm.dataset.mobNo = String(mobNo);
-    UiDOM.modalMobName.textContent = `${mob.Name}`;
+    UiDOM.modalMobName.textContent = `${mob.name}`;
     UiDOM.modalTimeInput.value = localIso;
 
     UiDOM.reportModal.classList.remove("hidden");
-    UiDOM.reportModal.classList.add("flex");
 }
 
 export function closeReportModal() {
     UiDOM.reportModal.classList.add("hidden");
-    UiDOM.reportModal.classList.remove("flex");
     UiDOM.modalTimeInput.value = "";
     UiDOM.modalStatus.textContent = "";
     UiDOM.modalForceSubmit.checked = false;
@@ -35,12 +33,10 @@ export function openAuthModal() {
     UiDOM.authStatus.textContent = "";
     UiDOM.authStatus.classList.remove('text-error', 'text-success');
     UiDOM.authModal.classList.remove("hidden");
-    UiDOM.authModal.classList.add("flex");
 }
 
 export function closeAuthModal() {
     UiDOM.authModal.classList.add("hidden");
-    UiDOM.authModal.classList.remove("flex");
     UiDOM.authLodestoneId.value = "";
 }
 
