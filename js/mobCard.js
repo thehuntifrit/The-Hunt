@@ -437,8 +437,14 @@ export function createSimpleMobItem(mob) {
   if (!item) return document.createElement('div');
 
   item.classList.add(`rank-${mob.rank.toLowerCase()}`);
-  item.dataset.mobNo = mob.No;
+  item.dataset.mobNo = String(mob.No);
   item.dataset.rank = mob.rank;
+
+  const reportBtn = item.querySelector('.pc-list-report-btn');
+  if (reportBtn) {
+    reportBtn.dataset.mobNo = String(mob.No);
+    reportBtn.dataset.rank = mob.rank;
+  }
 
   const nameEl = item.querySelector('.pc-list-mob-name');
   if (nameEl) {
@@ -875,17 +881,17 @@ function handlePCListClick(e) {
     e.stopImmediatePropagation();
 
     const mob = getState().mobs.find(m => m.No === mobNo);
-    const effectiveRank = mob ? mob.rank : rank;
+    if (!mob) return;
 
     if (!getState().isVerified) {
       openAuthModal();
       return;
     }
 
-    if (effectiveRank === 'S' || effectiveRank === 'F') {
+    if (mob.rank === 'S' || mob.rank === 'F') {
       openReportModal(mobNo);
-    } else if (effectiveRank === 'A') {
-      handleInstantReport(mobNo, effectiveRank);
+    } else if (mob.rank === 'A') {
+      handleInstantReport(mobNo, mob.rank);
     } else {
       openReportModal(mobNo);
     }
