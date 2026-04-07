@@ -1231,21 +1231,30 @@ html body.magnifier-active .mob-card-inner * {
     visibility: hidden;
 }
 
-#manual-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 500;
-    display: flex;
+#report-modal:not(.hidden),
+#auth-modal:not(.hidden),
+#manual-modal:not(.hidden) {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: fixed !important;
+    inset: 0 !important;
     align-items: center;
     justify-content: center;
     padding: var(--s-4);
+}
 
-    #manual-modal-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        z-index: -1;
+#report-modal:not(.hidden) { z-index: 999 !important; }
+#auth-modal:not(.hidden) { z-index: 1000 !important; }
+#manual-modal:not(.hidden) { z-index: 1001 !important; }
+
+#manual-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: -1;
+}
     }
 
     .manual-modal-content {
