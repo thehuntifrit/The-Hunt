@@ -2471,7 +2471,8 @@ html body.magnifier-active .mob-card-inner * {
     border: 1px solid rgba(var(--cyan-rgb), 0.5);
     transition: border-color 0.2s;
     display: flex;
-    align-items: stretch;
+    align-items: center;
+    min-height: 34px;
     overflow: hidden;
 }
 
@@ -2497,8 +2498,8 @@ html body.magnifier-active .mob-card-inner * {
 
 .memo-separator {
     width: 1px;
+    height: 20px;
     background: rgba(var(--cyan-rgb), 0.3);
-    margin: 6px 0;
 }
 
 .detail-memo-input {
@@ -2507,11 +2508,11 @@ html body.magnifier-active .mob-card-inner * {
     border: none;
     outline: none;
     color: var(--white);
-    font-size: 0.8rem;
-    padding: 8px 10px;
+    font-size: 0.825rem;
+    padding: 0 10px;
     resize: none;
-    line-height: 1.4;
-    min-height: 34px;
+    line-height: 1.25;
+    height: auto;
     overflow: hidden;
     -webkit-user-select: text;
     user-select: text;
