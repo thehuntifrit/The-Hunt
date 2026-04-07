@@ -679,6 +679,7 @@ html body.magnifier-active .mob-card-inner * {
         align-items: center;
         text-align: end;
         font-variant-numeric: tabular-nums;
+        margin-right: -0.5ch;
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
         position: relative;
         z-index: 10;
