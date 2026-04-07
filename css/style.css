@@ -3104,3 +3104,85 @@ html body.magnifier-active .mob-card-inner * {
     padding: var(--s-4);
     pointer-events: none;
 }
+
+/* --- SECTION: TOAST --- */
+.toast-container-wrapper {
+    position: fixed;
+    top: calc(var(--mobile-header-height, 0px) + 20px);
+    right: 20px;
+    z-index: var(--z-toast);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+    max-width: calc(100vw - 40px);
+}
+
+.toast-item-base {
+    position: relative;
+    padding: 14px 24px;
+    border-radius: var(--r-md);
+    font-weight: 700;
+    font-size: var(--fs-ui-md);
+    color: var(--white);
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(var(--cyan-rgb), 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4),
+                inset 0 0 12px rgba(var(--cyan-rgb), 0.1);
+    pointer-events: auto;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                opacity 0.3s ease;
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* Neon glow effect */
+.toast-item-base::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(var(--cyan-rgb), 0.5), transparent 60%);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+.toast-success {
+    border-color: rgba(var(--cyan-rgb), 0.6);
+    box-shadow: 0 4px 25px rgba(var(--cyan-rgb), 0.2),
+                inset 0 0 15px rgba(var(--cyan-rgb), 0.15);
+    text-shadow: 0 0 8px rgba(var(--cyan-rgb), 0.5);
+}
+
+.toast-error {
+    border-color: rgba(239, 68, 68, 0.6); /* Red-500 */
+    box-shadow: 0 4px 25px rgba(239, 68, 68, 0.2),
+                inset 0 0 15px rgba(239, 68, 68, 0.15);
+    text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+}
+
+.opacity-0 {
+    opacity: 0;
+}
+
+.translate-x-full {
+    transform: translateX(120%);
+}
+
+@media (max-width: 1023px) {
+    .toast-container-wrapper {
+        top: calc(var(--mobile-header-height) + 12px);
+        right: 12px;
+        left: 12px;
+    }
+    
+    .toast-item-base {
+        width: 100%;
+        font-size: var(--fs-ui-sm);
+        padding: 12px 16px;
+    }
+}
