@@ -397,14 +397,14 @@ export function createPCDetailCard(mob) {
   updateEl(card, '[data-last-kill]', { textContent: fmt(mob.last_kill_time) });
 
   updateEl(card, '.section-content.condition', { innerHTML: processText(mob.condition || "\u7279\u6b8a\u306a\u51fa\u73fe\u6761\u4ef6\u306f\u3042\u308a\u307e\u305b\u3093\u3002") });
-  
+
   const memoEl = card.querySelector('.detail-memo-input');
   if (memoEl) {
     memoEl.value = mob.memo_text || '';
     memoEl.dataset.mobNo = mob.No;
     // 初期表示時の高さ調整
     setTimeout(() => adjustMemoHeight(memoEl), 0);
-    
+
     // 入力時の自動リサイズ
     memoEl.addEventListener('input', () => adjustMemoHeight(memoEl));
   }
@@ -817,8 +817,13 @@ export function updateSimpleMobItem(item, mob) {
   if (isMaint) item.classList.add("maintenance-gray-out");
   else item.classList.remove("maintenance-gray-out");
 
-  if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) item.classList.add("blink-active");
-  else item.classList.remove("blink-active");
+  if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) {
+    item.classList.add("blink-active");
+    item.classList.add("blink-border-white");
+  } else {
+    item.classList.remove("blink-active");
+    item.classList.remove("blink-border-white");
+  }
   updateMemoIcon(item, mob);
 }
 

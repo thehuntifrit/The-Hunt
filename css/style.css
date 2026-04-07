@@ -386,7 +386,7 @@ body::before {
     gap: 4px;
 
     .mobile-clock-label {
-        font-size: 9px;
+        font-size: 12px;
         font-weight: 700;
         color: rgba(255, 255, 255, 0.35);
         letter-spacing: 0.05em;
@@ -394,7 +394,7 @@ body::before {
     }
 
     .mobile-clock-val {
-        font-size: 13px;
+        font-size: 16px;
         font-weight: 700;
         color: var(--text-timer);
         font-family: var(--font-mono);
@@ -451,7 +451,7 @@ body::before {
 }
 
 .mobile-top-title {
-    font-size: var(--fs-sm);
+    font-size: calc(var(--fs-sm) + 6px);
     font-weight: 800;
     letter-spacing: -0.02em;
     display: flex;
@@ -587,15 +587,19 @@ html body.magnifier-active .mob-card-inner * {
         transition: background var(--t-base);
     }
 
+    z-index: 5;
+
     &:hover {
         background: var(--bg-glass);
         border-color: rgba(255, 255, 255, 0.1);
+        z-index: 20;
     }
 
     &.selected {
         background: var(--bg-dark-panel);
         border-color: rgba(var(--cyan-rgb), 0.4);
         box-shadow: inset 0 0 10px rgba(var(--cyan-rgb), 0.1);
+        z-index: 15;
 
         &::before {
             background: var(--accent-cyan);
@@ -762,6 +766,18 @@ html body.magnifier-active .mob-card-inner * {
         filter: grayscale(100%);
         color: var(--text-dim);
     }
+
+    &.blink-border-white::after {
+        content: '';
+        position: absolute;
+        inset-block: 0;
+        inset-inline: 0;
+        pointer-events: none;
+        border-top: 1.5px solid rgba(255, 255, 255, 0.8);
+        border-bottom: 1.5px solid rgba(255, 255, 255, 0.8);
+        animation: pc-list-glow-yuragi 4s infinite ease-in-out;
+        z-index: 12;
+    }
 }
 
 /* Sidebar & Footer Navigation Buttons */
@@ -778,7 +794,6 @@ html body.magnifier-active .mob-card-inner * {
     justify-content: center;
     position: relative;
     padding: 0;
-    transition: all var(--t-fast);
     opacity: 0.8;
 
     &:hover {
@@ -805,7 +820,6 @@ html body.magnifier-active .mob-card-inner * {
     .nav-icon {
         font-size: 20px;
         margin-block-end: 2px;
-        transition: all var(--t-fast);
         color: var(--nav-text);
     }
 
@@ -814,7 +828,6 @@ html body.magnifier-active .mob-card-inner * {
         font-weight: 800;
         letter-spacing: 0.05em;
         opacity: 0.7;
-        transition: all var(--t-fast);
         color: var(--nav-text);
     }
 }
@@ -950,8 +963,8 @@ html body.magnifier-active .mob-card-inner * {
 
     }
 
+    /* 
     @keyframes sidebar-alert-pulse {
-
         0%,
         100% {
             opacity: 1;
@@ -961,6 +974,7 @@ html body.magnifier-active .mob-card-inner * {
             opacity: 0.8;
         }
     }
+    */
 
     .sidebar-error-item {
         display: flex;
@@ -1853,7 +1867,6 @@ html body.magnifier-active .mob-card-inner * {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    transition: all var(--t-fast);
     position: relative;
     padding: var(--s-1) 0;
     user-select: none;
@@ -1872,7 +1885,6 @@ html body.magnifier-active .mob-card-inner * {
         letter-spacing: 0.1em;
         line-height: 1;
         color: var(--nav-text);
-        transition: color var(--t-fast);
         white-space: nowrap;
         text-align: center;
         display: block;
@@ -1881,10 +1893,6 @@ html body.magnifier-active .mob-card-inner * {
 
     &:hover {
         background: transparent;
-    }
-
-    &:active {
-        transition: none;
     }
 
     &.active {
@@ -1899,7 +1907,6 @@ html body.magnifier-active .mob-card-inner * {
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: none;
 
         &::before {
             content: '';
@@ -1909,7 +1916,6 @@ html body.magnifier-active .mob-card-inner * {
             inline-size: 3px;
             background: var(--nav-active-text);
             box-shadow: 2px 0 10px rgba(var(--cyan-rgb), 0.5);
-            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
     }
 
@@ -1920,8 +1926,8 @@ html body.magnifier-active .mob-card-inner * {
         &::after {
             content: '';
             position: absolute !important;
-            inset-block-start: 4px !important;
-            inset-inline-end: 4px !important;
+            inset-block-start: 8px !important;
+            inset-inline-end: 8px !important;
             inline-size: 8px;
             block-size: 8px;
             background: var(--nav-badge-error);
@@ -2528,6 +2534,10 @@ html body.magnifier-active .mob-card-inner * {
     padding: 2px 0;
 }
 
+.memo-section {
+    margin-bottom: 8px;
+}
+
 .detail-section .section-label {
     font-size: var(--fs-ui-tiny);
     font-weight: 800;
@@ -2983,8 +2993,30 @@ html body.magnifier-active .mob-card-inner * {
     }
 }
 
+@keyframes pc-list-glow-yuragi {
+
+    0%,
+    100% {
+        opacity: 0.35;
+        filter: brightness(1) blur(0.5px);
+        box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.1),
+            inset 0 -2px 4px rgba(255, 255, 255, 0.1);
+    }
+
+    50% {
+        opacity: 0.9;
+        filter: brightness(1.2) blur(0px);
+        box-shadow: inset 0 4px 8px rgba(255, 255, 255, 0.3),
+            inset 0 -4px 8px rgba(255, 255, 255, 0.3),
+            0 0 10px rgba(255, 255, 255, 0.2);
+    }
+}
+
 /* --- SECTION: RESPONSIVE --- */
 @media (min-width: 1024px) {
+    #app-sidebar .app-nav-btn {
+        inline-size: var(--sidebar-w, 56px) !important;
+    }
 
     #mobile-top-bar,
     #mobile-footer-bar {
@@ -2992,7 +3024,7 @@ html body.magnifier-active .mob-card-inner * {
     }
 
     .app-nav-btn.active {
-        inline-size: 52px;
+        inline-size: var(--sidebar-w, 56px);
         block-size: 52px;
         margin-inline: auto;
         border-radius: 0;
@@ -3003,7 +3035,7 @@ html body.magnifier-active .mob-card-inner * {
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: none;
+        /* transition: none; */
 
         &::before {
             inset-inline-start: 0;
