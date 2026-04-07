@@ -1809,10 +1809,6 @@ html body.magnifier-active .mob-card-inner * {
         background: linear-gradient(to right, var(--accent-cyan), var(--blue-base));
     }
 
-    label {
-        font-size: 1rem;
-    }
-
     input {
         background: var(--bg-dark);
         border: 1px solid var(--border-normal);
