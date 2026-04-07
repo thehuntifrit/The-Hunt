@@ -292,7 +292,7 @@
     }
 
     .main-content-area {
-        padding-top: calc(var(--mobile-header-height) + var(--s-3));
+        padding-top: var(--mobile-header-height);
         padding-bottom: calc(var(--mobile-footer-height) + var(--s-2));
     }
 
@@ -1127,7 +1127,7 @@ html body.magnifier-active .mob-card-inner * {
 @media (max-width: 1023px) {
     body .main-content-area {
         margin-left: 0;
-        padding-top: 4rem;
+        padding-top: var(--mobile-header-height);
         padding-bottom: 5rem;
         padding-left: 1vw;
         padding-right: 1vw;
@@ -2598,7 +2598,7 @@ html body.magnifier-active .mob-card-inner * {
 .detail-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2px;
+    gap: 4px;
     margin-bottom: 4px;
 }
 
@@ -2617,7 +2617,7 @@ html body.magnifier-active .mob-card-inner * {
     color: var(--accent-cyan);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    margin-block-end: 2px;
+    margin-block-end: 1px;
     transform: translateY(1px);
 }
 
@@ -3125,14 +3125,14 @@ html body.magnifier-active .mob-card-inner * {
     font-weight: 700;
     font-size: var(--fs-ui-md);
     color: var(--white);
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(12px);
+    background: #000000;
+    backdrop-filter: none;
     border: 1px solid rgba(var(--cyan-rgb), 0.3);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4),
-                inset 0 0 12px rgba(var(--cyan-rgb), 0.1);
+        inset 0 0 12px rgba(var(--cyan-rgb), 0.1);
     pointer-events: auto;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                opacity 0.3s ease;
+        opacity 0.3s ease;
     overflow: hidden;
     white-space: pre-wrap;
     word-break: break-all;
@@ -3153,14 +3153,14 @@ html body.magnifier-active .mob-card-inner * {
 .toast-success {
     border-color: rgba(var(--cyan-rgb), 0.6);
     box-shadow: 0 4px 25px rgba(var(--cyan-rgb), 0.2),
-                inset 0 0 15px rgba(var(--cyan-rgb), 0.15);
+        inset 0 0 15px rgba(var(--cyan-rgb), 0.15);
     text-shadow: 0 0 8px rgba(var(--cyan-rgb), 0.5);
 }
 
 .toast-error {
     border-color: rgba(239, 68, 68, 0.6);
     box-shadow: 0 4px 25px rgba(239, 68, 68, 0.2),
-                inset 0 0 15px rgba(239, 68, 68, 0.15);
+        inset 0 0 15px rgba(239, 68, 68, 0.15);
     text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
 }
 
@@ -3178,7 +3178,7 @@ html body.magnifier-active .mob-card-inner * {
         right: 12px;
         left: 12px;
     }
-    
+
     .toast-item-base {
         width: 100%;
         font-size: var(--fs-ui-sm);
