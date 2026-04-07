@@ -16,42 +16,24 @@ export const DOM = {
   areaFilterWrapper: null,
   areaFilterPanel: null,
   statusMessage: null,
-  reportModal: null,
-  reportForm: null,
-  modalMobName: null,
-  modalStatus: null,
-  modalTimeInput: null,
-  modalForceSubmit: null,
-  authModal: null,
-  authLodestoneId: null,
-  authVCode: null,
-  authStatus: null,
-  pcLeftList: null,
-  pcRightDetail: null,
-  pcLayout: null,
-  mobileLayout: null,
-  cardOverlayBackdrop: null,
-  mobileDetailOverlay: null,
+  reportModal: document.getElementById('report-modal'),
+  reportForm: document.getElementById('report-form'),
+  modalMobName: document.getElementById('modal-mob-name'),
+  modalStatus: document.getElementById('modal-status'),
+  modalTimeInput: document.getElementById('report-datetime'),
+  modalForceSubmit: document.getElementById('report-force-submit'),
+  statusMessageTemp: null,
+  authModal: document.getElementById('auth-modal'),
+  authLodestoneId: document.getElementById('auth-lodestone-id'),
+  authVCode: document.getElementById('auth-v-code'),
+  authStatus: document.getElementById('auth-modal-status'),
+  pcLeftList: document.getElementById('pc-left-list'),
+  pcRightDetail: document.getElementById('pc-right-detail'),
+  pcLayout: document.getElementById('pc-layout'),
+  mobileLayout: document.getElementById('mobile-layout'),
+  cardOverlayBackdrop: document.getElementById('card-overlay-backdrop'),
+  mobileDetailOverlay: document.getElementById('mobile-detail-overlay'),
 };
-
-function initDomElements() {
-  DOM.reportModal = document.getElementById('report-modal');
-  DOM.reportForm = document.getElementById('report-form');
-  DOM.modalMobName = document.getElementById('modal-mob-name');
-  DOM.modalStatus = document.getElementById('modal-status');
-  DOM.modalTimeInput = document.getElementById('report-datetime');
-  DOM.modalForceSubmit = document.getElementById('report-force-submit');
-  DOM.authModal = document.getElementById('auth-modal');
-  DOM.authLodestoneId = document.getElementById('auth-lodestone-id');
-  DOM.authVCode = document.getElementById('auth-v-code');
-  DOM.authStatus = document.getElementById('auth-modal-status');
-  DOM.pcLeftList = document.getElementById('pc-left-list');
-  DOM.pcRightDetail = document.getElementById('pc-right-detail');
-  DOM.pcLayout = document.getElementById('pc-layout');
-  DOM.mobileLayout = document.getElementById('mobile-layout');
-  DOM.cardOverlayBackdrop = document.getElementById('card-overlay-backdrop');
-  DOM.mobileDetailOverlay = document.getElementById('mobile-detail-overlay');
-}
 
 export const cardCache = new Map();
 
@@ -81,7 +63,6 @@ let locationEventsAttached = false;
 
 async function initApp() {
   try {
-    initDomElements();
     initTooltip();
     initGlobalMagnifier();
     loadBaseMobData();
