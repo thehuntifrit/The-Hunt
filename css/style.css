@@ -630,6 +630,7 @@ html body.magnifier-active .mob-card-inner * {
         display: flex;
         align-items: center;
         margin-inline-start: 0.5em;
+        margin-inline-end: 1.25em;
         flex-shrink: 0;
     }
 
