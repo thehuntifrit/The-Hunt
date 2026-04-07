@@ -871,7 +871,7 @@ function attachGlobalEventListeners() {
       setOpenMobCardNo(null);
       sortAndRedistribute({ immediate: true });
     }
-    if (e.target.matches("input[data-action='save-memo']")) {
+    if (e.target.matches("[data-action='save-memo']")) {
       e.stopPropagation();
     }
   });
@@ -881,7 +881,7 @@ function attachGlobalEventListeners() {
   }
 
   document.addEventListener('change', async (e) => {
-    if (e.target.matches("input[data-action='save-memo']")) {
+    if (e.target.matches("[data-action='save-memo']")) {
       const input = e.target;
       const mobNo = parseInt(input.dataset.mobNo, 10);
       const text = input.value;
@@ -921,7 +921,7 @@ function attachGlobalEventListeners() {
   }, { passive: true });
 
   document.addEventListener('keydown', (e) => {
-    if (e.target.matches("input[data-action='save-memo']")) {
+    if (e.target.matches("[data-action='save-memo']")) {
       if (e.key === 'Enter') {
         e.target.blur();
       }

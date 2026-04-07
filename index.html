@@ -89,15 +89,11 @@
         <div id="pc-layout" class="pc-layout-container">
             <div id="pc-left-list"></div>
             <div id="pc-right-pane">
-                <div id="pc-clocks-header" class="pc-clocks-header">
-                    <div class="header-clock-group">
-                        <span class="header-label-mini">ET</span>
-                        <span id="pc-time-et" class="header-time-val-mini">--:--</span>
-                    </div>
-                    <div class="header-clock-group">
-                        <span class="header-label-mini">LT</span>
-                        <span id="pc-time-lt" class="header-time-val-mini">--:--</span>
-                    </div>
+                <div id="pc-clocks-header" class="pc-clocks-header mobile-top-clocks">
+                    <span class="mobile-clock-label">ET</span>
+                    <span id="pc-time-et" class="mobile-clock-val">--:--</span>
+                    <span class="mobile-clock-label">LT</span>
+                    <span id="pc-time-lt" class="mobile-clock-val">--:--</span>
                 </div>
                 <div id="pc-right-detail"></div>
             </div>
@@ -241,10 +237,13 @@
 
             <div class="pc-detail-content overflow-y-auto pr-1">
                 <div class="detail-section memo-section mb-5">
-                    <div class="section-label">MEMO</div>
                     <div class="detail-memo-box">
-                        <input type="text" name="memo" aria-label="メモを入力" class="memo-input detail-memo-input"
-                            placeholder="メモ入力（全角30文字まで）" maxlength="30" data-action="save-memo">
+                        <div class="memo-prefix-area">
+                            <span class="memo-prefix-text">memo</span>
+                        </div>
+                        <div class="memo-separator"></div>
+                        <textarea name="memo" aria-label="メモを入力" class="memo-textarea detail-memo-input"
+                            placeholder="全角30文字まで" maxlength="30" data-action="save-memo" rows="1"></textarea>
                     </div>
                 </div>
 

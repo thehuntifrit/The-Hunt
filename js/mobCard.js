@@ -397,7 +397,17 @@ export function createPCDetailCard(mob) {
   updateEl(card, '[data-last-kill]', { textContent: fmt(mob.last_kill_time) });
 
   updateEl(card, '.section-content.condition', { innerHTML: processText(mob.condition || "\u7279\u6b8a\u306a\u51fa\u73fe\u6761\u4ef6\u306f\u3042\u308a\u307e\u305b\u3093\u3002") });
-  updateEl(card, '.memo-input', { value: mob.memo_text || '' }, { mobNo: mob.No });
+  
+  const memoEl = card.querySelector('.detail-memo-input');
+  if (memoEl) {
+    memoEl.value = mob.memo_text || '';
+    memoEl.dataset.mobNo = mob.No;
+    // 初期表示時の高さ調整
+    setTimeout(() => adjustMemoHeight(memoEl), 0);
+    
+    // 入力時の自動リサイズ
+    memoEl.addEventListener('input', () => adjustMemoHeight(memoEl));
+  }
 
   const mapSection = card.querySelector('.map-section');
   if (mapSection) {
@@ -609,12 +619,15 @@ export function updateExpandablePanel(card, mob) {
 
   if (elLast) elLast.textContent = fmt(mob.last_kill_time);
 
-  const elMemoInput = card.querySelector("input[data-action='save-memo']");
+  const elMemoInput = card.querySelector(".detail-memo-input");
   if (elMemoInput) {
     if (elMemoInput.dataset.mobNo !== String(mob.No)) elMemoInput.dataset.mobNo = mob.No;
     if (document.activeElement !== elMemoInput) {
       const newValue = mob.memo_text || "";
-      if (elMemoInput.value !== newValue) elMemoInput.value = newValue;
+      if (elMemoInput.value !== newValue) {
+        elMemoInput.value = newValue;
+        adjustMemoHeight(elMemoInput);
+      }
     }
   }
 
@@ -696,6 +709,12 @@ export function updateAreaInfo(card, mob) {
   if (headerArea) {
     headerArea.textContent = `${areaName} | ${expName}`;
   }
+}
+
+export function adjustMemoHeight(el) {
+  if (!el || el.tagName !== 'TEXTAREA') return;
+  el.style.height = 'auto';
+  el.style.height = (el.scrollHeight) + 'px';
 }
 
 export function updateMapOverlay(card, mob) {
