@@ -936,17 +936,17 @@ export function attachLocationEvents() {
 
   const colContainer = document.getElementById("column-container");
   if (colContainer) {
-    colContainer.addEventListener("click", handleCrushToggle, { capture: true });
+    colContainer.addEventListener("click", handleCrushToggle);
   }
 
   const pcRightPane = document.getElementById("pc-right-detail");
   if (pcRightPane) {
-    pcRightPane.addEventListener("click", handleCrushToggle, { capture: true });
+    pcRightPane.addEventListener("click", handleCrushToggle);
   }
 
   const mobileOverlay = document.getElementById("mobile-detail-overlay");
   if (mobileOverlay) {
-    mobileOverlay.addEventListener("click", handleCrushToggle, { capture: true });
+    mobileOverlay.addEventListener("click", handleCrushToggle);
   }
 
   locationEventsAttached = true;
