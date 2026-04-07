@@ -1792,11 +1792,11 @@ html body.magnifier-active .mob-card-inner * {
 .spawn-point {
     position: absolute;
     border-radius: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) scale(1);
     width: 14px;
     height: 14px;
     box-sizing: border-box;
-    transition: all var(--t-base);
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
@@ -1845,8 +1845,9 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .spawn-point:hover {
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) scale(2);
     z-index: 20;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.6), 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
 .magnifier-clone {
