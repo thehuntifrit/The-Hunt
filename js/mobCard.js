@@ -870,7 +870,9 @@ function handlePCListClick(e) {
   const reportBtn = e.target.closest(".pc-list-report-btn");
 
   if (reportBtn) {
+    e.preventDefault();
     e.stopPropagation();
+    e.stopImmediatePropagation();
     if (!getState().isVerified) {
       openAuthModal();
       return;
@@ -896,7 +898,9 @@ function handleMobCardClick(e) {
 
   const reportBtn = e.target.closest(".report-side-bar, .pc-list-report-btn");
   if (reportBtn) {
+    e.preventDefault();
     e.stopPropagation();
+    e.stopImmediatePropagation();
     if (!getState().isVerified) {
       openAuthModal();
       return;
