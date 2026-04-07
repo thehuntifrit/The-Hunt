@@ -1078,10 +1078,12 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 @media (max-width: 1023px) {
-    .main-content-area {
+    body .main-content-area {
         margin-left: 0;
         padding-top: 4rem;
         padding-bottom: 5rem;
+        padding-left: 1vw;
+        padding-right: 1vw;
     }
 }
 
@@ -1136,12 +1138,15 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 @media (max-width: 1023px) {
-    .pc-layout-container {
-        flex-direction: column;
+    body .pc-layout-container {
+        display: block;
+        width: 100%;
     }
 
-    #pc-left-list {
-        flex: 1 1 100%;
+    body #pc-left-list {
+        width: 100%;
+        max-width: none;
+        flex: none;
     }
 
     #pc-right-pane {
@@ -2212,6 +2217,7 @@ html body.magnifier-active .mob-card-inner * {
     user-select: none;
     cursor: pointer;
     z-index: 1;
+    width: 100%;
     scroll-margin-block-start: calc(env(safe-area-inset-top, 0px) + var(--s-2));
     contain: content;
     container-type: inline-size;

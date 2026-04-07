@@ -881,7 +881,10 @@ function handlePCListClick(e) {
       openAuthModal();
       return;
     }
-    if (effectiveRank === 'A') {
+
+    if (effectiveRank === 'S' || effectiveRank === 'F') {
+      openReportModal(mobNo);
+    } else if (effectiveRank === 'A') {
       handleInstantReport(mobNo, effectiveRank);
     } else {
       openReportModal(mobNo);
