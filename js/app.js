@@ -259,7 +259,15 @@ export async function renderMaintenanceStatus() {
     }
     const isPC = p.closest('#app-sidebar') || p.closest('.sidebar-panel-content');
     if (isPC) {
-      p.innerHTML = maintPCHtml;
+      p.textContent = "";
+      const lines = maintPCHtml.split('<br>');
+      lines.forEach((line, i) => {
+        const textNode = document.createTextNode(line.replace(/&nbsp;/g, '\u00A0'));
+        p.appendChild(textNode);
+        if (i < lines.length - 1) {
+          p.appendChild(document.createElement('br'));
+        }
+      });
     } else {
       p.textContent = maintMobileHtml;
     }
@@ -280,16 +288,26 @@ export async function renderMaintenanceStatus() {
 
   const nameToDisplay = (state.isVerified && state.characterName) ? state.characterName : "名無しさん";
 
-  telopPanels.forEach(p => {
-    p.innerHTML = "";
+  const welcomeArea = document.getElementById("sidebar-welcome-area");
+  if (welcomeArea) {
+    welcomeArea.textContent = "";
     const welcome = document.createElement("div");
     welcome.className = "sidebar-welcome-msg";
     welcome.textContent = `ようこそ ${nameToDisplay}`;
-    p.appendChild(welcome);
+    welcomeArea.appendChild(welcome);
+  }
 
+  telopPanels.forEach(p => {
+    p.textContent = "";
     const msgSpan = document.createElement("span");
     if (telopMsg) {
-      msgSpan.innerHTML = escapeHtml(telopMsg).replace(/\/\//g, "<br>");
+      const parts = escapeHtml(telopMsg).split(/\/\/|<br>/i);
+      parts.forEach((part, i) => {
+        msgSpan.appendChild(document.createTextNode(part));
+        if (i < parts.length - 1) {
+          msgSpan.appendChild(document.createElement('br'));
+        }
+      });
     } else {
       msgSpan.textContent = "メッセージはありません。";
     }
@@ -347,16 +365,18 @@ const cardObserver = new IntersectionObserver((entries) => {
   if (isMobile && getState().openMobCardNo !== null) return;
 
   const mobMap = getMobMap();
-  for (const entry of entries) {
-    const mobNo = entry.target.dataset.mobNo;
-    if (entry.isIntersecting) {
-      visibleCards.add(mobNo);
-      const mob = mobMap.get(mobNo);
-      if (mob) updateCardFull(entry.target, mob);
-    } else {
-      visibleCards.delete(mobNo);
+  requestAnimationFrame(() => {
+    for (const entry of entries) {
+      const mobNo = entry.target.dataset.mobNo;
+      if (entry.isIntersecting) {
+        visibleCards.add(mobNo);
+        const mob = mobMap.get(mobNo);
+        if (mob) updateCardFull(entry.target, mob);
+      } else {
+        visibleCards.delete(mobNo);
+      }
     }
-  }
+  });
 }, { threshold: 0 });
 
 export function updateCardFull(card, mob) {
@@ -506,15 +526,13 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       });
     });
 
-    nextChildren.forEach((child, index) => {
-      if (DOM.pcLeftList.children[index] !== child) {
-        DOM.pcLeftList.insertBefore(child, DOM.pcLeftList.children[index] || null);
-      }
+    const fragment = document.createDocumentFragment();
+    nextChildren.forEach(child => {
+      fragment.appendChild(child);
     });
 
-    while (DOM.pcLeftList.children.length > nextChildren.length) {
-      DOM.pcLeftList.removeChild(DOM.pcLeftList.lastElementChild);
-    }
+    DOM.pcLeftList.innerHTML = "";
+    DOM.pcLeftList.appendChild(fragment);
   }
 
   const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");

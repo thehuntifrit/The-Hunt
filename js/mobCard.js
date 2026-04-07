@@ -45,6 +45,9 @@ let tooltip = null;
 let currentTarget = null;
 
 export function initTooltip() {
+  if (window.tooltipInitialized) return;
+  window.tooltipInitialized = true;
+
   tooltip = document.createElement("div");
   tooltip.id = "custom-tooltip";
   tooltip.className = "custom-tooltip hidden";
