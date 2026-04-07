@@ -816,7 +816,7 @@ html body.magnifier-active .mob-card-inner * {
             position: absolute;
             inset-inline-start: 0;
             inset-block: 0;
-            inline-size: 3px;
+            inline-size: 4px;
             background: var(--accent-cyan);
             box-shadow: 0 0 10px var(--accent-cyan);
         }
@@ -2167,7 +2167,7 @@ html body.magnifier-active .mob-card-inner * {
     border-color: rgba(var(--cyan-rgb), 0.4);
 
     &[data-rank] {
-        border-inline-start: 3px solid var(--current-rank);
+        border-inline-start: 4px solid var(--current-rank);
         color: var(--current-rank);
         background: rgba(var(--current-rank-rgb), 0.18);
         border-color: rgba(var(--current-rank-rgb), 0.5);
@@ -2396,10 +2396,10 @@ html body.magnifier-active .mob-card-inner * {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid var(--bg-glass-heavy);
     border-radius: 3px;
-    padding: 2px 4px;
+    padding: 2px 3px;
     font-size: var(--fs-ui-sm);
     height: auto;
-    min-width: 32px;
+    min-width: 28px;
     line-height: 1;
     display: inline-flex;
     align-items: center;
@@ -2699,7 +2699,7 @@ html body.magnifier-active .mob-card-inner * {
         letter-spacing: 0.05em;
 
         &.is-selected {
-            border-inline-start: 3px solid var(--accent-cyan);
+            border-inline-start: 4px solid var(--accent-cyan);
             color: var(--accent-cyan);
             background: rgba(var(--cyan-rgb), 0.22);
             border-color: rgba(var(--cyan-rgb), 0.4);
