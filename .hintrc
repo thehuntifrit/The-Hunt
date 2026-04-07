@@ -21,7 +21,9 @@
           "inline-size: fit-content",
           "user-select",
           "scrollbar-width",
-          "scrollbar-width: thin"
+          "scrollbar-width: thin",
+          "mask-composite",
+          "mask-composite: exclude"
         ]
       }
     ]

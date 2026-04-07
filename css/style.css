@@ -3138,7 +3138,6 @@ html body.magnifier-active .mob-card-inner * {
     word-break: break-all;
 }
 
-/* Neon glow effect */
 .toast-item-base::before {
     content: '';
     position: absolute;
@@ -3159,7 +3158,7 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 .toast-error {
-    border-color: rgba(239, 68, 68, 0.6); /* Red-500 */
+    border-color: rgba(239, 68, 68, 0.6);
     box-shadow: 0 4px 25px rgba(239, 68, 68, 0.2),
                 inset 0 0 15px rgba(239, 68, 68, 0.15);
     text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
@@ -3185,4 +3184,4 @@ html body.magnifier-active .mob-card-inner * {
         font-size: var(--fs-ui-sm);
         padding: 12px 16px;
     }
-}
+}
