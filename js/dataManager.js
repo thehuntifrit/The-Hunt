@@ -743,10 +743,17 @@ export function isCulled(pointStatus, mobNo, mob = null) {
     if (!mob) {
         mob = s.mobs.find(m => m.No === mobNo);
     }
-    const mobLastKillTime = mob?.last_kill_time || 0;
+    if (!mob) return false;
+
+    const instance = mob.No % 10;
+    const targetSMob = s.mobs.find(m => m.rank === "S" && m.area === mob.area && (m.No % 10) === instance);
+
+    const baseLastKillTime = targetSMob ? (targetSMob.last_kill_time || 0) : (mob.last_kill_time || 0);
+
     const serverUpSec = s.maintenance?.serverUp
         ? new Date(s.maintenance.serverUp).getTime()
         : 0;
+
     const culledMs = pointStatus?.culled_at && typeof pointStatus.culled_at.toMillis === "function"
         ? pointStatus.culled_at.toMillis()
         : 0;
@@ -754,13 +761,16 @@ export function isCulled(pointStatus, mobNo, mob = null) {
     const uncullMs = pointStatus?.uncull_at && typeof pointStatus.uncull_at.toMillis === "function"
         ? pointStatus.uncull_at.toMillis()
         : 0;
-    const lastKillMs = typeof mobLastKillTime === "number" ? mobLastKillTime * 1000 : 0;
+
+    const lastKillMs = typeof baseLastKillTime === "number" ? baseLastKillTime * 1000 : 0;
     const validCulledMs = culledMs > serverUpSec ? culledMs : 0;
     const validUnculledMs = uncullMs > serverUpSec ? uncullMs : 0;
+
     if (validCulledMs === 0 && validUnculledMs === 0) return false;
 
     const culledAfterKill = validCulledMs > lastKillMs;
     const unculledAfterKill = validUnculledMs > lastKillMs;
+
     if (culledAfterKill && (!unculledAfterKill || validCulledMs >= validUnculledMs)) return true;
     if (unculledAfterKill && (!culledAfterKill || validUnculledMs >= validCulledMs)) return false;
 
