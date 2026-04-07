@@ -1523,8 +1523,13 @@ html body.magnifier-active .mob-card-inner * {
     padding: 1.5rem;
 }
 
+.modal-content-base h2 {
+    margin-top: 0;
+    font-size: calc(var(--fs-xl) - 1px);
+}
+
 .modal-mob-name {
-    font-size: 1rem;
+    font-size: 1.125rem;
     margin-bottom: var(--s-4);
     font-weight: 600;
     color: var(--white);
@@ -1539,6 +1544,7 @@ html body.magnifier-active .mob-card-inner * {
     background-color: var(--bg-deeper);
     border: 1px solid var(--border-normal);
     color: var(--white);
+    font-size: 1rem;
     outline: none;
     transition: all 0.2s;
 }
@@ -1803,6 +1809,10 @@ html body.magnifier-active .mob-card-inner * {
         background: linear-gradient(to right, var(--accent-cyan), var(--blue-base));
     }
 
+    label {
+        font-size: 1rem;
+    }
+
     input {
         background: var(--bg-dark);
         border: 1px solid var(--border-normal);
@@ -1947,7 +1957,6 @@ html body.magnifier-active .mob-card-inner * {
 }
 
 /* --- SECTION: SIDEBAR --- */
-
 .sidebar-section {
     margin-block-end: var(--s-4);
     padding: 0;
@@ -2381,7 +2390,6 @@ html body.magnifier-active .mob-card-inner * {
 .status-next {
     background: var(--progress-fill);
 }
-
 
 .js-mobile-icon {
     width: 20px;
