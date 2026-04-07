@@ -1276,6 +1276,7 @@ html body.magnifier-active .mob-card-inner * {
     visibility: hidden;
 }
 
+/* 重複のため一旦コメントアウト
 #report-modal,
 #auth-modal,
 #manual-modal {
@@ -1303,6 +1304,7 @@ html body.magnifier-active .mob-card-inner * {
     visibility: hidden;
     transition: opacity 0.2s;
 }
+*/
 
 #report-modal:not(.hidden) {
     display: flex;
@@ -1519,16 +1521,16 @@ html body.magnifier-active .mob-card-inner * {
     position: relative;
     width: 100%;
     max-width: 28rem;
-    padding: 1.5rem;
+    padding: 1rem 1.5rem 1.5rem;
 }
 
 .modal-content-base h2 {
     margin-top: 0;
-    font-size: calc(var(--fs-xl) - 1px);
+    font-size: calc(var(--fs-xl) - 2px);
 }
 
 .modal-mob-name {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     margin-bottom: var(--s-4);
     font-weight: 600;
     color: var(--white);
@@ -1543,7 +1545,7 @@ html body.magnifier-active .mob-card-inner * {
     background-color: var(--bg-deeper);
     border: 1px solid var(--border-normal);
     color: var(--white);
-    font-size: 1rem;
+    font-size: 1.125rem;
     outline: none;
     transition: all 0.2s;
 }
@@ -1785,6 +1787,7 @@ html body.magnifier-active .mob-card-inner * {
     z-index: -1;
 }
 
+/* 旧仕様の残りと思われるためコメントアウト
 #report-modal,
 #auth-modal {
     .bg-gray-800 {
@@ -1836,6 +1839,7 @@ html body.magnifier-active .mob-card-inner * {
         background: linear-gradient(to right, var(--accent-gold), #ea580c);
     }
 }
+*/
 
 /* --- SECTION: MAP --- */
 .pc-map-box {
