@@ -873,12 +873,16 @@ function handlePCListClick(e) {
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
+
+    const mob = getState().mobs.find(m => m.No === mobNo);
+    const effectiveRank = mob ? mob.rank : rank;
+
     if (!getState().isVerified) {
       openAuthModal();
       return;
     }
-    if (rank === 'A') {
-      handleInstantReport(mobNo, rank);
+    if (effectiveRank === 'A') {
+      handleInstantReport(mobNo, effectiveRank);
     } else {
       openReportModal(mobNo);
     }
