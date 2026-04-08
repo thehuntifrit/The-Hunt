@@ -1378,13 +1378,6 @@ html body.magnifier-active .mob-card-inner * {
     padding: 1rem 1.5rem 1.5rem;
 }
 
-.modal-content-base h2 {
-    margin-top: 0;
-    margin-bottom: 0.25rem;
-    font-size: calc(var(--fs-xl) - 4px);
-    margin-left: 1em;
-}
-
 .modal-mob-name {
     margin-top: 0;
     font-size: 1.25rem;
