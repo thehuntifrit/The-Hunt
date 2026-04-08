@@ -200,10 +200,13 @@
     }
 
     #mobile-footer-panel {
-        max-block-size: calc(85vh - var(--mobile-footer-height));
+        max-height: 70vh;
         overflow-y: auto;
         overscroll-behavior: contain;
         display: none;
+        background: var(--nav-bg);
+        border-top: 1px solid var(--nav-border-heavy);
+        padding: var(--s-3);
 
         &.open {
             display: block;
@@ -213,17 +216,6 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
-        }
-    }
-
-    .mobile-footer-panel {
-        max-block-size: 0;
-        overflow: hidden;
-        overflow-y: auto;
-        transition: max-block-size 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-        &.open {
-            max-block-size: 50vh;
         }
     }
 
@@ -1016,16 +1008,6 @@ html body.magnifier-active .mob-card-inner * {
         margin-bottom: var(--s-2);
         text-align: center;
     }
-
-    .sidebar-manual-content {
-        max-block-size: calc(100vh - 120px);
-        overflow-y: auto;
-    }
-
-    .sidebar-manual-content {
-        max-block-size: calc(100vh - 120px);
-        overflow-y: auto;
-    }
 }
 
 /* --- SECTION: LAYOUT --- */
@@ -1068,6 +1050,11 @@ html body.magnifier-active .mob-card-inner * {
     flex-wrap: wrap;
     gap: var(--s-4);
     align-items: start;
+}
+
+.sidebar-manual-content {
+    max-block-size: calc(100vh - 120px);
+    overflow-y: auto;
 }
 
 #pc-left-list {
@@ -1817,8 +1804,7 @@ html body.magnifier-active .mob-card-inner * {
 .js-error-content,
 .sidebar-error-item,
 .rank-header,
-.area-filter-btn,
-#mobile-footer-panel {
+.area-filter-btn {
     font-family: 'Roboto', sans-serif;
     font-size: 13.5px;
     line-height: 1.25;
@@ -1830,11 +1816,6 @@ html body.magnifier-active .mob-card-inner * {
     padding: 6px 12px;
     box-sizing: border-box;
     transition: all var(--t-fast);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
 }
 
 .sidebar-alert-content *,
