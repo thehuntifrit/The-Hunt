@@ -31,6 +31,8 @@
     --color-lastone: #34d399;
     --sidebar-w: 56px;
     --panel-w: 160px;
+    --pc-list-w: 480px;
+    --pc-detail-w: 400px;
     --sidebar-total: var(--sidebar-w);
     --fs-sm: 0.875rem;
     --fs-base: 1rem;
@@ -444,7 +446,7 @@ html body.magnifier-active .mob-card-inner * {
         display: flex;
         flex-direction: row;
         inline-size: 100%;
-        max-inline-size: 1200px;
+        max-inline-size: 920px;
         margin-inline: auto;
         justify-content: center;
         gap: 0;
@@ -453,7 +455,7 @@ html body.magnifier-active .mob-card-inner * {
     }
 
     #pc-left-list {
-        inline-size: 480px;
+        inline-size: var(--pc-list-w);
         flex: none;
         display: flex;
         flex-direction: column;
@@ -462,7 +464,7 @@ html body.magnifier-active .mob-card-inner * {
     }
 
     #pc-right-pane {
-        inline-size: 400px;
+        inline-size: var(--pc-detail-w);
         flex: none;
         align-self: flex-start;
         position: sticky;
@@ -472,7 +474,7 @@ html body.magnifier-active .mob-card-inner * {
         flex-direction: column;
         gap: 12px;
         padding-inline-start: 0;
-        margin-inline-start: -105px;
+        margin-inline-start: 24px;
         margin-block-start: 12px;
         max-block-size: calc(100vh - 1rem);
         overflow-y: auto;
@@ -515,7 +517,7 @@ html body.magnifier-active .mob-card-inner * {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 92px 36px 28px;
     align-items: center;
-    max-width: 480px;
+    max-width: var(--pc-list-w);
     width: 100%;
     background: rgba(48, 64, 94, 0.6);
     border: none;
@@ -881,7 +883,6 @@ html body.magnifier-active .mob-card-inner * {
 @media (min-width: 1024px) {
     #app-sidebar {
         --sidebar-w: 56px;
-        --panel-w: 160px;
 
         position: fixed;
         inset-block: 0;
@@ -1067,27 +1068,12 @@ html body.magnifier-active .mob-card-inner * {
     overflow-y: auto;
 }
 
-#pc-left-list {
-    flex: 1 1 480px;
-    max-width: 480px;
-    width: 100%;
-}
-
-#pc-right-pane {
-    flex: 1;
-    min-width: 300px;
-}
-
 .pc-detail-header>.flex.justify-start {
     margin-bottom: var(--s-1);
 }
 
 .pc-detail-header>.flex.justify-between {
     margin-bottom: 0;
-}
-
-#pc-layout {
-    display: flex;
 }
 
 /* --- SECTION: UTILS --- */
@@ -2563,7 +2549,7 @@ html body.magnifier-active .mob-card-inner * {
     overflow: hidden;
     contain: layout style;
     inline-size: 100%;
-    max-inline-size: 400px;
+    max-inline-size: var(--pc-detail-w);
     background: var(--bg-glass);
     block-size: auto;
     max-block-size: 96vh;
