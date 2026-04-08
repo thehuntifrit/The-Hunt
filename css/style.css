@@ -1499,7 +1499,7 @@ html body.magnifier-active .mob-card-inner * {
 .modal-content-base h2 {
     margin-top: 0;
     margin-bottom: 0.25rem;
-    font-size: calc(var(--fs-xl) - 2px);
+    font-size: calc(var(--fs-xl) - 4px);
 }
 
 .modal-mob-name {
@@ -1510,6 +1510,10 @@ html body.magnifier-active .mob-card-inner * {
     color: var(--white);
     border-bottom: 1px solid var(--border-normal);
     padding-bottom: 0.5rem;
+}
+
+.modal-content-base label[for="report-datetime"] {
+    margin-left: 1em;
 }
 
 .modal-input-field {
