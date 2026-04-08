@@ -1382,6 +1382,7 @@ html body.magnifier-active .mob-card-inner * {
     margin-top: 0;
     margin-bottom: 0.25rem;
     font-size: calc(var(--fs-xl) - 4px);
+    margin-left: 1em;
 }
 
 .modal-mob-name {
