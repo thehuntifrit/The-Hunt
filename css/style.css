@@ -296,10 +296,6 @@
 }
 
 /* --- SECTION: BASE --- */
-html {
-    scrollbar-gutter: stable;
-}
-
 html,
 body {
     margin: 0;
@@ -486,6 +482,7 @@ html body.magnifier-active .mob-card-inner * {
             scrollbar-width: thin;
             scrollbar-color: #3b82f6 transparent;
         }
+        /* 内部コンテンツを圧迫しないよう設定を整理 */
 
         &::-webkit-scrollbar {
             inline-size: 4px;
@@ -513,8 +510,9 @@ html body.magnifier-active .mob-card-inner * {
         transform: translateY(0.6rem);
     }
 
-    .detail-area-row {
+    .pc-detail-card .detail-area-row {
         font-size: 12px;
+        color: #ffffff;
     }
 }
 
@@ -1039,8 +1037,14 @@ html body.magnifier-active .mob-card-inner * {
         margin-left: 0;
         padding-top: var(--mobile-header-height);
         padding-bottom: 5rem;
+        /* モバイル表示時のみ適用し、PC版への影響を遮断 */
         padding-left: 1vw;
         padding-right: 1vw;
+    }
+
+    /* モバイルで詳細パネル展開中のみ、スクロールバー消失分を補填してガタつきを防止 */
+    body.body-lock {
+        padding-right: 15px;
     }
 
     body .pc-layout-container {
@@ -2352,6 +2356,7 @@ html body.magnifier-active .mob-card-inner * {
     color: var(--accent-cyan);
     text-transform: uppercase;
     letter-spacing: 0.1em;
+    margin-block-start: 2px;
     margin-bottom: 0.2rem;
     padding-left: 0.5rem;
     border-left: 2px solid var(--accent-cyan);
@@ -2569,7 +2574,7 @@ html body.magnifier-active .mob-card-inner * {
     }
 
     .pc-detail-header {
-        padding: var(--s-3) var(--s-4) 0;
+        padding: var(--s-3) 0.75rem 0;
         position: relative;
         flex-shrink: 0;
 
@@ -2595,6 +2600,18 @@ html body.magnifier-active .mob-card-inner * {
         min-inline-size: 0;
         color: var(--white);
         line-height: 1;
+
+        &[data-rank="S"] {
+            color: var(--rank-s);
+        }
+
+        &[data-rank="A"] {
+            color: var(--rank-a);
+        }
+
+        &[data-rank="F"] {
+            color: var(--rank-f);
+        }
     }
 
     .pc-detail-rank {
@@ -2658,17 +2675,20 @@ html body.magnifier-active .mob-card-inner * {
 .pc-detail-header .pc-list-report-btn {
     position: absolute;
     top: 0.75rem;
-    right: 1rem;
+    right: 0.75rem;
 }
 
 .pc-detail-content {
-    padding: 0 1rem 0.5rem;
+    padding: 0 0.75rem 0.5rem;
     margin-top: -12px;
     border-top: none;
     flex: 1 1 auto;
     overflow-y: auto;
     scrollbar-width: thin;
-    padding-right: 0.5rem;
+}
+
+.pc-detail-content > *:last-child {
+    margin-bottom: 0 !important;
 }
 
 @supports (scrollbar-color: auto) {
