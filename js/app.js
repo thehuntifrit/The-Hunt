@@ -562,7 +562,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     if (mobileOverlay && overlayBackdrop) {
       const isCardOpen = !!state.openMobCardNo;
       document.body.classList.toggle('body-lock', isCardOpen);
-      
+
       if (isCardOpen) {
         if (mobileOverlay.dataset.renderedMobNo !== String(state.openMobCardNo)) {
           const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
@@ -876,7 +876,7 @@ function attachGlobalEventListeners() {
     const currentWidth = window.innerWidth;
     const wasPC = prevWidth >= 1024;
     const isNowPC = currentWidth >= 1024;
-    
+
     if (wasPC !== isNowPC) {
       prevWidth = currentWidth;
       sortAndRedistribute();

@@ -310,9 +310,9 @@ body {
 }
 
 .body-lock {
-    overflow: hidden !important;
     touch-action: none;
     -webkit-overflow-scrolling: none;
+    overscroll-behavior: contain;
 }
 
 *,
@@ -482,7 +482,6 @@ html body.magnifier-active .mob-card-inner * {
             scrollbar-width: thin;
             scrollbar-color: #3b82f6 transparent;
         }
-        /* 内部コンテンツを圧迫しないよう設定を整理 */
 
         &::-webkit-scrollbar {
             inline-size: 4px;
@@ -1037,15 +1036,10 @@ html body.magnifier-active .mob-card-inner * {
         margin-left: 0;
         padding-top: var(--mobile-header-height);
         padding-bottom: 5rem;
-        /* モバイル表示時のみ適用し、PC版への影響を遮断 */
         padding-left: 1vw;
         padding-right: 1vw;
     }
 
-    /* モバイルで詳細パネル展開中のみ、スクロールバー消失分を補填してガタつきを防止 */
-    body.body-lock {
-        padding-right: 15px;
-    }
 
     body .pc-layout-container {
         display: block;
@@ -2687,7 +2681,7 @@ html body.magnifier-active .mob-card-inner * {
     scrollbar-width: thin;
 }
 
-.pc-detail-content > *:last-child {
+.pc-detail-content>*:last-child {
     margin-bottom: 0 !important;
 }
 
@@ -2736,6 +2730,7 @@ html body.magnifier-active .mob-card-inner * {
     justify-content: center;
     padding: 12px;
     box-sizing: border-box;
+    overscroll-behavior: contain;
 }
 
 /* --- SECTION: ANIMATIONS --- */
@@ -2852,7 +2847,6 @@ html body.magnifier-active .mob-card-inner * {
         display: flex;
         align-items: center;
         justify-content: center;
-        /* transition: none; */
 
         &::before {
             inset-inline-start: 0;
