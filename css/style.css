@@ -32,11 +32,11 @@
     --sidebar-w: 56px;
     --panel-w: 220px;
     --sidebar-total: var(--sidebar-w);
-    --fs-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.875rem);
-    --fs-base: clamp(0.9rem, 0.85rem + 0.25vw, 1rem);
-    --fs-md: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
-    --fs-lg: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
-    --fs-xl: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+    --fs-sm: 0.875rem;
+    --fs-base: 1rem;
+    --fs-md: 1.125rem;
+    --fs-lg: 1.25rem;
+    --fs-xl: 1.5rem;
 
     --s-1: 0.25rem;
     --s-2: 0.5rem;
@@ -294,6 +294,10 @@
 }
 
 /* --- SECTION: BASE --- */
+html {
+    scrollbar-gutter: stable;
+}
+
 html,
 body {
     margin: 0;
@@ -305,6 +309,12 @@ body {
     color: var(--text-primary);
     font-family: 'Inter', sans-serif;
     box-sizing: border-box;
+}
+
+.body-lock {
+    overflow: hidden !important;
+    touch-action: none;
+    -webkit-overflow-scrolling: none;
 }
 
 *,
@@ -1270,7 +1280,6 @@ html body.magnifier-active .mob-card-inner * {
     font-weight: 700;
 }
 
-
 .font-semibold {
     font-weight: 600;
 }
@@ -1519,8 +1528,6 @@ html body.magnifier-active .mob-card-inner * {
     text-align: center;
 }
 
-
-
 .loading-overlay {
     position: fixed;
     inset: 0;
@@ -1531,6 +1538,11 @@ html body.magnifier-active .mob-card-inner * {
     align-items: center;
     background: var(--bg-dark);
     transition: all 0.5s ease-in-out;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .loading-spinner {
@@ -1618,8 +1630,6 @@ html body.magnifier-active .mob-card-inner * {
     backdrop-filter: blur(4px);
     z-index: -1;
 }
-
-
 
 /* --- SECTION: MAP --- */
 .pc-map-box {

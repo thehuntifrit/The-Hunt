@@ -17,6 +17,7 @@ const MAINTENANCE_URL = "./json/maintenance.json";
 const MOB_DATA_CACHE_KEY = "mobDataCache";
 const MOB_STATUS_CACHE_KEY = "mobStatusCache";
 const SPAWN_CACHE_KEY = "spawnConditionCache";
+const LOCATIONS_CACHE_KEY = "mobLocationsCache";
 
 // ─── State ──────────────────────────────────────────────
 
@@ -303,30 +304,48 @@ async function loadMaintenance() {
 
 async function loadLocationData() {
     try {
+        const cachedLocsStr = await idb.get(LOCATIONS_CACHE_KEY);
+        if (cachedLocsStr) {
+            try {
+                const cachedLocs = JSON.parse(cachedLocsStr);
+                applyLocationsToState(cachedLocs);
+            } catch (e) {
+                console.warn("Location cache parse error:", e);
+            }
+        }
+
         const res = await fetch(MOB_LOCATIONS_URL);
         if (!res.ok) throw new Error("Location data failed to load.");
         const locationsData = await res.json();
+        const freshLocsStr = JSON.stringify(locationsData);
 
-        state.baseMobData.forEach(mob => {
-            const locInfo = locationsData[mob.area];
-            if (locInfo) {
-                mob.locations = locInfo.locations || [];
-                mob.mapImage = locInfo.mapImage || "";
-            }
-        });
-
-        state.mobs.forEach(mob => {
-            const locInfo = locationsData[mob.area];
-            if (locInfo) {
-                mob.locations = locInfo.locations || [];
-                mob.mapImage = locInfo.mapImage || "";
-            }
-        });
-
-        window.dispatchEvent(new CustomEvent('locationDataReady'));
+        if (freshLocsStr !== cachedLocsStr) {
+            await idb.set(LOCATIONS_CACHE_KEY, freshLocsStr);
+            applyLocationsToState(locationsData);
+        }
     } catch (e) {
         console.warn("Lazy location load failed:", e);
     }
+}
+
+function applyLocationsToState(locationsData) {
+    state.baseMobData.forEach(mob => {
+        const locInfo = locationsData[mob.area];
+        if (locInfo) {
+            mob.locations = locInfo.locations || [];
+            mob.mapImage = locInfo.mapImage || "";
+        }
+    });
+
+    state.mobs.forEach(mob => {
+        const locInfo = locationsData[mob.area];
+        if (locInfo) {
+            mob.locations = locInfo.locations || [];
+            mob.mapImage = locInfo.mapImage || "";
+        }
+    });
+
+    window.dispatchEvent(new CustomEvent('locationDataReady'));
 }
 
 export async function loadBaseMobData() {
