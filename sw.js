@@ -57,7 +57,6 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // JSONと画像は Cache-First (背景で更新) または Stale-While-Revalidate
   if (url.pathname.endsWith('.json') || url.pathname.includes('/maps/') || url.pathname.includes('/icon/')) {
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
@@ -74,7 +73,6 @@ self.addEventListener('fetch', (event) => {
       })
     );
   } else {
-    // その他（HTML, JS, CSS）は Network-First
     event.respondWith(
       fetch(event.request).catch(() => {
         return caches.match(event.request);
