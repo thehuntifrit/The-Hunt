@@ -18,19 +18,23 @@ const auth = getAuth(app);
 export async function initializeAuth() {
     return new Promise((resolve) => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            unsubscribe();
             if (user) {
+                unsubscribe();
                 resolve(user.uid);
             } else {
                 signInAnonymously(auth)
-                    .then((credential) => {
-                        resolve(credential.user.uid);
-                    })
                     .catch((error) => {
+                        console.error("Anonymous sign-in failed:", error);
+                        unsubscribe();
                         resolve(null);
                     });
             }
         });
+        // タイムアウト設定 (念のため)
+        setTimeout(() => {
+            unsubscribe();
+            resolve(auth.currentUser ? auth.currentUser.uid : null);
+        }, 10000);
     });
 }
 
@@ -281,7 +285,11 @@ export const toggleCrushStatus = async (mobNo, area, locationId, nextCulled) => 
 
 export async function registerUserToFirestore(lodestoneId, characterName) {
     try {
-        const user = auth.currentUser;
+        let user = auth.currentUser;
+        if (!user) {
+            await initializeAuth();
+            user = auth.currentUser;
+        }
         if (!user) return;
 
         const userDocRef = doc(db, "users", user.uid);
@@ -291,6 +299,7 @@ export async function registerUserToFirestore(lodestoneId, characterName) {
             updated_at: Timestamp.now()
         }, { merge: true });
     } catch (error) {
+        console.error("registerUserToFirestore failed:", error);
     }
 }
 
@@ -305,7 +314,18 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
     }
 
     try {
-        const token = await auth.currentUser.getIdToken();
+        let user = auth.currentUser;
+        if (!user) {
+            console.log("Auth user is null, initializing...");
+            await initializeAuth();
+            user = auth.currentUser;
+        }
+
+        if (!user) {
+            throw new Error("Firebase Auth user could not be initialized.");
+        }
+
+        const token = await user.getIdToken();
         const fetchUrl = `${VERIFICATION_PROXY_URL}?lodestoneId=${encodeURIComponent(lodestoneId)}`;
 
         const response = await fetch(fetchUrl, {
@@ -313,9 +333,16 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
                 'Authorization': `Bearer ${token}`
             }
         });
+
         if (!response.ok) {
             if (response.status === 404) {
                 return { success: false, error: "キャラクターが見つかりませんでした。" };
+            }
+            if (response.status === 401) {
+                return { success: false, error: "認証エラーが発生しました。ページを再読み込みして試してください。" };
+            }
+            if (response.status === 403) {
+                return { success: false, error: "アクセスが拒否されました。日本国外からのアクセス、またはプロキシ利用は制限されています。" };
             }
             throw new Error(`プロキシ・サーバーエラー: ${response.status}`);
         }
@@ -333,13 +360,16 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
         if (bio.includes(verificationCode)) {
             return { success: true, characterName: name };
         } else {
-            return { success: false, error: "検証コードが自己紹介文に見つかりませんでした。保存されているか確認してください。" };
+            return {
+                success: false,
+                error: "検証コードが自己紹介文に見つかりませんでした。保存から反映まで最大5分程度かかる場合があります。また、言語設定が日本語(JP)であることを確認してください。"
+            };
         }
     } catch (error) {
         console.error("Lodestone verification failed:", error);
         return {
             success: false,
-            error: "認証に失敗しました。時間をおいて再試行してください。"
+            error: `認証に失敗しました。(${error.message || "Unknown Error"})`
         };
     }
 }

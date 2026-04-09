@@ -1,22 +1,21 @@
 /* --- SECTION: APPNAV BASE (PC STYLES) --- */
 #appnav-sidebar {
-    --sidebar-w: 56px;
     position: fixed;
     inset-block: 0;
     inset-inline-start: 0;
     inline-size: auto;
-    min-inline-size: var(--sidebar-w);
-    background: var(--nav-bg);
+    min-inline-size: 56px;
+    background: var(--color-nav-bg);
     backdrop-filter: blur(24px);
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: row;
-    z-index: var(--z-sticky);
+    z-index: 100;
     transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
 
     &.expanded {
-        width: calc(var(--sidebar-w) + var(--panel-w));
+        width: 216px; /* 56px + 160px */
         .appnav-panel { display: flex; }
     }
 
@@ -28,16 +27,16 @@
     }
 
     .appnav-main-nav {
-        inline-size: var(--sidebar-w);
-        min-inline-size: var(--sidebar-w);
+        inline-size: 56px;
+        min-inline-size: 56px;
         block-size: 100%;
-        background: var(--nav-inner-bg);
-        border-inline-end: 1px solid var(--nav-border);
+        background: var(--color-nav-inner-bg);
+        border-inline-end: 1px solid var(--color-nav-border);
         display: flex;
         flex-direction: column;
         align-items: center;
         z-index: 40;
-        padding-block-start: var(--s-5);
+        padding-block-start: 21px;
         box-sizing: border-box;
         transition: inline-size 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         overflow-x: hidden;
@@ -45,21 +44,21 @@
 
     .appnav-panel {
         flex: 1;
-        background: var(--nav-bg);
+        background: var(--color-nav-bg);
         display: none;
         flex-direction: column;
-        width: var(--panel-w);
+        width: 160px;
         min-inline-size: 0;
         overflow-y: auto;
         overflow-x: hidden;
-        padding: var(--s-3) var(--s-2);
+        padding: 11px 7px;
     }
 
     .appnav-top {
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: var(--s-4) 0 var(--s-3);
+        padding: 14px 0 11px;
         inline-size: 100%;
         box-sizing: border-box;
     }
@@ -69,11 +68,11 @@
         font-weight: 800;
         line-height: 1.1;
         letter-spacing: -0.02em;
-        margin-block-end: var(--s-5);
+        margin-block-end: 21px;
         cursor: default;
         text-align: center;
-        .appnav-logo-the { color: var(--accent-cyan); }
-        .appnav-logo-hunt { color: var(--accent-gold); }
+        .appnav-logo-the { color: var(--color-cyan); }
+        .appnav-logo-hunt { color: var(--color-gold); }
     }
 }
 
@@ -94,7 +93,7 @@
     opacity: 0.8;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
-    transition: all var(--t-base);
+    transition: all 0.3s ease;
 
     &:hover {
         opacity: 1;
@@ -103,8 +102,8 @@
 
     &.appnav-active {
         opacity: 1;
-        color: var(--accent-cyan);
-        background: var(--nav-active-bg);
+        color: var(--color-cyan);
+        background: var(--color-nav-active-bg);
 
         &::before {
             content: '';
@@ -112,14 +111,14 @@
             inset-inline-start: 0;
             inset-block: 0;
             inline-size: 4px;
-            background: var(--accent-cyan);
-            box-shadow: 0 0 10px var(--accent-cyan);
+            background: var(--color-cyan);
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
         }
     }
 
     &.has-alert {
-        color: var(--nav-alert);
-        text-shadow: 0 0 10px rgba(var(--rank-s-rgb), 0.6);
+        color: var(--color-gold);
+        text-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
 
         &::after {
             content: '';
@@ -128,9 +127,9 @@
             inset-inline-end: 8px !important;
             inline-size: 8px;
             block-size: 8px;
-            background: var(--nav-badge-error);
+            background: var(--color-nav-badge-error);
             border-radius: 50%;
-            box-shadow: 0 0 10px var(--nav-badge-error);
+            box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
             z-index: 10;
         }
     }
@@ -143,7 +142,7 @@
     }
 
     .appnav-label {
-        font-size: var(--fs-ui-tiny);
+        font-size: 10px;
         font-weight: 800;
         letter-spacing: 0.05em;
         line-height: 1;
@@ -157,17 +156,17 @@
 
 /* Sidebar Sections & Filters */
 .appnav-section {
-    margin-block-end: var(--s-4);
+    margin-block-end: 14px;
     display: block;
 
     .appnav-section-title,
     .appnav-filter-title {
         font-family: 'Roboto', sans-serif;
-        font-size: var(--fs-ui-sm);
+        font-size: 11px;
         font-weight: 800;
-        color: var(--white);
+        color: var(--color-white);
         letter-spacing: 0.15em;
-        margin-block-end: var(--s-3);
+        margin-block-end: 11px;
         text-align: center;
         text-transform: uppercase;
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
@@ -190,31 +189,29 @@
         font-family: 'Roboto', sans-serif;
         font-size: 13.5px;
         background: rgba(255, 255, 255, 0.04);
-        border: 1px solid var(--border-normal);
-        color: var(--white);
-        transition: all var(--t-fast);
+        border: 1px solid var(--color-border-normal);
+        color: var(--color-white);
+        transition: all 0.2s ease;
 
         &:hover { background: rgba(255, 255, 255, 0.1); }
 
         &[data-rank] {
-            --rank-color: var(--current-rank, var(--accent-cyan));
-            --rank-rgb: var(--current-rank-rgb, var(--cyan-rgb));
+            --rank-color: var(--current-rank, var(--color-cyan));
             color: var(--rank-color);
-            background: rgba(var(--rank-rgb), 0.12);
-            border-color: rgba(var(--rank-rgb), 0.25);
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.1);
         }
     }
 
     &.appnav-active .appnav-rank-header {
-        background: rgba(var(--cyan-rgb), 0.15);
-        border-color: rgba(var(--cyan-rgb), 0.4);
+        background: rgba(34, 211, 238, 0.15);
+        border-color: rgba(34, 211, 238, 0.4);
 
         &[data-rank] {
             border-inline-start: 4px solid var(--current-rank);
             color: var(--current-rank);
-            background: rgba(var(--current-rank-rgb), 0.18);
-            border-color: rgba(var(--current-rank-rgb), 0.5);
-            box-shadow: inset 0 0 10px rgba(var(--current-rank-rgb), 0.1);
+            background: rgba(255, 255, 255, 0.05); /* Simplified background */
+            border-color: var(--current-rank);
         }
     }
 
@@ -239,7 +236,7 @@
 
 /* Error/Alert Items */
 .appnav-error-item {
-    padding: var(--s-2) 0;
+    padding: 7px 0;
     border-block-end: 1px solid rgba(255, 255, 255, 0.08);
     background: transparent;
     width: 100%;
@@ -249,7 +246,7 @@
     .appnav-error-time {
         font-family: var(--font-mono);
         color: rgba(255, 255, 255, 0.6);
-        font-size: var(--fs-ui-tiny);
+        font-size: 10px;
         font-weight: 700;
     }
 }
@@ -258,7 +255,7 @@
     max-block-size: 400px;
     overflow-y: auto;
     background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--border-normal);
+    border: 1px solid var(--color-border-normal);
     padding: 6px 12px;
 }
 

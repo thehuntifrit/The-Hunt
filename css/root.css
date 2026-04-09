@@ -1,126 +1,64 @@
 :root {
-    --bg-dark: rgba(15, 23, 42, 1);
-    --bg-card: rgba(30, 41, 59, 0.45);
-    --accent-cyan: rgba(34, 211, 238, 1);
-    --cyan-rgb: 34, 211, 238;
-    --accent-gold: rgba(251, 191, 36, 1);
-    --accent-crimson: rgba(248, 113, 113, 1);
-    --text-primary: rgba(248, 250, 252, 1);
-    --text-secondary: rgba(148, 163, 184, 1);
+    /* --- COLOR SYSTEM --- */
+    --color-bg-dark: rgba(15, 23, 42, 1);
+    --color-bg-card: rgba(30, 41, 59, 0.45);
+    --color-cyan: rgba(34, 211, 238, 1);
+    --color-gold: rgba(251, 191, 36, 1);
+    --color-crimson: rgba(248, 113, 113, 1);
+    --color-text-primary: rgba(248, 250, 252, 1);
+    --color-text-secondary: rgba(148, 163, 184, 1);
+    --color-timer: rgba(226, 215, 197, 1);
 
-    --rank-s: rgba(251, 191, 36, 1);
-    --rank-s-rgb: 251, 191, 36;
-    --rank-a: rgba(107, 163, 122, 1);
-    --rank-a-rgb: 107, 163, 122;
-    --rank-f: rgba(129, 140, 248, 1);
-    --rank-f-rgb: 129, 140, 248;
+    --color-rank-s: rgba(251, 191, 36, 1);
+    --color-rank-a: rgba(107, 163, 122, 1);
+    --color-rank-f: rgba(129, 140, 248, 1);
 
-    --rank-s-tab: rgba(217, 119, 6, 1);
-    --rank-a-tab: rgba(21, 128, 61, 1);
-    --rank-f-tab: rgba(67, 56, 202, 1);
+    --color-rank-s-tab: rgba(217, 119, 6, 1);
+    --color-rank-a-tab: rgba(21, 128, 61, 1);
+    --color-rank-f-tab: rgba(67, 56, 202, 1);
 
-    --progress-bg: rgba(0, 0, 0, 0.6);
-    --progress-fill: rgba(37, 99, 235, 1);
-    --progress-ready: rgba(59, 130, 246, 1);
-    --progress-max-over: rgba(29, 78, 216, 1);
+    --color-progress-bg: rgba(0, 0, 0, 0.6);
+    --color-progress-fill: rgba(37, 99, 235, 1);
+    --color-progress-ready: rgba(59, 130, 246, 1);
+    --color-progress-max-over: rgba(29, 78, 216, 1);
 
     --color-b1: rgba(68, 148, 247, 1);
     --color-b2: rgba(253, 92, 92, 1);
     --color-culled: rgba(218, 218, 218, 1);
     --color-lastone: rgba(52, 211, 153, 1);
-    --sidebar-w: 56px;
-    --panel-w: 160px;
-    --pc-list-w: 480px;
-    --pc-detail-w: 400px;
-    --sidebar-total: var(--sidebar-w);
-    --fs-sm: 12px;
-    --fs-base: 14px;
-    --fs-md: 16px;
-    --fs-lg: 18px;
-    --fs-xl: 21px;
 
-    --s-1: 4px;
-    --s-2: 7px;
-    --s-3: 11px;
-    --s-4: 14px;
-    --s-5: 21px;
-
-    --r-sm: 4px;
-    --r-md: 8px;
-    --r-lg: 12px;
-
-    --t-fast: 0.2s ease;
-    --t-base: 0.3s ease;
-    --t-slow: 0.4s ease;
-
-    --z-base: 1;
-    --z-sticky: 100;
-    --z-overlay: 200;
-    --z-modal: 210;
-    --z-toast: 300;
-
-    --font-mono: 'JetBrains Mono', 'Roboto Mono', monospace;
-    --bg-glass: rgba(255, 255, 255, 0.08);
-    --bg-glass-heavy: rgba(255, 255, 255, 0.15);
-    --bg-dark-panel: rgba(15, 23, 42, 0.85);
-    --text-timer: rgba(226, 215, 197, 1);
-    --nav-bg: rgba(10, 15, 30, 0.95);
-    --nav-inner-bg: rgba(15, 23, 42, 0.95);
-    --nav-border: rgba(255, 255, 255, 0.05);
-    --nav-border-heavy: rgba(255, 255, 255, 0.15);
-    --nav-text: rgba(255, 255, 255, 1);
-    --nav-label: rgba(255, 255, 255, 1);
-    --nav-hover-text: rgba(255, 255, 255, 0.9);
-    --nav-active-bg: rgba(var(--cyan-rgb), 0.12);
-    --nav-active-text: var(--accent-cyan);
-    --nav-alert: var(--accent-gold);
-    --nav-badge-error: rgba(255, 77, 77, 1);
-
-    --fs-ui-nano: 8px;
-    --fs-ui-tiny: 10px;
-    --fs-ui-sm: 11px;
-    --fs-ui-base: 13px;
-    --fs-ui-md: 14px;
+    /* --- UI THEME COLORS --- */
+    --color-nav-bg: rgba(10, 15, 30, 0.95);
+    --color-nav-inner-bg: rgba(15, 23, 42, 0.95);
+    --color-nav-border: rgba(255, 255, 255, 0.05);
+    --color-nav-border-heavy: rgba(255, 255, 255, 0.15);
+    --color-nav-text: rgba(255, 255, 255, 1);
+    --color-nav-active-bg: rgba(34, 211, 238, 0.12);
+    --color-nav-badge-error: rgba(255, 77, 77, 1);
 
     --color-ui-unselected: rgba(148, 163, 184, 1);
     --color-spawn-count: rgba(241, 245, 249, 1);
     --color-spawn-warn: rgba(234, 179, 8, 1);
 
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    --shadow-neon: 0 0 15px rgba(var(--cyan-rgb), 0.3);
+    --color-bg-panel: rgba(30, 41, 59, 1);
+    --color-bg-panel-light: rgba(55, 65, 81, 1);
+    --color-border-subtle: rgba(255, 255, 255, 0.05);
+    --color-border-normal: rgba(255, 255, 255, 0.12);
+    
+    --color-white: rgba(255, 255, 255, 1);
+    --color-black: rgba(0, 0, 0, 1);
+    --color-all-rank: rgba(244, 63, 94, 1);
 
-    --text-shadow-neon: 0 0 8px rgba(var(--cyan-rgb), 0.4);
+    /* --- LAYOUT CONSTANTS (KEEP BASIC) --- */
+    --z-sticky: 100;
+    --z-modal: 210;
+    --z-toast: 300;
 
-    --bg-deeper: rgba(3, 7, 18, 1);
-    --bg-panel: rgba(30, 41, 59, 1);
-    --bg-panel-light: rgba(55, 65, 81, 1);
-    --border-subtle: rgba(255, 255, 255, 0.05);
-    --border-normal: rgba(255, 255, 255, 0.12);
-    --border-cyan: rgba(var(--cyan-rgb), 0.4);
-    --text-dim: rgba(148, 163, 184, 1);
-    --text-muted: rgba(100, 116, 139, 1);
-    --shadow-deep: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-
-    --s-05: 2px;
-    --s-15: 5px;
-
-    --white: rgba(255, 255, 255, 1);
-    --white-rgb: 255, 255, 255;
-    --black: rgba(0, 0, 0, 1);
-    --blue-base: rgba(37, 99, 235, 1);
-    --red-base: rgba(239, 68, 68, 1);
-    --all-rank: rgba(244, 63, 94, 1);
-    --all-rank-rgb: 244, 63, 94;
-
-    --transition-all: all var(--t-base);
-    --transition-opacity: opacity var(--t-base);
-    --transition-transform: none;
+    --font-mono: 'JetBrains Mono', 'Roboto Mono', monospace;
+    --t-base: 0.3s ease;
 }
 
-
+@media (max-width: 1023px) {
     :root {
         --mobile-header-height: calc(34px + env(safe-area-inset-top, 0px));
         --mobile-footer-height: calc(52px + env(safe-area-inset-bottom, 0px));
@@ -131,15 +69,15 @@
         top: 0;
         left: 0;
         right: 0;
-        z-index: var(--z-toast);
+        z-index: 9999;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: calc(var(--s-1) + var(--s-2) + env(safe-area-inset-top, 0px)) var(--s-2) var(--s-2);
+        padding: calc(11px + env(safe-area-inset-top, 0px)) 7px 7px;
         background: rgba(10, 15, 30, 0.95);
         backdrop-filter: blur(16px);
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        height: var(--mobile-header-height);
+        height: 52px;
     }
 
     #root-mobile-footer-bar {
@@ -147,10 +85,10 @@
         bottom: 0;
         left: 0;
         right: 0;
-        z-index: var(--z-toast);
-        background: var(--nav-bg);
+        z-index: 9999;
+        background: var(--color-nav-bg);
         backdrop-filter: blur(16px);
-        border-top: 1px solid var(--nav-border-heavy);
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
         display: flex;
         flex-direction: column-reverse;
         padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -161,18 +99,18 @@
         overflow-y: auto;
         overscroll-behavior: contain;
         display: none;
-        background: var(--nav-bg);
-        border-top: 1px solid var(--nav-border-heavy);
-        padding: var(--s-3);
+        background: var(--color-nav-bg);
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 11px;
 
         &.appnav-open { display: block; }
         .appnav-filter-accordion { display: flex; flex-direction: column; gap: 4px; }
     }
 
     #mobcard-overlay-backdrop {
-        z-index: var(--z-modal);
-        top: var(--mobile-header-height);
-        bottom: var(--mobile-footer-height);
+        z-index: 1000;
+        top: 52px;
+        bottom: 52px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -184,7 +122,7 @@
 
     .main-content-area {
         margin-left: 0;
-        padding-top: var(--mobile-header-height);
+        padding-top: 52px;
         padding-bottom: 5rem;
         padding-left: 1vw;
         padding-right: 1vw;
@@ -201,8 +139,8 @@ body {
     font-size: 14px;
     line-height: 1.625;
     -webkit-font-smoothing: antialiased;
-    background-color: var(--bg-dark);
-    color: var(--text-primary);
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-primary);
     font-family: 'Inter', sans-serif;
     box-sizing: border-box;
 }
@@ -240,7 +178,7 @@ body {
 }
 
 body.appnav-expanded .main-content-area {
-    --sidebar-total: calc(var(--sidebar-w) + var(--panel-w));
+    --sidebar-total: 216px; /* 56px + 160px */
 }
 
 body::before {
@@ -251,8 +189,8 @@ body::before {
     width: 100%;
     height: 100%;
     background-image:
-        linear-gradient(to bottom, rgba(var(--cyan-rgb), 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 90% 80%, rgba(234, 179, 8, 0.03) 0%, transparent 20%);
+        linear-gradient(to bottom, rgba(34, 211, 238, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 90% 80%, rgba(251, 191, 36, 0.03) 0%, transparent 20%);
     pointer-events: none;
     z-index: -1;
 }
@@ -274,7 +212,7 @@ body::before {
     .mobile-clock-val {
         font-size: 16px;
         font-weight: 700;
-        color: var(--text-timer);
+        color: var(--color-timer);
         font-family: var(--font-mono);
         font-variant-numeric: tabular-nums;
         line-height: normal;
@@ -286,7 +224,7 @@ body::before {
 }
 
 .mobcard-name {
-    font-size: var(--fs-xs);
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: -0.02em;
 }
@@ -303,11 +241,11 @@ body::before {
 }
 
 .root-mobile-title {
-    font-size: calc(var(--fs-sm) + 6px);
+    font-size: 18px; /* 12px + 6px */
     font-weight: 800;
     letter-spacing: -0.02em;
     display: flex;
-    gap: var(--s-1);
+    gap: 4px;
 }
 
 .mobcard-content::-webkit-scrollbar {
@@ -339,7 +277,7 @@ html body.magnifier-active .mobcard-inner * {
 /* --- SECTION: LAYOUT --- */
 .main-content-area {
     min-height: 100vh;
-    padding: var(--s-4);
+    padding: 14px;
     margin-left: 0;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -355,7 +293,7 @@ html body.magnifier-active .mobcard-inner * {
     margin: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: var(--s-4);
+    gap: 14px;
     align-items: start;
 }
 
@@ -365,7 +303,7 @@ html body.magnifier-active .mobcard-inner * {
 }
 
 .pc-detail-header>.flex.justify-start {
-    margin-bottom: var(--s-1);
+    margin-bottom: 4px;
 }
 
 .pc-detail-header>.flex.justify-between {
@@ -374,11 +312,11 @@ html body.magnifier-active .mobcard-inner * {
 
 /* --- SECTION: UTILS --- */
 .text-secondary {
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
 }
 
 .text-xs {
-    font-size: var(--fs-xs);
+    font-size: 11px;
 }
 
 .text-xl {
@@ -390,7 +328,7 @@ html body.magnifier-active .mobcard-inner * {
 }
 
 .mb-4 {
-    margin-bottom: var(--s-4);
+    margin-bottom: 14px;
 }
 
 .gap-3 {
@@ -471,14 +409,14 @@ html body.magnifier-active .mobcard-inner * {
 .manual-modal-content {
     position: relative;
     z-index: 1;
-    background: var(--bg-dark);
-    border-radius: var(--r-lg);
+    background: var(--color-bg-dark);
+    border-radius: 12px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
     inline-size: 100%;
     max-inline-size: 56rem;
     max-block-size: 90vh;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--white);
+    color: var(--color-white);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -489,14 +427,14 @@ html body.magnifier-active .mobcard-inner * {
         inset-inline-start: 0;
         inline-size: 100%;
         block-size: 3px;
-        background: linear-gradient(to right, var(--accent-cyan), var(--blue-base));
+        background: linear-gradient(to right, var(--color-cyan), rgba(37, 99, 235, 1));
     }
 
     .manual-modal-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: var(--s-4) 1.25rem;
+        padding: 14px 1.25rem;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
@@ -505,19 +443,19 @@ html body.magnifier-active .mobcard-inner * {
         font-weight: 800;
         display: flex;
         align-items: center;
-        gap: var(--s-2);
+        gap: 7px;
 
         .text-cyan {
-            color: var(--accent-cyan);
+            color: var(--color-cyan);
         }
 
         .text-yellow {
-            color: var(--accent-gold);
+            color: var(--color-gold);
         }
 
         .text-gray {
             color: rgba(255, 255, 255, 0.4);
-            margin-inline-start: var(--s-2);
+            margin-inline-start: 7px;
             font-size: 0.9rem;
             font-weight: 400;
             letter-spacing: 0.1em;
@@ -529,7 +467,7 @@ html body.magnifier-active .mobcard-inner * {
         border: none;
         color: rgba(255, 255, 255, 0.5);
         cursor: pointer;
-        padding: var(--s-1);
+        padding: 4px;
         font-size: 1.5rem;
         line-height: 1;
 
@@ -571,11 +509,12 @@ html body.magnifier-active .mobcard-inner * {
 }
 
 .text-cyan {
-    color: var(--accent-cyan);
+    color: var(--color-cyan);
 }
 
 .text-yellow {
-    color: var(--accent-gold);
+    color: var(--color-gold);
+}
 }
 
 @media (min-width: 1024px) {
@@ -602,15 +541,15 @@ html body.magnifier-active .mobcard-inner * {
     text-shadow: 0 0 4px currentColor;
 
     &[data-rank="S"] {
-        color: var(--rank-s);
+        color: var(--color-rank-s);
     }
 
     &[data-rank="A"] {
-        color: var(--rank-a);
+        color: var(--color-rank-a);
     }
 
     &[data-rank="F"] {
-        color: var(--rank-f);
+        color: var(--color-rank-f);
     }
 }
 
@@ -644,12 +583,12 @@ html body.magnifier-active .mobcard-inner * {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--s-4);
+    padding: 14px;
 }
 
 .modal-content-base {
-    background-color: var(--bg-panel);
-    border-radius: var(--r-md);
+    background-color: var(--color-bg-panel);
+    border-radius: 8px;
     position: relative;
     width: 100%;
     max-width: 28rem;
@@ -659,10 +598,10 @@ html body.magnifier-active .mobcard-inner * {
 .modal-mob-name {
     margin-top: 0;
     font-size: 1.25rem;
-    margin-bottom: var(--s-4);
+    margin-bottom: 14px;
     font-weight: 600;
-    color: var(--white);
-    border-bottom: 1px solid var(--border-normal);
+    color: var(--color-white);
+    border-bottom: 1px solid var(--color-border-normal);
     padding-bottom: 0.5rem;
 }
 
@@ -672,11 +611,11 @@ html body.magnifier-active .mobcard-inner * {
 
 .modal-input-field {
     width: 100%;
-    padding: var(--s-2);
-    border-radius: var(--r-sm);
-    background-color: var(--bg-deeper);
-    border: 1px solid var(--border-normal);
-    color: var(--white);
+    padding: 7px;
+    border-radius: 4px;
+    background-color: rgba(3, 7, 18, 1);
+    border: 1px solid var(--color-border-normal);
+    color: var(--color-white);
     font-size: 1.125rem;
     outline: none;
     transition: all 0.2s;
@@ -687,27 +626,27 @@ html body.magnifier-active .mobcard-inner * {
 }
 
 .modal-error-display {
-    font-size: var(--fs-sm);
+    font-size: 12px;
     text-align: center;
     margin: 0.75rem 0;
-    color: var(--accent-crimson);
+    color: var(--color-crimson);
     font-weight: 700;
 }
 
 .modal-checkbox {
     width: 1.25rem;
     height: 1.25rem;
-    color: var(--blue-base);
-    background-color: var(--bg-panel);
-    border: 1px solid var(--bg-panel-light);
-    border-radius: var(--r-sm);
+    color: rgba(37, 99, 235, 1);
+    background-color: var(--color-bg-panel);
+    border: 1px solid var(--color-bg-panel-light);
+    border-radius: 4px;
 }
 
 .btn-secondary {
     padding: 0.5rem 1rem;
-    border-radius: var(--r-sm);
-    background-color: var(--bg-panel-light);
-    color: var(--white);
+    border-radius: 4px;
+    background-color: var(--color-bg-panel-light);
+    color: var(--color-white);
     font-weight: 500;
     transition: background-color 0.2s;
 }
@@ -717,38 +656,38 @@ html body.magnifier-active .mobcard-inner * {
 }
 
 .btn-primary-cyan {
-    padding: var(--s-2) var(--s-5);
-    border-radius: var(--r-sm);
-    background: linear-gradient(to right, #0891b2, var(--blue-base));
-    color: var(--white);
+    padding: 7px 21px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #0891b2, rgba(37, 99, 235, 1));
+    color: var(--color-white);
     font-weight: 700;
     box-shadow: 0 10px 15px -3px rgba(34, 211, 238, 0.3);
     transition: all 0.2s;
 }
 
 .btn-primary-cyan:hover {
-    background: linear-gradient(to right, var(--accent-cyan), var(--blue-base));
+    background: linear-gradient(to right, var(--color-cyan), rgba(37, 99, 235, 1));
 }
 
 .btn-primary-yellow {
-    padding: var(--s-2) var(--s-5);
-    border-radius: var(--r-sm);
-    background: linear-gradient(to right, var(--accent-gold), #ea580c);
-    color: var(--white);
+    padding: 7px 21px;
+    border-radius: 4px;
+    background: linear-gradient(to right, var(--color-gold), #ea580c);
+    color: var(--color-white);
     font-weight: 700;
     box-shadow: 0 10px 15px -3px rgba(234, 88, 12, 0.2);
     transition: all 0.2s;
 }
 
 .btn-primary-yellow:hover {
-    background: linear-gradient(to right, var(--accent-gold), #f97316);
+    background: linear-gradient(to right, var(--color-gold), #f97316);
 }
 
 .btn-copy {
     padding: 0.25rem 0.75rem;
-    background-color: var(--bg-panel-light);
-    border-radius: var(--r-sm);
-    font-size: var(--fs-xs);
+    background-color: var(--color-bg-panel-light);
+    border-radius: 4px;
+    font-size: 11px;
     transition: background-color 0.2s;
     color: var(--white);
 }
@@ -758,33 +697,33 @@ html body.magnifier-active .mobcard-inner * {
 }
 
 .modal-auth-description {
-    font-size: var(--fs-sm);
-    color: var(--text-dim);
+    font-size: 12px;
+    color: var(--color-text-secondary);
     display: flex;
     flex-direction: column;
-    gap: var(--s-4);
-    margin-bottom: var(--s-5);
+    gap: 14px;
+    margin-bottom: 21px;
 }
 
 .modal-auth-box {
     background-color: rgba(15, 23, 42, 0.5);
-    padding: var(--s-4);
-    border-radius: var(--r-md);
-    border: 1px solid var(--border-normal);
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid var(--color-border-normal);
     display: flex;
     flex-direction: column;
-    gap: var(--s-4);
+    gap: 14px;
 }
 
 .auth-code-display {
     flex: 1;
-    padding: var(--s-2);
-    background-color: var(--bg-deeper);
-    border-radius: var(--r-sm);
-    border: 1px solid var(--bg-panel);
+    padding: 7px;
+    background-color: rgba(3, 7, 18, 1);
+    border-radius: 4px;
+    border: 1px solid var(--color-bg-panel);
     text-align: center;
     font-family: var(--font-mono);
-    color: var(--accent-gold);
+    color: var(--color-gold);
     font-weight: 700;
     user-select: all;
     letter-spacing: 0.1em;
@@ -792,21 +731,21 @@ html body.magnifier-active .mobcard-inner * {
 }
 
 .modal-auth-note {
-    font-size: var(--fs-xs);
-    color: var(--text-muted);
+    font-size: 11px;
+    color: rgba(100, 116, 139, 1);
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
     padding-left: 7px;
-    border-left: 2px solid var(--bg-panel-light);
+    border-left: 2px solid var(--color-bg-panel-light);
 }
 
 .auth-verified-box {
     background-color: rgba(6, 78, 59, 0.2);
     border: 1px solid rgba(16, 185, 129, 0.5);
-    padding: var(--s-4);
-    border-radius: var(--r-md);
-    margin: var(--s-4) 0;
+    padding: 14px;
+    border-radius: 8px;
+    margin: 14px 0;
     text-align: center;
 }
 
@@ -818,7 +757,7 @@ html body.magnifier-active .mobcard-inner * {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: var(--bg-dark);
+    background: var(--color-bg-dark);
     transition: all 0.5s ease-in-out;
 }
 
@@ -830,29 +769,29 @@ html body.magnifier-active .mobcard-inner * {
 .loading-spinner {
     width: 48px;
     height: 48px;
-    border: 4px solid rgba(var(--cyan-rgb), 0.2);
-    border-top-color: var(--accent-cyan);
+    border: 4px solid rgba(34, 211, 238, 0.2);
+    border-top-color: var(--color-cyan);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
 
 .loading-text {
     margin-top: 14px;
-    color: var(--text-secondary);
-    font-size: var(--fs-sm);
+    color: var(--color-text-secondary);
+    font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.05em;
 }
 
 .app-btn-outline {
-    background: rgba(var(--cyan-rgb), 0.12);
-    border: 1px solid var(--accent-cyan);
-    border-radius: var(--r-sm);
-    color: var(--accent-cyan);
+    background: rgba(34, 211, 238, 0.12);
+    border: 1px solid var(--color-cyan);
+    border-radius: 4px;
+    color: var(--color-cyan);
     font-weight: 800;
-    text-shadow: 0 0 8px rgba(var(--cyan-rgb), 0.6);
+    text-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
     cursor: pointer;
-    transition: all var(--t-base);
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -860,20 +799,20 @@ html body.magnifier-active .mobcard-inner * {
 }
 
 .app-btn-outline:hover {
-    background: var(--accent-cyan);
+    background: var(--color-cyan);
     color: rgba(15, 23, 42, 1);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(var(--cyan-rgb), 0.3);
+    box-shadow: 0 4px 12px rgba(34, 211, 238, 0.3);
 }
 
 .custom-tooltip {
     position: fixed;
     z-index: 95;
     background: rgba(15, 23, 42, 0.95);
-    color: var(--white);
+    color: var(--color-white);
     padding: 7px 11px;
     border-radius: 5px;
-    font-size: var(--fs-sm);
+    font-size: 12px;
     pointer-events: none;
     white-space: nowrap;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -896,13 +835,13 @@ html body.magnifier-active .mobcard-inner * {
     font-size: 13px;
     cursor: pointer;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all var(--t-base);
+    transition: all 0.3s ease;
     flex-shrink: 0;
 }
 
 .mobcard-mobile-actions:hover {
     background: rgba(255, 255, 255, 0.15);
-    color: var(--white);
+    color: var(--color-white);
 }
 
 .app-backdrop {
@@ -915,22 +854,22 @@ html body.magnifier-active .mobcard-inner * {
 
 /* --- SECTION: MAP --- */
 .pc-map-box {
-    background-color: var(--bg-deeper);
-    border-radius: var(--r-sm);
+    background-color: rgba(3, 7, 18, 1);
+    border-radius: 4px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .map-magnifier {
     position: fixed;
     transform: translate(-50%, -50%);
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(var(--cyan-rgb), 0.4), inset 0 0 15px rgba(0, 0, 0, 0.5);
-    z-index: var(--z-modal);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(34, 211, 238, 0.4), inset 0 0 15px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
     width: 168px;
     height: 168px;
-    border: 4px solid var(--accent-cyan);
+    border: 4px solid var(--color-cyan);
     border-radius: 9999px;
     overflow: hidden;
-    background-color: var(--bg-deeper);
+    background-color: rgba(3, 7, 18, 1);
     pointer-events: none;
 }
 
@@ -1036,9 +975,9 @@ html body.magnifier-active .mobcard-inner * {
     .appnav-area-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: var(--s-2);
+        gap: 7px;
         inline-size: 100%;
-        margin-block-start: var(--s-2);
+        margin-block-start: 7px;
         box-sizing: border-box;
     }
 
@@ -1048,10 +987,10 @@ html body.magnifier-active .mobcard-inner * {
         letter-spacing: 0.05em;
 
         &.appnav-selected {
-            border-inline-start: 4px solid var(--accent-cyan);
-            color: var(--accent-cyan);
-            background: rgba(var(--cyan-rgb), 0.22);
-            border-color: rgba(var(--cyan-rgb), 0.4);
+            border-inline-start: 4px solid var(--color-cyan);
+            color: var(--color-cyan);
+            background: rgba(34, 211, 238, 0.22);
+            border-color: rgba(34, 211, 238, 0.4);
         }
     }
 
@@ -1071,12 +1010,10 @@ html body.magnifier-active .mobcard-inner * {
 .appnav-area-filter-item.appnav-active {
     background: rgba(34, 211, 238, 0.15);
     border-color: rgba(34, 211, 238, 0.4);
-    color: var(--accent-cyan);
+    color: var(--color-cyan);
     font-weight: 700;
 }
 
-/* --- SECTION: DESKTOP --- */
-.pc-detail-header {
 /* --- SECTION: ANIMATIONS --- */
 @keyframes nav-glow-follow {
     0% { filter: hue-rotate(0deg); opacity: 0.6; }
@@ -1120,7 +1057,7 @@ html body.magnifier-active .mobcard-inner * {
 /* --- SECTION: RESPONSIVE --- */
 @media (min-width: 1024px) {
     #appnav-sidebar .appnav-btn {
-        inline-size: var(--sidebar-w, 56px) !important;
+        inline-size: 56px !important;
     }
 
     #mobile-top-bar,
@@ -1129,13 +1066,13 @@ html body.magnifier-active .mobcard-inner * {
     }
 
     .appnav-btn.appnav-active {
-        inline-size: var(--sidebar-w, 56px);
+        inline-size: 56px;
         block-size: 52px;
         margin-inline: auto;
         border-radius: 0;
         align-self: center;
-        background: var(--nav-active-bg);
-        color: var(--nav-active-text);
+        background: var(--color-nav-active-bg);
+        color: var(--color-nav-active-text);
         position: relative;
         display: flex;
         align-items: center;
@@ -1151,27 +1088,23 @@ html body.magnifier-active .mobcard-inner * {
 
 /* --- SECTION: OTHER --- */
 [data-rank="S"] {
-    --current-rank: var(--rank-s);
-    --current-rank-rgb: var(--rank-s-rgb);
+    --current-rank: var(--color-rank-s);
     --rank-text: rgba(255, 255, 255, 1);
 }
 
 [data-rank="A"] {
-    --current-rank: var(--rank-a);
-    --current-rank-rgb: var(--rank-a-rgb);
-    --rank-text: var(--rank-a);
+    --current-rank: var(--color-rank-a);
+    --rank-text: var(--color-rank-a);
 }
 
 [data-rank="F"],
 [data-rank="F.A.T.E."] {
-    --current-rank: var(--rank-f);
-    --current-rank-rgb: var(--rank-f-rgb);
-    --rank-text: var(--rank-f);
+    --current-rank: var(--color-rank-f);
+    --rank-text: var(--color-rank-f);
 }
 
 [data-rank="ALL"] {
-    --current-rank: var(--all-rank);
-    --current-rank-rgb: var(--all-rank-rgb);
+    --current-rank: var(--color-all-rank);
 }
 
 /* --- SECTION: TOAST --- */
@@ -1182,21 +1115,21 @@ html body.magnifier-active .mobcard-inner * {
     z-index: 9999;
     display: flex;
     flex-direction: column;
-    gap: var(--s-2);
+    gap: 7px;
     pointer-events: none;
 }
 
 .toast-item-base {
     position: relative;
     padding: 14px 24px;
-    border-radius: var(--r-md);
+    border-radius: 8px;
     font-weight: 700;
-    font-size: var(--fs-ui-md);
-    color: var(--white);
+    font-size: 14px;
+    color: var(--color-white);
     background: rgba(0, 53, 122, 1);
     backdrop-filter: none;
-    border: 1px solid rgba(var(--cyan-rgb), 0.3);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 0 12px rgba(var(--cyan-rgb), 0.1);
+    border: 1px solid rgba(34, 211, 238, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 0 12px rgba(34, 211, 238, 0.1);
     pointer-events: auto;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
     overflow: hidden;
@@ -1210,16 +1143,16 @@ html body.magnifier-active .mobcard-inner * {
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(135deg, rgba(var(--cyan-rgb), 0.5), transparent 60%);
+    background: linear-gradient(135deg, rgba(34, 211, 238, 0.5), transparent 60%);
     mask: linear-gradient(rgba(255, 255, 255, 1) 0 0) content-box, linear-gradient(rgba(255, 255, 255, 1) 0 0);
     mask-composite: exclude;
     pointer-events: none;
 }
 
 .toast-success {
-    border-color: rgba(var(--cyan-rgb), 0.6);
-    box-shadow: 0 4px 25px rgba(var(--cyan-rgb), 0.2), inset 0 0 15px rgba(var(--cyan-rgb), 0.15);
-    text-shadow: 0 0 8px rgba(var(--cyan-rgb), 0.5);
+    border-color: rgba(34, 211, 238, 0.6);
+    box-shadow: 0 4px 25px rgba(34, 211, 238, 0.2), inset 0 0 15px rgba(34, 211, 238, 0.15);
+    text-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
 }
 
 .toast-error {
@@ -1233,14 +1166,14 @@ html body.magnifier-active .mobcard-inner * {
 
 @media (max-width: 1023px) {
     .toast-container-wrapper {
-        top: calc(var(--mobile-header-height) + 12px);
+        top: 64px; /* 52px + 12px */
         right: 12px;
         left: 12px;
     }
 
     .toast-item-base {
         width: 100%;
-        font-size: var(--fs-ui-sm);
+        font-size: 11px;
         padding: 12px 16px;
     }
 }

@@ -5,7 +5,7 @@
     flex-wrap: nowrap;
     inline-size: 100%;
     max-inline-size: 920px;
-    margin-inline-start: max(calc(var(--sidebar-total) + 16px), calc((100% - 920px) / 2));
+    margin-inline-start: max(72px, calc((100% - 920px) / 2)); /* 56px + 16px */
     margin-inline-end: auto;
     justify-content: center;
     gap: 0;
@@ -14,7 +14,7 @@
 }
 
 #moblist-container {
-    inline-size: var(--pc-list-w);
+    inline-size: 480px;
     flex: none;
     display: flex;
     flex-direction: column;
@@ -23,7 +23,7 @@
 }
 
 #mobcard-pane {
-    inline-size: var(--pc-detail-w);
+    inline-size: 400px;
     flex: none;
     align-self: flex-start;
     position: sticky;
@@ -48,9 +48,9 @@
     }
 
     &::-webkit-scrollbar-thumb {
-        background: var(--bg-glass-heavy);
-        border-radius: var(--r-sm);
-        &:hover { background: rgba(var(--rank-f-rgb), 0.05); }
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+        &:hover { background: rgba(129, 140, 248, 0.05); }
     }
 
     &::-webkit-scrollbar-track { background: transparent; }
@@ -75,14 +75,14 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) 92px 36px 28px;
     align-items: center;
-    max-width: var(--pc-list-w);
+    max-width: 480px;
     width: 100%;
     background: rgba(48, 64, 94, 0.6);
     border: none;
-    border-radius: var(--r-sm);
+    border-radius: 4px;
     padding: 0 0 0 6px;
     cursor: pointer;
-    transition: all var(--t-base) cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease cubic-bezier(0.4, 0, 0.2, 1);
     -webkit-user-select: none;
     user-select: none;
     block-size: 32px;
@@ -101,21 +101,21 @@
         inset-block: 0;
         inline-size: 3px;
         background: transparent;
-        transition: background var(--t-base);
+        transition: background 0.3s ease;
     }
 
     &:hover {
-        background: var(--bg-glass);
+        background: rgba(255, 255, 255, 0.08);
         border-color: rgba(255, 255, 255, 0.1);
         z-index: 20;
     }
 
     &.selected {
-        background: var(--bg-dark-panel);
-        border-color: rgba(var(--cyan-rgb), 0.4);
-        box-shadow: inset 0 0 10px rgba(var(--cyan-rgb), 0.1);
+        background: rgba(15, 23, 42, 0.85);
+        border-color: rgba(34, 211, 238, 0.4);
+        box-shadow: inset 0 0 10px rgba(34, 211, 238, 0.1);
         z-index: 15;
-        &::before { background: var(--accent-cyan); }
+        &::before { background: var(--color-cyan); }
     }
 
     .moblist-header {
@@ -124,7 +124,7 @@
         min-inline-size: 0;
         font-weight: 700;
         font-size: 15px;
-        padding-inline-end: var(--s-1);
+        padding-inline-end: 4px;
         position: relative;
         z-index: 10;
         overflow: hidden;
@@ -136,14 +136,14 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        color: var(--white);
+        color: var(--color-white);
 
-        &[data-rank="S"] { color: var(--white); }
-        &[data-rank="A"] { color: var(--rank-a); }
-        &[data-rank="F"] { color: var(--rank-f); }
+        &[data-rank="S"] { color: var(--color-white); }
+        &[data-rank="A"] { color: var(--color-rank-a); }
+        &[data-rank="F"] { color: var(--color-rank-f); }
         &[data-rank="S-active"] {
-            color: var(--white);
-            text-shadow: 0 0 10px rgba(var(--rank-s-rgb), 0.4);
+            color: var(--color-white);
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
         }
     }
 
@@ -161,7 +161,7 @@
     .moblist-time {
         grid-column: 2;
         font-family: var(--font-mono);
-        font-size: var(--fs-ui-md);
+        font-size: 14px;
         font-weight: 500;
         display: flex;
         align-items: center;
@@ -171,7 +171,7 @@
         z-index: 10;
         width: 100%;
         text-align: right;
-        padding-inline-end: var(--s-1);
+        padding-inline-end: 4px;
     }
 
     .moblist-bg-gauge {
@@ -182,13 +182,13 @@
         pointer-events: none;
         overflow: hidden;
         z-index: 1;
-        border-radius: var(--r-sm) 0 0 var(--r-sm);
+        border-radius: 4px 0 0 4px;
     }
 
     .moblist-bg-bar {
         inline-size: 0;
         block-size: 100%;
-        background: var(--progress-fill);
+        background: var(--color-progress-fill);
         opacity: 0.25;
         transition: inline-size 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -196,9 +196,9 @@
     .moblist-percent {
         grid-column: 3;
         font-family: var(--font-mono);
-        font-size: var(--fs-ui-md);
+        font-size: 14px;
         font-weight: 500;
-        color: var(--white);
+        color: var(--color-white);
         display: flex;
         justify-content: flex-end;
         align-items: center;
@@ -208,7 +208,7 @@
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
         position: relative;
         z-index: 10;
-        padding-inline-end: var(--s-2);
+        padding-inline-end: 7px;
         justify-self: end;
         width: 100%;
 
@@ -229,13 +229,13 @@
         block-size: 100%;
         background: rgba(0, 243, 255, 0.05);
         border: none;
-        border-radius: 0 var(--r-sm) var(--r-sm) 0;
-        color: var(--white);
+        border-radius: 0 4px 4px 0;
+        color: var(--color-white);
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all var(--t-fast);
+        transition: all 0.2s ease;
         position: relative;
         z-index: 10;
         margin: 0;
@@ -256,7 +256,7 @@
             background: rgba(0, 243, 255, 1);
             border-radius: 1px;
             box-shadow: 0 0 4px rgba(0, 243, 255, 0.6);
-            transition: all var(--t-fast);
+            transition: all 0.2s ease;
         }
         &::before { inline-size: 10px; block-size: 2.5px; }
         &::after { inline-size: 2.5px; block-size: 10px; }
@@ -276,12 +276,12 @@
         .moblist-name {
             opacity: 0.5;
             filter: grayscale(100%);
-            color: var(--text-dim);
+            color: var(--color-text-secondary);
         }
         .truncate {
             opacity: 0.5;
             filter: grayscale(100%);
-            color: var(--text-dim);
+            color: var(--color-text-secondary);
         }
     }
 
@@ -319,7 +319,7 @@
     .moblist-report-btn {
         width: 58px;
         height: 22px;
-        font-size: var(--fs-ui-tiny);
+        font-size: 10px;
         letter-spacing: 0.05em;
         margin: 0;
     }
