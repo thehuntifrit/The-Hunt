@@ -20,7 +20,7 @@
     --rank-a-tab: #15803d;
     --rank-f-tab: #4338ca;
 
-    --progress-bg: rgba(0, 0, 0, 0.4);
+    --progress-bg: rgba(0, 0, 0, 0.6);
     --progress-fill: #2563eb;
     --progress-ready: #3b82f6;
     --progress-max-over: #1d4ed8;
@@ -457,7 +457,7 @@ html body.magnifier-active .mob-card-inner * {
         flex: none;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 3px;
         margin-block-start: 28px;
     }
 
@@ -529,7 +529,7 @@ html body.magnifier-active .mob-card-inner * {
     transition: all var(--t-base) cubic-bezier(0.4, 0, 0.2, 1);
     -webkit-user-select: none;
     user-select: none;
-    block-size: 28px;
+    block-size: 32px;
     margin-block-end: 2px;
     position: relative;
     overflow: hidden;
@@ -1050,6 +1050,11 @@ html body.magnifier-active .mob-card-inner * {
         width: 100%;
         max-width: none;
         flex: none;
+    }
+
+    body .pc-list-item {
+        block-size: 32px;
+        margin-block-end: 4px;
     }
 
     #pc-right-pane {
