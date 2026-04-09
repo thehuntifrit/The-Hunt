@@ -2,7 +2,8 @@ const GOOGLE_KEYS_URL = 'https://www.googleapis.com/service_accounts/v1/jwk/secu
 const PROJECT_ID = 'the-hunt-ifrit';
 const ALLOWED_ORIGINS = [
     'https://the-hunt-ifrit.firebaseapp.com',
-    'https://the-hunt-ifrit.web.app'
+    'https://the-hunt-ifrit.web.app',
+    'https://thehuntifrit.github.io'
 ];
 
 let publicKeysCache = null;

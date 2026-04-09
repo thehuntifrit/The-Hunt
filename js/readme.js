@@ -1,4 +1,4 @@
-﻿import { getState, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
+import { getState, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
 import { verifyLodestoneCharacter, registerUserToFirestore } from "./server.js";
 import { cloneTemplate } from "./mobCard.js";
 
@@ -110,6 +110,8 @@ async function updateAuthUI() {
 
         try {
             const result = await verifyLodestoneCharacter(lodestoneId, currentVCode);
+            verifyBtn.disabled = false;
+            
             if (result.success) {
                 statusEl.textContent = "検証成功！登録しています...";
                 await registerUserToFirestore(lodestoneId, result.characterName);
@@ -123,7 +125,7 @@ async function updateAuthUI() {
                 verifyBtn.disabled = false;
             }
         } catch (err) {
-            statusEl.textContent = "エラーが発生しました";
+            statusEl.textContent = `エラー: ${err.message || "通信失敗"}`;
             statusEl.className = "text-xs text-red-400 auth-status-msg";
             verifyBtn.disabled = false;
         }

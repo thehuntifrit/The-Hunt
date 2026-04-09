@@ -89,26 +89,34 @@ export function initModal() {
             UiDOM.authStatus.classList.add('text-success');
             verifyBtn.disabled = true;
 
-            const result = await verifyLodestoneCharacter(lodestoneId, currentVerificationCode);
+            try {
+                const result = await verifyLodestoneCharacter(lodestoneId, currentVerificationCode);
 
-            if (result.success) {
-                UiDOM.authStatus.textContent = `検証成功！ようこそ、${result.characterName}さん。`;
-                UiDOM.authStatus.classList.add('text-success');
+                if (result.success) {
+                    UiDOM.authStatus.textContent = `検証成功！ようこそ、${result.characterName}さん。`;
+                    UiDOM.authStatus.classList.add('text-success');
 
-                await registerUserToFirestore(lodestoneId, result.characterName);
-                setLodestoneId(lodestoneId);
-                setCharacterName(result.characterName);
-                setVerified(true);
+                    await registerUserToFirestore(lodestoneId, result.characterName);
+                    setLodestoneId(lodestoneId);
+                    setCharacterName(result.characterName);
+                    setVerified(true);
 
-                setTimeout(() => {
-                    closeAuthModal();
+                    setTimeout(() => {
+                        closeAuthModal();
+                        verifyBtn.disabled = false;
+                    }, 1500);
+                } else {
+                    const errorMsg = result.error || "検証に失敗しました";
+                    UiDOM.authStatus.textContent = errorMsg;
+                    UiDOM.authStatus.classList.add('text-error');
+                    console.error("認証失敗:", errorMsg);
                     verifyBtn.disabled = false;
-                }, 1500);
-            } else {
-                const errorMsg = result.error || "検証に失敗しました";
+                }
+            } catch (error) {
+                const errorMsg = `エラー: ${error.message || "予期せぬエラーが発生しました"}`;
                 UiDOM.authStatus.textContent = errorMsg;
                 UiDOM.authStatus.classList.add('text-error');
-                console.error("認証失敗:", errorMsg);
+                console.error("認証プロセス異常:", error);
                 verifyBtn.disabled = false;
             }
         });
