@@ -55,6 +55,35 @@
             inset-inline-end: 14px;
             margin: 0;
             z-index: 20;
+            background: rgba(34, 211, 238, 0.1);
+            border: 1px solid rgba(34, 211, 238, 0.4);
+            border-radius: 4px;
+            color: var(--color-cyan);
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 10px;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.2), inset 0 0 5px rgba(34, 211, 238, 0.2);
+            transition: all 0.3s ease;
+
+            &::before,
+            &::after {
+                display: none;
+            }
+
+            &:hover {
+                background: rgba(34, 211, 238, 0.2);
+                border-color: var(--color-cyan);
+                box-shadow: 0 0 15px rgba(34, 211, 238, 0.4), inset 0 0 8px rgba(34, 211, 238, 0.3);
+                text-shadow: 0 0 12px rgba(34, 211, 238, 0.8);
+                transform: translateY(-1px);
+            }
+
+            &:active {
+                transform: translateY(0);
+                opacity: 0.8;
+            }
         }
     }
 

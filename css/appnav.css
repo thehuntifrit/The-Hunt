@@ -90,24 +90,30 @@
     }
 
     .appnav-logo {
-        font-size: 14px;
-        font-weight: 800;
+        font-size: 18px;
+        font-weight: 900;
         line-height: 1.1;
-        letter-spacing: -0.02em;
-        margin-block-end: 20px;
+        letter-spacing: 0.05em;
+        margin-block-end: 24px;
         cursor: pointer;
         text-align: center;
         inline-size: 100%;
         opacity: 1 !important;
-        display: block !important;
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-transform: uppercase;
 
         .appnav-logo-the {
             color: var(--color-cyan);
+            text-shadow: 0 0 15px rgba(34, 211, 238, 0.8), 0 0 5px rgba(34, 211, 238, 0.5);
             display: block;
         }
 
         .appnav-logo-hunt {
             color: var(--color-gold);
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
             display: block;
         }
     }
@@ -233,16 +239,21 @@
     .appnav-filter-btn {
         inline-size: 100%;
         cursor: pointer;
-        padding: 6px 12px;
+        padding: 8px 12px;
         font-family: 'Roboto', sans-serif;
         font-size: 13.5px;
-        background: rgba(255, 255, 255, 0.04);
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.02);
         border: 1px solid var(--color-border-normal);
-        color: var(--color-white);
-        transition: all 0.2s ease;
+        color: var(--color-text-secondary);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity: 0.5;
+        filter: grayscale(0.5);
 
         &:hover {
-            background: rgba(255, 255, 255, 0.1);
+            opacity: 0.8;
+            background: rgba(255, 255, 255, 0.08);
+            filter: grayscale(0);
         }
 
         &[data-rank] {
@@ -254,14 +265,21 @@
     }
 
     &.appnav-active .appnav-rank-header {
-        background: rgba(34, 211, 238, 0.15);
-        border-color: rgba(34, 211, 238, 0.4);
+        background: rgba(34, 211, 238, 0.08);
+        border-color: var(--color-cyan);
+        color: var(--color-cyan);
+        opacity: 1;
+        filter: grayscale(0);
+        box-shadow: inset 0 0 12px rgba(34, 211, 238, 0.15), 0 0 10px rgba(34, 211, 238, 0.2);
+        text-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
 
         &[data-rank] {
             border-inline-start: 4px solid var(--current-rank);
             color: var(--current-rank);
             background: rgba(255, 255, 255, 0.05);
             border-color: var(--current-rank);
+            box-shadow: inset 0 0 12px rgba(var(--current-rank-rgb), 0.1), 0 0 15px rgba(var(--current-rank-rgb), 0.25);
+            text-shadow: 0 0 10px var(--current-rank);
         }
     }
 
@@ -274,13 +292,45 @@
         .appnav-area-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 4px;
-            padding: 4px;
+            gap: 6px;
+            padding: 8px;
         }
     }
 
     &.appnav-is-expanded .appnav-area-expansion {
         max-block-size: 1000px;
+    }
+}
+
+.area-filter-btn {
+    inline-size: 100%;
+    cursor: pointer;
+    padding: 6px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--color-text-secondary);
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    text-align: center;
+    opacity: 0.4;
+    filter: grayscale(1);
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        opacity: 0.7;
+        filter: grayscale(0.5);
+    }
+
+    &.is-selected {
+        background: rgba(34, 211, 238, 0.12);
+        border-color: var(--color-cyan);
+        color: var(--color-cyan);
+        opacity: 1;
+        filter: grayscale(0);
+        box-shadow: inset 0 0 8px rgba(34, 211, 238, 0.15), 0 0 8px rgba(34, 211, 238, 0.2);
+        text-shadow: 0 0 6px rgba(34, 211, 238, 0.5);
     }
 }
 
