@@ -34,27 +34,20 @@
                 </div>
             </div>
             <div class="appnav-panel">
-                <div id="sidebar-panel-error" class="appnav-section hidden">
-                    <div class="appnav-section">
-                        <div class="appnav-section-title">ERRORS</div>
-                        <div id="sidebar-error-content" class="appnav-alert js-error-content"></div>
-                    </div>
+                <div id="sidebar-panel-error" class="js-appnav-panel-item hidden">
+                    <div class="appnav-section-title">ERRORS</div>
+                    <div id="sidebar-error-content" class="appnav-alert js-error-content"></div>
                 </div>
-                <div id="sidebar-panel-telop" class="appnav-section hidden">
-                    <div class="appnav-section">
-                        <div class="appnav-section-title">ANNOUNCEMENT</div>
-                        <div id="sidebar-welcome-area" class="sidebar-welcome-area"></div>
-                        <div id="sidebar-telop-content" class="appnav-alert js-telop-content"></div>
-                    </div>
+                <div id="sidebar-panel-telop" class="js-appnav-panel-item hidden">
+                    <div class="appnav-section-title">ANNOUNCEMENT</div>
+                    <div id="sidebar-welcome-area" class="sidebar-welcome-area"></div>
+                    <div id="sidebar-telop-content" class="appnav-alert js-telop-content"></div>
                 </div>
-                <div id="sidebar-panel-maintenance" class="appnav-section hidden">
-                    <div class="appnav-section">
-                        <div class="appnav-section-title">Maintenance info.</div>
-                        <div id="sidebar-maintenance-content" class="appnav-alert js-maintenance-content">
-                        </div>
-                    </div>
+                <div id="sidebar-panel-maintenance" class="js-appnav-panel-item hidden">
+                    <div class="appnav-section-title">Maintenance info.</div>
+                    <div id="sidebar-maintenance-content" class="appnav-alert js-maintenance-content"></div>
                 </div>
-                <div id="sidebar-panel-rank" class="appnav-section hidden">
+                <div id="sidebar-panel-rank" class="js-appnav-panel-item hidden">
                     <div id="sidebar-filter-accordion" class="appnav-filter-accordion"></div>
                 </div>
             </div>
@@ -73,9 +66,9 @@
         </div>
         <div class="mobile-top-clocks">
             <span class="mobile-clock-label">ET</span>
-            <span id="mobile-time-et" class="mobile-clock-val">--:--</span>
+            <span class="mobile-clock-val js-et-clock">--:--</span>
             <span class="mobile-clock-label">LT</span>
-            <span id="mobile-time-lt" class="mobile-clock-val">--:--</span>
+            <span class="mobile-clock-val js-lt-clock">--:--</span>
         </div>
     </div>
 
@@ -90,20 +83,20 @@
         <div id="root-layout" class="pc-layout-container">
             <div id="moblist-container"></div>
             <div id="mobcard-pane">
-                <div id="mobcard-clocks" class="mobile-top-clocks">
+                <div id="mobcard-clocks" class="mobile-top-clocks js-pc-clocks">
                     <span class="mobile-clock-label">ET</span>
-                    <span id="pc-time-et" class="mobile-clock-val">--:--</span>
+                    <span class="mobile-clock-val js-et-clock">--:--</span>
                     <span class="mobile-clock-label">LT</span>
-                    <span id="pc-time-lt" class="mobile-clock-val">--:--</span>
+                    <span class="mobile-clock-val js-lt-clock">--:--</span>
                 </div>
-                <div id="mobcard-detail"></div>
+                <div id="mobcard-detail" class="js-mobcard-container" data-rendered-mob-no="none"></div>
             </div>
         </div>
 
     </main>
 
     <div id="mobcard-overlay-backdrop" class="app-backdrop hidden">
-        <div id="mobcard-overlay" class="mobcard-overlay-wrapper">
+        <div id="mobcard-overlay" class="mobcard-overlay-wrapper js-mobcard-container" data-rendered-mob-no="none">
         </div>
     </div>
 

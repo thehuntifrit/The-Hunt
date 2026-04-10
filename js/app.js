@@ -3,35 +3,28 @@ import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatDurationC
 import { attachMobCardEvents, createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initTooltip, initGlobalMagnifier } from "./mobCard.js";
 import { getGroupKey, GROUP_LABELS, getOrCreateGroupSection, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, allTabComparator } from "./mobSorter.js";
 import { closeReportModal, openAuthModal, openReportModal, initModal, closeAuthModal } from "./modal.js";
-import { handleAreaFilterClick, initSidebar, initNotification, checkAndNotify } from "./sidebar.js";
+import { handleAreaFilterClick, initAppNav, initNotification, checkAndNotify, updateErrorPanel } from "./sidebar.js";
 import { initializeAuth, getUserData, submitReport, submitMemo, toggleCrushStatus } from "./server.js";
 import { openUserManual } from "./readme.js";
 
 // ─── 定数・DOM ──────────────────────────────────────────
 export const DOM = {
-  masterContainer: null,
-  cols: [],
-  rankTabs: null,
-  areaFilterWrapper: null,
-  areaFilterPanel: null,
-  statusMessage: null,
+  colContainer: document.getElementById('column-container'),
+  pcLeftList: document.getElementById('moblist-container'),
+  pcRightDetail: document.getElementById('mobcard-detail'),
+  mobileDetailOverlay: document.getElementById('mobcard-overlay'),
+  cardOverlayBackdrop: document.getElementById('mobcard-overlay-backdrop'),
   reportModal: document.getElementById('report-modal'),
   reportForm: document.getElementById('report-form'),
   modalMobName: document.getElementById('modal-mob-name'),
   modalStatus: document.getElementById('modal-status'),
   modalTimeInput: document.getElementById('report-datetime'),
   modalForceSubmit: document.getElementById('report-force-submit'),
-  statusMessageTemp: null,
   authModal: document.getElementById('auth-modal'),
-  authLodestoneId: document.getElementById('auth-lodestone-id'),
   authVCode: document.getElementById('auth-v-code'),
   authStatus: document.getElementById('auth-modal-status'),
-  pcLeftList: document.getElementById('moblist-container'),
-  pcRightDetail: document.getElementById('mobcard-detail'),
-  pcLayout: document.getElementById('root-layout'),
-  mobileLayout: document.getElementById('mobile-layout'),
-  cardOverlayBackdrop: document.getElementById('mobcard-overlay-backdrop'),
-  mobileDetailOverlay: document.getElementById('mobcard-overlay'),
+  authLodestoneId: document.getElementById('auth-lodestone-id'),
+  loadingOverlay: document.getElementById('loading-overlay'),
 };
 
 export const cardCache = new Map();
@@ -87,6 +80,8 @@ async function initApp() {
     }).catch(err => {
       console.error("Auth initialization error:", err);
       setVerified(false);
+      // 認証エラーでもUI構築を継続
+      window.dispatchEvent(new CustomEvent('initialDataLoaded'));
     });
 
     startRealtime();
@@ -94,7 +89,7 @@ async function initApp() {
     initModal();
     renderMaintenanceStatus();
     updateHeaderTime();
-    initSidebar();
+    initAppNav();
     initNotification();
     attachMobCardEvents();
     attachLocationEvents();
@@ -115,13 +110,14 @@ async function initApp() {
     window.addEventListener('initialDataLoaded', () => {
       try {
         renderMaintenanceStatus();
+        updateErrorPanel();
       } catch (e) {
         console.error("Initial maintenance render failed:", e);
       }
     }, { once: true });
 
     const loadingTimeout = setTimeout(() => {
-      const overlay = document.getElementById("loading-overlay");
+      const overlay = DOM.loadingOverlay;
       if (overlay && !overlay.classList.contains("hidden")) {
         console.warn("Loading timeout: Forcing UI display.");
         if (!getState().initialLoadComplete) {
@@ -131,7 +127,7 @@ async function initApp() {
         overlay.classList.add("hidden");
         showToast("データ同期がタイムアウトしました。既存のデータで表示します。", "info");
       }
-    }, 10000);
+    }, 6000);
 
     window.addEventListener('initialSortComplete', () => {
       clearTimeout(loadingTimeout);
@@ -148,17 +144,13 @@ async function initApp() {
         }
       } catch (e) {
         console.error("Initial render show failed:", e);
-        const overlay = document.getElementById("loading-overlay");
-        if (overlay) overlay.classList.add("hidden");
+        showColumnContainer(); // 失敗しても表示だけは試みる
       }
     }, { once: true });
 
   } catch (e) {
     console.error("App initialization failed:", e);
-    const overlay = document.getElementById("loading-overlay");
-    if (overlay) {
-      overlay.classList.add("hidden");
-    }
+    showColumnContainer();
   }
 }
 
@@ -328,22 +320,13 @@ export async function renderMaintenanceStatus() {
 
 // ─── ヘッダー時刻 ───────────────────────────────────────
 export function updateHeaderTime() {
-  const state = getState();
-  if (!state) return;
-
   const now = new Date();
   const et = getEorzeaTime(now);
-  const lt = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  const ltStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   const etStr = `${et.hours}:${et.minutes}`;
 
-  ["pc-time-lt", "mobile-time-lt"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = lt;
-  });
-  ["pc-time-et", "mobile-time-et"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = etStr;
-  });
+  document.querySelectorAll('.js-lt-clock').forEach(el => el.textContent = ltStr);
+  document.querySelectorAll('.js-et-clock').forEach(el => el.textContent = etStr);
 }
 
 // ─── ソート＆描画 ───────────────────────────────────────
@@ -472,8 +455,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   }
 
   const isPC = window.innerWidth >= 1024;
-  const pcLayout = DOM.pcLayout || document.getElementById("root-layout");
-  if (pcLayout) pcLayout.classList.remove("hidden");
 
   if (DOM.pcLeftList) {
     const currentNodes = Array.from(DOM.pcLeftList.children);
@@ -484,21 +465,12 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     });
 
     const nextChildren = [];
-    const groups = {
-      MAX_OVER: [],
-      WINDOW: [],
-      NEXT: [],
-      MAINTENANCE: []
-    };
-
-    sortedMobs.forEach(mob => {
-      groups[getGroupKey(mob)].push(mob);
-    });
+    const groups = { MAX_OVER: [], WINDOW: [], NEXT: [], MAINTENANCE: [] };
+    sortedMobs.forEach(mob => { groups[getGroupKey(mob)].push(mob); });
 
     ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
       const groupMobs = groups[key];
       if (groupMobs.length === 0) return;
-
       const headerText = GROUP_LABELS[key];
       const headerKey = `header-${headerText}`;
       let header = currentMap.get(headerKey);
@@ -512,69 +484,50 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       groupMobs.forEach(mob => {
         const mobKey = `mob-${mob.No}`;
         let item = currentMap.get(mobKey);
-        if (!item) {
-          item = createSimpleMobItem(mob);
-        } else {
-          updateSimpleMobItem(item, mob);
-        }
+        if (!item) item = createSimpleMobItem(mob);
+        else updateSimpleMobItem(item, mob);
         nextChildren.push(item);
       });
     });
 
     const fragment = document.createDocumentFragment();
-    nextChildren.forEach(child => {
-      fragment.appendChild(child);
-    });
-
+    nextChildren.forEach(child => fragment.appendChild(child));
     DOM.pcLeftList.innerHTML = "";
     DOM.pcLeftList.appendChild(fragment);
   }
 
-  const rightPane = DOM.pcRightDetail || document.getElementById("mobcard-detail");
-  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobcard-overlay");
-  const overlayBackdrop = DOM.cardOverlayBackdrop || document.getElementById("mobcard-overlay-backdrop");
+  const detailContainer = isPC ? DOM.pcRightDetail : DOM.mobileDetailOverlay;
+  const inactiveContainer = isPC ? DOM.mobileDetailOverlay : DOM.pcRightDetail;
 
-  if (isPC) {
-    if (rightPane) {
-      if (state.openMobCardNo) {
-        if (rightPane.dataset.renderedMobNo !== String(state.openMobCardNo)) {
-          const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
-          if (targetMob) {
-            rightPane.innerHTML = "";
-            rightPane.appendChild(createMobCard(targetMob, true));
-            rightPane.dataset.renderedMobNo = String(state.openMobCardNo);
+  if (detailContainer) {
+    if (getState().openMobCardNo) {
+      if (detailContainer.dataset.renderedMobNo !== String(getState().openMobCardNo)) {
+        const targetMob = getState().mobs.find(m => m.No === getState().openMobCardNo);
+        if (targetMob) {
+          detailContainer.innerHTML = "";
+          detailContainer.appendChild(createMobCard(targetMob, true));
+          detailContainer.dataset.renderedMobNo = String(getState().openMobCardNo);
+          if (!isPC && DOM.cardOverlayBackdrop) {
+            DOM.cardOverlayBackdrop.classList.remove("hidden");
+            document.body.classList.add('body-lock');
           }
         }
-      } else {
-        if (rightPane.dataset.renderedMobNo !== "none") {
-          rightPane.innerHTML = '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>';
-          rightPane.dataset.renderedMobNo = "none";
+      }
+    } else {
+      if (detailContainer.dataset.renderedMobNo !== "none") {
+        detailContainer.innerHTML = isPC ? '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>' : "";
+        detailContainer.dataset.renderedMobNo = "none";
+        if (!isPC && DOM.cardOverlayBackdrop) {
+          DOM.cardOverlayBackdrop.classList.add("hidden");
+          document.body.classList.remove('body-lock');
         }
       }
     }
-    if (overlayBackdrop) overlayBackdrop.classList.add("hidden");
-  } else {
-    if (mobileOverlay && overlayBackdrop) {
-      const isCardOpen = !!state.openMobCardNo;
-      document.body.classList.toggle('body-lock', isCardOpen);
+  }
 
-      if (isCardOpen) {
-        if (mobileOverlay.dataset.renderedMobNo !== String(state.openMobCardNo)) {
-          const targetMob = state.mobs.find(m => m.No === state.openMobCardNo);
-          if (targetMob) {
-            mobileOverlay.innerHTML = "";
-            mobileOverlay.appendChild(createMobCard(targetMob, true));
-            mobileOverlay.dataset.renderedMobNo = String(state.openMobCardNo);
-
-            overlayBackdrop.classList.remove("hidden");
-          }
-        }
-      } else {
-        mobileOverlay.innerHTML = "";
-        mobileOverlay.dataset.renderedMobNo = "none";
-        overlayBackdrop.classList.add("hidden");
-      }
-    }
+  if (inactiveContainer && inactiveContainer.dataset.renderedMobNo !== "none") {
+    inactiveContainer.innerHTML = "";
+    inactiveContainer.dataset.renderedMobNo = "none";
   }
 
   lastRenderedOrderStr = sortedMobs.map(m => m.No).join(",");

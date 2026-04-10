@@ -5,7 +5,6 @@ import { openAuthModal, openReportModal } from "./modal.js";
 import { sortAndRedistribute, handleInstantReport } from "./app.js";
 
 // ─── 汎用ユーティリティ ─────────────────────────────────
-
 function updateEl(parent, selector, props = {}, dataset = {}) {
   const el = parent.querySelector(selector);
   if (!el) return;
@@ -40,7 +39,6 @@ export function processText(text) {
 }
 
 // ─── ツールチップ ───────────────────────────────────────
-
 let tooltip = null;
 let currentTarget = null;
 
@@ -103,7 +101,6 @@ export function hideTooltip() {
 }
 
 // ─── 拡大鏡 ─────────────────────────────────────────────
-
 export function initGlobalMagnifier() {
   if (window.magnifierInitialized) return;
   window.magnifierInitialized = true;
@@ -197,7 +194,6 @@ export function initGlobalMagnifier() {
 }
 
 // ─── タイマー表示 ────────────────────────────────────────
-
 export function shouldDisplayMemo(mob) {
   const hasMemo = mob.memo_text?.trim();
   const isMemoNewer = (mob.memo_updated_at || 0) >= (mob.last_kill_time || 0);
@@ -288,7 +284,6 @@ function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWin
 }
 
 // ─── スポーンポイント ───────────────────────────────────
-
 export function getSpawnCountInfo(mob) {
   const state = getState();
   const instance = mob.No % 10;
@@ -367,19 +362,18 @@ export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, i
 }
 
 // ─── カード作成 ─────────────────────────────────────────
-
 export function createMobCard(mob, isDetailView = false) {
-  if (isDetailView) return createPCDetailCard(mob);
+  if (isDetailView) return renderMobCard(mob);
   return createSimpleMobItem(mob);
 }
 
-export function createPCDetailCard(mob) {
+export function renderMobCard(mob) {
   const template = document.getElementById('mobcard-card-template');
   const clone = template.content.cloneNode(true);
   const card = clone.querySelector('.mobcard-card');
 
   const rank = mob.rank;
-  const { elapsedPercent, nextConditionSpawnDate, minRepop, maxRepop } = mob.repopInfo || {};
+  const { nextConditionSpawnDate, minRepop, maxRepop } = mob.repopInfo || {};
   const fmt = (val) => val ? formatMMDDHHmm(val) : "--/-- --:--";
 
   card.dataset.mobNo = mob.No;
@@ -391,24 +385,18 @@ export function createPCDetailCard(mob) {
 
   updateEl(card, '.mobcard-rank', { textContent: rank }, { rank });
 
-  const progressBar = card.querySelector('.mobcard-progress-bar');
-  if (progressBar) progressBar.style.width = `${elapsedPercent || 0}%`;
-
   updateEl(card, '[data-min-repop]', { textContent: fmt(minRepop) });
   updateEl(card, '[data-max-repop]', { textContent: fmt(maxRepop) });
   updateEl(card, '[data-next-possible]', { textContent: nextConditionSpawnDate ? fmt(nextConditionSpawnDate) : "--/-- --:--" });
   updateEl(card, '[data-last-kill]', { textContent: fmt(mob.last_kill_time) });
 
-  updateEl(card, '.section-content.condition', { innerHTML: processText(mob.condition || "\u7279\u6b8a\u306a\u51fa\u73fe\u6761\u4ef6\u306f\u3042\u308a\u307e\u305b\u3093\u3002") });
+  updateEl(card, '.section-content.condition', { innerHTML: processText(mob.condition || "特別な出現条件はありません。") });
 
   const memoEl = card.querySelector('.mobcard-memo-input');
   if (memoEl) {
     memoEl.value = mob.memo_text || '';
     memoEl.dataset.mobNo = mob.No;
-    // 初期表示時の高さ調整
     setTimeout(() => adjustMemoHeight(memoEl), 0);
-
-    // 入力時の自動リサイズ
     memoEl.addEventListener('input', () => adjustMemoHeight(memoEl));
   }
 
@@ -429,8 +417,7 @@ export function createPCDetailCard(mob) {
   }
 
   updateAreaInfo(card, mob);
-  updateMobCount(card, mob);
-  updateExpandablePanel(card, mob);
+  updateDetailCardRealtime(card, mob);
 
   return card;
 }
@@ -455,150 +442,84 @@ export function createSimpleMobItem(mob) {
     nameEl.dataset.rank = mob.rank;
   }
 
-  const rankBadge = item.querySelector('.list-rank-badge');
-  if (rankBadge) {
-    rankBadge.textContent = mob.rank;
-    rankBadge.dataset.rank = mob.rank;
-  }
-
   updateSimpleMobItem(item, mob);
   return item;
 }
 
-// ─── カード更新 ─────────────────────────────────────────
-
-export function updateProgressBar(card, mob) {
-  const { elapsedPercent, status } = mob.repopInfo || {};
-  const bars = card.querySelectorAll('.progress-bar-bg, .mobcard-progress-bar');
-  const texts = card.querySelectorAll('.progress-text, .mobcard-progress-text');
-  const wrappers = card.querySelectorAll('.progress-bar-wrapper, .mobcard-progress-container');
-  const isInCondition = !!mob.repopInfo.isInConditionWindow;
-  const isPreRepop = status === "Next" || status === "Maintenance";
-  card.classList.toggle('is-pre-repop', isPreRepop);
-
-  bars.forEach(bar => {
-    const currentWidth = parseFloat(bar.style.width) || 0;
-    if (Math.abs(elapsedPercent - currentWidth) > 0.1) {
-      bar.style.transition = (currentWidth === 0 || elapsedPercent < currentWidth) ? "none" : "width 10s linear";
-      bar.style.width = `${elapsedPercent || 0}%`;
-    }
-    bar.classList.remove('status-max-over', 'status-condition-active', 'status-pop-window', 'status-next');
-    bar.style.background = "";
-    if (status === "MaxOver") bar.classList.add("status-max-over");
-    else if (status === "ConditionActive") bar.classList.add("status-condition-active");
-    else if (status === "PopWindow") bar.classList.add("status-pop-window");
-    else if (status === "Next" || status === "NextCondition") bar.classList.add("status-next");
-  });
-
-  texts.forEach(text => {
-    text.classList.remove(PROGRESS_CLASSES.TEXT_NEXT, PROGRESS_CLASSES.TEXT_POP);
-    if (status === "PopWindow" || status === "ConditionActive" || status === "MaxOver") {
-      text.classList.add(PROGRESS_CLASSES.TEXT_POP);
-    }
-  });
-
-  wrappers.forEach(wrapper => {
-    wrapper.classList.remove(PROGRESS_CLASSES.BLINK_WHITE);
-    if (isInCondition && !mob.repopInfo?.isMaintenanceStop && !mob.repopInfo?.isBlockedByMaintenance) {
-      wrapper.classList.add(PROGRESS_CLASSES.BLINK_WHITE);
-      card.classList.add('blink-border-white');
-    } else {
-      card.classList.remove('blink-border-white');
-    }
-  });
+// ─── リアルタイム更新用 ─────────────────────────
+export function updateDetailCardRealtime(card, mob) {
+  updateProgressBar(card, mob);
+  updateProgressText(card, mob);
+  updateExpandablePanel(card, mob);
+  updateMobCount(card, mob);
 }
 
-export function updateProgressText(card, mob) {
-  const { elapsedPercent, status, isInConditionWindow } = mob.repopInfo || {};
-  const { label, timeValue, isSpecialCondition, isTimeOver, dhm, isInWindow } = computeTimeLabel(mob);
+export function updateProgressBar(element, mob) {
+  const { elapsedPercent, status } = mob.repopInfo || {};
+  const bar = element.querySelector('.mobcard-progress-bar, .moblist-bg-bar');
+  const wrapper = element.querySelector('.mobcard-progress-container, .moblist-bg-gauge');
+  if (!bar) return;
+
+  const currentWidth = parseFloat(bar.style.width) || 0;
+  if (Math.abs(elapsedPercent - currentWidth) > 0.1) {
+    bar.style.transition = (currentWidth === 0 || elapsedPercent < currentWidth) ? "none" : "width 10s linear";
+    bar.style.width = `${elapsedPercent || 0}%`;
+  }
+
+  bar.classList.remove('status-max-over', 'status-condition-active', 'status-pop-window', 'status-next');
+  if (status === "MaxOver") bar.classList.add("status-max-over");
+  else if (status === "ConditionActive") bar.classList.add("status-condition-active");
+  else if (status === "PopWindow") bar.classList.add("status-pop-window");
+  else if (status === "Next" || status === "NextCondition") bar.classList.add("status-next");
+
+  if (wrapper) {
+    const isInCondition = !!mob.repopInfo.isInConditionWindow && !mob.repopInfo.isMaintenanceStop && !mob.repopInfo.isBlockedByMaintenance;
+    wrapper.classList.toggle(PROGRESS_CLASSES.BLINK_WHITE, isInCondition);
+    element.classList.toggle('blink-border-white', isInCondition);
+  }
+}
+
+export function updateProgressText(element, mob) {
+  const { status, isInConditionWindow } = mob.repopInfo || {};
+  const { label, dhm, isSpecialCondition, isTimeOver, isInWindow } = computeTimeLabel(mob);
   const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
 
-  const isPCDetail = !!(card.id === 'mobcard-detail' || card.closest('#mobcard-detail') || card.classList.contains('mobcard-card'));
-  const rankBadge = card.querySelector('.list-rank-badge, .mobcard-rank');
-  const areaEl = card.querySelector('.root-mobile-header-text');
+  const timeContainer = element.querySelector('.mobcard-progress-text, .moblist-time');
+  const percentEl = element.querySelector('.percent, .moblist-percent');
 
-  if (rankBadge) {
-    rankBadge.textContent = mob.rank;
-    rankBadge.dataset.rank = mob.rank;
-  }
-  if (areaEl) {
-    areaEl.textContent = ` ${mob.area} | ${mob.Expansion}`;
-  }
-
-  const iconEl = card.querySelector('.js-mobile-icon');
-  const timeEl = card.querySelector('.js-mobile-time');
-  const pcDetailEl = card.querySelector('.mobcard-progress-text');
-
-  if (iconEl) {
-    iconEl.textContent = label || '';
-    iconEl.className = 'js-mobile-icon timer-label-base';
-    if (status) iconEl.classList.add(`status-${status.toLowerCase()}`);
-    if (isSpecialCondition) iconEl.classList.add('is-special');
-  }
-  if (timeEl) {
+  if (timeContainer) {
     const timerNode = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
-    const cacheKey = `${label}-${isSpecialCondition}-${isTimeOver}-${isInWindow}-${dhm?.rawS || 0}`;
+    const cacheKey = `timer-${label}-${isSpecialCondition}-${isTimeOver}-${isInWindow}-${dhm?.rawS || 0}`;
 
-    if (timeEl._lastCacheKey !== cacheKey) {
-      timeEl.innerHTML = "";
-      const inner = document.createElement("div");
-      inner.className = "js-mobile-time-inner";
-      inner.appendChild(timerNode);
-
-      const percentSpan = document.createElement("span");
-      percentSpan.className = "detail-percent-val";
-
-      const { elapsedPercent, status: pStatus } = mob.repopInfo || {};
-      const percentValue = pStatus === "MaxOver" ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
-      percentSpan.innerHTML = `(${percentValue}%)`;
-
-      inner.appendChild(percentSpan);
-
-      timeEl.appendChild(inner);
-      timeEl._lastCacheKey = cacheKey;
-    }
-    if (status === "MaxOver") timeEl.classList.add("max-over");
-    else timeEl.classList.remove("max-over");
-  }
-
-  if (pcDetailEl) {
-    const { elapsedPercent, status: dStatus } = mob.repopInfo || {};
-    const percentValue = dStatus === "MaxOver" ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
-    const pcText = `${percentValue}<span class="percent-unit">%</span>`;
-
-    if (pcDetailEl._lastPercent !== pcText) {
-      let span = pcDetailEl._cachedSpan;
-      if (!span) {
-        span = pcDetailEl.querySelector('span');
-        if (!span) {
-          span = document.createElement('span');
-          span.className = 'pc-percent-inner';
-          pcDetailEl.textContent = '';
-          pcDetailEl.appendChild(span);
-        }
-        pcDetailEl._cachedSpan = span;
+    if (timeContainer._lastCacheKey !== cacheKey) {
+      timeContainer.innerHTML = "";
+      if (element.classList.contains('moblist-item')) {
+        // リスト用レイアウト: [Timer] [Label]
+        const inner = document.createElement("div");
+        inner.className = "timer-inner-grid";
+        const labelSpan = document.createElement("span");
+        labelSpan.className = `timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''}`;
+        labelSpan.textContent = label;
+        inner.appendChild(timerNode);
+        inner.appendChild(labelSpan);
+        timeContainer.appendChild(inner);
+      } else {
+        // カード用レイアウト: [Timer]
+        timeContainer.appendChild(timerNode);
       }
-      span.innerHTML = pcText;
-      pcDetailEl._lastPercent = pcText;
+      timeContainer._lastCacheKey = cacheKey;
     }
-    if (status === "MaxOver") pcDetailEl.classList.add("max-over");
-    else pcDetailEl.classList.remove("max-over");
   }
 
-  const mobNameEl = card.querySelector('.mob-name');
-  const shouldDimCard = isMaint;
-
-  if (shouldDimCard) {
-    card.classList.add("is-pre-repop");
-  } else {
-    card.classList.remove("is-pre-repop");
+  if (percentEl) {
+    const { elapsedPercent } = mob.repopInfo || {};
+    const percentValue = status === "MaxOver" ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
+    percentEl.innerHTML = `${percentValue}<span class="percent-unit">%</span>`;
+    percentEl.classList.toggle("max-over", status === "MaxOver");
   }
 
-  if (isMaint) card.classList.add("maintenance-gray-out");
-  else card.classList.remove("maintenance-gray-out");
-
-  if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) card.classList.add("blink-border-white");
-  else card.classList.remove("blink-border-white");
+  element.classList.toggle("is-pre-repop", status === "Next" || status === "Maintenance");
+  element.classList.toggle("maintenance-gray-out", isMaint);
 }
 
 export function updateExpandablePanel(card, mob) {
@@ -683,21 +604,11 @@ export function updateMemoIcon(card, mob) {
 }
 
 export function updateMobCount(card, mob) {
-  const countContainer = card.querySelector('.mob-count-container');
+  const countContainer = card.querySelector('.mob-count-container, .moblist-count');
   if (!countContainer) return;
-  const { remainingCount, validSpawnPoints } = getSpawnCountInfo(mob);
-  let displayCountText = "";
-  if (mob.mapImage && mob.locations) {
-    if (remainingCount === 1) {
-      const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-      displayCountText = `<span class="pc-count-val font-bold count-warn">📍${pointNumber}<span style="margin-left:2px;">番</span></span>`;
-    } else if (remainingCount > 1) {
-      displayCountText = `<span class="pc-count-val font-bold text-secondary">📍@<span style="margin-left:2px;">${remainingCount}</span></span>`;
-    }
-  }
-  if (countContainer.dataset.cacheKey !== displayCountText) {
-    countContainer.dataset.cacheKey = displayCountText;
-    countContainer.innerHTML = displayCountText;
+  const { countHtml } = getSpawnCountInfo(mob);
+  if (countContainer.innerHTML !== countHtml) {
+    countContainer.innerHTML = countHtml;
   }
 }
 
@@ -706,18 +617,13 @@ export function updateAreaInfo(card, mob) {
   const expName = mob.Expansion || "--";
   const rank = mob.rank || "A";
 
-  card.querySelectorAll('.mob-rank-badge, .list-rank-badge').forEach(badge => {
+  card.querySelectorAll('.mob-rank-badge, .mobcard-rank').forEach(badge => {
     badge.textContent = rank;
     badge.dataset.rank = rank;
   });
 
   card.querySelectorAll('.detail-area').forEach(el => el.textContent = areaName);
   card.querySelectorAll('.detail-expansion').forEach(el => el.textContent = `| ${expName}`);
-
-  const headerArea = card.querySelector('.root-mobile-header-text');
-  if (headerArea) {
-    headerArea.textContent = `${areaName} | ${expName}`;
-  }
 }
 
 export function adjustMemoHeight(el) {
@@ -770,99 +676,30 @@ export function updateMapOverlay(card, mob) {
 }
 
 export function updateSimpleMobItem(item, mob) {
-  const { elapsedPercent, status, isInConditionWindow } = mob.repopInfo || {};
-  const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
-  const timeEl = item.querySelector('.moblist-time');
-  const progressEl = item.querySelector('.moblist-bg-bar');
-  const percentEl = item.querySelector('.moblist-percent');
-  const { countHtml } = getSpawnCountInfo(mob);
-  const { label, timeValue, isSpecialCondition, isTimeOver, dhm, isInWindow } = computeTimeLabel(mob);
-
-  if (timeEl) {
-    const timerNode = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
-    const cacheKey = `${label}-${status}-${isSpecialCondition}-${isTimeOver}-${isInWindow}-${dhm?.rawS || 0}`;
-
-    if (timeEl._lastCacheKey !== cacheKey) {
-      timeEl.innerHTML = "";
-      const inner = document.createElement("div");
-      inner.className = "timer-inner-grid";
-
-      const labelSpan = document.createElement("span");
-      labelSpan.className = `timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''} text-center opacity-90`;
-      labelSpan.style.marginInlineStart = "4px";
-      labelSpan.textContent = label;
-
-      inner.appendChild(timerNode);
-      inner.appendChild(labelSpan);
-      timeEl.appendChild(inner);
-      timeEl._lastCacheKey = cacheKey;
-    }
-  }
+  updateProgressBar(item, mob);
+  updateProgressText(item, mob);
   const countInner = item.querySelector('.moblist-count');
   if (countInner) {
+    const { countHtml } = getSpawnCountInfo(mob);
     countInner.innerHTML = countHtml;
-  }
-
-  const isPreRepop = status === "Next" || status === "Maintenance";
-  item.classList.toggle('is-pre-repop', isPreRepop);
-  if (progressEl) {
-    const currentWidth = parseFloat(progressEl.style.width) || 0;
-    if (Math.abs(elapsedPercent - currentWidth) > 0.001) {
-      progressEl.style.transition = (currentWidth === 0 || elapsedPercent < currentWidth) ? "none" : "width linear 60s";
-      progressEl.style.width = `${elapsedPercent}%`;
-    }
-    progressEl.classList.remove('status-max-over', 'status-condition-active', 'status-pop-window', 'status-next');
-    if (isTimeOver) progressEl.classList.add("status-max-over");
-    else if (status === "ConditionActive") progressEl.classList.add("status-condition-active");
-    else if (status === "PopWindow") progressEl.classList.add("status-pop-window");
-    else if (status === "Next" || status === "NextCondition") progressEl.classList.add("status-next");
-  }
-  if (percentEl) {
-    const { elapsedPercent, status: listStatus } = mob.repopInfo || {};
-    const isTimeOverVal = listStatus === "MaxOver";
-    const percentValue = isTimeOverVal ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
-    percentEl.innerHTML = `${percentValue}<span class="percent-unit">%</span>`;
-  }
-  if (isMaint) item.classList.add("maintenance-gray-out");
-  else item.classList.remove("maintenance-gray-out");
-
-  if (!isMaint && (status === "ConditionActive" || (status === "MaxOver" && isInConditionWindow))) {
-    item.classList.add("blink-active");
-    item.classList.add("blink-border-white");
-  } else {
-    item.classList.remove("blink-active");
-    item.classList.remove("blink-border-white");
   }
   updateMemoIcon(item, mob);
 }
 
 // ─── イベント ───────────────────────────────────────────
-
 export function attachMobCardEvents() {
-  const colContainer = document.getElementById("column-container");
-  if (colContainer) {
-    colContainer.addEventListener("click", handleMobCardClick);
-  }
+  const containers = [
+    document.getElementById("moblist-container"),
+    document.getElementById("mobcard-detail"),
+    document.getElementById("mobcard-overlay")
+  ].filter(Boolean);
 
-  const moblistContainer = document.getElementById("moblist-container");
-  if (moblistContainer) {
-    moblistContainer.addEventListener("click", handlePCListClick);
-  }
-
-  const mobcardDetail = document.getElementById("mobcard-detail");
-  if (mobcardDetail) {
-    mobcardDetail.addEventListener("click", handleMobCardClick);
-  }
-
-  const mobcardOverlay = document.getElementById("mobcard-overlay");
-  if (mobcardOverlay) {
-    mobcardOverlay.addEventListener("click", handleMobCardClick);
-  }
+  containers.forEach(c => c.addEventListener("click", handleGeneralClick));
 
   const overlayBackdrop = document.getElementById("mobcard-overlay-backdrop");
   if (overlayBackdrop) {
     overlayBackdrop.addEventListener("click", (e) => {
-      if (e.target === overlayBackdrop || e.target === mobcardOverlay) {
+      if (e.target === overlayBackdrop) {
         setOpenMobCardNo(null);
         sortAndRedistribute({ immediate: true });
       }
@@ -870,78 +707,37 @@ export function attachMobCardEvents() {
   }
 }
 
-function handlePCListClick(e) {
-  const item = e.target.closest(".moblist-item");
+function handleGeneralClick(e) {
+  const target = e.target;
+  const item = target.closest(".moblist-item, .mobcard-card");
   if (!item) return;
 
   const mobNo = parseInt(item.dataset.mobNo, 10);
-  const rank = item.dataset.rank;
-  const reportBtn = e.target.closest(".moblist-report-btn");
+  const mob = getState().mobs.find(m => m.No === mobNo);
+  if (!mob) return;
 
+  const reportBtn = target.closest(".moblist-report-btn");
   if (reportBtn) {
     e.preventDefault();
     e.stopPropagation();
-    e.stopImmediatePropagation();
-
-    const mob = getState().mobs.find(m => m.No === mobNo);
-    if (!mob) return;
-
     if (!getState().isVerified) {
       openAuthModal();
       return;
     }
-
-    if (mob.rank === 'S' || mob.rank === 'F') {
-      openReportModal(mobNo);
-    } else if (mob.rank === 'A') {
-      handleInstantReport(mobNo, mob.rank);
-    } else {
-      openReportModal(mobNo);
-    }
-  } else {
-    const currentOpen = getState().openMobCardNo;
-    setOpenMobCardNo(currentOpen === mobNo ? null : mobNo);
-    sortAndRedistribute({ immediate: true });
-  }
-}
-
-function handleMobCardClick(e) {
-  const card = e.target.closest(".moblist-item, .mobcard-card");
-  if (!card) return;
-
-  const mobNo = parseInt(card.dataset.mobNo, 10);
-  const rank = card.dataset.rank;
-
-  const reportBtn = e.target.closest(".moblist-report-btn");
-  if (reportBtn) {
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-    if (!getState().isVerified) {
-      openAuthModal();
-      return;
-    }
-
-    const mobNoFromBtn = parseInt(reportBtn.dataset.mobNo, 10) || mobNo;
-    const type = reportBtn.dataset.reportType;
-
-    if (type === "modal") {
-      openReportModal(mobNoFromBtn);
-    } else if (type === "instant") {
-      handleInstantReport(mobNoFromBtn, rank);
-    }
+    const type = reportBtn.dataset.reportType || (mob.rank === 'A' ? 'instant' : 'modal');
+    if (type === "modal") openReportModal(mobNo);
+    else handleInstantReport(mobNo, mob.rank);
     return;
   }
 
-  const closeBtn = e.target.closest('[data-action="close-card"]');
-  if (closeBtn) {
+  if (target.closest('[data-action="close-card"]')) {
     e.stopPropagation();
     setOpenMobCardNo(null);
     sortAndRedistribute({ immediate: true });
     return;
   }
 
-  if (card.classList.contains('moblist-item') || card.classList.contains('mobcard-card')) {
+  if (target.closest(".moblist-item") || target.classList.contains('mobcard-card')) {
     const currentOpen = getState().openMobCardNo;
     setOpenMobCardNo(currentOpen === mobNo ? null : mobNo);
     sortAndRedistribute({ immediate: true });

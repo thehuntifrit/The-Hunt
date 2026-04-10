@@ -1,78 +1,71 @@
 /* --- SECTION: MOBLIST LAYOUT --- */
 #root-layout {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    inline-size: 100%;
-    max-inline-size: 920px;
-    margin-inline-start: max(72px, calc((100% - 920px) / 2));
-    margin-inline-end: auto;
-    justify-content: center;
-    gap: 0;
-    min-block-size: 100vh;
-    align-items: flex-start;
+    display: block;
+    width: 100%;
 }
 
 #moblist-container {
-    inline-size: 480px;
-    flex: none;
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 3px;
-    margin-block-start: 28px;
 }
 
 #mobcard-pane {
-    inline-size: 400px;
-    flex: none;
-    align-self: flex-start;
-    position: sticky;
-    top: 20px;
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding-inline-start: 0;
-    margin-inline-start: 24px;
-    margin-block-start: 0;
-    max-block-size: calc(100vh - 28px);
-    overflow-y: auto;
-
-    @supports (scrollbar-color: auto) {
-        scrollbar-width: thin;
-        scrollbar-color: rgba(59, 130, 246, 1) transparent;
-    }
-
-    &::-webkit-scrollbar {
-        inline-size: 4px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.15);
-        border-radius: 4px;
-
-        &:hover {
-            background: rgba(129, 140, 248, 0.05);
-        }
-    }
-
-    &::-webkit-scrollbar-track {
-        background: transparent;
-    }
+    display: none;
 }
 
-#mobcard-clocks {
-    align-self: flex-end;
-    margin-inline-end: 28px;
-    margin-block-start: 18px;
-    margin-block-end: -11px;
-    transform: translateY(8px);
-}
+@media (min-width: 1024px) {
+    #root-layout {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        inline-size: 100%;
+        max-inline-size: 920px;
+        margin-inline-start: max(72px, calc((100% - 920px) / 2));
+        margin-inline-end: auto;
+        justify-content: center;
+        gap: 0;
+        min-block-size: 100vh;
+        align-items: flex-start;
+    }
 
-#mobcard-detail {
-    display: flex;
-    flex-direction: column;
-    inline-size: 100%;
+    #moblist-container {
+        inline-size: 480px;
+        flex: none;
+        margin-block-start: 28px;
+    }
+
+    #mobcard-pane {
+        display: flex;
+        inline-size: 400px;
+        flex: none;
+        align-self: flex-start;
+        position: sticky;
+        top: 20px;
+        z-index: 100;
+        flex-direction: column;
+        gap: 12px;
+        padding-inline-start: 0;
+        margin-inline-start: 24px;
+        margin-block-start: 0;
+        max-block-size: calc(100vh - 28px);
+        overflow-y: auto;
+    }
+
+    #mobcard-clocks {
+        align-self: flex-end;
+        margin-inline-end: 28px;
+        margin-block-start: 18px;
+        margin-block-end: -11px;
+        transform: translateY(8px);
+    }
+
+    #mobcard-detail {
+        display: flex;
+        flex-direction: column;
+        inline-size: 100%;
+    }
 }
 
 /* --- SECTION: MOBLIST ITEM --- */
@@ -186,9 +179,62 @@
         white-space: nowrap;
         position: relative;
         z-index: 10;
-        width: 100%;
+        inline-size: 100%;
         text-align: right;
-        padding-inline-end: 4px;
+        padding-inline-end: 2px;
+        overflow: visible;
+
+        .timer-inner-grid {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 2px;
+            white-space: nowrap;
+            width: auto;
+        }
+
+        .timer-label {
+            flex-shrink: 0;
+            white-space: nowrap;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 1px 3px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            line-height: 1;
+            min-inline-size: 28px;
+            text-align: center;
+            margin-inline-start: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            &.status-maxover {
+                background: rgba(239, 68, 68, 0.25);
+                border-color: rgba(239, 68, 68, 0.4);
+                color: #ff9999;
+            }
+
+            &.status-popwindow,
+            &.status-conditionactive,
+            &.status-nextcondition {
+                background: rgba(16, 185, 129, 0.25);
+                border-color: rgba(16, 185, 129, 0.4);
+                color: #a7f3d0;
+            }
+
+            &.status-next {
+                background: rgba(148, 163, 184, 0.2);
+                border-color: rgba(148, 163, 184, 0.3);
+            }
+
+            &.is-special {
+                color: var(--color-gold);
+                border-color: rgba(251, 191, 36, 0.4);
+                text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+            }
+        }
     }
 
     .moblist-bg-gauge {
@@ -221,7 +267,7 @@
         align-items: center;
         text-align: end;
         font-variant-numeric: tabular-nums;
-        margin-right: -0.5ch;
+        margin-right: calc(-0.5ch + 2px);
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
         position: relative;
         z-index: 10;
@@ -348,6 +394,7 @@
     }
 
     body .moblist-item {
+        max-width: none;
         block-size: 32px;
         margin-block-end: 4px;
     }

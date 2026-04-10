@@ -1,4 +1,16 @@
-/* --- SECTION: APPNAV BASE (PC STYLES) --- */
+@media (min-width: 1024px) {
+
+    #root-mobile-footer-bar,
+    #appnav-footer-panel {
+        display: none !important;
+    }
+
+    #appnav-sidebar {
+        display: flex !important;
+        /* PC版では確実に表示 */
+    }
+}
+
 #appnav-sidebar {
     position: fixed;
     inset-block: 0;
@@ -17,7 +29,6 @@
     &.expanded {
         width: 216px;
 
-        /* 56px + 160px */
         .appnav-panel {
             display: flex;
         }
@@ -58,6 +69,17 @@
         padding: 11px 7px;
     }
 
+    .sidebar-manual-content {
+        inline-size: 100%;
+        block-size: auto;
+        max-block-size: none;
+        padding: 10px;
+        box-sizing: border-box;
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--color-white);
+    }
+
     .appnav-top {
         display: flex;
         flex-direction: column;
@@ -68,20 +90,25 @@
     }
 
     .appnav-logo {
-        font-size: 16px;
+        font-size: 14px;
         font-weight: 800;
         line-height: 1.1;
         letter-spacing: -0.02em;
-        margin-block-end: 21px;
-        cursor: default;
+        margin-block-end: 20px;
+        cursor: pointer;
         text-align: center;
+        inline-size: 100%;
+        opacity: 1 !important;
+        display: block !important;
 
         .appnav-logo-the {
             color: var(--color-cyan);
+            display: block;
         }
 
         .appnav-logo-hunt {
             color: var(--color-gold);
+            display: block;
         }
     }
 }
@@ -103,6 +130,15 @@
     opacity: 0.8;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.appnav-btn.is-disabled {
+    opacity: 0.3 !important;
+    filter: grayscale(1);
+}
+
+.appnav-btn {
     transition: all 0.3s ease;
 
     &:hover {

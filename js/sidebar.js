@@ -4,7 +4,6 @@ import { openUserManual } from "./readme.js";
 import { cloneTemplate, escapeHtml } from "./mobCard.js";
 
 // ─── 定数・DOM ──────────────────────────────────────────
-
 const FilterDOM = {
     areaFilterPanelMobile: document.getElementById('area-filter-panel-mobile'),
     areaFilterPanelDesktop: document.getElementById('area-filter-panel-desktop')
@@ -31,7 +30,6 @@ window.errorLog = window.errorLog || [];
 const MAX_ERROR_LOG = 50;
 
 // ─── 通知 ───────────────────────────────────────────────
-
 export function initNotification() {
     audio = new Audio(SOUND_FILE);
     audio.load();
@@ -44,11 +42,20 @@ export function initNotification() {
 
     toggles.forEach(t => {
         t.checked = isEnabled;
+        const label = t.closest('.appnav-btn');
+        if (label) {
+            label.classList.toggle('is-disabled', !isEnabled);
+        }
+
         t.addEventListener('change', (e) => {
             const enabled = e.target.checked;
 
             toggles.forEach(other => {
                 if (other !== t) other.checked = enabled;
+                const otherLabel = other.closest('.appnav-btn');
+                if (otherLabel) {
+                    otherLabel.classList.toggle('is-disabled', !enabled);
+                }
             });
 
             setNotificationEnabled(enabled);
@@ -145,7 +152,6 @@ export function checkAndNotify(mob) {
 }
 
 // ─── フィルタ ───────────────────────────────────────────
-
 function normalizeRank(rank) {
     if (rank === 'S rank' || rank === 'S') return 'S';
     if (rank === 'A rank' || rank === 'A') return 'A';
@@ -373,8 +379,7 @@ export function filterMobsByRankAndArea(mobs) {
     });
 }
 
-// ─── サイドバー ─────────────────────────────────────────
-
+// ─── アプリナビ ─────────────────────────────────────────
 function getStoredState() {
     try {
         return JSON.parse(localStorage.getItem("sidebarState")) || {};
@@ -387,15 +392,17 @@ function saveState(key, value) {
     localStorage.setItem("sidebarState", JSON.stringify(s));
 }
 
-export function initSidebar() {
+export function initAppNav() {
     const sidebar = document.getElementById("appnav-sidebar");
-    if (!sidebar) return;
+    const footerBar = document.getElementById("root-mobile-footer-bar");
+    if (!sidebar && !footerBar) return;
 
     captureErrors();
     document.body.classList.add("has-sidebar");
 
+    // 初期状態の復元 (PC)
     const stored = getStoredState();
-    if (stored.panel && stored.panel !== "manual") {
+    if (sidebar && stored.panel && stored.panel !== "manual") {
         currentPanel = stored.panel;
         sidebar.classList.add("expanded");
         document.body.classList.add("sidebar-expanded");
@@ -404,24 +411,27 @@ export function initSidebar() {
         showPanel(currentPanel);
     }
 
-    const navCol = sidebar.querySelector(".appnav-main-nav");
-    if (navCol) {
-        renderNavItems(navCol, "sidebar");
+    // ナビゲーションアイテムの描画
+    if (sidebar) {
+        const navCol = sidebar.querySelector(".appnav-main-nav");
+        if (navCol) renderNavItems(navCol, "sidebar");
+
+        const logo = sidebar.querySelector(".appnav-logo");
+        if (logo) {
+            logo.addEventListener("click", () => {
+                if (sidebar.classList.contains("expanded")) closePanel();
+            });
+        }
     }
 
-    const logo = sidebar.querySelector(".appnav-logo");
-    if (logo) {
-        logo.addEventListener("click", () => {
-            if (sidebar.classList.contains("expanded")) {
-                closePanel();
-            }
-        });
+    if (footerBar) {
+        const iconCol = footerBar.querySelector(".appnav-mobile-icons");
+        if (iconCol) renderNavItems(iconCol, "mobile");
     }
 
     if (currentPanel !== "rank") {
         renderSidebarFilterAccordion();
     }
-    initMobileFooter();
 }
 
 function renderNavItems(container, layout) {
@@ -443,11 +453,7 @@ function renderNavItems(container, layout) {
                 <span class="appnav-icon">${item.icon}</span>
                 <span class="appnav-label">${item.label}</span>
             `;
-            btn.addEventListener("click", () => {
-                const isMobile = window.innerWidth < 1024;
-                if (!isMobile) togglePanel(item.id);
-                else toggleMobilePanel(item.id);
-            });
+            btn.addEventListener("click", () => togglePanel(item.id));
             container.appendChild(btn);
         } else if (item.type === "toggle") {
             const id = `${layout === "sidebar" ? "sidebar" : "mobile"}-notification-toggle`;
@@ -456,40 +462,77 @@ function renderNavItems(container, layout) {
             toggleLabel.className = "appnav-btn nav-toggle-btn";
             toggleLabel.setAttribute("for", id);
             toggleLabel.innerHTML = `
-                <input type="checkbox" id="${id}" name="${name}" class="hidden-toggle">
+                <input type="checkbox" id="${id}" name="${name}" class="hidden-toggle js-notify-toggle">
                 <span class="appnav-icon">${item.icon}</span>
                 <span class="appnav-label">${item.label}</span>
             `;
             container.appendChild(toggleLabel);
         }
     });
+
+    // 通知トグルの初期化 (sync)
+    setTimeout(() => initNotification(), 0);
 }
 
-function togglePanel(panelName) {
+export async function togglePanel(panelName) {
+    const isMobile = window.innerWidth < 1024;
+
     if (panelName === "manual") {
-        if (typeof openUserManual === "function") {
-            openUserManual();
+        if (typeof openUserManual === "function") openUserManual();
+        return;
+    }
+
+    if (isMobile) {
+        // モバイルオーバーレイのトグル
+        const panel = document.getElementById("appnav-footer-panel");
+        const footerBar = document.getElementById("root-mobile-footer-bar");
+        if (!panel || !footerBar) return;
+
+        footerBar.querySelectorAll(".appnav-btn").forEach(b => b.classList.remove("appnav-active"));
+
+        if (mobileCurrentPanel === panelName) {
+            panel.classList.remove("appnav-open");
+            panel.classList.add("hidden");
+            mobileCurrentPanel = null;
+            return;
         }
-        return;
+
+        const btn = footerBar.querySelector(`[data-panel="${panelName}"]`);
+        if (btn) btn.classList.add("appnav-active");
+        mobileCurrentPanel = panelName;
+
+        const sourcePanel = document.getElementById(`sidebar-panel-${panelName}`);
+        if (sourcePanel) {
+            panel.innerHTML = sourcePanel.innerHTML;
+        } else {
+            panel.innerHTML = "";
+        }
+
+        panel.classList.remove("hidden");
+        panel.classList.add("appnav-open");
+
+        // 特別なパネルの追加レンダリング
+        syncPanelContents(panelName, panel);
+    } else {
+        // PCサイドバーのトグル
+        const sidebar = document.getElementById("appnav-sidebar");
+        if (!sidebar) return;
+
+        if (currentPanel === panelName) {
+            closePanel();
+            return;
+        }
+
+        sidebar.querySelectorAll(".appnav-btn").forEach(b => b.classList.remove("appnav-active"));
+        const btn = sidebar.querySelector(`[data-panel="${panelName}"]`);
+        if (btn) btn.classList.add("appnav-active");
+
+        sidebar.classList.add("expanded");
+        document.body.classList.add("sidebar-expanded");
+        showPanel(panelName);
+        currentPanel = panelName;
+        saveState("panel", panelName);
     }
-
-    const sidebar = document.getElementById("appnav-sidebar");
-    if (!sidebar) return;
-
-    if (currentPanel === panelName) {
-        closePanel();
-        return;
-    }
-
-    sidebar.querySelectorAll(".appnav-btn").forEach(b => b.classList.remove("appnav-active"));
-    const btn = sidebar.querySelector(`[data-panel="${panelName}"]`);
-    if (btn) btn.classList.add("appnav-active");
-
-    sidebar.classList.add("expanded");
-    document.body.classList.add("sidebar-expanded");
-    showPanel(panelName);
-    currentPanel = panelName;
-    saveState("panel", panelName);
 }
 
 function closePanel() {
@@ -502,82 +545,29 @@ function closePanel() {
     currentPanel = null;
     saveState("panel", null);
 
-    document.querySelectorAll(".appnav-section").forEach(p => p.classList.add("hidden"));
+    document.querySelectorAll(".appnav-panel .js-appnav-panel-item").forEach(p => p.classList.add("hidden"));
 }
 
 function showPanel(panelName) {
-    document.querySelectorAll(".appnav-section").forEach(p => p.classList.add("hidden"));
+    document.querySelectorAll(".appnav-panel .js-appnav-panel-item").forEach(p => p.classList.add("hidden"));
     const target = document.getElementById(`sidebar-panel-${panelName}`);
     if (target) {
         target.classList.remove("hidden");
-        if (panelName === "rank") {
-            renderSidebarFilterAccordion(target);
-        } else if (panelName === "manual") {
-            loadManualContent(target);
-        } else if (panelName === "error") {
-            updateErrorPanel(target);
-        }
+        syncPanelContents(panelName, target);
     }
 }
 
-// ─── モバイルフッター ───────────────────────────────────
-
-function initMobileFooter() {
-    const footerBar = document.getElementById("root-mobile-footer-bar");
-    if (!footerBar) return;
-
-    const iconCol = footerBar.querySelector(".appnav-mobile-icons");
-    if (iconCol) {
-        renderNavItems(iconCol, "mobile");
-    }
-}
-
-async function toggleMobilePanel(panelName) {
-    const panel = document.getElementById("appnav-footer-panel");
-    const footerBar = document.getElementById("root-mobile-footer-bar");
-    if (!panel || !footerBar) return;
-
-    footerBar.querySelectorAll(".appnav-btn").forEach(b => b.classList.remove("appnav-active"));
-
-    if (mobileCurrentPanel === panelName) {
-        panel.classList.remove("appnav-open");
-        panel.classList.add("hidden");
-        mobileCurrentPanel = null;
-        return;
-    }
-
-    const btn = footerBar.querySelector(`[data-panel="${panelName}"]`);
-    if (btn) btn.classList.add("appnav-active");
-    mobileCurrentPanel = panelName;
-
-    const sourcePanel = document.getElementById(`sidebar-panel-${panelName}`);
-    if (sourcePanel) {
-        panel.innerHTML = sourcePanel.innerHTML;
-    } else {
-        panel.innerHTML = "";
-    }
-
-    if (panelName === "rank") {
-        renderSidebarFilterAccordion(panel);
-    } else if (panelName === "manual") {
-        loadManualContent(panel);
-    } else if (panelName === "error") {
-        updateErrorPanel(panel);
-    }
-
-    panel.classList.remove("hidden");
-    panel.classList.add("appnav-open");
-
-    if (panelName === "telop" || panelName === "maintenance") {
+async function syncPanelContents(panelName, container) {
+    if (panelName === "rank") renderSidebarFilterAccordion(container);
+    else if (panelName === "manual") loadManualContent(container);
+    else if (panelName === "error") updateErrorPanel(container);
+    else if (panelName === "telop" || panelName === "maintenance") {
         const { renderMaintenanceStatus } = await import("./app.js");
-        if (typeof renderMaintenanceStatus === "function") {
-            renderMaintenanceStatus();
-        }
+        if (typeof renderMaintenanceStatus === "function") renderMaintenanceStatus();
     }
 }
 
 // ─── エラー ─────────────────────────────────────────────
-
 function captureErrors() {
     const origError = console.error;
     console.error = (...args) => {
@@ -607,12 +597,14 @@ function captureErrors() {
     });
 }
 
-function updateErrorPanel(targetContainer = null) {
-    const panels = targetContainer ? [targetContainer.querySelector(".js-error-content") || targetContainer] : document.querySelectorAll(".js-error-content");
-    if (panels.length === 0 || (panels.length === 1 && !panels[0])) return;
+export function updateErrorPanel(targetContainer = null) {
+    const panels = targetContainer ?
+        [targetContainer.querySelector(".js-error-content") || targetContainer] :
+        document.querySelectorAll(".js-error-content");
+
+    if (panels.length === 0) return;
 
     const fragment = document.createDocumentFragment();
-    
     if (!window.errorLog || window.errorLog.length === 0) {
         const emptyMsg = document.createElement("div");
         emptyMsg.className = "text-center u-text-sm text-gray-500 mt-10";
@@ -633,7 +625,7 @@ function updateErrorPanel(targetContainer = null) {
 
     panels.forEach(el => {
         if (!el) return;
-        if (el.classList.contains("appnav-footer-panel") || el.id === "appnav-footer-panel") {
+        if (el.id === "appnav-footer-panel") {
             el.innerHTML = '<div class="appnav-section"><div class="appnav-section-title">ERRORS</div><div class="appnav-alert js-error-content"></div></div>';
             const inner = el.querySelector(".js-error-content");
             inner.appendChild(fragment.cloneNode(true));
@@ -651,7 +643,6 @@ function updateErrorBadge() {
 }
 
 // ─── マニュアル ─────────────────────────────────────────
-
 async function loadManualContent(targetContainer = null) {
     const container = targetContainer || document.getElementById("sidebar-manual-content");
     if (!container) return;
@@ -676,7 +667,6 @@ async function loadManualContent(targetContainer = null) {
 }
 
 // ─── アコーディオン ─────────────────────────────────────
-
 function renderSidebarFilterAccordion(targetContainer = null) {
     const container = targetContainer?.id === "appnav-footer-panel" ? targetContainer :
         (targetContainer?.querySelector(".appnav-filter-accordion") || document.getElementById("sidebar-filter-accordion"));
@@ -736,12 +726,8 @@ function renderSidebarFilterAccordion(targetContainer = null) {
 }
 
 // ─── イベントリスナー ───────────────────────────────────
-
 window.addEventListener("filterChanged", () => {
-    // デスクトップ用サイドバー
     renderSidebarFilterAccordion();
-
-    // モバイル用フッターパネル
     const mobilePanel = document.getElementById("appnav-footer-panel");
     if (mobilePanel && mobileCurrentPanel === "rank") {
         renderSidebarFilterAccordion(mobilePanel);
