@@ -15,8 +15,12 @@
     overflow: hidden;
 
     &.expanded {
-        width: 216px; /* 56px + 160px */
-        .appnav-panel { display: flex; }
+        width: 216px;
+
+        /* 56px + 160px */
+        .appnav-panel {
+            display: flex;
+        }
     }
 
     .appnav-inner {
@@ -71,8 +75,14 @@
         margin-block-end: 21px;
         cursor: default;
         text-align: center;
-        .appnav-logo-the { color: var(--color-cyan); }
-        .appnav-logo-hunt { color: var(--color-gold); }
+
+        .appnav-logo-the {
+            color: var(--color-cyan);
+        }
+
+        .appnav-logo-hunt {
+            color: var(--color-gold);
+        }
     }
 }
 
@@ -179,7 +189,9 @@
     margin-block-end: 4px;
     display: block;
 
-    &:last-child { margin-block-end: 0; }
+    &:last-child {
+        margin-block-end: 0;
+    }
 
     .appnav-rank-header,
     .appnav-filter-btn {
@@ -193,7 +205,9 @@
         color: var(--color-white);
         transition: all 0.2s ease;
 
-        &:hover { background: rgba(255, 255, 255, 0.1); }
+        &:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
 
         &[data-rank] {
             --rank-color: var(--current-rank, var(--color-cyan));
@@ -210,7 +224,7 @@
         &[data-rank] {
             border-inline-start: 4px solid var(--current-rank);
             color: var(--current-rank);
-            background: rgba(255, 255, 255, 0.05); /* Simplified background */
+            background: rgba(255, 255, 255, 0.05);
             border-color: var(--current-rank);
         }
     }
@@ -241,7 +255,9 @@
     background: transparent;
     width: 100%;
 
-    &:last-child { border-block-end: none; }
+    &:last-child {
+        border-block-end: none;
+    }
 
     .appnav-error-time {
         font-family: var(--font-mono);
@@ -251,7 +267,8 @@
     }
 }
 
-.appnav-alert, .js-error-content {
+.appnav-alert,
+.js-error-content {
     max-block-size: 400px;
     overflow-y: auto;
     background: rgba(255, 255, 255, 0.04);
@@ -261,7 +278,9 @@
 
 /* --- SECTION: MEDIA (MOBILE OVERRIDES) --- */
 @media (max-width: 1023px) {
-    #appnav-sidebar, #appnav-status-bar {
+
+    #appnav-sidebar,
+    #appnav-status-bar {
         display: none;
     }
 

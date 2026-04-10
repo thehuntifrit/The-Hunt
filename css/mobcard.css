@@ -80,9 +80,17 @@
         text-shadow: none;
         transition: text-shadow 0.4s ease, color 0.4s ease;
 
-        &[data-rank="S"] { color: var(--color-rank-s); }
-        &[data-rank="A"] { color: var(--color-rank-a); }
-        &[data-rank="F"] { color: var(--color-rank-f); }
+        &[data-rank="S"] {
+            color: var(--color-rank-s);
+        }
+
+        &[data-rank="A"] {
+            color: var(--color-rank-a);
+        }
+
+        &[data-rank="F"] {
+            color: var(--color-rank-f);
+        }
     }
 
     .mobcard-rank {
@@ -102,9 +110,17 @@
         box-shadow: 0 0 10px rgba(currentColor, 0.5), inset 0 0 4px rgba(currentColor, 0.3);
         text-shadow: 0 0 5px currentColor;
 
-        &[data-rank="S"] { color: var(--color-rank-s); }
-        &[data-rank="A"] { color: var(--color-rank-a); }
-        &[data-rank="F"] { color: var(--color-rank-f); }
+        &[data-rank="S"] {
+            color: var(--color-rank-s);
+        }
+
+        &[data-rank="A"] {
+            color: var(--color-rank-a);
+        }
+
+        &[data-rank="F"] {
+            color: var(--color-rank-f);
+        }
     }
 
     .mobcard-progress-container {
@@ -158,6 +174,7 @@
     }
 
     &.mobcard-pre-repop {
+
         .area-info-container,
         .status-bar-inner,
         .progress-text>div,
@@ -165,10 +182,12 @@
             opacity: 0.3;
             filter: grayscale(100%);
         }
+
         .mobcard-report-bar {
             opacity: 0.6;
             filter: grayscale(100%);
         }
+
         .mobcard-name {
             color: var(--color-white);
             text-shadow: none;
@@ -182,6 +201,7 @@
             filter: grayscale(100%);
             box-shadow: none;
         }
+
         .mobcard-name {
             color: var(--color-white);
             text-shadow: none;
@@ -232,7 +252,9 @@
         min-inline-size: 2.5ch;
         margin-inline-end: 0.3ch;
 
-        &:last-child { margin-inline-end: 0; }
+        &:last-child {
+            margin-inline-end: 0;
+        }
     }
 
     .mobcard-timer-num {
@@ -253,10 +275,15 @@
     }
 }
 
-.mobcard-status-max { background: var(--color-progress-ready); }
+.mobcard-status-max {
+    background: var(--color-progress-ready);
+}
+
 .mobcard-status-active,
 .mobcard-status-window,
-.mobcard-status-next { background: var(--color-progress-fill); }
+.mobcard-status-next {
+    background: var(--color-progress-fill);
+}
 
 .mobcard-timer-label {
     color: var(--color-white);
@@ -273,10 +300,19 @@
     justify-content: center;
     font-weight: 700;
 
-    &.mobcard-status-next { background: rgba(148, 163, 184, 0.2); }
+    &.mobcard-status-next {
+        background: rgba(148, 163, 184, 0.2);
+    }
+
     &.mobcard-status-window,
-    &.mobcard-status-active { background: rgba(16, 185, 129, 0.2); }
-    &.mobcard-status-max { background: rgba(239, 68, 68, 0.2); }
+    &.mobcard-status-active {
+        background: rgba(16, 185, 129, 0.2);
+    }
+
+    &.mobcard-status-max {
+        background: rgba(239, 68, 68, 0.2);
+    }
+
     &.mobcard-special {
         color: var(--color-gold);
         text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
@@ -401,7 +437,9 @@
 }
 
 .mobcard-expandable {
-    &.open { max-height: none; }
+    &.open {
+        max-height: none;
+    }
 
     &>div {
         min-height: 0;

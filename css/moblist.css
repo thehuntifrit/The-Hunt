@@ -5,7 +5,7 @@
     flex-wrap: nowrap;
     inline-size: 100%;
     max-inline-size: 920px;
-    margin-inline-start: max(72px, calc((100% - 920px) / 2)); /* 56px + 16px */
+    margin-inline-start: max(72px, calc((100% - 920px) / 2));
     margin-inline-end: auto;
     justify-content: center;
     gap: 0;
@@ -50,10 +50,15 @@
     &::-webkit-scrollbar-thumb {
         background: rgba(255, 255, 255, 0.15);
         border-radius: 4px;
-        &:hover { background: rgba(129, 140, 248, 0.05); }
+
+        &:hover {
+            background: rgba(129, 140, 248, 0.05);
+        }
     }
 
-    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
 }
 
 #mobcard-clocks {
@@ -115,7 +120,10 @@
         border-color: rgba(34, 211, 238, 0.4);
         box-shadow: inset 0 0 10px rgba(34, 211, 238, 0.1);
         z-index: 15;
-        &::before { background: var(--color-cyan); }
+
+        &::before {
+            background: var(--color-cyan);
+        }
     }
 
     .moblist-header {
@@ -138,9 +146,18 @@
         white-space: nowrap;
         color: var(--color-white);
 
-        &[data-rank="S"] { color: var(--color-white); }
-        &[data-rank="A"] { color: var(--color-rank-a); }
-        &[data-rank="F"] { color: var(--color-rank-f); }
+        &[data-rank="S"] {
+            color: var(--color-white);
+        }
+
+        &[data-rank="A"] {
+            color: var(--color-rank-a);
+        }
+
+        &[data-rank="F"] {
+            color: var(--color-rank-f);
+        }
+
         &[data-rank="S-active"] {
             color: var(--color-white);
             text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
@@ -217,6 +234,7 @@
             margin-inline-start: 0.3ch;
             color: rgba(255, 255, 255, 0.4);
         }
+
         .moblist-percent-inner {
             font-size: inherit;
             color: var(--white);
@@ -246,11 +264,20 @@
         &:hover {
             background: rgba(0, 243, 255, 0.15);
             box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.5), 0 0 15px rgba(0, 243, 255, 0.2);
-            &::before, &::after { background: rgba(255, 255, 255, 1); box-shadow: 0 0 8px rgba(0, 243, 255, 1); }
+
+            &::before,
+            &::after {
+                background: rgba(255, 255, 255, 1);
+                box-shadow: 0 0 8px rgba(0, 243, 255, 1);
+            }
         }
 
-        &:active { transform: scale(0.95); }
-        &::before, &::after {
+        &:active {
+            transform: scale(0.95);
+        }
+
+        &::before,
+        &::after {
             content: '';
             position: absolute;
             background: rgba(0, 243, 255, 1);
@@ -258,8 +285,16 @@
             box-shadow: 0 0 4px rgba(0, 243, 255, 0.6);
             transition: all 0.2s ease;
         }
-        &::before { inline-size: 10px; block-size: 2.5px; }
-        &::after { inline-size: 2.5px; block-size: 10px; }
+
+        &::before {
+            inline-size: 10px;
+            block-size: 2.5px;
+        }
+
+        &::after {
+            inline-size: 2.5px;
+            block-size: 10px;
+        }
     }
 
     &.moblist-blink {
@@ -278,6 +313,7 @@
             filter: grayscale(100%);
             color: var(--color-text-secondary);
         }
+
         .truncate {
             opacity: 0.5;
             filter: grayscale(100%);
