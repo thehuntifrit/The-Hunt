@@ -9,7 +9,10 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/root.css">
+    <link rel="stylesheet" href="css/appnav.css">
+    <link rel="stylesheet" href="css/moblist.css">
+    <link rel="stylesheet" href="css/mobcard.css">
     <script src="js/lib/marked.min.js"></script>
     <script src="js/lib/purify.min.js"></script>
 </head>
@@ -21,53 +24,50 @@
         <div class="loading-text">Loading...</div>
     </div>
 
-    <aside id="app-sidebar">
-        <div class="sidebar-inner">
-            <div class="sidebar-main-nav">
-                <div class="sidebar-top">
-                    <div class="sidebar-logo">
-                        <span class="logo-the">The</span><br><span class="logo-hunt">Hunt</span>
+    <aside id="appnav-sidebar">
+        <div class="appnav-inner">
+            <div class="appnav-main-nav">
+                <div class="appnav-top">
+                    <div class="appnav-logo">
+                        <span class="appnav-logo-the">The</span><br><span class="appnav-logo-hunt">Hunt</span>
                     </div>
-                </div>
-
-                <div class="sidebar-icon-col">
                 </div>
             </div>
-            <div class="sidebar-panel">
-                <div id="sidebar-panel-error" class="sidebar-panel-content hidden">
-                    <div class="sidebar-section">
-                        <div class="sidebar-section-title">ERRORS</div>
-                        <div id="sidebar-error-content" class="sidebar-alert-content js-error-content"></div>
+            <div class="appnav-panel">
+                <div id="sidebar-panel-error" class="appnav-section hidden">
+                    <div class="appnav-section">
+                        <div class="appnav-section-title">ERRORS</div>
+                        <div id="sidebar-error-content" class="appnav-alert js-error-content"></div>
                     </div>
                 </div>
-                <div id="sidebar-panel-telop" class="sidebar-panel-content hidden">
-                    <div class="sidebar-section">
-                        <div class="sidebar-section-title">ANNOUNCEMENT</div>
+                <div id="sidebar-panel-telop" class="appnav-section hidden">
+                    <div class="appnav-section">
+                        <div class="appnav-section-title">ANNOUNCEMENT</div>
                         <div id="sidebar-welcome-area" class="sidebar-welcome-area"></div>
-                        <div id="sidebar-telop-content" class="sidebar-alert-content js-telop-content"></div>
+                        <div id="sidebar-telop-content" class="appnav-alert js-telop-content"></div>
                     </div>
                 </div>
-                <div id="sidebar-panel-maintenance" class="sidebar-panel-content hidden">
-                    <div class="sidebar-section">
-                        <div class="sidebar-section-title">Maintenance info.</div>
-                        <div id="sidebar-maintenance-content" class="sidebar-alert-content js-maintenance-content">
+                <div id="sidebar-panel-maintenance" class="appnav-section hidden">
+                    <div class="appnav-section">
+                        <div class="appnav-section-title">Maintenance info.</div>
+                        <div id="sidebar-maintenance-content" class="appnav-alert js-maintenance-content">
                         </div>
                     </div>
                 </div>
-                <div id="sidebar-panel-rank" class="sidebar-panel-content hidden">
-                    <div id="sidebar-filter-accordion" class="sidebar-filter-accordion"></div>
+                <div id="sidebar-panel-rank" class="appnav-section hidden">
+                    <div id="sidebar-filter-accordion" class="appnav-filter-accordion"></div>
                 </div>
             </div>
         </div>
     </aside>
 
-    <div id="sidebar-status-bar" class="u-mobile-only">
+    <div id="appnav-status-bar" class="u-mobile-only">
         <div id="status-message-maintenance" class="hidden"></div>
         <div id="status-message-telop" class="hidden"></div>
     </div>
 
-    <div id="mobile-top-bar">
-        <div class="mobile-top-title">
+    <div id="root-mobile-top-bar">
+        <div class="root-mobile-title">
             <span class="text-cyan u-font-bold">The</span>
             <span class="text-yellow u-font-bold">Hunt</span>
         </div>
@@ -79,31 +79,31 @@
         </div>
     </div>
 
-    <nav id="mobile-footer-bar">
-        <div class="mobile-footer-icons">
+    <nav id="root-mobile-footer-bar">
+        <div class="appnav-mobile-icons">
         </div>
-        <div id="mobile-footer-panel" class="mobile-footer-panel hidden"></div>
+        <div id="appnav-footer-panel" class="appnav-footer-panel hidden"></div>
     </nav>
 
     <main class="main-content-area">
 
-        <div id="pc-layout" class="pc-layout-container">
-            <div id="pc-left-list"></div>
-            <div id="pc-right-pane">
-                <div id="pc-clocks-header" class="pc-clocks-header mobile-top-clocks">
+        <div id="root-layout" class="pc-layout-container">
+            <div id="moblist-container"></div>
+            <div id="mobcard-pane">
+                <div id="mobcard-clocks" class="mobile-top-clocks">
                     <span class="mobile-clock-label">ET</span>
                     <span id="pc-time-et" class="mobile-clock-val">--:--</span>
                     <span class="mobile-clock-label">LT</span>
                     <span id="pc-time-lt" class="mobile-clock-val">--:--</span>
                 </div>
-                <div id="pc-right-detail"></div>
+                <div id="mobcard-detail"></div>
             </div>
         </div>
 
     </main>
 
-    <div id="card-overlay-backdrop" class="app-backdrop hidden">
-        <div id="mobile-detail-overlay" class="mobile-detail-overlay-wrapper">
+    <div id="mobcard-overlay-backdrop" class="app-backdrop hidden">
+        <div id="mobcard-overlay" class="mobcard-overlay-wrapper">
         </div>
     </div>
 
@@ -209,78 +209,80 @@
         </div>
     </div>
 
-    <template id="pc-detail-card-template">
-        <div class="pc-detail-card pc-detail-card-inner">
-            <div class="pc-detail-header pt-1 relative">
-                <div class="u-flex u-items-center u-justify-start pr-[65px]">
-                    <div class="u-flex u-items-center min-w-0" style="gap: 0.5em;">
-                        <h2 class="pc-detail-name" style="flex: 0 1 auto; min-width: 0;"></h2>
-                        <div class="pc-detail-rank u-font-bold px-1 py-0.5 border rounded u-flex-none" data-rank="">
+    <template id="mobcard-card-template">
+        <div class="mobcard-card">
+            <div class="mobcard-inner">
+                <div class="mobcard-header">
+                    <div class="u-flex u-items-center u-justify-start pr-[65px]">
+                        <div class="u-flex u-items-center min-w-0" style="gap: 0.5em;">
+                            <h2 class="mobcard-name" style="flex: 0 1 auto; min-width: 0;"></h2>
+                            <div class="mobcard-rank px-1 py-0.5" data-rank="">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <button class="app-btn-outline pc-list-report-btn" data-report-type="" data-mob-no="">REPORT</button>
-                <div class="u-flex u-items-center u-justify-between">
-                    <div class="detail-area-row m-0 p-0 text-yellow font-medium">
-                        <span class="detail-area"></span>
-                        <span class="detail-expansion opacity-60"></span>
-                    </div>
-                    <div class="pc-detail-progress-text">
-                        <span class="percent">0%</span>
-                    </div>
-                </div>
-                <div class="pc-detail-progress-container">
-                    <div class="pc-detail-progress-bar"></div>
-                </div>
-            </div>
-
-            <div class="pc-detail-content overflow-y-auto pr-1">
-                <div class="detail-section memo-section mb-5">
-                    <div class="detail-memo-box">
-                        <div class="memo-prefix-area">
-                            <span class="memo-prefix-text">memo</span>
+                    <button class="moblist-report-btn" data-report-type="" data-mob-no="">REPORT</button>
+                    <div class="u-flex u-items-center u-justify-between">
+                        <div class="mobcard-section m-0 p-0 text-yellow font-medium">
+                            <span class="detail-area"></span>
+                            <span class="detail-expansion opacity-60"></span>
                         </div>
-                        <div class="memo-separator"></div>
-                        <textarea name="memo" aria-label="メモを入力" class="memo-textarea detail-memo-input"
-                            placeholder="全角30文字まで" maxlength="30" data-action="save-memo" rows="1"></textarea>
+                        <div class="mobcard-progress-text">
+                            <span class="percent">0%</span>
+                        </div>
+                    </div>
+                    <div class="mobcard-progress-container">
+                        <div class="mobcard-progress-bar"></div>
                     </div>
                 </div>
 
-                <div class="detail-grid mb-5">
-                    <div class="detail-info-item">
-                        <div class="label">最短POP</div>
-                        <div class="value" data-min-repop>--/-- --:--</div>
+                <div class="mobcard-content overflow-y-auto pr-1">
+                    <div class="mobcard-section memo-section mb-5">
+                        <div class="mobcard-memo-box">
+                            <div class="mobcard-memo-prefix-area">
+                                <span class="mobcard-memo-prefix-text">memo</span>
+                            </div>
+                            <div class="mobcard-memo-separator"></div>
+                            <textarea name="memo" aria-label="メモを入力" class="mobcard-memo-input detail-memo-input"
+                                placeholder="全角30文字まで" maxlength="30" data-action="save-memo" rows="1"></textarea>
+                        </div>
                     </div>
-                    <div class="detail-info-item">
-                        <div class="label">最大POP</div>
-                        <div class="value" data-max-repop>--/-- --:--</div>
+
+                    <div class="mobcard-grid mb-5">
+                        <div class="mobcard-info-item">
+                            <div class="mobcard-label">最短POP</div>
+                            <div class="mobcard-value" data-min-repop>--/-- --:--</div>
+                        </div>
+                        <div class="mobcard-info-item">
+                            <div class="mobcard-label">最大POP</div>
+                            <div class="mobcard-value" data-max-repop>--/-- --:--</div>
+                        </div>
+                        <div class="mobcard-info-item mobcard-highlight">
+                            <div class="mobcard-label">次回POP可能</div>
+                            <div class="mobcard-value" data-next-possible>--/-- --:--</div>
+                        </div>
+                        <div class="mobcard-info-item">
+                            <div class="mobcard-label">前回討伐</div>
+                            <div class="mobcard-value" data-last-kill>--/-- --:--</div>
+                        </div>
                     </div>
-                    <div class="detail-info-item highlight">
-                        <div class="label">次回POP可能</div>
-                        <div class="value" data-next-possible>--/-- --:--</div>
+
+                    <div class="mobcard-section map-section">
+                        <div class="mobcard-section-label">出現マップ</div>
+                        <div class="map-container relative w-full pc-map-box overflow-hidden mt-2">
+                            <img class="mob-map-img w-full h-auto object-contain opacity-90 transition-opacity">
+                            <div class="map-overlay absolute inset-0"></div>
+                        </div>
                     </div>
-                    <div class="detail-info-item">
-                        <div class="label">前回討伐</div>
-                        <div class="value" data-last-kill>--/-- --:--</div>
+
+                    <div class="mobcard-section">
+                        <div class="mobcard-section-label">出現条件</div>
+                        <div class="section-content condition condition-text"></div>
                     </div>
                 </div>
 
-                <div class="detail-section map-section">
-                    <div class="section-label">出現マップ</div>
-                    <div class="map-container relative w-full pc-map-box overflow-hidden mt-2">
-                        <img class="mob-map-img w-full h-auto object-contain opacity-90 transition-opacity">
-                        <div class="map-overlay absolute inset-0"></div>
-                    </div>
+                <div class="mobcard-mobile-actions" data-action="close-card">
+                    CLOSE
                 </div>
-
-                <div class="detail-section">
-                    <div class="section-label">出現条件</div>
-                    <div class="section-content condition condition-text"></div>
-                </div>
-            </div>
-
-            <div class="mobile-detail-actions" data-action="close-card">
-                CLOSE
             </div>
         </div>
     </template>
@@ -290,12 +292,12 @@
     </div>
 
     <template id="timer-rich-template">
-        <span class="timer-value">
-            <span class="timer-part h-part">
-                <span class="timer-num"></span><span class="timer-unit">h</span>
+        <span class="mobcard-timer">
+            <span class="mobcard-timer-part h-part">
+                <span class="mobcard-timer-num"></span><span class="mobcard-timer-unit">h</span>
             </span>
-            <span class="timer-part m-part">
-                <span class="timer-num"></span><span class="timer-unit">m</span>
+            <span class="mobcard-timer-part m-part">
+                <span class="mobcard-timer-num"></span><span class="mobcard-timer-unit">m</span>
             </span>
         </span>
     </template>
@@ -304,19 +306,19 @@
         <div class="spawn-point" tabindex="0"></div>
     </template>
 
-    <template id="pc-list-item-template">
-        <div class="pc-list-item">
-            <div class="pc-list-bg-gauge">
-                <div class="pc-list-bg-bar"></div>
+    <template id="moblist-item-template">
+        <div class="moblist-item">
+            <div class="moblist-bg-gauge">
+                <div class="moblist-bg-bar"></div>
             </div>
-            <div class="pc-list-header-row u-font-bold">
-                <span class="pc-list-mob-name truncate"></span>
+            <div class="moblist-header u-font-bold">
+                <span class="moblist-name truncate"></span>
                 <span class="memo-icon-container h-4 u-flex u-items-center"></span>
-                <span class="pc-list-count-inner"></span>
+                <span class="moblist-count"></span>
             </div>
-            <div class="pc-list-time"></div>
-            <div class="pc-list-percent">0%</div>
-            <button class="pc-list-report-btn"></button>
+            <div class="moblist-time"></div>
+            <div class="moblist-percent">0%</div>
+            <button class="moblist-report-btn"></button>
         </div>
     </template>
 
@@ -333,17 +335,17 @@
         </section>
     </template>
 
-    <template id="sidebar-error-item-template">
-        <div class="sidebar-error-item">
-            <span class="error-time"></span>
+    <template id="appnav-error-item-template">
+        <div class="appnav-error-item">
+            <span class="appnav-error-time"></span>
             <span class="error-msg"></span>
         </div>
     </template>
 
     <template id="rank-accordion-item-template">
-        <div class="rank-accordion-item">
-            <button class="rank-header"></button>
-            <div class="area-expansion">
+        <div class="appnav-rank-item">
+            <button class="appnav-rank-header"></button>
+            <div class="appnav-area-expansion">
                 <div class="area-grid-container"></div>
             </div>
         </div>

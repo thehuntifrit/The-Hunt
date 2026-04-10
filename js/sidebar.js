@@ -388,7 +388,7 @@ function saveState(key, value) {
 }
 
 export function initSidebar() {
-    const sidebar = document.getElementById("app-sidebar");
+    const sidebar = document.getElementById("appnav-sidebar");
     if (!sidebar) return;
 
     captureErrors();
@@ -400,16 +400,16 @@ export function initSidebar() {
         sidebar.classList.add("expanded");
         document.body.classList.add("sidebar-expanded");
         const btn = sidebar.querySelector(`[data-panel="${currentPanel}"]`);
-        if (btn) btn.classList.add("active");
+        if (btn) btn.classList.add("appnav-active");
         showPanel(currentPanel);
     }
 
-    const navCol = sidebar.querySelector(".sidebar-icon-col");
+    const navCol = sidebar.querySelector(".appnav-main-nav");
     if (navCol) {
         renderNavItems(navCol, "sidebar");
     }
 
-    const logo = sidebar.querySelector(".sidebar-logo");
+    const logo = sidebar.querySelector(".appnav-logo");
     if (logo) {
         logo.addEventListener("click", () => {
             if (sidebar.classList.contains("expanded")) {
@@ -437,11 +437,11 @@ function renderNavItems(container, layout) {
 
         if (item.type === "panel") {
             const btn = document.createElement("button");
-            btn.className = "app-nav-btn";
+            btn.className = "appnav-btn";
             btn.dataset.panel = item.id;
             btn.innerHTML = `
-                <span class="nav-icon">${item.icon}</span>
-                <span class="nav-label">${item.label}</span>
+                <span class="appnav-icon">${item.icon}</span>
+                <span class="appnav-label">${item.label}</span>
             `;
             btn.addEventListener("click", () => {
                 const isMobile = window.innerWidth < 1024;
@@ -453,12 +453,12 @@ function renderNavItems(container, layout) {
             const id = `${layout === "sidebar" ? "sidebar" : "mobile"}-notification-toggle`;
             const name = `${layout === "sidebar" ? "sidebar" : "mobile"}-notify`;
             const toggleLabel = document.createElement("label");
-            toggleLabel.className = "app-nav-btn nav-toggle-btn";
+            toggleLabel.className = "appnav-btn nav-toggle-btn";
             toggleLabel.setAttribute("for", id);
             toggleLabel.innerHTML = `
                 <input type="checkbox" id="${id}" name="${name}" class="hidden-toggle">
-                <span class="nav-icon">${item.icon}</span>
-                <span class="nav-label">${item.label}</span>
+                <span class="appnav-icon">${item.icon}</span>
+                <span class="appnav-label">${item.label}</span>
             `;
             container.appendChild(toggleLabel);
         }
@@ -473,7 +473,7 @@ function togglePanel(panelName) {
         return;
     }
 
-    const sidebar = document.getElementById("app-sidebar");
+    const sidebar = document.getElementById("appnav-sidebar");
     if (!sidebar) return;
 
     if (currentPanel === panelName) {
@@ -481,9 +481,9 @@ function togglePanel(panelName) {
         return;
     }
 
-    sidebar.querySelectorAll(".app-nav-btn").forEach(b => b.classList.remove("active"));
+    sidebar.querySelectorAll(".appnav-btn").forEach(b => b.classList.remove("appnav-active"));
     const btn = sidebar.querySelector(`[data-panel="${panelName}"]`);
-    if (btn) btn.classList.add("active");
+    if (btn) btn.classList.add("appnav-active");
 
     sidebar.classList.add("expanded");
     document.body.classList.add("sidebar-expanded");
@@ -493,20 +493,20 @@ function togglePanel(panelName) {
 }
 
 function closePanel() {
-    const sidebar = document.getElementById("app-sidebar");
+    const sidebar = document.getElementById("appnav-sidebar");
     if (!sidebar) return;
 
-    sidebar.querySelectorAll(".app-nav-btn").forEach(b => b.classList.remove("active"));
+    sidebar.querySelectorAll(".appnav-btn").forEach(b => b.classList.remove("appnav-active"));
     sidebar.classList.remove("expanded");
     document.body.classList.remove("sidebar-expanded");
     currentPanel = null;
     saveState("panel", null);
 
-    document.querySelectorAll(".sidebar-panel-content").forEach(p => p.classList.add("hidden"));
+    document.querySelectorAll(".appnav-section").forEach(p => p.classList.add("hidden"));
 }
 
 function showPanel(panelName) {
-    document.querySelectorAll(".sidebar-panel-content").forEach(p => p.classList.add("hidden"));
+    document.querySelectorAll(".appnav-section").forEach(p => p.classList.add("hidden"));
     const target = document.getElementById(`sidebar-panel-${panelName}`);
     if (target) {
         target.classList.remove("hidden");
@@ -523,31 +523,31 @@ function showPanel(panelName) {
 // ─── モバイルフッター ───────────────────────────────────
 
 function initMobileFooter() {
-    const footerBar = document.getElementById("mobile-footer-bar");
+    const footerBar = document.getElementById("root-mobile-footer-bar");
     if (!footerBar) return;
 
-    const iconCol = footerBar.querySelector(".mobile-footer-icons");
+    const iconCol = footerBar.querySelector(".appnav-mobile-icons");
     if (iconCol) {
         renderNavItems(iconCol, "mobile");
     }
 }
 
 async function toggleMobilePanel(panelName) {
-    const panel = document.getElementById("mobile-footer-panel");
-    const footerBar = document.getElementById("mobile-footer-bar");
+    const panel = document.getElementById("appnav-footer-panel");
+    const footerBar = document.getElementById("root-mobile-footer-bar");
     if (!panel || !footerBar) return;
 
-    footerBar.querySelectorAll(".app-nav-btn").forEach(b => b.classList.remove("active"));
+    footerBar.querySelectorAll(".appnav-btn").forEach(b => b.classList.remove("appnav-active"));
 
     if (mobileCurrentPanel === panelName) {
-        panel.classList.remove("open");
+        panel.classList.remove("appnav-open");
         panel.classList.add("hidden");
         mobileCurrentPanel = null;
         return;
     }
 
     const btn = footerBar.querySelector(`[data-panel="${panelName}"]`);
-    if (btn) btn.classList.add("active");
+    if (btn) btn.classList.add("appnav-active");
     mobileCurrentPanel = panelName;
 
     const sourcePanel = document.getElementById(`sidebar-panel-${panelName}`);
@@ -566,7 +566,7 @@ async function toggleMobilePanel(panelName) {
     }
 
     panel.classList.remove("hidden");
-    panel.classList.add("open");
+    panel.classList.add("appnav-open");
 
     if (panelName === "telop" || panelName === "maintenance") {
         const { renderMaintenanceStatus } = await import("./app.js");
@@ -620,9 +620,9 @@ function updateErrorPanel(targetContainer = null) {
         fragment.appendChild(emptyMsg);
     } else {
         window.errorLog.forEach(e => {
-            const el = cloneTemplate('sidebar-error-item-template');
+            const el = cloneTemplate('appnav-error-item-template');
             if (el) {
-                const timeEl = el.querySelector(".error-time");
+                const timeEl = el.querySelector(".appnav-error-time");
                 const msgEl = el.querySelector(".error-msg");
                 if (timeEl) timeEl.textContent = e.time;
                 if (msgEl) msgEl.textContent = e.msg;
@@ -633,8 +633,8 @@ function updateErrorPanel(targetContainer = null) {
 
     panels.forEach(el => {
         if (!el) return;
-        if (el.classList.contains("mobile-footer-panel") || el.id === "mobile-footer-panel") {
-            el.innerHTML = '<div class="sidebar-section"><div class="sidebar-section-title">ERRORS</div><div class="sidebar-alert-content js-error-content"></div></div>';
+        if (el.classList.contains("appnav-footer-panel") || el.id === "appnav-footer-panel") {
+            el.innerHTML = '<div class="appnav-section"><div class="appnav-section-title">ERRORS</div><div class="appnav-alert js-error-content"></div></div>';
             const inner = el.querySelector(".js-error-content");
             inner.appendChild(fragment.cloneNode(true));
         } else {
@@ -678,15 +678,15 @@ async function loadManualContent(targetContainer = null) {
 // ─── アコーディオン ─────────────────────────────────────
 
 function renderSidebarFilterAccordion(targetContainer = null) {
-    const container = targetContainer?.id === "mobile-footer-panel" ? targetContainer :
-        (targetContainer?.querySelector(".sidebar-filter-accordion") || document.getElementById("sidebar-filter-accordion"));
+    const container = targetContainer?.id === "appnav-footer-panel" ? targetContainer :
+        (targetContainer?.querySelector(".appnav-filter-accordion") || document.getElementById("sidebar-filter-accordion"));
     if (!container) return;
 
     const ranks = [
-        { key: "ALL", label: "ALL", color: "var(--all-rank)" },
-        { key: "S rank", label: "S rank", color: "var(--rank-s)" },
-        { key: "A rank", label: "A rank", color: "var(--rank-a)" },
-        { key: "FATE", label: "FATE", color: "var(--rank-f)" },
+        { key: "ALL", label: "ALL", color: "var(--color-all-rank)" },
+        { key: "S rank", label: "S rank", color: "var(--color-rank-s)" },
+        { key: "A rank", label: "A rank", color: "var(--color-rank-a)" },
+        { key: "FATE", label: "FATE", color: "var(--color-rank-f)" },
     ];
 
     const state = getState();
@@ -695,7 +695,7 @@ function renderSidebarFilterAccordion(targetContainer = null) {
 
     const fragment = document.createDocumentFragment();
     const title = document.createElement("div");
-    title.className = "sidebar-filter-title";
+    title.className = "appnav-filter-title";
     title.textContent = "Filter";
     fragment.appendChild(title);
 
@@ -705,19 +705,19 @@ function renderSidebarFilterAccordion(targetContainer = null) {
 
         const itemEl = cloneTemplate('rank-accordion-item-template');
         if (itemEl) {
-            if (isActive) itemEl.classList.add('active');
-            if (isExpanded) itemEl.classList.add('is-expanded');
+            if (isActive) itemEl.classList.add('appnav-active');
+            if (isExpanded) itemEl.classList.add('appnav-is-expanded');
             itemEl.dataset.rank = r.key;
             itemEl.style.setProperty('--current-rank', r.color);
             const rgb = r.color.replace('var(--', '').replace(')', '-rgb');
             itemEl.style.setProperty('--current-rank-rgb', `var(--${rgb})`);
 
-            const header = itemEl.querySelector(".rank-header");
+            const header = itemEl.querySelector(".appnav-rank-header");
             if (header) {
                 header.dataset.rank = r.key;
                 header.textContent = r.label;
                 header.addEventListener("click", () => {
-                    const rankKey = header.closest(".rank-accordion-item").dataset.rank;
+                    const rankKey = header.closest(".appnav-rank-item").dataset.rank;
                     handleRankTabClick(rankKey);
                 });
             }
@@ -728,9 +728,9 @@ function renderSidebarFilterAccordion(targetContainer = null) {
     container.innerHTML = "";
     container.appendChild(fragment);
 
-    const activeExpansion = container.querySelector(".rank-accordion-item.active .area-grid-container");
+    const activeExpansion = container.querySelector(".appnav-rank-item.appnav-active .area-grid-container");
     if (activeExpansion) {
-        activeExpansion.className = "area-grid-container area-grid";
+        activeExpansion.className = "area-grid-container appnav-area-grid";
         renderAreaFilterPanel(activeExpansion);
     }
 }
@@ -742,7 +742,7 @@ window.addEventListener("filterChanged", () => {
     renderSidebarFilterAccordion();
 
     // モバイル用フッターパネル
-    const mobilePanel = document.getElementById("mobile-footer-panel");
+    const mobilePanel = document.getElementById("appnav-footer-panel");
     if (mobilePanel && mobileCurrentPanel === "rank") {
         renderSidebarFilterAccordion(mobilePanel);
     }

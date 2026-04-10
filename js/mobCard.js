@@ -251,7 +251,7 @@ export function computeTimeLabel(mob) {
 function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow) {
   if (!dhm) {
     const fallback = document.createElement('div');
-    fallback.className = 'timer-value';
+    fallback.className = 'mobcard-timer';
     fallback.textContent = "--/-- --:--";
     return fallback;
   }
@@ -259,8 +259,8 @@ function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWin
   if (isInWindow) {
     const totalMinutes = Math.ceil((dhm.rawS || 0) / 60);
     const span = document.createElement('span');
-    span.className = 'timer-value special-timer';
-    span.innerHTML = `<span class="timer-part"><span class="timer-num">${totalMinutes}</span><span class="timer-unit">分</span></span>`;
+    span.className = 'mobcard-timer special-timer';
+    span.innerHTML = `<span class="mobcard-timer-part"><span class="mobcard-timer-num">${totalMinutes}</span><span class="mobcard-timer-unit">分</span></span>`;
     return span;
   }
 
@@ -273,7 +273,7 @@ function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWin
   const { d, h, m } = dhm;
 
   const format = (elPart, num, unit) => {
-    const numEl = elPart.querySelector('.timer-num');
+    const numEl = elPart.querySelector('.mobcard-timer-num');
     const isHidden = unit === 'h' && (Number(num) === 0 || !num);
     elPart.classList.toggle('hidden', isHidden);
     if (!isHidden) {
@@ -374,9 +374,9 @@ export function createMobCard(mob, isDetailView = false) {
 }
 
 export function createPCDetailCard(mob) {
-  const template = document.getElementById('pc-detail-card-template');
+  const template = document.getElementById('mobcard-card-template');
   const clone = template.content.cloneNode(true);
-  const card = clone.querySelector('.pc-detail-card');
+  const card = clone.querySelector('.mobcard-card');
 
   const rank = mob.rank;
   const { elapsedPercent, nextConditionSpawnDate, minRepop, maxRepop } = mob.repopInfo || {};
@@ -385,13 +385,13 @@ export function createPCDetailCard(mob) {
   card.dataset.mobNo = mob.No;
   card.dataset.rank = rank;
 
-  updateEl(card, '.pc-detail-name', { textContent: mob.name });
-  const nameEl = card.querySelector('.pc-detail-name');
+  updateEl(card, '.mobcard-name', { textContent: mob.name });
+  const nameEl = card.querySelector('.mobcard-name');
   if (nameEl) nameEl.dataset.rank = rank;
 
-  updateEl(card, '.pc-detail-rank', { textContent: rank }, { rank });
+  updateEl(card, '.mobcard-rank', { textContent: rank }, { rank });
 
-  const progressBar = card.querySelector('.pc-detail-progress-bar');
+  const progressBar = card.querySelector('.mobcard-progress-bar');
   if (progressBar) progressBar.style.width = `${elapsedPercent || 0}%`;
 
   updateEl(card, '[data-min-repop]', { textContent: fmt(minRepop) });
@@ -401,7 +401,7 @@ export function createPCDetailCard(mob) {
 
   updateEl(card, '.section-content.condition', { innerHTML: processText(mob.condition || "\u7279\u6b8a\u306a\u51fa\u73fe\u6761\u4ef6\u306f\u3042\u308a\u307e\u305b\u3093\u3002") });
 
-  const memoEl = card.querySelector('.detail-memo-input');
+  const memoEl = card.querySelector('.mobcard-memo-input');
   if (memoEl) {
     memoEl.value = mob.memo_text || '';
     memoEl.dataset.mobNo = mob.No;
@@ -422,7 +422,7 @@ export function createPCDetailCard(mob) {
     }
   }
 
-  const reportBtn = card.querySelector('.pc-list-report-btn');
+  const reportBtn = card.querySelector('.moblist-report-btn');
   if (reportBtn) {
     reportBtn.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
     reportBtn.dataset.mobNo = mob.No;
@@ -436,20 +436,20 @@ export function createPCDetailCard(mob) {
 }
 
 export function createSimpleMobItem(mob) {
-  const item = cloneTemplate('pc-list-item-template');
+  const item = cloneTemplate('moblist-item-template');
   if (!item) return document.createElement('div');
 
   item.classList.add(`rank-${mob.rank.toLowerCase()}`);
   item.dataset.mobNo = String(mob.No);
   item.dataset.rank = mob.rank;
 
-  const reportBtn = item.querySelector('.pc-list-report-btn');
+  const reportBtn = item.querySelector('.moblist-report-btn');
   if (reportBtn) {
     reportBtn.dataset.mobNo = String(mob.No);
     reportBtn.dataset.rank = mob.rank;
   }
 
-  const nameEl = item.querySelector('.pc-list-mob-name');
+  const nameEl = item.querySelector('.moblist-name');
   if (nameEl) {
     nameEl.textContent = mob.name;
     nameEl.dataset.rank = mob.rank;
@@ -469,9 +469,9 @@ export function createSimpleMobItem(mob) {
 
 export function updateProgressBar(card, mob) {
   const { elapsedPercent, status } = mob.repopInfo || {};
-  const bars = card.querySelectorAll('.progress-bar-bg, .pc-detail-progress-bar');
-  const texts = card.querySelectorAll('.progress-text, .pc-detail-progress-text');
-  const wrappers = card.querySelectorAll('.progress-bar-wrapper, .pc-detail-progress-container');
+  const bars = card.querySelectorAll('.progress-bar-bg, .mobcard-progress-bar');
+  const texts = card.querySelectorAll('.progress-text, .mobcard-progress-text');
+  const wrappers = card.querySelectorAll('.progress-bar-wrapper, .mobcard-progress-container');
   const isInCondition = !!mob.repopInfo.isInConditionWindow;
   const isPreRepop = status === "Next" || status === "Maintenance";
   card.classList.toggle('is-pre-repop', isPreRepop);
@@ -513,9 +513,9 @@ export function updateProgressText(card, mob) {
   const { label, timeValue, isSpecialCondition, isTimeOver, dhm, isInWindow } = computeTimeLabel(mob);
   const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
 
-  const isPCDetail = !!(card.id === 'pc-right-detail' || card.closest('#pc-right-detail') || card.classList.contains('pc-detail-card'));
-  const rankBadge = card.querySelector('.list-rank-badge, .pc-detail-rank');
-  const areaEl = card.querySelector('.mobile-header-area-text');
+  const isPCDetail = !!(card.id === 'mobcard-detail' || card.closest('#mobcard-detail') || card.classList.contains('mobcard-card'));
+  const rankBadge = card.querySelector('.list-rank-badge, .mobcard-rank');
+  const areaEl = card.querySelector('.root-mobile-header-text');
 
   if (rankBadge) {
     rankBadge.textContent = mob.rank;
@@ -527,7 +527,7 @@ export function updateProgressText(card, mob) {
 
   const iconEl = card.querySelector('.js-mobile-icon');
   const timeEl = card.querySelector('.js-mobile-time');
-  const pcDetailEl = card.querySelector('.pc-detail-progress-text');
+  const pcDetailEl = card.querySelector('.mobcard-progress-text');
 
   if (iconEl) {
     iconEl.textContent = label || '';
@@ -628,7 +628,7 @@ export function updateExpandablePanel(card, mob) {
 
   if (elLast) elLast.textContent = fmt(mob.last_kill_time);
 
-  const elMemoInput = card.querySelector(".detail-memo-input");
+  const elMemoInput = card.querySelector(".mobcard-memo-input");
   if (elMemoInput) {
     if (elMemoInput.dataset.mobNo !== String(mob.No)) elMemoInput.dataset.mobNo = mob.No;
     if (document.activeElement !== elMemoInput) {
@@ -645,9 +645,9 @@ export function updateExpandablePanel(card, mob) {
     const conditionText = mob.condition ? processText(mob.condition) : "特別な出現条件はありません。";
     if (elCondition.innerHTML !== conditionText) elCondition.innerHTML = conditionText;
 
-    const isPCDetail = card.classList.contains('pc-detail-card');
+    const isPCDetail = card.classList.contains('mobcard-card');
     const sections = [
-      elCondition.closest('.detail-section') || elCondition.closest('.pc-detail-section'),
+      elCondition.closest('.mobcard-section') || elCondition.closest('.mobcard-section'),
       card.querySelector('.memo-section'),
       card.querySelector('.map-section')
     ].filter(Boolean);
@@ -714,7 +714,7 @@ export function updateAreaInfo(card, mob) {
   card.querySelectorAll('.detail-area').forEach(el => el.textContent = areaName);
   card.querySelectorAll('.detail-expansion').forEach(el => el.textContent = `| ${expName}`);
 
-  const headerArea = card.querySelector('.mobile-header-area-text');
+  const headerArea = card.querySelector('.root-mobile-header-text');
   if (headerArea) {
     headerArea.textContent = `${areaName} | ${expName}`;
   }
@@ -772,9 +772,9 @@ export function updateMapOverlay(card, mob) {
 export function updateSimpleMobItem(item, mob) {
   const { elapsedPercent, status, isInConditionWindow } = mob.repopInfo || {};
   const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
-  const timeEl = item.querySelector('.pc-list-time');
-  const progressEl = item.querySelector('.pc-list-bg-bar');
-  const percentEl = item.querySelector('.pc-list-percent');
+  const timeEl = item.querySelector('.moblist-time');
+  const progressEl = item.querySelector('.moblist-bg-bar');
+  const percentEl = item.querySelector('.moblist-percent');
   const { countHtml } = getSpawnCountInfo(mob);
   const { label, timeValue, isSpecialCondition, isTimeOver, dhm, isInWindow } = computeTimeLabel(mob);
 
@@ -798,7 +798,7 @@ export function updateSimpleMobItem(item, mob) {
       timeEl._lastCacheKey = cacheKey;
     }
   }
-  const countInner = item.querySelector('.pc-list-count-inner');
+  const countInner = item.querySelector('.moblist-count');
   if (countInner) {
     countInner.innerHTML = countHtml;
   }
@@ -844,25 +844,25 @@ export function attachMobCardEvents() {
     colContainer.addEventListener("click", handleMobCardClick);
   }
 
-  const pcLeftList = document.getElementById("pc-left-list");
-  if (pcLeftList) {
-    pcLeftList.addEventListener("click", handlePCListClick);
+  const moblistContainer = document.getElementById("moblist-container");
+  if (moblistContainer) {
+    moblistContainer.addEventListener("click", handlePCListClick);
   }
 
-  const pcRightPane = document.getElementById("pc-right-detail");
-  if (pcRightPane) {
-    pcRightPane.addEventListener("click", handleMobCardClick);
+  const mobcardDetail = document.getElementById("mobcard-detail");
+  if (mobcardDetail) {
+    mobcardDetail.addEventListener("click", handleMobCardClick);
   }
 
-  const mobileOverlay = document.getElementById("mobile-detail-overlay");
-  if (mobileOverlay) {
-    mobileOverlay.addEventListener("click", handleMobCardClick);
+  const mobcardOverlay = document.getElementById("mobcard-overlay");
+  if (mobcardOverlay) {
+    mobcardOverlay.addEventListener("click", handleMobCardClick);
   }
 
-  const overlayBackdrop = document.getElementById("card-overlay-backdrop");
+  const overlayBackdrop = document.getElementById("mobcard-overlay-backdrop");
   if (overlayBackdrop) {
     overlayBackdrop.addEventListener("click", (e) => {
-      if (e.target === overlayBackdrop || e.target === mobileOverlay) {
+      if (e.target === overlayBackdrop || e.target === mobcardOverlay) {
         setOpenMobCardNo(null);
         sortAndRedistribute({ immediate: true });
       }
@@ -871,12 +871,12 @@ export function attachMobCardEvents() {
 }
 
 function handlePCListClick(e) {
-  const item = e.target.closest(".pc-list-item");
+  const item = e.target.closest(".moblist-item");
   if (!item) return;
 
   const mobNo = parseInt(item.dataset.mobNo, 10);
   const rank = item.dataset.rank;
-  const reportBtn = e.target.closest(".pc-list-report-btn");
+  const reportBtn = e.target.closest(".moblist-report-btn");
 
   if (reportBtn) {
     e.preventDefault();
@@ -906,13 +906,13 @@ function handlePCListClick(e) {
 }
 
 function handleMobCardClick(e) {
-  const card = e.target.closest(".pc-list-item, .mob-card, .pc-detail-card");
+  const card = e.target.closest(".moblist-item, .mobcard-card");
   if (!card) return;
 
   const mobNo = parseInt(card.dataset.mobNo, 10);
   const rank = card.dataset.rank;
 
-  const reportBtn = e.target.closest(".report-side-bar, .pc-list-report-btn");
+  const reportBtn = e.target.closest(".moblist-report-btn");
   if (reportBtn) {
     e.preventDefault();
     e.stopPropagation();
@@ -941,7 +941,7 @@ function handleMobCardClick(e) {
     return;
   }
 
-  if (card.classList.contains('pc-list-item') || card.classList.contains('mob-card')) {
+  if (card.classList.contains('moblist-item') || card.classList.contains('mobcard-card')) {
     const currentOpen = getState().openMobCardNo;
     setOpenMobCardNo(currentOpen === mobNo ? null : mobNo);
     sortAndRedistribute({ immediate: true });

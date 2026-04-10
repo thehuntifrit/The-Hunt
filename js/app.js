@@ -8,7 +8,6 @@ import { initializeAuth, getUserData, submitReport, submitMemo, toggleCrushStatu
 import { openUserManual } from "./readme.js";
 
 // ─── 定数・DOM ──────────────────────────────────────────
-
 export const DOM = {
   masterContainer: null,
   cols: [],
@@ -27,12 +26,12 @@ export const DOM = {
   authLodestoneId: document.getElementById('auth-lodestone-id'),
   authVCode: document.getElementById('auth-v-code'),
   authStatus: document.getElementById('auth-modal-status'),
-  pcLeftList: document.getElementById('pc-left-list'),
-  pcRightDetail: document.getElementById('pc-right-detail'),
-  pcLayout: document.getElementById('pc-layout'),
+  pcLeftList: document.getElementById('moblist-container'),
+  pcRightDetail: document.getElementById('mobcard-detail'),
+  pcLayout: document.getElementById('root-layout'),
   mobileLayout: document.getElementById('mobile-layout'),
-  cardOverlayBackdrop: document.getElementById('card-overlay-backdrop'),
-  mobileDetailOverlay: document.getElementById('mobile-detail-overlay'),
+  cardOverlayBackdrop: document.getElementById('mobcard-overlay-backdrop'),
+  mobileDetailOverlay: document.getElementById('mobcard-overlay'),
 };
 
 export const cardCache = new Map();
@@ -60,7 +59,6 @@ let lastClickLocationId = null;
 let locationEventsAttached = false;
 
 // ─── 初期化 ─────────────────────────────────────────────
-
 async function initApp() {
   try {
     initTooltip();
@@ -110,7 +108,7 @@ async function initApp() {
     window.addEventListener('pageshow', (event) => {
       if (event.persisted) {
         setOpenMobCardNo(null);
-        document.querySelectorAll('.expandable-panel.open').forEach(el => el.classList.remove('open'));
+        document.querySelectorAll('.appnav-rank-item.appnav-active').forEach(el => el.classList.remove('appnav-active'));
       }
     });
 
@@ -180,7 +178,6 @@ export function showColumnContainer() {
 }
 
 // ─── メンテナンス表示 ───────────────────────────────────
-
 async function getMaintenanceStatus() {
   const state = getState();
   const maintenance = state.maintenance;
@@ -257,7 +254,7 @@ export async function renderMaintenanceStatus() {
       p.textContent = "現在予定されているメンテナンスはありません";
       return;
     }
-    const isPC = p.closest('#app-sidebar') || p.closest('.sidebar-panel-content');
+    const isPC = p.closest('#appnav-sidebar') || p.closest('.appnav-section');
     if (isPC) {
       p.textContent = "";
       const lines = maintPCHtml.split('<br>');
@@ -314,23 +311,22 @@ export async function renderMaintenanceStatus() {
     p.appendChild(msgSpan);
   });
 
-  document.querySelectorAll(`.app-nav-btn[data-panel="maintenance"]`)
+  document.querySelectorAll(`.appnav-btn[data-panel="maintenance"]`)
     .forEach(btn => btn.classList.toggle("has-alert", hasMaintenance));
 
-  document.querySelectorAll(`.app-nav-btn[data-panel="telop"]`)
+  document.querySelectorAll(`.appnav-btn[data-panel="telop"]`)
     .forEach(btn => btn.classList.toggle("has-alert", hasMessage));
 
   const errorLogCount = window.errorLog ? window.errorLog.length : 0;
   const hasError = errorLogCount > 0;
-  document.querySelectorAll(`.app-nav-btn[data-panel="error"]`)
+  document.querySelectorAll(`.appnav-btn[data-panel="error"]`)
     .forEach(btn => btn.classList.toggle("has-alert", hasError));
 
-  document.querySelectorAll(`.app-nav-btn[data-panel="rank"]`)
+  document.querySelectorAll(`.appnav-btn[data-panel="rank"]`)
     .forEach(btn => btn.classList.remove("has-alert"));
 }
 
 // ─── ヘッダー時刻 ───────────────────────────────────────
-
 export function updateHeaderTime() {
   const state = getState();
   if (!state) return;
@@ -351,7 +347,6 @@ export function updateHeaderTime() {
 }
 
 // ─── ソート＆描画 ───────────────────────────────────────
-
 function getMobMap() {
   const mobs = getState().mobs;
   if (mobs === currentMobsRef && cachedMobMap) return cachedMobMap;
@@ -380,8 +375,8 @@ const cardObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0 });
 
 export function updateCardFull(card, mob) {
-  const isDetail = card.classList.contains('pc-detail-card');
-  const isListItem = card.classList.contains('pc-list-item');
+  const isDetail = card.classList.contains('mobcard-card');
+  const isListItem = card.classList.contains('moblist-item');
 
   if (isDetail) {
     updateProgressText(card, mob);
@@ -406,16 +401,16 @@ export function updateVisibleCards() {
 }
 
 export function updateDetailCardRealtime(mobMap) {
-  const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
+  const rightPane = DOM.pcRightDetail || document.getElementById("mobcard-detail");
   if (rightPane && rightPane.dataset.renderedMobNo && rightPane.dataset.renderedMobNo !== "none") {
     const detailCard = rightPane.firstElementChild;
     const mob = mobMap.get(rightPane.dataset.renderedMobNo);
     if (detailCard && mob) updateCardFull(detailCard, mob);
   }
 
-  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");
+  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobcard-overlay");
   if (mobileOverlay && mobileOverlay.dataset.renderedMobNo && mobileOverlay.dataset.renderedMobNo !== "none") {
-    const detailCard = mobileOverlay.querySelector('.pc-detail-card');
+    const detailCard = mobileOverlay.querySelector('.mobcard-card');
     const mob = mobMap.get(mobileOverlay.dataset.renderedMobNo);
     if (detailCard && mob) {
       updateCardFull(detailCard, mob);
@@ -477,7 +472,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   }
 
   const isPC = window.innerWidth >= 1024;
-  const pcLayout = DOM.pcLayout || document.getElementById("pc-layout");
+  const pcLayout = DOM.pcLayout || document.getElementById("root-layout");
   if (pcLayout) pcLayout.classList.remove("hidden");
 
   if (DOM.pcLeftList) {
@@ -535,9 +530,9 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     DOM.pcLeftList.appendChild(fragment);
   }
 
-  const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
-  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");
-  const overlayBackdrop = DOM.cardOverlayBackdrop || document.getElementById("card-overlay-backdrop");
+  const rightPane = DOM.pcRightDetail || document.getElementById("mobcard-detail");
+  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobcard-overlay");
+  const overlayBackdrop = DOM.cardOverlayBackdrop || document.getElementById("mobcard-overlay-backdrop");
 
   if (isPC) {
     if (rightPane) {
@@ -616,7 +611,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 }
 
 // ─── プログレスバー ─────────────────────────────────────
-
 export function updateProgressBars() {
   const state = getState();
   const nowSec = Date.now() / 1000;
@@ -656,7 +650,7 @@ export function updateProgressBars() {
     });
 
     if (DOM.pcLeftList) {
-      const listItems = DOM.pcLeftList.querySelectorAll('.pc-list-item');
+      const listItems = DOM.pcLeftList.querySelectorAll('.moblist-item');
       listItems.forEach(item => {
         const mobNo = item.dataset.mobNo;
         const mob = mobMap.get(String(mobNo));
@@ -667,12 +661,12 @@ export function updateProgressBars() {
     }
   }
 
-  const rightPane = DOM.pcRightDetail || document.getElementById("pc-right-detail");
-  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobile-detail-overlay");
+  const rightPane = DOM.pcRightDetail || document.getElementById("mobcard-detail");
+  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobcard-overlay");
 
   [rightPane, mobileOverlay].forEach(container => {
     if (container && container.dataset.renderedMobNo && container.dataset.renderedMobNo !== "none") {
-      const detailCard = container.querySelector('.pc-detail-card') || container.firstElementChild;
+      const detailCard = container.querySelector('.mobcard-card') || container.firstElementChild;
       const mob = mobMap.get(container.dataset.renderedMobNo);
       if (detailCard && mob) {
         updateCardFull(detailCard, mob);
@@ -693,12 +687,11 @@ export function updateProgressBars() {
     }
   }
 
-  const rankBtn = document.querySelector('.app-nav-btn[data-panel="rank"]');
+  const rankBtn = document.querySelector('.appnav-btn[data-panel="rank"]');
   if (rankBtn) rankBtn.classList.remove("has-alert");
 }
 
 // ─── 報告処理 ───────────────────────────────────────────
-
 export function showToast(message, type = "error") {
   if (type === "error") {
     console.error(message);
@@ -760,7 +753,6 @@ async function handleReportSubmit(e) {
 }
 
 // ─── スポーン操作 ───────────────────────────────────────
-
 function applyOptimisticDOM(point, nextCulled) {
   point.dataset.isCulled = String(nextCulled);
 
@@ -869,7 +861,6 @@ function handleCrushToggle(e) {
 }
 
 // ─── イベントリスナー ───────────────────────────────────
-
 function attachGlobalEventListeners() {
   let prevWidth = window.innerWidth;
   window.addEventListener("resize", debounce(() => {
@@ -963,21 +954,20 @@ export function attachLocationEvents() {
     colContainer.addEventListener("click", handleCrushToggle);
   }
 
-  const pcRightPane = document.getElementById("pc-right-detail");
-  if (pcRightPane) {
-    pcRightPane.addEventListener("click", handleCrushToggle);
+  const mobcardDetail = document.getElementById("mobcard-detail");
+  if (mobcardDetail) {
+    mobcardDetail.addEventListener("click", handleCrushToggle);
   }
 
-  const mobileOverlay = document.getElementById("mobile-detail-overlay");
-  if (mobileOverlay) {
-    mobileOverlay.addEventListener("click", handleCrushToggle);
+  const mobcardOverlay = document.getElementById("mobcard-overlay");
+  if (mobcardOverlay) {
+    mobcardOverlay.addEventListener("click", handleCrushToggle);
   }
 
   locationEventsAttached = true;
 }
 
 // ─── グローバルイベント登録 ─────────────────────────────
-
 window.addEventListener('characterNameSet', () => {
   renderMaintenanceStatus();
 });
