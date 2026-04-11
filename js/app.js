@@ -763,7 +763,7 @@ function handleCrushToggle(e) {
   if (point.dataset.isInteractive !== "true") return;
   if (point.dataset.isLastone === "true") return;
 
-  const card = e.target.closest(".mob-card, .pc-detail-card");
+  const card = e.target.closest(".mobcard-card");
   if (!card) return;
 
   e.preventDefault();

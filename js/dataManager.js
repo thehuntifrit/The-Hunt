@@ -406,7 +406,7 @@ export async function loadBaseMobData() {
         if (state.baseMobData.length > 0) {
             applyPendingRealtimeData();
         }
-        
+
     } catch (e) {
         console.error("Failed to load base data from network:", e);
         if (!cachedData) {
