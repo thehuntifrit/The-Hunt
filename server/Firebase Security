@@ -1,10 +1,20 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper: Checks if the user is authenticated and has a registered lodestone_id
+
+    function myLodestoneId() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.lodestone_id;
+    }
+
     function isVerified() {
-      return request.auth != null && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.lodestone_id != null;
+      return request.auth != null && myLodestoneId() != null;
+    }
+
+    function reporterIdMatchesSelf() {
+      let incoming = request.resource.data;
+      let keys = incoming.keys();
+      let mobKey = keys[0];
+      return incoming[mobKey].reporter_id == myLodestoneId();
     }
 
     // User profiles: Only the owner can read or write their own profile
@@ -13,29 +23,31 @@ service cloud.firestore {
     }
 
     // Mob status/reports: Public read, only verified users can update
+    // reporter_id must match the caller's own registered lodestone_id
     match /mob_status/{docId} {
       allow read: if true;
-      allow create, update: if isVerified();
-      allow delete: if false; // Prevent accidental or malicious deletion of status data
+      allow create, update: if isVerified() && reporterIdMatchesSelf();
+      allow delete: if false;
     }
-    
+
     // Mob locations: Public read, only verified users can update
     match /mob_locations/{mobId} {
       allow read: if true;
       allow create, update: if isVerified();
       allow delete: if false;
     }
-    
+
     // Maintenance info: Public read, no public write allowed
     match /shared_data/maintenance {
       allow read: if true;
-      allow write: if false; 
+      allow write: if false;
     }
-    
+
     // Memos: Public read, only verified users can update
+    // reporter_id must match the caller's own registered lodestone_id
     match /shared_data/memo {
       allow read: if true;
-      allow create, update: if isVerified();
+      allow create, update: if isVerified() && reporterIdMatchesSelf();
       allow delete: if false;
     }
   }

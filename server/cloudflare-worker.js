@@ -46,7 +46,7 @@ export default {
         const url = new URL(request.url);
         const lodestoneId = url.searchParams.get('lodestoneId');
 
-        if (!lodestoneId || !/^\d+$/.test(lodestoneId)) {
+        if (!lodestoneId || !/^\d+$/.test(lodestoneId) || lodestoneId.length > 20) {
             return new Response('Invalid or missing lodestoneId', {
                 status: 400,
                 headers: { 'Access-Control-Allow-Origin': allowedOrigin }

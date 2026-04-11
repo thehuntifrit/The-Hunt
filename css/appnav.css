@@ -192,7 +192,7 @@
     opacity: 0.8;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
-    transition: all 0.3s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
 
     &:hover {
         opacity: 1;
@@ -239,9 +239,9 @@
 
         &::after {
             content: '';
-            position: absolute !important;
-            inset-block-start: 8px !important;
-            inset-inline-end: 8px !important;
+            position: absolute;
+            inset-block-start: 8px;
+            inset-inline-end: 8px;
             inline-size: 8px;
             block-size: 8px;
             background: var(--color-nav-badge-error);

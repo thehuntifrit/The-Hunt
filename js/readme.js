@@ -36,7 +36,7 @@ export const openUserManual = async () => {
     }
 };
 
-const closeModal = () => {
+export const closeUserManual = () => {
     const modal = document.getElementById('manual-modal');
     if (!modal) return;
     modal.classList.add('hidden');
@@ -45,11 +45,20 @@ const closeModal = () => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    const backdrop = document.getElementById('manual-modal-backdrop');
+    const modal = document.getElementById('manual-modal');
     const closeBtn = document.getElementById('close-manual-modal');
 
-    closeBtn?.addEventListener('click', closeModal);
-    backdrop?.addEventListener('click', closeModal);
+    closeBtn?.addEventListener('click', closeUserManual);
+
+    modal?.addEventListener('click', (e) => {
+        if (e.target === modal) closeUserManual();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+            closeUserManual();
+        }
+    });
 });
 
 window.addEventListener('characterNameSet', () => {
@@ -70,7 +79,10 @@ async function updateAuthUI() {
     }
 
     if (!currentVCode) {
-        currentVCode = "HUNT-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+        const arr = new Uint8Array(6);
+        crypto.getRandomValues(arr);
+        const code = Array.from(arr).map(b => b.toString(36).toUpperCase()).join('').substring(0, 8);
+        currentVCode = "HUNT-" + code;
     }
 
     const formEl = cloneTemplate('auth-form-template');

@@ -441,8 +441,8 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   let selectionStart = null;
   let selectionEnd = null;
 
-  if (activeElement && activeElement.closest('.mob-card')) {
-    focusedMobNo = activeElement.closest('.mob-card').dataset.mobNo;
+  if (activeElement && activeElement.closest('.mobcard-card, .moblist-item')) {
+    focusedMobNo = activeElement.closest('.mobcard-card, .moblist-item').dataset.mobNo;
     if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
       focusedAction = activeElement.dataset.action;
       selectionStart = activeElement.selectionStart;
@@ -925,7 +925,6 @@ window.addEventListener('characterNameSet', () => {
 window.addEventListener('initialDataLoaded', () => {
   updateHeaderTime();
   filterAndRender({ isInitialLoad: true });
-  sortAndRedistribute({ immediate: true });
   updateProgressBars();
 });
 

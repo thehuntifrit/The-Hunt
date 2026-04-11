@@ -28,7 +28,10 @@ export function closeReportModal() {
 let currentVerificationCode = "";
 
 export function openAuthModal() {
-    currentVerificationCode = "HUNT-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+    const arr = new Uint8Array(6);
+    crypto.getRandomValues(arr);
+    const code = Array.from(arr).map(b => b.toString(36).toUpperCase()).join('').substring(0, 8);
+    currentVerificationCode = "HUNT-" + code;
     UiDOM.authVCode.textContent = currentVerificationCode;
     UiDOM.authStatus.textContent = "";
     UiDOM.authStatus.classList.remove('text-error', 'text-success');
@@ -125,6 +128,7 @@ export function initModal() {
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
             if (!UiDOM.reportModal.classList.contains("hidden")) closeReportModal();
+            if (!UiDOM.authModal.classList.contains("hidden")) closeAuthModal();
         }
     });
 }

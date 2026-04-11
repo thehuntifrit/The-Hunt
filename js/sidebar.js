@@ -1,6 +1,6 @@
 import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled } from "./dataManager.js";
 import { filterAndRender } from "./app.js";
-import { openUserManual } from "./readme.js";
+import { openUserManual, closeUserManual } from "./readme.js";
 import { cloneTemplate, escapeHtml } from "./mobCard.js";
 
 // ─── 定数・DOM ──────────────────────────────────────────
@@ -242,7 +242,6 @@ export function handleAreaFilterClick(e) {
 
         filterAndRender();
         renderAreaFilterPanel(customContainer);
-        if (customContainer) renderAreaFilterPanel();
         return;
     }
 
@@ -278,7 +277,6 @@ export function handleAreaFilterClick(e) {
 
     filterAndRender();
     renderAreaFilterPanel(customContainer);
-    if (customContainer) renderAreaFilterPanel();
 }
 
 export function filterMobsByRankAndArea(mobs) {
@@ -418,7 +416,12 @@ function setActiveNavItem(id) {
 
 export async function togglePanel(panelName) {
     if (panelName === "manual") {
-        if (typeof openUserManual === "function") openUserManual();
+        const modal = document.getElementById('manual-modal');
+        if (modal && !modal.classList.contains('hidden')) {
+            closeUserManual();
+        } else {
+            if (typeof openUserManual === "function") openUserManual();
+        }
         return;
     }
 
@@ -543,7 +546,7 @@ export function updateErrorPanel(targetContainer = null) {
 }
 
 function updateErrorBadge() {
-    const { renderMaintenanceStatus } = import("./app.js").then(m => {
+    import("./app.js").then(m => {
         if (typeof m.renderMaintenanceStatus === "function") m.renderMaintenanceStatus();
     });
 }

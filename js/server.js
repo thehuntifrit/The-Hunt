@@ -148,7 +148,7 @@ export const submitReport = async (mobNo, timeISO) => {
             modalStatusEl.textContent = "現在時刻より10分以上未来の時刻は報告できません。";
             modalStatusEl.classList.add("text-error");
         }
-        return;
+        return { success: false, error: "現在時刻より10分以上未来の時刻は報告できません。" };
     }
 
     if (!isForceSubmit && mob.last_kill_time) {
@@ -181,7 +181,7 @@ export const submitReport = async (mobNo, timeISO) => {
                 modalStatusEl.textContent = `まだ湧き時間になっていません。\n最短でも ${timeStr} 以降である必要があります。\n(強制送信する場合はチェックを入れてください)`;
                 modalStatusEl.classList.add("text-error", "whitespace-pre-wrap");
             }
-            return;
+            return { success: false, error: `最短でも ${timeStr} 以降の時刻で報告してください。` };
         }
     }
 
