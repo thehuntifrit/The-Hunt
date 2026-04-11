@@ -154,55 +154,38 @@ export const renderAreaFilterPanel = (customContainer = null) => {
         isAllSelected = items.length > 0 && currentSet.size === items.length;
     }
 
-    const createPanelContent = () => {
-        const container = document.createElement("div");
-        container.className = "appnav-area-filter-wrapper";
+    const container = customContainer || document.querySelector("#appnav .appnav-rank-item.appnav-active .area-grid-container");
+    if (!container) return;
 
-        const allBtnWrapper = document.createElement("div");
-        allBtnWrapper.className = "area-all-container";
+    container.innerHTML = "";
 
-        const allBtn = document.createElement("button");
-        allBtn.className = `area-filter-btn area-select-all ${isAllSelected ? 'is-selected' : ''}`;
-        allBtn.textContent = isAllSelected ? "全解除" : "全選択";
-        allBtn.dataset.value = "ALL";
-        allBtn.addEventListener("click", (e) => {
+    // 1. 全選択ボタン
+    const allBtnWrapper = document.createElement("div");
+    allBtnWrapper.className = "area-all-container";
+    const allBtn = document.createElement("button");
+    allBtn.className = `area-filter-btn area-select-all ${isAllSelected ? 'is-selected' : ''}`;
+    allBtn.textContent = isAllSelected ? "全解除" : "全選択";
+    allBtn.dataset.value = "ALL";
+    allBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        handleAreaFilterClick(e);
+    });
+    allBtnWrapper.appendChild(allBtn);
+    container.appendChild(allBtnWrapper);
+
+    // 2. 個別エリアボタン群（フラットに追加）
+    items.forEach(item => {
+        const isSelected = currentSet.has(item);
+        const btn = document.createElement("button");
+        btn.className = `area-filter-btn ${isSelected ? 'is-selected' : ''}`;
+        btn.textContent = (state.filter.rank === 'FATE' && item === 'F') ? 'FATE' : (state.filter.rank === 'ALL' ? (item === 'F' ? 'FATE' : `${item} rank`) : item);
+        btn.dataset.value = item;
+        btn.addEventListener("click", (e) => {
             e.stopPropagation();
             handleAreaFilterClick(e);
         });
-        allBtnWrapper.appendChild(allBtn);
-        container.appendChild(allBtnWrapper);
-
-        const grid = document.createElement("div");
-        grid.className = "area-grid-container";
-
-        items.forEach(item => {
-            const isSelected = currentSet.has(item);
-            const btn = document.createElement("button");
-            btn.className = `area-filter-btn ${isSelected ? 'is-selected' : ''}`;
-            btn.textContent = (state.filter.rank === 'FATE' && item === 'F') ? 'FATE' : (state.filter.rank === 'ALL' ? (item === 'F' ? 'FATE' : `${item} rank`) : item);
-            btn.dataset.value = item;
-            btn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                handleAreaFilterClick(e);
-            });
-            grid.appendChild(btn);
-        });
-
-        container.appendChild(grid);
-        return container;
-    };
-
-    if (customContainer) {
-        customContainer.innerHTML = "";
-        customContainer.appendChild(createPanelContent());
-        return;
-    }
-
-    const activeExpansion = document.querySelector("#appnav .appnav-rank-item.appnav-active .area-grid-container");
-    if (activeExpansion) {
-        activeExpansion.innerHTML = "";
-        activeExpansion.appendChild(createPanelContent());
-    }
+        container.appendChild(btn);
+    });
 };
 
 export const handleRankTabClick = (rank) => {
@@ -331,7 +314,7 @@ export function filterMobsByRankAndArea(mobs) {
             const targetSet =
                 areaSets?.[filterKey] instanceof Set ? areaSets[filterKey] : new Set();
 
-            if (targetSet.size === 0) return false; 
+            if (targetSet.size === 0) return false;
             if (targetSet.size === allExpansions) return true;
 
             return targetSet.has(mobExpansion);
@@ -347,7 +330,7 @@ export function filterMobsByRankAndArea(mobs) {
             const targetSet =
                 areaSets?.[filterKey] instanceof Set ? areaSets[filterKey] : new Set();
 
-            if (targetSet.size === 0) return false; 
+            if (targetSet.size === 0) return false;
             if (targetSet.size === allExpansions) return true;
 
             return targetSet.has(mobExpansion);
@@ -461,7 +444,7 @@ function closePanel() {
 
     nav.classList.remove("expanded");
     document.body.classList.remove("sidebar-expanded");
-    
+
     const panelArea = nav.querySelector(".appnav-panel");
     if (panelArea) {
         panelArea.classList.remove("expanded");
