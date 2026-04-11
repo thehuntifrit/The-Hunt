@@ -62,7 +62,7 @@
         .header-left {
             display: flex;
             align-items: center;
-            gap: 10px; /* 半角スペース以上の余白 */
+            gap: 10px;
             min-width: 0;
             flex: 1;
         }
@@ -72,16 +72,16 @@
             align-items: center;
             justify-content: space-between;
             width: 100%;
-            font-size: 11px; /* 同サイズに合わせる */
+            font-size: 11px;
             line-height: 1.2;
-            min-height: 18px; /* 上下幅の中央揃え用 */
+            min-height: 18px;
         }
 
         .mobcard-area-info {
             display: flex;
             align-items: center;
-            color: rgba(255, 255, 255, 0.7); /* 太字と黄色を削除し、不透明度を調整 */
-            font-weight: 400; /* 太字を削除 */
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 400;
             gap: 4px;
 
             .detail-expansion {
@@ -90,7 +90,7 @@
         }
 
         .moblist-report-btn {
-            position: relative; /* 絶対配置を解除 */
+            position: relative;
             inset: auto;
             margin: 0;
             z-index: 20;
@@ -98,10 +98,10 @@
             border: 1px solid rgba(34, 211, 238, 0.4);
             border-radius: 4px;
             color: var(--color-cyan);
-            font-family: 'Roboto', sans-serif; /* Robotoに変更 */
+            font-family: 'Roboto', sans-serif;
             font-size: 10px;
             font-weight: 800;
-            padding: 4px 6px; /* 左右4px削減 (10px -> 6px) */
+            padding: 4px 6px;
             letter-spacing: 0.1em;
             text-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
             box-shadow: 0 0 10px rgba(34, 211, 238, 0.2), inset 0 0 5px rgba(34, 211, 238, 0.2);
@@ -190,7 +190,7 @@
         background: rgba(0, 0, 0, 0.6);
         border-radius: 4px;
         overflow: hidden;
-        margin: -6px 0 0; /* -2px -> -6px (さらに4px UP) */
+        margin: -6px 0 0;
         box-shadow: none;
         border: 1px solid var(--color-border-subtle);
     }
@@ -264,7 +264,7 @@
 
 .percent {
     text-align: right;
-    font-size: 13px; /* 11px -> 13px */
+    font-size: 13px;
     font-weight: 800;
     color: rgba(255, 255, 255, 0.95);
     display: flex;
@@ -273,8 +273,7 @@
 }
 
 .mobcard-content {
-    padding: 0 0.75rem 0.5rem; /* 12px -> 0px (12px UP) */
-    margin-top: 0;
+    padding: 0 0.75rem 0.5rem;
     border-top: none;
     flex: 1 1 auto;
     overflow-y: auto;
@@ -510,7 +509,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 12px;
+    padding: 0;
     box-sizing: border-box;
     overscroll-behavior: contain;
 }
@@ -521,7 +520,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 21px;
+    padding: 0;
     pointer-events: none;
 }
 
@@ -577,15 +576,17 @@
         padding: 8px 0;
         pointer-events: auto;
 
-        .mobcard-card {
-            animation: cardOverlayFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 100%;
+        #mobcard-overlay .mobcard-card {
+            width: 92vw;
+            height: 92vh;
             max-width: none;
-            max-height: calc(100% - 16px);
-            height: auto;
+            max-inline-size: none;
+            max-height: 92vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            margin: 0;
+            z-index: var(--z-mobcard-mobile);
         }
 
         .mobcard-mobile-actions {
