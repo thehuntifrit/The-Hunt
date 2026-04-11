@@ -142,8 +142,8 @@ body {
     background: transparent;
 }
 
-body.appnav-expanded .main-content-area {
-    --sidebar-total: 216px;
+body.sidebar-expanded .main-content-area {
+    --sidebar-width: 216px;
 }
 
 body::before {
@@ -243,7 +243,7 @@ html body.magnifier-active .mobcard-inner * {
     .main-content-area {
         min-height: 100vh;
         padding: 14px;
-        margin-left: 0;
+        margin-left: var(--sidebar-width, 56px);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 

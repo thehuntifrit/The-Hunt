@@ -454,7 +454,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       let header = currentMap.get(headerKey);
       if (!header) {
         header = document.createElement("div");
-        header.className = "text-xs font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
+        header.className = "moblist-group-header font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
         header.textContent = headerText;
       }
       nextChildren.push(header);
