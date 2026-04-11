@@ -82,8 +82,9 @@
         position: fixed;
         width: 100%;
         max-width: 500px;
-        top: 42px; /* メインエリアのpadding等に合わせる */
-        z-index: 40; /* z-hierarchy: appnav(20), mobcard(30), modal-backdrop(50) から、固定パネルとして調整 */
+        top: 40px;
+        margin-left: -40px;
+        z-index: 40;
         flex-direction: column;
         gap: 12px;
         max-block-size: calc(100vh - 84px);
@@ -92,7 +93,8 @@
 
     #mobcard-clocks {
         align-self: flex-end;
-        margin-block-end: 4px;
+        margin-right: 56px;
+        transform: translateY(8px);
     }
 }
 
@@ -338,7 +340,6 @@
         }
     }
 
-    /* 特殊条件時のグラデーション発光エフェクト */
     &.moblist-blink-white::after {
         content: '';
         position: absolute;

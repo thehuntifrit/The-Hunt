@@ -37,44 +37,44 @@
                         <span class="appnav-icon">📊</span>
                         <span class="appnav-label">RANK</span>
                     </button>
-                    <button class="appnav-btn" data-nav-id="telop" title="NEWS">
+                    <button class="appnav-btn" data-nav-id="telop" title="告知">
                         <span class="appnav-icon">📢</span>
-                        <span class="appnav-label">NEWS</span>
+                        <span class="appnav-label">告知</span>
                     </button>
-                    <button class="appnav-btn" data-nav-id="maintenance" title="MAINT">
+                    <button class="appnav-btn" data-nav-id="maintenance" title="メンテ">
                         <span class="appnav-icon">🛠️</span>
-                        <span class="appnav-label">MAINT</span>
+                        <span class="appnav-label">メンテ</span>
                     </button>
-                    <button class="appnav-btn" data-nav-id="error" title="ERROR">
+                    <button class="appnav-btn" data-nav-id="error" title="エラー">
                         <span class="appnav-icon">⚠️</span>
-                        <span class="appnav-label">ERROR</span>
+                        <span class="appnav-label">エラー</span>
                     </button>
-                    <button class="appnav-btn" data-nav-id="manual" title="MANUAL">
+                    <button class="appnav-btn" data-nav-id="manual" title="説明">
                         <span class="appnav-icon">📖</span>
-                        <span class="appnav-label">MANUAL</span>
+                        <span class="appnav-label">説明</span>
                     </button>
                     <div class="appnav-divider"></div>
                     <label class="appnav-btn nav-toggle-btn" for="appnav-notification-toggle" data-nav-id="notify"
-                        title="NOTIFY">
+                        title="通知">
                         <input type="checkbox" id="appnav-notification-toggle" name="appnav-notify"
                             class="hidden-toggle js-notify-toggle" style="display:none;">
                         <span class="appnav-icon">🔔</span>
-                        <span class="appnav-label">NOTIFY</span>
+                        <span class="appnav-label">通知</span>
                     </label>
                 </div>
             </div>
             <div class="appnav-panel">
                 <div id="sidebar-panel-error" class="js-appnav-panel-item hidden">
-                    <div class="appnav-section-title">ERRORS</div>
+                    <div class="appnav-section-title">エラー一覧</div>
                     <div id="sidebar-error-content" class="appnav-alert js-error-content"></div>
                 </div>
                 <div id="sidebar-panel-telop" class="js-appnav-panel-item hidden">
-                    <div class="appnav-section-title">ANNOUNCEMENT</div>
+                    <div class="appnav-section-title">告知</div>
                     <div id="sidebar-welcome-area" class="sidebar-welcome-area"></div>
                     <div id="sidebar-telop-content" class="appnav-alert js-telop-content"></div>
                 </div>
                 <div id="sidebar-panel-maintenance" class="js-appnav-panel-item hidden">
-                    <div class="appnav-section-title">Maintenance info.</div>
+                    <div class="appnav-section-title">メンテ情報</div>
                     <div id="sidebar-maintenance-content" class="appnav-alert js-maintenance-content"></div>
                 </div>
                 <div id="sidebar-panel-rank" class="js-appnav-panel-item hidden">
@@ -113,292 +113,293 @@
             </div>
         </div>
 
-    <div id="manual-modal" class="hidden">
-        <div class="app-backdrop"></div>
-        <div class="manual-modal-content">
-            <div class="manual-modal-top-border"></div>
+        <div id="manual-modal" class="hidden">
+            <div class="app-backdrop"></div>
+            <div class="manual-modal-content">
+                <div class="manual-modal-top-border"></div>
 
-            <div class="manual-modal-header">
-                <h2 class="manual-modal-title">
-                    <span class="text-cyan">The</span>
-                    <span class="text-yellow">Hunt</span>
-                    <span class="text-gray">USER MANUAL</span>
-                </h2>
-                <button id="close-manual-modal" class="manual-modal-close" title="閉じる">✕</button>
-            </div>
-
-            <div id="readme-container" class="prose prose-invert prose-sm max-w-none">
-            </div>
-        </div>
-    </div>
-
-    <div id="report-modal" class="app-backdrop hidden report-modal-backdrop">
-        <div class="modal-content-base">
-            <div class="modal-top-bar"></div>
-            <p id="modal-mob-name" class="modal-mob-name"></p>
-
-            <form id="report-form" data-mob-no="">
-                <div class="mb-4">
-                    <label for="report-datetime" class="u-block u-text-sm font-medium mb-1 text-gray-400">討伐日時
-                        (JST)</label>
-                    <input type="datetime-local" id="report-datetime" name="kill-time" required
-                        class="modal-input-field">
+                <div class="manual-modal-header">
+                    <h2 class="manual-modal-title">
+                        <span class="text-cyan">The</span>
+                        <span class="text-yellow">Hunt</span>
+                        <span class="text-gray">USER GUIDE</span>
+                    </h2>
+                    <button id="close-manual-modal" class="manual-modal-close" title="閉じる">✕</button>
                 </div>
 
-                <div id="modal-status" class="modal-error-display"></div>
-
-                <div class="u-flex u-justify-between u-items-center mt-6">
-                    <div class="u-flex u-items-center u-gap-2">
-                        <input type="checkbox" id="report-force-submit" name="force-submit" class="modal-checkbox">
-                        <label for="report-force-submit" class="u-text-sm text-gray-300 select-none">修正する</label>
-                    </div>
-                    <div class="u-flex u-gap-2">
-                        <button type="button" id="cancel-report" class="btn-secondary">キャンセル</button>
-                        <button type="submit" class="btn-primary-cyan">送信</button>
-                    </div>
+                <div id="readme-container" class="prose prose-invert prose-sm max-w-none">
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
 
-    <div id="auth-modal" class="app-backdrop hidden auth-modal-backdrop">
-        <div class="modal-content-base">
-            <div class="modal-top-bar"></div>
+        <div id="report-modal" class="app-backdrop hidden report-modal-backdrop">
+            <div class="modal-content-base">
+                <div class="modal-top-bar"></div>
+                <p id="modal-mob-name" class="modal-mob-name"></p>
 
-            <h2 class="text-xl u-font-bold mb-4 text-yellow text-glow">ユーザー認証 (キャラクター登録)</h2>
-            <div class="modal-auth-description">
-                <p>Lodestoneキャラクターとの紐付けが必要です。</p>
+                <form id="report-form" data-mob-no="">
+                    <div class="mb-4">
+                        <label for="report-datetime" class="u-block u-text-sm font-medium mb-1 text-gray-400">討伐日時
+                            (JST)</label>
+                        <input type="datetime-local" id="report-datetime" name="kill-time" required
+                            class="modal-input-field">
+                    </div>
 
-                <div class="modal-auth-box">
-                    <div>
-                        <div class="u-block text-xs font-semibold text-gray-500 uppercase mb-1">Step 1:
-                            検証コードをコピー</div>
+                    <div id="modal-status" class="modal-error-display"></div>
+
+                    <div class="u-flex u-justify-between u-items-center mt-6">
+                        <div class="u-flex u-items-center u-gap-2">
+                            <input type="checkbox" id="report-force-submit" name="force-submit" class="modal-checkbox">
+                            <label for="report-force-submit" class="u-text-sm text-gray-300 select-none">修正する</label>
+                        </div>
                         <div class="u-flex u-gap-2">
-                            <code id="auth-v-code" class="auth-code-display">----</code>
-                            <button id="auth-copy-code" class="btn-copy">Copy</button>
+                            <button type="button" id="cancel-report" class="btn-secondary">キャンセル</button>
+                            <button type="submit" class="btn-primary-cyan">送信</button>
                         </div>
                     </div>
+                </form>
+            </div>
+        </div>
 
-                    <div>
-                        <div class="u-block text-xs font-semibold text-gray-500 uppercase mb-1">Step 2:
-                            Lodestoneプロフィールに貼り付け</div>
-                        <div class="u-text-sm text-gray-300 space-y-2 leading-relaxed">
-                            <p>自己紹介欄に認証コードを貼り付けて保存</p>
-                            <a href="https://jp.finalfantasyxiv.com/lodestone/my/setting/profile/" target="_blank"
-                                rel="noopener noreferrer"
-                                class="text-cyan-400 underline u-inline-flex u-items-center gap-1 u-font-bold">
-                                プロフィール編集画面を開く 🔗
-                            </a>
-                            <div class="modal-auth-note">
-                                <p>※Lodestoneのログイン必須</p>
-                                <p>編集画面で認証コードを入力し、「確認」→「設定」を押して保存後、「自己紹介を確認する」を押してください</p>
+        <div id="auth-modal" class="app-backdrop hidden auth-modal-backdrop">
+            <div class="modal-content-base">
+                <div class="modal-top-bar"></div>
+
+                <h2 class="text-xl u-font-bold mb-4 text-yellow text-glow">ユーザー認証 (キャラクター登録)</h2>
+                <div class="modal-auth-description">
+                    <p>Lodestoneキャラクターとの紐付けが必要です。</p>
+
+                    <div class="modal-auth-box">
+                        <div>
+                            <div class="u-block text-xs font-semibold text-gray-500 uppercase mb-1">Step 1:
+                                検証コードをコピー</div>
+                            <div class="u-flex u-gap-2">
+                                <code id="auth-v-code" class="auth-code-display">----</code>
+                                <button id="auth-copy-code" class="btn-copy">Copy</button>
                             </div>
                         </div>
-                    </div>
 
-                    <div>
-                        <label for="auth-lodestone-id"
-                            class="u-block text-xs font-semibold text-gray-500 uppercase mb-1">Step 3:
-                            認証コードが正しく表示されるか確認し、開いているキャラクターページのURL、もしくはURL末尾の数字をコピーして貼り付け</label>
-                        <input type="text" id="auth-lodestone-id" name="lodestone-id" maxlength="200"
-                            aria-label="LodestoneキャラクターページのURL、またはキャラクターIDを入力" class="modal-input-field">
-                    </div>
-                </div>
-            </div>
-
-            <div id="auth-modal-status" class="u-text-sm text-center mb-4 min-h-[1.25rem]"></div>
-
-            <div class="u-flex justify-end gap-3">
-                <button type="button" id="auth-cancel" class="btn-secondary">キャンセル</button>
-                <button type="button" id="auth-verify" class="btn-primary-yellow">登録</button>
-            </div>
-        </div>
-    </div>
-
-    <template id="mobcard-card-template">
-        <div class="mobcard-card">
-            <div class="mobcard-inner">
-                <div class="mobcard-header">
-                    <div class="header-top-row">
-                        <div class="header-left">
-                            <div class="mobcard-rank" data-rank=""></div>
-                            <h2 class="mobcard-name"></h2>
-                        </div>
-                        <button class="moblist-report-btn" data-report-type="" data-mob-no="">REPORT</button>
-                    </div>
-                    <div class="header-mid-row">
-                        <div class="mobcard-area-info">
-                            <span class="detail-area"></span>
-                            <span class="detail-expansion"></span>
-                        </div>
-                        <div class="percent">0%</div>
-                    </div>
-                    <div class="mobcard-progress-container">
-                        <div class="mobcard-progress-bar"></div>
-                    </div>
-                </div>
-
-                <div class="mobcard-content overflow-y-auto pr-1">
-                    <div class="mobcard-section memo-section mb-5">
-                        <div class="mobcard-memo-box">
-                            <div class="mobcard-memo-prefix-area">
-                                <span class="mobcard-memo-prefix-text">memo</span>
+                        <div>
+                            <div class="u-block text-xs font-semibold text-gray-500 uppercase mb-1">Step 2:
+                                Lodestoneプロフィールに貼り付け</div>
+                            <div class="u-text-sm text-gray-300 space-y-2 leading-relaxed">
+                                <p>自己紹介欄に認証コードを貼り付けて保存</p>
+                                <a href="https://jp.finalfantasyxiv.com/lodestone/my/setting/profile/" target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="text-cyan-400 underline u-inline-flex u-items-center gap-1 u-font-bold">
+                                    プロフィール編集画面を開く 🔗
+                                </a>
+                                <div class="modal-auth-note">
+                                    <p>※Lodestoneのログイン必須</p>
+                                    <p>編集画面で認証コードを入力し、「確認」→「設定」を押して保存後、「自己紹介を確認する」を押してください</p>
+                                </div>
                             </div>
-                            <div class="mobcard-memo-separator"></div>
-                            <textarea name="memo" aria-label="メモを入力" class="mobcard-memo-input detail-memo-input"
-                                placeholder="全角30文字まで" maxlength="30" data-action="save-memo" rows="1"></textarea>
                         </div>
-                    </div>
 
-                    <div class="mobcard-grid mb-5">
-                        <div class="mobcard-info-item">
-                            <div class="mobcard-label">最短POP</div>
-                            <div class="mobcard-value" data-min-repop>--/-- --:--</div>
+                        <div>
+                            <label for="auth-lodestone-id"
+                                class="u-block text-xs font-semibold text-gray-500 uppercase mb-1">Step 3:
+                                認証コードが正しく表示されるか確認し、開いているキャラクターページのURL、もしくはURL末尾の数字をコピーして貼り付け</label>
+                            <input type="text" id="auth-lodestone-id" name="lodestone-id" maxlength="200"
+                                aria-label="LodestoneキャラクターページのURL、またはキャラクターIDを入力" class="modal-input-field">
                         </div>
-                        <div class="mobcard-info-item">
-                            <div class="mobcard-label">最大POP</div>
-                            <div class="mobcard-value" data-max-repop>--/-- --:--</div>
-                        </div>
-                        <div class="mobcard-info-item mobcard-highlight">
-                            <div class="mobcard-label">次回POP可能</div>
-                            <div class="mobcard-value" data-next-possible>--/-- --:--</div>
-                        </div>
-                        <div class="mobcard-info-item">
-                            <div class="mobcard-label">前回討伐</div>
-                            <div class="mobcard-value" data-last-kill>--/-- --:--</div>
-                        </div>
-                    </div>
-
-                    <div class="mobcard-section map-section">
-                        <div class="mobcard-section-label">出現マップ</div>
-                        <div class="map-container relative w-full pc-map-box overflow-hidden mt-2">
-                            <img class="mob-map-img w-full h-auto object-contain opacity-90 transition-opacity">
-                            <div class="map-overlay absolute inset-0"></div>
-                        </div>
-                    </div>
-
-                    <div class="mobcard-section">
-                        <div class="mobcard-section-label">出現条件</div>
-                        <div class="section-content condition condition-text"></div>
                     </div>
                 </div>
 
-                <div class="mobcard-mobile-actions" data-action="close-card">
-                    CLOSE
+                <div id="auth-modal-status" class="u-text-sm text-center mb-4 min-h-[1.25rem]"></div>
+
+                <div class="u-flex justify-end gap-3">
+                    <button type="button" id="auth-cancel" class="btn-secondary">キャンセル</button>
+                    <button type="button" id="auth-verify" class="btn-primary-yellow">登録</button>
                 </div>
             </div>
         </div>
-    </template>
 
-    <div id="global-magnifier" class="map-magnifier hidden">
-        <div class="magnifier-content-wrapper absolute w-full h-full"></div>
-    </div>
+        <template id="mobcard-card-template">
+            <div class="mobcard-card">
+                <div class="mobcard-inner">
+                    <div class="mobcard-header">
+                        <div class="header-top-row">
+                            <div class="header-left">
+                                <div class="mobcard-rank" data-rank=""></div>
+                                <h2 class="mobcard-name"></h2>
+                            </div>
+                            <button class="moblist-report-btn" data-report-type="" data-mob-no="">REPORT</button>
+                        </div>
+                        <div class="header-mid-row">
+                            <div class="mobcard-area-info">
+                                <span class="detail-area"></span>
+                                <span class="detail-expansion"></span>
+                            </div>
+                            <div class="percent">0%</div>
+                        </div>
+                        <div class="mobcard-progress-container">
+                            <div class="mobcard-progress-bar"></div>
+                        </div>
+                    </div>
 
-    <template id="timer-rich-template">
-        <span class="mobcard-timer">
-            <span class="mobcard-timer-part h-part">
-                <span class="mobcard-timer-num"></span><span class="mobcard-timer-unit">h</span>
+                    <div class="mobcard-content overflow-y-auto pr-1">
+                        <div class="mobcard-section memo-section mb-5">
+                            <div class="mobcard-memo-box">
+                                <div class="mobcard-memo-prefix-area">
+                                    <span class="mobcard-memo-prefix-text">memo</span>
+                                </div>
+                                <div class="mobcard-memo-separator"></div>
+                                <textarea name="memo" aria-label="メモを入力" class="mobcard-memo-input detail-memo-input"
+                                    placeholder="全角30文字まで" maxlength="30" data-action="save-memo" rows="1"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="mobcard-grid mb-5">
+                            <div class="mobcard-info-item">
+                                <div class="mobcard-label">最短POP</div>
+                                <div class="mobcard-value" data-min-repop>--/-- --:--</div>
+                            </div>
+                            <div class="mobcard-info-item">
+                                <div class="mobcard-label">最大POP</div>
+                                <div class="mobcard-value" data-max-repop>--/-- --:--</div>
+                            </div>
+                            <div class="mobcard-info-item mobcard-highlight">
+                                <div class="mobcard-label">次回POP可能</div>
+                                <div class="mobcard-value" data-next-possible>--/-- --:--</div>
+                            </div>
+                            <div class="mobcard-info-item">
+                                <div class="mobcard-label">前回討伐</div>
+                                <div class="mobcard-value" data-last-kill>--/-- --:--</div>
+                            </div>
+                        </div>
+
+                        <div class="mobcard-section map-section">
+                            <div class="mobcard-section-label">出現マップ</div>
+                            <div class="map-container relative w-full pc-map-box overflow-hidden mt-2">
+                                <img class="mob-map-img w-full h-auto object-contain opacity-90 transition-opacity">
+                                <div class="map-overlay absolute inset-0"></div>
+                            </div>
+                        </div>
+
+                        <div class="mobcard-section">
+                            <div class="mobcard-section-label">出現条件</div>
+                            <div class="section-content condition condition-text"></div>
+                        </div>
+                    </div>
+
+                    <div class="mobcard-mobile-actions" data-action="close-card">
+                        CLOSE
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <div id="global-magnifier" class="map-magnifier hidden">
+            <div class="magnifier-content-wrapper absolute w-full h-full"></div>
+        </div>
+
+        <template id="timer-rich-template">
+            <span class="mobcard-timer">
+                <span class="mobcard-timer-part h-part">
+                    <span class="mobcard-timer-num"></span><span class="mobcard-timer-unit">h</span>
+                </span>
+                <span class="mobcard-timer-part m-part">
+                    <span class="mobcard-timer-num"></span><span class="mobcard-timer-unit">m</span>
+                </span>
             </span>
-            <span class="mobcard-timer-part m-part">
-                <span class="mobcard-timer-num"></span><span class="mobcard-timer-unit">m</span>
-            </span>
-        </span>
-    </template>
+        </template>
 
-    <template id="spawn-point-template">
-        <div class="spawn-point" tabindex="0"></div>
-    </template>
+        <template id="spawn-point-template">
+            <div class="spawn-point" tabindex="0"></div>
+        </template>
 
-    <template id="moblist-item-template">
-        <div class="moblist-item">
-            <div class="moblist-bg-gauge">
-                <div class="moblist-bg-bar"></div>
+        <template id="moblist-item-template">
+            <div class="moblist-item">
+                <div class="moblist-bg-gauge">
+                    <div class="moblist-bg-bar"></div>
+                </div>
+                <div class="moblist-header u-font-bold">
+                    <span class="moblist-name truncate"></span>
+                    <span class="memo-icon-container h-4 u-flex u-items-center"></span>
+                    <span class="moblist-count"></span>
+                </div>
+                <div class="moblist-time"></div>
+                <div class="moblist-percent">0%</div>
+                <button class="moblist-report-btn"></button>
             </div>
-            <div class="moblist-header u-font-bold">
-                <span class="moblist-name truncate"></span>
-                <span class="memo-icon-container h-4 u-flex u-items-center"></span>
-                <span class="moblist-count"></span>
+        </template>
+
+        <template id="status-group-template">
+            <section class="status-group u-w-full hidden">
+                <div class="status-group-separator">
+                    <span class="status-group-label"></span>
+                </div>
+                <div class="group-columns">
+                    <div class="col-1 u-flex u-flex-col u-gap-2"></div>
+                    <div class="col-2 u-flex u-flex-col u-gap-2"></div>
+                    <div class="col-3 u-flex u-flex-col u-gap-2"></div>
+                </div>
+            </section>
+        </template>
+
+        <template id="appnav-error-item-template">
+            <div class="appnav-error-item">
+                <span class="appnav-error-time"></span>
+                <span class="error-msg"></span>
             </div>
-            <div class="moblist-time"></div>
-            <div class="moblist-percent">0%</div>
-            <button class="moblist-report-btn"></button>
-        </div>
-    </template>
+        </template>
 
-    <template id="status-group-template">
-        <section class="status-group u-w-full hidden">
-            <div class="status-group-separator">
-                <span class="status-group-label"></span>
-            </div>
-            <div class="group-columns">
-                <div class="col-1 u-flex u-flex-col u-gap-2"></div>
-                <div class="col-2 u-flex u-flex-col u-gap-2"></div>
-                <div class="col-3 u-flex u-flex-col u-gap-2"></div>
-            </div>
-        </section>
-    </template>
-
-    <template id="appnav-error-item-template">
-        <div class="appnav-error-item">
-            <span class="appnav-error-time"></span>
-            <span class="error-msg"></span>
-        </div>
-    </template>
-
-    <template id="rank-accordion-item-template">
-        <div class="appnav-rank-item">
-            <button class="appnav-rank-header"></button>
-            <div class="appnav-area-expansion">
-                <div class="area-grid-container"></div>
-            </div>
-        </div>
-    </template>
-
-    <template id="auth-verified-template">
-        <div class="auth-verified-box">
-            <p class="text-emerald u-font-bold">✓ 認証済みです</p>
-        </div>
-    </template>
-
-    <template id="auth-form-template">
-        <div class="modal-auth-box space-y-4 text-left">
-            <p class="text-xs text-yellow u-font-bold uppercase tracking-wider">認証手続き</p>
-            <div class="space-y-2">
-                <div class="u-block text-xs text-gray-400">STEP 1: 検証コードをコピー</div>
-                <div class="u-flex u-gap-2">
-                    <code class="auth-code-display auth-vcode-display"></code>
-                    <button class="btn-copy auth-copy-btn">Copy</button>
+        <template id="rank-accordion-item-template">
+            <div class="appnav-rank-item">
+                <button class="appnav-rank-header"></button>
+                <div class="appnav-area-expansion">
+                    <div class="area-grid-container"></div>
                 </div>
             </div>
-            <div class="space-y-2">
-                <div class="u-block text-xs text-gray-400">STEP 2: Lodestoneプロフィールに貼り付け</div>
-                <a href="https://jp.finalfantasyxiv.com/lodestone/my/setting/profile/" target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-cyan underline u-text-sm u-block hover:text-cyan-300">プロフィール編集画面を開く 🔗</a>
+        </template>
+
+        <template id="auth-verified-template">
+            <div class="auth-verified-box">
+                <p class="text-emerald u-font-bold">✓ 認証済みです</p>
             </div>
-            <div class="space-y-2">
-                <label class="u-block text-xs text-gray-400">STEP 3: キャラクターIDを入力して検証</label>
-                <div class="u-flex u-flex-col u-gap-2">
-                    <input type="text" class="modal-input-field auth-id-input" placeholder="IDまたはURL" maxlength="200">
-                    <div class="text-xs min-h-[1em] auth-status-msg"></div>
-                    <button class="btn-primary-yellow w-full auth-verify-btn">検証して登録</button>
+        </template>
+
+        <template id="auth-form-template">
+            <div class="modal-auth-box space-y-4 text-left">
+                <p class="text-xs text-yellow u-font-bold uppercase tracking-wider">認証手続き</p>
+                <div class="space-y-2">
+                    <div class="u-block text-xs text-gray-400">STEP 1: 検証コードをコピー</div>
+                    <div class="u-flex u-gap-2">
+                        <code class="auth-code-display auth-vcode-display"></code>
+                        <button class="btn-copy auth-copy-btn">Copy</button>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="u-block text-xs text-gray-400">STEP 2: Lodestoneプロフィールに貼り付け</div>
+                    <a href="https://jp.finalfantasyxiv.com/lodestone/my/setting/profile/" target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-cyan underline u-text-sm u-block hover:text-cyan-300">プロフィール編集画面を開く 🔗</a>
+                </div>
+                <div class="space-y-2">
+                    <label class="u-block text-xs text-gray-400">STEP 3: キャラクターIDを入力して検証</label>
+                    <div class="u-flex u-flex-col u-gap-2">
+                        <input type="text" class="modal-input-field auth-id-input" placeholder="IDまたはURL"
+                            maxlength="200">
+                        <div class="text-xs min-h-[1em] auth-status-msg"></div>
+                        <button class="btn-primary-yellow w-full auth-verify-btn">検証して登録</button>
+                    </div>
                 </div>
             </div>
-        </div>
-    </template>
+        </template>
 
-    <script type="module" src="./js/app.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').then(reg => {
-                    console.log('SW registered');
-                }).catch(err => {
-                    console.warn('SW failed', err);
+        <script type="module" src="./js/app.js"></script>
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js').then(reg => {
+                        console.log('SW registered');
+                    }).catch(err => {
+                        console.warn('SW failed', err);
+                    });
                 });
-            });
-        }
-    </script>
+            }
+        </script>
 </body>
 
 </html>

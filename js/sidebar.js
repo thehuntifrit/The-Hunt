@@ -589,14 +589,11 @@ function renderSidebarFilterAccordion(targetContainer = null) {
     const clickStep = state.filter.clickStep || 1;
 
     const fragment = document.createDocumentFragment();
-    const section = document.createElement("div");
-    section.className = "appnav-section";
 
     const title = document.createElement("div");
-    title.className = "appnav-filter-title";
-    title.textContent = "Filter";
-    section.appendChild(title);
-    fragment.appendChild(section);
+    title.className = "appnav-section-title";
+    title.textContent = "Rank Filter";
+    fragment.appendChild(title);
 
     ranks.forEach(r => {
         const isActive = r.key === activeRank;
@@ -608,8 +605,6 @@ function renderSidebarFilterAccordion(targetContainer = null) {
             if (isExpanded) itemEl.classList.add('appnav-is-expanded');
             itemEl.dataset.rank = r.key;
             itemEl.style.setProperty('--current-rank', r.color);
-            const rgb = r.color.replace('var(--', '').replace(')', '-rgb');
-            itemEl.style.setProperty('--current-rank-rgb', `var(--${rgb})`);
 
             const header = itemEl.querySelector(".appnav-rank-header");
             if (header) {
