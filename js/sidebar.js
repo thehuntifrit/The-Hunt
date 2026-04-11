@@ -8,7 +8,6 @@ const SOUND_FILE = "./sound/01 FFXIV_Linkshell_Transmission.mp3";
 
 let audio = null;
 const notifiedCycles = new Set();
-let manualLoaded = false;
 let currentPanel = null;
 window.errorLog = window.errorLog || [];
 const MAX_ERROR_LOG = 50;
@@ -475,7 +474,6 @@ function showPanel(panelName) {
 
 async function syncPanelContents(panelName, container) {
     if (panelName === "rank") renderSidebarFilterAccordion(container);
-    else if (panelName === "manual") loadManualContent(container);
     else if (panelName === "error") updateErrorPanel(container);
     else if (panelName === "telop" || panelName === "maintenance") {
         const { renderMaintenanceStatus } = await import("./app.js");
@@ -549,30 +547,6 @@ function updateErrorBadge() {
     import("./app.js").then(m => {
         if (typeof m.renderMaintenanceStatus === "function") m.renderMaintenanceStatus();
     });
-}
-
-// ─── マニュアル ─────────────────────────────────────────
-async function loadManualContent(targetContainer = null) {
-    const container = targetContainer || document.getElementById("sidebar-manual-content");
-    if (!container) return;
-
-    container.innerHTML = '<div class="sidebar-manual-content"><p style="text-align:center;color:rgba(255,255,255,0.4)">読み込み中...</p></div>';
-
-    try {
-        const response = await fetch("./README.md");
-        if (!response.ok) throw new Error("マニュアル読み込み失敗");
-        const text = await response.text();
-        if (typeof marked !== "undefined") {
-            marked.setOptions({ breaks: true, gfm: true });
-            const html = marked.parse(text);
-            container.innerHTML = `<div class="sidebar-manual-content">${DOMPurify.sanitize(html)}</div>`;
-        } else {
-            container.innerHTML = `<div class="sidebar-manual-content">${escapeHtml(text)}</div>`;
-        }
-        manualLoaded = true;
-    } catch {
-        container.innerHTML = '<div class="sidebar-manual-content"><p style="color:#ef4444;text-align:center">読み込み失敗</p></div>';
-    }
 }
 
 // ─── アコーディオン ─────────────────────────────────────

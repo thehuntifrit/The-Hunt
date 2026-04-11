@@ -160,13 +160,8 @@ async function initApp() {
  * スクロール時には実行されないため、1pxのブレも発生しない。
  */
 function syncMobCardPanePosition() {
-  const anchor = document.getElementById('mobcard-anchor');
   const pane = document.getElementById('mobcard-pane');
-  if (anchor && pane && window.innerWidth >= 1024) {
-    const rect = anchor.getBoundingClientRect();
-    pane.style.left = `${rect.left}px`;
-    pane.style.width = `${rect.width}px`;
-  } else if (pane) {
+  if (pane && window.innerWidth >= 1024) {
     pane.style.left = '';
     pane.style.width = '';
   }

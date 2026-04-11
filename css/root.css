@@ -1124,6 +1124,16 @@ html body.magnifier-active .mobcard-inner * {
             inset-block: 0;
             border-radius: 0;
         }
+
+        &.has-alert::after {
+            inset-block-start: 6px;
+            inset-inline-end: 6px;
+        }
+    }
+
+    .appnav-btn:not(.appnav-active).has-alert::after {
+        inset-block-start: 6px;
+        inset-inline-end: 6px;
     }
 }
 

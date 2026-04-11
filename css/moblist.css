@@ -72,19 +72,16 @@
     }
 
     #mobcard-anchor {
-        display: block;
-        flex: 1;
-        min-inline-size: 400px;
-        max-inline-size: 500px;
-        pointer-events: none;
-        visibility: hidden;
+        display: none;
     }
 
     #mobcard-pane {
         display: flex;
-        position: fixed;
+        position: sticky;
+        flex: 1;
+        min-inline-size: 400px;
+        max-inline-size: 500px;
         width: 100%;
-        max-width: 500px;
         top: 40px;
         margin-left: 0;
         z-index: 40;
