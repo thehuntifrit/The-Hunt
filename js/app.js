@@ -152,6 +152,24 @@ async function initApp() {
     console.error("App initialization failed:", e);
     showColumnContainer();
   }
+  syncMobCardPanePosition();
+}
+
+/**
+ * PC版にて fixed 配置になった詳細パネルの位置を、アンカー要素の水平位置に同期させる。
+ * スクロール時には実行されないため、1pxのブレも発生しない。
+ */
+function syncMobCardPanePosition() {
+  const anchor = document.getElementById('mobcard-anchor');
+  const pane = document.getElementById('mobcard-pane');
+  if (anchor && pane && window.innerWidth >= 1024) {
+    const rect = anchor.getBoundingClientRect();
+    pane.style.left = `${rect.left}px`;
+    pane.style.width = `${rect.width}px`;
+  } else if (pane) {
+    pane.style.left = '';
+    pane.style.width = '';
+  }
 }
 
 export function showColumnContainer() {
@@ -793,7 +811,18 @@ function attachGlobalEventListeners() {
       prevWidth = currentWidth;
       sortAndRedistribute();
     }
+    syncMobCardPanePosition();
   }, 100));
+
+  // サイドバーの展開・格納が完了（アニメーション終了）したら位置を再同期
+  const appnav = document.getElementById('appnav');
+  if (appnav) {
+    appnav.addEventListener('transitionend', (e) => {
+      if (e.propertyName === 'width') {
+        syncMobCardPanePosition();
+      }
+    });
+  }
 
   document.addEventListener('click', (e) => {
     if (e.target.closest('.tab-button')) {

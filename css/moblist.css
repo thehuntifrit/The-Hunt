@@ -17,6 +17,10 @@
     display: none;
 }
 
+#mobcard-anchor {
+    display: none;
+}
+
 /* モバイル時の詳細表示（オーバーレイ形式） */
 @media (max-width: 1023px) {
     #mobcard-pane.is-active {
@@ -64,18 +68,25 @@
         flex: none;
     }
 
-    #mobcard-pane {
-        display: flex;
+    #mobcard-anchor {
+        display: block;
         flex: 1;
         min-inline-size: 400px;
         max-inline-size: 500px;
-        align-self: flex-start;
-        position: sticky;
-        top: 20px;
-        z-index: 100;
+        pointer-events: none;
+        visibility: hidden;
+    }
+
+    #mobcard-pane {
+        display: flex;
+        position: fixed;
+        width: 100%;
+        max-width: 500px;
+        top: 42px; /* メインエリアのpadding等に合わせる */
+        z-index: 40; /* z-hierarchy: appnav(20), mobcard(30), modal-backdrop(50) から、固定パネルとして調整 */
         flex-direction: column;
         gap: 12px;
-        max-block-size: calc(100vh - 48px);
+        max-block-size: calc(100vh - 84px);
         overflow-y: auto;
     }
 
