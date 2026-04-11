@@ -1,5 +1,5 @@
 /* --- SECTION: MOBLIST LAYOUT --- */
-#root-layout {
+#list-layout {
     display: block;
     width: 100%;
 }
@@ -9,62 +9,52 @@
     display: flex;
     flex-direction: column;
     gap: 3px;
+    margin-block-start: 0;
 }
 
 #mobcard-pane {
     display: none;
 }
 
+/* PC LAYOUT (DESKTOP) */
 @media (min-width: 1024px) {
-    #root-layout {
+    #list-layout {
         display: flex;
         flex-direction: row;
         flex-wrap: nowrap;
         inline-size: 100%;
-        max-inline-size: 920px;
-        margin-inline-start: max(72px, calc((100% - 920px) / 2));
-        margin-inline-end: auto;
+        max-inline-size: 1000px;
+        margin-inline: auto;
         justify-content: center;
-        gap: 0;
+        gap: 24px;
         min-block-size: 100vh;
         align-items: flex-start;
+        padding-top: 28px;
     }
 
     #moblist-container {
         inline-size: 480px;
         flex: none;
-        margin-block-start: 28px;
     }
 
     #mobcard-pane {
         display: flex;
-        inline-size: 400px;
-        flex: none;
+        flex: 1;
+        min-inline-size: 400px;
+        max-inline-size: 500px;
         align-self: flex-start;
         position: sticky;
         top: 20px;
         z-index: 100;
         flex-direction: column;
         gap: 12px;
-        padding-inline-start: 0;
-        margin-inline-start: 24px;
-        margin-block-start: 0;
-        max-block-size: calc(100vh - 28px);
+        max-block-size: calc(100vh - 48px);
         overflow-y: auto;
     }
 
     #mobcard-clocks {
         align-self: flex-end;
-        margin-inline-end: 28px;
-        margin-block-start: 18px;
-        margin-block-end: -11px;
-        transform: translateY(8px);
-    }
-
-    #mobcard-detail {
-        display: flex;
-        flex-direction: column;
-        inline-size: 100%;
+        margin-block-end: 4px;
     }
 }
 
@@ -73,7 +63,6 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) 92px 36px 28px;
     align-items: center;
-    max-width: 480px;
     width: 100%;
     background: rgba(48, 64, 94, 0.6);
     border: none;
@@ -104,13 +93,11 @@
 
     &:hover {
         background: rgba(255, 255, 255, 0.08);
-        border-color: rgba(255, 255, 255, 0.1);
         z-index: 20;
     }
 
     &.selected {
         background: rgba(15, 23, 42, 0.85);
-        border-color: rgba(34, 211, 238, 0.4);
         box-shadow: inset 0 0 10px rgba(34, 211, 238, 0.1);
         z-index: 15;
 
@@ -142,15 +129,12 @@
         &[data-rank="S"] {
             color: var(--color-white);
         }
-
         &[data-rank="A"] {
             color: var(--color-rank-a);
         }
-
         &[data-rank="F"] {
             color: var(--color-rank-f);
         }
-
         &[data-rank="S-active"] {
             color: var(--color-white);
             text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
@@ -164,7 +148,6 @@
         margin-inline-end: 18px;
         flex-shrink: 0;
         white-space: nowrap;
-        letter-spacing: -0.02em;
         opacity: 0.9;
     }
 
@@ -182,20 +165,16 @@
         inline-size: 100%;
         text-align: right;
         padding-inline-end: 2px;
-        overflow: visible;
 
         .timer-inner-grid {
             display: flex;
             align-items: center;
             justify-content: flex-end;
             gap: 2px;
-            white-space: nowrap;
-            width: auto;
         }
 
         .timer-label {
             flex-shrink: 0;
-            white-space: nowrap;
             font-size: 11px;
             font-weight: 700;
             padding: 1px 3px;
@@ -215,7 +194,6 @@
                 border-color: rgba(239, 68, 68, 0.4);
                 color: #ff9999;
             }
-
             &.status-popwindow,
             &.status-conditionactive,
             &.status-nextcondition {
@@ -223,16 +201,9 @@
                 border-color: rgba(16, 185, 129, 0.4);
                 color: #a7f3d0;
             }
-
-            &.status-next {
-                background: rgba(148, 163, 184, 0.2);
-                border-color: rgba(148, 163, 184, 0.3);
-            }
-
             &.is-special {
                 color: var(--color-gold);
                 border-color: rgba(251, 191, 36, 0.4);
-                text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
             }
         }
     }
@@ -265,26 +236,10 @@
         display: flex;
         justify-content: flex-end;
         align-items: center;
-        text-align: end;
-        font-variant-numeric: tabular-nums;
-        margin-right: calc(-0.5ch + 2px);
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
         position: relative;
         z-index: 10;
         padding-inline-end: 7px;
-        justify-self: end;
-        width: 100%;
-
-        .moblist-percent-unit {
-            font-size: 0.85em;
-            margin-inline-start: 0.3ch;
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .moblist-percent-inner {
-            font-size: inherit;
-            color: var(--white);
-        }
     }
 
     .moblist-report-btn {
@@ -302,25 +257,7 @@
         transition: all 0.2s ease;
         position: relative;
         z-index: 10;
-        margin: 0;
-        padding: 0;
-        justify-self: stretch;
-        box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.3), 0 0 10px rgba(0, 243, 255, 0.1);
-
-        &:hover {
-            background: rgba(0, 243, 255, 0.15);
-            box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.5), 0 0 15px rgba(0, 243, 255, 0.2);
-
-            &::before,
-            &::after {
-                background: rgba(255, 255, 255, 1);
-                box-shadow: 0 0 8px rgba(0, 243, 255, 1);
-            }
-        }
-
-        &:active {
-            transform: scale(0.95);
-        }
+        box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.3);
 
         &::before,
         &::after {
@@ -328,82 +265,33 @@
             position: absolute;
             background: rgba(0, 243, 255, 1);
             border-radius: 1px;
-            box-shadow: 0 0 4px rgba(0, 243, 255, 0.6);
-            transition: all 0.2s ease;
         }
+        &::before { inline-size: 10px; block-size: 2px; }
+        &::after { inline-size: 2px; block-size: 10px; }
 
-        &::before {
-            inline-size: 10px;
-            block-size: 2.5px;
+        &:hover {
+            background: rgba(0, 243, 255, 0.15);
+            box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.5);
         }
-
-        &::after {
-            inline-size: 2.5px;
-            block-size: 10px;
-        }
-    }
-
-    &.moblist-blink {
-        animation: pc-glow-bg 3s infinite ease-in-out;
-        border-color: rgba(255, 255, 255, 0.3);
-    }
-
-    &.moblist-maintenance {
-        opacity: 0.5;
-        filter: grayscale(100%);
-    }
-
-    &.moblist-pre-repop {
-        .moblist-name {
-            opacity: 0.5;
-            filter: grayscale(100%);
-            color: var(--color-text-secondary);
-        }
-
-        .truncate {
-            opacity: 0.5;
-            filter: grayscale(100%);
-            color: var(--color-text-secondary);
-        }
-    }
-
-    &.moblist-blink-white::after {
-        content: '';
-        position: absolute;
-        inset-block: 0;
-        inset-inline: 0;
-        pointer-events: none;
-        border-top: 1.5px solid rgba(255, 255, 255, 0.8);
-        border-bottom: 1.5px solid rgba(255, 255, 255, 0.8);
-        animation: pc-list-glow-yuragi 4s infinite ease-in-out;
-        z-index: 12;
     }
 }
 
 /* --- SECTION: MEDIA (MOBILE OVERRIDES) --- */
 @media (max-width: 1023px) {
-    body .pc-layout-container {
+    .main-layout-container {
         display: block;
         width: 100%;
     }
 
-    body #moblist-container {
+    #moblist-container {
         width: 100%;
-        max-width: none;
-        flex: none;
     }
 
-    body .moblist-item {
-        max-width: none;
-        block-size: 32px;
+    .moblist-item {
         margin-block-end: 4px;
-    }
-
-    .moblist-report-btn {
-        width: 58px;
-        height: 22px;
-        font-size: 10px;
-        letter-spacing: 0.05em;
-        margin: 0;
+        
+        .moblist-report-btn {
+            width: 58px;
+        }
     }
 }
