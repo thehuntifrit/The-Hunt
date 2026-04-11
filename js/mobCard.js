@@ -296,7 +296,7 @@ export function getSpawnCountInfo(mob) {
   let countHtml = "";
   if (remainingCount === 1) {
     const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-    countHtml = `<span class="pc-count-val count-warn font-bold">📍${pointNumber}<span class="u-ml-1">番</span></span>`;
+    countHtml = `<span class="pc-count-val text-cyan font-bold">📍${pointNumber}<span class="u-ml-1">番</span></span>`;
   } else if (remainingCount > 1) {
     countHtml = `<span class="pc-count-val font-bold">📍@<span class="u-ml-1">${remainingCount}</span></span>`;
   }
@@ -474,11 +474,10 @@ export function updateProgressBar(element, mob) {
 
   if (wrapper) {
     const isInCondition = !!mob.repopInfo.isInConditionWindow && !mob.repopInfo.isMaintenanceStop && !mob.repopInfo.isBlockedByMaintenance;
-    wrapper.classList.toggle(PROGRESS_CLASSES.BLINK_WHITE, isInCondition);
 
-    // 特定の条件下でのエフェクト（リストアイテム / 詳細カード）
-    const borderClass = element.classList.contains('moblist-item') ? 'moblist-blink-white' : 'mobcard-blink-white';
-    element.classList.toggle(borderClass, isInCondition);
+    if (element.classList.contains('moblist-item')) {
+      element.classList.toggle('moblist-blink-white', isInCondition);
+    }
   }
 }
 
@@ -497,7 +496,6 @@ export function updateProgressText(element, mob) {
     if (timeContainer._lastCacheKey !== cacheKey) {
       timeContainer.innerHTML = "";
       if (element.classList.contains('moblist-item')) {
-        // リスト用レイアウト: [Timer] [Label]
         const inner = document.createElement("div");
         inner.className = "timer-inner-grid";
         const labelSpan = document.createElement("span");
@@ -507,7 +505,6 @@ export function updateProgressText(element, mob) {
         inner.appendChild(labelSpan);
         timeContainer.appendChild(inner);
       } else {
-        // カード用レイアウト: [Timer]
         timeContainer.appendChild(timerNode);
       }
       timeContainer._lastCacheKey = cacheKey;

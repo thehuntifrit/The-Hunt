@@ -99,7 +99,7 @@
 /* --- SECTION: MOBLIST ITEM --- */
 .moblist-item {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 92px 36px 28px;
+    grid-template-columns: minmax(0, 1fr) 90px 34px 28px;
     align-items: center;
     width: 100%;
     background: rgba(48, 64, 94, 0.6);
@@ -186,7 +186,7 @@
     .moblist-time {
         grid-column: 2;
         font-family: var(--font-mono);
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 500;
         display: flex;
         align-items: center;
@@ -216,7 +216,7 @@
             line-height: 1;
             min-inline-size: 28px;
             text-align: center;
-            margin-inline-start: 4px;
+            margin-inline-start: 2px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -262,7 +262,7 @@
     .moblist-percent {
         grid-column: 3;
         font-family: var(--font-mono);
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 500;
         color: var(--color-white);
         display: flex;
@@ -305,6 +305,29 @@
             box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.5);
         }
     }
+
+    /* 特殊条件時のグラデーション発光エフェクト */
+    &.moblist-blink-white::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(to bottom, 
+            rgba(255, 255, 255, 0.6) 0%, 
+            rgba(255, 255, 255, 0.15) 10%, 
+            transparent 30%, 
+            transparent 70%, 
+            rgba(255, 255, 255, 0.15) 90%, 
+            rgba(255, 255, 255, 0.6) 100%
+        );
+        animation: moblist-glow-gradient 3s infinite ease-in-out;
+        z-index: 30;
+    }
+}
+
+@keyframes moblist-glow-gradient {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.6; }
 }
 
 /* --- SECTION: MEDIA (MOBILE OVERRIDES) --- */
@@ -320,6 +343,14 @@
 
     .moblist-item {
         margin-block-end: 4px;
-        .moblist-report-btn { width: 58px; }
+        grid-template-columns: minmax(0, 1fr) 90px 34px 58px;
+
+        .moblist-report-btn {
+            width: 58px;
+        }
+
+        .moblist-bg-gauge {
+            inset-inline-end: 58px;
+        }
     }
 }
