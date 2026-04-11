@@ -245,13 +245,10 @@ html body.magnifier-active .mobcard-inner * {
 
     /* --- SECTION: LAYOUT --- */
     .main-content-area {
-        height: 100vh;
-        overflow: hidden;
-        padding: 0;
+        min-height: 100vh;
+        padding: 14px;
         margin-left: var(--sidebar-width, 56px);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        display: flex;
-        flex-direction: column;
     }
 
     @media (max-width: 1023px) {
