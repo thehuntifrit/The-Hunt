@@ -212,8 +212,6 @@ async function getMaintenanceStatus() {
 export async function renderMaintenanceStatus() {
   const state = getState();
   const maintenance = await getMaintenanceStatus();
-  const maintenanceEl = document.getElementById("status-message-maintenance");
-  const telopEl = document.getElementById("status-message-telop");
 
   const maintPanels = document.querySelectorAll(".js-maintenance-content");
   const telopPanels = document.querySelectorAll(".js-telop-content");
@@ -231,22 +229,12 @@ export async function renderMaintenanceStatus() {
     hasMaintenance = true;
   }
 
-  if (maintenanceEl) {
-    if (hasMaintenance) {
-      maintenanceEl.textContent = maintMobileHtml;
-      maintenanceEl.classList.remove("hidden");
-    } else {
-      maintenanceEl.textContent = "";
-      maintenanceEl.classList.add("hidden");
-    }
-  }
-
   maintPanels.forEach(p => {
     if (!hasMaintenance) {
       p.textContent = "現在予定されているメンテナンスはありません";
       return;
     }
-    const isPC = p.closest('#appnav-sidebar') || p.closest('.appnav-section');
+    const isPC = window.innerWidth >= 1024;
     if (isPC) {
       p.textContent = "";
       const lines = maintPCHtml.split('<br>');
@@ -264,16 +252,6 @@ export async function renderMaintenanceStatus() {
 
   const telopMsg = (maintenance && maintenance.message && maintenance.message.trim() !== "") ? maintenance.message : "";
   hasMessage = telopMsg !== "";
-
-  if (telopEl) {
-    if (hasMessage) {
-      telopEl.textContent = telopMsg;
-      telopEl.classList.remove("hidden");
-    } else {
-      telopEl.textContent = "";
-      telopEl.classList.add("hidden");
-    }
-  }
 
   const nameToDisplay = (state.isVerified && state.characterName) ? state.characterName : "名無しさん";
 

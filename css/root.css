@@ -80,40 +80,6 @@
         height: 52px;
     }
 
-    #root-mobile-footer-bar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 9999;
-        background: var(--color-nav-bg);
-        backdrop-filter: blur(16px);
-        border-top: 1px solid rgba(255, 255, 255, 0.15);
-        display: flex;
-        flex-direction: column-reverse;
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-
-    #appnav-footer-panel {
-        max-height: 70vh;
-        overflow-y: auto;
-        overscroll-behavior: contain;
-        display: none;
-        background: var(--color-nav-bg);
-        border-top: 1px solid rgba(255, 255, 255, 0.15);
-        padding: 11px;
-
-        &.appnav-open {
-            display: block;
-        }
-
-        .appnav-filter-accordion {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-    }
-
     #mobcard-overlay-backdrop {
         z-index: 1000;
         top: 52px;
@@ -132,22 +98,15 @@
     .main-content-area {
         margin-left: 0;
         padding-top: 52px;
-        padding-bottom: 5rem;
+        padding-bottom: 60px;
         padding-left: 1vw;
         padding-right: 1vw;
-    }
-
-    footer {
-        display: none;
     }
 }
 
 /* PC表示（1024px以上）時のモバイル要素隠蔽 */
 @media (min-width: 1024px) {
-
-    #root-mobile-top-bar,
-    #root-mobile-footer-bar,
-    #appnav-status-bar {
+    #root-mobile-top-bar {
         display: none !important;
     }
 }

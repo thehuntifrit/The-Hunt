@@ -1,106 +1,156 @@
+/* --- PC LAYOUT (SIDEBAR) --- */
 @media (min-width: 1024px) {
+    #appnav {
+        position: fixed;
+        inset-block: 0;
+        inset-inline-start: 0;
+        inline-size: auto;
+        min-inline-size: 56px;
+        background: var(--color-nav-bg);
+        backdrop-filter: blur(24px);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-direction: row;
+        z-index: 100;
+        transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
 
-    #root-mobile-footer-bar,
-    #appnav-footer-panel {
-        display: none !important;
-    }
+        &.expanded {
+            width: 216px;
 
-    #appnav-sidebar {
-        display: flex !important;
+            .appnav-panel {
+                display: flex;
+                transform: none;
+                opacity: 1;
+                pointer-events: auto;
+            }
+        }
+
+        .appnav-inner {
+            height: 100%;
+            display: flex;
+            align-items: stretch;
+            background: transparent;
+        }
+
+        .appnav-main-nav {
+            inline-size: 56px;
+            min-inline-size: 56px;
+            block-size: 100%;
+            background: var(--color-nav-inner-bg);
+            border-inline-end: 1px solid var(--color-nav-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 40;
+            padding-block-start: 21px;
+            box-sizing: border-box;
+            transition: inline-size 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-x: hidden;
+        }
+
+        .appnav-panel {
+            flex: 1;
+            background: var(--color-nav-bg);
+            display: none;
+            flex-direction: column;
+            width: 160px;
+            min-inline-size: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 11px 7px;
+            text-align: center;
+        }
+
+        .appnav-divider {
+            display: block;
+        }
     }
 }
 
-#appnav-sidebar {
-    position: fixed;
-    inset-block: 0;
-    inset-inline-start: 0;
-    inline-size: auto;
-    min-inline-size: 56px;
-    background: var(--color-nav-bg);
-    backdrop-filter: blur(24px);
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
-    display: flex;
-    flex-direction: row;
-    z-index: 100;
-    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
+/* --- MOBILE LAYOUT (FOOTER) --- */
+@media (max-width: 1023px) {
+    #appnav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        background: var(--color-nav-bg);
+        backdrop-filter: blur(24px);
+        border-top: 1px solid var(--color-nav-border-heavy);
+        display: flex;
+        flex-direction: column-reverse;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
 
-    &.expanded {
-        width: 216px;
+        .appnav-inner {
+            display: flex;
+            flex-direction: column-reverse;
+            width: 100%;
+        }
+
+        .appnav-main-nav {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: stretch;
+            height: 52px;
+            width: 100%;
+            background: var(--color-nav-inner-bg);
+        }
+
+        .appnav-items-wrapper {
+            display: flex;
+            flex: 1;
+            justify-content: space-around;
+        }
+
+        .appnav-btn {
+            flex: 1;
+            height: 52px;
+        }
 
         .appnav-panel {
+            max-height: 0;
+            overflow: hidden;
+            background: var(--color-nav-bg);
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
+            padding: 0 11px;
             display: flex;
+            flex-direction: column;
+            width: 100%;
+
+            &.expanded {
+                max-height: 70vh;
+                padding: 11px;
+                overflow-y: auto;
+                border-bottom: 1px solid var(--color-nav-border);
+            }
+        }
+
+        .appnav-divider {
+            display: none;
+        }
+
+        .appnav-top {
+            display: none;
         }
     }
+}
 
-    .appnav-inner {
-        height: 100%;
-        display: flex;
-        align-items: stretch;
-        background: transparent;
-    }
-
-    .appnav-main-nav {
-        inline-size: 56px;
-        min-inline-size: 56px;
-        block-size: 100%;
-        background: var(--color-nav-inner-bg);
-        border-inline-end: 1px solid var(--color-nav-border);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        z-index: 40;
-        padding-block-start: 21px;
-        box-sizing: border-box;
-        transition: inline-size 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow-x: hidden;
-    }
-
-    .appnav-panel {
-        flex: 1;
-        background: var(--color-nav-bg);
-        display: none;
-        flex-direction: column;
-        width: 160px;
-        min-inline-size: 0;
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding: 11px 7px;
-        text-align: center;
-    }
-
-    .sidebar-manual-content {
-        inline-size: 100%;
-        block-size: auto;
-        max-block-size: none;
-        padding: 10px;
-        box-sizing: border-box;
-        font-size: 14px;
-        line-height: 1.6;
-        color: var(--color-white);
-    }
-
-    .appnav-top {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 14px 0 11px;
-        inline-size: 100%;
-        box-sizing: border-box;
-    }
-
+/* --- COMMON ELEMENTS --- */
+#appnav {
     .appnav-logo {
         font-size: 18px;
         font-weight: 950;
         line-height: 0.7;
         letter-spacing: -0.04em;
-        margin-block-end: 24px;
+        margin-bottom: 24px;
         cursor: pointer;
         text-align: left;
         inline-size: fit-content;
         margin-inline: auto;
-        opacity: 1 !important;
-        display: flex !important;
+        display: flex;
         flex-direction: column;
         align-items: flex-start;
         justify-content: center;
@@ -108,19 +158,13 @@
         .appnav-logo-the {
             color: var(--color-cyan);
             text-shadow: 0 0 15px rgba(34, 211, 238, 0.8), 0 0 5px rgba(34, 211, 238, 0.5);
-            display: block;
-            margin: 0;
-            padding: 0;
             font-size: 16px;
         }
 
         .appnav-logo-hunt {
             color: var(--color-gold);
             text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
-            display: block;
-            margin: 0;
-            padding: 0;
-            margin-block-start: -10px;
+            margin-top: -10px;
         }
     }
 }
@@ -132,7 +176,6 @@
     margin: 8px auto;
 }
 
-/* Navigation Buttons */
 .appnav-btn {
     inline-size: 100%;
     block-size: 52px;
@@ -149,15 +192,6 @@
     opacity: 0.8;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
-    transition: opacity 0.2s ease, filter 0.2s ease;
-}
-
-.appnav-btn.is-disabled {
-    opacity: 0.3 !important;
-    filter: grayscale(1);
-}
-
-.appnav-btn {
     transition: all 0.3s ease;
 
     &:hover {
@@ -173,9 +207,6 @@
         &::before {
             content: '';
             position: absolute;
-            inset-inline-start: 0;
-            inset-block: 0;
-            inline-size: 4px;
             background: var(--color-cyan);
             box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
         }
@@ -202,7 +233,7 @@
     .appnav-icon {
         font-size: 20px;
         line-height: 1;
-        margin-block-end: 2px;
+        margin-bottom: 2px;
         color: inherit;
     }
 
@@ -219,10 +250,20 @@
     }
 }
 
-/* Sidebar Sections & Filters */
-.appnav-section {
-    margin-block-end: 14px;
-    display: block;
+@media (min-width: 1024px) {
+    .appnav-btn.appnav-active::before {
+        inset-inline-start: 0;
+        inset-block: 0;
+        inline-size: 4px;
+    }
+}
+
+@media (max-width: 1023px) {
+    .appnav-btn.appnav-active::before {
+        inset-inline: 0;
+        inset-block-start: 0;
+        block-size: 2px;
+    }
 }
 
 .appnav-section-title {
@@ -231,51 +272,30 @@
     font-weight: 800;
     color: var(--color-white);
     letter-spacing: 0.15em;
-    margin-block-end: 11px;
+    margin-bottom: 11px;
     text-align: center;
     text-transform: uppercase;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     line-height: 1.4;
     display: block;
-    padding-block-end: 0;
-    border-block-end: none;
     margin-inline: 8px;
 }
 
 #sidebar-panel-telop .appnav-section-title {
-    padding-block-end: 8px;
-    border-block-end: 1px solid rgba(255, 255, 255, 0.15);
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.appnav-filter-title {
-    font-family: 'Roboto', sans-serif;
-    font-size: 11px;
-    font-weight: 800;
-    color: var(--color-white);
-    letter-spacing: 0.15em;
-    margin-block-end: 11px;
-    text-align: center;
-    text-transform: uppercase;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-    line-height: 1.4;
-    display: block;
-    border-block-end: none !important;
-}
-
-.sidebar-welcome-area {
-    border: none;
-}
-
+/* Rank / Accordion Styles */
 .appnav-rank-item {
-    margin-block-end: 4px;
+    margin-bottom: 4px;
     display: block;
 
     &:last-child {
-        margin-block-end: 0;
+        margin-bottom: 0;
     }
 
-    .appnav-rank-header,
-    .appnav-filter-btn {
+    .appnav-rank-header {
         inline-size: 100%;
         cursor: pointer;
         padding: 8px 12px;
@@ -286,7 +306,6 @@
         border: 1px solid rgba(255, 255, 255, 0.08);
         color: var(--color-text-secondary);
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        opacity: 1;
 
         &:hover {
             background: rgba(255, 255, 255, 0.12);
@@ -295,8 +314,6 @@
         &[data-rank] {
             --rank-color: var(--current-rank, var(--color-cyan));
             color: var(--rank-color);
-            background: rgba(255, 255, 255, 0.03);
-            border-color: rgba(255, 255, 255, 0.1);
         }
     }
 
@@ -306,129 +323,52 @@
         color: var(--color-cyan);
         box-shadow: inset 0 0 12px rgba(34, 211, 238, 0.2), 0 0 15px rgba(34, 211, 238, 0.3);
         text-shadow: 0 0 10px rgba(34, 211, 238, 0.8);
-
-        &[data-rank] {
-            border-inline-start: 4px solid var(--current-rank);
-            color: var(--current-rank);
-            background: rgba(255, 255, 255, 0.05);
-            border-color: var(--current-rank);
-            box-shadow: inset 0 0 12px rgba(var(--current-rank-rgb), 0.1), 0 0 15px rgba(var(--current-rank-rgb), 0.25);
-            text-shadow: 0 0 10px var(--current-rank);
-        }
-    }
-
-    .appnav-area-expansion {
-        max-block-size: 0;
-        overflow: hidden;
-        transition: max-block-size 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        background: rgba(15, 23, 42, 0.3);
-
-        .appnav-area-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-
-            .area-all-container {
-                padding: 0 10px 0;
-                margin-block-start: -6px;
-                width: 100%;
-                box-sizing: border-box;
-
-                .area-select-all {
-                    padding: 10px;
-                    font-size: 15px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.1em;
-                }
-            }
-
-            .area-grid-container {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 4px;
-                padding: 6px 10px 0;
-                margin-block-end: -4px;
-            }
-        }
-    }
-
-    &.appnav-is-expanded .appnav-area-expansion {
-        max-block-size: 1000px;
     }
 }
 
+.appnav-area-expansion {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(15, 23, 42, 0.3);
+}
+
+.appnav-rank-item.appnav-is-expanded .appnav-area-expansion {
+    max-height: 1000px;
+}
+
+.area-grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    padding: 8px;
+}
+
 .area-filter-btn {
-    inline-size: 100%;
-    block-size: 28px;
+    width: 100%;
+    height: 32px;
     cursor: pointer;
-    padding: 6px 4px;
-    font-family: 'Roboto', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.12);
     color: var(--color-text-secondary);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    text-align: center;
-    opacity: 1;
-
-    &:hover {
-        background: rgba(255, 255, 255, 0.15);
-    }
 
     &.is-selected {
         background: rgba(34, 211, 238, 0.18);
         border-color: var(--color-cyan);
         color: var(--color-cyan);
-        box-shadow: inset 0 0 10px rgba(34, 211, 238, 0.25), 0 0 10px rgba(34, 211, 238, 0.3);
-        text-shadow: 0 0 8px rgba(34, 211, 238, 0.8);
-    }
-}
-
-/* Error/Alert Items */
-.appnav-error-item {
-    padding: 7px 0;
-    border-block-end: 1px solid rgba(255, 255, 255, 0.08);
-    background: transparent;
-    width: 100%;
-
-    &:last-child {
-        border-block-end: none;
-    }
-
-    .appnav-error-time {
-        font-family: var(--font-mono);
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 10px;
-        font-weight: 700;
     }
 }
 
 .appnav-alert,
 .js-error-content {
-    max-block-size: 400px;
-    overflow-y: auto;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--color-border-normal);
-    padding: 6px 12px;
-}
-
-/* --- SECTION: MEDIA (MOBILE OVERRIDES) --- */
-@media (max-width: 1023px) {
-
-    #appnav-sidebar,
-    #appnav-status-bar {
-        display: none;
-    }
-
-    .appnav-mobile-icons {
-        display: flex;
-        align-items: stretch;
-        justify-content: space-around;
-        block-size: 52px;
-    }
+    padding: 8px;
+    text-align: left;
 }

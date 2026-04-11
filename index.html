@@ -24,7 +24,7 @@
         <div class="loading-text">Loading...</div>
     </div>
 
-    <aside id="appnav-sidebar">
+    <aside id="appnav">
         <div class="appnav-inner">
             <div class="appnav-main-nav">
                 <div class="appnav-top">
@@ -53,10 +53,10 @@
                         <span class="appnav-icon">📖</span>
                         <span class="appnav-label">MANUAL</span>
                     </button>
-                    <div class="appnav-divider u-pc-only"></div>
-                    <label class="appnav-btn nav-toggle-btn" for="sidebar-notification-toggle" data-nav-id="notify"
+                    <div class="appnav-divider"></div>
+                    <label class="appnav-btn nav-toggle-btn" for="appnav-notification-toggle" data-nav-id="notify"
                         title="NOTIFY">
-                        <input type="checkbox" id="sidebar-notification-toggle" name="sidebar-notify"
+                        <input type="checkbox" id="appnav-notification-toggle" name="appnav-notify"
                             class="hidden-toggle js-notify-toggle" style="display:none;">
                         <span class="appnav-icon">🔔</span>
                         <span class="appnav-label">NOTIFY</span>
@@ -84,11 +84,6 @@
         </div>
     </aside>
 
-    <div id="appnav-status-bar" class="u-mobile-only">
-        <div id="status-message-maintenance" class="hidden"></div>
-        <div id="status-message-telop" class="hidden"></div>
-    </div>
-
     <div id="root-mobile-top-bar">
         <div class="root-mobile-title">
             <span class="text-cyan u-font-bold">The</span>
@@ -101,39 +96,6 @@
             <span class="mobile-clock-val js-lt-clock">--:--</span>
         </div>
     </div>
-
-    <nav id="root-mobile-footer-bar">
-        <div class="appnav-mobile-icons">
-            <button class="appnav-btn" data-nav-id="rank" title="RANK">
-                <span class="appnav-icon">📊</span>
-                <span class="appnav-label">RANK</span>
-            </button>
-            <button class="appnav-btn" data-nav-id="telop" title="NEWS">
-                <span class="appnav-icon">📢</span>
-                <span class="appnav-label">NEWS</span>
-            </button>
-            <button class="appnav-btn" data-nav-id="maintenance" title="MAINT">
-                <span class="appnav-icon">🛠️</span>
-                <span class="appnav-label">MAINT</span>
-            </button>
-            <button class="appnav-btn" data-nav-id="error" title="ERROR">
-                <span class="appnav-icon">⚠️</span>
-                <span class="appnav-label">ERROR</span>
-            </button>
-            <button class="appnav-btn" data-nav-id="manual" title="MANUAL">
-                <span class="appnav-icon">📖</span>
-                <span class="appnav-label">MANUAL</span>
-            </button>
-            <label class="appnav-btn nav-toggle-btn" for="mobile-notification-toggle" data-nav-id="notify"
-                title="NOTIFY">
-                <input type="checkbox" id="mobile-notification-toggle" name="mobile-notify"
-                    class="hidden-toggle js-notify-toggle" style="display:none;">
-                <span class="appnav-icon">🔔</span>
-                <span class="appnav-label">NOTIFY</span>
-            </label>
-        </div>
-        <div id="appnav-footer-panel" class="appnav-footer-panel hidden"></div>
-    </nav>
 
     <main class="main-content-area">
 

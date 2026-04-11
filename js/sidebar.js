@@ -4,18 +4,12 @@ import { openUserManual } from "./readme.js";
 import { cloneTemplate, escapeHtml } from "./mobCard.js";
 
 // ─── 定数・DOM ──────────────────────────────────────────
-const FilterDOM = {
-    areaFilterPanelMobile: document.getElementById('area-filter-panel-mobile'),
-    areaFilterPanelDesktop: document.getElementById('area-filter-panel-desktop')
-};
-
 const SOUND_FILE = "./sound/01 FFXIV_Linkshell_Transmission.mp3";
 
 let audio = null;
 const notifiedCycles = new Set();
 let manualLoaded = false;
 let currentPanel = null;
-let mobileCurrentPanel = null;
 window.errorLog = window.errorLog || [];
 const MAX_ERROR_LOG = 50;
 
@@ -24,37 +18,28 @@ export function initNotification() {
     audio = new Audio(SOUND_FILE);
     audio.load();
 
-    const sidebarToggle = document.getElementById('sidebar-notification-toggle');
-    const mobileToggle = document.getElementById('mobile-notification-toggle');
-    const toggles = [sidebarToggle, mobileToggle].filter(t => t !== null);
+    const toggle = document.getElementById('appnav-notification-toggle');
+    if (!toggle) return;
 
     const isEnabled = getState().notificationEnabled;
+    toggle.checked = isEnabled;
 
-    toggles.forEach(t => {
-        t.checked = isEnabled;
-        const label = t.closest('.appnav-btn');
+    const label = toggle.closest('.appnav-btn');
+    if (label) {
+        label.classList.toggle('is-disabled', !isEnabled);
+    }
+
+    toggle.addEventListener('change', (e) => {
+        const enabled = e.target.checked;
         if (label) {
-            label.classList.toggle('is-disabled', !isEnabled);
+            label.classList.toggle('is-disabled', !enabled);
         }
+        setNotificationEnabled(enabled);
 
-        t.addEventListener('change', (e) => {
-            const enabled = e.target.checked;
-
-            toggles.forEach(other => {
-                if (other !== t) other.checked = enabled;
-                const otherLabel = other.closest('.appnav-btn');
-                if (otherLabel) {
-                    otherLabel.classList.toggle('is-disabled', !enabled);
-                }
-            });
-
-            setNotificationEnabled(enabled);
-
-            if (enabled) {
-                requestNotificationPermission();
-                playNotificationSound(true);
-            }
-        });
+        if (enabled) {
+            requestNotificationPermission();
+            playNotificationSound(true);
+        }
     });
 }
 
@@ -67,9 +52,6 @@ async function requestNotificationPermission() {
 }
 
 export function playNotificationSound(isSilent = false) {
-    const isMobile = window.innerWidth < 1024;
-    if (!isMobile) return;
-
     if (!audio) return;
 
     if (isSilent) {
@@ -216,16 +198,10 @@ export const renderAreaFilterPanel = (customContainer = null) => {
         return;
     }
 
-    const mobilePanel = FilterDOM.areaFilterPanelMobile?.querySelector('.flex-wrap') || FilterDOM.areaFilterPanelMobile;
-    const desktopPanel = FilterDOM.areaFilterPanelDesktop?.querySelector('.flex-wrap') || FilterDOM.areaFilterPanelDesktop;
-
-    if (mobilePanel) {
-        mobilePanel.innerHTML = "";
-        mobilePanel.appendChild(createPanelContent());
-    }
-    if (desktopPanel) {
-        desktopPanel.innerHTML = "";
-        desktopPanel.appendChild(createPanelContent());
+    const activeExpansion = document.querySelector("#appnav .appnav-rank-item.appnav-active .area-grid-container");
+    if (activeExpansion) {
+        activeExpansion.innerHTML = "";
+        activeExpansion.appendChild(createPanelContent());
     }
 };
 
@@ -355,7 +331,7 @@ export function filterMobsByRankAndArea(mobs) {
             const targetSet =
                 areaSets?.[filterKey] instanceof Set ? areaSets[filterKey] : new Set();
 
-            if (targetSet.size === 0) return false; /* 修正: 何も選択されていない場合は非表示にする */
+            if (targetSet.size === 0) return false; 
             if (targetSet.size === allExpansions) return true;
 
             return targetSet.has(mobExpansion);
@@ -371,7 +347,7 @@ export function filterMobsByRankAndArea(mobs) {
             const targetSet =
                 areaSets?.[filterKey] instanceof Set ? areaSets[filterKey] : new Set();
 
-            if (targetSet.size === 0) return false; /* 修正: 何も選択されていない場合は非表示にする */
+            if (targetSet.size === 0) return false; 
             if (targetSet.size === allExpansions) return true;
 
             return targetSet.has(mobExpansion);
@@ -393,17 +369,15 @@ function saveState(key, value) {
 }
 
 export function initAppNav() {
-    const sidebar = document.getElementById("appnav-sidebar");
-    const footerBar = document.getElementById("root-mobile-footer-bar");
-    if (!sidebar && !footerBar) return;
+    const nav = document.getElementById("appnav");
+    if (!nav) return;
 
     captureErrors();
 
-    // 初期状態の復元 (PC)
     const stored = getStoredState();
-    if (sidebar && stored.panel && stored.panel !== "manual") {
+    if (stored.panel && stored.panel !== "manual") {
         currentPanel = stored.panel;
-        sidebar.classList.add("expanded");
+        nav.classList.add("expanded");
         document.body.classList.add("sidebar-expanded");
         showPanel(currentPanel);
         setActiveNavItem(currentPanel);
@@ -413,14 +387,12 @@ export function initAppNav() {
 
     bindNavItems();
 
-    if (sidebar) {
-        const logo = sidebar.querySelector(".appnav-logo");
-        if (logo) {
-            logo.addEventListener("click", () => {
-                if (sidebar.classList.contains("expanded")) closePanel();
-                setActiveNavItem('home');
-            });
-        }
+    const logo = nav.querySelector(".appnav-logo");
+    if (logo) {
+        logo.addEventListener("click", () => {
+            if (nav.classList.contains("expanded")) closePanel();
+            setActiveNavItem('home');
+        });
     }
 
     if (currentPanel !== "rank") {
@@ -428,7 +400,6 @@ export function initAppNav() {
     }
 }
 
-// ─── ナビアプリ (AppNav) 制御 ─────────────────────────
 function bindNavItems() {
     const navButtons = document.querySelectorAll('.appnav-btn[data-nav-id]');
 
@@ -436,7 +407,6 @@ function bindNavItems() {
         const navId = btn.dataset.navId;
 
         btn.addEventListener('click', (e) => {
-            // 通知トグルの場合はチェックボックスの動作を優先
             if (navId === 'notify') return;
 
             e.preventDefault();
@@ -464,63 +434,39 @@ function setActiveNavItem(id) {
 }
 
 export async function togglePanel(panelName) {
-    const isMobile = window.innerWidth < 1024;
-
     if (panelName === "manual") {
         if (typeof openUserManual === "function") openUserManual();
         return;
     }
 
-    if (isMobile) {
-        const panel = document.getElementById("appnav-footer-panel");
-        const footerBar = document.getElementById("root-mobile-footer-bar");
-        if (!panel || !footerBar) return;
+    const nav = document.getElementById("appnav");
+    if (!nav) return;
 
-        if (mobileCurrentPanel === panelName) {
-            panel.classList.remove("appnav-open");
-            panel.classList.add("hidden");
-            mobileCurrentPanel = null;
-            setActiveNavItem('home');
-            return;
-        }
-
-        mobileCurrentPanel = panelName;
-        setActiveNavItem(panelName);
-
-        const sourcePanel = document.getElementById(`sidebar-panel-${panelName}`);
-        if (sourcePanel) {
-            panel.innerHTML = sourcePanel.innerHTML;
-        } else {
-            panel.innerHTML = "";
-        }
-
-        panel.classList.remove("hidden");
-        panel.classList.add("appnav-open");
-        syncPanelContents(panelName, panel);
-    } else {
-        const sidebar = document.getElementById("appnav-sidebar");
-        if (!sidebar) return;
-
-        if (currentPanel === panelName) {
-            closePanel();
-            return;
-        }
-
-        sidebar.classList.add("expanded");
-        document.body.classList.add("sidebar-expanded");
-        showPanel(panelName);
-        currentPanel = panelName;
-        setActiveNavItem(panelName);
-        saveState("panel", panelName);
+    if (currentPanel === panelName) {
+        closePanel();
+        return;
     }
+
+    nav.classList.add("expanded");
+    document.body.classList.add("sidebar-expanded");
+    showPanel(panelName);
+    currentPanel = panelName;
+    setActiveNavItem(panelName);
+    saveState("panel", panelName);
 }
 
 function closePanel() {
-    const sidebar = document.getElementById("appnav-sidebar");
-    if (!sidebar) return;
+    const nav = document.getElementById("appnav");
+    if (!nav) return;
 
-    sidebar.classList.remove("expanded");
+    nav.classList.remove("expanded");
     document.body.classList.remove("sidebar-expanded");
+    
+    const panelArea = nav.querySelector(".appnav-panel");
+    if (panelArea) {
+        panelArea.classList.remove("expanded");
+    }
+
     currentPanel = null;
     setActiveNavItem('home');
     saveState("panel", null);
@@ -529,6 +475,10 @@ function closePanel() {
 }
 
 function showPanel(panelName) {
+    const nav = document.getElementById("appnav");
+    const panelArea = nav.querySelector(".appnav-panel");
+    if (panelArea) panelArea.classList.add("expanded");
+
     document.querySelectorAll(".appnav-panel .js-appnav-panel-item").forEach(p => p.classList.add("hidden"));
     const target = document.getElementById(`sidebar-panel-${panelName}`);
     if (target) {
@@ -543,7 +493,9 @@ async function syncPanelContents(panelName, container) {
     else if (panelName === "error") updateErrorPanel(container);
     else if (panelName === "telop" || panelName === "maintenance") {
         const { renderMaintenanceStatus } = await import("./app.js");
-        if (typeof renderMaintenanceStatus === "function") renderMaintenanceStatus();
+        if (typeof renderMaintenanceStatus === "function") {
+            renderMaintenanceStatus();
+        }
     }
 }
 
@@ -578,10 +530,7 @@ function captureErrors() {
 }
 
 export function updateErrorPanel(targetContainer = null) {
-    const panels = targetContainer ?
-        [targetContainer.querySelector(".js-error-content") || targetContainer] :
-        document.querySelectorAll(".js-error-content");
-
+    const panels = document.querySelectorAll(".js-error-content");
     if (panels.length === 0) return;
 
     const fragment = document.createDocumentFragment();
@@ -605,21 +554,15 @@ export function updateErrorPanel(targetContainer = null) {
 
     panels.forEach(el => {
         if (!el) return;
-        if (el.id === "appnav-footer-panel") {
-            el.innerHTML = '<div class="appnav-section"><div class="appnav-section-title">ERRORS</div><div class="appnav-alert js-error-content"></div></div>';
-            const inner = el.querySelector(".js-error-content");
-            inner.appendChild(fragment.cloneNode(true));
-        } else {
-            el.innerHTML = "";
-            el.appendChild(fragment.cloneNode(true));
-        }
+        el.innerHTML = "";
+        el.appendChild(fragment.cloneNode(true));
     });
 }
 
 function updateErrorBadge() {
-    if (typeof window.renderMaintenanceStatus === "function") {
-        window.renderMaintenanceStatus();
-    }
+    const { renderMaintenanceStatus } = import("./app.js").then(m => {
+        if (typeof m.renderMaintenanceStatus === "function") m.renderMaintenanceStatus();
+    });
 }
 
 // ─── マニュアル ─────────────────────────────────────────
@@ -648,8 +591,7 @@ async function loadManualContent(targetContainer = null) {
 
 // ─── アコーディオン ─────────────────────────────────────
 function renderSidebarFilterAccordion(targetContainer = null) {
-    const container = targetContainer?.id === "appnav-footer-panel" ? targetContainer :
-        (targetContainer?.querySelector(".appnav-filter-accordion") || document.getElementById("sidebar-filter-accordion"));
+    const container = document.getElementById("sidebar-filter-accordion");
     if (!container) return;
 
     const ranks = [
@@ -712,8 +654,4 @@ function renderSidebarFilterAccordion(targetContainer = null) {
 // ─── イベントリスナー ───────────────────────────────────
 window.addEventListener("filterChanged", () => {
     renderSidebarFilterAccordion();
-    const mobilePanel = document.getElementById("appnav-footer-panel");
-    if (mobilePanel && mobileCurrentPanel === "rank") {
-        renderSidebarFilterAccordion(mobilePanel);
-    }
 });
