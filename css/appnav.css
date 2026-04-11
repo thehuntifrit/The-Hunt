@@ -97,9 +97,8 @@
         margin-block-end: 24px;
         cursor: pointer;
         text-align: left;
-        inline-size: 100%;
-        padding-inline-start: 12px;
-        margin-inline-start: -14px;
+        inline-size: fit-content;
+        margin-inline: auto;
         opacity: 1 !important;
         display: flex !important;
         flex-direction: column;
@@ -112,6 +111,7 @@
             display: block;
             margin: 0;
             padding: 0;
+            font-size: 16px;
         }
 
         .appnav-logo-hunt {
@@ -123,6 +123,13 @@
             margin-block-start: -10px;
         }
     }
+}
+
+.appnav-divider {
+    inline-size: 48px;
+    block-size: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 8px auto;
 }
 
 /* Navigation Buttons */
@@ -423,12 +430,5 @@
         align-items: stretch;
         justify-content: space-around;
         block-size: 52px;
-    }
-
-    .appnav-divider {
-        inline-size: 1px;
-        block-size: 32px;
-        background: rgba(255, 255, 255, 0.1);
-        margin: auto 4px;
     }
 }

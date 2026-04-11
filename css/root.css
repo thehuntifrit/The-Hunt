@@ -498,6 +498,67 @@ html body.magnifier-active .mobcard-inner * {
     .manual-modal-close:hover {
         color: var(--white);
     }
+
+    #readme-container {
+        text-align: left;
+        line-height: 1.6;
+        color: var(--color-text-primary, var(--color-white));
+        padding: 1.5rem;
+        overflow-y: auto;
+        flex: 1;
+
+        h1,
+        h2,
+        h3 {
+            color: var(--color-cyan);
+            margin-block-start: 1.25rem;
+            margin-block-end: 0.75rem;
+            font-weight: 800;
+            text-align: left;
+        }
+
+        h1 {
+            font-size: 1.25rem;
+            border-bottom: 1px solid rgba(var(--color-cyan-rgb, 34, 211, 238), 0.3);
+            padding-bottom: 0.4rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        ul,
+        ol {
+            margin-bottom: 1.25rem;
+            padding-left: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+
+            code {
+                background: none;
+                padding: 0;
+            }
+        }
+    }
 }
 
 .hidden {
