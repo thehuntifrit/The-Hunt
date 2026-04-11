@@ -26,6 +26,7 @@
           "mask-composite: exclude"
         ]
       }
-    ]
+    ],
+    "no-inline-styles": "off"
   }
 }

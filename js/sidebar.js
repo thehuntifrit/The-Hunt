@@ -11,16 +11,6 @@ const FilterDOM = {
 
 const SOUND_FILE = "./sound/01 FFXIV_Linkshell_Transmission.mp3";
 
-const NAV_ITEMS = [
-    { id: "error", icon: "⚠️", label: "エラー", type: "panel" },
-    { id: "telop", icon: "📢", label: "告知", type: "panel" },
-    { id: "maintenance", icon: "🛠️", label: "メンテ", type: "panel" },
-    { id: "rank", icon: "🏷️", label: "選択", type: "panel" },
-    { id: "divider", type: "divider" },
-    { id: "manual", icon: "📋", label: "説明", type: "panel" },
-    { id: "notify", icon: "🔔", label: "通知", type: "toggle" }
-];
-
 let audio = null;
 const notifiedCycles = new Set();
 let manualLoaded = false;
@@ -183,7 +173,12 @@ export const renderAreaFilterPanel = (customContainer = null) => {
     }
 
     const createPanelContent = () => {
-        const fragment = document.createDocumentFragment();
+        const container = document.createElement("div");
+        container.className = "appnav-area-filter-wrapper";
+
+        const allBtnWrapper = document.createElement("div");
+        allBtnWrapper.className = "area-all-container";
+
         const allBtn = document.createElement("button");
         allBtn.className = `area-filter-btn area-select-all ${isAllSelected ? 'is-selected' : ''}`;
         allBtn.textContent = isAllSelected ? "全解除" : "全選択";
@@ -192,7 +187,11 @@ export const renderAreaFilterPanel = (customContainer = null) => {
             e.stopPropagation();
             handleAreaFilterClick(e);
         });
-        fragment.appendChild(allBtn);
+        allBtnWrapper.appendChild(allBtn);
+        container.appendChild(allBtnWrapper);
+
+        const grid = document.createElement("div");
+        grid.className = "area-grid-container";
 
         items.forEach(item => {
             const isSelected = currentSet.has(item);
@@ -204,10 +203,11 @@ export const renderAreaFilterPanel = (customContainer = null) => {
                 e.stopPropagation();
                 handleAreaFilterClick(e);
             });
-            fragment.appendChild(btn);
+            grid.appendChild(btn);
         });
 
-        return fragment;
+        container.appendChild(grid);
+        return container;
     };
 
     if (customContainer) {
@@ -216,8 +216,8 @@ export const renderAreaFilterPanel = (customContainer = null) => {
         return;
     }
 
-    const mobilePanel = FilterDOM.areaFilterPanelMobile?.querySelector('.flex-wrap');
-    const desktopPanel = FilterDOM.areaFilterPanelDesktop?.querySelector('.flex-wrap');
+    const mobilePanel = FilterDOM.areaFilterPanelMobile?.querySelector('.flex-wrap') || FilterDOM.areaFilterPanelMobile;
+    const desktopPanel = FilterDOM.areaFilterPanelDesktop?.querySelector('.flex-wrap') || FilterDOM.areaFilterPanelDesktop;
 
     if (mobilePanel) {
         mobilePanel.innerHTML = "";
@@ -355,7 +355,7 @@ export function filterMobsByRankAndArea(mobs) {
             const targetSet =
                 areaSets?.[filterKey] instanceof Set ? areaSets[filterKey] : new Set();
 
-            if (targetSet.size === 0) return true;
+            if (targetSet.size === 0) return false; /* 修正: 何も選択されていない場合は非表示にする */
             if (targetSet.size === allExpansions) return true;
 
             return targetSet.has(mobExpansion);
@@ -371,7 +371,7 @@ export function filterMobsByRankAndArea(mobs) {
             const targetSet =
                 areaSets?.[filterKey] instanceof Set ? areaSets[filterKey] : new Set();
 
-            if (targetSet.size === 0) return true;
+            if (targetSet.size === 0) return false; /* 修正: 何も選択されていない場合は非表示にする */
             if (targetSet.size === allExpansions) return true;
 
             return targetSet.has(mobExpansion);
@@ -398,7 +398,6 @@ export function initAppNav() {
     if (!sidebar && !footerBar) return;
 
     captureErrors();
-    document.body.classList.add("has-sidebar");
 
     // 初期状態の復元 (PC)
     const stored = getStoredState();
@@ -406,27 +405,22 @@ export function initAppNav() {
         currentPanel = stored.panel;
         sidebar.classList.add("expanded");
         document.body.classList.add("sidebar-expanded");
-        const btn = sidebar.querySelector(`[data-panel="${currentPanel}"]`);
-        if (btn) btn.classList.add("appnav-active");
         showPanel(currentPanel);
+        setActiveNavItem(currentPanel);
+    } else {
+        setActiveNavItem(null);
     }
 
-    // ナビゲーションアイテムの描画
-    if (sidebar) {
-        const navCol = sidebar.querySelector(".appnav-main-nav");
-        if (navCol) renderNavItems(navCol, "sidebar");
+    bindNavItems();
 
+    if (sidebar) {
         const logo = sidebar.querySelector(".appnav-logo");
         if (logo) {
             logo.addEventListener("click", () => {
                 if (sidebar.classList.contains("expanded")) closePanel();
+                setActiveNavItem('home');
             });
         }
-    }
-
-    if (footerBar) {
-        const iconCol = footerBar.querySelector(".appnav-mobile-icons");
-        if (iconCol) renderNavItems(iconCol, "mobile");
     }
 
     if (currentPanel !== "rank") {
@@ -434,44 +428,39 @@ export function initAppNav() {
     }
 }
 
-function renderNavItems(container, layout) {
-    container.innerHTML = "";
-    NAV_ITEMS.forEach(item => {
-        if (item.type === "divider") {
-            if (layout === "mobile") return;
-            const div = document.createElement("div");
-            div.className = "sidebar-divider";
-            container.appendChild(div);
-            return;
-        }
+// ─── ナビアプリ (AppNav) 制御 ─────────────────────────
+function bindNavItems() {
+    const navButtons = document.querySelectorAll('.appnav-btn[data-nav-id]');
 
-        if (item.type === "panel") {
-            const btn = document.createElement("button");
-            btn.className = "appnav-btn";
-            btn.dataset.panel = item.id;
-            btn.innerHTML = `
-                <span class="appnav-icon">${item.icon}</span>
-                <span class="appnav-label">${item.label}</span>
-            `;
-            btn.addEventListener("click", () => togglePanel(item.id));
-            container.appendChild(btn);
-        } else if (item.type === "toggle") {
-            const id = `${layout === "sidebar" ? "sidebar" : "mobile"}-notification-toggle`;
-            const name = `${layout === "sidebar" ? "sidebar" : "mobile"}-notify`;
-            const toggleLabel = document.createElement("label");
-            toggleLabel.className = "appnav-btn nav-toggle-btn";
-            toggleLabel.setAttribute("for", id);
-            toggleLabel.innerHTML = `
-                <input type="checkbox" id="${id}" name="${name}" class="hidden-toggle js-notify-toggle">
-                <span class="appnav-icon">${item.icon}</span>
-                <span class="appnav-label">${item.label}</span>
-            `;
-            container.appendChild(toggleLabel);
-        }
+    navButtons.forEach(btn => {
+        const navId = btn.dataset.navId;
+
+        btn.addEventListener('click', (e) => {
+            // 通知トグルの場合はチェックボックスの動作を優先
+            if (navId === 'notify') return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (navId === 'home') {
+                closePanel();
+                const container = document.getElementById("moblist-container");
+                if (container) container.scrollTo({ top: 0, behavior: "smooth" });
+                setActiveNavItem('home');
+                return;
+            }
+
+            togglePanel(navId);
+        });
     });
 
-    // 通知トグルの初期化 (sync)
     setTimeout(() => initNotification(), 0);
+}
+
+function setActiveNavItem(id) {
+    document.querySelectorAll(".appnav-btn[data-nav-id]").forEach(btn => {
+        btn.classList.toggle("appnav-active", btn.dataset.navId === id);
+    });
 }
 
 export async function togglePanel(panelName) {
@@ -483,23 +472,20 @@ export async function togglePanel(panelName) {
     }
 
     if (isMobile) {
-        // モバイルオーバーレイのトグル
         const panel = document.getElementById("appnav-footer-panel");
         const footerBar = document.getElementById("root-mobile-footer-bar");
         if (!panel || !footerBar) return;
-
-        footerBar.querySelectorAll(".appnav-btn").forEach(b => b.classList.remove("appnav-active"));
 
         if (mobileCurrentPanel === panelName) {
             panel.classList.remove("appnav-open");
             panel.classList.add("hidden");
             mobileCurrentPanel = null;
+            setActiveNavItem('home');
             return;
         }
 
-        const btn = footerBar.querySelector(`[data-panel="${panelName}"]`);
-        if (btn) btn.classList.add("appnav-active");
         mobileCurrentPanel = panelName;
+        setActiveNavItem(panelName);
 
         const sourcePanel = document.getElementById(`sidebar-panel-${panelName}`);
         if (sourcePanel) {
@@ -510,11 +496,8 @@ export async function togglePanel(panelName) {
 
         panel.classList.remove("hidden");
         panel.classList.add("appnav-open");
-
-        // 特別なパネルの追加レンダリング
         syncPanelContents(panelName, panel);
     } else {
-        // PCサイドバーのトグル
         const sidebar = document.getElementById("appnav-sidebar");
         if (!sidebar) return;
 
@@ -523,14 +506,11 @@ export async function togglePanel(panelName) {
             return;
         }
 
-        sidebar.querySelectorAll(".appnav-btn").forEach(b => b.classList.remove("appnav-active"));
-        const btn = sidebar.querySelector(`[data-panel="${panelName}"]`);
-        if (btn) btn.classList.add("appnav-active");
-
         sidebar.classList.add("expanded");
         document.body.classList.add("sidebar-expanded");
         showPanel(panelName);
         currentPanel = panelName;
+        setActiveNavItem(panelName);
         saveState("panel", panelName);
     }
 }
@@ -539,10 +519,10 @@ function closePanel() {
     const sidebar = document.getElementById("appnav-sidebar");
     if (!sidebar) return;
 
-    sidebar.querySelectorAll(".appnav-btn").forEach(b => b.classList.remove("appnav-active"));
     sidebar.classList.remove("expanded");
     document.body.classList.remove("sidebar-expanded");
     currentPanel = null;
+    setActiveNavItem('home');
     saveState("panel", null);
 
     document.querySelectorAll(".appnav-panel .js-appnav-panel-item").forEach(p => p.classList.add("hidden"));
@@ -684,10 +664,14 @@ function renderSidebarFilterAccordion(targetContainer = null) {
     const clickStep = state.filter.clickStep || 1;
 
     const fragment = document.createDocumentFragment();
+    const section = document.createElement("div");
+    section.className = "appnav-section";
+
     const title = document.createElement("div");
     title.className = "appnav-filter-title";
     title.textContent = "Filter";
-    fragment.appendChild(title);
+    section.appendChild(title);
+    fragment.appendChild(section);
 
     ranks.forEach(r => {
         const isActive = r.key === activeRank;

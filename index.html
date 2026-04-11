@@ -32,6 +32,38 @@
                         <span class="appnav-logo-the">The</span><br><span class="appnav-logo-hunt">Hunt</span>
                     </div>
                 </div>
+                <div class="appnav-items-wrapper">
+                    <button class="appnav-btn" data-nav-id="rank" title="RANK">
+                        <span class="appnav-icon">📊</span>
+                        <span class="appnav-label">RANK</span>
+                    </button>
+                    <button class="appnav-btn" data-nav-id="telop" title="NEWS">
+                        <span class="appnav-icon">📢</span>
+                        <span class="appnav-label">NEWS</span>
+                    </button>
+                    <button class="appnav-btn" data-nav-id="maintenance" title="MAINT">
+                        <span class="appnav-icon">🛠️</span>
+                        <span class="appnav-label">MAINT</span>
+                    </button>
+                    <button class="appnav-btn" data-nav-id="error" title="ERROR">
+                        <span class="appnav-icon">⚠️</span>
+                        <span class="appnav-label">ERROR</span>
+                    </button>
+                    <button class="appnav-btn" data-nav-id="manual" title="MANUAL">
+                        <span class="appnav-icon">📖</span>
+                        <span class="appnav-label">MANUAL</span>
+                    </button>
+                    <div class="appnav-divider u-pc-only"
+                        style="margin: 8px 0; inline-size: 32px; block-size: 1px; background: rgba(255, 255, 255, 0.1);">
+                    </div>
+                    <label class="appnav-btn nav-toggle-btn" for="sidebar-notification-toggle" data-nav-id="notify"
+                        title="NOTIFY">
+                        <input type="checkbox" id="sidebar-notification-toggle" name="sidebar-notify"
+                            class="hidden-toggle js-notify-toggle" style="display:none;">
+                        <span class="appnav-icon">🔔</span>
+                        <span class="appnav-label">NOTIFY</span>
+                    </label>
+                </div>
             </div>
             <div class="appnav-panel">
                 <div id="sidebar-panel-error" class="js-appnav-panel-item hidden">
@@ -74,6 +106,34 @@
 
     <nav id="root-mobile-footer-bar">
         <div class="appnav-mobile-icons">
+            <button class="appnav-btn" data-nav-id="rank" title="RANK">
+                <span class="appnav-icon">📊</span>
+                <span class="appnav-label">RANK</span>
+            </button>
+            <div class="appnav-divider"></div>
+            <button class="appnav-btn" data-nav-id="telop" title="NEWS">
+                <span class="appnav-icon">📢</span>
+                <span class="appnav-label">NEWS</span>
+            </button>
+            <button class="appnav-btn" data-nav-id="maintenance" title="MAINT">
+                <span class="appnav-icon">🛠️</span>
+                <span class="appnav-label">MAINT</span>
+            </button>
+            <button class="appnav-btn" data-nav-id="error" title="ERROR">
+                <span class="appnav-icon">⚠️</span>
+                <span class="appnav-label">ERROR</span>
+            </button>
+            <button class="appnav-btn" data-nav-id="manual" title="MANUAL">
+                <span class="appnav-icon">📖</span>
+                <span class="appnav-label">MANUAL</span>
+            </button>
+            <label class="appnav-btn nav-toggle-btn" for="mobile-notification-toggle" data-nav-id="notify"
+                title="NOTIFY">
+                <input type="checkbox" id="mobile-notification-toggle" name="mobile-notify"
+                    class="hidden-toggle js-notify-toggle" style="display:none;">
+                <span class="appnav-icon">🔔</span>
+                <span class="appnav-label">NOTIFY</span>
+            </label>
         </div>
         <div id="appnav-footer-panel" class="appnav-footer-panel hidden"></div>
     </nav>

@@ -7,7 +7,6 @@
 
     #appnav-sidebar {
         display: flex !important;
-        /* PC版では確実に表示 */
     }
 }
 
@@ -67,6 +66,7 @@
         overflow-y: auto;
         overflow-x: hidden;
         padding: 11px 7px;
+        text-align: center;
     }
 
     .sidebar-manual-content {
@@ -91,30 +91,36 @@
 
     .appnav-logo {
         font-size: 18px;
-        font-weight: 900;
-        line-height: 1.1;
-        letter-spacing: 0.05em;
+        font-weight: 950;
+        line-height: 0.7;
+        letter-spacing: -0.04em;
         margin-block-end: 24px;
         cursor: pointer;
-        text-align: center;
+        text-align: left;
         inline-size: 100%;
+        padding-inline-start: 12px;
+        margin-inline-start: -14px;
         opacity: 1 !important;
         display: flex !important;
         flex-direction: column;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
-        text-transform: uppercase;
 
         .appnav-logo-the {
             color: var(--color-cyan);
             text-shadow: 0 0 15px rgba(34, 211, 238, 0.8), 0 0 5px rgba(34, 211, 238, 0.5);
             display: block;
+            margin: 0;
+            padding: 0;
         }
 
         .appnav-logo-hunt {
             color: var(--color-gold);
             text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
             display: block;
+            margin: 0;
+            padding: 0;
+            margin-block-start: -10px;
         }
     }
 }
@@ -210,21 +216,47 @@
 .appnav-section {
     margin-block-end: 14px;
     display: block;
+}
 
-    .appnav-section-title,
-    .appnav-filter-title {
-        font-family: 'Roboto', sans-serif;
-        font-size: 11px;
-        font-weight: 800;
-        color: var(--color-white);
-        letter-spacing: 0.15em;
-        margin-block-end: 11px;
-        text-align: center;
-        text-transform: uppercase;
-        text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-        line-height: 1.4;
-        display: block;
-    }
+.appnav-section-title {
+    font-family: 'Roboto', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--color-white);
+    letter-spacing: 0.15em;
+    margin-block-end: 11px;
+    text-align: center;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    line-height: 1.4;
+    display: block;
+    padding-block-end: 0;
+    border-block-end: none;
+    margin-inline: 8px;
+}
+
+#sidebar-panel-telop .appnav-section-title {
+    padding-block-end: 8px;
+    border-block-end: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.appnav-filter-title {
+    font-family: 'Roboto', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--color-white);
+    letter-spacing: 0.15em;
+    margin-block-end: 11px;
+    text-align: center;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    line-height: 1.4;
+    display: block;
+    border-block-end: none !important;
+}
+
+.sidebar-welcome-area {
+    border: none;
 }
 
 .appnav-rank-item {
@@ -243,17 +275,14 @@
         font-family: 'Roboto', sans-serif;
         font-size: 13.5px;
         font-weight: 700;
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid var(--color-border-normal);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         color: var(--color-text-secondary);
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        opacity: 0.5;
-        filter: grayscale(0.5);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity: 1;
 
         &:hover {
-            opacity: 0.8;
-            background: rgba(255, 255, 255, 0.08);
-            filter: grayscale(0);
+            background: rgba(255, 255, 255, 0.12);
         }
 
         &[data-rank] {
@@ -265,13 +294,11 @@
     }
 
     &.appnav-active .appnav-rank-header {
-        background: rgba(34, 211, 238, 0.08);
+        background: rgba(34, 211, 238, 0.15);
         border-color: var(--color-cyan);
         color: var(--color-cyan);
-        opacity: 1;
-        filter: grayscale(0);
-        box-shadow: inset 0 0 12px rgba(34, 211, 238, 0.15), 0 0 10px rgba(34, 211, 238, 0.2);
-        text-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+        box-shadow: inset 0 0 12px rgba(34, 211, 238, 0.2), 0 0 15px rgba(34, 211, 238, 0.3);
+        text-shadow: 0 0 10px rgba(34, 211, 238, 0.8);
 
         &[data-rank] {
             border-inline-start: 4px solid var(--current-rank);
@@ -290,10 +317,31 @@
         background: rgba(15, 23, 42, 0.3);
 
         .appnav-area-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+
+            .area-all-container {
+                padding: 0 10px 0;
+                margin-block-start: -6px;
+                width: 100%;
+                box-sizing: border-box;
+
+                .area-select-all {
+                    padding: 10px;
+                    font-size: 15px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                }
+            }
+
+            .area-grid-container {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 4px;
+                padding: 6px 10px 0;
+                margin-block-end: -4px;
+            }
         }
     }
 
@@ -304,33 +352,33 @@
 
 .area-filter-btn {
     inline-size: 100%;
+    block-size: 28px;
     cursor: pointer;
     padding: 6px 4px;
-    font-size: 11px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 13px;
     font-weight: 700;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     color: var(--color-text-secondary);
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    opacity: 0.4;
-    filter: grayscale(1);
+    opacity: 1;
 
     &:hover {
-        background: rgba(255, 255, 255, 0.08);
-        opacity: 0.7;
-        filter: grayscale(0.5);
+        background: rgba(255, 255, 255, 0.15);
     }
 
     &.is-selected {
-        background: rgba(34, 211, 238, 0.12);
+        background: rgba(34, 211, 238, 0.18);
         border-color: var(--color-cyan);
         color: var(--color-cyan);
-        opacity: 1;
-        filter: grayscale(0);
-        box-shadow: inset 0 0 8px rgba(34, 211, 238, 0.15), 0 0 8px rgba(34, 211, 238, 0.2);
-        text-shadow: 0 0 6px rgba(34, 211, 238, 0.5);
+        box-shadow: inset 0 0 10px rgba(34, 211, 238, 0.25), 0 0 10px rgba(34, 211, 238, 0.3);
+        text-shadow: 0 0 8px rgba(34, 211, 238, 0.8);
     }
 }
 
