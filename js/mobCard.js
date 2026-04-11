@@ -486,27 +486,23 @@ export function updateProgressText(element, mob) {
   const { label, dhm, isSpecialCondition, isTimeOver, isInWindow } = computeTimeLabel(mob);
   const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
 
-  const timeContainer = element.querySelector('.mobcard-progress-text, .moblist-time');
+  const timeContainer = element.querySelector('.moblist-time');
   const percentEl = element.querySelector('.percent, .moblist-percent');
 
-  if (timeContainer) {
+  if (timeContainer && element.classList.contains('moblist-item')) {
     const timerNode = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
     const cacheKey = `timer-${label}-${isSpecialCondition}-${isTimeOver}-${isInWindow}-${dhm?.rawS || 0}`;
 
     if (timeContainer._lastCacheKey !== cacheKey) {
       timeContainer.innerHTML = "";
-      if (element.classList.contains('moblist-item')) {
-        const inner = document.createElement("div");
-        inner.className = "timer-inner-grid";
-        const labelSpan = document.createElement("span");
-        labelSpan.className = `timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''}`;
-        labelSpan.textContent = label;
-        inner.appendChild(timerNode);
-        inner.appendChild(labelSpan);
-        timeContainer.appendChild(inner);
-      } else {
-        timeContainer.appendChild(timerNode);
-      }
+      const inner = document.createElement("div");
+      inner.className = "timer-inner-grid";
+      const labelSpan = document.createElement("span");
+      labelSpan.className = `timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''}`;
+      labelSpan.textContent = label;
+      inner.appendChild(timerNode);
+      inner.appendChild(labelSpan);
+      timeContainer.appendChild(inner);
       timeContainer._lastCacheKey = cacheKey;
     }
   }

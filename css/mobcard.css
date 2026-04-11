@@ -45,27 +45,68 @@
     }
 
     .mobcard-header {
-        padding: 11px 0.75rem 0;
+        padding: 11px 12px 6px;
         position: relative;
         flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        .header-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* 半角スペース以上の余白 */
+            min-width: 0;
+            flex: 1;
+        }
+
+        .header-mid-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 11px; /* 同サイズに合わせる */
+            line-height: 1.2;
+            min-height: 18px; /* 上下幅の中央揃え用 */
+        }
+
+        .mobcard-area-info {
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.7); /* 太字と黄色を削除し、不透明度を調整 */
+            font-weight: 400; /* 太字を削除 */
+            gap: 4px;
+
+            .detail-expansion {
+                opacity: 0.6;
+            }
+        }
 
         .moblist-report-btn {
-            position: absolute;
-            inset-block-start: 8px;
-            inset-inline-end: 14px;
+            position: relative; /* 絶対配置を解除 */
+            inset: auto;
             margin: 0;
             z-index: 20;
             background: rgba(34, 211, 238, 0.1);
             border: 1px solid rgba(34, 211, 238, 0.4);
             border-radius: 4px;
             color: var(--color-cyan);
+            font-family: 'Roboto', sans-serif; /* Robotoに変更 */
             font-size: 10px;
             font-weight: 800;
-            padding: 4px 10px;
+            padding: 4px 6px; /* 左右4px削減 (10px -> 6px) */
             letter-spacing: 0.1em;
             text-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
             box-shadow: 0 0 10px rgba(34, 211, 238, 0.2), inset 0 0 5px rgba(34, 211, 238, 0.2);
             transition: all 0.3s ease;
+            flex-shrink: 0;
 
             &::before,
             &::after {
@@ -96,8 +137,6 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        flex: 1;
-        min-inline-size: 0;
         color: var(--color-white);
         line-height: 1;
         text-shadow: none;
@@ -120,15 +159,15 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        inline-size: 1.62em;
-        block-size: 1.62em;
+        width: 24px;
+        height: 24px;
         font-size: 13px;
         font-weight: 900;
         line-height: 1;
         border-radius: 2px;
         background: rgba(0, 0, 0, 0.4);
         border: 1.5px solid currentColor;
-        margin-inline: 0 0.6em;
+        margin: 0;
         flex-shrink: 0;
         box-shadow: 0 0 10px rgba(currentColor, 0.5), inset 0 0 4px rgba(currentColor, 0.3);
         text-shadow: 0 0 5px currentColor;
@@ -147,21 +186,21 @@
     }
 
     .mobcard-progress-container {
-        block-size: 10px;
+        height: 8px;
         background: rgba(0, 0, 0, 0.6);
-        border-radius: 5px;
+        border-radius: 4px;
         overflow: hidden;
-        margin-block: 0;
+        margin: -6px 0 0; /* -2px -> -6px (さらに4px UP) */
         box-shadow: none;
         border: 1px solid var(--color-border-subtle);
     }
 
     .mobcard-progress-bar {
-        block-size: 100%;
-        inline-size: 0;
+        height: 100%;
+        width: 0;
         background: var(--color-progress-fill);
-        border-radius: 5px;
-        transition: inline-size 0.4s ease ease-out;
+        border-radius: 4px;
+        transition: width 0.4s ease-out;
         box-shadow: none;
     }
 
@@ -223,17 +262,19 @@
     }
 }
 
-.mobcard-progress-text {
+.percent {
     text-align: right;
-    width: 44px;
-    font-size: 12px;
+    font-size: 13px; /* 11px -> 13px */
     font-weight: 800;
     color: rgba(255, 255, 255, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .mobcard-content {
-    padding: 0 0.75rem 0.5rem;
-    margin-top: -12px;
+    padding: 0 0.75rem 0.5rem; /* 12px -> 0px (12px UP) */
+    margin-top: 0;
     border-top: none;
     flex: 1 1 auto;
     overflow-y: auto;
