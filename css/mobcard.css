@@ -447,6 +447,14 @@
         border-left: 2px solid var(--color-cyan);
         text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
     }
+
+    .condition-text {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.5;
+        padding: 2px 8px;
+        white-space: pre-wrap;
+    }
 }
 
 .mobcard-grid {

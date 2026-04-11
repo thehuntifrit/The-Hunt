@@ -470,8 +470,15 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 
     const fragment = document.createDocumentFragment();
     nextChildren.forEach(child => fragment.appendChild(child));
-    DOM.pcLeftList.innerHTML = "";
-    DOM.pcLeftList.appendChild(fragment);
+
+    const orderChanged = lastRenderedOrderStr !== sortedMobs.map(m => m.No).join(",") ||
+      lastRenderedGroupStr !== sortedMobs.map(m => getGroupKey(m)).join(",");
+
+    if (orderChanged || DOM.pcLeftList.children.length !== nextChildren.length) {
+      DOM.pcLeftList.innerHTML = "";
+      DOM.pcLeftList.appendChild(fragment);
+    } else {
+    }
   }
 
   const detailContainer = document.getElementById("mobcard-detail");
@@ -536,15 +543,15 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 }
 
 // ─── プログレスバー ─────────────────────────────────────
-export function updateProgressBars() {
+export function updateProgressBars({ forceAll = true } = {}) {
   const state = getState();
   const nowSec = Date.now() / 1000;
   const mobMap = getMobMap();
-  const filtered = getFilteredMobs();
+  const filtered = forceAll ? getFilteredMobs() : [];
   const isMobile = window.innerWidth < 1024;
   const isOverlayOpen = state.openMobCardNo !== null;
 
-  if (!(isMobile && isOverlayOpen)) {
+  if (forceAll && !(isMobile && isOverlayOpen)) {
     filtered.forEach(mob => {
       const info = mob.repopInfo;
       if (info) {
@@ -586,16 +593,9 @@ export function updateProgressBars() {
     }
   }
 
-  const detailContainer = document.getElementById("mobcard-detail");
-  if (detailContainer && detailContainer.dataset.renderedMobNo && detailContainer.dataset.renderedMobNo !== "none") {
-    const detailCard = detailContainer.querySelector('.mobcard-card') || detailContainer.firstElementChild;
-    const mob = mobMap.get(String(detailContainer.dataset.renderedMobNo));
-    if (detailCard && mob) {
-      updateCardFull(detailCard, mob);
-    }
-  }
+  updateDetailCardRealtime(mobMap);
 
-  if (!(isMobile && isOverlayOpen)) {
+  if (forceAll && !(isMobile && isOverlayOpen)) {
     invalidateSortCache();
     const sorted = getSortedFilteredMobs();
     const currentOrderStr = sorted.map(m => m.No).join(",");
@@ -906,9 +906,10 @@ window.addEventListener('mobUpdated', (e) => {
   const card = cardCache.get(String(mobNo));
   if (card) {
     updateCardFull(card, mob);
-    invalidateSortCache();
-    sortAndRedistribute();
   }
+  const mobMap = getMobMap();
+  updateDetailCardRealtime(mobMap);
+  sortAndRedistribute();
 });
 
 window.addEventListener('filterChanged', () => {
@@ -917,7 +918,7 @@ window.addEventListener('filterChanged', () => {
 });
 
 window.addEventListener('mobsUpdated', () => {
-  updateProgressBars();
+  updateProgressBars({ forceAll: false });
 });
 
 window.addEventListener('locationDataReady', () => {

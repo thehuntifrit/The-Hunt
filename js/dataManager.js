@@ -2,7 +2,6 @@ import { calculateRepop } from "./cal.js";
 import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos, subscribeMaintenance } from "./server.js";
 
 // ─── 定数 ───────────────────────────────────────────────
-
 export const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
 
 export const PROGRESS_CLASSES = {
@@ -20,7 +19,6 @@ const SPAWN_CACHE_KEY = "spawnConditionCache";
 const LOCATIONS_CACHE_KEY = "mobLocationsCache";
 
 // ─── State ──────────────────────────────────────────────
-
 export const state = {
     userId: localStorage.getItem("user_uuid") || null,
     lodestoneId: localStorage.getItem("lodestone_id") || null,
@@ -90,7 +88,6 @@ if (Array.isArray(state.filter.allRankSet)) {
 }
 
 // ─── State Accessors ────────────────────────────────────
-
 export function getState() {
     return state;
 }
@@ -159,7 +156,6 @@ export function setNotificationEnabled(enabled) {
 }
 
 // ─── IndexedDB Cache ────────────────────────────────────
-
 const idb = {
     db: null,
     _initPromise: null,
@@ -207,7 +203,6 @@ const idb = {
 };
 
 // ─── Worker ─────────────────────────────────────────────
-
 let memorySpawnCache = null;
 
 const saveSpawnCacheDebounced = (() => {
@@ -267,7 +262,6 @@ export function requestWorkerCalculation(mob, maintenance, options = {}) {
 }
 
 // ─── データ加工 ─────────────────────────────────────────
-
 function processMobData(rawMobData, maintenance, options = {}) {
     const { skipConditionCalc = false } = options;
     return Object.entries(rawMobData.mobs).map(([no, mob]) => ({
@@ -288,7 +282,6 @@ function processMobData(rawMobData, maintenance, options = {}) {
 }
 
 // ─── データ読込 ─────────────────────────────────────────
-
 async function loadMaintenance() {
     try {
         const res = await fetch(MAINTENANCE_URL);
@@ -425,7 +418,6 @@ export async function loadBaseMobData() {
 }
 
 // ─── 初期化 ─────────────────────────────────────────────
-
 const initialLoadState = {
     status: false,
     location: false,
@@ -561,7 +553,6 @@ function checkInitialLoadComplete() {
 }
 
 // ─── リアルタイム ───────────────────────────────────────
-
 export function startRealtime() {
     unsubscribes.forEach(fn => fn && fn());
     unsubscribes = [];
@@ -596,50 +587,44 @@ export function startRealtime() {
         }
 
         const current = state.mobs;
-        const map = new Map();
+        let anyChanges = false;
+        const updatedMobNos = new Set();
 
         Object.values(mobStatusDataMap).forEach(docData => {
             Object.entries(docData).forEach(([mobId, mobData]) => {
                 const mobNo = parseInt(mobId, 10);
-                map.set(mobNo, {
-                    last_kill_time: mobData.last_kill_time?.seconds || 0,
-                    prev_kill_time: mobData.prev_kill_time?.seconds || 0,
-                });
+                const mob = current.find(m => m.No === mobNo);
+                if (!mob) return;
+
+                const newLastKill = mobData.last_kill_time?.seconds || 0;
+                const newPrevKill = mobData.prev_kill_time?.seconds || 0;
+
+                if (mob.last_kill_time !== newLastKill || mob.prev_kill_time !== newPrevKill) {
+                    mob.last_kill_time = newLastKill;
+                    mob.prev_kill_time = newPrevKill;
+                    requestWorkerCalculation(mob, state.maintenance, { forceRecalc: true });
+                    anyChanges = true;
+                    updatedMobNos.add(mobNo);
+                }
             });
         });
 
-        if (!state.initialLoadComplete) {
-            current.forEach(m => {
-                const dyn = map.get(m.No);
-                if (dyn) {
-                    m.last_kill_time = dyn.last_kill_time;
-                    m.prev_kill_time = dyn.prev_kill_time;
-                }
-            });
-            initialLoadState.status = true;
-            checkInitialLoadComplete();
-        } else {
-            let hasChanges = false;
-            current.forEach(m => {
-                const dyn = map.get(m.No);
-                if (dyn) {
-                    if (m.last_kill_time !== dyn.last_kill_time || m.prev_kill_time !== dyn.prev_kill_time) {
-                        m.last_kill_time = dyn.last_kill_time;
-                        m.prev_kill_time = dyn.prev_kill_time;
-                        requestWorkerCalculation(m, state.maintenance, { forceRecalc: true });
-                        hasChanges = true;
-                    }
-                }
-            });
-
-            if (hasChanges) {
+        if (anyChanges) {
+            if (!state.initialLoadComplete) {
+                initialLoadState.status = true;
+                checkInitialLoadComplete();
+            } else {
                 const statusToCache = current.reduce((acc, m) => {
                     acc[m.No] = { last_kill_time: m.last_kill_time, prev_kill_time: m.prev_kill_time };
                     return acc;
                 }, {});
                 idb.set(MOB_STATUS_CACHE_KEY, statusToCache);
 
-                setMobs([...current]);
+                updatedMobNos.forEach(mobNo => {
+                    const mob = current.find(m => m.No === mobNo);
+                    window.dispatchEvent(new CustomEvent('mobUpdated', { detail: { mobNo, mob } }));
+                });
+
                 window.dispatchEvent(new CustomEvent('mobsUpdated'));
             }
         }
@@ -652,14 +637,30 @@ export function startRealtime() {
             return;
         }
 
-        updateAllMobCullStatuses(locationsMap);
+        state.mobLocations = locationsMap;
+
+        const affectedAreas = new Set(Object.keys(locationsMap).map(k => k.split('_')[0]));
+
+        state.mobs.forEach(m => {
+            if (affectedAreas.has(m.area)) {
+                const instance = m.No % 10;
+                const key = `${m.area}_${instance}`;
+                const dyn = locationsMap[key];
+                if (dyn) {
+                    m.spawn_cull_status = dyn;
+                    if (state.initialLoadComplete) {
+                        window.dispatchEvent(new CustomEvent('mobUpdated', { detail: { mobNo: m.No, mob: m } }));
+                    }
+                }
+            }
+        });
 
         if (!state.initialLoadComplete) {
             initialLoadState.location = true;
             checkInitialLoadComplete();
+        } else {
+            window.dispatchEvent(new CustomEvent('locationsUpdated', { detail: { locationsMap } }));
         }
-        setMobs([...state.mobs]);
-        window.dispatchEvent(new CustomEvent('locationsUpdated', { detail: { locationsMap } }));
     });
     unsubscribes.push(unsubLoc);
 
@@ -670,24 +671,36 @@ export function startRealtime() {
         }
 
         const current = state.mobs;
+        const updatedMobNos = Object.keys(memoData);
 
-        current.forEach(m => {
-            const memos = memoData[m.No] || [];
+        updatedMobNos.forEach(mobNoStr => {
+            const mobNo = parseInt(mobNoStr, 10);
+            const mob = current.find(m => m.No === mobNo);
+            if (!mob) return;
+
+            const memos = memoData[mobNoStr] || [];
             const latest = memos[0];
+            const oldMemo = mob.memo_text;
+
             if (latest) {
-                m.memo_text = latest.memo_text;
-                m.memo_updated_at = latest.created_at?.seconds || 0;
+                mob.memo_text = latest.memo_text;
+                mob.memo_updated_at = latest.created_at?.seconds || 0;
             } else {
-                m.memo_text = "";
+                mob.memo_text = "";
+                mob.memo_updated_at = 0;
+            }
+
+            if (state.initialLoadComplete && oldMemo !== mob.memo_text) {
+                window.dispatchEvent(new CustomEvent('mobUpdated', { detail: { mobNo, mob } }));
             }
         });
 
         if (!state.initialLoadComplete) {
             initialLoadState.memo = true;
             checkInitialLoadComplete();
+        } else {
+            window.dispatchEvent(new CustomEvent('mobsUpdated'));
         }
-        setMobs([...current]);
-        window.dispatchEvent(new CustomEvent('mobsUpdated'));
     });
     unsubscribes.push(unsubMemo);
 

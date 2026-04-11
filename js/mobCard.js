@@ -380,6 +380,7 @@ export function renderMobCard(mob) {
   card.dataset.rank = rank;
 
   updateEl(card, '.mobcard-name', { textContent: mob.name });
+  const detailPane = card.querySelector(".mobcard-content");
   const nameEl = card.querySelector('.mobcard-name');
   if (nameEl) nameEl.dataset.rank = rank;
 
@@ -390,7 +391,7 @@ export function renderMobCard(mob) {
   updateEl(card, '[data-next-possible]', { textContent: nextConditionSpawnDate ? fmt(nextConditionSpawnDate) : "--/-- --:--" });
   updateEl(card, '[data-last-kill]', { textContent: fmt(mob.last_kill_time) });
 
-  updateEl(card, '.section-content.condition', { innerHTML: processText(mob.condition || "特別な出現条件はありません。") });
+  updateEl(card, '.condition-text', { innerHTML: processText(mob.condition || "特別な出現条件はありません。") });
 
   const memoEl = card.querySelector('.mobcard-memo-input');
   if (memoEl) {
