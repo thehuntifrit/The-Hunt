@@ -30,7 +30,6 @@ export async function initializeAuth() {
                     });
             }
         });
-        // タイムアウト設定 (念のため)
         setTimeout(() => {
             unsubscribe();
             resolve(auth.currentUser ? auth.currentUser.uid : null);

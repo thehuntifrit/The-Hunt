@@ -199,7 +199,6 @@
         background: rgba(255, 255, 255, 0.05);
     }
 
-    /* 通知トグルボタン固有のスタイル */
     &.nav-toggle-btn {
         .appnav-icon {
             color: var(--color-cyan);
@@ -210,10 +209,12 @@
         &.is-disabled {
             opacity: 0.35;
             filter: grayscale(1);
+
             .appnav-icon {
                 color: var(--color-text-secondary);
                 text-shadow: none;
             }
+
             .appnav-label {
                 color: var(--color-text-secondary);
             }
@@ -363,13 +364,13 @@ body #appnav .appnav-panel .area-grid-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2px;
-    padding: 8px; /* 0を排除し、上下左右すべてに8pxの余白を確保 */
+    padding: 8px;
     margin: 0;
 }
 
 body #appnav .appnav-panel .area-all-container {
     grid-column: 1 / -1;
-    margin-top: 2px; /* ランクボタン（親）との物理的な距離を再確保 */
+    margin-top: 2px;
     margin-bottom: 4px;
 }
 

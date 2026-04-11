@@ -144,7 +144,7 @@ async function initApp() {
         }
       } catch (e) {
         console.error("Initial render show failed:", e);
-        showColumnContainer(); // 失敗しても表示だけは試みる
+        showColumnContainer();
       }
     }, { once: true });
 
@@ -155,10 +155,6 @@ async function initApp() {
   syncMobCardPanePosition();
 }
 
-/**
- * PC版にて fixed 配置になった詳細パネルの位置を、アンカー要素の水平位置に同期させる。
- * スクロール時には実行されないため、1pxのブレも発生しない。
- */
 function syncMobCardPanePosition() {
   const pane = document.getElementById('mobcard-pane');
   if (pane && window.innerWidth >= 1024) {

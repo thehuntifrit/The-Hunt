@@ -51,6 +51,7 @@ export function initTooltip() {
   tooltip.className = "custom-tooltip hidden";
   document.body.appendChild(tooltip);
 
+  let tooltipRafId = null;
   document.addEventListener("mousemove", (e) => {
     if (!currentTarget) return;
 
@@ -60,12 +61,16 @@ export function initTooltip() {
       return;
     }
 
-    const offset = 15;
+    if (tooltipRafId) cancelAnimationFrame(tooltipRafId);
+    
     const x = e.clientX;
-    const y = e.clientY - offset;
+    const y = e.clientY;
 
-    tooltip.style.left = `${x}px`;
-    tooltip.style.top = `${y}px`;
+    tooltipRafId = requestAnimationFrame(() => {
+      const offset = 15;
+      tooltip.style.left = `${x}px`;
+      tooltip.style.top = `${y - offset}px`;
+    });
   });
 
   document.addEventListener("mouseover", (e) => {
@@ -142,6 +147,16 @@ export function initGlobalMagnifier() {
     wrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${ZOOM_SCALE})`;
   };
 
+  let magnifierRafId = null;
+  const throttledUpdateMagnifier = (e) => {
+    if (magnifierRafId) cancelAnimationFrame(magnifierRafId);
+    const x = e.clientX;
+    const y = e.clientY;
+    magnifierRafId = requestAnimationFrame(() => {
+      updateMagnifier({ clientX: x, clientY: y });
+    });
+  };
+
   document.addEventListener('mousedown', (e) => {
     if (e.button !== 2) return;
 
@@ -167,12 +182,12 @@ export function initGlobalMagnifier() {
     wrapper.appendChild(clone);
     magnifier.classList.remove('hidden');
     document.body.classList.add('magnifier-active');
-    updateMagnifier(e);
+    throttledUpdateMagnifier(e);
   }, { capture: true });
 
   window.addEventListener('mousemove', (e) => {
     if (activeMapImg) {
-      updateMagnifier(e);
+      throttledUpdateMagnifier(e);
     }
   });
 
