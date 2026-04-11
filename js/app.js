@@ -474,38 +474,32 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     DOM.pcLeftList.appendChild(fragment);
   }
 
-  const detailContainer = isPC ? DOM.pcRightDetail : DOM.mobileDetailOverlay;
-  const inactiveContainer = isPC ? DOM.mobileDetailOverlay : DOM.pcRightDetail;
+  const detailContainer = document.getElementById("mobcard-detail");
+  const pane = document.getElementById("mobcard-pane");
 
-  if (detailContainer) {
-    if (getState().openMobCardNo) {
-      if (detailContainer.dataset.renderedMobNo !== String(getState().openMobCardNo)) {
-        const targetMob = getState().mobs.find(m => m.No === getState().openMobCardNo);
+  if (detailContainer && pane) {
+    const openMobNo = getState().openMobCardNo;
+    if (openMobNo) {
+      if (detailContainer.dataset.renderedMobNo !== String(openMobNo)) {
+        const targetMob = getState().mobs.find(m => m.No === openMobNo);
         if (targetMob) {
           detailContainer.innerHTML = "";
           detailContainer.appendChild(createMobCard(targetMob, true));
-          detailContainer.dataset.renderedMobNo = String(getState().openMobCardNo);
-          if (!isPC && DOM.cardOverlayBackdrop) {
-            DOM.cardOverlayBackdrop.classList.remove("hidden");
-            document.body.classList.add('body-lock');
-          }
+          detailContainer.dataset.renderedMobNo = String(openMobNo);
         }
+      }
+      pane.classList.add("is-active");
+      if (window.innerWidth < 1024) {
+        document.body.classList.add('body-lock');
       }
     } else {
       if (detailContainer.dataset.renderedMobNo !== "none") {
-        detailContainer.innerHTML = isPC ? '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>' : "";
+        detailContainer.innerHTML = window.innerWidth >= 1024 ? '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>' : "";
         detailContainer.dataset.renderedMobNo = "none";
-        if (!isPC && DOM.cardOverlayBackdrop) {
-          DOM.cardOverlayBackdrop.classList.add("hidden");
-          document.body.classList.remove('body-lock');
-        }
       }
+      pane.classList.remove("is-active");
+      document.body.classList.remove('body-lock');
     }
-  }
-
-  if (inactiveContainer && inactiveContainer.dataset.renderedMobNo !== "none") {
-    inactiveContainer.innerHTML = "";
-    inactiveContainer.dataset.renderedMobNo = "none";
   }
 
   lastRenderedOrderStr = sortedMobs.map(m => m.No).join(",");
@@ -592,18 +586,14 @@ export function updateProgressBars() {
     }
   }
 
-  const rightPane = DOM.pcRightDetail || document.getElementById("mobcard-detail");
-  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobcard-overlay");
-
-  [rightPane, mobileOverlay].forEach(container => {
-    if (container && container.dataset.renderedMobNo && container.dataset.renderedMobNo !== "none") {
-      const detailCard = container.querySelector('.mobcard-card') || container.firstElementChild;
-      const mob = mobMap.get(container.dataset.renderedMobNo);
-      if (detailCard && mob) {
-        updateCardFull(detailCard, mob);
-      }
+  const detailContainer = document.getElementById("mobcard-detail");
+  if (detailContainer && detailContainer.dataset.renderedMobNo && detailContainer.dataset.renderedMobNo !== "none") {
+    const detailCard = detailContainer.querySelector('.mobcard-card') || detailContainer.firstElementChild;
+    const mob = mobMap.get(String(detailContainer.dataset.renderedMobNo));
+    if (detailCard && mob) {
+      updateCardFull(detailCard, mob);
     }
-  });
+  }
 
   if (!(isMobile && isOverlayOpen)) {
     invalidateSortCache();

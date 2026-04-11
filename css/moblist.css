@@ -12,8 +12,35 @@
     margin-block-start: 0;
 }
 
+/* 共通の詳細コンテナ設定 */
 #mobcard-pane {
     display: none;
+}
+
+/* モバイル時の詳細表示（オーバーレイ形式） */
+@media (max-width: 1023px) {
+    #mobcard-pane.is-active {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        background: rgba(10, 15, 30, 0.85);
+        backdrop-filter: blur(12px);
+        padding: 52px 14px;
+        overflow-y: auto;
+        animation: mobcard-slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #mobcard-clocks {
+        display: none;
+    }
+
+    #mobcard-detail {
+        width: 100%;
+        max-width: 480px;
+        margin: 0 auto;
+    }
 }
 
 /* PC LAYOUT (DESKTOP) */
@@ -55,6 +82,17 @@
     #mobcard-clocks {
         align-self: flex-end;
         margin-block-end: 4px;
+    }
+}
+
+@keyframes mobcard-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
@@ -126,15 +164,9 @@
         white-space: nowrap;
         color: var(--color-white);
 
-        &[data-rank="S"] {
-            color: var(--color-white);
-        }
-        &[data-rank="A"] {
-            color: var(--color-rank-a);
-        }
-        &[data-rank="F"] {
-            color: var(--color-rank-f);
-        }
+        &[data-rank="S"] { color: var(--color-white); }
+        &[data-rank="A"] { color: var(--color-rank-a); }
+        &[data-rank="F"] { color: var(--color-rank-f); }
         &[data-rank="S-active"] {
             color: var(--color-white);
             text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
@@ -259,8 +291,7 @@
         z-index: 10;
         box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.3);
 
-        &::before,
-        &::after {
+        &::before, &::after {
             content: '';
             position: absolute;
             background: rgba(0, 243, 255, 1);
@@ -289,9 +320,6 @@
 
     .moblist-item {
         margin-block-end: 4px;
-        
-        .moblist-report-btn {
-            width: 58px;
-        }
+        .moblist-report-btn { width: 58px; }
     }
 }

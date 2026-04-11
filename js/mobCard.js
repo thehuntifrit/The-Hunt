@@ -475,7 +475,7 @@ export function updateProgressBar(element, mob) {
   if (wrapper) {
     const isInCondition = !!mob.repopInfo.isInConditionWindow && !mob.repopInfo.isMaintenanceStop && !mob.repopInfo.isBlockedByMaintenance;
     wrapper.classList.toggle(PROGRESS_CLASSES.BLINK_WHITE, isInCondition);
-    
+
     // 特定の条件下でのエフェクト（リストアイテム / 詳細カード）
     const borderClass = element.classList.contains('moblist-item') ? 'moblist-blink-white' : 'mobcard-blink-white';
     element.classList.toggle(borderClass, isInCondition);
@@ -693,16 +693,15 @@ export function updateSimpleMobItem(item, mob) {
 export function attachMobCardEvents() {
   const containers = [
     document.getElementById("moblist-container"),
-    document.getElementById("mobcard-detail"),
-    document.getElementById("mobcard-overlay")
+    document.getElementById("mobcard-detail")
   ].filter(Boolean);
 
   containers.forEach(c => c.addEventListener("click", handleGeneralClick));
 
-  const overlayBackdrop = document.getElementById("mobcard-overlay-backdrop");
-  if (overlayBackdrop) {
-    overlayBackdrop.addEventListener("click", (e) => {
-      if (e.target === overlayBackdrop) {
+  const pane = document.getElementById("mobcard-pane");
+  if (pane) {
+    pane.addEventListener("click", (e) => {
+      if (e.target === pane && window.innerWidth < 1024) {
         setOpenMobCardNo(null);
         sortAndRedistribute({ immediate: true });
       }

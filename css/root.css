@@ -80,21 +80,6 @@
         height: 52px;
     }
 
-    #mobcard-overlay-backdrop {
-        z-index: 1000;
-        top: 52px;
-        bottom: 52px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        transition: opacity 0.3s ease;
-
-        &.hidden {
-            display: none;
-        }
-    }
-
     .main-content-area {
         margin-left: 0;
         padding-top: 52px;
@@ -110,7 +95,6 @@
         display: none !important;
     }
 }
-
 
 /* --- SECTION: BASE --- */
 html,
