@@ -295,10 +295,10 @@ async function loadMaintenance() {
     }
 }
 
-async function loadLocationData() {
+async function loadLocationData(background = false) {
     try {
         const cachedLocsStr = await idb.get(LOCATIONS_CACHE_KEY);
-        if (cachedLocsStr) {
+        if (!background && cachedLocsStr) {
             try {
                 const cachedLocs = JSON.parse(cachedLocsStr);
                 applyLocationsToState(cachedLocs);
@@ -307,14 +307,22 @@ async function loadLocationData() {
             }
         }
 
-        const res = await fetch(MOB_LOCATIONS_URL);
-        if (!res.ok) throw new Error("Location data failed to load.");
-        const locationsData = await res.json();
-        const freshLocsStr = JSON.stringify(locationsData);
+        const fetchPromise = (async () => {
+            const res = await fetch(MOB_LOCATIONS_URL);
+            if (!res.ok) throw new Error("Location data failed to load.");
+            const locationsData = await res.json();
+            const freshLocsStr = JSON.stringify(locationsData);
 
-        if (freshLocsStr !== cachedLocsStr) {
-            await idb.set(LOCATIONS_CACHE_KEY, freshLocsStr);
-            applyLocationsToState(locationsData);
+            if (freshLocsStr !== cachedLocsStr) {
+                await idb.set(LOCATIONS_CACHE_KEY, freshLocsStr);
+                applyLocationsToState(locationsData);
+            }
+        })();
+
+        if (!background) {
+            await fetchPromise;
+        } else {
+            fetchPromise.catch(e => console.warn("Background location fetch failed:", e));
         }
     } catch (e) {
         console.warn("Lazy location load failed:", e);
@@ -375,6 +383,42 @@ export async function loadBaseMobData() {
             setMobs([...processed]);
 
             scheduleConditionCalculation(processed, maintenance, memorySpawnCache);
+
+            await loadLocationData(false);
+            if (state.baseMobData.length > 0) {
+                applyPendingRealtimeData();
+            }
+
+            // バックグラウンドで最新データをフェッチ
+            (async () => {
+                try {
+                    const mobRes = await fetch(MOB_DATA_URL);
+                    if (!mobRes.ok) throw new Error("Mob data failed to load.");
+
+                    const freshData = await mobRes.json();
+                    const freshDataStr = JSON.stringify(freshData);
+
+                    if (freshDataStr !== cachedDataStr) {
+                        await idb.set(MOB_DATA_CACHE_KEY, freshDataStr);
+                        const processedFresh = processMobData(freshData, maintenance, { skipConditionCalc: true });
+                        processedFresh.forEach(mob => {
+                            if (memorySpawnCache[mob.No]) {
+                                mob._spawnCache = memorySpawnCache[mob.No];
+                                mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
+                            }
+                        });
+                        state.baseMobData = processedFresh;
+                        setMobs([...processedFresh]);
+                        scheduleConditionCalculation(processedFresh, maintenance, memorySpawnCache);
+                        applyPendingRealtimeData();
+                        window.dispatchEvent(new CustomEvent('mobsUpdated'));
+                    }
+                    await loadLocationData(true);
+                } catch(e) {
+                    console.warn("Background fresh data fetch failed:", e);
+                }
+            })();
+            return;
         } catch (e) {
             console.warn("Cache parse error:", e);
         }
@@ -387,22 +431,20 @@ export async function loadBaseMobData() {
         const freshData = await mobRes.json();
         const freshDataStr = JSON.stringify(freshData);
 
-        if (freshDataStr !== cachedDataStr) {
-            await idb.set(MOB_DATA_CACHE_KEY, freshDataStr);
+        await idb.set(MOB_DATA_CACHE_KEY, freshDataStr);
 
-            const processed = processMobData(freshData, maintenance, { skipConditionCalc: true });
+        const processed = processMobData(freshData, maintenance, { skipConditionCalc: true });
 
-            processed.forEach(mob => {
-                if (memorySpawnCache[mob.No]) {
-                    mob._spawnCache = memorySpawnCache[mob.No];
-                    mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
-                }
-            });
+        processed.forEach(mob => {
+            if (memorySpawnCache[mob.No]) {
+                mob._spawnCache = memorySpawnCache[mob.No];
+                mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
+            }
+        });
 
-            state.baseMobData = processed;
-            setMobs([...processed]);
-            scheduleConditionCalculation(processed, maintenance, memorySpawnCache);
-        }
+        state.baseMobData = processed;
+        setMobs([...processed]);
+        scheduleConditionCalculation(processed, maintenance, memorySpawnCache);
 
         await loadLocationData();
 
@@ -413,6 +455,9 @@ export async function loadBaseMobData() {
         console.error("Failed to load base data from network:", e);
         if (!cachedData) {
             console.error("データの読み込みに失敗しました。");
+            window.dispatchEvent(new CustomEvent('criticalDataLoadError', {
+                detail: { message: "基礎データの読み込みに失敗しました。\nアプリをファイルから直接開いている場合は、VS CodeのLive Serverなどを使って開いてください。" }
+            }));
         }
     }
 }

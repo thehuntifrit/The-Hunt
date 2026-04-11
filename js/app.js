@@ -129,6 +129,21 @@ async function initApp() {
       }
     }, 6000);
 
+    window.addEventListener('criticalDataLoadError', (e) => {
+      clearTimeout(loadingTimeout);
+      const overlay = DOM.loadingOverlay;
+      if (overlay) {
+        const spinner = overlay.querySelector('.loading-spinner');
+        if (spinner) spinner.style.display = 'none';
+        const text = overlay.querySelector('.loading-text');
+        if (text) {
+          text.style.whiteSpace = "pre-wrap";
+          text.textContent = e.detail.message;
+          text.style.color = '#ef4444';
+        }
+      }
+    }, { once: true });
+
     window.addEventListener('initialSortComplete', () => {
       clearTimeout(loadingTimeout);
       try {
@@ -805,7 +820,6 @@ function attachGlobalEventListeners() {
     syncMobCardPanePosition();
   }, 100));
 
-  // サイドバーの展開・格納が完了（アニメーション終了）したら位置を再同期
   const appnav = document.getElementById('appnav');
   if (appnav) {
     appnav.addEventListener('transitionend', (e) => {
