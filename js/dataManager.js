@@ -613,11 +613,13 @@ export function startRealtime() {
             });
         });
 
+        if (!state.initialLoadComplete) {
+            initialLoadState.status = true;
+            checkInitialLoadComplete();
+        }
+
         if (anyChanges) {
-            if (!state.initialLoadComplete) {
-                initialLoadState.status = true;
-                checkInitialLoadComplete();
-            } else {
+            if (state.initialLoadComplete) {
                 const statusToCache = current.reduce((acc, m) => {
                     acc[m.No] = { last_kill_time: m.last_kill_time, prev_kill_time: m.prev_kill_time };
                     return acc;
