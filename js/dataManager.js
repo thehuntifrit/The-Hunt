@@ -389,7 +389,12 @@ export async function loadBaseMobData() {
                 applyPendingRealtimeData();
             }
 
-            // バックグラウンドで最新データをフェッチ
+            if (!state.initialLoadComplete) {
+                state.initialLoadComplete = true;
+                if (initialLoadTimer) clearTimeout(initialLoadTimer);
+                window.dispatchEvent(new CustomEvent('initialDataLoaded'));
+            }
+
             (async () => {
                 try {
                     const mobRes = await fetch(MOB_DATA_URL);
