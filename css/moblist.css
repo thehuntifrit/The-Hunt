@@ -24,7 +24,7 @@
         flex-direction: column;
         position: fixed;
         inset: 0;
-        z-index: 2000;
+        z-index: var(--z-mobcard-mobile);
         background: rgba(10, 15, 30, 0.85);
         backdrop-filter: blur(12px);
         padding: 52px 14px;

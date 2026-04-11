@@ -49,10 +49,14 @@
     --color-black: rgba(0, 0, 0, 1);
     --color-all-rank: rgba(244, 63, 94, 1);
 
-    /* --- LAYOUT CONSTANTS (KEEP BASIC) --- */
-    --z-sticky: 100;
-    --z-modal: 210;
-    --z-toast: 300;
+    /* --- LAYOUT CONSTANTS (z-index hierarchy) --- */
+    --z-mobile-top-bar: 10;
+    --z-appnav-mobile: 20;
+    --z-mobcard-mobile: 30;
+    --z-modal-backdrop: 50;
+    --z-modal-content: 60;
+    --z-toast: 80;
+    --z-loading-overlay: 100;
 
     --font-mono: 'JetBrains Mono', 'Roboto Mono', monospace;
     --t-base: 0.3s ease;
@@ -69,7 +73,7 @@
         top: 0;
         left: 0;
         right: 0;
-        z-index: 9999;
+        z-index: var(--z-mobile-top-bar);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -241,10 +245,13 @@ html body.magnifier-active .mobcard-inner * {
 
     /* --- SECTION: LAYOUT --- */
     .main-content-area {
-        min-height: 100vh;
-        padding: 14px;
+        height: 100vh;
+        overflow: hidden;
+        padding: 0;
         margin-left: var(--sidebar-width, 56px);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
     }
 
     @media (max-width: 1023px) {
@@ -350,18 +357,11 @@ html body.magnifier-active .mobcard-inner * {
     justify-content: center;
     opacity: 1;
     visibility: visible;
+    z-index: var(--z-modal-content);
 }
 
-#report-modal:not(.hidden) {
-    z-index: 999;
-}
-
-#auth-modal:not(.hidden) {
-    z-index: 1000;
-}
-
-#manual-modal:not(.hidden) {
-    z-index: 1001;
+.app-backdrop {
+    z-index: var(--z-modal-backdrop);
 }
 
 #manual-modal-backdrop {
@@ -369,7 +369,7 @@ html body.magnifier-active .mobcard-inner * {
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
-    z-index: -1;
+    z-index: var(--z-modal-backdrop);
 }
 
 .manual-modal-content {
@@ -780,7 +780,7 @@ html body.magnifier-active .mobcard-inner * {
 .loading-overlay {
     position: fixed;
     inset: 0;
-    z-index: 10000;
+    z-index: var(--z-loading-overlay);
     display: flex;
     flex-direction: column;
     justify-content: center;
