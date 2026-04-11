@@ -26,7 +26,7 @@
     container-name: mobcard-card;
     transition: opacity 0.4s ease cubic-bezier(0.16, 1, 0.3, 1);
 
-    &.blink-border-white .mobcard-inner {
+    &.mobcard-blink-white .mobcard-inner {
         animation: blink-white-light 3s infinite ease-in-out;
     }
 

@@ -603,6 +603,10 @@ html body.magnifier-active .mobcard-inner * {
     display: none !important;
 }
 
+.progress-blink-white {
+    animation: blink-white-light 3s infinite ease-in-out;
+}
+
 .list-rank-badge {
     display: inline-flex;
     align-items: center;

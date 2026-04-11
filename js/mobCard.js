@@ -475,7 +475,10 @@ export function updateProgressBar(element, mob) {
   if (wrapper) {
     const isInCondition = !!mob.repopInfo.isInConditionWindow && !mob.repopInfo.isMaintenanceStop && !mob.repopInfo.isBlockedByMaintenance;
     wrapper.classList.toggle(PROGRESS_CLASSES.BLINK_WHITE, isInCondition);
-    element.classList.toggle('blink-border-white', isInCondition);
+    
+    // 特定の条件下でのエフェクト（リストアイテム / 詳細カード）
+    const borderClass = element.classList.contains('moblist-item') ? 'moblist-blink-white' : 'mobcard-blink-white';
+    element.classList.toggle(borderClass, isInCondition);
   }
 }
 

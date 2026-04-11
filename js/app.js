@@ -303,18 +303,18 @@ export async function renderMaintenanceStatus() {
     p.appendChild(msgSpan);
   });
 
-  document.querySelectorAll(`.appnav-btn[data-panel="maintenance"]`)
+  document.querySelectorAll(`.appnav-btn[data-nav-id="maintenance"]`)
     .forEach(btn => btn.classList.toggle("has-alert", hasMaintenance));
 
-  document.querySelectorAll(`.appnav-btn[data-panel="telop"]`)
+  document.querySelectorAll(`.appnav-btn[data-nav-id="telop"]`)
     .forEach(btn => btn.classList.toggle("has-alert", hasMessage));
 
   const errorLogCount = window.errorLog ? window.errorLog.length : 0;
   const hasError = errorLogCount > 0;
-  document.querySelectorAll(`.appnav-btn[data-panel="error"]`)
+  document.querySelectorAll(`.appnav-btn[data-nav-id="error"]`)
     .forEach(btn => btn.classList.toggle("has-alert", hasError));
 
-  document.querySelectorAll(`.appnav-btn[data-panel="rank"]`)
+  document.querySelectorAll(`.appnav-btn[data-nav-id="rank"]`)
     .forEach(btn => btn.classList.remove("has-alert"));
 }
 
