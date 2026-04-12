@@ -1,6 +1,6 @@
 :root {
     /* --- COLOR SYSTEM --- */
-    --color-bg-dark: rgba(15, 23, 42, 1);
+    --color-bg-dark: rgb(20, 30, 54);
     --color-bg-card: rgba(30, 41, 59, 0.45);
     --color-cyan: rgba(34, 211, 238, 1);
     --color-gold: rgba(251, 191, 36, 1);

@@ -280,7 +280,7 @@
         inline-size: 0;
         block-size: 100%;
         background: var(--color-progress-fill);
-        opacity: 0.25;
+        opacity: 0.4;
         transition: inline-size 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -346,12 +346,12 @@
         inset: 0;
         pointer-events: none;
         background: linear-gradient(to bottom,
-                rgba(255, 255, 255, 0.6) 0%,
-                rgba(255, 255, 255, 0.15) 10%,
+                rgba(255, 255, 255, 0.9) 0%,
+                rgba(255, 255, 255, 0.25) 10%,
                 transparent 30%,
                 transparent 70%,
-                rgba(255, 255, 255, 0.15) 90%,
-                rgba(255, 255, 255, 0.6) 100%);
+                rgba(255, 255, 255, 0.25) 90%,
+                rgba(255, 255, 255, 0.9) 100%);
         animation: moblist-glow-gradient 3s infinite ease-in-out;
         z-index: 30;
     }
@@ -361,11 +361,11 @@
 
     0%,
     100% {
-        opacity: 0.2;
+        opacity: 0.3;
     }
 
     50% {
-        opacity: 0.6;
+        opacity: 0.8;
     }
 }
 

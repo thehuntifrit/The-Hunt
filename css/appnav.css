@@ -145,7 +145,8 @@
         font-weight: 950;
         line-height: 0.7;
         letter-spacing: -0.04em;
-        margin-bottom: 24px;
+        margin-top: 16px;
+        margin-bottom: 48px;
         cursor: pointer;
         text-align: left;
         inline-size: fit-content;
