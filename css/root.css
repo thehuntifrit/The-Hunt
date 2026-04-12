@@ -50,12 +50,12 @@
     --color-all-rank: rgba(244, 63, 94, 1);
 
     /* --- LAYOUT CONSTANTS (z-index hierarchy) --- */
-    --z-mobile-top-bar: 10;
-    --z-appnav-mobile: 20;
-    --z-mobcard-mobile: 30;
-    --z-modal-backdrop: 50;
-    --z-modal-content: 60;
-    --z-toast: 80;
+    --z-mobile-top-bar: 95;
+    --z-appnav-mobile: 95;
+    --z-mobcard-mobile: 60;
+    --z-modal-backdrop: 80;
+    --z-modal-content: 90;
+    --z-toast: 98;
     --z-loading-overlay: 100;
 
     --font-mono: 'JetBrains Mono', 'Roboto Mono', monospace;
@@ -73,7 +73,7 @@
         top: 0;
         left: 0;
         right: 0;
-        z-index: 110;
+        z-index: var(--z-mobile-top-bar);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -363,9 +363,10 @@ html body.magnifier-active .mobcard-inner * {
     #report-modal:not(.hidden),
     #auth-modal:not(.hidden),
     #manual-modal:not(.hidden) {
-        top: 40px;
-        bottom: var(--mobile-footer-height);
+        top: var(--mobile-header-height, 40px);
+        bottom: var(--mobile-footer-height, 40px);
         inset-inline: 0;
+        z-index: var(--z-modal-content);
     }
 
     #report-modal .app-backdrop,
@@ -391,7 +392,7 @@ html body.magnifier-active .mobcard-inner * {
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
     inline-size: 100%;
     max-inline-size: 56rem;
-    max-block-size: 90vh;
+    max-block-size: 100%;
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--color-white);
     overflow: hidden;
