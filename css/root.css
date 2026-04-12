@@ -1222,8 +1222,7 @@ html body.magnifier-active .mobcard-inner * {
 
 @media (max-width: 1023px) {
     .toast-container-wrapper {
-        top: 64px;
-        /* 52px + 12px */
+        top: 52px;
         right: 12px;
         left: 12px;
     }
