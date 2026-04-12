@@ -112,8 +112,11 @@ export function checkAndNotify(mob) {
             ? `まもなく（2分前）`
             : `時間なう！`;
 
-        sendBrowserNotification(title, body);
-        playNotificationSound();
+        if (window.innerWidth >= 1024) {
+            sendBrowserNotification(title, body);
+        } else {
+            playNotificationSound();
+        }
         notifiedCycles.add(cycleKey);
     }
 
