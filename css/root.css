@@ -64,8 +64,8 @@
 
 @media (max-width: 1023px) {
     :root {
-        --mobile-header-height: calc(34px + env(safe-area-inset-top, 0px));
-        --mobile-footer-height: calc(52px + env(safe-area-inset-bottom, 0px));
+        --mobile-header-height: 40px;
+        --mobile-footer-height: calc(40px + env(safe-area-inset-bottom, 0px));
     }
 
     #root-mobile-top-bar {
@@ -73,21 +73,21 @@
         top: 0;
         left: 0;
         right: 0;
-        z-index: var(--z-mobile-top-bar);
+        z-index: 110;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: calc(11px + env(safe-area-inset-top, 0px)) 7px 7px;
+        padding: calc(7px + env(safe-area-inset-top, 0px)) 7px 7px;
         background: rgba(10, 15, 30, 0.95);
         backdrop-filter: blur(16px);
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        height: 52px;
+        height: 40px;
     }
 
     .main-content-area {
         margin-left: 0;
-        padding-top: 52px;
-        padding-bottom: 60px;
+        padding-top: 40px;
+        padding-bottom: calc(40px + 12px + env(safe-area-inset-bottom, 0px));
         padding-left: 1vw;
         padding-right: 1vw;
     }
@@ -363,7 +363,7 @@ html body.magnifier-active .mobcard-inner * {
     #report-modal:not(.hidden),
     #auth-modal:not(.hidden),
     #manual-modal:not(.hidden) {
-        top: 52px;
+        top: 40px;
         bottom: var(--mobile-footer-height);
         inset-inline: 0;
     }

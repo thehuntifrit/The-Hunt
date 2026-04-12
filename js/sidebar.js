@@ -370,8 +370,7 @@ export function initAppNav() {
     const logo = nav.querySelector(".appnav-logo");
     if (logo) {
         logo.addEventListener("click", () => {
-            if (nav.classList.contains("expanded")) closePanel();
-            setActiveNavItem('home');
+            window.location.reload();
         });
     }
 
