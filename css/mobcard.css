@@ -534,7 +534,7 @@
 /* --- SECTION: MEDIA (MOBILE OVERRIDES) --- */
 @media (max-width: 1023px) {
     .mobcard-card {
-        scroll-margin-top: 40px;
+        scroll-margin-top: var(--mobile-header-height);
         margin-block-end: 1px;
         max-inline-size: 96%;
         width: 100%;

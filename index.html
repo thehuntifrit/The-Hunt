@@ -58,7 +58,7 @@
                     <label class="appnav-btn nav-toggle-btn" for="appnav-notification-toggle" data-nav-id="notify"
                         title="通知">
                         <input type="checkbox" id="appnav-notification-toggle" name="appnav-notify"
-                            class="hidden-toggle js-notify-toggle" style="display:none;">
+                            class="hidden-toggle js-notify-toggle">
                         <span class="appnav-icon">🔔</span>
                         <span class="appnav-label">通知</span>
                     </label>
@@ -351,40 +351,6 @@
                 <button class="appnav-rank-header"></button>
                 <div class="appnav-area-expansion">
                     <div class="area-grid-container"></div>
-                </div>
-            </div>
-        </template>
-
-        <template id="auth-verified-template">
-            <div class="auth-verified-box">
-                <p class="text-emerald u-font-bold">✓ 認証済みです</p>
-            </div>
-        </template>
-
-        <template id="auth-form-template">
-            <div class="modal-auth-box space-y-4 text-left">
-                <p class="text-xs text-yellow u-font-bold uppercase tracking-wider">認証手続き</p>
-                <div class="space-y-2">
-                    <div class="u-block text-xs text-gray-400">STEP 1: 検証コードをコピー</div>
-                    <div class="u-flex u-gap-2">
-                        <code class="auth-code-display auth-vcode-display"></code>
-                        <button class="btn-copy auth-copy-btn">Copy</button>
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <div class="u-block text-xs text-gray-400">STEP 2: Lodestoneプロフィールに貼り付け</div>
-                    <a href="https://jp.finalfantasyxiv.com/lodestone/my/setting/profile/" target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-cyan underline u-text-sm u-block hover:text-cyan-300">プロフィール編集画面を開く 🔗</a>
-                </div>
-                <div class="space-y-2">
-                    <label class="u-block text-xs text-gray-400">STEP 3: キャラクターIDを入力して検証</label>
-                    <div class="u-flex u-flex-col u-gap-2">
-                        <input type="text" class="modal-input-field auth-id-input" placeholder="IDまたはURL"
-                            maxlength="200">
-                        <div class="text-xs min-h-[1em] auth-status-msg"></div>
-                        <button class="btn-primary-yellow w-full auth-verify-btn">検証して登録</button>
-                    </div>
                 </div>
             </div>
         </template>
