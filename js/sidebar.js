@@ -28,6 +28,16 @@ export function initNotification() {
         label.classList.toggle('is-disabled', !isEnabled);
     }
 
+    const onFirstUserAction = () => {
+        if (getState().notificationEnabled) {
+            playNotificationSound(true);
+        }
+        document.removeEventListener('click', onFirstUserAction);
+        document.removeEventListener('touchstart', onFirstUserAction);
+    };
+    document.addEventListener('click', onFirstUserAction);
+    document.addEventListener('touchstart', onFirstUserAction);
+
     toggle.addEventListener('change', (e) => {
         const enabled = e.target.checked;
         if (label) {
