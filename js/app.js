@@ -1,9 +1,9 @@
 import { getState, recalculateMob, requestWorkerCalculation, PROGRESS_CLASSES, EXPANSION_MAP, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled } from "./dataManager.js";
 import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
-import { attachMobCardEvents, createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initTooltip, initGlobalMagnifier } from "./mobCard.js";
+import { attachMobCardEvents, createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initTooltip, initGlobalMagnifier, adjustMemoHeight } from "./mobCard.js";
 import { getGroupKey, GROUP_LABELS, getOrCreateGroupSection, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, allTabComparator } from "./mobSorter.js";
 import { closeReportModal, openAuthModal, openReportModal, initModal, closeAuthModal } from "./modal.js";
-import { handleAreaFilterClick, initAppNav, initNotification, checkAndNotify, updateErrorPanel } from "./sidebar.js";
+import { handleAreaFilterClick, handleRankTabClick, initAppNav, initNotification, togglePanel, closePanel, setActiveNavItem, checkAndNotify, updateErrorPanel } from "./sidebar.js";
 import { initializeAuth, getUserData, submitReport, submitMemo, toggleCrushStatus } from "./server.js";
 import { openUserManual } from "./readme.js";
 
@@ -80,7 +80,6 @@ async function initApp() {
     }).catch(err => {
       console.error("Auth initialization error:", err);
       setVerified(false);
-      // 認証エラーでもUI構築を継続
       window.dispatchEvent(new CustomEvent('initialDataLoaded'));
     });
 
@@ -805,101 +804,6 @@ function handleCrushToggle(e) {
   });
 }
 
-// ─── イベントリスナー ───────────────────────────────────
-function attachGlobalEventListeners() {
-  let prevWidth = window.innerWidth;
-  window.addEventListener("resize", debounce(() => {
-    const currentWidth = window.innerWidth;
-    const wasPC = prevWidth >= 1024;
-    const isNowPC = currentWidth >= 1024;
-
-    if (wasPC !== isNowPC) {
-      prevWidth = currentWidth;
-      sortAndRedistribute();
-    }
-    syncMobCardPanePosition();
-  }, 100));
-
-  const appnav = document.getElementById('appnav');
-  if (appnav) {
-    appnav.addEventListener('transitionend', (e) => {
-      if (e.propertyName === 'width') {
-        syncMobCardPanePosition();
-      }
-    });
-  }
-
-  document.addEventListener('click', (e) => {
-    if (e.target.closest('.tab-button')) {
-      return;
-    }
-    if (e.target.closest('.area-filter-btn')) {
-      handleAreaFilterClick(e);
-      return;
-    }
-    if (e.target === DOM.cardOverlayBackdrop) {
-      setOpenMobCardNo(null);
-      sortAndRedistribute({ immediate: true });
-    }
-    if (e.target.matches("[data-action='save-memo']")) {
-      e.stopPropagation();
-    }
-  });
-
-  if (DOM.reportForm) {
-    DOM.reportForm.addEventListener('submit', handleReportSubmit);
-  }
-
-  document.addEventListener('change', async (e) => {
-    if (e.target.matches("[data-action='save-memo']")) {
-      const input = e.target;
-      const mobNo = parseInt(input.dataset.mobNo, 10);
-      const text = input.value;
-
-      if (!getState().isVerified) {
-        input.value = '';
-        openAuthModal();
-        return;
-      }
-
-      await submitMemo(mobNo, text);
-    }
-  });
-
-  let touchStartX = 0;
-  document.addEventListener('touchstart', (e) => {
-    const reportBtn = e.target.closest('.report-side-bar');
-    if (reportBtn) {
-      touchStartX = e.changedTouches[0].screenX;
-    }
-  }, { passive: true });
-
-  document.addEventListener('touchend', (e) => {
-    const reportBtn = e.target.closest('.report-side-bar');
-    if (reportBtn) {
-      const touchEndX = e.changedTouches[0].screenX;
-      if (touchEndX - touchStartX > 30) {
-        const mobNo = parseInt(reportBtn.dataset.mobNo, 10);
-        const type = reportBtn.dataset.reportType;
-        if (type === 'modal') {
-          openReportModal(mobNo);
-        } else {
-          reportBtn.click();
-        }
-      }
-    }
-  }, { passive: true });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.target.matches("[data-action='save-memo']")) {
-      if (e.key === 'Enter') {
-        e.target.blur();
-      }
-      e.stopPropagation();
-    }
-  });
-
-}
 
 export function attachLocationEvents() {
   if (locationEventsAttached) return;
@@ -922,7 +826,116 @@ export function attachLocationEvents() {
   locationEventsAttached = true;
 }
 
-// ─── グローバルイベント登録 ─────────────────────────────
+// ─── グローバルイベント管理（イベント委譲） ───────────────────────
+function attachGlobalEventListeners() {
+  let prevWidth = window.innerWidth;
+  window.addEventListener("resize", debounce(() => {
+    const currentWidth = window.innerWidth;
+    if ((prevWidth >= 1024) !== (currentWidth >= 1024)) {
+      prevWidth = currentWidth;
+      sortAndRedistribute();
+    }
+    syncMobCardPanePosition();
+  }, 100));
+
+  const appnav = document.getElementById('appnav');
+  if (appnav) {
+    appnav.addEventListener('transitionend', (e) => {
+      if (e.propertyName === 'width') syncMobCardPanePosition();
+    });
+  }
+
+  document.body.addEventListener('click', (e) => {
+    const target = e.target;
+
+    const navBtn = target.closest('.appnav-btn[data-nav-id]');
+    if (navBtn) {
+      const navId = navBtn.dataset.navId;
+      if (navId === 'notify') return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (navId === 'home') {
+        closePanel();
+        const container = document.getElementById("moblist-container");
+        if (container) container.scrollTo({ top: 0, behavior: "smooth" });
+        setActiveNavItem('home');
+      } else {
+        togglePanel(navId);
+      }
+      return;
+    }
+
+    const rankHeader = target.closest('.appnav-rank-header');
+    if (rankHeader) {
+      handleRankTabClick(rankHeader.closest(".appnav-rank-item").dataset.rank);
+      return;
+    }
+
+    const filterBtn = target.closest(".area-filter-btn");
+    if (filterBtn) {
+      e.stopPropagation();
+      handleAreaFilterClick(e);
+      return;
+    }
+
+    if (target.closest('.appnav-logo')) {
+      window.location.reload();
+      return;
+    }
+
+    if (target === DOM.cardOverlayBackdrop) {
+      setOpenMobCardNo(null);
+      sortAndRedistribute({ immediate: true });
+    }
+  });
+
+  if (DOM.reportForm) {
+    DOM.reportForm.addEventListener('submit', (e) => {
+      if (typeof handleReportSubmit === 'function') handleReportSubmit(e);
+    });
+  }
+
+  document.body.addEventListener('input', (e) => {
+    if (e.target.classList.contains('mobcard-memo-input') || e.target.matches("[data-action='save-memo']")) {
+      adjustMemoHeight(e.target);
+    }
+  });
+
+  document.body.addEventListener('change', async (e) => {
+    const input = e.target;
+    if (input.classList.contains('mobcard-memo-input') || input.matches("[data-action='save-memo']")) {
+      const mobNo = parseInt(input.dataset.mobNo, 10);
+      const value = input.value.trim();
+      if (!isNaN(mobNo)) {
+        if (!getState().isVerified) {
+          input.value = '';
+          openAuthModal();
+          return;
+        }
+        await submitMemo(mobNo, value);
+      }
+    }
+  });
+
+  let touchStartX = 0;
+  document.body.addEventListener('touchstart', (e) => {
+    const reportBtn = e.target.closest('.report-side-bar');
+    if (reportBtn) touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  document.body.addEventListener('touchend', (e) => {
+    const reportBtn = e.target.closest('.report-side-bar');
+    if (reportBtn) {
+      const touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX - touchStartX > 30) {
+        const mobNo = parseInt(reportBtn.dataset.mobNo, 10);
+        if (reportBtn.dataset.reportType === 'modal') openReportModal(mobNo);
+        else reportBtn.click();
+      }
+    }
+  }, { passive: true });
+}
+
 window.addEventListener('characterNameSet', () => {
   renderMaintenanceStatus();
 });
@@ -941,7 +954,7 @@ window.addEventListener('mobUpdated', (e) => {
     updateCardFull(card, mob);
   }
   const mobMap = getMobMap();
-  updateDetailCardRealtime(mobMap);
+  if (mobMap) updateDetailCardRealtime(mobMap, mob);
   sortAndRedistribute();
 });
 

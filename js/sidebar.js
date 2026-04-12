@@ -158,31 +158,22 @@ export const renderAreaFilterPanel = (customContainer = null) => {
 
     container.innerHTML = "";
 
-    // 1. 全選択ボタン
     const allBtnWrapper = document.createElement("div");
     allBtnWrapper.className = "area-all-container";
     const allBtn = document.createElement("button");
     allBtn.className = `area-filter-btn area-select-all ${isAllSelected ? 'is-selected' : ''}`;
     allBtn.textContent = isAllSelected ? "全解除" : "全選択";
     allBtn.dataset.value = "ALL";
-    allBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        handleAreaFilterClick(e);
-    });
     allBtnWrapper.appendChild(allBtn);
     container.appendChild(allBtnWrapper);
 
-    // 2. 個別エリアボタン群（フラットに追加）
     items.forEach(item => {
         const isSelected = currentSet.has(item);
         const btn = document.createElement("button");
         btn.className = `area-filter-btn ${isSelected ? 'is-selected' : ''}`;
         btn.textContent = (state.filter.rank === 'FATE' && item === 'F') ? 'FATE' : (state.filter.rank === 'ALL' ? (item === 'F' ? 'FATE' : `${item} rank`) : item);
         btn.dataset.value = item;
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            handleAreaFilterClick(e);
-        });
+        btn.dataset.value = item;
         container.appendChild(btn);
     });
 };
@@ -365,48 +356,16 @@ export function initAppNav() {
         setActiveNavItem(null);
     }
 
-    bindNavItems();
+    initNotification();
 
     const logo = nav.querySelector(".appnav-logo");
-    if (logo) {
-        logo.addEventListener("click", () => {
-            window.location.reload();
-        });
-    }
 
     if (currentPanel !== "rank") {
         renderSidebarFilterAccordion();
     }
 }
 
-function bindNavItems() {
-    const navButtons = document.querySelectorAll('.appnav-btn[data-nav-id]');
-
-    navButtons.forEach(btn => {
-        const navId = btn.dataset.navId;
-
-        btn.addEventListener('click', (e) => {
-            if (navId === 'notify') return;
-
-            e.preventDefault();
-            e.stopPropagation();
-
-            if (navId === 'home') {
-                closePanel();
-                const container = document.getElementById("moblist-container");
-                if (container) container.scrollTo({ top: 0, behavior: "smooth" });
-                setActiveNavItem('home');
-                return;
-            }
-
-            togglePanel(navId);
-        });
-    });
-
-    setTimeout(() => initNotification(), 0);
-}
-
-function setActiveNavItem(id) {
+export function setActiveNavItem(id) {
     document.querySelectorAll(".appnav-btn[data-nav-id]").forEach(btn => {
         btn.classList.toggle("appnav-active", btn.dataset.navId === id);
     });
@@ -439,7 +398,7 @@ export async function togglePanel(panelName) {
     saveState("panel", panelName);
 }
 
-function closePanel() {
+export function closePanel() {
     const nav = document.getElementById("appnav");
     if (!nav) return;
 
@@ -586,10 +545,6 @@ function renderSidebarFilterAccordion(targetContainer = null) {
             if (header) {
                 header.dataset.rank = r.key;
                 header.textContent = r.label;
-                header.addEventListener("click", () => {
-                    const rankKey = header.closest(".appnav-rank-item").dataset.rank;
-                    handleRankTabClick(rankKey);
-                });
             }
             fragment.appendChild(itemEl);
         }

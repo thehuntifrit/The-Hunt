@@ -409,12 +409,11 @@ export function renderMobCard(mob) {
   updateEl(card, '.condition-text', { innerHTML: processText(mob.condition || "特別な出現条件はありません。") });
 
   const memoEl = card.querySelector('.mobcard-memo-input');
-  if (memoEl) {
-    memoEl.value = mob.memo_text || '';
-    memoEl.dataset.mobNo = mob.No;
-    setTimeout(() => adjustMemoHeight(memoEl), 0);
-    memoEl.addEventListener('input', () => adjustMemoHeight(memoEl));
-  }
+    if (memoEl) {
+      memoEl.value = mob.memo_text || '';
+      memoEl.dataset.mobNo = mob.No;
+      setTimeout(() => adjustMemoHeight(memoEl), 0);
+    }
 
   const mapSection = card.querySelector('.map-section');
   if (mapSection) {

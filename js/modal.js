@@ -1,6 +1,7 @@
-let DOM;
 import { getState, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
 import { verifyLodestoneCharacter, registerUserToFirestore } from "./server.js";
+
+let DOM = {};
 
 export async function openReportModal(mobNo) {
     const mob = getState().mobs.find(m => m.No === mobNo);
@@ -40,8 +41,9 @@ export function openAuthModal() {
 
 export function closeAuthModal() {
     DOM.authModal.classList.add("hidden");
-    DOM.authLodestoneId.value = "";
 }
+
+// ─── モーダル初期化 ───
 
 export function initModal(domRef) {
     DOM = domRef;
