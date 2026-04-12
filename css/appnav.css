@@ -264,13 +264,24 @@
             content: '';
             position: absolute;
             inset-block-start: 8px;
-            inset-inline-end: 8px;
             inline-size: 8px;
             block-size: 8px;
             background: var(--color-nav-badge-error);
             border-radius: 50%;
             box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
             z-index: 10;
+        }
+
+        @media (min-width: 1024px) {
+            &::after {
+                inset-inline-start: calc(50% + 10px);
+            }
+        }
+
+        @media (max-width: 1023px) {
+            &::after {
+                inset-inline-end: 8px;
+            }
         }
     }
 
