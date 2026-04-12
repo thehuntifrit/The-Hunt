@@ -283,7 +283,13 @@ export async function renderMaintenanceStatus() {
     welcomeArea.textContent = "";
     const welcome = document.createElement("div");
     welcome.className = "sidebar-welcome-msg";
-    welcome.textContent = `ようこそ ${nameToDisplay}`;
+
+    welcome.appendChild(document.createTextNode("ようこそ "));
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "sidebar-welcome-name";
+    nameSpan.textContent = nameToDisplay;
+    welcome.appendChild(nameSpan);
+
     welcomeArea.appendChild(welcome);
   }
 
