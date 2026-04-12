@@ -578,6 +578,15 @@ export function updateProgressBars({ forceAll = true } = {}) {
     filtered.forEach(mob => {
       const info = mob.repopInfo;
       if (info) {
+        if (info.maxRepop && nowSec >= info.maxRepop) {
+          info.elapsedPercent = 100;
+        } else if (info.minRepop && nowSec >= info.minRepop) {
+          const denominator = info.maxRepop - info.minRepop;
+          info.elapsedPercent = denominator > 0 ? Math.min(((nowSec - info.minRepop) / denominator) * 100, 100) : 100;
+        } else {
+          info.elapsedPercent = 0;
+        }
+
         let needsRecalc = false;
         const infoNow = nowSec;
 
