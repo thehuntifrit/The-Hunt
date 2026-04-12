@@ -86,7 +86,7 @@ async function initApp() {
 
     startRealtime();
     setOpenMobCardNo(null);
-    initModal();
+    initModal(DOM);
     renderMaintenanceStatus();
     updateHeaderTime();
     initAppNav();
