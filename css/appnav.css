@@ -270,6 +270,7 @@
             border-radius: 50%;
             box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
             z-index: 10;
+            animation: nav-badge-blink 1.5s infinite ease-in-out;
         }
 
         @media (min-width: 1024px) {
@@ -301,7 +302,18 @@
         white-space: nowrap;
         text-align: center;
         display: block;
-        width: 100%;
+    }
+}
+
+@keyframes nav-badge-blink {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.2;
+        transform: scale(1);
+        box-shadow: 0 0 15px rgba(255, 77, 77, 0.8);
     }
 }
 
@@ -353,9 +365,9 @@
     .appnav-rank-header {
         inline-size: 100%;
         cursor: pointer;
-        padding: 6px 12px;
+        padding: 4px 12px;
         font-family: 'Roboto', sans-serif;
-        font-size: 17.5px;
+        font-size: 16px;
         font-weight: 700;
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.08);
@@ -416,9 +428,9 @@
         font-size: 13px;
         font-weight: 700;
         min-height: 24px;
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        color: var(--color-text-secondary);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.4);
         border-radius: 1px;
         display: flex;
         align-items: center;
@@ -435,14 +447,16 @@
         }
 
         &.is-selected {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.4);
-            color: rgba(255, 255, 255, 0.9);
+            background: transparent;
+            border-color: hsla(188, 60%, 53%, 0.5);
+            color: hsla(188, 60%, 53%, 1);
             box-shadow: none;
             text-shadow: none;
         }
 
         &.area-select-all {
+            width: 80%;
+            margin-inline: auto;
             font-size: 13.5px;
             letter-spacing: 0.02em;
         }
