@@ -3,7 +3,7 @@
     display: flex;
     flex-direction: column;
     padding: 0;
-    background: rgba(24, 38, 66, 0.98);
+    background: rgba(20, 30, 54, 0.98);
     border: 1px solid rgba(34, 211, 238, 0.4);
     border-radius: 12px;
     box-shadow: none;
@@ -30,7 +30,7 @@
     }
 
     .mobcard-inner {
-        background: linear-gradient(135deg, rgba(13, 30, 64, 1), rgba(6, 15, 38, 1));
+        background: transparent;
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-top: 1px solid rgba(255, 255, 255, 0.25);
         border-radius: 8px;
@@ -259,6 +259,60 @@
             text-shadow: none;
         }
     }
+
+    &.mobcard-expanded {
+        .mobcard-inner {
+            max-block-size: inherit;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mobcard-expandable {
+            block-size: auto;
+            overflow-y: auto;
+        }
+
+        .mobcard-header {
+            position: sticky;
+            inset-block-start: 0;
+            z-index: 3;
+            background: rgba(15, 23, 42, 0.98);
+            border-block-end: 1px solid rgba(255, 255, 255, 0.15);
+            border-start-start-radius: 0;
+            border-start-end-radius: 0;
+        }
+    }
+
+    .mobcard-mobile-actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        position: sticky;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.1);
+        z-index: 5;
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        flex-shrink: 0;
+        transition: all 0.2s;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        color: rgba(255, 255, 255, 0.8);
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--color-white);
+        }
+
+        &:active {
+            background: rgba(34, 211, 238, 0.2);
+            color: var(--color-cyan);
+        }
+    }
 }
 
 .percent {
@@ -272,7 +326,7 @@
 }
 
 .mobcard-content {
-    padding: 0 0.75rem 0.5rem;
+    padding: 0 11px 7px;
     border-top: none;
     flex: 1 1 auto;
     overflow-y: auto;
@@ -458,43 +512,44 @@
 
 .mobcard-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 4px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .mobcard-info-item {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(14, 33, 78, 1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 4px;
-    padding: 0 10px;
+    padding: 4px 10px;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    min-height: auto;
+}
 
-    .mobcard-label {
-        font-size: 10px;
-        font-weight: 800;
-        color: var(--color-cyan);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        margin-block-end: 1px;
-        transform: translateY(1px);
-    }
+.mobcard-info-item .mobcard-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-block-end: 2px;
+    line-height: 1;
+}
 
-    .mobcard-value {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--color-text-secondary);
-        font-family: var(--font-mono);
-        line-height: 1.1;
-        margin-bottom: 1px;
-        font-variant-numeric: tabular-nums;
-    }
+.mobcard-info-item .mobcard-value {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-white);
+    font-family: var(--font-mono);
+    line-height: 1.2;
+    text-shadow: none;
+    font-variant-numeric: tabular-nums;
+}
 
-    &.mobcard-highlight .mobcard-value {
-        color: var(--color-gold);
-        font-weight: bold;
-    }
+.mobcard-info-item.mobcard-highlight .mobcard-value {
+    color: var(--color-gold);
 }
 
 .mobcard-expandable {
@@ -542,31 +597,6 @@
         margin-block: 2dvh;
         height: auto;
 
-        &.mobcard-expanded {
-            .mobcard-inner {
-                max-block-size: inherit;
-                overflow-y: auto;
-                overscroll-behavior: contain;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .mobcard-expandable {
-                block-size: auto;
-                overflow-y: auto;
-            }
-
-            .mobcard-header {
-                position: sticky;
-                inset-block-start: 0;
-                z-index: 3;
-                background: rgba(15, 23, 42, 0.98);
-                border-block-end: 1px solid rgba(255, 255, 255, 0.15);
-                border-start-start-radius: 0;
-                border-start-end-radius: 0;
-            }
-        }
-
         &.moblist-selected .mobcard-inner {
             background: rgba(255, 255, 255, 0.08);
             border-color: rgba(34, 211, 238, 0.3);
@@ -594,26 +624,6 @@
             overflow: hidden;
             margin: 0;
             z-index: var(--z-mobcard-mobile);
-        }
-
-        .mobcard-mobile-actions {
-            position: sticky;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.1);
-            z-index: 5;
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
-            flex-shrink: 0;
-            transition: all 0.2s;
-
-            &:hover {
-                background: rgba(255, 255, 255, 0.15);
-                color: var(--white);
-            }
-
-            &:active {
-                background: rgba(34, 211, 238, 0.2);
-                color: var(--color-cyan);
-            }
         }
     }
 }

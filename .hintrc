@@ -23,7 +23,8 @@
           "scrollbar-width",
           "scrollbar-width: thin",
           "mask-composite",
-          "mask-composite: exclude"
+          "mask-composite: exclude",
+          "min-height: auto"
         ]
       }
     ],

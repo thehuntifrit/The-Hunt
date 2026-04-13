@@ -51,7 +51,7 @@
 
         .appnav-panel {
             flex: 1;
-            background: var(--color-nav-bg);
+            background: var(--color-bg-dark);
             display: none;
             flex-direction: column;
             width: 160px;
@@ -113,7 +113,7 @@
         .appnav-panel {
             max-height: 0;
             overflow: hidden;
-            background: var(--color-nav-bg);
+            background: var(--color-bg-dark);
             transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
             padding: 0 11px;
             display: flex;

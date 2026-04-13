@@ -1,6 +1,6 @@
 :root {
     /* --- COLOR SYSTEM --- */
-    --color-bg-dark: rgb(20, 30, 54);
+    --color-bg-dark: rgba(20, 30, 54, 1);
     --color-bg-card: rgba(30, 41, 59, 0.45);
     --color-cyan: rgba(34, 211, 238, 1);
     --color-gold: rgba(251, 191, 36, 1);
@@ -300,21 +300,21 @@ html body.magnifier-active .mobcard-inner * {
         font-size: 11px;
     }
 
-    .text-xl {
-        font-size: 1.25rem;
+    /* .text-xl {
+        font-size: 18px;
     }
 
     .mt-6 {
-        margin-top: 1.5rem;
-    }
+        margin-top: 21px;
+    } */
 
     .mb-4 {
         margin-bottom: 14px;
     }
 
-    .gap-3 {
-        gap: 0.75rem;
-    }
+    /* .gap-3 {
+        gap: 11px;
+    } */
 
     .text-emerald {
         color: var(--color-lastone);
@@ -402,7 +402,7 @@ html body.magnifier-active .mobcard-inner * {
     border-radius: 12px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
     inline-size: 100%;
-    max-inline-size: 56rem;
+    max-inline-size: 784px;
     max-block-size: 100%;
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--color-white);
@@ -423,12 +423,12 @@ html body.magnifier-active .mobcard-inner * {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 14px 1.25rem;
+        padding: 14px 18px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .manual-modal-title {
-        font-size: 1.15rem;
+        font-size: 16px;
         font-weight: 800;
         display: flex;
         align-items: center;
@@ -445,7 +445,7 @@ html body.magnifier-active .mobcard-inner * {
         .text-gray {
             color: rgba(255, 255, 255, 0.4);
             margin-inline-start: 7px;
-            font-size: 0.9rem;
+            font-size: 13px;
             font-weight: 400;
             letter-spacing: 0.1em;
         }
@@ -457,7 +457,7 @@ html body.magnifier-active .mobcard-inner * {
         color: rgba(255, 255, 255, 0.5);
         cursor: pointer;
         padding: 4px;
-        font-size: 1.5rem;
+        font-size: 21px;
         line-height: 1;
 
     }
@@ -470,7 +470,7 @@ html body.magnifier-active .mobcard-inner * {
         text-align: left;
         line-height: 1.6;
         color: var(--color-text-primary, var(--color-white));
-        padding: 1.5rem;
+        padding: 21px;
         overflow-y: auto;
         flex: 1;
 
@@ -478,35 +478,35 @@ html body.magnifier-active .mobcard-inner * {
         h2,
         h3 {
             color: var(--color-cyan);
-            margin-block-start: 1.25rem;
-            margin-block-end: 0.75rem;
+            margin-block-start: 18px;
+            margin-block-end: 11px;
             font-weight: 800;
             text-align: left;
         }
 
         h1 {
-            font-size: 1.25rem;
+            font-size: 18px;
             border-bottom: 1px solid rgba(var(--color-cyan-rgb, 34, 211, 238), 0.3);
-            padding-bottom: 0.4rem;
+            padding-bottom: 6px;
         }
 
         p {
-            margin-bottom: 1rem;
+            margin-bottom: 14px;
         }
 
         ul,
         ol {
-            margin-bottom: 1.25rem;
-            padding-left: 1.5rem;
+            margin-bottom: 18px;
+            padding-left: 21px;
         }
 
         li {
-            margin-bottom: 0.5rem;
+            margin-bottom: 7px;
         }
 
         code {
             background: rgba(0, 0, 0, 0.3);
-            padding: 0.2rem 0.4rem;
+            padding: 3px 6px;
             border-radius: 4px;
             font-family: var(--font-mono);
             font-size: 0.9em;
@@ -514,10 +514,10 @@ html body.magnifier-active .mobcard-inner * {
 
         pre {
             background: rgba(0, 0, 0, 0.4);
-            padding: 1rem;
+            padding: 14px;
             border-radius: 8px;
             overflow-x: auto;
-            margin-bottom: 1.25rem;
+            margin-bottom: 18px;
             border: 1px solid rgba(255, 255, 255, 0.05);
 
             code {
@@ -620,13 +620,13 @@ html body.magnifier-active .mobcard-inner * {
     justify-content: space-between;
 }
 
-.u-text-sm {
-    font-size: 0.875rem;
-}
+/* .u-text-sm {
+    font-size: 12px;
+} */
 
-.u-gap-2 {
-    gap: 0.5rem;
-}
+/* .u-gap-2 {
+    gap: 7px;
+} */
 
 /* --- SECTION: COMMON_UI --- */
 .report-modal-backdrop,
@@ -642,18 +642,18 @@ html body.magnifier-active .mobcard-inner * {
     border-radius: 8px;
     position: relative;
     width: 100%;
-    max-width: 28rem;
-    padding: 1rem 1.5rem 1.5rem;
+    max-width: 392px;
+    padding: 14px 21px 21px;
 }
 
 .modal-mob-name {
     margin-top: 0;
-    font-size: 1.25rem;
+    font-size: 18px;
     margin-bottom: 14px;
     font-weight: 600;
     color: var(--color-white);
     border-bottom: 1px solid var(--color-border-normal);
-    padding-bottom: 0.5rem;
+    padding-bottom: 7px;
 }
 
 .modal-content-base label[for="report-datetime"] {
@@ -667,7 +667,7 @@ html body.magnifier-active .mobcard-inner * {
     background-color: rgba(3, 7, 18, 1);
     border: 1px solid var(--color-border-normal);
     color: var(--color-white);
-    font-size: 1.125rem;
+    font-size: 16px;
     outline: none;
     transition: all 0.2s;
 }
@@ -679,14 +679,14 @@ html body.magnifier-active .mobcard-inner * {
 .modal-error-display {
     font-size: 12px;
     text-align: center;
-    margin: 0.75rem 0;
+    margin: 11px 0;
     color: var(--color-crimson);
     font-weight: 700;
 }
 
 .modal-checkbox {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 18px;
+    height: 18px;
     color: rgba(37, 99, 235, 1);
     background-color: var(--color-bg-panel);
     border: 1px solid var(--color-bg-panel-light);
@@ -694,7 +694,7 @@ html body.magnifier-active .mobcard-inner * {
 }
 
 .btn-secondary {
-    padding: 0.5rem 1rem;
+    padding: 7px 14px;
     border-radius: 4px;
     background-color: var(--color-bg-panel-light);
     color: var(--color-white);
@@ -735,7 +735,7 @@ html body.magnifier-active .mobcard-inner * {
 }
 
 .btn-copy {
-    padding: 0.25rem 0.75rem;
+    padding: 4px 11px;
     background-color: var(--color-bg-panel-light);
     border-radius: 4px;
     font-size: 11px;
@@ -778,7 +778,7 @@ html body.magnifier-active .mobcard-inner * {
     font-weight: 700;
     user-select: all;
     letter-spacing: 0.1em;
-    font-size: 1.125rem;
+    font-size: 16px;
 }
 
 .modal-auth-note {
@@ -786,7 +786,7 @@ html body.magnifier-active .mobcard-inner * {
     color: rgba(100, 116, 139, 1);
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 4px;
     padding-left: 7px;
     border-left: 2px solid var(--color-bg-panel-light);
 }
@@ -1189,7 +1189,7 @@ html body.magnifier-active .mobcard-inner * {
     font-weight: 700;
     font-size: 14px;
     color: var(--color-white);
-    background: rgba(0, 53, 122, 1);
+    background: var(--color-bg-dark);
     backdrop-filter: none;
     border: 1px solid rgba(34, 211, 238, 0.3);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 0 12px rgba(34, 211, 238, 0.1);
