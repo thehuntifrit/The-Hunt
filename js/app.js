@@ -992,7 +992,7 @@ window.addEventListener('locationsUpdated', () => {
 
 setInterval(() => {
   updateProgressBars();
-}, 1000);
+}, EORZEA_MINUTE_MS);
 
 setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
 
