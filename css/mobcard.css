@@ -184,6 +184,26 @@
         }
     }
 
+    .instance-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 5px;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1;
+        border-radius: 3px;
+        background: #0f172a;
+        border: 1.5px solid var(--color-cyan);
+        color: #ffffff;
+        flex-shrink: 0;
+        margin-right: 4px;
+        position: relative;
+        box-shadow: 0 0 10px rgba(34, 211, 238, 0.2);
+    }
+
     .mobcard-progress-container {
         height: 8px;
         background: rgba(0, 0, 0, 0.6);

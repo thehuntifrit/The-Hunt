@@ -34,8 +34,24 @@ export function escapeHtml(str) {
 }
 
 export function processText(text) {
-  if (typeof text !== "string" || !text) return "";
   return escapeHtml(text).replace(/\/\//g, "<br>");
+}
+
+export function renderNameWithInstance(container, name) {
+  if (!container) return;
+  const match = name.match(/^([1-9])(.+)/);
+  container.innerHTML = "";
+  if (match) {
+    const instance = match[1];
+    const realName = match[2];
+    const badge = document.createElement("span");
+    badge.className = "instance-badge";
+    badge.textContent = instance;
+    container.appendChild(badge);
+    container.appendChild(document.createTextNode(realName));
+  } else {
+    container.textContent = name;
+  }
 }
 
 // ─── ツールチップ ───────────────────────────────────────
@@ -394,10 +410,11 @@ export function renderMobCard(mob) {
   card.dataset.mobNo = mob.No;
   card.dataset.rank = rank;
 
-  updateEl(card, '.mobcard-name', { textContent: mob.name });
-  const detailPane = card.querySelector(".mobcard-content");
   const nameEl = card.querySelector('.mobcard-name');
-  if (nameEl) nameEl.dataset.rank = rank;
+  if (nameEl) {
+    renderNameWithInstance(nameEl, mob.name);
+    nameEl.dataset.rank = rank;
+  }
 
   updateEl(card, '.mobcard-rank', { textContent: rank }, { rank });
 
@@ -453,7 +470,7 @@ export function createSimpleMobItem(mob) {
 
   const nameEl = item.querySelector('.moblist-name');
   if (nameEl) {
-    nameEl.textContent = mob.name;
+    renderNameWithInstance(nameEl, mob.name);
     nameEl.dataset.rank = mob.rank;
   }
 
