@@ -1,0 +1,629 @@
+/* --- SECTION: MOBCARD --- */
+.mobcard-card {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    background: rgba(20, 30, 54, 0.98);
+    border: 1px solid rgba(34, 211, 238, 0.4);
+    border-radius: 12px;
+    box-shadow: none;
+    overflow: hidden;
+    contain: layout style;
+    inline-size: 100%;
+    max-inline-size: 400px;
+    block-size: auto;
+    max-block-size: 96vh;
+    pointer-events: auto;
+    position: relative;
+    transform: translateZ(0);
+    font-size: 0;
+    -webkit-user-select: none;
+    user-select: none;
+    z-index: 1;
+    scroll-margin-block-start: calc(env(safe-area-inset-top, 0px) + 7px);
+    container-type: inline-size;
+    container-name: mobcard-card;
+    transition: opacity 0.4s ease cubic-bezier(0.16, 1, 0.3, 1);
+
+    &.mobcard-blink-white .mobcard-inner {
+        animation: blink-white-light 3s infinite ease-in-out;
+    }
+
+    .mobcard-inner {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 8px;
+        transition: border-color 0.4s ease, background 0.4s ease;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        inline-size: 100%;
+        block-size: 100%;
+        contain: layout style;
+    }
+
+    .mobcard-header {
+        padding: 11px 12px 6px;
+        position: relative;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        .header-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .header-mid-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 11px;
+            line-height: 1.2;
+            min-height: 18px;
+        }
+
+        .mobcard-area-info {
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 400;
+            gap: 4px;
+
+            .detail-expansion {
+                opacity: 0.6;
+            }
+        }
+
+        .moblist-report-btn {
+            position: relative;
+            inset: auto;
+            margin: 0;
+            z-index: 2;
+            background: rgba(34, 211, 238, 0.1);
+            border: 1px solid rgba(34, 211, 238, 0.4);
+            border-radius: 4px;
+            color: var(--color-cyan);
+            font-family: 'Roboto', sans-serif;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 6px;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.2), inset 0 0 5px rgba(34, 211, 238, 0.2);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+
+            &::before,
+            &::after {
+                display: none;
+            }
+
+            &:hover {
+                background: rgba(34, 211, 238, 0.2);
+                border-color: var(--color-cyan);
+                box-shadow: 0 0 15px rgba(34, 211, 238, 0.4), inset 0 0 8px rgba(34, 211, 238, 0.3);
+                text-shadow: 0 0 12px rgba(34, 211, 238, 0.8);
+                transform: translateY(-1px);
+            }
+
+            &:active {
+                transform: translateY(0);
+                opacity: 0.8;
+            }
+        }
+    }
+
+    .mobcard-name {
+        font-size: 16px;
+        font-weight: 800;
+        margin: 0;
+        padding: 0;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--color-white);
+        line-height: 1;
+        text-shadow: none;
+        transition: text-shadow 0.4s ease, color 0.4s ease;
+
+        &[data-rank="S"] {
+            color: var(--color-rank-s);
+        }
+
+        &[data-rank="A"] {
+            color: var(--color-rank-a);
+        }
+
+        &[data-rank="F"] {
+            color: var(--color-rank-f);
+        }
+    }
+
+    .mobcard-rank {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        font-size: 13px;
+        font-weight: 900;
+        line-height: 1;
+        border-radius: 2px;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1.5px solid currentColor;
+        margin: 0;
+        flex-shrink: 0;
+        box-shadow: 0 0 10px rgba(currentColor, 0.5), inset 0 0 4px rgba(currentColor, 0.3);
+        text-shadow: 0 0 5px currentColor;
+
+        &[data-rank="S"] {
+            color: var(--color-rank-s);
+        }
+
+        &[data-rank="A"] {
+            color: var(--color-rank-a);
+        }
+
+        &[data-rank="F"] {
+            color: var(--color-rank-f);
+        }
+    }
+
+    .mobcard-progress-container {
+        height: 8px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 4px;
+        overflow: hidden;
+        margin: -6px 0 0;
+        box-shadow: none;
+        border: 1px solid var(--color-border-subtle);
+    }
+
+    .mobcard-progress-bar {
+        height: 100%;
+        width: 0;
+        background: var(--color-progress-fill);
+        border-radius: 4px;
+        transition: width 0.4s ease-out;
+        box-shadow: none;
+    }
+
+    &.mobcard-floating {
+        position: fixed;
+        z-index: var(--z-mobcard-mobile);
+        max-width: 95vw;
+
+        .mobcard-inner {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 1), rgba(15, 23, 42, 1));
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15), 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 40px rgba(34, 211, 238, 0.4);
+            height: auto;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .mobcard-expandable {
+            max-height: none;
+        }
+    }
+
+    &.mobcard-floating:hover .mobcard-inner {
+        transform: none;
+    }
+
+    &.mobcard-pre-repop {
+
+        .area-info-container,
+        .status-bar-inner,
+        .progress-text>div,
+        .memo-icon-container {
+            opacity: 0.3;
+            filter: grayscale(100%);
+        }
+
+        .mobcard-report-bar {
+            opacity: 0.6;
+            filter: grayscale(100%);
+        }
+
+        .mobcard-name {
+            color: var(--color-white);
+            text-shadow: none;
+            opacity: 0.5;
+        }
+    }
+
+    &.mobcard-maintenance {
+        .mobcard-inner {
+            opacity: 0.7;
+            filter: grayscale(100%);
+            box-shadow: none;
+        }
+
+        .mobcard-name {
+            color: var(--color-white);
+            text-shadow: none;
+        }
+    }
+
+    &.mobcard-expanded {
+        .mobcard-inner {
+            max-block-size: inherit;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mobcard-expandable {
+            block-size: auto;
+            overflow-y: auto;
+        }
+
+        .mobcard-header {
+            position: sticky;
+            inset-block-start: 0;
+            z-index: 3;
+            background: rgba(15, 23, 42, 0.98);
+            border-block-end: 1px solid rgba(255, 255, 255, 0.15);
+            border-start-start-radius: 0;
+            border-start-end-radius: 0;
+        }
+    }
+
+    .mobcard-mobile-actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        position: sticky;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.1);
+        z-index: 5;
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        flex-shrink: 0;
+        transition: all 0.2s;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        color: rgba(255, 255, 255, 0.8);
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--color-white);
+        }
+
+        &:active {
+            background: rgba(34, 211, 238, 0.2);
+            color: var(--color-cyan);
+        }
+    }
+}
+
+.percent {
+    text-align: right;
+    font-size: 13px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.mobcard-content {
+    padding: 0 11px 7px;
+    border-top: none;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    scrollbar-width: thin;
+
+    &>*:last-child {
+        margin-bottom: 0;
+    }
+}
+
+@supports (scrollbar-color: auto) {
+    .mobcard-content {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
+    }
+}
+
+.mobcard-timer {
+    color: var(--color-timer);
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    justify-content: flex-end;
+    align-items: baseline;
+    font-family: var(--font-mono);
+
+    .mobcard-timer-part {
+        display: inline-flex;
+        align-items: baseline;
+        justify-content: flex-end;
+        min-inline-size: 2.5ch;
+        margin-inline-end: 0.3ch;
+
+        &:last-child {
+            margin-inline-end: 0;
+        }
+    }
+
+    .mobcard-timer-num {
+        color: var(--color-white);
+        font-weight: 700;
+    }
+
+    .mobcard-timer-unit {
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 12px;
+        margin-inline-start: 1px;
+    }
+
+    &.label-next .mobcard-timer-num,
+    &.label-next.mobcard-timer-over .mobcard-timer-num {
+        color: var(--color-gold);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 0 0 5px rgba(251, 191, 36, 0.5);
+    }
+}
+
+.mobcard-status-max {
+    background: var(--color-progress-ready);
+}
+
+.mobcard-status-active,
+.mobcard-status-window,
+.mobcard-status-next {
+    background: var(--color-progress-fill);
+}
+
+.mobcard-timer-label {
+    color: var(--color-white);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+    padding: 2px 3px;
+    font-size: 11px;
+    height: auto;
+    min-width: 28px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+
+    &.mobcard-status-next {
+        background: rgba(148, 163, 184, 0.2);
+    }
+
+    &.mobcard-status-window,
+    &.mobcard-status-active {
+        background: rgba(16, 185, 129, 0.2);
+    }
+
+    &.mobcard-status-max {
+        background: rgba(239, 68, 68, 0.2);
+    }
+
+    &.mobcard-special {
+        color: var(--color-gold);
+        text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+    }
+}
+
+.mobcard-memo-box {
+    background: rgba(34, 211, 238, 0.05);
+    border-radius: 6px;
+    border: 1px solid rgba(34, 211, 238, 0.5);
+    transition: border-color 0.2s;
+    display: flex;
+    align-items: center;
+    min-height: 34px;
+    overflow: hidden;
+
+    &:focus-within {
+        border-color: rgba(34, 211, 238, 0.8);
+        box-shadow: 0 0 10px rgba(34, 211, 238, 0.1);
+    }
+}
+
+.mobcard-memo-prefix-area {
+    display: flex;
+    align-items: center;
+    padding: 0 8px 0 10px;
+}
+
+.mobcard-memo-prefix-text {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--color-cyan);
+    letter-spacing: 0.05em;
+    text-transform: lowercase;
+    opacity: 0.8;
+}
+
+.mobcard-memo-separator {
+    width: 1px;
+    height: 20px;
+    background: rgba(34, 211, 238, 0.3);
+}
+
+.mobcard-memo-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--color-white);
+    font-size: 12px;
+    padding: 0 10px;
+    resize: none;
+    line-height: 1.25;
+    height: auto;
+    overflow: hidden;
+    -webkit-user-select: text;
+    user-select: text;
+    cursor: text;
+
+    &::placeholder {
+        color: rgba(255, 255, 255, 0.45);
+    }
+}
+
+.mobcard-section {
+    margin-bottom: 4px;
+    padding: 2px 0;
+
+    .mobcard-section-label {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--color-cyan);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-block-start: 2px;
+        margin-bottom: 3px;
+        padding-left: 7px;
+        border-left: 2px solid var(--color-cyan);
+        text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+    }
+
+    .condition-text {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.5;
+        padding: 2px 8px;
+        white-space: pre-wrap;
+    }
+}
+
+.mobcard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.mobcard-info-item {
+    background: rgba(48, 64, 94, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 4px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: auto;
+}
+
+.mobcard-info-item .mobcard-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-block-end: 2px;
+    line-height: 1;
+}
+
+.mobcard-info-item .mobcard-value {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-white);
+    font-family: var(--font-mono);
+    line-height: 1.2;
+    text-shadow: none;
+    font-variant-numeric: tabular-nums;
+}
+
+.mobcard-info-item.mobcard-highlight .mobcard-value {
+    color: var(--color-gold);
+}
+
+.mobcard-expandable {
+    &.open {
+        max-height: none;
+    }
+
+    &>div {
+        min-height: 0;
+        padding: 7px;
+        opacity: 0;
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+}
+
+#mobcard-detail,
+#mobcard-overlay {
+    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-sizing: border-box;
+    overscroll-behavior: contain;
+}
+
+.mobcard-overlay-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    pointer-events: none;
+}
+
+/* --- SECTION: MEDIA (MOBILE OVERRIDES) --- */
+@media (max-width: 1023px) {
+    .mobcard-card {
+        scroll-margin-top: var(--mobile-header-height);
+        margin-block-end: 1px;
+        max-inline-size: 96%;
+        width: 100%;
+        margin-inline: auto;
+        margin-block: 2dvh;
+        height: auto;
+
+        &.moblist-selected .mobcard-inner {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(34, 211, 238, 0.3);
+        }
+    }
+
+    #mobcard-overlay {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 0;
+        pointer-events: auto;
+
+        .mobcard-card {
+            width: 92vw;
+            height: 92vh;
+            max-width: none;
+            max-inline-size: none;
+            max-height: 92vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            margin: 0;
+            z-index: var(--z-mobcard-mobile);
+        }
+    }
+}

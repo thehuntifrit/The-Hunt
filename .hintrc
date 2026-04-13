@@ -1,0 +1,33 @@
+{
+  "extends": [
+    "development"
+  ],
+  "hints": {
+    "axe/name-role-value": [
+      "default",
+      {
+        "button-name": "off"
+      }
+    ],
+    "button-type": "off",
+    "compat-api/css": [
+      "default",
+      {
+        "ignore": [
+          "-webkit-overflow-scrolling",
+          "backdrop-filter",
+          "scrollbar-gutter",
+          "scrollbar-gutter: stable",
+          "inline-size: fit-content",
+          "user-select",
+          "scrollbar-width",
+          "scrollbar-width: thin",
+          "mask-composite",
+          "mask-composite: exclude",
+          "min-height: auto"
+        ]
+      }
+    ],
+    "no-inline-styles": "off"
+  }
+}
