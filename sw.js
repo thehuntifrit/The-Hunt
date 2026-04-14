@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hunt-cache-v1';
+const CACHE_NAME = 'hunt-cache-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -27,7 +27,8 @@ const ASSETS_TO_CACHE = [
   './maps/Upper_La_Noscea.webp',
   './maps/Urqopacha.webp',
   './maps/Yanxia.webp',
-  './icon/The_Hunt.png'
+  './icon/The_Hunt.png',
+  './sound/01 FFXIV_Linkshell_Transmission.mp3'
 ];
 
 self.addEventListener('install', (event) => {
@@ -57,7 +58,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  if (url.pathname.endsWith('.json') || url.pathname.includes('/maps/') || url.pathname.includes('/icon/')) {
+  if (url.pathname.endsWith('.json') || url.pathname.includes('/maps/') || url.pathname.includes('/icon/') || url.pathname.includes('/sound/')) {
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         const fetchPromise = fetch(event.request).then((networkResponse) => {

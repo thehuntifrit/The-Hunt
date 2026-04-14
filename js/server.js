@@ -7,9 +7,12 @@ import { getState } from "./dataManager.js";
 import { closeReportModal } from "./modal.js";
 
 const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyBikwjGsjL_PVFhx3Vj-OeJCocKA_hQOgU",
-    authDomain: "the-hunt-ifrit.firebaseapp.com",
-    projectId: "the-hunt-ifrit",
+  apiKey: "AIzaSyBikwjGsjL_PVFhx3Vj-OeJCocKA_hQOgU",
+  authDomain: "the-hunt-ifrit.firebaseapp.com",
+  projectId: "the-hunt-ifrit",
+  storageBucket: "the-hunt-ifrit.firebasestorage.app",
+  messagingSenderId: "285578581189",
+  appId: "1:285578581189:web:4d9826ee3f988a7519ccac"
 };
 
 const app = initializeApp(FIREBASE_CONFIG);
