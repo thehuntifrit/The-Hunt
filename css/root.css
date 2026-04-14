@@ -10,8 +10,8 @@
     --color-timer: rgba(226, 215, 197, 1);
 
     --color-rank-s: rgba(251, 191, 36, 1);
-    --color-rank-a: rgba(107, 163, 122, 1);
-    --color-rank-f: rgba(129, 140, 248, 1);
+    --color-rank-a: rgba(175, 207, 184, 1);
+    --color-rank-f: rgba(147, 156, 231, 1);
 
     --color-rank-s-tab: rgba(217, 119, 6, 1);
     --color-rank-a-tab: rgba(21, 128, 61, 1);
@@ -19,7 +19,7 @@
 
     --color-progress-bg: rgba(0, 0, 0, 0.6);
     --color-progress-fill: rgba(37, 99, 235, 1);
-    --color-progress-ready: rgba(59, 130, 246, 1);
+    --color-progress-ready: rgba(48, 110, 209, 1);
     --color-progress-max-over: rgba(29, 78, 216, 1);
 
     --color-b1: rgba(68, 148, 247, 1);
