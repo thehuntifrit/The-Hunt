@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, getDoc, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app-check.js";
 
 import { getState } from "./dataManager.js";
 import { closeReportModal } from "./modal.js";
@@ -14,6 +15,16 @@ const FIREBASE_CONFIG = {
 const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+// Initialize Firebase App Check
+if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+}
+
+initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider('6LcWXLYsAAAAAN09fxJlvWCF1RyZyaH8lTcKB8RG'),
+    isTokenAutoRefreshEnabled: true
+});
 
 export async function initializeAuth() {
     return new Promise((resolve) => {
