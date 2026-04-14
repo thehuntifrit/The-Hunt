@@ -155,8 +155,8 @@ export function allTabComparator(a, b) {
     return pa.instance - pb.instance;
   }
 
-  const isAConditionActive = aStatus === "ConditionActive";
-  const isBConditionActive = bStatus === "ConditionActive";
+  const isAConditionActive = !!aInfo.isInConditionWindow;
+  const isBConditionActive = !!bInfo.isInConditionWindow;
 
   if (isAConditionActive && !isBConditionActive) return -1;
   if (!isAConditionActive && isBConditionActive) return 1;

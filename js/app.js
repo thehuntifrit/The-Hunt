@@ -598,7 +598,7 @@ export function updateProgressBars({ forceAll = true } = {}) {
 
         if (info.conditionWindowEnd && infoNow >= (info.conditionWindowEnd.getTime() / 1000) && info.isInConditionWindow) {
           needsRecalc = true;
-        } else if (info.nextConditionSpawnDate && infoNow >= (info.nextConditionSpawnDate.getTime() / 1000) && info.status === "NextCondition") {
+        } else if (info.nextConditionSpawnDate && infoNow >= (info.nextConditionSpawnDate.getTime() / 1000)) {
           needsRecalc = true;
         } else if (info.minRepop && infoNow >= info.minRepop && info.status === "Next") {
           needsRecalc = true;
