@@ -1,8 +1,11 @@
-const CACHE_NAME = 'hunt-cache-v2';
+const CACHE_NAME = 'hunt-cache-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './css/style.css',
+  './css/root.css',
+  './css/appnav.css',
+  './css/mobcard.css',
+  './css/moblist.css',
   './js/app.js',
   './js/cal.js',
   './js/dataManager.js',
@@ -12,6 +15,10 @@ const ASSETS_TO_CACHE = [
   './js/readme.js',
   './js/sidebar.js',
   './js/server.js',
+  './js/worker.js',
+  './js/lib/marked.min.js',
+  './js/lib/purify.min.js',
+  './json/maintenance.json',
   './json/mob_data.json',
   './json/mob_locations.json',
   './maps/Amh_Araeng.webp',
