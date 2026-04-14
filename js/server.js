@@ -22,7 +22,7 @@ if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
 }
 
 initializeAppCheck(app, {
-    provider: new ReCaptchaEnterpriseProvider('6LcWXLYsAAAAAN09fxJlvWCF1RyZyaH8lTcKB8RG'),
+    provider: new ReCaptchaEnterpriseProvider('6LeFtbYsAAAAAJETFxeUWd2IOe92slrZcYcZFHeT'),
     isTokenAutoRefreshEnabled: true
 });
 
