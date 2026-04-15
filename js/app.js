@@ -43,8 +43,6 @@ const UNCULLED_CLASS_MAP = {
 
 let cachedMobMap = null;
 let currentMobsRef = null;
-let lastRenderedOrderStr = "";
-let lastRenderedGroupStr = "";
 let isInitialLoading = false;
 let isInitialSortingSuppressed = false;
 let lastClickTime = 0;
@@ -527,9 +525,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     isInitialLoading = true;
   }
 
-  invalidateSortCache();
-  const sortedMobs = getSortedFilteredMobs();
-
   const activeElement = document.activeElement;
   let focusedMobNo = null;
   let focusedAction = null;
@@ -545,7 +540,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     }
   }
 
-  const isPC = window.innerWidth >= 1024;
 
   if (DOM.pcLeftList) {
     syncDomOrder();
@@ -580,9 +574,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
       document.body.classList.remove('body-lock');
     }
   }
-
-  lastRenderedOrderStr = sortedMobs.map(m => m.No).join(",");
-  lastRenderedGroupStr = sortedMobs.map(m => getGroupKey(m)).join(",");
 
   if (isInitialLoad) {
     isInitialSortingSuppressed = true;
