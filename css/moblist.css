@@ -312,7 +312,7 @@
         grid-column: 4;
         inline-size: 28px;
         block-size: 100%;
-        background: rgba(0, 243, 255, 0.05);
+        background: var(--color-bg-panel-light);
         border: none;
         border-radius: 0 4px 4px 0;
         color: var(--color-white);
@@ -322,28 +322,34 @@
         cursor: pointer;
         position: relative;
         z-index: 10;
-        border-right: 1px solid rgba(0, 243, 255, 0.2);
+        border-left: 1px solid rgba(0, 243, 255, 0.4);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        transition: none;
 
         &::before,
         &::after {
             content: '';
             position: absolute;
-            background: rgba(0, 243, 255, 1);
+            background: var(--color-cyan);
             border-radius: 1px;
         }
 
         &::before {
-            inline-size: 10px;
+            inline-size: 12px;
             block-size: 2px;
         }
 
         &::after {
             inline-size: 2px;
-            block-size: 10px;
+            block-size: 12px;
         }
 
         &:hover {
-            background: rgba(0, 243, 255, 0.15);
+            background: color-mix(in srgb, var(--color-cyan), var(--color-bg-panel-light) 60%);
+        }
+
+        &:active {
+            filter: brightness(1.2);
         }
     }
 

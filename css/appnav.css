@@ -369,8 +369,8 @@
         font-family: 'Roboto', sans-serif;
         font-size: 16px;
         font-weight: 700;
-        background: var(--color-bg-card);
-        border: 1px solid var(--color-border-normal);
+        background: var(--color-bg-panel-light);
+        border: 1px solid rgba(255, 255, 255, 0.15);
         color: var(--color-text-secondary);
 
         &:hover {
@@ -442,12 +442,11 @@
             background: var(--color-bg-panel-light);
         }
 
-        &.selected {
-            background: var(--color-bg-dark);
+        &.is-selected {
+            background: color-mix(in srgb, var(--color-cyan), transparent 60%);
             border-color: var(--color-cyan);
-            color: hsla(188, 60%, 53%, 1);
-            box-shadow: none;
-            text-shadow: none;
+            color: var(--color-white);
+            font-weight: 700;
         }
 
         &.area-select-all {
