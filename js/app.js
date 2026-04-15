@@ -460,8 +460,6 @@ export const sortAndRedistribute = (options = {}) => {
   }
 };
 
-
-// 理想の順序に従ってDOMの並び順を同期するバッチ処理
 export function syncDomOrder() {
   if (!DOM.pcLeftList) return;
 
@@ -499,14 +497,11 @@ export function syncDomOrder() {
       let item = nodeMap.get(itemKey);
       if (!item) {
         item = createSimpleMobItem(m);
-      } else {
-        updateSimpleMobItem(item, m);
       }
       idealNodes.push(item);
     });
   });
 
-  // DOMの順序を理想の順序(idealNodes)に同期
   for (let i = 0; i < idealNodes.length; i++) {
     const ideal = idealNodes[i];
     const current = DOM.pcLeftList.children[i];
@@ -517,7 +512,6 @@ export function syncDomOrder() {
     if (ideal.dataset.mobNo) observeCard(ideal);
   }
 
-  // 余分なノードがあれば削除（基本的には発生しないはずだが安全のため）
   while (DOM.pcLeftList.children.length > idealNodes.length) {
     DOM.pcLeftList.removeChild(DOM.pcLeftList.lastChild);
   }
