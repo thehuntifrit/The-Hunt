@@ -625,10 +625,7 @@ export function updateMapOverlay(card, mob) {
   }
 
   const mapImg = mapContainer.querySelector('.mob-map-img');
-  const overlayWrap = card.querySelector('.map-overlay-wrap');
-  if (!overlayWrap) return;
-
-  const mapOverlay = overlayWrap.querySelector('.map-overlay');
+  const mapOverlay = mapContainer.querySelector('.map-overlay');
   if (!mapOverlay) return;
 
   if (!isDetail) {
