@@ -453,14 +453,65 @@ export const sortAndRedistribute = (options = {}) => {
     }
   };
 
-  if (immediate) {
-    run();
-  } else {
-    debouncedSortAndRedistribute();
-  }
-};
+    if (immediate) {
+      run();
+    } else {
+      debouncedSortAndRedistribute();
+    }
+  };
 
-export function filterAndRender({ isInitialLoad = false } = {}) {
+
+  export function incrementalMove(mobNo) {
+    if (!DOM.pcLeftList) return;
+
+    const mobNoStr = String(mobNo);
+    const mobEl = cardCache.get(mobNoStr);
+    if (!mobEl) return;
+
+    const sortedMobs = getSortedFilteredMobs();
+    const groups = { MAX_OVER: [], WINDOW: [], NEXT: [], MAINTENANCE: [] };
+    sortedMobs.forEach(m => { groups[getGroupKey(m)].push(m); });
+
+    const idealNodes = [];
+    const currentNodesMap = new Map();
+    Array.from(DOM.pcLeftList.children).forEach(node => {
+      if (node.dataset.mobNo) currentNodesMap.set(`mob-${node.dataset.mobNo}`, node);
+      else if (node.classList.contains('moblist-group-header')) currentNodesMap.set(`header-${node.textContent}`, node);
+    });
+
+    ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
+      const groupMobs = groups[key];
+      if (groupMobs.length === 0) return;
+
+      const headerText = GROUP_LABELS[key];
+      const headerKey = `header-${headerText}`;
+      let header = currentNodesMap.get(headerKey);
+      if (!header) {
+          header = document.createElement("div");
+          header.className = "moblist-group-header font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
+          header.textContent = headerText;
+      }
+      idealNodes.push(header);
+
+      groupMobs.forEach(m => {
+        const itemKey = `mob-${m.No}`;
+        let item = currentNodesMap.get(itemKey);
+        if (!item) item = createSimpleMobItem(m);
+        idealNodes.push(item);
+      });
+    });
+
+    const myIndex = idealNodes.findIndex(node => node === mobEl || (node.dataset && node.dataset.mobNo === mobNoStr));
+    if (myIndex === -1) return;
+
+    const nextNode = idealNodes[myIndex + 1] || null;
+
+    if (mobEl.nextSibling !== nextNode) {
+      DOM.pcLeftList.insertBefore(mobEl, nextNode);
+    }
+  }
+
+  export function filterAndRender({ isInitialLoad = false } = {}) {
   const state = getState();
   if (!state.initialLoadComplete && !isInitialLoad) {
     return;
@@ -536,7 +587,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     if (orderChanged || DOM.pcLeftList.children.length !== nextChildren.length) {
       DOM.pcLeftList.innerHTML = "";
       DOM.pcLeftList.appendChild(fragment);
-    } else {
     }
   }
 
@@ -603,63 +653,99 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
   }
 }
 
-// ─── プログレスバー ─────────────────────────────────────
-export function updateProgressBars({ forceAll = true } = {}) {
-  const state = getState();
-  const nowSec = Date.now() / 1000;
-  const mobMap = getMobMap();
-  const filtered = forceAll ? getFilteredMobs() : [];
-  const isMobile = window.innerWidth < 1024;
-  const isOverlayOpen = state.openMobCardNo !== null;
+  let lastTierBTime = 0;
+  let lastTierCTime = 0;
 
-  if (forceAll && !(isMobile && isOverlayOpen)) {
+
+  export function updateProgressBarsOptimized() {
+    const state = getState();
+    const now = Date.now();
+    const nowSec = now / 1000;
+
+    const isTierB = now - lastTierBTime >= 60000;
+    const isTierC = now - lastTierCTime >= 2917;
+
+    if (!isTierB && !isTierC) return;
+
+    const filtered = getFilteredMobs();
+    const changedMobNos = [];
+
     filtered.forEach(mob => {
       const info = mob.repopInfo;
-      if (!info) return;
+      if (!info || info.status === "Maintenance") return;
 
-      const mobNoStr = String(mob.No);
-      const isVisible = visibleCards.has(mobNoStr);
-      const isNearBoundary = info.nextBoundarySec && (nowSec >= info.nextBoundarySec - 60);
+      const isUrgent = (info.nextBoundarySec && (nowSec >= info.nextBoundarySec - 60)) ||
+                       (info.status === "PopWindow" || info.status === "ConditionActive");
 
+      if (isUrgent) {
+        if (isTierC) {
+          if (updateMobState(mob, nowSec, state)) changedMobNos.push(mob.No);
+        }
+      } else {
+        if (isTierB) {
+          if (updateMobState(mob, nowSec, state)) changedMobNos.push(mob.No);
+        }
+      }
+    });
+
+    if (isTierB) lastTierBTime = now;
+    if (isTierC) lastTierCTime = now;
+
+    if (changedMobNos.length > 0) {
+      invalidateSortCache();
+      changedMobNos.forEach(mobNo => {
+        incrementalMove(mobNo);
+      });
+    } else if (isTierC) {
+      const windowMobs = filtered.filter(m => getGroupKey(m) === "WINDOW");
+      if (windowMobs.length > 1) {
+        windowMobs.forEach(mob => incrementalMove(mob.No));
+      }
+    }
+
+    const mobMap = getMobMap();
+    updateDetailCardRealtime(mobMap);
+
+    const rankBtn = document.querySelector('.appnav-btn[data-panel="rank"]');
+    if (rankBtn) rankBtn.classList.remove("has-alert");
+  }
+
+
+  function updateMobState(mob, nowSec, state) {
+    const info = mob.repopInfo;
+    let hasStatusChange = false;
+
+    if (info.nextBoundarySec && nowSec >= info.nextBoundarySec) {
+      mob.repopInfo = calculateRepop(mob, state.maintenance);
+      hasStatusChange = true;
+    } else {
       if (info.maxRepop && nowSec >= info.maxRepop) {
-        info.elapsedPercent = 100;
+        if (info.status !== "MaxOver") {
+          mob.repopInfo = calculateRepop(mob, state.maintenance);
+          hasStatusChange = true;
+        }
       } else if (info.minRepop && nowSec >= info.minRepop) {
-        const denominator = info.maxRepop - info.minRepop;
-        info.elapsedPercent = denominator > 0 ? Math.min(((nowSec - info.minRepop) / denominator) * 100, 100) : 100;
+        const nextPercent = Math.min(((nowSec - info.minRepop) / (info.maxRepop - info.minRepop)) * 100, 100);
+        if (Math.abs((info.elapsedPercent || 0) - nextPercent) > 0.1) {
+          info.elapsedPercent = nextPercent;
+          if (info.status === "PopWindow") hasStatusChange = true;
+        }
+        if (info.status === "Next" || info.status === "NextCondition") {
+          mob.repopInfo = calculateRepop(mob, state.maintenance);
+          hasStatusChange = true;
+        }
       } else {
         info.elapsedPercent = 0;
       }
-
-      if (!isVisible && !isNearBoundary) {
-        return;
-      }
-
-      const card = cardCache.get(mobNoStr);
-      if (card) {
-        checkAndNotify(mob);
-        updateCardFull(card, mob);
-      }
-    });
-  }
-
-  updateDetailCardRealtime(mobMap);
-
-  if (forceAll && !(isMobile && isOverlayOpen)) {
-    invalidateSortCache();
-    const sorted = getSortedFilteredMobs();
-    const currentOrderStr = sorted.map(m => m.No).join(",");
-    const currentGroupStr = sorted.map(m => getGroupKey(m)).join(",");
-
-    if (!isInitialSortingSuppressed) {
-      if (currentOrderStr !== lastRenderedOrderStr || currentGroupStr !== lastRenderedGroupStr) {
-        sortAndRedistribute();
-      }
     }
-  }
 
-  const rankBtn = document.querySelector('.appnav-btn[data-panel="rank"]');
-  if (rankBtn) rankBtn.classList.remove("has-alert");
-}
+    const mobNoStr = String(mob.No);
+    const card = cardCache.get(mobNoStr);
+    if (card) {
+      updateCardFull(card, mob);
+    }
+    return hasStatusChange;
+  }
 
 // ─── 報告処理 ───────────────────────────────────────────
 export function showToast(message, type = "error") {
@@ -965,7 +1051,9 @@ window.addEventListener('characterNameSet', () => {
 window.addEventListener('initialDataLoaded', () => {
   updateHeaderTime();
   filterAndRender({ isInitialLoad: true });
-  updateProgressBars();
+  lastTierBTime = 0;
+  lastTierCTime = 0;
+  updateProgressBarsOptimized();
 });
 
 window.addEventListener('mobUpdated', (e) => {
@@ -986,7 +1074,7 @@ window.addEventListener('filterChanged', () => {
 });
 
 window.addEventListener('mobsUpdated', () => {
-  updateProgressBars({ forceAll: false });
+  updateProgressBarsOptimized();
 });
 
 window.addEventListener('locationDataReady', () => {
@@ -1056,8 +1144,8 @@ function handleGeneralClick(e) {
 }
 
 setInterval(() => {
-  updateProgressBars();
-}, EORZEA_MINUTE_MS);
+  updateProgressBarsOptimized();
+}, 1000);
 
 setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
 
