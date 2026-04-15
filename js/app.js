@@ -453,65 +453,77 @@ export const sortAndRedistribute = (options = {}) => {
     }
   };
 
-    if (immediate) {
-      run();
-    } else {
-      debouncedSortAndRedistribute();
+  if (immediate) {
+    run();
+  } else {
+    debouncedSortAndRedistribute();
+  }
+};
+
+
+// 理想の順序に従ってDOMの並び順を同期するバッチ処理
+export function syncDomOrder() {
+  if (!DOM.pcLeftList) return;
+
+  invalidateSortCache();
+  const sortedMobs = getSortedFilteredMobs();
+  const groups = { MAX_OVER: [], WINDOW: [], NEXT: [], MAINTENANCE: [] };
+  sortedMobs.forEach(m => {
+    groups[getGroupKey(m)].push(m);
+  });
+
+  const idealNodes = [];
+  const currentNodes = Array.from(DOM.pcLeftList.children);
+  const nodeMap = new Map();
+  currentNodes.forEach(node => {
+    if (node.dataset.mobNo) nodeMap.set(`mob-${node.dataset.mobNo}`, node);
+    else if (node.classList.contains('moblist-group-header')) nodeMap.set(`header-${node.textContent}`, node);
+  });
+
+  ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
+    const groupMobs = groups[key];
+    if (groupMobs.length === 0) return;
+
+    const headerText = GROUP_LABELS[key];
+    const headerKey = `header-${headerText}`;
+    let header = nodeMap.get(headerKey);
+    if (!header) {
+      header = document.createElement("div");
+      header.className = "moblist-group-header font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
+      header.textContent = headerText;
     }
-  };
+    idealNodes.push(header);
 
-
-  export function incrementalMove(mobNo) {
-    if (!DOM.pcLeftList) return;
-
-    const mobNoStr = String(mobNo);
-    const mobEl = cardCache.get(mobNoStr);
-    if (!mobEl) return;
-
-    const sortedMobs = getSortedFilteredMobs();
-    const groups = { MAX_OVER: [], WINDOW: [], NEXT: [], MAINTENANCE: [] };
-    sortedMobs.forEach(m => { groups[getGroupKey(m)].push(m); });
-
-    const idealNodes = [];
-    const currentNodesMap = new Map();
-    Array.from(DOM.pcLeftList.children).forEach(node => {
-      if (node.dataset.mobNo) currentNodesMap.set(`mob-${node.dataset.mobNo}`, node);
-      else if (node.classList.contains('moblist-group-header')) currentNodesMap.set(`header-${node.textContent}`, node);
-    });
-
-    ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
-      const groupMobs = groups[key];
-      if (groupMobs.length === 0) return;
-
-      const headerText = GROUP_LABELS[key];
-      const headerKey = `header-${headerText}`;
-      let header = currentNodesMap.get(headerKey);
-      if (!header) {
-          header = document.createElement("div");
-          header.className = "moblist-group-header font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
-          header.textContent = headerText;
+    groupMobs.forEach(m => {
+      const itemKey = `mob-${m.No}`;
+      let item = nodeMap.get(itemKey);
+      if (!item) {
+        item = createSimpleMobItem(m);
+      } else {
+        updateSimpleMobItem(item, m);
       }
-      idealNodes.push(header);
-
-      groupMobs.forEach(m => {
-        const itemKey = `mob-${m.No}`;
-        let item = currentNodesMap.get(itemKey);
-        if (!item) item = createSimpleMobItem(m);
-        idealNodes.push(item);
-      });
+      idealNodes.push(item);
     });
+  });
 
-    const myIndex = idealNodes.findIndex(node => node === mobEl || (node.dataset && node.dataset.mobNo === mobNoStr));
-    if (myIndex === -1) return;
+  // DOMの順序を理想の順序(idealNodes)に同期
+  for (let i = 0; i < idealNodes.length; i++) {
+    const ideal = idealNodes[i];
+    const current = DOM.pcLeftList.children[i];
 
-    const nextNode = idealNodes[myIndex + 1] || null;
-
-    if (mobEl.nextSibling !== nextNode) {
-      DOM.pcLeftList.insertBefore(mobEl, nextNode);
+    if (current !== ideal) {
+      DOM.pcLeftList.insertBefore(ideal, current || null);
     }
+    if (ideal.dataset.mobNo) observeCard(ideal);
   }
 
-  export function filterAndRender({ isInitialLoad = false } = {}) {
+  // 余分なノードがあれば削除（基本的には発生しないはずだが安全のため）
+  while (DOM.pcLeftList.children.length > idealNodes.length) {
+    DOM.pcLeftList.removeChild(DOM.pcLeftList.lastChild);
+  }
+}
+
+export function filterAndRender({ isInitialLoad = false } = {}) {
   const state = getState();
   if (!state.initialLoadComplete && !isInitialLoad) {
     return;
@@ -542,52 +554,7 @@ export const sortAndRedistribute = (options = {}) => {
   const isPC = window.innerWidth >= 1024;
 
   if (DOM.pcLeftList) {
-    const currentNodes = Array.from(DOM.pcLeftList.children);
-    const currentMap = new Map();
-    currentNodes.forEach(node => {
-      if (node.dataset.mobNo) currentMap.set(`mob-${node.dataset.mobNo}`, node);
-      else if (node.textContent) currentMap.set(`header-${node.textContent}`, node);
-    });
-
-    const nextChildren = [];
-    const groups = { MAX_OVER: [], WINDOW: [], NEXT: [], MAINTENANCE: [] };
-    sortedMobs.forEach(mob => { groups[getGroupKey(mob)].push(mob); });
-
-    ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"].forEach(key => {
-      const groupMobs = groups[key];
-      if (groupMobs.length === 0) return;
-      const headerText = GROUP_LABELS[key];
-      const headerKey = `header-${headerText}`;
-      let header = currentMap.get(headerKey);
-      if (!header) {
-        header = document.createElement("div");
-        header.className = "moblist-group-header font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
-        header.textContent = headerText;
-      }
-      nextChildren.push(header);
-
-      groupMobs.forEach(mob => {
-        const mobKey = `mob-${mob.No}`;
-        let item = currentMap.get(mobKey);
-        if (!item) item = createSimpleMobItem(mob);
-        else updateSimpleMobItem(item, mob);
-        nextChildren.push(item);
-      });
-    });
-
-    const fragment = document.createDocumentFragment();
-    nextChildren.forEach(child => {
-      fragment.appendChild(child);
-      if (child.dataset.mobNo) observeCard(child);
-    });
-
-    const orderChanged = lastRenderedOrderStr !== sortedMobs.map(m => m.No).join(",") ||
-      lastRenderedGroupStr !== sortedMobs.map(m => getGroupKey(m)).join(",");
-
-    if (orderChanged || DOM.pcLeftList.children.length !== nextChildren.length) {
-      DOM.pcLeftList.innerHTML = "";
-      DOM.pcLeftList.appendChild(fragment);
-    }
+    syncDomOrder();
   }
 
   const detailContainer = document.getElementById("mobcard-detail");
@@ -653,99 +620,97 @@ export const sortAndRedistribute = (options = {}) => {
   }
 }
 
-  let lastTierBTime = 0;
-  let lastTierCTime = 0;
+let lastTierBTime = 0;
+let lastTierCTime = 0;
 
 
-  export function updateProgressBarsOptimized() {
-    const state = getState();
-    const now = Date.now();
-    const nowSec = now / 1000;
+export function updateProgressBarsOptimized() {
+  const state = getState();
+  const now = Date.now();
+  const nowSec = now / 1000;
 
-    const isTierB = now - lastTierBTime >= 60000;
-    const isTierC = now - lastTierCTime >= 2917;
+  const isTierB = now - lastTierBTime >= 60000;
+  const isTierC = now - lastTierCTime >= 2917;
 
-    if (!isTierB && !isTierC) return;
+  if (!isTierB && !isTierC) return;
 
-    const filtered = getFilteredMobs();
-    const changedMobNos = [];
+  const filtered = getFilteredMobs();
+  let anyStateChanged = false;
 
-    filtered.forEach(mob => {
-      const info = mob.repopInfo;
-      if (!info || info.status === "Maintenance") return;
-
-      const isUrgent = (info.nextBoundarySec && (nowSec >= info.nextBoundarySec - 60)) ||
-                       (info.status === "PopWindow" || info.status === "ConditionActive");
-
-      if (isUrgent) {
-        if (isTierC) {
-          if (updateMobState(mob, nowSec, state)) changedMobNos.push(mob.No);
-        }
-      } else {
-        if (isTierB) {
-          if (updateMobState(mob, nowSec, state)) changedMobNos.push(mob.No);
-        }
-      }
-    });
-
-    if (isTierB) lastTierBTime = now;
-    if (isTierC) lastTierCTime = now;
-
-    if (changedMobNos.length > 0) {
-      invalidateSortCache();
-      changedMobNos.forEach(mobNo => {
-        incrementalMove(mobNo);
-      });
-    } else if (isTierC) {
-      const windowMobs = filtered.filter(m => getGroupKey(m) === "WINDOW");
-      if (windowMobs.length > 1) {
-        windowMobs.forEach(mob => incrementalMove(mob.No));
-      }
-    }
-
-    const mobMap = getMobMap();
-    updateDetailCardRealtime(mobMap);
-
-    const rankBtn = document.querySelector('.appnav-btn[data-panel="rank"]');
-    if (rankBtn) rankBtn.classList.remove("has-alert");
-  }
-
-
-  function updateMobState(mob, nowSec, state) {
+  filtered.forEach(mob => {
     const info = mob.repopInfo;
-    let hasStatusChange = false;
+    if (!info || info.status === "Maintenance") return;
 
-    if (info.nextBoundarySec && nowSec >= info.nextBoundarySec) {
-      mob.repopInfo = calculateRepop(mob, state.maintenance);
-      hasStatusChange = true;
+    const isUrgent = (info.nextBoundarySec && (nowSec >= info.nextBoundarySec - 60)) ||
+      (info.status === "PopWindow" || info.status === "ConditionActive");
+
+    if (isUrgent) {
+      if (isTierC) {
+        if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
+      }
     } else {
-      if (info.maxRepop && nowSec >= info.maxRepop) {
-        if (info.status !== "MaxOver") {
-          mob.repopInfo = calculateRepop(mob, state.maintenance);
-          hasStatusChange = true;
-        }
-      } else if (info.minRepop && nowSec >= info.minRepop) {
-        const nextPercent = Math.min(((nowSec - info.minRepop) / (info.maxRepop - info.minRepop)) * 100, 100);
-        if (Math.abs((info.elapsedPercent || 0) - nextPercent) > 0.1) {
-          info.elapsedPercent = nextPercent;
-          if (info.status === "PopWindow") hasStatusChange = true;
-        }
-        if (info.status === "Next" || info.status === "NextCondition") {
-          mob.repopInfo = calculateRepop(mob, state.maintenance);
-          hasStatusChange = true;
-        }
-      } else {
-        info.elapsedPercent = 0;
+      if (isTierB) {
+        if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
       }
     }
+  });
 
-    const mobNoStr = String(mob.No);
-    const card = cardCache.get(mobNoStr);
-    if (card) {
-      updateCardFull(card, mob);
-    }
-    return hasStatusChange;
+  if (isTierB) lastTierBTime = now;
+  if (isTierC) lastTierCTime = now;
+
+  if (anyStateChanged) {
+    syncDomOrder();
   }
+
+  const mobMap = getMobMap();
+  updateDetailCardRealtime(mobMap);
+
+  const rankBtn = document.querySelector('.appnav-btn[data-panel="rank"]');
+  if (rankBtn) rankBtn.classList.remove("has-alert");
+}
+
+
+function updateMobState(mob, nowSec, state) {
+  const info = mob.repopInfo;
+  let hasSignificantChange = false;
+  const oldStatus = info.status;
+
+  if (info.nextBoundarySec && nowSec >= info.nextBoundarySec) {
+    mob.repopInfo = calculateRepop(mob, state.maintenance);
+    hasSignificantChange = true;
+  } else {
+    if (info.maxRepop && nowSec >= info.maxRepop) {
+      if (info.status !== "MaxOver") {
+        mob.repopInfo = calculateRepop(mob, state.maintenance);
+        hasSignificantChange = true;
+      }
+    } else if (info.minRepop && nowSec >= info.minRepop) {
+      const nextPercent = Math.min(((nowSec - info.minRepop) / (info.maxRepop - info.minRepop)) * 100, 100);
+      if (Math.abs((info.elapsedPercent || 0) - nextPercent) > 0.1) {
+        info.elapsedPercent = nextPercent;
+        if (info.status === "PopWindow" || info.status === "ConditionActive") {
+          hasSignificantChange = true;
+        }
+      }
+      if (info.status === "Next" || info.status === "NextCondition") {
+        mob.repopInfo = calculateRepop(mob, state.maintenance);
+        hasSignificantChange = true;
+      }
+    } else {
+      info.elapsedPercent = 0;
+    }
+  }
+
+  if (oldStatus !== mob.repopInfo.status) {
+    hasSignificantChange = true;
+  }
+
+  const card = cardCache.get(String(mob.No));
+  if (card) {
+    updateCardFull(card, mob);
+  }
+  return hasSignificantChange;
+}
 
 // ─── 報告処理 ───────────────────────────────────────────
 export function showToast(message, type = "error") {
