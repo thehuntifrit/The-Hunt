@@ -1,6 +1,6 @@
 import { getState, recalculateMob, requestWorkerCalculation, PROGRESS_CLASSES, EXPANSION_MAP, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled } from "./dataManager.js";
 import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
-import { attachMobCardEvents, createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initTooltip, initGlobalMagnifier, adjustMemoHeight } from "./mobCard.js";
+import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initTooltip, initGlobalMagnifier, adjustMemoHeight } from "./mobCard.js";
 import { getGroupKey, GROUP_LABELS, getOrCreateGroupSection, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, allTabComparator } from "./mobSorter.js";
 import { closeReportModal, openAuthModal, openReportModal, initModal, closeAuthModal } from "./modal.js";
 import { handleAreaFilterClick, handleRankTabClick, initAppNav, initNotification, togglePanel, closePanel, setActiveNavItem, checkAndNotify, updateErrorPanel } from "./sidebar.js";
@@ -54,7 +54,7 @@ let locationEventsAttached = false;
 // ─── 初期化 ─────────────────────────────────────────────
 async function initApp() {
   try {
-    initTooltip();
+    attachMobCardEvents();
     initGlobalMagnifier();
     loadBaseMobData();
 
@@ -187,6 +187,8 @@ export function showColumnContainer() {
       const overlay = document.getElementById("loading-overlay");
       if (overlay) {
         overlay.classList.add("hidden");
+        overlay.style.display = 'none';
+        overlay.remove();
       }
     });
   });
@@ -354,15 +356,25 @@ const cardObserver = new IntersectionObserver((entries) => {
     for (const entry of entries) {
       const mobNo = entry.target.dataset.mobNo;
       if (entry.isIntersecting) {
-        visibleCards.add(mobNo);
-        const mob = mobMap.get(mobNo);
-        if (mob) updateCardFull(entry.target, mob);
+        if (!visibleCards.has(mobNo)) {
+          visibleCards.add(mobNo);
+          const mob = mobMap.get(mobNo);
+          if (mob) updateCardFull(entry.target, mob);
+        }
       } else {
         visibleCards.delete(mobNo);
       }
     }
   });
-}, { threshold: 0 });
+}, { threshold: 0, rootMargin: '50px' });
+
+export function observeCard(el) {
+  if (el) cardObserver.observe(el);
+}
+
+export function unobserveCard(el) {
+  if (el) cardObserver.unobserve(el);
+}
 
 export function updateCardFull(card, mob) {
   const isDetail = card.classList.contains('mobcard-card');
@@ -498,12 +510,16 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     });
 
     const fragment = document.createDocumentFragment();
-    nextChildren.forEach(child => fragment.appendChild(child));
+    nextChildren.forEach(child => {
+        fragment.appendChild(child);
+        if (child.dataset.mobNo) observeCard(child);
+    });
 
     const orderChanged = lastRenderedOrderStr !== sortedMobs.map(m => m.No).join(",") ||
       lastRenderedGroupStr !== sortedMobs.map(m => getGroupKey(m)).join(",");
 
     if (orderChanged || DOM.pcLeftList.children.length !== nextChildren.length) {
+      cardObserver.disconnect();
       DOM.pcLeftList.innerHTML = "";
       DOM.pcLeftList.appendChild(fragment);
     } else {
@@ -520,7 +536,9 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
         const targetMob = getState().mobs.find(m => m.No === openMobNo);
         if (targetMob) {
           detailContainer.innerHTML = "";
-          detailContainer.appendChild(createMobCard(targetMob, true));
+          const newCard = createMobCard(targetMob, true);
+          detailContainer.appendChild(newCard);
+          observeCard(newCard);
           detailContainer.dataset.renderedMobNo = String(openMobNo);
         }
       }
@@ -583,52 +601,31 @@ export function updateProgressBars({ forceAll = true } = {}) {
   if (forceAll && !(isMobile && isOverlayOpen)) {
     filtered.forEach(mob => {
       const info = mob.repopInfo;
-      if (info) {
-        if (info.maxRepop && nowSec >= info.maxRepop) {
-          info.elapsedPercent = 100;
-        } else if (info.minRepop && nowSec >= info.minRepop) {
-          const denominator = info.maxRepop - info.minRepop;
-          info.elapsedPercent = denominator > 0 ? Math.min(((nowSec - info.minRepop) / denominator) * 100, 100) : 100;
-        } else {
-          info.elapsedPercent = 0;
-        }
+      if (!info) return;
 
-        let needsRecalc = false;
-        const infoNow = nowSec;
+      const mobNoStr = String(mob.No);
+      const isVisible = visibleCards.has(mobNoStr);
+      const isNearBoundary = info.nextBoundarySec && (nowSec >= info.nextBoundarySec - 60);
 
-        if (info.conditionWindowEnd && infoNow >= (info.conditionWindowEnd.getTime() / 1000) && info.isInConditionWindow) {
-          needsRecalc = true;
-        } else if (info.nextConditionSpawnDate && infoNow >= (info.nextConditionSpawnDate.getTime() / 1000)) {
-          needsRecalc = true;
-        } else if (info.minRepop && infoNow >= info.minRepop && info.status === "Next") {
-          needsRecalc = true;
-        } else if (info.maxRepop && infoNow >= info.maxRepop && info.status === "PopWindow") {
-          needsRecalc = true;
-        }
-
-        if (needsRecalc) {
-          recalculateMob(mob.No);
-        }
+      if (info.maxRepop && nowSec >= info.maxRepop) {
+        info.elapsedPercent = 100;
+      } else if (info.minRepop && nowSec >= info.minRepop) {
+        const denominator = info.maxRepop - info.minRepop;
+        info.elapsedPercent = denominator > 0 ? Math.min(((nowSec - info.minRepop) / denominator) * 100, 100) : 100;
+      } else {
+        info.elapsedPercent = 0;
       }
 
-      const card = cardCache.get(String(mob.No));
+      if (!isVisible && !isNearBoundary) {
+        return;
+      }
+
+      const card = cardCache.get(mobNoStr);
       if (card) {
         checkAndNotify(mob);
-        updateProgressText(card, mob);
-        updateProgressBar(card, mob);
+        updateCardFull(card, mob);
       }
     });
-
-    if (DOM.pcLeftList) {
-      const listItems = DOM.pcLeftList.querySelectorAll('.moblist-item');
-      listItems.forEach(item => {
-        const mobNo = item.dataset.mobNo;
-        const mob = mobMap.get(String(mobNo));
-        if (mob) {
-          updateSimpleMobItem(item, mob);
-        }
-      });
-    }
   }
 
   updateDetailCardRealtime(mobMap);
@@ -989,6 +986,63 @@ window.addEventListener('locationsUpdated', () => {
   invalidateFilterCache();
   updateVisibleCards();
 });
+
+// ─── イベント ───────────────────────────────────────────
+function attachMobCardEvents() {
+  const containers = [
+    document.getElementById("moblist-container"),
+    document.getElementById("mobcard-detail")
+  ].filter(Boolean);
+
+  containers.forEach(c => c.addEventListener("click", handleGeneralClick));
+
+  const pane = document.getElementById("mobcard-pane");
+  if (pane) {
+    pane.addEventListener("click", (e) => {
+      if (e.target === pane && window.innerWidth < 1024) {
+        setOpenMobCardNo(null);
+        sortAndRedistribute({ immediate: true });
+      }
+    });
+  }
+}
+
+function handleGeneralClick(e) {
+  const target = e.target;
+  const item = target.closest(".moblist-item, .mobcard-card");
+  if (!item) return;
+
+  const mobNo = parseInt(item.dataset.mobNo, 10);
+  const mob = getState().mobs.find(m => m.No === mobNo);
+  if (!mob) return;
+
+  const reportBtn = target.closest(".moblist-report-btn");
+  if (reportBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!getState().isVerified) {
+      openAuthModal();
+      return;
+    }
+    const type = reportBtn.dataset.reportType || (mob.rank === 'A' ? 'instant' : 'modal');
+    if (type === "modal") openReportModal(mobNo);
+    else handleInstantReport(mobNo, mob.rank);
+    return;
+  }
+
+  if (target.closest('[data-action="close-card"]')) {
+    e.stopPropagation();
+    setOpenMobCardNo(null);
+    sortAndRedistribute({ immediate: true });
+    return;
+  }
+
+  if (target.closest(".moblist-item") || target.classList.contains('mobcard-card')) {
+    const currentOpen = getState().openMobCardNo;
+    setOpenMobCardNo(currentOpen === mobNo ? null : mobNo);
+    sortAndRedistribute({ immediate: true });
+  }
+}
 
 setInterval(() => {
   updateProgressBars();

@@ -117,13 +117,12 @@ export function checkAndNotify(mob) {
     const shouldNotify = (now >= oneMinBefore && now <= endTime);
 
     if (shouldNotify && !notifiedCycles.has(cycleKey)) {
-        const title = `【POP info】 ${mob.name}`;
         const body = (now < spawnTime)
             ? `まもなく（2分前）`
             : `時間なう！`;
 
         if (window.innerWidth >= 1024) {
-            sendBrowserNotification(title, body);
+            sendBrowserNotification(`【POP info】 ${mob.name}`, body);
         } else {
             playNotificationSound();
         }

@@ -2,7 +2,7 @@ import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatMMDDHHmm 
 import { getState, PROGRESS_CLASSES, setOpenMobCardNo, isCulled } from "./dataManager.js";
 import { toggleCrushStatus } from "./server.js";
 import { openAuthModal, openReportModal } from "./modal.js";
-import { sortAndRedistribute, handleInstantReport } from "./app.js";
+
 
 // ─── 汎用ユーティリティ ─────────────────────────────────
 function updateEl(parent, selector, props = {}, dataset = {}) {
@@ -54,71 +54,11 @@ export function renderNameWithInstance(container, name) {
   }
 }
 
-// ─── ツールチップ ───────────────────────────────────────
-let tooltip = null;
-let currentTarget = null;
-
 export function initTooltip() {
-  if (window.tooltipInitialized) return;
-  window.tooltipInitialized = true;
-
-  tooltip = document.createElement("div");
-  tooltip.id = "custom-tooltip";
-  tooltip.className = "custom-tooltip hidden";
-  document.body.appendChild(tooltip);
-
-  let tooltipRafId = null;
-  document.addEventListener("mousemove", (e) => {
-    if (!currentTarget) return;
-
-    if (!document.body.contains(currentTarget)) {
-      currentTarget = null;
-      tooltip.classList.add("hidden");
-      return;
-    }
-
-    if (tooltipRafId) cancelAnimationFrame(tooltipRafId);
-
-    const x = e.clientX;
-    const y = e.clientY;
-
-    tooltipRafId = requestAnimationFrame(() => {
-      const offset = 15;
-      tooltip.style.left = `${x}px`;
-      tooltip.style.top = `${y - offset}px`;
-    });
-  });
-
-  document.addEventListener("mouseover", (e) => {
-    const target = e.target.closest("[data-tooltip]");
-    if (!target) return;
-
-    const text = target.getAttribute("data-tooltip");
-    if (!text) return;
-
-    currentTarget = target;
-    tooltip.textContent = text;
-    tooltip.classList.remove("hidden");
-
-    const offset = 15;
-    tooltip.style.left = `${e.clientX}px`;
-    tooltip.style.top = `${e.clientY - offset}px`;
-  });
-
-  document.addEventListener("mouseout", (e) => {
-    const target = e.target.closest("[data-tooltip]");
-    if (target && target === currentTarget) {
-      currentTarget = null;
-      tooltip.classList.add("hidden");
-    }
-  });
 }
 
 export function hideTooltip() {
-  if (tooltip) {
-    tooltip.classList.add("hidden");
-  }
-  currentTarget = null;
+  // 廃止
 }
 
 // ─── 拡大鏡 ─────────────────────────────────────────────
@@ -132,30 +72,38 @@ export function initGlobalMagnifier() {
 
   let activeMapImg = null;
   let activeMapContainer = null;
+  let activeMapContainerRect = null;
+  let magnifierRect = null;
   const ZOOM_SCALE = 2.0;
 
+  const closeMagnifier = () => {
+    magnifier.classList.add('hidden');
+    document.body.classList.remove('magnifier-active');
+    activeMapImg = null;
+    activeMapContainer = null;
+    activeMapContainerRect = null;
+    wrapper.innerHTML = '';
+    window.removeEventListener('mousemove', onMagnifierMouseMove);
+  };
+
   const updateMagnifier = (e) => {
-    if (!activeMapImg || !activeMapContainer) return;
+    if (!activeMapImg || !activeMapContainer || !activeMapContainerRect) return;
 
-    const rect = activeMapContainer.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = e.clientX - activeMapContainerRect.left;
+    const y = e.clientY - activeMapContainerRect.top;
 
-    if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
-      magnifier.classList.add('hidden');
-      document.body.classList.remove('magnifier-active');
-      activeMapImg = null;
-      activeMapContainer = null;
-      wrapper.innerHTML = '';
+    if (x < 0 || y < 0 || x > activeMapContainerRect.width || y > activeMapContainerRect.height) {
+      closeMagnifier();
       return;
     }
 
-    magnifier.style.left = `${e.clientX}px`;
-    magnifier.style.top = `${e.clientY}px`;
+    magnifier.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
 
-    const magRect = magnifier.getBoundingClientRect();
-    const centerX = magRect.width / 2;
-    const centerY = magRect.height / 2;
+    if (!magnifierRect) {
+      magnifierRect = magnifier.getBoundingClientRect();
+    }
+    const centerX = magnifierRect.width / 2;
+    const centerY = magnifierRect.height / 2;
 
     const translateX = centerX - (x * ZOOM_SCALE);
     const translateY = centerY - (y * ZOOM_SCALE);
@@ -164,7 +112,7 @@ export function initGlobalMagnifier() {
   };
 
   let magnifierRafId = null;
-  const throttledUpdateMagnifier = (e) => {
+  const onMagnifierMouseMove = (e) => {
     if (magnifierRafId) cancelAnimationFrame(magnifierRafId);
     const x = e.clientX;
     const y = e.clientY;
@@ -185,6 +133,7 @@ export function initGlobalMagnifier() {
     e.preventDefault();
     activeMapContainer = mapContainer;
     activeMapImg = mapImg;
+    activeMapContainerRect = activeMapContainer.getBoundingClientRect();
 
     wrapper.innerHTML = '';
     const clone = mapContainer.cloneNode(true);
@@ -198,22 +147,18 @@ export function initGlobalMagnifier() {
     wrapper.appendChild(clone);
     magnifier.classList.remove('hidden');
     document.body.classList.add('magnifier-active');
-    throttledUpdateMagnifier(e);
+
+    // 拡大鏡自体のサイズを取得（初回または表示時）
+    magnifierRect = magnifier.getBoundingClientRect();
+
+    // アクティブ時のみmousemoveを開始
+    window.addEventListener('mousemove', onMagnifierMouseMove);
+    updateMagnifier(e);
   }, { capture: true });
 
-  window.addEventListener('mousemove', (e) => {
-    if (activeMapImg) {
-      throttledUpdateMagnifier(e);
-    }
-  });
-
   window.addEventListener('mouseup', (e) => {
-    if (e.button === 2) {
-      magnifier.classList.add('hidden');
-      document.body.classList.remove('magnifier-active');
-      activeMapImg = null;
-      activeMapContainer = null;
-      wrapper.innerHTML = '';
+    if (e.button === 2 && activeMapImg) {
+      closeMagnifier();
     }
   });
 
@@ -380,7 +325,6 @@ export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, i
   const titleText = `${pointNumber}${isCulledFlag ? " (済)" : ""}`;
 
   Object.assign(el.dataset, {
-    tooltip: titleText,
     locationId: point.id,
     mobNo: mobNo,
     rank: rank,
@@ -492,22 +436,26 @@ export function updateProgressBar(element, mob) {
   const wrapper = element.querySelector('.mobcard-progress-container, .moblist-bg-gauge');
   if (!bar) return;
 
-  const currentWidth = parseFloat(bar.style.width) || 0;
-  if (Math.abs(elapsedPercent - currentWidth) > 0.1) {
-    bar.style.transition = (currentWidth === 0 || elapsedPercent < currentWidth) ? "none" : "width 10s linear";
+  const lastPct = parseFloat(bar.dataset.lastPct) || 0;
+  if (Math.abs(elapsedPercent - lastPct) > 0.2) {
+    bar.style.transition = (lastPct === 0 || elapsedPercent < lastPct) ? "none" : "width 10s linear";
     bar.style.width = `${elapsedPercent || 0}%`;
+    bar.dataset.lastPct = elapsedPercent;
   }
 
-  bar.classList.remove('status-max-over', 'status-condition-active', 'status-pop-window', 'status-next');
-  if (status === "MaxOver") bar.classList.add("status-max-over");
-  else if (status === "ConditionActive") bar.classList.add("status-condition-active");
-  else if (status === "PopWindow") bar.classList.add("status-pop-window");
-  else if (status === "Next" || status === "NextCondition") bar.classList.add("status-next");
+  if (bar.dataset.lastStatus !== status) {
+    bar.classList.remove('status-max-over', 'status-condition-active', 'status-pop-window', 'status-next');
+    if (status === "MaxOver") bar.classList.add("status-max-over");
+    else if (status === "ConditionActive") bar.classList.add("status-condition-active");
+    else if (status === "PopWindow") bar.classList.add("status-pop-window");
+    else if (status === "Next" || status === "NextCondition") bar.classList.add("status-next");
+    bar.dataset.lastStatus = status;
+  }
 
   if (wrapper) {
     const isInCondition = !!mob.repopInfo.isInConditionWindow && !mob.repopInfo.isMaintenanceStop && !mob.repopInfo.isBlockedByMaintenance;
-
-    if (element.classList.contains('moblist-item')) {
+    const currentBlink = element.classList.contains('moblist-blink-white');
+    if (element.classList.contains('moblist-item') && currentBlink !== isInCondition) {
       element.classList.toggle('moblist-blink-white', isInCondition);
     }
   }
@@ -550,13 +498,22 @@ export function updateProgressText(element, mob) {
   element.classList.toggle("maintenance-gray-out", isMaint);
 }
 
-export function updateExpandablePanel(card, mob) {
-  const { minRepop, maxRepop, nextConditionSpawnDate } = mob.repopInfo || {};
+// ─── DOM Cache Helper ────────────────────────────────────
+function getEl(parent, selector, key) {
+  if (!parent._cache) parent._cache = {};
+  if (parent._cache[key]) return parent._cache[key];
+  const el = parent.querySelector(selector);
+  if (el) parent._cache[key] = el;
+  return el;
+}
 
-  const elMin = card.querySelector("[data-min-repop]");
-  const elMax = card.querySelector("[data-max-repop]");
-  const elNext = card.querySelector("[data-next-possible]");
-  const elLast = card.querySelector("[data-last-kill]");
+export function updateExpandablePanel(card, mob) {
+  const { minRepop, maxRepop } = mob.repopInfo || {};
+
+  const elMin = getEl(card, "[data-min-repop]", "minRepop");
+  const elMax = getEl(card, "[data-max-repop]", "maxRepop");
+  const elNext = getEl(card, "[data-next-possible]", "nextPossible");
+  const elLast = getEl(card, "[data-last-kill]", "lastKill");
 
   const fmt = (val) => val ? formatMMDDHHmm(val) : "--/-- --:--";
 
@@ -565,19 +522,23 @@ export function updateExpandablePanel(card, mob) {
 
   if (elNext) {
     if (mob.repopInfo?.nextConditionSpawnDate) {
-      elNext.textContent = formatMMDDHHmm(mob.repopInfo.nextConditionSpawnDate);
+      const val = formatMMDDHHmm(mob.repopInfo.nextConditionSpawnDate);
+      if (elNext.textContent !== val) elNext.textContent = val;
       elNext.classList.add('text-yellow');
       elNext.classList.remove('text-secondary');
     } else {
-      elNext.textContent = "--/-- --:--";
+      if (elNext.textContent !== "--/-- --:--") elNext.textContent = "--/-- --:--";
       elNext.classList.remove('text-yellow');
       elNext.classList.add('text-secondary');
     }
   }
 
-  if (elLast) elLast.textContent = fmt(mob.last_kill_time);
+  if (elLast) {
+    const val = fmt(mob.last_kill_time);
+    if (elLast.textContent !== val) elLast.textContent = val;
+  }
 
-  const elMemoInput = card.querySelector(".mobcard-memo-input");
+  const elMemoInput = getEl(card, ".mobcard-memo-input", "memoInput");
   if (elMemoInput) {
     if (elMemoInput.dataset.mobNo !== String(mob.No)) elMemoInput.dataset.mobNo = mob.No;
     if (document.activeElement !== elMemoInput) {
@@ -589,16 +550,16 @@ export function updateExpandablePanel(card, mob) {
     }
   }
 
-  const elCondition = card.querySelector(".condition-text");
+  const elCondition = getEl(card, ".condition-text", "conditionText");
   if (elCondition) {
     const conditionText = mob.condition ? processText(mob.condition) : "特別な出現条件はありません。";
     if (elCondition.innerHTML !== conditionText) elCondition.innerHTML = conditionText;
 
     const isPCDetail = card.classList.contains('mobcard-card');
     const sections = [
-      elCondition.closest('.mobcard-section') || elCondition.closest('.mobcard-section'),
-      card.querySelector('.memo-section'),
-      card.querySelector('.map-section')
+      elCondition.closest('.mobcard-section'),
+      getEl(card, '.memo-section', 'memoSection'),
+      getEl(card, '.map-section', 'mapSection')
     ].filter(Boolean);
 
     sections.forEach(section => {
@@ -612,18 +573,18 @@ export function updateExpandablePanel(card, mob) {
 }
 
 export function updateMemoIcon(card, mob) {
-  const memoIconContainer = card.querySelector('.memo-icon-container');
+  const memoIconContainer = getEl(card, '.memo-icon-container', 'memoIconContainer');
   if (!memoIconContainer) return;
   const shouldShowMemo = shouldDisplayMemo(mob);
-  const newState = shouldShowMemo ? mob.memo_text : "";
-  if (memoIconContainer.dataset.memoState === newState) return;
-  memoIconContainer.dataset.memoState = newState;
+  
+  if (memoIconContainer._lastShow === shouldShowMemo) return;
+  memoIconContainer._lastShow = shouldShowMemo;
+
   memoIconContainer.innerHTML = '';
   if (shouldShowMemo) {
     memoIconContainer.classList.remove('hidden');
     const span = document.createElement('span');
     span.classList.add('memo-icon');
-    span.dataset.tooltip = mob.memo_text;
     span.textContent = '📝';
     memoIconContainer.appendChild(span);
   } else {
@@ -632,11 +593,12 @@ export function updateMemoIcon(card, mob) {
 }
 
 export function updateMobCount(card, mob) {
-  const countContainer = card.querySelector('.mob-count-container, .moblist-count');
+  const countContainer = getEl(card, '.moblist-count', 'mobCount');
   if (!countContainer) return;
   const { countHtml } = getSpawnCountInfo(mob);
-  if (countContainer.innerHTML !== countHtml) {
+  if (countContainer._lastHtml !== countHtml) {
     countContainer.innerHTML = countHtml;
+    countContainer._lastHtml = countHtml;
   }
 }
 
@@ -661,8 +623,10 @@ export function adjustMemoHeight(el) {
 }
 
 export function updateMapOverlay(card, mob) {
+  const isDetail = card.classList.contains('mobcard-card');
   const mapContainer = card.querySelector('.map-container');
   if (!mapContainer) return;
+
   if (mob.rank === 'F') {
     mapContainer.classList.add('hidden');
     const mapSection = mapContainer.closest('.map-section');
@@ -671,6 +635,20 @@ export function updateMapOverlay(card, mob) {
   }
 
   const mapImg = mapContainer.querySelector('.mob-map-img');
+  const overlayWrap = card.querySelector('.map-overlay-wrap');
+  if (!overlayWrap) return;
+
+  const mapOverlay = overlayWrap.querySelector('.map-overlay');
+  if (!mapOverlay) return;
+
+  if (!isDetail) {
+    if (mapOverlay.innerHTML !== "") {
+      mapOverlay.innerHTML = "";
+      delete mapOverlay._lastPointsHash;
+    }
+    return;
+  }
+
   if (mapImg && mob.mapImage && mapImg.dataset.mobMap !== mob.mapImage) {
     mapImg.src = `./maps/${mob.mapImage}`;
     mapImg.alt = `${mob.area} Map`;
@@ -681,8 +659,6 @@ export function updateMapOverlay(card, mob) {
     delete mapContainer.dataset.locationLoading;
   }
   if (mapContainer.classList.contains('hidden')) return;
-  const mapOverlay = mapContainer.querySelector('.map-overlay');
-  if (!mapOverlay) return;
 
   if (mob.mapImage && mob.locations) {
     const { spawnCullStatus, validSpawnPoints } = getSpawnCountInfo(mob);
@@ -706,67 +682,6 @@ export function updateMapOverlay(card, mob) {
 export function updateSimpleMobItem(item, mob) {
   updateProgressBar(item, mob);
   updateProgressText(item, mob);
-  const countInner = item.querySelector('.moblist-count');
-  if (countInner) {
-    const { countHtml } = getSpawnCountInfo(mob);
-    countInner.innerHTML = countHtml;
-  }
+  updateMobCount(item, mob);
   updateMemoIcon(item, mob);
-}
-
-// ─── イベント ───────────────────────────────────────────
-export function attachMobCardEvents() {
-  const containers = [
-    document.getElementById("moblist-container"),
-    document.getElementById("mobcard-detail")
-  ].filter(Boolean);
-
-  containers.forEach(c => c.addEventListener("click", handleGeneralClick));
-
-  const pane = document.getElementById("mobcard-pane");
-  if (pane) {
-    pane.addEventListener("click", (e) => {
-      if (e.target === pane && window.innerWidth < 1024) {
-        setOpenMobCardNo(null);
-        sortAndRedistribute({ immediate: true });
-      }
-    });
-  }
-}
-
-function handleGeneralClick(e) {
-  const target = e.target;
-  const item = target.closest(".moblist-item, .mobcard-card");
-  if (!item) return;
-
-  const mobNo = parseInt(item.dataset.mobNo, 10);
-  const mob = getState().mobs.find(m => m.No === mobNo);
-  if (!mob) return;
-
-  const reportBtn = target.closest(".moblist-report-btn");
-  if (reportBtn) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!getState().isVerified) {
-      openAuthModal();
-      return;
-    }
-    const type = reportBtn.dataset.reportType || (mob.rank === 'A' ? 'instant' : 'modal');
-    if (type === "modal") openReportModal(mobNo);
-    else handleInstantReport(mobNo, mob.rank);
-    return;
-  }
-
-  if (target.closest('[data-action="close-card"]')) {
-    e.stopPropagation();
-    setOpenMobCardNo(null);
-    sortAndRedistribute({ immediate: true });
-    return;
-  }
-
-  if (target.closest(".moblist-item") || target.classList.contains('mobcard-card')) {
-    const currentOpen = getState().openMobCardNo;
-    setOpenMobCardNo(currentOpen === mobNo ? null : mobNo);
-    sortAndRedistribute({ immediate: true });
-  }
 }

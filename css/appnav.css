@@ -7,8 +7,7 @@
         inline-size: auto;
         min-inline-size: 56px;
         background: var(--color-nav-bg);
-        backdrop-filter: blur(24px);
-        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+        border-right: 1px solid var(--color-nav-border);
         display: flex;
         flex-direction: row;
         z-index: var(--z-header);
@@ -77,7 +76,6 @@
         right: 0;
         z-index: var(--z-footer);
         background: var(--color-nav-bg);
-        backdrop-filter: blur(24px);
         border-top: 1px solid var(--color-nav-border-heavy);
         display: flex;
         flex-direction: column-reverse;
@@ -158,13 +156,11 @@
 
         .appnav-logo-the {
             color: var(--color-cyan);
-            text-shadow: 0 0 15px rgba(34, 211, 238, 0.8), 0 0 5px rgba(34, 211, 238, 0.5);
             font-size: 16px;
         }
 
         .appnav-logo-hunt {
             color: var(--color-gold);
-            text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
             margin-top: -10px;
         }
 
@@ -176,7 +172,7 @@
             font-size: 16px;
             color: var(--color-text-secondary);
             opacity: 0;
-            transition: all 0.3s ease;
+            transition: opacity 0.3s ease, transform 0.3s ease, color 0.3s ease;
         }
 
         &:hover {
@@ -224,8 +220,7 @@
     &.nav-toggle-btn {
         .appnav-icon {
             color: var(--color-cyan);
-            text-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
-            transition: all 0.3s ease;
+            transition: color 0.3s ease;
         }
 
         &.is-disabled {
@@ -252,25 +247,21 @@
             content: '';
             position: absolute;
             background: var(--color-cyan);
-            box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
         }
     }
 
     &.has-alert {
         color: var(--color-gold);
-        text-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
 
         &::after {
             content: '';
             position: absolute;
             inset-block-start: 8px;
-            inline-size: 8px;
-            block-size: 8px;
+            inline-size: 6px;
+            block-size: 6px;
             background: var(--color-nav-badge-error);
             border-radius: 50%;
-            box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
             z-index: 10;
-            animation: nav-badge-blink 1.5s infinite ease-in-out;
         }
 
         @media (min-width: 1024px) {
@@ -305,17 +296,7 @@
     }
 }
 
-@keyframes nav-badge-blink {
-    0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.2;
-        transform: scale(1);
-        box-shadow: 0 0 15px rgba(255, 77, 77, 0.8);
-    }
-}
+/* nav-badge-blink removed */
 
 @media (min-width: 1024px) {
     .appnav-btn.appnav-active::before {
@@ -342,7 +323,6 @@
     margin-bottom: 6px;
     text-align: center;
     text-transform: uppercase;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     line-height: 1.4;
     display: block;
     margin-inline: 8px;
@@ -396,7 +376,7 @@
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.08);
         color: var(--color-text-secondary);
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
         &:hover {
             background: rgba(255, 255, 255, 0.12);

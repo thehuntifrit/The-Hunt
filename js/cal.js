@@ -540,7 +540,13 @@ export function calculateRepop(mob, maintenance, options = {}) {
     isMaintenanceStop,
     isBlockedByMaintenance,
     maintStart: maintenanceStart,
-    maintEnd: serverUp || (parseDate(maint.end)?.getTime() / 1000 || 0)
+    maintEnd: serverUp || (parseDate(maint.end)?.getTime() / 1000 || 0),
+    nextBoundarySec: [
+      minRepop,
+      maxRepop,
+      nextConditionSpawnDate ? nextConditionSpawnDate.getTime() / 1000 : null,
+      conditionWindowEnd ? conditionWindowEnd.getTime() / 1000 : null
+    ].filter(t => t !== null && t > now).reduce((min, t) => Math.min(min, t), Infinity)
   };
 }
 

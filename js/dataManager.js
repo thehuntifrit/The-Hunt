@@ -60,7 +60,9 @@ export const state = {
     pendingMaintenanceData: null,
     pendingLocationsMap: null,
     pendingMemoData: null,
-    _filterVersion: 0
+    _filterVersion: 0,
+    sMobMap: new Map(),
+    mobsMap: new Map()
 };
 
 if (state.filter.areaSets) {
@@ -127,6 +129,19 @@ export function setVerified(verified) {
 
 function setMobs(data) {
     state.mobs = data;
+    state.mobsMap.clear();
+    data.forEach(m => state.mobsMap.set(String(m.No), m));
+    updateSMobMap();
+}
+
+export function updateSMobMap() {
+    state.sMobMap.clear();
+    state.mobs.forEach(m => {
+        if (m.rank === "S") {
+            const instance = m.No % 10;
+            state.sMobMap.set(`${m.area}_${instance}`, m);
+        }
+    });
 }
 
 export function setFilter(partial) {
@@ -590,14 +605,13 @@ export function startRealtime() {
             return;
         }
 
-        const current = state.mobs;
+        const current = state.mobsMap;
         let anyChanges = false;
         const updatedMobNos = new Set();
 
         Object.values(mobStatusDataMap).forEach(docData => {
             Object.entries(docData).forEach(([mobId, mobData]) => {
-                const mobNo = parseInt(mobId, 10);
-                const mob = current.find(m => m.No === mobNo);
+                const mob = current.get(mobId);
                 if (!mob) return;
 
                 const newLastKill = mobData.last_kill_time?.seconds || 0;
@@ -608,7 +622,7 @@ export function startRealtime() {
                     mob.prev_kill_time = newPrevKill;
                     requestWorkerCalculation(mob, state.maintenance, { forceRecalc: true });
                     anyChanges = true;
-                    updatedMobNos.add(mobNo);
+                    updatedMobNos.add(parseInt(mobId, 10));
                 }
             });
         });
@@ -620,14 +634,14 @@ export function startRealtime() {
 
         if (anyChanges) {
             if (state.initialLoadComplete) {
-                const statusToCache = current.reduce((acc, m) => {
+                const statusToCache = state.mobs.reduce((acc, m) => {
                     acc[m.No] = { last_kill_time: m.last_kill_time, prev_kill_time: m.prev_kill_time };
                     return acc;
                 }, {});
                 idb.set(MOB_STATUS_CACHE_KEY, statusToCache);
 
                 updatedMobNos.forEach(mobNo => {
-                    const mob = current.find(m => m.No === mobNo);
+                    const mob = state.mobsMap.get(String(mobNo));
                     window.dispatchEvent(new CustomEvent('mobUpdated', { detail: { mobNo, mob } }));
                 });
 
@@ -676,13 +690,12 @@ export function startRealtime() {
             return;
         }
 
-        const current = state.mobs;
         const updatedMobNos = Object.keys(memoData);
 
         updatedMobNos.forEach(mobNoStr => {
-            const mobNo = parseInt(mobNoStr, 10);
-            const mob = current.find(m => m.No === mobNo);
+            const mob = state.mobsMap.get(mobNoStr);
             if (!mob) return;
+            const mobNo = parseInt(mobNoStr, 10);
 
             const memos = memoData[mobNoStr] || [];
             const latest = memos[0];
@@ -755,10 +768,9 @@ export function startRealtime() {
 // ─── ユーティリティ ─────────────────────────────────────
 export function recalculateMob(mobNo) {
     const state = getState();
-    const mobIndex = state.mobs.findIndex(m => m.No === mobNo);
-    if (mobIndex === -1) return;
+    const mob = state.mobsMap.get(String(mobNo));
+    if (!mob) return;
 
-    const mob = state.mobs[mobIndex];
     requestWorkerCalculation(mob, state.maintenance, { forceRecalc: true });
 
     return mob;
@@ -778,12 +790,12 @@ export function updateAllMobCullStatuses(locationsMap = state.mobLocations) {
 export function isCulled(pointStatus, mobNo, mob = null) {
     const s = getState();
     if (!mob) {
-        mob = s.mobs.find(m => m.No === mobNo);
+        mob = s.mobsMap.get(String(mobNo));
     }
     if (!mob) return false;
 
     const instance = mob.No % 10;
-    const targetSMob = s.mobs.find(m => m.rank === "S" && m.area === mob.area && (m.No % 10) === instance);
+    const targetSMob = s.sMobMap.get(`${mob.area}_${instance}`);
 
     const baseLastKillTime = targetSMob ? (targetSMob.last_kill_time || 0) : (mob.last_kill_time || 0);
 
