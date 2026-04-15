@@ -1,7 +1,7 @@
 :root {
     /* --- COLOR SYSTEM --- */
-    --color-bg-dark: #0f172a;
-    --color-bg-card: #1e293b;
+    --color-bg-dark: #111827;
+    --color-bg-card: #1f2937;
     --color-cyan: #22d3ee;
     --color-gold: #fbbf24;
     --color-crimson: #f87171;
@@ -28,8 +28,8 @@
     --color-lastone: rgba(52, 211, 153, 1);
 
     /* --- UI THEME COLORS --- */
-    --color-nav-bg: rgba(10, 15, 30, 0.95);
-    --color-nav-inner-bg: rgba(15, 23, 42, 0.95);
+    --color-nav-bg: #111827;
+    --color-nav-inner-bg: #111827;
     --color-nav-border: rgba(255, 255, 255, 0.05);
     --color-nav-border-heavy: rgba(255, 255, 255, 0.15);
     --color-nav-text: rgba(255, 255, 255, 1);
@@ -40,10 +40,10 @@
     --color-spawn-count: rgba(241, 245, 249, 1);
     --color-spawn-warn: rgba(234, 179, 8, 1);
 
-    --color-bg-panel: rgba(30, 41, 59, 1);
-    --color-bg-panel-light: rgba(55, 65, 81, 1);
-    --color-border-subtle: rgba(255, 255, 255, 0.05);
-    --color-border-normal: rgba(255, 255, 255, 0.12);
+    --color-bg-panel: #1f2937;
+    --color-bg-panel-light: #374151;
+    --color-border-subtle: rgba(255, 255, 255, 0.03);
+    --color-border-normal: rgba(255, 255, 255, 0.08);
 
     --color-white: rgba(255, 255, 255, 1);
     --color-black: rgba(0, 0, 0, 1);
@@ -59,7 +59,7 @@
     --z-loading: 100;
     --z-toast: 98;
     --z-magnifier: 98;
-    --z-tooltip: 96;
+
     --z-header: 95;
     --z-footer: 95;
     --z-modal: 90;
@@ -102,7 +102,6 @@
     }
 }
 
-/* PC表示（1024px以上）時のモバイル要素隠蔽 */
 @media (min-width: 1024px) {
     #root-mobile-top-bar {
         display: none;
@@ -159,8 +158,6 @@ body {
 body.sidebar-expanded .main-content-area {
     --sidebar-width: 216px;
 }
-
-/* body::before removed for peak performance */
 
 /* --- SECTION: COMMON UI --- */
 .mobile-top-clocks {
@@ -247,7 +244,6 @@ html body.magnifier-active .mobcard-inner * {
         min-height: 100dvh;
         padding: 14px;
         margin-left: var(--sidebar-width, 56px);
-        transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     @media (max-width: 1023px) {
@@ -287,21 +283,9 @@ html body.magnifier-active .mobcard-inner * {
         font-size: 11px;
     }
 
-    /* .text-xl {
-        font-size: 18px;
-    }
-
-    .mt-6 {
-        margin-top: 21px;
-    } */
-
     .mb-4 {
         margin-bottom: 14px;
     }
-
-    /* .gap-3 {
-        gap: 11px;
-    } */
 
     .text-emerald {
         color: var(--color-lastone);
@@ -437,7 +421,6 @@ html body.magnifier-active .mobcard-inner * {
         padding: 4px;
         font-size: 21px;
         line-height: 1;
-
     }
 
     .manual-modal-close:hover {
@@ -599,14 +582,6 @@ html body.magnifier-active .mobcard-inner * {
     justify-content: space-between;
 }
 
-/* .u-text-sm {
-    font-size: 12px;
-} */
-
-/* .u-gap-2 {
-    gap: 7px;
-} */
-
 /* --- SECTION: COMMON_UI --- */
 .report-modal-backdrop,
 .auth-modal-backdrop {
@@ -648,7 +623,6 @@ html body.magnifier-active .mobcard-inner * {
     color: var(--color-white);
     font-size: 16px;
     outline: none;
-    transition: all 0.2s;
 }
 
 .modal-input-field:focus {
@@ -678,7 +652,6 @@ html body.magnifier-active .mobcard-inner * {
     background-color: var(--color-bg-panel-light);
     color: var(--color-white);
     font-weight: 500;
-    transition: background-color 0.2s;
 }
 
 .btn-secondary:hover {
@@ -692,7 +665,6 @@ html body.magnifier-active .mobcard-inner * {
     color: var(--color-white);
     font-weight: 700;
     box-shadow: 0 10px 15px -3px rgba(34, 211, 238, 0.3);
-    transition: all 0.2s;
 }
 
 .btn-primary-cyan:hover {
@@ -706,7 +678,6 @@ html body.magnifier-active .mobcard-inner * {
     color: var(--color-white);
     font-weight: 700;
     box-shadow: 0 10px 15px -3px rgba(234, 88, 12, 0.2);
-    transition: all 0.2s;
 }
 
 .btn-primary-yellow:hover {
@@ -718,7 +689,6 @@ html body.magnifier-active .mobcard-inner * {
     background-color: var(--color-bg-panel-light);
     border-radius: 4px;
     font-size: 11px;
-    transition: background-color 0.2s;
     color: var(--white);
 }
 
@@ -788,7 +758,6 @@ html body.magnifier-active .mobcard-inner * {
     justify-content: center;
     align-items: center;
     background: var(--color-bg-dark);
-    transition: all 0.5s ease-in-out;
 }
 
 @keyframes spin {

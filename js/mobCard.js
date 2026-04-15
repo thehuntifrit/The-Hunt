@@ -54,13 +54,6 @@ export function renderNameWithInstance(container, name) {
   }
 }
 
-export function initTooltip() {
-}
-
-export function hideTooltip() {
-  // 廃止
-}
-
 // ─── 拡大鏡 ─────────────────────────────────────────────
 export function initGlobalMagnifier() {
   if (window.magnifierInitialized) return;
@@ -148,10 +141,8 @@ export function initGlobalMagnifier() {
     magnifier.classList.remove('hidden');
     document.body.classList.add('magnifier-active');
 
-    // 拡大鏡自体のサイズを取得（初回または表示時）
     magnifierRect = magnifier.getBoundingClientRect();
 
-    // アクティブ時のみmousemoveを開始
     window.addEventListener('mousemove', onMagnifierMouseMove);
     updateMagnifier(e);
   }, { capture: true });
@@ -498,7 +489,6 @@ export function updateProgressText(element, mob) {
   element.classList.toggle("maintenance-gray-out", isMaint);
 }
 
-// ─── DOM Cache Helper ────────────────────────────────────
 function getEl(parent, selector, key) {
   if (!parent._cache) parent._cache = {};
   if (parent._cache[key]) return parent._cache[key];
@@ -576,7 +566,7 @@ export function updateMemoIcon(card, mob) {
   const memoIconContainer = getEl(card, '.memo-icon-container', 'memoIconContainer');
   if (!memoIconContainer) return;
   const shouldShowMemo = shouldDisplayMemo(mob);
-  
+
   if (memoIconContainer._lastShow === shouldShowMemo) return;
   memoIconContainer._lastShow = shouldShowMemo;
 
@@ -596,7 +586,7 @@ export function updateMobCount(card, mob) {
   const countContainer = getEl(card, '.moblist-count', 'mobCount');
   if (!countContainer) return;
   const { countHtml } = getSpawnCountInfo(mob);
-  if (countContainer._lastHtml !== countHtml) {
+  if (countContainer.innerHTML !== countHtml) {
     countContainer.innerHTML = countHtml;
     countContainer._lastHtml = countHtml;
   }

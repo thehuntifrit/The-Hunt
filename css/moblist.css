@@ -112,8 +112,8 @@
     grid-template-columns: minmax(0, 1fr) 90px 34px 28px;
     align-items: center;
     width: 100%;
-    background: #1e293b;
-    border: none;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 4px;
     padding: 0 0 0 6px;
     cursor: pointer;
@@ -124,10 +124,7 @@
     position: relative;
     overflow: hidden;
     inline-size: 100%;
-    content-visibility: auto;
-    contain-intrinsic-size: 0 32px;
     box-sizing: border-box;
-    z-index: 5;
 
     &::before {
         content: '';
@@ -139,13 +136,12 @@
     }
 
     &:hover {
-        background: #334155;
-        z-index: 20;
+        background: var(--color-bg-card);
     }
 
     &.selected {
-        background: #060b14;
-        z-index: 15;
+        background: var(--color-bg-dark);
+        border-color: var(--color-cyan);
 
         &::before {
             background: var(--color-cyan);
@@ -156,6 +152,7 @@
         display: flex;
         align-items: center;
         min-inline-size: 0;
+        pointer-events: none;
         font-weight: 700;
         font-size: 15px;
         padding-inline-end: 4px;
@@ -293,12 +290,12 @@
         block-size: 100%;
         background: var(--color-progress-fill);
         opacity: 0.3;
-        transition: inline-size 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .moblist-percent {
         grid-column: 3;
         font-family: var(--font-mono);
+        pointer-events: none;
         font-size: 13px;
         font-weight: 500;
         color: var(--color-white);
@@ -308,6 +305,7 @@
         position: relative;
         z-index: 10;
         padding-inline-end: 4px;
+        pointer-events: none;
     }
 
     .moblist-report-btn {

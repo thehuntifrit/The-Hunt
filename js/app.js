@@ -1,6 +1,6 @@
 import { getState, recalculateMob, requestWorkerCalculation, PROGRESS_CLASSES, EXPANSION_MAP, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled } from "./dataManager.js";
 import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
-import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initTooltip, initGlobalMagnifier, adjustMemoHeight } from "./mobCard.js";
+import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initGlobalMagnifier, adjustMemoHeight } from "./mobCard.js";
 import { getGroupKey, GROUP_LABELS, getOrCreateGroupSection, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, allTabComparator } from "./mobSorter.js";
 import { closeReportModal, openAuthModal, openReportModal, initModal, closeAuthModal } from "./modal.js";
 import { handleAreaFilterClick, handleRankTabClick, initAppNav, initNotification, togglePanel, closePanel, setActiveNavItem, checkAndNotify, updateErrorPanel } from "./sidebar.js";
@@ -188,7 +188,6 @@ export function showColumnContainer() {
       if (overlay) {
         overlay.classList.add("hidden");
         overlay.style.display = 'none';
-        overlay.remove();
       }
     });
   });
@@ -347,33 +346,49 @@ function getMobMap() {
   return cachedMobMap;
 }
 
-const cardObserver = new IntersectionObserver((entries) => {
-  const isMobile = window.innerWidth < 1024;
-  if (isMobile && getState().openMobCardNo !== null) return;
+function updateVisibleCardsSet() {
+  const container = document.getElementById('moblist-container');
+  if (!container) return;
 
+  const vh = window.innerHeight;
+  const items = container.querySelectorAll('.moblist-item');
   const mobMap = getMobMap();
-  requestAnimationFrame(() => {
-    for (const entry of entries) {
-      const mobNo = entry.target.dataset.mobNo;
-      if (entry.isIntersecting) {
-        if (!visibleCards.has(mobNo)) {
-          visibleCards.add(mobNo);
-          const mob = mobMap.get(mobNo);
-          if (mob) updateCardFull(entry.target, mob);
-        }
-      } else {
-        visibleCards.delete(mobNo);
+
+  const prevVisible = new Set(visibleCards);
+  visibleCards.clear();
+
+  items.forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if (rect.bottom > -100 && rect.top < vh + 100) {
+      const mobNo = el.dataset.mobNo;
+      visibleCards.add(mobNo);
+      cardCache.set(mobNo, el);
+
+      if (!prevVisible.has(mobNo)) {
+        const mob = mobMap.get(mobNo);
+        if (mob) updateCardFull(el, mob);
       }
     }
   });
-}, { threshold: 0, rootMargin: '50px' });
+}
+
+const handleScroll = debounce(updateVisibleCardsSet, 200);
+window.addEventListener('scroll', handleScroll, { passive: true });
+window.addEventListener('resize', handleScroll, { passive: true });
 
 export function observeCard(el) {
-  if (el) cardObserver.observe(el);
+  if (el) {
+    const mobNo = el.dataset.mobNo;
+    cardCache.set(mobNo, el);
+  }
 }
 
 export function unobserveCard(el) {
-  if (el) cardObserver.unobserve(el);
+  if (el) {
+    const mobNo = el.dataset.mobNo;
+    cardCache.delete(mobNo);
+    visibleCards.delete(mobNo);
+  }
 }
 
 export function updateCardFull(card, mob) {
@@ -511,15 +526,14 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 
     const fragment = document.createDocumentFragment();
     nextChildren.forEach(child => {
-        fragment.appendChild(child);
-        if (child.dataset.mobNo) observeCard(child);
+      fragment.appendChild(child);
+      if (child.dataset.mobNo) observeCard(child);
     });
 
     const orderChanged = lastRenderedOrderStr !== sortedMobs.map(m => m.No).join(",") ||
       lastRenderedGroupStr !== sortedMobs.map(m => getGroupKey(m)).join(",");
 
     if (orderChanged || DOM.pcLeftList.children.length !== nextChildren.length) {
-      cardObserver.disconnect();
       DOM.pcLeftList.innerHTML = "";
       DOM.pcLeftList.appendChild(fragment);
     } else {
@@ -727,9 +741,6 @@ function applyOptimisticDOM(point, nextCulled) {
       }
     }
   }
-
-  const pointNumber = parseInt(point.dataset.locationId?.slice(-2), 10);
-  point.dataset.tooltip = `${pointNumber}${nextCulled ? " (済)" : ""}`;
 }
 
 function applyOptimisticState(mobNo, area, locationId, nextCulled) {
