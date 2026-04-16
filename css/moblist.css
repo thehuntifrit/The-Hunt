@@ -371,8 +371,15 @@
 }
 
 @keyframes moblist-pulse-white {
-    0%, 100% { opacity: 0; }
-    50% { opacity: 0.15; }
+
+    0%,
+    100% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0.15;
+    }
 }
 
 /* --- SECTION: MEDIA (MOBILE OVERRIDES) --- */

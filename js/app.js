@@ -7,6 +7,25 @@ import { handleAreaFilterClick, handleRankTabClick, initAppNav, initNotification
 import { initializeAuth, getUserData, submitReport, submitMemo, toggleCrushStatus } from "./server.js";
 import { openUserManual } from "./readme.js";
 
+// ─── 診断・計測用グローバル変数 ────────────────────────
+window.__HUNT_METRICS__ = {
+  tickCount: 0,
+  lastTickTime: 0,
+  totalCalc: 0,
+  totalRender: 0,
+  urgentCount: 0,
+  reset() {
+    this.totalCalc = 0;
+    this.totalRender = 0;
+    this.urgentCount = 0;
+  },
+  report() {
+    console.log(`%c[Hunt計測] 更新: ${this.lastTickTime.toFixed(1)}ms | 計算: ${this.totalCalc}回 | 描画: ${this.totalRender}回 | Urgent数: ${this.urgentCount}件`, "color: #00d4ff; font-weight: bold;");
+  }
+};
+window.HUNT_DEBUG_MUTE_DOM = false;
+window.HUNT_DEBUG_MUTE_CALC = false;
+
 // ─── 定数・DOM ──────────────────────────────────────────
 export const DOM = {
   colContainer: document.getElementById('column-container'),
@@ -392,6 +411,8 @@ export function updateCardFull(card, mob) {
   if (card._lastStateHash === stateHash) return;
   card._lastStateHash = stateHash;
 
+  if (window.__HUNT_METRICS__) window.__HUNT_METRICS__.totalRender++;
+
   const isDetail = card.classList.contains('mobcard-card');
   const isListItem = card.classList.contains('moblist-item');
 
@@ -617,9 +638,13 @@ export function updateProgressBarsOptimized() {
   const nowSec = now / 1000;
 
   const isTierB = now - lastTierBTime >= 60000;
-  const isTierC = now - lastTierCTime >= 2917;
+  const isTierC = now - lastTierCTime >= 2000;
 
   if (!isTierB && !isTierC) return;
+  if (window.HUNT_DEBUG_MUTE_CALC) return;
+
+  const startTime = performance.now();
+  window.__HUNT_METRICS__.reset();
 
   const filtered = getFilteredMobs();
   let anyStateChanged = false;
@@ -632,20 +657,27 @@ export function updateProgressBarsOptimized() {
 
       if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
 
-      if (info.nextBoundarySec && (nowSec >= info.nextBoundarySec - 60)) {
+      const isUrgent = (info.nextBoundarySec && (nowSec >= info.nextBoundarySec - 60)) ||
+        (info.status === "PopWindow" || info.status === "ConditionActive" || info.status === "NextCondition");
+
+      if (isUrgent) {
         lastUrgentMobIds.add(String(mob.No));
       }
     });
     lastTierBTime = now;
   } else if (isTierC) {
     const mobMap = state.mobsMap;
+    window.__HUNT_METRICS__.urgentCount = lastUrgentMobIds.size;
     lastUrgentMobIds.forEach(mobNoStr => {
       const mob = mobMap.get(mobNoStr);
       if (mob) {
         if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
 
         const info = mob.repopInfo;
-        if (!info || !info.nextBoundarySec || (nowSec < info.nextBoundarySec - 65)) {
+        const isStillUrgent = (info.nextBoundarySec && (nowSec >= info.nextBoundarySec - 60)) ||
+          (info.status === "PopWindow" || info.status === "ConditionActive" || info.status === "NextCondition");
+
+        if (!isStillUrgent) {
           lastUrgentMobIds.delete(mobNoStr);
         }
       }
@@ -664,6 +696,9 @@ export function updateProgressBarsOptimized() {
 
   const rankBtn = document.querySelector('.appnav-btn[data-panel="rank"]');
   if (rankBtn) rankBtn.classList.remove("has-alert");
+
+  window.__HUNT_METRICS__.lastTickTime = performance.now() - startTime;
+  window.__HUNT_METRICS__.report();
 }
 
 
@@ -673,24 +708,36 @@ function updateMobState(mob, nowSec, state) {
 
   let hasSignificantChange = false;
   const oldStatus = info.status;
+  let calculationTriggered = false;
 
-  if (info.nextBoundarySec && nowSec >= info.nextBoundarySec) {
+  // 1. 境界時刻を跨いだ場合のフル再計算 (仕様 36-40項)
+  const isBoundaryCrossed = (info.nextBoundarySec && nowSec >= info.nextBoundarySec) ||
+    (info.maxRepop && nowSec >= info.maxRepop && info.status !== "MaxOver") ||
+    (info.minRepop && nowSec >= info.minRepop && (info.status === "Next" || info.status === "NextCondition"));
+
+  if (isBoundaryCrossed) {
     mob.repopInfo = calculateRepop(mob, state.maintenance);
+    calculationTriggered = true;
     hasSignificantChange = true;
-  } else if (info.maxRepop && nowSec >= info.maxRepop) {
-    if (info.status !== "MaxOver") {
-      mob.repopInfo = calculateRepop(mob, state.maintenance);
-      hasSignificantChange = true;
-    }
-  } else if (info.minRepop && nowSec >= info.minRepop) {
-    const nextPercent = Math.min(((nowSec - info.minRepop) / (info.maxRepop - info.minRepop)) * 100, 100);
-    info.elapsedPercent = nextPercent;
-    if (info.status === "Next" || info.status === "NextCondition") {
-      mob.repopInfo = calculateRepop(mob, state.maintenance);
-      hasSignificantChange = true;
-    }
   } else {
-    info.elapsedPercent = 0;
+    // 2. 算術ベースの軽量タイマー更新 (仕様 44項)
+    if (info.maxRepop && nowSec >= info.maxRepop) {
+      info.status = "MaxOver";
+      info.elapsedPercent = 100;
+      info.timeRemaining = `超過 ${formatDurationColon(nowSec - info.maxRepop)}`;
+    } else if (info.minRepop && nowSec < info.minRepop) {
+      info.status = (info.status === "NextCondition") ? "NextCondition" : "Next";
+      info.elapsedPercent = 0;
+      info.timeRemaining = `次回 ${formatDurationColon(info.minRepop - nowSec)}`;
+    } else if (info.minRepop && info.maxRepop) {
+      info.elapsedPercent = Math.min(((nowSec - info.minRepop) / (info.maxRepop - info.minRepop)) * 100, 100);
+      const label = info.status === "ConditionActive" ? "条件" : "残り";
+      info.timeRemaining = `${label} ${formatDurationColon(info.maxRepop - nowSec)}`;
+    }
+  }
+
+  if (calculationTriggered) {
+    window.__HUNT_METRICS__.totalCalc++;
   }
 
   if (oldStatus !== mob.repopInfo.status) {
@@ -704,12 +751,14 @@ function updateMobState(mob, nowSec, state) {
     document.getElementById("mobcard-overlay")?.dataset.renderedMobNo;
 
   if (detailMobNo === mobNoStr) {
+    if (window.HUNT_DEBUG_MUTE_DOM) return hasSignificantChange;
     const detailCard = document.querySelector(`.mobcard-card[data-mob-no="${mobNoStr}"]`);
     if (detailCard) updateCardFull(detailCard, mob);
   }
 
   const listItem = cardCache.get(mobNoStr);
   if (listItem) {
+    if (window.HUNT_DEBUG_MUTE_DOM) return hasSignificantChange;
     updateCardFull(listItem, mob);
   }
 
