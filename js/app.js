@@ -33,6 +33,8 @@ const visibleCards = new Set();
 
 let isInitialLoading = false;
 let isInitialSortingSuppressed = false;
+let lastClickTime = 0;
+let lastClickLocationId = null;
 let locationEventsAttached = false;
 
 // ─── 初期化 ─────────────────────────────────────────────
@@ -373,7 +375,8 @@ export function unobserveCard(el) {
 
 export function updateCardFull(card, mob) {
   const info = mob.repopInfo || {};
-  const stateHash = `${info.status}|${info.timeRemaining}|${info.isInConditionWindow}`;
+  const cullHash = JSON.stringify(mob.spawn_cull_status || {});
+  const stateHash = `${info.status}|${info.timeRemaining}|${info.isInConditionWindow}|${cullHash}`;
 
   if (card._lastStateHash === stateHash) return;
   card._lastStateHash = stateHash;
