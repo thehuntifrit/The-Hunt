@@ -1,4 +1,4 @@
-import { getState, recalculateMob, requestWorkerCalculation, PROGRESS_CLASSES, EXPANSION_MAP, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled } from "./dataManager.js";
+import { getState, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled } from "./dataManager.js";
 import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
 import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initGlobalMagnifier, adjustMemoHeight } from "./mobCard.js";
 import { getGroupKey, GROUP_LABELS, getOrCreateGroupSection, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, allTabComparator } from "./mobSorter.js";
@@ -6,25 +6,6 @@ import { closeReportModal, openAuthModal, openReportModal, initModal, closeAuthM
 import { handleAreaFilterClick, handleRankTabClick, initAppNav, initNotification, togglePanel, closePanel, setActiveNavItem, checkAndNotify, updateErrorPanel } from "./sidebar.js";
 import { initializeAuth, getUserData, submitReport, submitMemo, toggleCrushStatus } from "./server.js";
 import { openUserManual } from "./readme.js";
-
-// ─── 診断・計測用グローバル変数 ────────────────────────
-window.__HUNT_METRICS__ = {
-  tickCount: 0,
-  lastTickTime: 0,
-  totalCalc: 0,
-  totalRender: 0,
-  urgentCount: 0,
-  reset() {
-    this.totalCalc = 0;
-    this.totalRender = 0;
-    this.urgentCount = 0;
-  },
-  report() {
-    console.log(`%c[Hunt計測] 更新: ${this.lastTickTime.toFixed(1)}ms | 計算: ${this.totalCalc}回 | 描画: ${this.totalRender}回 | Urgent数: ${this.urgentCount}件`, "color: #00d4ff; font-weight: bold;");
-  }
-};
-window.HUNT_DEBUG_MUTE_DOM = false;
-window.HUNT_DEBUG_MUTE_CALC = false;
 
 // ─── 定数・DOM ──────────────────────────────────────────
 export const DOM = {
@@ -50,22 +31,8 @@ export const cardCache = new Map();
 
 const visibleCards = new Set();
 
-const CULLED_CLASS_MAP = {
-  "color-b1": "color-b1-culled",
-  "color-b2": "color-b2-culled",
-}
-
-const UNCULLED_CLASS_MAP = {
-  "color-b1-culled": "color-b1",
-  "color-b2-culled": "color-b2",
-}
-
-let cachedMobMap = null;
-let currentMobsRef = null;
 let isInitialLoading = false;
 let isInitialSortingSuppressed = false;
-let lastClickTime = 0;
-let lastClickLocationId = null;
 let locationEventsAttached = false;
 
 // ─── 初期化 ─────────────────────────────────────────────
@@ -641,7 +608,6 @@ export function updateProgressBarsOptimized(force = false) {
   const isTierC = force || (now - lastTierCTime >= 2000);
 
   if (!isTierB && !isTierC) return;
-  if (window.HUNT_DEBUG_MUTE_CALC) return;
 
   const filtered = getFilteredMobs();
   let anyStateChanged = false;
@@ -726,10 +692,6 @@ function updateMobState(mob, nowSec, state) {
     }
   }
 
-  if (calculationTriggered) {
-    window.__HUNT_METRICS__.totalCalc++;
-  }
-
   if (oldStatus !== mob.repopInfo.status) {
     hasSignificantChange = true;
   }
@@ -741,14 +703,12 @@ function updateMobState(mob, nowSec, state) {
     document.getElementById("mobcard-overlay")?.dataset.renderedMobNo;
 
   if (detailMobNo === mobNoStr) {
-    if (window.HUNT_DEBUG_MUTE_DOM) return hasSignificantChange;
     const detailCard = document.querySelector(`.mobcard-card[data-mob-no="${mobNoStr}"]`);
     if (detailCard) updateCardFull(detailCard, mob);
   }
 
   const listItem = cardCache.get(mobNoStr);
   if (listItem) {
-    if (window.HUNT_DEBUG_MUTE_DOM) return hasSignificantChange;
     updateCardFull(listItem, mob);
   }
 

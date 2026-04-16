@@ -1,8 +1,7 @@
-import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatMMDDHHmm } from "./cal.js";
-import { getState, PROGRESS_CLASSES, setOpenMobCardNo, isCulled } from "./dataManager.js";
+import { getDurationDHMParts, formatDurationDHM, formatMMDDHHmm } from "./cal.js";
+import { getState, setOpenMobCardNo, isCulled } from "./dataManager.js";
 import { toggleCrushStatus } from "./server.js";
 import { openAuthModal, openReportModal } from "./modal.js";
-
 
 // ─── 汎用ユーティリティ ─────────────────────────────────
 function updateEl(parent, selector, props = {}, dataset = {}) {
