@@ -429,10 +429,13 @@ export function updateProgressBar(element, mob) {
   if (!bar) return;
 
   const lastPct = parseFloat(bar.dataset.lastPct) || 0;
-  if (Math.abs(elapsedPercent - lastPct) > 0.2) {
+  if (Math.abs(elapsedPercent - lastPct) > 0.05) {
     const isDetail = element.classList.contains('mobcard-card');
-    const transitionProp = isDetail ? "transform 0.4s ease-out" : "transform 10s linear";
-    bar.style.transition = (lastPct === 0 || elapsedPercent < lastPct) ? "none" : transitionProp;
+    if (!isDetail) {
+      bar.style.transition = "none";
+    } else {
+      bar.style.transition = (lastPct === 0 || elapsedPercent < lastPct) ? "none" : "transform 0.4s ease-out";
+    }
     bar.style.transform = `scaleX(${(elapsedPercent || 0) / 100})`;
     bar.dataset.lastPct = elapsedPercent;
   }
@@ -614,7 +617,7 @@ export function updateAreaInfo(card, mob) {
 export function adjustMemoHeight(el) {
   if (!el || el.tagName !== 'TEXTAREA') return;
   el.style.height = 'auto';
-  el.style.height = (el.scrollHeight) + 'px';
+  el.style.height = el.scrollHeight + 'px';
 }
 
 export function updateMapOverlay(card, mob) {

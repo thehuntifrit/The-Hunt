@@ -406,12 +406,10 @@ export function unobserveCard(el) {
 
 export function updateCardFull(card, mob) {
   const info = mob.repopInfo || {};
-  const stateHash = `${info.status}|${Math.round((info.elapsedPercent || 0) * 10)}|${info.isInConditionWindow}`;
+  const stateHash = `${info.status}|${info.timeRemaining}|${info.isInConditionWindow}`;
 
   if (card._lastStateHash === stateHash) return;
   card._lastStateHash = stateHash;
-
-  if (window.__HUNT_METRICS__) window.__HUNT_METRICS__.totalRender++;
 
   const isDetail = card.classList.contains('mobcard-card');
   const isListItem = card.classList.contains('moblist-item');
@@ -440,14 +438,16 @@ export function updateVisibleCards() {
 
 export function updateDetailCardRealtime(mobMap) {
   const rightPane = DOM.pcRightDetail || document.getElementById("mobcard-detail");
-  if (rightPane && rightPane.dataset.renderedMobNo && rightPane.dataset.renderedMobNo !== "none") {
+  if (!rightPane || rightPane.offsetParent === null) return;
+
+  if (rightPane.dataset.renderedMobNo && rightPane.dataset.renderedMobNo !== "none") {
     const detailCard = rightPane.firstElementChild;
     const mob = mobMap.get(rightPane.dataset.renderedMobNo);
     if (detailCard && mob) updateCardFull(detailCard, mob);
   }
 
   const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobcard-overlay");
-  if (mobileOverlay && mobileOverlay.dataset.renderedMobNo && mobileOverlay.dataset.renderedMobNo !== "none") {
+  if (mobileOverlay && mobileOverlay.offsetParent !== null && mobileOverlay.dataset.renderedMobNo && mobileOverlay.dataset.renderedMobNo !== "none") {
     const detailCard = mobileOverlay.querySelector('.mobcard-card');
     const mob = mobMap.get(mobileOverlay.dataset.renderedMobNo);
     if (detailCard && mob) {
@@ -632,19 +632,16 @@ let lastTierCTime = 0;
 let cachedFilteredMobsForLoop = null;
 let lastUrgentMobIds = new Set();
 
-export function updateProgressBarsOptimized() {
+export function updateProgressBarsOptimized(force = false) {
   const state = getState();
   const now = Date.now();
   const nowSec = now / 1000;
 
-  const isTierB = now - lastTierBTime >= 60000;
-  const isTierC = now - lastTierCTime >= 2000;
+  const isTierB = force || (now - lastTierBTime >= 60000);
+  const isTierC = force || (now - lastTierCTime >= 2000);
 
   if (!isTierB && !isTierC) return;
   if (window.HUNT_DEBUG_MUTE_CALC) return;
-
-  const startTime = performance.now();
-  window.__HUNT_METRICS__.reset();
 
   const filtered = getFilteredMobs();
   let anyStateChanged = false;
@@ -667,7 +664,6 @@ export function updateProgressBarsOptimized() {
     lastTierBTime = now;
   } else if (isTierC) {
     const mobMap = state.mobsMap;
-    window.__HUNT_METRICS__.urgentCount = lastUrgentMobIds.size;
     lastUrgentMobIds.forEach(mobNoStr => {
       const mob = mobMap.get(mobNoStr);
       if (mob) {
@@ -696,11 +692,7 @@ export function updateProgressBarsOptimized() {
 
   const rankBtn = document.querySelector('.appnav-btn[data-panel="rank"]');
   if (rankBtn) rankBtn.classList.remove("has-alert");
-
-  window.__HUNT_METRICS__.lastTickTime = performance.now() - startTime;
-  window.__HUNT_METRICS__.report();
 }
-
 
 function updateMobState(mob, nowSec, state) {
   const info = mob.repopInfo;
@@ -710,7 +702,6 @@ function updateMobState(mob, nowSec, state) {
   const oldStatus = info.status;
   let calculationTriggered = false;
 
-  // 1. 境界時刻を跨いだ場合のフル再計算 (仕様 36-40項)
   const isBoundaryCrossed = (info.nextBoundarySec && nowSec >= info.nextBoundarySec) ||
     (info.maxRepop && nowSec >= info.maxRepop && info.status !== "MaxOver") ||
     (info.minRepop && nowSec >= info.minRepop && (info.status === "Next" || info.status === "NextCondition"));
@@ -720,7 +711,6 @@ function updateMobState(mob, nowSec, state) {
     calculationTriggered = true;
     hasSignificantChange = true;
   } else {
-    // 2. 算術ベースの軽量タイマー更新 (仕様 44項)
     if (info.maxRepop && nowSec >= info.maxRepop) {
       info.status = "MaxOver";
       info.elapsedPercent = 100;
@@ -1166,5 +1156,11 @@ setInterval(() => {
 }, EORZEA_MINUTE_MS);
 
 setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    updateProgressBarsOptimized(true);
+  }
+});
 
 document.addEventListener('DOMContentLoaded', initApp);
