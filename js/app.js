@@ -1024,15 +1024,20 @@ window.addEventListener('initialDataLoaded', () => {
   updateProgressBarsOptimized();
 });
 
-window.addEventListener('mobUpdated', (e) => {
-  const { mobNo, mob } = e.detail;
-  checkAndNotify(mob);
-  const card = cardCache.get(String(mobNo));
-  if (card) {
-    updateCardFull(card, mob);
-  }
+window.addEventListener('mobsBatchUpdated', (e) => {
+  const { mobNos } = e.detail;
   const mobMap = getMobMap();
-  if (mobMap) updateDetailCardRealtime(mobMap, mob);
+  if (!mobMap) return;
+
+  mobNos.forEach(mobNo => {
+    const mob = mobMap.get(String(mobNo));
+    if (!mob) return;
+    checkAndNotify(mob);
+    const card = cardCache.get(String(mobNo));
+    if (card) updateCardFull(card, mob);
+  });
+
+  updateDetailCardRealtime(mobMap);
   sortAndRedistribute();
 });
 

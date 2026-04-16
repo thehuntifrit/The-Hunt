@@ -638,10 +638,12 @@ export function startRealtime() {
                 }, {});
                 idb.set(MOB_STATUS_CACHE_KEY, statusToCache);
 
-                updatedMobNos.forEach(mobNo => {
-                    const mob = state.mobsMap.get(String(mobNo));
-                    window.dispatchEvent(new CustomEvent('mobUpdated', { detail: { mobNo, mob } }));
-                });
+                window.dispatchEvent(new CustomEvent('mobsBatchUpdated', { 
+                    detail: { 
+                        mobNos: Array.from(updatedMobNos),
+                        updateType: 'status'
+                    } 
+                }));
 
                 window.dispatchEvent(new CustomEvent('mobsUpdated'));
             }
@@ -656,6 +658,7 @@ export function startRealtime() {
         }
 
         state.mobLocations = locationsMap;
+        const updatedMobNos = [];
 
         const affectedAreas = new Set(Object.keys(locationsMap).map(k => k.split('_')[0]));
 
@@ -667,7 +670,7 @@ export function startRealtime() {
                 if (dyn) {
                     m.spawn_cull_status = dyn;
                     if (state.initialLoadComplete) {
-                        window.dispatchEvent(new CustomEvent('mobUpdated', { detail: { mobNo: m.No, mob: m } }));
+                        updatedMobNos.push(m.No);
                     }
                 }
             }
@@ -677,6 +680,14 @@ export function startRealtime() {
             initialLoadState.location = true;
             checkInitialLoadComplete();
         } else {
+            if (updatedMobNos.length > 0) {
+                window.dispatchEvent(new CustomEvent('mobsBatchUpdated', {
+                    detail: {
+                        mobNos: updatedMobNos,
+                        updateType: 'location'
+                    }
+                }));
+            }
             window.dispatchEvent(new CustomEvent('locationsUpdated', { detail: { locationsMap } }));
         }
     });
@@ -688,9 +699,10 @@ export function startRealtime() {
             return;
         }
 
-        const updatedMobNos = Object.keys(memoData);
+        const memoMobNos = Object.keys(memoData);
+        const updatedMobNosList = [];
 
-        updatedMobNos.forEach(mobNoStr => {
+        memoMobNos.forEach(mobNoStr => {
             const mob = state.mobsMap.get(mobNoStr);
             if (!mob) return;
             const mobNo = parseInt(mobNoStr, 10);
@@ -708,7 +720,7 @@ export function startRealtime() {
             }
 
             if (state.initialLoadComplete && oldMemo !== mob.memo_text) {
-                window.dispatchEvent(new CustomEvent('mobUpdated', { detail: { mobNo, mob } }));
+                updatedMobNosList.push(mobNo);
             }
         });
 
@@ -716,6 +728,14 @@ export function startRealtime() {
             initialLoadState.memo = true;
             checkInitialLoadComplete();
         } else {
+            if (updatedMobNosList.length > 0) {
+                window.dispatchEvent(new CustomEvent('mobsBatchUpdated', {
+                    detail: {
+                        mobNos: updatedMobNosList,
+                        updateType: 'memo'
+                    }
+                }));
+            }
             window.dispatchEvent(new CustomEvent('mobsUpdated'));
         }
     });
