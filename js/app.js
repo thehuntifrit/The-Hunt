@@ -31,6 +31,16 @@ export const cardCache = new Map();
 
 const visibleCards = new Set();
 
+const CULLED_CLASS_MAP = {
+  "color-b1": "color-b1-culled",
+  "color-b2": "color-b2-culled",
+}
+
+const UNCULLED_CLASS_MAP = {
+  "color-b1-culled": "color-b1",
+  "color-b2-culled": "color-b2",
+}
+
 let isInitialLoading = false;
 let isInitialSortingSuppressed = false;
 let lastClickTime = 0;
