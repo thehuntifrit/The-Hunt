@@ -110,27 +110,35 @@ export function checkAndNotify(mob) {
     const now = Date.now();
     const spawnTime = info.nextConditionSpawnDate.getTime();
     const endTime = info.conditionWindowEnd.getTime();
-    const oneMinBefore = spawnTime - 120000;
+    const beforeTime = spawnTime - 120000;
 
-    const cycleKey = `${mob.No}-${spawnTime}`;
+    const cycleKeyBase = `${mob.No}-${spawnTime}`;
+    const beforeKey = `${cycleKeyBase}-before`;
+    const atKey = `${cycleKeyBase}-at`;
 
-    const shouldNotify = (now >= oneMinBefore && now <= endTime);
-
-    if (shouldNotify && !notifiedCycles.has(cycleKey)) {
-        const body = (now < spawnTime)
-            ? `まもなく（2分前）`
-            : `時間なう！`;
-
+    if (now >= beforeTime && now < spawnTime && !notifiedCycles.has(beforeKey)) {
+        const body = `まもなく（2分前）`;
         if (window.innerWidth >= 1024) {
             sendBrowserNotification(`【POP info】 ${mob.name}`, body);
         } else {
             playNotificationSound();
         }
-        notifiedCycles.add(cycleKey);
+        notifiedCycles.add(beforeKey);
     }
 
-    if (now > endTime && notifiedCycles.has(cycleKey)) {
-        notifiedCycles.delete(cycleKey);
+    if (now >= spawnTime && now <= endTime && !notifiedCycles.has(atKey)) {
+        const body = `時間なう！`;
+        if (window.innerWidth >= 1024) {
+            sendBrowserNotification(`【POP info】 ${mob.name}`, body);
+        } else {
+            playNotificationSound();
+        }
+        notifiedCycles.add(atKey);
+    }
+
+    if (now > endTime) {
+        if (notifiedCycles.has(beforeKey)) notifiedCycles.delete(beforeKey);
+        if (notifiedCycles.has(atKey)) notifiedCycles.delete(atKey);
     }
 }
 

@@ -618,7 +618,7 @@ export function updateProgressBarsOptimized(force = false) {
   const nowSec = now / 1000;
 
   const isTierB = force || (now - lastTierBTime >= 60000);
-  const isTierC = force || (now - lastTierCTime >= 2000);
+  const isTierC = force || (now - lastTierCTime >= EORZEA_MINUTE_MS);
 
   if (!isTierB && !isTierC) return;
 
@@ -632,6 +632,7 @@ export function updateProgressBarsOptimized(force = false) {
       if (!info || info.status === "Maintenance") return;
 
       if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
+      checkAndNotify(mob);
 
       const isUrgent = (info.nextBoundarySec && (nowSec >= info.nextBoundarySec - 60)) ||
         (info.status === "PopWindow" || info.status === "ConditionActive" || info.status === "NextCondition");
@@ -647,6 +648,7 @@ export function updateProgressBarsOptimized(force = false) {
       const mob = mobMap.get(mobNoStr);
       if (mob) {
         if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
+        checkAndNotify(mob);
 
         const info = mob.repopInfo;
         const isStillUrgent = (info.nextBoundarySec && (nowSec >= info.nextBoundarySec - 60)) ||
