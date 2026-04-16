@@ -221,10 +221,11 @@ function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWin
 
   if (isInWindow) {
     const totalMinutes = Math.ceil((dhm.rawS || 0) / 60);
-    const span = document.createElement('span');
-    span.className = 'mobcard-timer special-timer';
-    span.innerHTML = `<span class="mobcard-timer-part"><span class="mobcard-timer-num">${totalMinutes}</span><span class="mobcard-timer-unit">分</span></span>`;
-    return span;
+    const el = document.createElement('span');
+    el.className = 'mobcard-timer special-timer';
+    el.dataset.minutes = totalMinutes;
+    el.innerHTML = `<span class="mobcard-timer-part"><span class="mobcard-timer-num">${totalMinutes}</span><span class="mobcard-timer-unit">分</span></span>`;
+    return el;
   }
 
   const el = cloneTemplate('timer-rich-template');
@@ -429,8 +430,10 @@ export function updateProgressBar(element, mob) {
 
   const lastPct = parseFloat(bar.dataset.lastPct) || 0;
   if (Math.abs(elapsedPercent - lastPct) > 0.2) {
-    bar.style.transition = (lastPct === 0 || elapsedPercent < lastPct) ? "none" : "width 10s linear";
-    bar.style.width = `${elapsedPercent || 0}%`;
+    const isDetail = element.classList.contains('mobcard-card');
+    const transitionProp = isDetail ? "transform 0.4s ease-out" : "transform 10s linear";
+    bar.style.transition = (lastPct === 0 || elapsedPercent < lastPct) ? "none" : transitionProp;
+    bar.style.transform = `scaleX(${(elapsedPercent || 0) / 100})`;
     bar.dataset.lastPct = elapsedPercent;
   }
 
@@ -461,10 +464,12 @@ export function updateProgressText(element, mob) {
   const percentEl = element.querySelector('.percent, .moblist-percent');
 
   if (timeContainer && element.classList.contains('moblist-item')) {
-    const timerNode = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
-    const cacheKey = `timer-${label}-${isSpecialCondition}-${isTimeOver}-${isInWindow}-${dhm?.rawS || 0}`;
+    const { d, h, m, rawS } = dhm || {};
+    const displayValue = isInWindow ? Math.ceil((rawS || 0) / 60) : `${d || 0}-${h || 0}-${m || 0}`;
+    const cacheKey = `timer-${label}-${isSpecialCondition}-${isTimeOver}-${isInWindow}-${displayValue}`;
 
     if (timeContainer._lastCacheKey !== cacheKey) {
+      const timerNode = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
       timeContainer.innerHTML = "";
       const inner = document.createElement("div");
       inner.className = "timer-inner-grid";

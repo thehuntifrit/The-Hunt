@@ -445,6 +445,15 @@ export function calculateRepop(mob, maintenance, options = {}) {
     mob.conditions
   );
 
+  if (!options.forceRecalc && mob.repopInfo && mob.repopInfo.nextBoundarySec && now < mob.repopInfo.nextBoundarySec) {
+    if (now >= minRepop) {
+      mob.repopInfo.elapsedPercent = Math.min(((now - minRepop) / (maxRepop - minRepop)) * 100, 100);
+    } else {
+      mob.repopInfo.elapsedPercent = 0;
+    }
+    return mob.repopInfo;
+  }
+
   if (hasCondition) {
     const cacheKey = `${lastKill}_${maintenanceStart || 0}`;
     let useCache = false;
@@ -469,8 +478,6 @@ export function calculateRepop(mob, maintenance, options = {}) {
         key: cacheKey,
         result: result
       };
-    } else if (mob._spawnCache?.result) {
-      staleCache = null;
     }
 
     const effective = result || staleCache;
@@ -479,11 +486,6 @@ export function calculateRepop(mob, maintenance, options = {}) {
       nextConditionSpawnDate = new Date(start * 1000);
       conditionWindowEnd = new Date(end * 1000);
       isInConditionWindow = (now >= start && now < end && now >= minRepop);
-
-      if (isInConditionWindow) {
-        const remainingSec = end - now;
-        conditionRemaining = `残り ${Math.ceil(remainingSec / 60)}分`;
-      }
     }
   }
 

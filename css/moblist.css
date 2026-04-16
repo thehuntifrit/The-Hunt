@@ -125,6 +125,7 @@
     overflow: hidden;
     inline-size: 100%;
     box-sizing: border-box;
+    contain: layout style;
 
     &::before {
         content: '';
@@ -286,10 +287,13 @@
     }
 
     .moblist-bg-bar {
-        inline-size: 0;
+        inline-size: 100%;
         block-size: 100%;
         background: var(--color-progress-fill);
         opacity: 0.3;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 10s linear;
     }
 
     .moblist-percent {
@@ -362,6 +366,7 @@
         opacity: 0;
         z-index: 5;
         animation: moblist-pulse-white 2s ease-in-out infinite;
+        will-change: opacity;
     }
 }
 

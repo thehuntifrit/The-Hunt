@@ -337,11 +337,7 @@ export function updateHeaderTime() {
 
 // ─── ソート＆描画 ───────────────────────────────────────
 function getMobMap() {
-  const mobs = getState().mobs;
-  if (mobs === currentMobsRef && cachedMobMap) return cachedMobMap;
-  currentMobsRef = mobs;
-  cachedMobMap = new Map(mobs.map(m => [String(m.No), m]));
-  return cachedMobMap;
+  return getState().mobsMap;
 }
 
 function updateVisibleCardsSet() {
@@ -390,6 +386,12 @@ export function unobserveCard(el) {
 }
 
 export function updateCardFull(card, mob) {
+  const info = mob.repopInfo || {};
+  const stateHash = `${info.status}|${Math.round((info.elapsedPercent || 0) * 10)}|${info.isInConditionWindow}`;
+
+  if (card._lastStateHash === stateHash) return;
+  card._lastStateHash = stateHash;
+
   const isDetail = card.classList.contains('mobcard-card');
   const isListItem = card.classList.contains('moblist-item');
 
@@ -540,7 +542,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     }
   }
 
-
   if (DOM.pcLeftList) {
     syncDomOrder();
   }
@@ -607,7 +608,8 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 
 let lastTierBTime = 0;
 let lastTierCTime = 0;
-
+let cachedFilteredMobsForLoop = null;
+let lastUrgentMobIds = new Set();
 
 export function updateProgressBarsOptimized() {
   const state = getState();
@@ -622,23 +624,33 @@ export function updateProgressBarsOptimized() {
   const filtered = getFilteredMobs();
   let anyStateChanged = false;
 
-  filtered.forEach(mob => {
-    const info = mob.repopInfo;
-    if (!info || info.status === "Maintenance") return;
+  if (isTierB) {
+    lastUrgentMobIds.clear();
+    filtered.forEach(mob => {
+      const info = mob.repopInfo;
+      if (!info || info.status === "Maintenance") return;
 
-    const isUrgent = (info.nextBoundarySec && (nowSec >= info.nextBoundarySec - 60)) ||
-      (info.status === "PopWindow" || info.status === "ConditionActive");
+      if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
 
-    if (isUrgent) {
-      if (isTierC) {
-        if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
+      if (info.nextBoundarySec && (nowSec >= info.nextBoundarySec - 60)) {
+        lastUrgentMobIds.add(String(mob.No));
       }
-    } else {
-      if (isTierB) {
+    });
+    lastTierBTime = now;
+  } else if (isTierC) {
+    const mobMap = state.mobsMap;
+    lastUrgentMobIds.forEach(mobNoStr => {
+      const mob = mobMap.get(mobNoStr);
+      if (mob) {
         if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
+
+        const info = mob.repopInfo;
+        if (!info || !info.nextBoundarySec || (nowSec < info.nextBoundarySec - 65)) {
+          lastUrgentMobIds.delete(mobNoStr);
+        }
       }
-    }
-  });
+    });
+  }
 
   if (isTierB) lastTierBTime = now;
   if (isTierC) lastTierCTime = now;

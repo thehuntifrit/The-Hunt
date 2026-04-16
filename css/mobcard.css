@@ -208,10 +208,12 @@
 
     .mobcard-progress-bar {
         height: 100%;
-        width: 0;
+        width: 100%;
         background: var(--color-progress-fill);
         border-radius: 4px;
-        transition: width 0.4s ease-out;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease-out;
         box-shadow: none;
     }
 
