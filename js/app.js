@@ -657,43 +657,50 @@ export function updateProgressBarsOptimized() {
 
 function updateMobState(mob, nowSec, state) {
   const info = mob.repopInfo;
+  if (!info) return false;
+
   let hasSignificantChange = false;
   const oldStatus = info.status;
 
   if (info.nextBoundarySec && nowSec >= info.nextBoundarySec) {
     mob.repopInfo = calculateRepop(mob, state.maintenance);
     hasSignificantChange = true;
-  } else {
-    if (info.maxRepop && nowSec >= info.maxRepop) {
-      if (info.status !== "MaxOver") {
-        mob.repopInfo = calculateRepop(mob, state.maintenance);
-        hasSignificantChange = true;
-      }
-    } else if (info.minRepop && nowSec >= info.minRepop) {
-      const nextPercent = Math.min(((nowSec - info.minRepop) / (info.maxRepop - info.minRepop)) * 100, 100);
-      if (Math.abs((info.elapsedPercent || 0) - nextPercent) > 0.1) {
-        info.elapsedPercent = nextPercent;
-        if (info.status === "PopWindow" || info.status === "ConditionActive") {
-          hasSignificantChange = true;
-        }
-      }
-      if (info.status === "Next" || info.status === "NextCondition") {
-        mob.repopInfo = calculateRepop(mob, state.maintenance);
-        hasSignificantChange = true;
-      }
-    } else {
-      info.elapsedPercent = 0;
+  } else if (info.maxRepop && nowSec >= info.maxRepop) {
+    if (info.status !== "MaxOver") {
+      mob.repopInfo = calculateRepop(mob, state.maintenance);
+      hasSignificantChange = true;
     }
+  } else if (info.minRepop && nowSec >= info.minRepop) {
+    const nextPercent = Math.min(((nowSec - info.minRepop) / (info.maxRepop - info.minRepop)) * 100, 100);
+    info.elapsedPercent = nextPercent;
+    if (info.status === "Next" || info.status === "NextCondition") {
+      mob.repopInfo = calculateRepop(mob, state.maintenance);
+      hasSignificantChange = true;
+    }
+  } else {
+    info.elapsedPercent = 0;
   }
 
   if (oldStatus !== mob.repopInfo.status) {
     hasSignificantChange = true;
   }
 
-  const card = cardCache.get(String(mob.No));
-  if (card) {
-    updateCardFull(card, mob);
+  const mobNoStr = String(mob.No);
+
+  const detailMobNo =
+    document.getElementById("mobcard-detail")?.dataset.renderedMobNo ||
+    document.getElementById("mobcard-overlay")?.dataset.renderedMobNo;
+
+  if (detailMobNo === mobNoStr) {
+    const detailCard = document.querySelector(`.mobcard-card[data-mob-no="${mobNoStr}"]`);
+    if (detailCard) updateCardFull(detailCard, mob);
   }
+
+  const listItem = cardCache.get(mobNoStr);
+  if (listItem) {
+    updateCardFull(listItem, mob);
+  }
+
   return hasSignificantChange;
 }
 
@@ -1095,7 +1102,7 @@ function handleGeneralClick(e) {
 
 setInterval(() => {
   updateProgressBarsOptimized();
-}, 1000);
+}, EORZEA_MINUTE_MS);
 
 setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
 
