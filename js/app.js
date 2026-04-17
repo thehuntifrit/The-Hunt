@@ -634,8 +634,8 @@ export function updateProgressBarsOptimized(force = false) {
       if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
       checkAndNotify(mob);
 
-      const isUrgent = (info.nextBoundarySec && (nowSec >= info.nextBoundarySec - 60)) ||
-        (info.status === "PopWindow" || info.status === "ConditionActive" || info.status === "NextCondition");
+      const timeToBoundary = info.nextBoundarySec ? Math.abs(nowSec - info.nextBoundarySec) : 999;
+      const isUrgent = timeToBoundary < 60;
 
       if (isUrgent) {
         lastUrgentMobIds.add(String(mob.No));
@@ -643,10 +643,9 @@ export function updateProgressBarsOptimized(force = false) {
     });
     lastTierBTime = now;
   } else if (isTierC) {
-    const mobMap = state.mobsMap;
-    lastUrgentMobIds.forEach(mobNoStr => {
-      const mob = mobMap.get(mobNoStr);
-      if (mob) {
+    filtered.forEach(mob => {
+      const mobNoStr = String(mob.No);
+      if (lastUrgentMobIds.has(mobNoStr)) {
         if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
         checkAndNotify(mob);
 
@@ -660,9 +659,6 @@ export function updateProgressBarsOptimized(force = false) {
       }
     });
   }
-
-  if (isTierB) lastTierBTime = now;
-  if (isTierC) lastTierCTime = now;
 
   if (anyStateChanged) {
     syncDomOrder();
@@ -696,14 +692,24 @@ function updateMobState(mob, nowSec, state) {
       info.status = "MaxOver";
       info.elapsedPercent = 100;
       info.timeRemaining = `超過 ${formatDurationColon(nowSec - info.maxRepop)}`;
-    } else if (info.minRepop && nowSec < info.minRepop) {
-      info.status = (info.status === "NextCondition") ? "NextCondition" : "Next";
-      info.elapsedPercent = 0;
-      info.timeRemaining = `次回 ${formatDurationColon(info.minRepop - nowSec)}`;
-    } else if (info.minRepop && info.maxRepop) {
-      info.elapsedPercent = Math.min(((nowSec - info.minRepop) / (info.maxRepop - info.minRepop)) * 100, 100);
-      const label = info.status === "ConditionActive" ? "条件" : "残り";
-      info.timeRemaining = `${label} ${formatDurationColon(info.maxRepop - nowSec)}`;
+    } else {
+      let targetSec = info.maxRepop || 0;
+      let label = (info.status === "ConditionActive") ? "条件" : "残り";
+
+      if (info.nextConditionSpawnDate && (nowSec < info.nextConditionSpawnDate.getTime() / 1000)) {
+        targetSec = info.nextConditionSpawnDate.getTime() / 1000;
+        label = "次回";
+      } else if (info.minRepop && nowSec < info.minRepop) {
+        targetSec = info.minRepop;
+        label = "次回";
+      }
+
+      const newTimeStr = `${label} ${formatDurationColon(Math.max(0, targetSec - nowSec))}`;
+      info.timeRemaining = newTimeStr;
+      
+      if (info.minRepop && info.maxRepop) {
+        info.elapsedPercent = Math.min(((nowSec - info.minRepop) / (info.maxRepop - info.minRepop)) * 100, 100);
+      }
     }
   }
 

@@ -25,7 +25,7 @@
     container-name: mobcard-card;
     transition: opacity 0.4s ease cubic-bezier(0.16, 1, 0.3, 1);
 
-    &.mobcard-blink-white .mobcard-inner {
+    &.mobcard-highlight-white .mobcard-inner {
         border-color: rgba(255, 255, 255, 0.4);
     }
 

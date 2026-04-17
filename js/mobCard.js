@@ -450,9 +450,9 @@ export function updateProgressBar(element, mob) {
 
   if (wrapper) {
     const isInCondition = !!mob.repopInfo.isInConditionWindow && !mob.repopInfo.isMaintenanceStop && !mob.repopInfo.isBlockedByMaintenance;
-    const currentBlink = element.classList.contains('moblist-blink-white');
+    const currentBlink = element.classList.contains('moblist-highlight-white');
     if (element.classList.contains('moblist-item') && currentBlink !== isInCondition) {
-      element.classList.toggle('moblist-blink-white', isInCondition);
+      element.classList.toggle('moblist-highlight-white', isInCondition);
     }
   }
 }

@@ -5,7 +5,7 @@ import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos, subsc
 export const EXPANSION_MAP = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
 
 export const PROGRESS_CLASSES = {
-    BLINK_WHITE: "progress-blink-white"
+    HIGHLIGHT_WHITE: "progress-highlight-white"
 };
 
 const MOB_DATA_URL = "./json/mob_data.json";
