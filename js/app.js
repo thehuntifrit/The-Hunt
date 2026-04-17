@@ -609,8 +609,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 
 let lastTierBTime = 0;
 let lastTierCTime = 0;
-let cachedFilteredMobsForLoop = null;
-let lastUrgentMobIds = new Set();
 
 export function updateProgressBarsOptimized(force = false) {
   const state = getState();
@@ -625,39 +623,21 @@ export function updateProgressBarsOptimized(force = false) {
   const filtered = getFilteredMobs();
   let anyStateChanged = false;
 
-  if (isTierB) {
-    lastUrgentMobIds.clear();
+  if (isTierC) {
     filtered.forEach(mob => {
       const info = mob.repopInfo;
       if (!info || info.status === "Maintenance") return;
 
-      if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
-      checkAndNotify(mob);
-
       const timeToBoundary = info.nextBoundarySec ? Math.abs(nowSec - info.nextBoundarySec) : 999;
-      const isUrgent = timeToBoundary < 60;
+      const needsRealtime = timeToBoundary < 60;
 
-      if (isUrgent) {
-        lastUrgentMobIds.add(String(mob.No));
-      }
-    });
-    lastTierBTime = now;
-  } else if (isTierC) {
-    filtered.forEach(mob => {
-      const mobNoStr = String(mob.No);
-      if (lastUrgentMobIds.has(mobNoStr)) {
+      if (needsRealtime || isTierB) {
         if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
         checkAndNotify(mob);
-
-        const info = mob.repopInfo;
-        const isStillUrgent = (info.nextBoundarySec && (nowSec >= info.nextBoundarySec - 60)) ||
-          (info.status === "PopWindow" || info.status === "ConditionActive" || info.status === "NextCondition");
-
-        if (!isStillUrgent) {
-          lastUrgentMobIds.delete(mobNoStr);
-        }
       }
     });
+    lastTierCTime = now;
+    if (isTierB) lastTierBTime = now;
   }
 
   if (anyStateChanged) {
@@ -666,9 +646,6 @@ export function updateProgressBarsOptimized(force = false) {
 
   const mobMap = getMobMap();
   updateDetailCardRealtime(mobMap);
-
-  const rankBtn = document.querySelector('.appnav-btn[data-panel="rank"]');
-  if (rankBtn) rankBtn.classList.remove("has-alert");
 }
 
 function updateMobState(mob, nowSec, state) {
@@ -693,20 +670,15 @@ function updateMobState(mob, nowSec, state) {
       info.elapsedPercent = 100;
       info.timeRemaining = `超過 ${formatDurationColon(nowSec - info.maxRepop)}`;
     } else {
-      let targetSec = info.maxRepop || 0;
-      let label = (info.status === "ConditionActive") ? "条件" : "残り";
+      const targetSec = info.nextBoundarySec || info.maxRepop || 0;
+      let label = "残り";
 
-      if (info.nextConditionSpawnDate && (nowSec < info.nextConditionSpawnDate.getTime() / 1000)) {
-        targetSec = info.nextConditionSpawnDate.getTime() / 1000;
-        label = "次回";
-      } else if (info.minRepop && nowSec < info.minRepop) {
-        targetSec = info.minRepop;
-        label = "次回";
-      }
+      if (info.status === "ConditionActive") label = "条件";
+      else if (info.status === "Next" || info.status === "NextCondition") label = "次回";
 
       const newTimeStr = `${label} ${formatDurationColon(Math.max(0, targetSec - nowSec))}`;
       info.timeRemaining = newTimeStr;
-      
+
       if (info.minRepop && info.maxRepop) {
         info.elapsedPercent = Math.min(((nowSec - info.minRepop) / (info.maxRepop - info.minRepop)) * 100, 100);
       }
