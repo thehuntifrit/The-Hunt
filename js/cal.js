@@ -6,6 +6,7 @@ const MOON_PHASE_DURATION_SEC = ET_DAY_SEC * 4;
 const MAX_SEARCH_ITERATIONS = 5000;
 const LIMIT_DAYS = 20;
 export const EORZEA_MINUTE_MS = 2917;
+export const MAINT_FACTOR = 0.6;
 
 function parseDate(input) {
   if (!input) return null;
@@ -398,31 +399,17 @@ export function calculateRepop(mob, maintenance, options = {}) {
   const repopSec = mob.repopSeconds;
   const maxSec = mob.maxRepopSeconds;
 
-  const maint = maintenance;
+  const maint = (maintenance && maintenance.maintenance) ? maintenance.maintenance : maintenance;
   if (!maint || !maint.start) return baseResult("Unknown");
 
-  const serverUpDate = parseDate(maint.serverUp || maint.end);
   const maintenanceStartDate = parseDate(maint.start);
   if (!maintenanceStartDate) return baseResult("Unknown");
 
+  const { minRepop, maxRepop } = getMaintenanceRepop(mob, lastKill, maint);
+
+  const serverUpDate = parseDate(maint.serverUp || maint.end);
   const serverUp = serverUpDate ? serverUpDate.getTime() / 1000 : 0;
   const maintenanceStart = maintenanceStartDate.getTime() / 1000;
-
-  const isRankF = mob.rank === "F";
-
-  let minRepop, maxRepop;
-  if (lastKill === 0 || (serverUp > 0 && lastKill <= serverUp)) {
-    if (isRankF) {
-      minRepop = serverUp + repopSec;
-      maxRepop = serverUp + maxSec;
-    } else {
-      minRepop = serverUp + repopSec * 0.6;
-      maxRepop = serverUp + maxSec * 0.6;
-    }
-  } else {
-    minRepop = lastKill + repopSec;
-    maxRepop = lastKill + maxSec;
-  }
 
   const pointSec = Math.max(minRepop, now);
 
@@ -580,4 +567,28 @@ function baseResult(status) {
     isMaintenanceStop: false,
     isBlockedByMaintenance: false
   };
+}
+
+export function getMaintenanceRepop(mob, lastKill, maintenance) {
+  const maint = (maintenance && maintenance.maintenance) ? maintenance.maintenance : maintenance;
+  const repopSec = mob.repopSeconds;
+  const maxSec = mob.maxRepopSeconds;
+
+  if (!maint || !maint.start) {
+    return { minRepop: lastKill + repopSec, maxRepop: lastKill + maxSec };
+  }
+
+  const serverUpDate = parseDate(maint.serverUp || maint.end);
+  const serverUp = serverUpDate ? serverUpDate.getTime() / 1000 : 0;
+  const isRankF = mob.rank === "F";
+
+  if (lastKill === 0 || (serverUp > 0 && lastKill <= serverUp)) {
+    const factor = isRankF ? 1 : MAINT_FACTOR;
+    return {
+      minRepop: serverUp + (repopSec * factor),
+      maxRepop: serverUp + (maxSec * factor)
+    };
+  }
+
+  return { minRepop: lastKill + repopSec, maxRepop: lastKill + maxSec };
 }

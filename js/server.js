@@ -5,6 +5,7 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gst
 
 import { getState } from "./dataManager.js";
 import { closeReportModal } from "./modal.js";
+import { getMaintenanceRepop } from "./cal.js";
 
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyBikwjGsjL_PVFhx3Vj-OeJCocKA_hQOgU",
@@ -170,20 +171,8 @@ export const submitReport = async (mobNo, timeISO) => {
             maintenance = maintenance.maintenance;
         }
 
-        let repopSeconds = mob.repopSeconds;
-        let baseTimeMs = mob.last_kill_time * 1000;
-
-        if (maintenance && maintenance.serverUp) {
-            const serverUpMs = new Date(maintenance.serverUp).getTime();
-            const serverUpSec = serverUpMs / 1000;
-
-            if (mob.last_kill_time <= serverUpSec) {
-                repopSeconds = repopSeconds * 0.6;
-                baseTimeMs = serverUpMs;
-            }
-        }
-
-        const minRepopTimeMs = baseTimeMs + (repopSeconds * 1000);
+        const { minRepop } = getMaintenanceRepop(mob, mob.last_kill_time || 0, maintenance);
+        const minRepopTimeMs = minRepop * 1000;
         const allowedTimeMs = minRepopTimeMs - (300 * 1000);
 
         if (killTimeDate.getTime() < allowedTimeMs) {
