@@ -178,18 +178,22 @@ export function computeTimeLabel(mob) {
   const isTimeOver = (info.status === "MaxOver");
   const isInWindow = (info.status === "ConditionActive");
   const isTimedMob = !!(info.isInConditionWindow || info.nextConditionSpawnDate);
-  const isSpecialCondition = isTimedMob && (info.status !== "PopWindow");
+  const isSpecialCondition = isTimedMob && (mob.rank === 'S') && (info.status !== "PopWindow");
 
   let label = "残り";
   let targetSec = info.nextBoundarySec || info.maxRepop || 0;
 
-  if (isMaint) label = "中止";
+  if (isMaint) label = "停止";
   else if (isTimeOver) {
     label = "超過";
     targetSec = info.maxRepop;
   }
-  else if (isInWindow) label = "条件";
-  else if (info.status === "Next" || info.status === "NextCondition") label = "次回";
+  else if (isInWindow) {
+    label = (mob.rank === 'S') ? "なう" : "条件";
+  }
+  else if (info.status === "Next" || info.status === "NextCondition") {
+    label = (mob.rank === 'S') ? "次回" : "残り";
+  }
 
   const secondsRemaining = Math.max(0, isTimeOver ? (now - targetSec) : (targetSec - now));
   const dhm = getDurationDHMParts(secondsRemaining);
@@ -204,15 +208,6 @@ function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWin
     fallback.className = 'mobcard-timer';
     fallback.textContent = "--/-- --:--";
     return fallback;
-  }
-
-  if (isInWindow) {
-    const totalMinutes = Math.ceil((dhm.rawS || 0) / 60);
-    const el = document.createElement('span');
-    el.className = 'mobcard-timer special-timer';
-    el.dataset.minutes = totalMinutes;
-    el.innerHTML = `<span class="mobcard-timer-part"><span class="mobcard-timer-num">${totalMinutes}</span><span class="mobcard-timer-unit">分</span></span>`;
-    return el;
   }
 
   const el = cloneTemplate('timer-rich-template');
