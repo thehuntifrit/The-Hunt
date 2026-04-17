@@ -673,7 +673,8 @@ function updateMobState(mob, nowSec, state) {
       const targetSec = info.nextBoundarySec || info.maxRepop || 0;
       let label = "残り";
 
-      if (info.status === "ConditionActive") label = "条件";
+      if (info.status === "Maintenance") label = "中止";
+      else if (info.status === "ConditionActive") label = "条件";
       else if (info.status === "Next" || info.status === "NextCondition") label = "次回";
 
       const newTimeStr = `${label} ${formatDurationColon(Math.max(0, targetSec - nowSec))}`;

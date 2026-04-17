@@ -167,47 +167,35 @@ export function shouldDisplayMemo(mob) {
 }
 
 export function computeTimeLabel(mob) {
-  const { minRepop, maxRepop, status, isInConditionWindow, conditionWindowEnd, nextConditionSpawnDate, isMaintenanceStop, isBlockedByMaintenance } = mob.repopInfo || {};
+  const info = mob.repopInfo || {};
   const now = Date.now() / 1000;
-  const isMaint = !!(isMaintenanceStop || isBlockedByMaintenance);
-  const isTimedMob = !!(isInConditionWindow || nextConditionSpawnDate);
-
-  if (!minRepop && !maxRepop && !isTimedMob) {
+  
+  if (!info.status) {
     return { label: "", timeValue: "--/-- --:--", isSpecialCondition: false, isTimeOver: false, isTimedMob: false, dhm: null };
   }
 
-  let label = "", isSpecialCondition = isTimedMob, isTimeOver = status === "MaxOver";
-  let secondsRemaining = 0;
+  const isMaint = !!(info.status === "Maintenance" || info.isMaintenanceStop || info.isBlockedByMaintenance);
+  const isTimeOver = (info.status === "MaxOver");
+  const isInWindow = (info.status === "ConditionActive");
+  const isTimedMob = !!(info.isInConditionWindow || info.nextConditionSpawnDate);
+  const isSpecialCondition = isTimedMob && (info.status !== "PopWindow");
 
-  if (isInConditionWindow && conditionWindowEnd && now < (conditionWindowEnd.getTime() / 1000)) {
-    label = "残り";
-    secondsRemaining = (conditionWindowEnd.getTime() / 1000) - now;
-    isSpecialCondition = true;
-  } else if (nextConditionSpawnDate && now < (nextConditionSpawnDate.getTime() / 1000)) {
-    label = "次回";
-    secondsRemaining = (nextConditionSpawnDate.getTime() / 1000) - now;
-    isSpecialCondition = true;
-  } else if (minRepop && now < minRepop) {
-    label = "次回";
-    secondsRemaining = minRepop - now;
-    if (isTimedMob) isSpecialCondition = true;
-  } else if (maxRepop && now < maxRepop) {
-    label = "残り";
-    secondsRemaining = maxRepop - now;
-    if (isTimedMob) isSpecialCondition = true;
-  } else if (maxRepop) {
-    label = "超過";
-    secondsRemaining = now - maxRepop;
-    if (isTimedMob) isSpecialCondition = true;
-    isTimeOver = true;
-  }
-
-  const dhm = secondsRemaining >= 0 ? getDurationDHMParts(secondsRemaining) : null;
-  const timeValue = dhm ? formatDurationDHM(secondsRemaining) : "--/-- --:--";
+  let label = "残り";
+  let targetSec = info.nextBoundarySec || info.maxRepop || 0;
 
   if (isMaint) label = "中止";
+  else if (isTimeOver) {
+    label = "超過";
+    targetSec = info.maxRepop;
+  }
+  else if (isInWindow) label = "条件";
+  else if (info.status === "Next" || info.status === "NextCondition") label = "次回";
 
-  return { label, timeValue, isSpecialCondition, isTimeOver, isTimedMob, dhm, isInWindow: !!isInConditionWindow };
+  const secondsRemaining = Math.max(0, isTimeOver ? (now - targetSec) : (targetSec - now));
+  const dhm = getDurationDHMParts(secondsRemaining);
+  const timeValue = formatDurationDHM(secondsRemaining);
+
+  return { label, timeValue, isSpecialCondition, isTimeOver, isTimedMob, dhm, isInWindow };
 }
 
 function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow) {
