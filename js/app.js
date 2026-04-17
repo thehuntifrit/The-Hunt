@@ -1,4 +1,4 @@
-import { getState, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled } from "./dataManager.js";
+import { getState, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled, STATUS_LABELS } from "./dataManager.js";
 import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
 import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initGlobalMagnifier, adjustMemoHeight } from "./mobCard.js";
 import { getGroupKey, GROUP_LABELS, getOrCreateGroupSection, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, allTabComparator } from "./mobSorter.js";
@@ -668,14 +668,11 @@ function updateMobState(mob, nowSec, state) {
     if (info.maxRepop && nowSec >= info.maxRepop) {
       info.status = "MaxOver";
       info.elapsedPercent = 100;
-      info.timeRemaining = `超過 ${formatDurationColon(nowSec - info.maxRepop)}`;
+      info.timeRemaining = `${STATUS_LABELS.MaxOver} ${formatDurationColon(nowSec - info.maxRepop)}`;
     } else {
       const targetSec = info.nextBoundarySec || info.maxRepop || 0;
-      let label = "残り";
-
-      if (info.status === "Maintenance") label = "中止";
-      else if (info.status === "ConditionActive") label = "条件";
-      else if (info.status === "Next" || info.status === "NextCondition") label = "次回";
+      const mapping = STATUS_LABELS[info.status];
+      const label = (typeof mapping === "object") ? (mob.rank === "S" ? mapping.S : mapping.others) : (mapping || "残り");
 
       const newTimeStr = `${label} ${formatDurationColon(Math.max(0, targetSec - nowSec))}`;
       info.timeRemaining = newTimeStr;

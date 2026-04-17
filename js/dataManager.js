@@ -16,6 +16,15 @@ const MOB_STATUS_CACHE_KEY = "mobStatusCache";
 const SPAWN_CACHE_KEY = "spawnConditionCache";
 const LOCATIONS_CACHE_KEY = "mobLocationsCache";
 
+export const STATUS_LABELS = {
+    Maintenance: "停止",
+    MaxOver: "超過",
+    ConditionActive: "なう",
+    PopWindow: "残り",
+    Next: { S: "次回", others: "残り" },
+    NextCondition: { S: "次回", others: "残り" }
+};
+
 // ─── State ──────────────────────────────────────────────
 export const state = {
     userId: localStorage.getItem("user_uuid") || null,

@@ -1,5 +1,5 @@
 import { getDurationDHMParts, formatDurationDHM, formatMMDDHHmm } from "./cal.js";
-import { getState, setOpenMobCardNo, isCulled } from "./dataManager.js";
+import { getState, setOpenMobCardNo, isCulled, STATUS_LABELS } from "./dataManager.js";
 import { toggleCrushStatus } from "./server.js";
 import { openAuthModal, openReportModal } from "./modal.js";
 
@@ -180,19 +180,13 @@ export function computeTimeLabel(mob) {
   const isTimedMob = !!(info.isInConditionWindow || info.nextConditionSpawnDate);
   const isSpecialCondition = isTimedMob && (mob.rank === 'S') && (info.status !== "PopWindow");
 
-  let label = "残り";
+  const mapping = STATUS_LABELS[info.status];
+  const label = (typeof mapping === "object") ? (mob.rank === 'S' ? mapping.S : mapping.others) : (mapping || "残り");
+
   let targetSec = info.nextBoundarySec || info.maxRepop || 0;
 
-  if (isMaint) label = "停止";
-  else if (isTimeOver) {
-    label = "超過";
+  if (isTimeOver) {
     targetSec = info.maxRepop;
-  }
-  else if (isInWindow) {
-    label = (mob.rank === 'S') ? "なう" : "条件";
-  }
-  else if (info.status === "Next" || info.status === "NextCondition") {
-    label = (mob.rank === 'S') ? "次回" : "残り";
   }
 
   const secondsRemaining = Math.max(0, isTimeOver ? (now - targetSec) : (targetSec - now));
