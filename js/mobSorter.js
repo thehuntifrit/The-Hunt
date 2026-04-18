@@ -161,17 +161,17 @@ export function allTabComparator(a, b) {
   if (isAConditionActive && !isBConditionActive) return -1;
   if (!isAConditionActive && isBConditionActive) return 1;
 
+  if (getGroupKey(a) === "NEXT" && getGroupKey(b) === "NEXT") {
+    const at = aInfo.nextBoundarySec || Infinity;
+    const bt = bInfo.nextBoundarySec || Infinity;
+    if (at !== bt) return at - bt;
+  }
+
   const aPercent = aInfo.elapsedPercent || 0;
   const bPercent = bInfo.elapsedPercent || 0;
 
   if (Math.abs(aPercent - bPercent) > 0.001) {
     return bPercent - aPercent;
-  }
-
-  if (!aIsAfterMaintenance && !bIsAfterMaintenance) {
-    const aTime = aInfo.minRepop || 0;
-    const bTime = bInfo.minRepop || 0;
-    if (aTime !== bTime) return aTime - bTime;
   }
 
   const rankDiff = rankPriority(a.rank) - rankPriority(b.rank);

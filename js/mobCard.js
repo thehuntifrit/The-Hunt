@@ -175,25 +175,35 @@ export function computeTimeLabel(mob) {
   }
 
   const isMaint = !!(info.status === "Maintenance" || info.isMaintenanceStop || info.isBlockedByMaintenance);
-  const isTimeOver = (info.status === "MaxOver");
-  const isInWindow = (info.status === "ConditionActive");
+  const isTimeOverRaw = (info.status === "MaxOver");
+  const isInWindow = !!info.isInConditionWindow;
+  const isNextWindow = !isInWindow && !!info.nextConditionSpawnDate && (now < info.nextConditionSpawnDate.getTime() / 1000);
   const isTimedMob = !!(info.isInConditionWindow || info.nextConditionSpawnDate);
   const isSpecialCondition = isTimedMob && (mob.rank === 'S') && (info.status !== "PopWindow");
 
-  const mapping = STATUS_LABELS[info.status];
+  let labelStatus = info.status;
+  if (isInWindow && (info.status === "MaxOver" || info.status === "PopWindow")) {
+    labelStatus = "ConditionActive";
+  } else if (isNextWindow && (info.status === "MaxOver" || info.status === "PopWindow")) {
+    labelStatus = "NextCondition";
+  }
+
+  const mapping = STATUS_LABELS[labelStatus];
   const label = (typeof mapping === "object") ? (mob.rank === 'S' ? mapping.S : mapping.others) : (mapping || "残り");
 
   let targetSec = info.nextBoundarySec || info.maxRepop || 0;
 
-  if (isTimeOver) {
+  const showAsOverdue = isTimeOverRaw && !isInWindow && !isNextWindow;
+
+  if (showAsOverdue) {
     targetSec = info.maxRepop;
   }
 
-  const secondsRemaining = Math.max(0, isTimeOver ? (now - targetSec) : (targetSec - now));
+  const secondsRemaining = Math.max(0, showAsOverdue ? (now - targetSec) : (targetSec - now));
   const dhm = getDurationDHMParts(secondsRemaining);
   const timeValue = formatDurationDHM(secondsRemaining);
 
-  return { label, timeValue, isSpecialCondition, isTimeOver, isTimedMob, dhm, isInWindow };
+  return { label, timeValue, isSpecialCondition, isTimeOver: showAsOverdue, isTimedMob, dhm, isInWindow };
 }
 
 function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow) {
