@@ -629,8 +629,7 @@ export function updateProgressBarsOptimized(force = false) {
       if (!info || info.status === "Maintenance") return;
 
       const timeToBoundary = info.nextBoundarySec ? Math.abs(nowSec - info.nextBoundarySec) : 999;
-      const hasCondition = !!info.nextConditionSpawnDate;
-      const needsRealtime = timeToBoundary < 60 || hasCondition;
+      const needsRealtime = timeToBoundary < 60;
 
       if (needsRealtime || isTierB) {
         if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
@@ -655,8 +654,7 @@ function updateMobState(mob, nowSec, state) {
 
   let hasSignificantChange = false;
   const oldStatus = info.status;
-  const oldTimeRemaining = info.timeRemaining;
-  const oldPercent = info.elapsedPercent;
+  let calculationTriggered = false;
 
   const isBoundaryCrossed = (info.nextBoundarySec && nowSec >= info.nextBoundarySec) ||
     (info.maxRepop && nowSec >= info.maxRepop && info.status !== "MaxOver") ||
@@ -664,6 +662,7 @@ function updateMobState(mob, nowSec, state) {
 
   if (isBoundaryCrossed) {
     mob.repopInfo = calculateRepop(mob, state.maintenance);
+    calculationTriggered = true;
     hasSignificantChange = true;
   } else {
     if (info.maxRepop && nowSec >= info.maxRepop) {
@@ -671,11 +670,7 @@ function updateMobState(mob, nowSec, state) {
       info.elapsedPercent = 100;
       info.timeRemaining = formatDurationColon(nowSec - info.maxRepop);
     } else {
-      let targetSec = info.nextBoundarySec || info.maxRepop || 0;
-      if (info.nextConditionSpawnDate && (info.status === "Next" || info.status === "NextCondition")) {
-        const condSec = info.nextConditionSpawnDate.getTime() / 1000;
-        if (condSec > nowSec) targetSec = condSec;
-      }
+      const targetSec = info.nextBoundarySec || info.maxRepop || 0;
       info.timeRemaining = formatDurationColon(Math.max(0, targetSec - nowSec));
 
       if (info.minRepop && info.maxRepop) {
@@ -684,7 +679,7 @@ function updateMobState(mob, nowSec, state) {
     }
   }
 
-  if (oldStatus !== info.status || oldTimeRemaining !== info.timeRemaining || oldPercent !== info.elapsedPercent) {
+  if (oldStatus !== mob.repopInfo.status) {
     hasSignificantChange = true;
   }
 
