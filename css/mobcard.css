@@ -211,7 +211,7 @@
         width: 100%;
         background: var(--color-progress-fill);
         border-radius: 4px;
-        transform: scaleX(0);
+        transform: scaleX(var(--prog-percent, 0));
         transform-origin: left;
         transition: transform 0.4s ease-out;
         box-shadow: none;
@@ -484,7 +484,7 @@
     padding: 0 10px;
     resize: none;
     line-height: 1.25;
-    height: auto;
+    height: var(--memo-h, auto);
     overflow: hidden;
     -webkit-user-select: text;
     user-select: text;

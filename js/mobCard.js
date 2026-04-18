@@ -89,7 +89,8 @@ export function initGlobalMagnifier() {
       return;
     }
 
-    magnifier.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
+    magnifier.style.setProperty('--mag-x', `${e.clientX}px`);
+    magnifier.style.setProperty('--mag-y', `${e.clientY}px`);
 
     if (!magnifierRect) {
       magnifierRect = magnifier.getBoundingClientRect();
@@ -100,7 +101,9 @@ export function initGlobalMagnifier() {
     const translateX = centerX - (x * ZOOM_SCALE);
     const translateY = centerY - (y * ZOOM_SCALE);
 
-    wrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${ZOOM_SCALE})`;
+    wrapper.style.setProperty('--mag-zoom-x', `${translateX}px`);
+    wrapper.style.setProperty('--mag-zoom-y', `${translateY}px`);
+    wrapper.style.setProperty('--mag-scale', String(ZOOM_SCALE));
   };
 
   let magnifierRafId = null;
@@ -133,8 +136,8 @@ export function initGlobalMagnifier() {
     clone.classList.remove('w-full', 'u-w-full', 'pc-map-box', 'cursor-crosshair', '!cursor-crosshair');
     clone.classList.add('magnifier-clone');
 
-    clone.style.width = `${mapContainer.offsetWidth}px`;
-    clone.style.height = `${mapContainer.offsetHeight}px`;
+    clone.style.setProperty('--map-w', `${mapContainer.offsetWidth}px`);
+    clone.style.setProperty('--map-h', `${mapContainer.offsetHeight}px`);
 
     wrapper.appendChild(clone);
     magnifier.classList.remove('hidden');
@@ -206,7 +209,7 @@ export function computeTimeLabel(mob) {
   const dhm = getDurationDHMParts(secondsRemaining);
   const timeValue = formatDurationDHM(secondsRemaining);
 
-  return { label, timeValue, isSpecialCondition, isTimeOver: showAsOverdue, isTimedMob, dhm, isInWindow };
+  return { label, labelStatus, timeValue, isSpecialCondition, isTimeOver: showAsOverdue, isTimedMob, dhm, isInWindow };
 }
 
 function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow) {
@@ -299,8 +302,8 @@ export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, i
   }
 
   el.className = `spawn-point ${colorClass}`;
-  el.style.left = `${point.x}%`;
-  el.style.top = `${point.y}%`;
+  el.style.setProperty('--point-x', `${point.x}%`);
+  el.style.setProperty('--point-y', `${point.y}%`);
 
   const pointNumber = parseInt(point.id.slice(-2), 10);
   const titleText = `${pointNumber}${isCulledFlag ? " (済)" : ""}`;
@@ -352,7 +355,9 @@ export function renderMobCard(mob) {
 
   const memoEl = card.querySelector('.mobcard-memo-input');
   if (memoEl) {
-    memoEl.value = mob.memo_text || '';
+    if (document.activeElement !== memoEl) {
+      memoEl.value = mob.memo_text || '';
+    }
     memoEl.dataset.mobNo = mob.No;
     setTimeout(() => adjustMemoHeight(memoEl), 0);
   }
@@ -412,21 +417,24 @@ export function updateDetailCardRealtime(card, mob) {
 }
 
 export function updateProgressBar(element, mob) {
-  const { elapsedPercent, status } = mob.repopInfo || {};
+  const { labelStatus } = computeTimeLabel(mob);
+  const { elapsedPercent } = mob.repopInfo || {};
+  const status = labelStatus;
   const bar = element.querySelector('.mobcard-progress-bar, .moblist-bg-bar');
   const wrapper = element.querySelector('.mobcard-progress-container, .moblist-bg-gauge');
   if (!bar) return;
 
-  const lastPct = parseFloat(bar.dataset.lastPct) || 0;
-  if (Math.abs(elapsedPercent - lastPct) > 0.05) {
-    const isDetail = element.classList.contains('mobcard-card');
-    if (!isDetail) {
-      bar.style.transition = "none";
-    } else {
-      bar.style.transition = (lastPct === 0 || elapsedPercent < lastPct) ? "none" : "transform 0.4s ease-out";
-    }
-    bar.style.transform = `scaleX(${(elapsedPercent || 0) / 100})`;
-    bar.dataset.lastPct = elapsedPercent;
+  const isDetail = element.classList.contains('mobcard-card');
+  const flooredPct = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
+  const lastPct = parseFloat(bar.dataset.lastPct);
+
+  if (flooredPct !== lastPct || bar.dataset.lastStatus !== status) {
+    const isReset = isNaN(lastPct) || flooredPct === 0 || flooredPct < lastPct;
+    const noTransition = !isDetail || isReset || status === "Next" || status === "Maintenance";
+
+    bar.classList.toggle('u-no-transition', noTransition);
+    bar.style.setProperty('--prog-percent', String(flooredPct / 100));
+    bar.dataset.lastPct = String(flooredPct);
   }
 
   if (bar.dataset.lastStatus !== status) {
@@ -436,6 +444,10 @@ export function updateProgressBar(element, mob) {
     else if (status === "PopWindow") bar.classList.add("status-pop-window");
     else if (status === "Next" || status === "NextCondition") bar.classList.add("status-next");
     bar.dataset.lastStatus = status;
+
+    if (status === "Next" || status === "Maintenance") {
+      bar.style.setProperty('--prog-percent', '0');
+    }
   }
 
   if (wrapper) {
@@ -605,8 +617,7 @@ export function updateAreaInfo(card, mob) {
 
 export function adjustMemoHeight(el) {
   if (!el || el.tagName !== 'TEXTAREA') return;
-  el.style.height = 'auto';
-  el.style.height = el.scrollHeight + 'px';
+  el.style.setProperty('--memo-h', el.scrollHeight + 'px');
 }
 
 export function updateMapOverlay(card, mob) {

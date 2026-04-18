@@ -291,9 +291,8 @@
         block-size: 100%;
         background: var(--color-progress-fill);
         opacity: 0.3;
-        transform: scaleX(0);
+        transform: scaleX(var(--prog-percent, 0));
         transform-origin: left;
-        transition: transform 10s linear;
     }
 
     .moblist-percent {

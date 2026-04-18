@@ -129,12 +129,11 @@ async function initApp() {
       const overlay = DOM.loadingOverlay;
       if (overlay) {
         const spinner = overlay.querySelector('.loading-spinner');
-        if (spinner) spinner.style.display = 'none';
+        if (spinner) spinner.classList.add('u-hidden');
         const text = overlay.querySelector('.loading-text');
         if (text) {
-          text.style.whiteSpace = "pre-wrap";
+          text.classList.add('u-pre-wrap', 'u-text-error');
           text.textContent = e.detail.message;
-          text.style.color = '#ef4444';
         }
       }
     }, { once: true });
@@ -168,8 +167,6 @@ async function initApp() {
 function syncMobCardPanePosition() {
   const pane = document.getElementById('mobcard-pane');
   if (pane && window.innerWidth >= CONFIG.BREAKPOINT_PC) {
-    pane.style.left = '';
-    pane.style.width = '';
   }
 }
 
@@ -183,7 +180,6 @@ export function showColumnContainer() {
       const overlay = document.getElementById("loading-overlay");
       if (overlay) {
         overlay.classList.add("hidden");
-        overlay.style.display = 'none';
       }
     });
   });
@@ -674,7 +670,8 @@ function updateMobState(mob, nowSec, state) {
       info.timeRemaining = formatDurationColon(Math.max(0, targetSec - nowSec));
 
       if (info.minRepop && info.maxRepop) {
-        info.elapsedPercent = Math.min(((nowSec - info.minRepop) / (info.maxRepop - info.minRepop)) * 100, 100);
+        const range = info.maxRepop - info.minRepop;
+        info.elapsedPercent = (range <= 0 || nowSec < info.minRepop) ? 0 : Math.min(100, Math.floor(((nowSec - info.minRepop) / range) * 100));
       }
     }
   }

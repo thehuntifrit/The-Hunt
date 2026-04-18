@@ -70,6 +70,13 @@
 
     --font-mono: 'JetBrains Mono', 'Roboto Mono', monospace;
     --t-base: 0.3s ease;
+
+    --mag-x: 0px;
+    --mag-y: 0px;
+    --mag-zoom-x: 0px;
+    --mag-zoom-y: 0px;
+    --mag-scale: 2;
+    --prog-percent: 0;
 }
 
 @media (max-width: 1023px) {
@@ -312,6 +319,47 @@ html body.magnifier-active .mobcard-inner * {
         visibility: hidden;
         pointer-events: none;
     }
+}
+
+.u-hidden {
+    display: none !important;
+}
+
+.u-pre-wrap {
+    white-space: pre-wrap !important;
+}
+
+.u-text-error {
+    color: #ef4444 !important;
+}
+
+.u-no-transition {
+    transition: none !important;
+}
+
+.spawn-point {
+    --point-x: 0%;
+    --point-y: 0%;
+    left: var(--point-x);
+    top: var(--point-y);
+}
+
+.magnifier-clone {
+    width: var(--map-w, 100%);
+    height: var(--map-h, 100%);
+}
+
+.mobcard-progress-bar, 
+.moblist-bg-bar {
+    transform: scaleX(var(--prog-percent, 0));
+}
+
+.map-magnifier {
+    transform: translate(var(--mag-x), var(--mag-y)) translate(-50%, -50%);
+}
+
+.magnifier-content-wrapper {
+    transform: translate(var(--mag-zoom-x), var(--mag-zoom-y)) scale(var(--mag-scale));
 }
 
 .map-magnifier.hidden {

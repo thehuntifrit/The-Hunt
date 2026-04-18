@@ -433,8 +433,8 @@ export function calculateRepop(mob, maintenance, options = {}) {
   );
 
   if (!options.forceRecalc && mob.repopInfo && mob.repopInfo.nextBoundarySec && now < mob.repopInfo.nextBoundarySec) {
-    if (now >= minRepop) {
-      mob.repopInfo.elapsedPercent = Math.min(((now - minRepop) / (maxRepop - minRepop)) * 100, 100);
+    if (now >= minRepop && maxRepop > minRepop) {
+      mob.repopInfo.elapsedPercent = Math.min(100, Math.floor(((now - minRepop) / (maxRepop - minRepop)) * 100));
     } else {
       mob.repopInfo.elapsedPercent = 0;
     }
@@ -487,7 +487,7 @@ export function calculateRepop(mob, maintenance, options = {}) {
     timeRemaining = formatDurationColon(minRepop - now);
   } else {
     status = "PopWindow";
-    elapsedPercent = Math.min(((now - minRepop) / (maxRepop - minRepop)) * 100, 100);
+    elapsedPercent = (now < minRepop || maxRepop <= minRepop) ? 0 : Math.min(100, Math.floor(((now - minRepop) / (maxRepop - minRepop)) * 100));
     timeRemaining = formatDurationColon(maxRepop - now);
   }
 
