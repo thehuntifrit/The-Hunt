@@ -668,14 +668,10 @@ function updateMobState(mob, nowSec, state) {
     if (info.maxRepop && nowSec >= info.maxRepop) {
       info.status = "MaxOver";
       info.elapsedPercent = 100;
-      info.timeRemaining = `${STATUS_LABELS.MaxOver} ${formatDurationColon(nowSec - info.maxRepop)}`;
+      info.timeRemaining = formatDurationColon(nowSec - info.maxRepop);
     } else {
       const targetSec = info.nextBoundarySec || info.maxRepop || 0;
-      const mapping = STATUS_LABELS[info.status];
-      const label = (typeof mapping === "object") ? (mob.rank === "S" ? mapping.S : mapping.others) : (mapping || "残り");
-
-      const newTimeStr = `${label} ${formatDurationColon(Math.max(0, targetSec - nowSec))}`;
-      info.timeRemaining = newTimeStr;
+      info.timeRemaining = formatDurationColon(Math.max(0, targetSec - nowSec));
 
       if (info.minRepop && info.maxRepop) {
         info.elapsedPercent = Math.min(((nowSec - info.minRepop) / (info.maxRepop - info.minRepop)) * 100, 100);

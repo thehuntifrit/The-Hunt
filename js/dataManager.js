@@ -22,8 +22,17 @@ export const STATUS_LABELS = {
     ConditionActive: "なう",
     PopWindow: "残り",
     Next: { S: "次回", others: "残り" },
-    NextCondition: { S: "次回", others: "残り" }
+    NextCondition: { S: "次回", others: "残り" },
+    Unknown: "未定"
 };
+
+export function getStatusLabel(status, rank) {
+    const mapping = STATUS_LABELS[status] || STATUS_LABELS.Unknown;
+    if (typeof mapping === "object") {
+        return rank === 'S' ? mapping.S : mapping.others;
+    }
+    return mapping;
+}
 
 // ─── State ──────────────────────────────────────────────
 export const state = {

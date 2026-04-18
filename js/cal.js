@@ -417,7 +417,7 @@ export function calculateRepop(mob, maintenance, options = {}) {
   const searchLimit = pointSec + LIMIT_DAYS * 24 * 3600;
 
   let status = "Unknown";
-  let timeRemaining = "Unknown";
+  let timeRemaining = "";
   let conditionRemaining = null;
   let nextConditionSpawnDate = null;
   let conditionWindowEnd = null;
@@ -557,8 +557,8 @@ function baseResult(status) {
     minRepop: null,
     maxRepop: null,
     elapsedPercent: 0,
-    timeRemaining: "未確定",
-    status,
+    timeRemaining: "",
+    status: status || "Unknown",
     nextMinRepopDate: null,
     nextConditionSpawnDate: null,
     conditionWindowEnd: null,

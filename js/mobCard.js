@@ -1,5 +1,5 @@
 import { getDurationDHMParts, formatDurationDHM, formatMMDDHHmm } from "./cal.js";
-import { getState, setOpenMobCardNo, isCulled, STATUS_LABELS } from "./dataManager.js";
+import { getState, setOpenMobCardNo, isCulled, getStatusLabel } from "./dataManager.js";
 import { toggleCrushStatus } from "./server.js";
 import { openAuthModal, openReportModal } from "./modal.js";
 
@@ -188,8 +188,7 @@ export function computeTimeLabel(mob) {
     labelStatus = "NextCondition";
   }
 
-  const mapping = STATUS_LABELS[labelStatus];
-  const label = (typeof mapping === "object") ? (mob.rank === 'S' ? mapping.S : mapping.others) : (mapping || "残り");
+  const label = getStatusLabel(labelStatus, mob.rank);
 
   let targetSec = info.nextBoundarySec || info.maxRepop || 0;
 
