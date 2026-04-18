@@ -16,6 +16,17 @@ const MOB_STATUS_CACHE_KEY = "mobStatusCache";
 const SPAWN_CACHE_KEY = "spawnConditionCache";
 const LOCATIONS_CACHE_KEY = "mobLocationsCache";
 
+// ─── 設定値 ─────────────────────────────────────────────
+export const CONFIG = {
+    APP_LOAD_TIMEOUT: 6000,
+    TIER_B_UPDATE_INTERVAL: 60000,
+    TOAST_DURATION: 4000,
+    CLICK_THRESHOLD: 1000,
+    DEBOUNCE_DELAY: 100,
+    BREAKPOINT_PC: 1024,
+    REPOP_CALC_DELAY: 2000
+};
+
 export const STATUS_LABELS = {
     Maintenance: "停止",
     MaxOver: "超過",
@@ -34,6 +45,15 @@ export function getStatusLabel(status, rank) {
     return mapping;
 }
 
+export function safeJsonParse(str, fallback = null) {
+    if (!str) return fallback;
+    try {
+        return JSON.parse(str);
+    } catch (e) {
+        return fallback;
+    }
+}
+
 // ─── State ──────────────────────────────────────────────
 export const state = {
     userId: localStorage.getItem("user_uuid") || null,
@@ -47,26 +67,15 @@ export const state = {
     worker: null,
 
     filter: (() => {
-        try {
-            const val = localStorage.getItem("huntFilterState");
-            if (val) {
-                const parsed = JSON.parse(val);
-                if (parsed.clickStep === undefined) parsed.clickStep = 1;
-                return parsed;
-            }
-        } catch (e) {
-            console.warn("huntFilterState parse error", e);
-        }
+        const val = localStorage.getItem("huntFilterState");
+        const parsed = safeJsonParse(val, {});
+        if (parsed.clickStep === undefined) parsed.clickStep = 1;
+
         return {
-            rank: "ALL",
-            clickStep: 1,
-            areaSets: {
-                S: new Set(),
-                A: new Set(),
-                F: new Set(),
-                ALL: new Set()
-            },
-            allRankSet: new Set()
+            rank: parsed.rank || "ALL",
+            clickStep: parsed.clickStep,
+            areaSets: parsed.areaSets || { S: [], A: [], F: [], ALL: [] },
+            allRankSet: parsed.allRankSet || []
         };
     })(),
     openMobCardNo: null,
@@ -84,11 +93,7 @@ export const state = {
 if (state.filter.areaSets) {
     for (const k in state.filter.areaSets) {
         const v = state.filter.areaSets[k];
-        if (Array.isArray(v)) {
-            state.filter.areaSets[k] = new Set(v);
-        } else if (!(v instanceof Set)) {
-            state.filter.areaSets[k] = new Set();
-        }
+        state.filter.areaSets[k] = new Set(v || []);
     }
 } else {
     state.filter.areaSets = {
@@ -329,13 +334,9 @@ async function loadMaintenance() {
 async function loadLocationData() {
     try {
         const cachedLocsStr = await idb.get(LOCATIONS_CACHE_KEY);
-        if (cachedLocsStr) {
-            try {
-                const cachedLocs = JSON.parse(cachedLocsStr);
-                applyLocationsToState(cachedLocs);
-            } catch (e) {
-                console.warn("Location cache parse error:", e);
-            }
+        const cachedLocs = safeJsonParse(cachedLocsStr);
+        if (cachedLocs) {
+            applyLocationsToState(cachedLocs);
         }
 
         const res = await fetch(MOB_LOCATIONS_URL);
@@ -379,78 +380,75 @@ export async function loadBaseMobData() {
 
     memorySpawnCache = await idb.get(SPAWN_CACHE_KEY) || {};
 
-    if (cachedDataStr) {
-        try {
-            cachedData = JSON.parse(cachedDataStr);
-            const processed = processMobData(cachedData, maintenance, { skipConditionCalc: true });
-            const cachedStatus = await idb.get(MOB_STATUS_CACHE_KEY);
-            if (cachedStatus) {
-                processed.forEach(m => {
-                    const s = cachedStatus[m.No];
-                    if (s) {
-                        m.last_kill_time = s.last_kill_time || 0;
-                        m.prev_kill_time = s.prev_kill_time || 0;
-                    }
-                });
-            }
+    cachedData = safeJsonParse(cachedDataStr);
 
-            processed.forEach(mob => {
-                if (memorySpawnCache[mob.No]) {
-                    mob._spawnCache = memorySpawnCache[mob.No];
+    if (cachedData) {
+        const processed = processMobData(cachedData, maintenance, { skipConditionCalc: true });
+        const cachedStatus = await idb.get(MOB_STATUS_CACHE_KEY);
+        if (cachedStatus) {
+            processed.forEach(m => {
+                const s = cachedStatus[m.No];
+                if (s) {
+                    m.last_kill_time = s.last_kill_time || 0;
+                    m.prev_kill_time = s.prev_kill_time || 0;
                 }
-                mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
             });
-
-            state.baseMobData = processed;
-            setMobs([...processed]);
-            scheduleConditionCalculation(processed, maintenance, memorySpawnCache);
-        } catch (e) {
-            console.warn("Cache parse error:", e);
         }
+
+        processed.forEach(mob => {
+            if (memorySpawnCache[mob.No]) {
+                mob._spawnCache = memorySpawnCache[mob.No];
+            }
+            mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
+        });
+
+        state.baseMobData = processed;
+        setMobs([...processed]);
+        scheduleConditionCalculation(processed, maintenance, memorySpawnCache);
     }
 
     try {
-        const mobRes = await fetch(MOB_DATA_URL);
-        if (!mobRes.ok) throw new Error("Mob data failed to load.");
+    const mobRes = await fetch(MOB_DATA_URL);
+    if (!mobRes.ok) throw new Error("Mob data failed to load.");
 
-        const freshData = await mobRes.json();
-        const freshDataStr = JSON.stringify(freshData);
+    const freshData = await mobRes.json();
+    const freshDataStr = JSON.stringify(freshData);
 
-        if (freshDataStr !== cachedDataStr) {
-            await idb.set(MOB_DATA_CACHE_KEY, freshDataStr);
+    if (freshDataStr !== cachedDataStr) {
+        await idb.set(MOB_DATA_CACHE_KEY, freshDataStr);
 
-            const processed = processMobData(freshData, maintenance, { skipConditionCalc: true });
-            processed.forEach(mob => {
-                if (memorySpawnCache[mob.No]) {
-                    mob._spawnCache = memorySpawnCache[mob.No];
-                    mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
-                }
-            });
+        const processed = processMobData(freshData, maintenance, { skipConditionCalc: true });
+        processed.forEach(mob => {
+            if (memorySpawnCache[mob.No]) {
+                mob._spawnCache = memorySpawnCache[mob.No];
+                mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
+            }
+        });
 
-            state.baseMobData = processed;
-            setMobs([...processed]);
-            scheduleConditionCalculation(processed, maintenance, memorySpawnCache);
-        }
+        state.baseMobData = processed;
+        setMobs([...processed]);
+        scheduleConditionCalculation(processed, maintenance, memorySpawnCache);
+    }
 
+    await loadLocationData();
+
+    if (state.baseMobData.length > 0) {
+        applyPendingRealtimeData();
+    }
+
+} catch (e) {
+    console.error("Failed to load base data from network:", e);
+    if (!cachedData) {
+        console.error("データの読み込みに失敗しました。");
+        window.dispatchEvent(new CustomEvent('criticalDataLoadError', {
+            detail: { message: "基礎データの読み込みに失敗しました。\nアプリをファイルから直接開いている場合は、VS CodeのLive Serverなどを使って開いてください。" }
+        }));
+    } else {
         await loadLocationData();
-
         if (state.baseMobData.length > 0) {
             applyPendingRealtimeData();
         }
-
-    } catch (e) {
-        console.error("Failed to load base data from network:", e);
-        if (!cachedData) {
-            console.error("データの読み込みに失敗しました。");
-            window.dispatchEvent(new CustomEvent('criticalDataLoadError', {
-                detail: { message: "基礎データの読み込みに失敗しました。\nアプリをファイルから直接開いている場合は、VS CodeのLive Serverなどを使って開いてください。" }
-            }));
-        } else {
-            await loadLocationData();
-            if (state.baseMobData.length > 0) {
-                applyPendingRealtimeData();
-            }
-        }
+    }
     }
 }
 
@@ -656,11 +654,11 @@ export function startRealtime() {
                 }, {});
                 idb.set(MOB_STATUS_CACHE_KEY, statusToCache);
 
-                window.dispatchEvent(new CustomEvent('mobsBatchUpdated', { 
-                    detail: { 
+                window.dispatchEvent(new CustomEvent('mobsBatchUpdated', {
+                    detail: {
                         mobNos: Array.from(updatedMobNos),
                         updateType: 'status'
-                    } 
+                    }
                 }));
 
                 window.dispatchEvent(new CustomEvent('mobsUpdated'));

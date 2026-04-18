@@ -162,15 +162,15 @@ export function allTabComparator(a, b) {
   if (!isAConditionActive && isBConditionActive) return 1;
 
   if (getGroupKey(a) === "NEXT" && getGroupKey(b) === "NEXT") {
-    const at = aInfo.nextBoundarySec || Infinity;
-    const bt = bInfo.nextBoundarySec || Infinity;
+    const at = aInfo.minRepop || Infinity;
+    const bt = bInfo.minRepop || Infinity;
     if (at !== bt) return at - bt;
   }
 
   const aPercent = aInfo.elapsedPercent || 0;
   const bPercent = bInfo.elapsedPercent || 0;
 
-  if (Math.abs(aPercent - bPercent) > 0.001) {
+  if (aPercent !== bPercent) {
     return bPercent - aPercent;
   }
 

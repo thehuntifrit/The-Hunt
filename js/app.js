@@ -1,4 +1,4 @@
-import { getState, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled, STATUS_LABELS } from "./dataManager.js";
+import { getState, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled, STATUS_LABELS, CONFIG } from "./dataManager.js";
 import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
 import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initGlobalMagnifier, adjustMemoHeight } from "./mobCard.js";
 import { getGroupKey, GROUP_LABELS, getOrCreateGroupSection, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, allTabComparator } from "./mobSorter.js";
@@ -122,7 +122,7 @@ async function initApp() {
         overlay.classList.add("hidden");
         showToast("データ同期がタイムアウトしました。既存のデータで表示します。", "info");
       }
-    }, 6000);
+    }, CONFIG.APP_LOAD_TIMEOUT);
 
     window.addEventListener('criticalDataLoadError', (e) => {
       clearTimeout(loadingTimeout);
@@ -167,7 +167,7 @@ async function initApp() {
 
 function syncMobCardPanePosition() {
   const pane = document.getElementById('mobcard-pane');
-  if (pane && window.innerWidth >= 1024) {
+  if (pane && window.innerWidth >= CONFIG.BREAKPOINT_PC) {
     pane.style.left = '';
     pane.style.width = '';
   }
@@ -483,8 +483,8 @@ export function syncDomOrder() {
     const groupMobs = groups[key];
     if (groupMobs.length === 0) return;
 
+    const headerKey = `header-${key}`;
     const headerText = GROUP_LABELS[key];
-    const headerKey = `header-${headerText}`;
     let header = nodeMap.get(headerKey);
     if (!header) {
       header = document.createElement("div");
@@ -615,7 +615,7 @@ export function updateProgressBarsOptimized(force = false) {
   const now = Date.now();
   const nowSec = now / 1000;
 
-  const isTierB = force || (now - lastTierBTime >= 60000);
+  const isTierB = force || (now - lastTierBTime >= CONFIG.TIER_B_UPDATE_INTERVAL);
   const isTierC = force || (now - lastTierCTime >= EORZEA_MINUTE_MS);
 
   if (!isTierB && !isTierC) return;
@@ -629,7 +629,8 @@ export function updateProgressBarsOptimized(force = false) {
       if (!info || info.status === "Maintenance") return;
 
       const timeToBoundary = info.nextBoundarySec ? Math.abs(nowSec - info.nextBoundarySec) : 999;
-      const needsRealtime = timeToBoundary < 60;
+      const hasCondition = !!info.nextConditionSpawnDate;
+      const needsRealtime = timeToBoundary < 60 || hasCondition;
 
       if (needsRealtime || isTierB) {
         if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
@@ -654,7 +655,8 @@ function updateMobState(mob, nowSec, state) {
 
   let hasSignificantChange = false;
   const oldStatus = info.status;
-  let calculationTriggered = false;
+  const oldTimeRemaining = info.timeRemaining;
+  const oldPercent = info.elapsedPercent;
 
   const isBoundaryCrossed = (info.nextBoundarySec && nowSec >= info.nextBoundarySec) ||
     (info.maxRepop && nowSec >= info.maxRepop && info.status !== "MaxOver") ||
@@ -662,7 +664,6 @@ function updateMobState(mob, nowSec, state) {
 
   if (isBoundaryCrossed) {
     mob.repopInfo = calculateRepop(mob, state.maintenance);
-    calculationTriggered = true;
     hasSignificantChange = true;
   } else {
     if (info.maxRepop && nowSec >= info.maxRepop) {
@@ -670,7 +671,11 @@ function updateMobState(mob, nowSec, state) {
       info.elapsedPercent = 100;
       info.timeRemaining = formatDurationColon(nowSec - info.maxRepop);
     } else {
-      const targetSec = info.nextBoundarySec || info.maxRepop || 0;
+      let targetSec = info.nextBoundarySec || info.maxRepop || 0;
+      if (info.nextConditionSpawnDate && (info.status === "Next" || info.status === "NextCondition")) {
+        const condSec = info.nextConditionSpawnDate.getTime() / 1000;
+        if (condSec > nowSec) targetSec = condSec;
+      }
       info.timeRemaining = formatDurationColon(Math.max(0, targetSec - nowSec));
 
       if (info.minRepop && info.maxRepop) {
@@ -679,7 +684,7 @@ function updateMobState(mob, nowSec, state) {
     }
   }
 
-  if (oldStatus !== mob.repopInfo.status) {
+  if (oldStatus !== info.status || oldTimeRemaining !== info.timeRemaining || oldPercent !== info.elapsedPercent) {
     hasSignificantChange = true;
   }
 
@@ -732,7 +737,7 @@ export function showToast(message, type = "error") {
   setTimeout(() => {
     toast.classList.add("translate-x-full", "opacity-0");
     toast.addEventListener("transitionend", () => toast.remove());
-  }, 4000);
+  }, CONFIG.TOAST_DURATION);
 }
 
 export function handleReportResult(result) {
@@ -844,7 +849,7 @@ function handleCrushToggle(e) {
     const now = Date.now();
     const timeDiff = now - lastClickTime;
 
-    if (locationId === lastClickLocationId && timeDiff < 1000) {
+    if (locationId === lastClickLocationId && timeDiff < CONFIG.CLICK_THRESHOLD) {
       lastClickTime = 0;
       lastClickLocationId = null;
     } else {
@@ -894,12 +899,12 @@ function attachGlobalEventListeners() {
   let prevWidth = window.innerWidth;
   window.addEventListener("resize", debounce(() => {
     const currentWidth = window.innerWidth;
-    if ((prevWidth >= 1024) !== (currentWidth >= 1024)) {
+    if ((prevWidth >= CONFIG.BREAKPOINT_PC) !== (currentWidth >= CONFIG.BREAKPOINT_PC)) {
       prevWidth = currentWidth;
       sortAndRedistribute();
     }
     syncMobCardPanePosition();
-  }, 100));
+  }, CONFIG.DEBOUNCE_DELAY));
 
   const appnav = document.getElementById('appnav');
   if (appnav) {
@@ -1058,7 +1063,7 @@ function attachMobCardEvents() {
   const pane = document.getElementById("mobcard-pane");
   if (pane) {
     pane.addEventListener("click", (e) => {
-      if (e.target === pane && window.innerWidth < 1024) {
+      if (e.target === pane && window.innerWidth < CONFIG.BREAKPOINT_PC) {
         setOpenMobCardNo(null);
         sortAndRedistribute({ immediate: true });
       }

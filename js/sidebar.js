@@ -1,4 +1,4 @@
-import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled } from "./dataManager.js";
+import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled, safeJsonParse } from "./dataManager.js";
 import { filterAndRender } from "./app.js";
 import { openUserManual, closeUserManual } from "./readme.js";
 import { cloneTemplate, escapeHtml } from "./mobCard.js";
@@ -347,14 +347,12 @@ export function filterMobsByRankAndArea(mobs) {
 }
 
 // ─── アプリナビ ─────────────────────────────────────────
-function getStoredState() {
-    try {
-        return JSON.parse(localStorage.getItem("sidebarState")) || {};
-    } catch { return {}; }
+function loadSidebarState() {
+    return safeJsonParse(localStorage.getItem("sidebarState"), {});
 }
 
 function saveState(key, value) {
-    const s = getStoredState();
+    const s = loadSidebarState();
     s[key] = value;
     localStorage.setItem("sidebarState", JSON.stringify(s));
 }
@@ -364,8 +362,8 @@ export function initAppNav() {
     if (!nav) return;
 
     captureErrors();
-
-    const stored = getStoredState();
+    
+    const stored = loadSidebarState();
     if (stored.panel && stored.panel !== "manual") {
         currentPanel = stored.panel;
         nav.classList.add("expanded");

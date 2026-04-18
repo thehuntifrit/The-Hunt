@@ -169,7 +169,7 @@ export function shouldDisplayMemo(mob) {
 export function computeTimeLabel(mob) {
   const info = mob.repopInfo || {};
   const now = Date.now() / 1000;
-  
+
   if (!info.status) {
     return { label: "", timeValue: "--/-- --:--", isSpecialCondition: false, isTimeOver: false, isTimedMob: false, dhm: null };
   }
@@ -191,6 +191,10 @@ export function computeTimeLabel(mob) {
   const label = getStatusLabel(labelStatus, mob.rank);
 
   let targetSec = info.nextBoundarySec || info.maxRepop || 0;
+
+  if (info.nextConditionSpawnDate && (info.status === "Next" || info.status === "NextCondition")) {
+    targetSec = info.nextConditionSpawnDate.getTime() / 1000;
+  }
 
   const showAsOverdue = isTimeOverRaw && !isInWindow && !isNextWindow;
 
