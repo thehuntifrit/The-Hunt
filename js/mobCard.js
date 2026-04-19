@@ -1,5 +1,5 @@
 import { getDurationDHMParts, formatDurationDHM, formatMMDDHHmm } from "./cal.js";
-import { getState, setOpenMobCardNo, isCulled, getStatusLabel, RANKS } from "./dataManager.js";
+import { getState, setOpenMobCardNo, isCulled, getStatusLabel, RANKS, DOM } from "./dataManager.js";
 import { toggleCrushStatus } from "./server.js";
 import { openAuthModal, openReportModal } from "./modal.js";
 
@@ -58,7 +58,7 @@ export function initGlobalMagnifier() {
   if (window.magnifierInitialized) return;
   window.magnifierInitialized = true;
 
-  const magnifier = document.getElementById('global-magnifier');
+  const magnifier = DOM.globalMagnifier;
   const wrapper = magnifier?.querySelector('.magnifier-content-wrapper');
   if (!magnifier || !wrapper) return;
 
@@ -70,7 +70,7 @@ export function initGlobalMagnifier() {
 
   const closeMagnifier = () => {
     magnifier.classList.add('hidden');
-    document.body.classList.remove('magnifier-active');
+    DOM.body.classList.remove('magnifier-active');
     activeMapImg = null;
     activeMapContainer = null;
     activeMapContainerRect = null;
@@ -141,7 +141,7 @@ export function initGlobalMagnifier() {
 
     wrapper.appendChild(clone);
     magnifier.classList.remove('hidden');
-    document.body.classList.add('magnifier-active');
+    DOM.body.classList.add('magnifier-active');
 
     magnifierRect = magnifier.getBoundingClientRect();
 
@@ -327,7 +327,7 @@ export function createMobCard(mob, isDetailView = false) {
 }
 
 export function renderMobCard(mob) {
-  const template = document.getElementById('mobcard-card-template');
+  const template = DOM.cardTemplate;
   const clone = template.content.cloneNode(true);
   const card = clone.querySelector('.mobcard-card');
 

@@ -1,4 +1,4 @@
-import { getState, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
+import { getState, setLodestoneId, setCharacterName, setVerified, extractLodestoneId, DOM } from "./dataManager.js";
 import { verifyLodestoneCharacter, registerUserToFirestore } from "./server.js";
 import { cloneTemplate } from "./mobCard.js";
 
@@ -6,8 +6,8 @@ let isLoaded = false;
 let currentVCode = "";
 
 export const openUserManual = async () => {
-    const modal = document.getElementById('manual-modal');
-    const container = document.getElementById('readme-container');
+    const modal = DOM.manualModal;
+    const container = DOM.readmeContainer;
     if (!modal || !container) return;
 
     modal.classList.remove('hidden');
@@ -45,8 +45,8 @@ export const closeUserManual = () => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.getElementById('manual-modal');
-    const closeBtn = document.getElementById('close-manual-modal');
+    const modal = DOM.manualModal;
+    const closeBtn = DOM.closeManualModalBtn;
 
     closeBtn?.addEventListener('click', closeUserManual);
 
@@ -66,7 +66,7 @@ window.addEventListener('characterNameSet', () => {
 });
 
 async function updateAuthUI() {
-    const authContainer = document.getElementById('readme-auth-session');
+    const authContainer = DOM.readmeAuthSession;
     if (!authContainer) return;
 
     const state = getState();
@@ -105,12 +105,9 @@ async function updateAuthUI() {
 
     verifyBtn?.addEventListener('click', async () => {
         const raw = idInput.value.trim();
-        if (!raw) return;
+        const lodestoneId = extractLodestoneId(raw);
 
-        const idMatch = raw.match(/character\/(\d+)/);
-        const lodestoneId = idMatch ? idMatch[1] : raw.match(/^\d+$/) ? raw : null;
-
-        if (!lodestoneId || lodestoneId.length > 20) {
+        if (!lodestoneId) {
             statusEl.textContent = "正しいIDまたはURLを入力してください";
             statusEl.className = "text-xs text-red-400";
             return;

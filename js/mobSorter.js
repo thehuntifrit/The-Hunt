@@ -1,7 +1,6 @@
-import { getState, RANKS } from "./dataManager.js";
+import { getState, RANKS, DOM } from "./dataManager.js";
 import { cloneTemplate } from "./mobCard.js";
 import { filterMobsByRankAndArea } from "./sidebar.js";
-import { DOM } from "./app.js";
 
 const mobIdPartsCache = new Map();
 

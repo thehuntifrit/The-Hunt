@@ -1,4 +1,4 @@
-import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled, safeJsonParse, RANKS } from "./dataManager.js";
+import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled, safeJsonParse, RANKS, CONFIG, DOM } from "./dataManager.js";
 import { filterAndRender } from "./app.js";
 import { openUserManual, closeUserManual } from "./readme.js";
 import { cloneTemplate, escapeHtml } from "./mobCard.js";
@@ -17,7 +17,7 @@ export function initNotification() {
     audio = new Audio(SOUND_FILE);
     audio.load();
 
-    const toggle = document.getElementById('appnav-notification-toggle');
+    const toggle = DOM.notificationToggle;
     if (!toggle) return;
 
     const isEnabled = getState().notificationEnabled;
@@ -110,7 +110,7 @@ export function checkAndNotify(mob) {
     const now = Date.now();
     const spawnTime = info.nextConditionSpawnDate.getTime();
     const endTime = info.conditionWindowEnd.getTime();
-    const beforeTime = spawnTime - 120000;
+    const beforeTime = spawnTime - CONFIG.NOTIFICATION_OFFSET_MS;
 
     const cycleKeyBase = `${mob.No}-${spawnTime}`;
     const beforeKey = `${cycleKeyBase}-before`;
@@ -358,7 +358,7 @@ function saveState(key, value) {
 }
 
 export function initAppNav() {
-    const nav = document.getElementById("appnav");
+    const nav = DOM.appNav;
     if (!nav) return;
 
     captureErrors();
@@ -391,7 +391,7 @@ export function setActiveNavItem(id) {
 
 export async function togglePanel(panelName) {
     if (panelName === "manual") {
-        const modal = document.getElementById('manual-modal');
+        const modal = DOM.manualModal;
         if (modal && !modal.classList.contains('hidden')) {
             closeUserManual();
         } else {
@@ -400,7 +400,7 @@ export async function togglePanel(panelName) {
         return;
     }
 
-    const nav = document.getElementById("appnav");
+    const nav = DOM.appNav;
     if (!nav) return;
 
     if (currentPanel === panelName) {
@@ -417,11 +417,11 @@ export async function togglePanel(panelName) {
 }
 
 export function closePanel() {
-    const nav = document.getElementById("appnav");
+    const nav = DOM.appNav;
     if (!nav) return;
 
     nav.classList.remove("expanded");
-    document.body.classList.remove("sidebar-expanded");
+    DOM.body.classList.remove("sidebar-expanded");
 
     const panelArea = nav.querySelector(".appnav-panel");
     if (panelArea) {
@@ -432,15 +432,15 @@ export function closePanel() {
     setActiveNavItem('home');
     saveState("panel", null);
 
-    document.querySelectorAll(".appnav-panel .js-appnav-panel-item").forEach(p => p.classList.add("hidden"));
+    DOM.appNavPanelItems.forEach(p => p.classList.add("hidden"));
 }
 
 function showPanel(panelName) {
-    const nav = document.getElementById("appnav");
+    const nav = DOM.appNav;
     const panelArea = nav.querySelector(".appnav-panel");
     if (panelArea) panelArea.classList.add("expanded");
 
-    document.querySelectorAll(".appnav-panel .js-appnav-panel-item").forEach(p => p.classList.add("hidden"));
+    DOM.appNavPanelItems.forEach(p => p.classList.add("hidden"));
     const target = document.getElementById(`sidebar-panel-${panelName}`);
     if (target) {
         target.classList.remove("hidden");
@@ -527,7 +527,7 @@ function updateErrorBadge() {
 
 // ─── アコーディオン ─────────────────────────────────────
 function renderSidebarFilterAccordion(targetContainer = null) {
-    const container = document.getElementById("sidebar-filter-accordion");
+    const container = targetContainer || DOM.filterAccordion;
     if (!container) return;
 
     const ranks = [

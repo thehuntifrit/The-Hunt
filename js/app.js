@@ -1,4 +1,4 @@
-import { getState, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled, STATUS_LABELS, CONFIG } from "./dataManager.js";
+import { getState, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled, STATUS_LABELS, CONFIG, DOM } from "./dataManager.js";
 import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
 import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initGlobalMagnifier, adjustMemoHeight } from "./mobCard.js";
 import { getGroupKey, GROUP_LABELS, getOrCreateGroupSection, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, allTabComparator } from "./mobSorter.js";
@@ -7,25 +7,7 @@ import { handleAreaFilterClick, handleRankTabClick, initAppNav, initNotification
 import { initializeAuth, getUserData, submitReport, submitMemo, toggleCrushStatus } from "./server.js";
 import { openUserManual } from "./readme.js";
 
-// ─── 定数・DOM ──────────────────────────────────────────
-export const DOM = {
-  colContainer: document.getElementById('column-container'),
-  pcLeftList: document.getElementById('moblist-container'),
-  pcRightDetail: document.getElementById('mobcard-detail'),
-  mobileDetailOverlay: document.getElementById('mobcard-overlay'),
-  cardOverlayBackdrop: document.getElementById('mobcard-overlay-backdrop'),
-  reportModal: document.getElementById('report-modal'),
-  reportForm: document.getElementById('report-form'),
-  modalMobName: document.getElementById('modal-mob-name'),
-  modalStatus: document.getElementById('modal-status'),
-  modalTimeInput: document.getElementById('report-datetime'),
-  modalForceSubmit: document.getElementById('report-force-submit'),
-  authModal: document.getElementById('auth-modal'),
-  authVCode: document.getElementById('auth-v-code'),
-  authStatus: document.getElementById('auth-modal-status'),
-  authLodestoneId: document.getElementById('auth-lodestone-id'),
-  loadingOverlay: document.getElementById('loading-overlay'),
-};
+// ─── 定数 ──────────────────────────────────────────────
 
 export const cardCache = new Map();
 
@@ -81,12 +63,10 @@ async function initApp() {
 
     startRealtime();
     setOpenMobCardNo(null);
-    initModal(DOM);
+    initModal();
     renderMaintenanceStatus();
     updateHeaderTime();
     initAppNav();
-    initNotification();
-    attachMobCardEvents();
     attachLocationEvents();
     attachGlobalEventListeners();
     window.renderMaintenanceStatus = renderMaintenanceStatus;
@@ -201,8 +181,8 @@ async function getMaintenanceStatus() {
   const now = new Date();
   const start = new Date(maintenance.start);
   const end = new Date(maintenance.end);
-  const showFrom = new Date(start.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const showUntil = new Date(end.getTime() + 4 * 24 * 60 * 60 * 1000);
+  const showFrom = new Date(start.getTime() - CONFIG.MAINTENANCE_SHOW_BEFORE_MS);
+  const showUntil = new Date(end.getTime() + CONFIG.MAINTENANCE_SHOW_AFTER_MS);
 
   const isWithinDisplayWindow = now >= showFrom && now <= showUntil;
 
@@ -575,7 +555,6 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
 
   if (isInitialLoad) {
     isInitialSortingSuppressed = true;
-    attachLocationEvents();
 
     setTimeout(() => {
       isInitialSortingSuppressed = false;
@@ -640,8 +619,7 @@ export function updateProgressBarsOptimized(force = false) {
     syncDomOrder();
   }
 
-  const mobMap = getMobMap();
-  updateDetailCardRealtime(mobMap);
+  updateVisibleCards();
 }
 
 function updateMobState(mob, nowSec, state) {

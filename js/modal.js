@@ -1,7 +1,7 @@
-import { getState, setLodestoneId, setCharacterName, setVerified } from "./dataManager.js";
+import { getState, setLodestoneId, setCharacterName, setVerified, extractLodestoneId, DOM } from "./dataManager.js";
 import { verifyLodestoneCharacter, registerUserToFirestore } from "./server.js";
 
-let DOM = {};
+
 
 export async function openReportModal(mobNo) {
     const mob = getState().mobs.find(m => m.No === mobNo);
@@ -45,11 +45,9 @@ export function closeAuthModal() {
 
 // ─── モーダル初期化 ───
 
-export function initModal(domRef) {
-    DOM = domRef;
-    const cancelReportBtn = document.getElementById("cancel-report");
-    if (cancelReportBtn) {
-        cancelReportBtn.addEventListener("click", closeReportModal);
+export function initModal() {
+    if (DOM.cancelReportBtn) {
+        DOM.cancelReportBtn.addEventListener("click", closeReportModal);
     }
     DOM.reportModal.addEventListener("click", (e) => {
         if (e.target === DOM.reportModal) {
@@ -57,35 +55,25 @@ export function initModal(domRef) {
         }
     });
 
-    const cancelAuthBtn = document.getElementById("auth-cancel");
-    if (cancelAuthBtn) {
-        cancelAuthBtn.addEventListener("click", closeAuthModal);
+    if (DOM.authCancelBtn) {
+        DOM.authCancelBtn.addEventListener("click", closeAuthModal);
     }
 
-    const copyCodeBtn = document.getElementById("auth-copy-code");
-    if (copyCodeBtn) {
-        copyCodeBtn.addEventListener("click", () => {
+    if (DOM.authCopyCodeBtn) {
+        DOM.authCopyCodeBtn.addEventListener("click", () => {
             navigator.clipboard.writeText(currentVerificationCode);
-            const originalText = copyCodeBtn.textContent;
-            copyCodeBtn.textContent = "Done!";
-            setTimeout(() => copyCodeBtn.textContent = originalText, 2000);
+            const originalText = DOM.authCopyCodeBtn.textContent;
+            DOM.authCopyCodeBtn.textContent = "Done!";
+            setTimeout(() => DOM.authCopyCodeBtn.textContent = originalText, 2000);
         });
     }
 
-    const verifyBtn = document.getElementById("auth-verify");
-    if (verifyBtn) {
-        verifyBtn.addEventListener("click", async () => {
+    if (DOM.authVerifyBtn) {
+        DOM.authVerifyBtn.addEventListener("click", async () => {
             const rawInput = DOM.authLodestoneId.value.trim();
-            if (!rawInput) {
-                DOM.authStatus.textContent = "IDまたはURLを入力してください。";
-                DOM.authStatus.classList.add('text-error');
-                return;
-            }
+            const lodestoneId = extractLodestoneId(rawInput);
 
-            const idMatch = rawInput.match(/character\/(\d+)/);
-            const lodestoneId = idMatch ? idMatch[1] : rawInput.match(/^\d+$/) ? rawInput : null;
-
-            if (!lodestoneId || lodestoneId.length > 20) {
+            if (!lodestoneId) {
                 DOM.authStatus.textContent = "正しいロードストーンのIDまたはURLを入力してください。";
                 DOM.authStatus.classList.add('text-error');
                 return;
@@ -93,7 +81,7 @@ export function initModal(domRef) {
 
             DOM.authStatus.textContent = "検証中...";
             DOM.authStatus.classList.add('text-success');
-            verifyBtn.disabled = true;
+            DOM.authVerifyBtn.disabled = true;
 
             try {
                 const result = await verifyLodestoneCharacter(lodestoneId, currentVerificationCode);
@@ -109,21 +97,21 @@ export function initModal(domRef) {
 
                     setTimeout(() => {
                         closeAuthModal();
-                        verifyBtn.disabled = false;
+                        DOM.authVerifyBtn.disabled = false;
                     }, 1500);
                 } else {
                     const errorMsg = result.error || "検証に失敗しました";
                     DOM.authStatus.textContent = errorMsg;
                     DOM.authStatus.classList.add('text-error');
                     console.error("認証失敗:", errorMsg);
-                    verifyBtn.disabled = false;
+                    DOM.authVerifyBtn.disabled = false;
                 }
             } catch (error) {
                 const errorMsg = `エラー: ${error.message || "予期せぬエラーが発生しました"}`;
                 DOM.authStatus.textContent = errorMsg;
                 DOM.authStatus.classList.add('text-error');
                 console.error("認証プロセス異常:", error);
-                verifyBtn.disabled = false;
+                DOM.authVerifyBtn.disabled = false;
             }
         });
     }

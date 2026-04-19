@@ -41,7 +41,10 @@ export const CONFIG = {
     CLICK_THRESHOLD: 1000,
     DEBOUNCE_DELAY: 100,
     BREAKPOINT_PC: 1024,
-    REPOP_CALC_DELAY: 2000
+    REPOP_CALC_DELAY: 2000,
+    NOTIFICATION_OFFSET_MS: 120000,
+    MAINTENANCE_SHOW_BEFORE_MS: 604800000,
+    MAINTENANCE_SHOW_AFTER_MS: 345600000
 };
 
 export const STATUS_LABELS = {
@@ -52,6 +55,40 @@ export const STATUS_LABELS = {
     Next: { S: "次回", others: "残り" },
     NextCondition: { S: "次回", others: "残り" },
     Unknown: "未定"
+};
+
+export const DOM = {
+    colContainer: document.getElementById('column-container'),
+    pcLeftList: document.getElementById('moblist-container'),
+    pcRightDetail: document.getElementById('mobcard-detail'),
+    mobileDetailOverlay: document.getElementById('mobcard-overlay'),
+    cardOverlayBackdrop: document.getElementById('mobcard-overlay-backdrop'),
+    reportModal: document.getElementById('report-modal'),
+    reportForm: document.getElementById('report-form'),
+    modalMobName: document.getElementById('modal-mob-name'),
+    modalStatus: document.getElementById('modal-status'),
+    modalTimeInput: document.getElementById('report-datetime'),
+    modalForceSubmit: document.getElementById('report-force-submit'),
+    authModal: document.getElementById('auth-modal'),
+    authVCode: document.getElementById('auth-v-code'),
+    authStatus: document.getElementById('auth-modal-status'),
+    authLodestoneId: document.getElementById('auth-lodestone-id'),
+    loadingOverlay: document.getElementById('loading-overlay'),
+    appNav: document.getElementById('appnav'),
+    manualModal: document.getElementById('manual-modal'),
+    readmeContainer: document.getElementById('readme-container'),
+    body: document.body,
+    filterAccordion: document.getElementById('sidebar-filter-accordion'),
+    appNavPanelItems: document.querySelectorAll(".appnav-panel .js-appnav-panel-item"),
+    cardTemplate: document.getElementById('mobcard-card-template'),
+    globalMagnifier: document.getElementById('global-magnifier'),
+    authCopyCodeBtn: document.getElementById('auth-copy-code'),
+    authVerifyBtn: document.getElementById('auth-verify'),
+    readmeAuthSession: document.getElementById('readme-auth-session'),
+    closeManualModalBtn: document.getElementById('close-manual-modal'),
+    notificationToggle: document.getElementById('appnav-notification-toggle'),
+    cancelReportBtn: document.getElementById('cancel-report'),
+    authCancelBtn: document.getElementById('auth-cancel')
 };
 
 export function getStatusLabel(status, rank) {
@@ -69,6 +106,16 @@ export function safeJsonParse(str, fallback = null) {
     } catch (e) {
         return fallback;
     }
+}
+
+export function extractLodestoneId(input) {
+    if (!input) return null;
+    const trimmed = input.trim();
+    const idMatch = trimmed.match(/character\/(\d+)/);
+    const lodestoneId = idMatch ? idMatch[1] : trimmed.match(/^\d+$/) ? trimmed : null;
+
+    if (!lodestoneId || lodestoneId.length > 20) return null;
+    return lodestoneId;
 }
 
 // ─── State ──────────────────────────────────────────────

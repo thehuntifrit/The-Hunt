@@ -3,7 +3,7 @@ import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, getDoc, T
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app-check.js";
 
-import { getState } from "./dataManager.js";
+import { getState, DOM } from "./dataManager.js";
 import { closeReportModal } from "./modal.js";
 import { getMaintenanceRepop } from "./cal.js";
 
@@ -153,8 +153,8 @@ export const submitReport = async (mobNo, timeISO) => {
         killTimeDate = new Date();
     }
 
-    const modalStatusEl = document.querySelector("#modal-status");
-    const forceSubmitEl = document.querySelector("#report-force-submit");
+    const modalStatusEl = DOM.modalStatus;
+    const forceSubmitEl = DOM.modalForceSubmit;
     const isForceSubmit = forceSubmitEl ? forceSubmitEl.checked : false;
     const nowMs = Date.now();
     if (killTimeDate.getTime() > nowMs + 600000) {
