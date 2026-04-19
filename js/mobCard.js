@@ -428,14 +428,12 @@ export function updateProgressBar(element, mob) {
   const flooredPct = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
   const lastPct = parseFloat(bar.dataset.lastPct);
 
-  if (flooredPct !== lastPct || bar.dataset.lastStatus !== status) {
-    const isReset = isNaN(lastPct) || flooredPct === 0 || flooredPct < lastPct;
-    const noTransition = !isDetail || isReset || status === "Next" || status === "Maintenance";
+  const isReset = isNaN(lastPct) || flooredPct === 0 || flooredPct < (lastPct || 0);
+  const noTransition = !isDetail || isReset || status === "Next" || status === "Maintenance";
 
-    bar.classList.toggle('u-no-transition', noTransition);
-    bar.style.setProperty('--prog-percent', String(flooredPct / 100));
-    bar.dataset.lastPct = String(flooredPct);
-  }
+  bar.classList.toggle('u-no-transition', noTransition);
+  bar.style.setProperty('--prog-percent', String(flooredPct / 100));
+  bar.dataset.lastPct = String(flooredPct);
 
   if (bar.dataset.lastStatus !== status) {
     bar.classList.remove('status-max-over', 'status-condition-active', 'status-pop-window', 'status-next');
@@ -468,23 +466,16 @@ export function updateProgressText(element, mob) {
   const percentEl = element.querySelector('.percent, .moblist-percent');
 
   if (timeContainer && element.classList.contains('moblist-item')) {
-    const { d, h, m, rawS } = dhm || {};
-    const displayValue = isInWindow ? Math.ceil((rawS || 0) / 60) : `${d || 0}-${h || 0}-${m || 0}`;
-    const cacheKey = `timer-${label}-${isSpecialCondition}-${isTimeOver}-${isInWindow}-${displayValue}`;
-
-    if (timeContainer._lastCacheKey !== cacheKey) {
-      const timerNode = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
-      timeContainer.innerHTML = "";
-      const inner = document.createElement("div");
-      inner.className = "timer-inner-grid";
-      const labelSpan = document.createElement("span");
-      labelSpan.className = `timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''}`;
-      labelSpan.textContent = label;
-      inner.appendChild(timerNode);
-      inner.appendChild(labelSpan);
-      timeContainer.appendChild(inner);
-      timeContainer._lastCacheKey = cacheKey;
-    }
+    const timerNode = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
+    timeContainer.innerHTML = "";
+    const inner = document.createElement("div");
+    inner.className = "timer-inner-grid";
+    const labelSpan = document.createElement("span");
+    labelSpan.className = `timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''}`;
+    labelSpan.textContent = label;
+    inner.appendChild(timerNode);
+    inner.appendChild(labelSpan);
+    timeContainer.appendChild(inner);
   }
 
   if (percentEl) {

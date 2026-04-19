@@ -438,6 +438,9 @@ export function calculateRepop(mob, maintenance, options = {}) {
     } else {
       mob.repopInfo.elapsedPercent = 0;
     }
+
+    const tSec = mob.repopInfo.nextBoundarySec;
+    mob.repopInfo.timeRemaining = formatDurationColon(Math.max(0, tSec - now));
     return mob.repopInfo;
   }
 
