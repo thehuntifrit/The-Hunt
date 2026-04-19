@@ -1,4 +1,4 @@
-import { getState, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled, STATUS_LABELS, CONFIG, DOM } from "./dataManager.js";
+import { getState, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled, STATUS_LABELS, CONFIG, DOM, handleAppError } from "./dataManager.js";
 import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal.js";
 import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initGlobalMagnifier, adjustMemoHeight } from "./mobCard.js";
 import { getGroupKey, GROUP_LABELS, getOrCreateGroupSection, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, allTabComparator } from "./mobSorter.js";
@@ -58,7 +58,7 @@ async function initApp() {
         setCharacterName(null);
       }
     }).catch(err => {
-      console.error("Auth initialization error:", err);
+      handleAppError(err, "Auth初期化失敗");
       setVerified(false);
       window.dispatchEvent(new CustomEvent('initialDataLoaded'));
     });
@@ -87,7 +87,7 @@ async function initApp() {
     }, CONFIG.APP_LOAD_TIMEOUT);
 
   } catch (e) {
-    console.error("App initialization failed:", e);
+    handleAppError(e, "アプリ初期化致命的エラー");
     showColumnContainer();
   }
   syncMobCardPanePosition();
@@ -1013,6 +1013,11 @@ function initAppEventListeners() {
   window.addEventListener('locationsUpdated', () => {
     invalidateFilterCache();
     updateVisibleCards();
+  });
+
+  window.addEventListener('appNotify', (e) => {
+    const { message, type } = e.detail;
+    showToast(message, type);
   });
 }
 

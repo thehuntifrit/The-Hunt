@@ -1,4 +1,4 @@
-import { getState, setLodestoneId, setCharacterName, setVerified, extractLodestoneId, DOM } from "./dataManager.js";
+import { getState, setLodestoneId, setCharacterName, setVerified, extractLodestoneId, DOM, handleAppError } from "./dataManager.js";
 import { verifyLodestoneCharacter, registerUserToFirestore } from "./server.js";
 
 
@@ -107,10 +107,7 @@ export function initModal() {
                     DOM.authVerifyBtn.disabled = false;
                 }
             } catch (error) {
-                const errorMsg = `エラー: ${error.message || "予期せぬエラーが発生しました"}`;
-                DOM.authStatus.textContent = errorMsg;
-                DOM.authStatus.classList.add('text-error');
-                console.error("認証プロセス異常:", error);
+                handleAppError(error, "認証プロセス異常");
                 DOM.authVerifyBtn.disabled = false;
             }
         });

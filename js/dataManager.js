@@ -44,7 +44,14 @@ export const CONFIG = {
     REPOP_CALC_DELAY: 2000,
     NOTIFICATION_OFFSET_MS: 120000,
     MAINTENANCE_SHOW_BEFORE_MS: 604800000,
-    MAINTENANCE_SHOW_AFTER_MS: 345600000
+    MAINTENANCE_SHOW_AFTER_MS: 345600000,
+    MAP_ZOOM_SCALE: 2.0,
+    AUTH_TIMEOUT: 10000,
+    REPORT_FUTURE_THRESHOLD: 600000,
+    REPORT_EARLY_THRESHOLD: 300000,
+    MEMO_MAX_LENGTH: 30,
+    IDB_SAVE_DEBOUNCE: 2000,
+    FIRESTORE_LOAD_TIMEOUT: 8000
 };
 
 export const STATUS_LABELS = {
@@ -116,6 +123,17 @@ export function extractLodestoneId(input) {
 
     if (!lodestoneId || lodestoneId.length > 20) return null;
     return lodestoneId;
+}
+
+export function handleAppError(error, context = "エラーが発生しました", notifyUser = true) {
+    const message = error.message || String(error);
+    console.error(`[${context}]`, error);
+
+    if (notifyUser) {
+        window.dispatchEvent(new CustomEvent('appNotify', {
+            detail: { message: `${context}: ${message}`, type: 'error' }
+        }));
+    }
 }
 
 // ─── State ──────────────────────────────────────────────
@@ -271,6 +289,7 @@ const idb = {
                 req.onsuccess = (e) => { this.db = e.target.result; resolve(this.db); };
                 req.onerror = () => reject(req.error);
             } catch (err) {
+                handleAppError(err, "IndexedDB初期化失敗", false);
                 reject(err);
             }
         });
@@ -286,7 +305,10 @@ const idb = {
                 req.onsuccess = () => resolve(req.result);
                 req.onerror = () => reject(req.error);
             });
-        } catch (e) { console.warn('IDB get error', e); return null; }
+        } catch (e) {
+            handleAppError(e, "IDB取得失敗", false);
+            return null;
+        }
     },
     async set(key, val) {
         try {
@@ -295,10 +317,11 @@ const idb = {
                 const tx = db.transaction("cache", "readwrite");
                 const store = tx.objectStore("cache");
                 const req = store.put(val, key);
-                req.onsuccess = () => resolve();
                 req.onerror = () => reject(req.error);
             });
-        } catch (e) { console.warn('IDB set error', e); }
+        } catch (e) {
+            handleAppError(e, "IDB保存失敗", false);
+        }
     }
 };
 
@@ -311,7 +334,7 @@ const saveSpawnCacheDebounced = (() => {
         clearTimeout(timeout);
         timeout = setTimeout(() => {
             idb.set(SPAWN_CACHE_KEY, cache);
-        }, 2000);
+        }, CONFIG.IDB_SAVE_DEBOUNCE);
     };
 })();
 
@@ -390,7 +413,7 @@ async function loadMaintenance() {
         state.maintenance = (data && data.maintenance) ? data.maintenance : data;
         return state.maintenance;
     } catch (e) {
-        console.error("メンテ情報読み込み失敗:", e);
+        handleAppError(e, "メンテ情報読み込み失敗", false);
         return null;
     }
 }
@@ -413,7 +436,7 @@ async function loadLocationData() {
             applyLocationsToState(locationsData);
         }
     } catch (e) {
-        console.warn("Lazy location load failed:", e);
+        handleAppError(e, "位置データ読み込み失敗", false);
     }
 }
 
@@ -472,47 +495,47 @@ export async function loadBaseMobData() {
     }
 
     try {
-    const mobRes = await fetch(MOB_DATA_URL);
-    if (!mobRes.ok) throw new Error("Mob data failed to load.");
+        const mobRes = await fetch(MOB_DATA_URL);
+        if (!mobRes.ok) throw new Error("Mob data failed to load.");
 
-    const freshData = await mobRes.json();
-    const freshDataStr = JSON.stringify(freshData);
+        const freshData = await mobRes.json();
+        const freshDataStr = JSON.stringify(freshData);
 
-    if (freshDataStr !== cachedDataStr) {
-        await idb.set(MOB_DATA_CACHE_KEY, freshDataStr);
+        if (freshDataStr !== cachedDataStr) {
+            await idb.set(MOB_DATA_CACHE_KEY, freshDataStr);
 
-        const processed = processMobData(freshData, maintenance, { skipConditionCalc: true });
-        processed.forEach(mob => {
-            if (memorySpawnCache[mob.No]) {
-                mob._spawnCache = memorySpawnCache[mob.No];
-                mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
-            }
-        });
+            const processed = processMobData(freshData, maintenance, { skipConditionCalc: true });
+            processed.forEach(mob => {
+                if (memorySpawnCache[mob.No]) {
+                    mob._spawnCache = memorySpawnCache[mob.No];
+                    mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
+                }
+            });
 
-        state.baseMobData = processed;
-        setMobs([...processed]);
-        scheduleConditionCalculation(processed, maintenance, memorySpawnCache);
-    }
+            state.baseMobData = processed;
+            setMobs([...processed]);
+            scheduleConditionCalculation(processed, maintenance, memorySpawnCache);
+        }
 
-    await loadLocationData();
-
-    if (state.baseMobData.length > 0) {
-        applyPendingRealtimeData();
-    }
-
-} catch (e) {
-    console.error("Failed to load base data from network:", e);
-    if (!cachedData) {
-        console.error("データの読み込みに失敗しました。");
-        window.dispatchEvent(new CustomEvent('criticalDataLoadError', {
-            detail: { message: "基礎データの読み込みに失敗しました。\nアプリをファイルから直接開いている場合は、VS CodeのLive Serverなどを使って開いてください。" }
-        }));
-    } else {
         await loadLocationData();
+
         if (state.baseMobData.length > 0) {
             applyPendingRealtimeData();
         }
-    }
+
+    } catch (e) {
+        handleAppError(e, "基礎データ読み込み失敗");
+        if (!cachedData) {
+            console.error("データの読み込みに失敗しました。");
+            window.dispatchEvent(new CustomEvent('criticalDataLoadError', {
+                detail: { message: "基礎データの読み込みに失敗しました。\nアプリをファイルから直接開いている場合は、VS CodeのLive Serverなどを使って開いてください。" }
+            }));
+        } else {
+            await loadLocationData();
+            if (state.baseMobData.length > 0) {
+                applyPendingRealtimeData();
+            }
+        }
     }
 }
 
@@ -675,7 +698,7 @@ export function startRealtime() {
             }
             checkInitialLoadComplete();
         }
-    }, 8000);
+    }, CONFIG.FIRESTORE_LOAD_TIMEOUT);
 
     const unsubStatus = subscribeMobStatusDocs(mobStatusDataMap => {
         if (state.mobs.length === 0) {

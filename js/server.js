@@ -3,7 +3,7 @@ import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, getDoc, T
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app-check.js";
 
-import { getState, DOM } from "./dataManager.js";
+import { getState, DOM, CONFIG, handleAppError } from "./dataManager.js";
 import { closeReportModal } from "./modal.js";
 import { getMaintenanceRepop } from "./cal.js";
 
@@ -48,7 +48,7 @@ export async function initializeAuth() {
         setTimeout(() => {
             unsubscribe();
             resolve(auth.currentUser ? auth.currentUser.uid : null);
-        }, 10000);
+        }, CONFIG.AUTH_TIMEOUT);
     });
 }
 
@@ -60,6 +60,7 @@ export async function getUserData(uid) {
             return userSnap.data();
         }
     } catch (error) {
+        handleAppError(error, "ユーザーデータ取得失敗", false);
     }
     return null;
 }
@@ -157,7 +158,7 @@ export const submitReport = async (mobNo, timeISO) => {
     const forceSubmitEl = DOM.modalForceSubmit;
     const isForceSubmit = forceSubmitEl ? forceSubmitEl.checked : false;
     const nowMs = Date.now();
-    if (killTimeDate.getTime() > nowMs + 600000) {
+    if (killTimeDate.getTime() > nowMs + CONFIG.REPORT_FUTURE_THRESHOLD) {
         if (modalStatusEl) {
             modalStatusEl.textContent = "現在時刻より10分以上未来の時刻は報告できません。";
             modalStatusEl.classList.add("text-error");
@@ -173,7 +174,7 @@ export const submitReport = async (mobNo, timeISO) => {
 
         const { minRepop } = getMaintenanceRepop(mob, mob.last_kill_time || 0, maintenance);
         const minRepopTimeMs = minRepop * 1000;
-        const allowedTimeMs = minRepopTimeMs - (300 * 1000);
+        const allowedTimeMs = minRepopTimeMs - CONFIG.REPORT_EARLY_THRESHOLD;
 
         if (killTimeDate.getTime() < allowedTimeMs) {
             const allowedDate = new Date(allowedTimeMs);
@@ -213,6 +214,7 @@ export const submitReport = async (mobNo, timeISO) => {
         return { success: true };
 
     } catch (error) {
+        handleAppError(error, "報告送信失敗");
         return {
             success: false,
             error: error.message || "通信失敗",
@@ -229,7 +231,7 @@ export const submitMemo = async (mobNo, memoText) => {
     const mob = mobs.find(m => m.No === mobNo);
     if (!mob) return { success: false, error: "Mobデータエラー" };
 
-    if (memoText && memoText.length > 30) {
+    if (memoText && memoText.length > CONFIG.MEMO_MAX_LENGTH) {
         return { success: false, error: "メモは30文字以内で入力してください" };
     }
 
@@ -256,6 +258,7 @@ export const submitMemo = async (mobNo, memoText) => {
         return { success: true };
 
     } catch (error) {
+        handleAppError(error, "メモ保存失敗");
         return { success: false, error: error.message || "通信または認証に失敗しました。" };
     }
 };
@@ -281,6 +284,7 @@ export const toggleCrushStatus = async (mobNo, area, locationId, nextCulled) => 
         await setDoc(docRef, updatePayload, { merge: true });
         return { success: true };
     } catch (error) {
+        handleAppError(error, "スポーン状態更新失敗", false);
         return { success: false };
     }
 };
@@ -301,7 +305,7 @@ export async function registerUserToFirestore(lodestoneId, characterName) {
             updated_at: Timestamp.now()
         }, { merge: true });
     } catch (error) {
-        console.error("registerUserToFirestore failed:", error);
+        handleAppError(error, "Firestoreユーザー登録失敗", false);
     }
 }
 
@@ -368,7 +372,7 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
             };
         }
     } catch (error) {
-        console.error("Lodestone verification failed:", error);
+        handleAppError(error, "Lodestone認証失敗");
         return {
             success: false,
             error: `認証に失敗しました。(${error.message || "Unknown Error"})`

@@ -109,7 +109,7 @@
 /* --- SECTION: MOBLIST ITEM --- */
 .moblist-item {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 90px 34px 28px;
+    grid-template-columns: minmax(0, 1fr) 82px 34px 28px;
     align-items: center;
     width: 100%;
     background: var(--color-bg-card);
@@ -155,7 +155,7 @@
         min-inline-size: 0;
         pointer-events: none;
         font-weight: 700;
-        font-size: 16px;
+        font-size: 15px;
         padding-inline-end: 4px;
         position: relative;
         z-index: 10;
@@ -376,7 +376,7 @@
 
     .moblist-item {
         margin-block-end: 4px;
-        grid-template-columns: minmax(0, 1fr) 90px 34px 28px;
+        grid-template-columns: minmax(0, 1fr) 82px 34px 28px;
 
         .moblist-report-btn {
             width: 28px;

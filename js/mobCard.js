@@ -1,5 +1,5 @@
 import { getDurationDHMParts, formatDurationDHM, formatMMDDHHmm } from "./cal.js";
-import { getState, setOpenMobCardNo, isCulled, getStatusLabel, RANKS, DOM } from "./dataManager.js";
+import { getState, setOpenMobCardNo, isCulled, getStatusLabel, RANKS, DOM, CONFIG } from "./dataManager.js";
 import { toggleCrushStatus } from "./server.js";
 import { openAuthModal, openReportModal } from "./modal.js";
 
@@ -66,7 +66,6 @@ export function initGlobalMagnifier() {
   let activeMapContainer = null;
   let activeMapContainerRect = null;
   let magnifierRect = null;
-  const ZOOM_SCALE = 2.0;
 
   const closeMagnifier = () => {
     magnifier.classList.add('hidden');
@@ -98,12 +97,12 @@ export function initGlobalMagnifier() {
     const centerX = magnifierRect.width / 2;
     const centerY = magnifierRect.height / 2;
 
-    const translateX = centerX - (x * ZOOM_SCALE);
-    const translateY = centerY - (y * ZOOM_SCALE);
+    const translateX = centerX - (x * CONFIG.MAP_ZOOM_SCALE);
+    const translateY = centerY - (y * CONFIG.MAP_ZOOM_SCALE);
 
     wrapper.style.setProperty('--mag-zoom-x', `${translateX}px`);
     wrapper.style.setProperty('--mag-zoom-y', `${translateY}px`);
-    wrapper.style.setProperty('--mag-scale', String(ZOOM_SCALE));
+    wrapper.style.setProperty('--mag-scale', String(CONFIG.MAP_ZOOM_SCALE));
   };
 
   let magnifierRafId = null;

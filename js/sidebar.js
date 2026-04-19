@@ -1,4 +1,4 @@
-import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled, safeJsonParse, RANKS, CONFIG, DOM } from "./dataManager.js";
+import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled, safeJsonParse, RANKS, CONFIG, DOM, handleAppError } from "./dataManager.js";
 import { filterAndRender } from "./app.js";
 import { openUserManual, closeUserManual } from "./readme.js";
 import { cloneTemplate, escapeHtml } from "./mobCard.js";
@@ -73,13 +73,9 @@ export function playNotificationSound(isSilent = false) {
     }
 
     audio.currentTime = 0;
-    try {
-        audio.play().catch(err => {
-            console.error("通知音の再生に失敗しました:", err);
-        });
-    } catch (err) {
-        console.error("通知音の再生エラー:", err);
-    }
+    audio.play().catch(err => {
+        handleAppError(err, "通知音の再生失敗", false);
+    });
 }
 
 export async function sendBrowserNotification(title, body) {
@@ -96,7 +92,7 @@ export async function sendBrowserNotification(title, body) {
             new Notification(title, options);
         }
     } catch (err) {
-        console.error("システム通知の表示に失敗しました:", err);
+        handleAppError(err, "システム通知の表示失敗", false);
     }
 }
 
@@ -362,7 +358,7 @@ export function initAppNav() {
     if (!nav) return;
 
     captureErrors();
-    
+
     const stored = loadSidebarState();
     if (stored.panel && stored.panel !== "manual") {
         currentPanel = stored.panel;
