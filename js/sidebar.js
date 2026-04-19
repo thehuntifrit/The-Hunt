@@ -200,16 +200,14 @@ export const handleRankTabClick = (rank) => {
     let clickStep = state.filter.clickStep || 1;
 
     if (rank === prevRank) {
-        if (clickStep === 1) clickStep = 2;
-        else if (clickStep === 2) clickStep = 3;
-        else if (clickStep === 3) clickStep = 2;
-
+        // すでに選択されている場合は 2(展開) と 3(格納) をトグル
+        clickStep = (state.filter.clickStep === 2) ? 3 : 2;
         setFilter({ clickStep });
     } else {
-        clickStep = 1;
+        // 新規選択時は 1(選択)
         setFilter({
             rank,
-            clickStep,
+            clickStep: 1,
             areaSets: state.filter.areaSets
         });
     }
@@ -525,10 +523,10 @@ function renderSidebarFilterAccordion(targetContainer = null) {
     if (!container) return;
 
     const ranks = [
-        { key: "ALL", label: "ALL", color: "var(--color-all-rank)" },
-        { key: "S rank", label: "S rank", color: "var(--color-rank-s)" },
-        { key: "A rank", label: "A rank", color: "var(--color-rank-a)" },
-        { key: "FATE", label: "FATE", color: "var(--color-rank-f)" },
+        { key: RANKS.ALL, label: "ALL", color: "var(--color-all-rank)" },
+        { key: RANKS.S_RANK, label: "S rank", color: "var(--color-rank-s)" },
+        { key: RANKS.A_RANK, label: "A rank", color: "var(--color-rank-a)" },
+        { key: RANKS.FATE, label: "FATE", color: "var(--color-rank-f)" },
     ];
 
     const state = getState();

@@ -600,7 +600,7 @@ function updateMobState(mob, nowSec, state) {
 
       if (info.minRepop && info.maxRepop) {
         const range = info.maxRepop - info.minRepop;
-        info.elapsedPercent = (range <= 0 || nowSec < info.minRepop) ? 0 : Math.min(100, Math.floor(((nowSec - info.minRepop) / range) * 100));
+        info.elapsedPercent = (range <= 0 || nowSec < info.minRepop) ? 0 : Math.min(100, ((nowSec - info.minRepop) / range) * 100);
       }
     }
   }

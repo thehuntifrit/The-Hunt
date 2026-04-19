@@ -349,16 +349,12 @@ html body.magnifier-active .mobcard-inner * {
     height: var(--map-h, 100%);
 }
 
-.mobcard-progress-bar, 
+.mobcard-progress-bar,
 .moblist-bg-bar {
     transform: scaleX(var(--prog-percent, 0));
 }
 
-/* 最初の定義を削除し、後方で一括管理します */
 
-.magnifier-content-wrapper {
-    transform: translate(var(--mag-zoom-x), var(--mag-zoom-y)) scale(var(--mag-scale));
-}
 
 .map-magnifier.hidden {
     display: none;
@@ -908,6 +904,9 @@ html body.magnifier-active .mobcard-inner * {
 .magnifier-content-wrapper {
     position: absolute;
     transform-origin: 0 0;
+    transform: translate(var(--mag-zoom-x), var(--mag-zoom-y)) scale(var(--mag-scale));
+    width: var(--map-w);
+    height: var(--map-h);
 }
 
 .map-container {
@@ -990,6 +989,8 @@ html body.magnifier-active .mobcard-inner * {
 }
 
 .magnifier-clone {
+    width: var(--map-w, 100%) !important;
+    height: var(--map-h, 100%) !important;
     margin: 0;
     border: none;
     box-shadow: none;
@@ -1135,15 +1136,50 @@ html body.magnifier-active .mobcard-inner * {
 }
 
 /* --- SECTION: UTILS (Additional) --- */
-.u-mb-14 { margin-bottom: 14px !important; }
-.u-mb-4 { margin-bottom: 4px !important; }
-.u-mb-2 { margin-bottom: 2px !important; }
-.u-mt-21 { margin-top: 21px !important; }
-.u-mt-14 { margin-top: 14px !important; }
-.u-mt-4 { margin-top: 4px !important; }
-.u-text-18 { font-size: 18px !important; }
-.u-text-gold { color: var(--color-gold) !important; }
-.u-text-center { text-align: center !important; }
-.u-text-gray-400 { color: #9ca3af !important; }
-.u-text-red-400 { color: #f87171 !important; }
-.u-font-700 { font-weight: 700 !important; }
+.u-mb-14 {
+    margin-bottom: 14px !important;
+}
+
+.u-mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.u-mb-2 {
+    margin-bottom: 2px !important;
+}
+
+.u-mt-21 {
+    margin-top: 21px !important;
+}
+
+.u-mt-14 {
+    margin-top: 14px !important;
+}
+
+.u-mt-4 {
+    margin-top: 4px !important;
+}
+
+.u-text-18 {
+    font-size: 18px !important;
+}
+
+.u-text-gold {
+    color: var(--color-gold) !important;
+}
+
+.u-text-center {
+    text-align: center !important;
+}
+
+.u-text-gray-400 {
+    color: #9ca3af !important;
+}
+
+.u-text-red-400 {
+    color: #f87171 !important;
+}
+
+.u-font-700 {
+    font-weight: 700 !important;
+}

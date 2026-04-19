@@ -316,6 +316,8 @@ export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, i
   el.style.setProperty('--point-y', `${point.y}%`);
 
   const pointNumber = parseInt(point.id.slice(-2), 10);
+  const state = isLastOne ? "(確)" : isCulledFlag ? "(済)" : "";
+  el.title = rank === "F" ? state : `${pointNumber} ${state}`;
 
   Object.assign(el.dataset, {
     locationId: point.id,
@@ -500,7 +502,8 @@ export function updateProgressText(element, mob, timeLabelObj = null) {
 
   if (percentEl) {
     const { elapsedPercent } = mob.repopInfo || {};
-    const percentValue = status === "MaxOver" ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
+    const raw = Math.max(0, Math.min(100, elapsedPercent || 0));
+    const percentValue = status === "MaxOver" ? "100" : element.classList.contains('mobcard-card') ? raw.toFixed(1) : String(Math.floor(raw));
 
     let numNode = percentEl.firstChild;
     if (!numNode || numNode.nodeType !== Node.TEXT_NODE) {
@@ -514,6 +517,12 @@ export function updateProgressText(element, mob, timeLabelObj = null) {
     } else {
       if (numNode.nodeValue !== percentValue) {
         numNode.nodeValue = percentValue;
+      }
+      if (!percentEl.querySelector('.percent-unit')) {
+        const unit = document.createElement('span');
+        unit.className = 'percent-unit';
+        unit.textContent = '%';
+        percentEl.appendChild(unit);
       }
     }
     percentEl.classList.toggle("max-over", status === "MaxOver");
