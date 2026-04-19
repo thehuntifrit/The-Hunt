@@ -250,17 +250,17 @@ export function getSpawnCountInfo(mob) {
   const key = `${mob.area}_${instance}`;
   const mobLocationsData = state.mobLocations?.[key];
   const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
-  if (!mob.mapImage || !mob.locations || mob.rank === RANKS.F) return { countHtml: "", remainingCount: 0, spawnCullStatus };
   const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
   const remainingCount = validSpawnPoints.length;
-  let countHtml = "";
+  let countInfo = null;
+
   if (remainingCount === 1) {
     const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
-    countHtml = `<span class="pc-count-val text-cyan font-bold">📍${pointNumber}<span class="u-ml-1">番</span></span>`;
+    countInfo = { type: 'single', value: pointNumber, unit: '番' };
   } else if (remainingCount > 1) {
-    countHtml = `<span class="pc-count-val font-bold">📍@<span class="u-ml-1">${remainingCount}</span></span>`;
+    countInfo = { type: 'multiple', value: remainingCount, unit: '' };
   }
-  return { countHtml, remainingCount, spawnCullStatus, validSpawnPoints };
+  return { countInfo, remainingCount, spawnCullStatus, validSpawnPoints };
 }
 
 export function getValidSpawnPoints(mob, spawnCullStatus) {
@@ -481,7 +481,15 @@ export function updateProgressText(element, mob) {
   if (percentEl) {
     const { elapsedPercent } = mob.repopInfo || {};
     const percentValue = status === "MaxOver" ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
-    percentEl.innerHTML = `${percentValue}<span class="percent-unit">%</span>`;
+
+    let unit = percentEl.querySelector('.percent-unit');
+    if (!unit) {
+      unit = document.createElement('span');
+      unit.className = 'percent-unit';
+      unit.textContent = '%';
+    }
+    percentEl.textContent = percentValue;
+    percentEl.appendChild(unit);
     percentEl.classList.toggle("max-over", status === "MaxOver");
   }
 
@@ -573,10 +581,8 @@ export function updateMemoIcon(card, mob) {
   memoIconContainer.innerHTML = '';
   if (shouldShowMemo) {
     memoIconContainer.classList.remove('hidden');
-    const span = document.createElement('span');
-    span.classList.add('memo-icon');
-    span.textContent = '📝';
-    memoIconContainer.appendChild(span);
+    const el = cloneTemplate('memo-icon-template');
+    if (el) memoIconContainer.appendChild(el);
   } else {
     memoIconContainer.classList.add('hidden');
   }
@@ -585,10 +591,34 @@ export function updateMemoIcon(card, mob) {
 export function updateMobCount(card, mob) {
   const countContainer = getEl(card, '.moblist-count', 'mobCount');
   if (!countContainer) return;
-  const { countHtml } = getSpawnCountInfo(mob);
-  if (countContainer.innerHTML !== countHtml) {
-    countContainer.innerHTML = countHtml;
-    countContainer._lastHtml = countHtml;
+
+  const { countInfo } = getSpawnCountInfo(mob);
+
+  if (!countInfo) {
+    if (countContainer.innerHTML !== "") countContainer.innerHTML = "";
+    return;
+  }
+
+  const cacheKey = `${countInfo.type}-${countInfo.value}`;
+  if (countContainer._lastCacheKey === cacheKey) return;
+  countContainer._lastCacheKey = cacheKey;
+
+  const el = cloneTemplate('spawn-count-template');
+  if (el) {
+    if (countInfo.type === 'single') el.classList.add('text-cyan', 'font-bold');
+    else el.classList.add('font-bold');
+
+    const numEl = el.querySelector('.count-num');
+    const unitEl = el.querySelector('.count-unit');
+
+    if (numEl) numEl.textContent = countInfo.type === 'single' ? countInfo.value : `@${countInfo.value}`;
+    if (unitEl) {
+      unitEl.textContent = countInfo.unit;
+      unitEl.className = 'u-ml-1';
+    }
+
+    countContainer.innerHTML = "";
+    countContainer.appendChild(el);
   }
 }
 

@@ -16,7 +16,14 @@ export const openUserManual = async () => {
 
     if (!isLoaded) {
         try {
-            container.innerHTML = '<p class="u-text-center u-text-gray-400">読み込み中...</p>';
+            const loadingMsg = cloneTemplate('ui-message-template');
+            if (loadingMsg) {
+                loadingMsg.className = "u-text-center u-text-gray-400";
+                loadingMsg.textContent = "読み込み中...";
+                container.innerHTML = "";
+                container.appendChild(loadingMsg);
+            }
+
             const response = await fetch('./README.md');
             if (!response.ok) throw new Error('Failed to load README');
 
@@ -31,7 +38,13 @@ export const openUserManual = async () => {
             updateAuthUI();
         } catch (error) {
             console.error(error);
-            container.innerHTML = '<p class="u-text-red-400 u-text-center">マニュアルの読み込みに失敗しました。</p>';
+            const errorMsg = cloneTemplate('ui-message-template');
+            if (errorMsg) {
+                errorMsg.className = "u-text-red-400 u-text-center";
+                errorMsg.textContent = "マニュアルの読み込みに失敗しました。";
+                container.innerHTML = "";
+                container.appendChild(errorMsg);
+            }
         }
     }
 };

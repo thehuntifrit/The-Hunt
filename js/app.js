@@ -28,10 +28,12 @@ let isInitialSortingSuppressed = false;
 let lastClickTime = 0;
 let lastClickLocationId = null;
 let locationEventsAttached = false;
+let loadingTimeout = null;
 
 // ─── 初期化 ─────────────────────────────────────────────
 async function initApp() {
   try {
+    initAppEventListeners();
     attachMobCardEvents();
     initGlobalMagnifier();
     loadBaseMobData();
@@ -71,27 +73,7 @@ async function initApp() {
     attachGlobalEventListeners();
     window.renderMaintenanceStatus = renderMaintenanceStatus;
 
-    window.addEventListener('maintenanceUpdated', () => {
-      renderMaintenanceStatus();
-    });
-
-    window.addEventListener('pageshow', (event) => {
-      if (event.persisted) {
-        setOpenMobCardNo(null);
-        document.querySelectorAll('.appnav-rank-item.appnav-active').forEach(el => el.classList.remove('appnav-active'));
-      }
-    });
-
-    window.addEventListener('initialDataLoaded', () => {
-      try {
-        renderMaintenanceStatus();
-        updateErrorPanel();
-      } catch (e) {
-        console.error("Initial maintenance render failed:", e);
-      }
-    }, { once: true });
-
-    const loadingTimeout = setTimeout(() => {
+    loadingTimeout = setTimeout(() => {
       const overlay = DOM.loadingOverlay;
       if (overlay && !overlay.classList.contains("hidden")) {
         console.warn("Loading timeout: Forcing UI display.");
@@ -103,39 +85,6 @@ async function initApp() {
         showToast("データ同期がタイムアウトしました。既存のデータで表示します。", "info");
       }
     }, CONFIG.APP_LOAD_TIMEOUT);
-
-    window.addEventListener('criticalDataLoadError', (e) => {
-      clearTimeout(loadingTimeout);
-      const overlay = DOM.loadingOverlay;
-      if (overlay) {
-        const spinner = overlay.querySelector('.loading-spinner');
-        if (spinner) spinner.classList.add('u-hidden');
-        const text = overlay.querySelector('.loading-text');
-        if (text) {
-          text.classList.add('u-pre-wrap', 'u-text-error');
-          text.textContent = e.detail.message;
-        }
-      }
-    }, { once: true });
-
-    window.addEventListener('initialSortComplete', () => {
-      clearTimeout(loadingTimeout);
-      try {
-        renderMaintenanceStatus();
-        showColumnContainer();
-
-        const isFirstVisit = !localStorage.getItem("has_visited");
-        if (isFirstVisit) {
-          localStorage.setItem("has_visited", "true");
-          if (window.openUserManual) {
-            window.openUserManual();
-          }
-        }
-      } catch (e) {
-        console.error("Initial render show failed:", e);
-        showColumnContainer();
-      }
-    }, { once: true });
 
   } catch (e) {
     console.error("App initialization failed:", e);
@@ -226,23 +175,25 @@ export async function renderMaintenanceStatus() {
   }
 
   maintPanels.forEach(p => {
+    p.innerHTML = "";
     if (!hasMaintenance) {
       p.textContent = "現在予定されているメンテナンスはありません";
       return;
     }
     const isPC = window.innerWidth >= 1024;
     if (isPC) {
-      p.textContent = "";
-      const lines = maintPCHtml.split('<br>');
-      lines.forEach((line, i) => {
-        const textNode = document.createTextNode(line.replace(/&nbsp;/g, '\u00A0'));
-        p.appendChild(textNode);
-        if (i < lines.length - 1) {
-          p.appendChild(document.createElement('br'));
-        }
-      });
+      const startLine = document.createElement("div");
+      startLine.textContent = `${formatMMDDHHmm(maintenance.start_time)} ～`;
+      const endLine = document.createElement("div");
+      if (maintenance.end_time) {
+        endLine.innerHTML = `&nbsp;&nbsp;&nbsp;&nbsp;${formatMMDDHHmm(maintenance.end_time)}`;
+      }
+      p.appendChild(startLine);
+      p.appendChild(endLine);
     } else {
-      p.textContent = maintMobileHtml;
+      const start = formatMMDDHHmm(maintenance.start_time);
+      const end = maintenance.end_time ? formatMMDDHHmm(maintenance.end_time) : "";
+      p.textContent = end ? `${start} ～ ${end}` : `${start} ～`;
     }
   });
 
@@ -969,54 +920,102 @@ function attachGlobalEventListeners() {
   }, { passive: true });
 }
 
-window.addEventListener('characterNameSet', () => {
-  renderMaintenanceStatus();
-});
+// ─── イベント ───────────────────────────────────────────
+function initAppEventListeners() {
+  window.addEventListener('maintenanceUpdated', () => renderMaintenanceStatus());
 
-window.addEventListener('initialDataLoaded', () => {
-  updateHeaderTime();
-  filterAndRender({ isInitialLoad: true });
-  lastTierBTime = 0;
-  lastTierCTime = 0;
-  updateProgressBarsOptimized();
-});
-
-window.addEventListener('mobsBatchUpdated', (e) => {
-  const { mobNos } = e.detail;
-  const mobMap = getMobMap();
-  if (!mobMap) return;
-
-  mobNos.forEach(mobNo => {
-    const mob = mobMap.get(String(mobNo));
-    if (!mob) return;
-    checkAndNotify(mob);
-    const card = cardCache.get(String(mobNo));
-    if (card) updateCardFull(card, mob);
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      setOpenMobCardNo(null);
+      document.querySelectorAll('.appnav-rank-item.appnav-active').forEach(el => el.classList.remove('appnav-active'));
+    }
   });
 
-  updateDetailCardRealtime(mobMap);
-  sortAndRedistribute();
-});
+  window.addEventListener('initialDataLoaded', () => {
+    try {
+      renderMaintenanceStatus();
+      updateErrorPanel();
+      updateHeaderTime();
+      filterAndRender({ isInitialLoad: true });
+      lastTierBTime = 0;
+      lastTierCTime = 0;
+      updateProgressBarsOptimized();
+    } catch (e) {
+      console.error("初期ロード処理失敗:", e);
+    }
+  }, { once: true });
 
-window.addEventListener('filterChanged', () => {
-  invalidateFilterCache();
-  filterAndRender();
-});
+  window.addEventListener('criticalDataLoadError', (e) => {
+    if (loadingTimeout) clearTimeout(loadingTimeout);
+    const overlay = DOM.loadingOverlay;
+    if (overlay) {
+      const spinner = overlay.querySelector('.loading-spinner');
+      if (spinner) spinner.classList.add('u-hidden');
+      const text = overlay.querySelector('.loading-text');
+      if (text) {
+        text.classList.add('u-pre-wrap', 'u-text-error');
+        text.textContent = e.detail.message;
+      }
+    }
+  }, { once: true });
 
-window.addEventListener('mobsUpdated', () => {
-  updateProgressBarsOptimized();
-});
+  window.addEventListener('initialSortComplete', () => {
+    if (loadingTimeout) clearTimeout(loadingTimeout);
+    try {
+      renderMaintenanceStatus();
+      showColumnContainer();
 
-window.addEventListener('locationDataReady', () => {
-  updateVisibleCards();
-});
+      const isFirstVisit = !localStorage.getItem("has_visited");
+      if (isFirstVisit) {
+        localStorage.setItem("has_visited", "true");
+        if (window.openUserManual) window.openUserManual();
+      }
+    } catch (e) {
+      console.error("初回描画失敗:", e);
+      showColumnContainer();
+    }
+  }, { once: true });
 
-window.addEventListener('locationsUpdated', () => {
-  invalidateFilterCache();
-  updateVisibleCards();
-});
+  window.addEventListener('characterNameSet', () => renderMaintenanceStatus());
 
-// ─── イベント ───────────────────────────────────────────
+  window.addEventListener('mobsBatchUpdated', (e) => {
+    const { mobNos } = e.detail;
+    const mobMap = getMobMap();
+    if (!mobMap) return;
+    mobNos.forEach(mobNo => {
+      const mob = mobMap.get(String(mobNo));
+      if (!mob) return;
+      checkAndNotify(mob);
+      const card = cardCache.get(String(mobNo));
+      if (card) updateCardFull(card, mob);
+    });
+    updateDetailCardRealtime(mobMap);
+    sortAndRedistribute();
+  });
+
+  window.addEventListener('mobUpdated', (e) => {
+    const { mobNo, mob } = e.detail;
+    const mobMap = getMobMap();
+    if (!mobMap) return;
+    const card = cardCache.get(String(mobNo));
+    if (card) updateCardFull(card, mob);
+    updateDetailCardRealtime(mobMap);
+    sortAndRedistribute();
+  });
+
+  window.addEventListener('filterChanged', () => {
+    invalidateFilterCache();
+    filterAndRender();
+  });
+
+  window.addEventListener('mobsUpdated', () => updateProgressBarsOptimized());
+  window.addEventListener('locationDataReady', () => updateVisibleCards());
+  window.addEventListener('locationsUpdated', () => {
+    invalidateFilterCache();
+    updateVisibleCards();
+  });
+}
+
 function attachMobCardEvents() {
   const containers = [
     document.getElementById("moblist-container"),
