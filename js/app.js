@@ -603,13 +603,8 @@ export function updateProgressBarsOptimized(force = false) {
       const info = mob.repopInfo;
       if (!info || info.status === "Maintenance") return;
 
-      const timeToBoundary = info.nextBoundarySec ? Math.abs(nowSec - info.nextBoundarySec) : 999;
-      const needsRealtime = timeToBoundary < 60;
-
-      if (needsRealtime || isTierB) {
-        if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
-        checkAndNotify(mob);
-      }
+      if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
+      checkAndNotify(mob);
     });
     lastTierCTime = now;
     if (isTierB) lastTierBTime = now;
