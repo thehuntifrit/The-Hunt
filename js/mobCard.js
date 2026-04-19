@@ -698,11 +698,11 @@ export function updateMapOverlay(card, mob) {
   }
 
   if (mapImg && mob.mapImage && mapImg.dataset.mobMap !== mob.mapImage) {
+    if (mapImg.decoding !== "sync") mapImg.decoding = "sync";
+    mapImg.loading = "eager";
     mapImg.src = `./maps/${mob.mapImage}`;
     mapImg.alt = `${mob.area} Map`;
     mapImg.dataset.mobMap = mob.mapImage;
-    mapImg.decoding = "async";
-    mapImg.loading = "eager";
     mapContainer.classList.remove('hidden');
     delete mapContainer.dataset.locationLoading;
   }
