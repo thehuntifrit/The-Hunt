@@ -8,7 +8,6 @@ import { initializeAuth, getUserData, submitReport, submitMemo, toggleCrushStatu
 import { openUserManual } from "./readme.js";
 
 // ─── 定数 ──────────────────────────────────────────────
-
 export const cardCache = new Map();
 
 const visibleCards = new Set();
@@ -90,13 +89,6 @@ async function initApp() {
     handleAppError(e, "アプリ初期化致命的エラー");
     showColumnContainer();
   }
-  syncMobCardPanePosition();
-}
-
-function syncMobCardPanePosition() {
-  const pane = document.getElementById('mobcard-pane');
-  if (pane && window.innerWidth >= CONFIG.BREAKPOINT_PC) {
-  }
 }
 
 export function showColumnContainer() {
@@ -163,14 +155,8 @@ export async function renderMaintenanceStatus() {
 
   let hasMaintenance = false;
   let hasMessage = false;
-  let maintMobileHtml = "";
-  let maintPCHtml = "";
 
   if (maintenance && (maintenance.is_active || maintenance.scheduled)) {
-    const start = formatMMDDHHmm(maintenance.start_time);
-    const end = formatMMDDHHmm(maintenance.end_time);
-    maintMobileHtml = end ? `${start} ～ ${end}` : `${start} ～`;
-    maintPCHtml = end ? `${start} ～<br>&nbsp;&nbsp;&nbsp;&nbsp;${end}` : `${start} ～`;
     hasMaintenance = true;
   }
 
@@ -250,14 +236,23 @@ export async function renderMaintenanceStatus() {
 }
 
 // ─── ヘッダー時刻 ───────────────────────────────────────
+let headerClocks = null;
+
 export function updateHeaderTime() {
   const now = new Date();
   const et = getEorzeaTime(now);
   const ltStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   const etStr = `${et.hours}:${et.minutes}`;
 
-  document.querySelectorAll('.js-lt-clock').forEach(el => el.textContent = ltStr);
-  document.querySelectorAll('.js-et-clock').forEach(el => el.textContent = etStr);
+  if (!headerClocks) {
+    headerClocks = {
+      lt: Array.from(document.querySelectorAll('.js-lt-clock')),
+      et: Array.from(document.querySelectorAll('.js-et-clock'))
+    };
+  }
+
+  headerClocks.lt.forEach(el => el.textContent = ltStr);
+  headerClocks.et.forEach(el => el.textContent = etStr);
 }
 
 // ─── ソート＆描画 ───────────────────────────────────────
@@ -312,7 +307,17 @@ export function unobserveCard(el) {
 
 export function updateCardFull(card, mob) {
   const info = mob.repopInfo || {};
-  const cullHash = JSON.stringify(mob.spawn_cull_status || {});
+
+  let cullHash = "";
+  if (mob.spawn_cull_status) {
+    for (const key in mob.spawn_cull_status) {
+      const s = mob.spawn_cull_status[key];
+      const c = s.culled_at?.seconds || 0;
+      const u = s.uncull_at?.seconds || 0;
+      cullHash += `${key}:${c},${u};`;
+    }
+  }
+
   const stateHash = `${info.status}|${info.timeRemaining}|${info.isInConditionWindow}|${cullHash}`;
 
   if (card._lastStateHash === stateHash) return;
@@ -340,10 +345,10 @@ export function updateVisibleCards() {
     const mob = mobMap.get(mobNoStr);
     if (card && mob) updateCardFull(card, mob);
   }
-  updateDetailCardRealtime(mobMap);
+  updateVisibleDetailCard(mobMap);
 }
 
-export function updateDetailCardRealtime(mobMap) {
+export function updateVisibleDetailCard(mobMap) {
   const rightPane = DOM.pcRightDetail || document.getElementById("mobcard-detail");
   if (!rightPane || rightPane.offsetParent === null) return;
 
@@ -604,22 +609,6 @@ function updateMobState(mob, nowSec, state) {
     hasSignificantChange = true;
   }
 
-  const mobNoStr = String(mob.No);
-
-  const detailMobNo =
-    document.getElementById("mobcard-detail")?.dataset.renderedMobNo ||
-    document.getElementById("mobcard-overlay")?.dataset.renderedMobNo;
-
-  if (detailMobNo === mobNoStr) {
-    const detailCard = document.querySelector(`.mobcard-card[data-mob-no="${mobNoStr}"]`);
-    if (detailCard) updateCardFull(detailCard, mob);
-  }
-
-  const listItem = cardCache.get(mobNoStr);
-  if (listItem) {
-    updateCardFull(listItem, mob);
-  }
-
   return hasSignificantChange;
 }
 
@@ -792,12 +781,13 @@ function handleCrushToggle(e) {
 export function attachLocationEvents() {
   if (locationEventsAttached) return;
 
-  const colContainer = document.getElementById("column-container");
-  if (colContainer) {
-    colContainer.addEventListener("click", handleCrushToggle);
+  const moblistContainer = document.getElementById("moblist-container");
+  if (moblistContainer) {
+    moblistContainer.addEventListener("click", handleCrushToggle);
   }
 
   const mobcardDetail = document.getElementById("mobcard-detail");
+
   if (mobcardDetail) {
     mobcardDetail.addEventListener("click", handleCrushToggle);
   }
@@ -819,13 +809,11 @@ function attachGlobalEventListeners() {
       prevWidth = currentWidth;
       sortAndRedistribute();
     }
-    syncMobCardPanePosition();
   }, CONFIG.DEBOUNCE_DELAY));
 
   const appnav = document.getElementById('appnav');
   if (appnav) {
     appnav.addEventListener('transitionend', (e) => {
-      if (e.propertyName === 'width') syncMobCardPanePosition();
     });
   }
 
@@ -989,7 +977,7 @@ function initAppEventListeners() {
       const card = cardCache.get(String(mobNo));
       if (card) updateCardFull(card, mob);
     });
-    updateDetailCardRealtime(mobMap);
+    updateVisibleDetailCard(mobMap);
     sortAndRedistribute();
   });
 
@@ -999,7 +987,7 @@ function initAppEventListeners() {
     if (!mobMap) return;
     const card = cardCache.get(String(mobNo));
     if (card) updateCardFull(card, mob);
-    updateDetailCardRealtime(mobMap);
+    updateVisibleDetailCard(mobMap);
     sortAndRedistribute();
   });
 
@@ -1079,9 +1067,8 @@ function handleGeneralClick(e) {
 
 setInterval(() => {
   updateProgressBarsOptimized();
+  updateHeaderTime();
 }, EORZEA_MINUTE_MS);
-
-setInterval(updateHeaderTime, EORZEA_MINUTE_MS);
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {

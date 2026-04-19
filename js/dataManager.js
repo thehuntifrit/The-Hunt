@@ -317,6 +317,7 @@ const idb = {
                 const tx = db.transaction("cache", "readwrite");
                 const store = tx.objectStore("cache");
                 const req = store.put(val, key);
+                req.onsuccess = () => resolve(req.result);
                 req.onerror = () => reject(req.error);
             });
         } catch (e) {

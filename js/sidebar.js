@@ -372,8 +372,6 @@ export function initAppNav() {
 
     initNotification();
 
-    const logo = nav.querySelector(".appnav-logo");
-
     if (currentPanel !== "rank") {
         renderSidebarFilterAccordion();
     }

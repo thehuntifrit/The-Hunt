@@ -19,16 +19,21 @@ export function cloneTemplate(id) {
   return template.content.cloneNode(true).firstElementChild;
 }
 
+// ─── ユーティリティ ─────────────────────────────────────
+export const formatOrPlaceholder = (val) => val ? formatMMDDHHmm(val) : "--/-- --:--";
+
+const ESCAPE_MAP = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;'
+};
+
 export function escapeHtml(str) {
   if (typeof str !== "string") return str;
   return str.replace(/[&<>"']/g, function (m) {
-    return {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
-    }[m];
+    return ESCAPE_MAP[m];
   });
 }
 
@@ -211,35 +216,41 @@ export function computeTimeLabel(mob) {
   return { label, labelStatus, timeValue, isSpecialCondition, isTimeOver: showAsOverdue, isTimedMob, dhm, isInWindow };
 }
 
-function renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow) {
+function updateTimerRichHTML(el, dhm, isSpecialCondition, isTimeOver) {
   if (!dhm) {
-    const fallback = document.createElement('div');
-    fallback.className = 'mobcard-timer';
-    fallback.textContent = "--/-- --:--";
-    return fallback;
+    el.innerHTML = "--/-- --:--";
+    el.className = 'mobcard-timer';
+    return;
   }
 
-  const el = cloneTemplate('timer-rich-template');
-  if (!el) return document.createElement('span');
+  if (el.innerHTML.includes("--/-- --:--") || el.innerHTML === "") {
+    const templateNode = cloneTemplate('timer-rich-template');
+    if (templateNode) {
+      el.innerHTML = templateNode.innerHTML;
+    }
+  }
 
+  el.className = 'mobcard-timer';
   if (isSpecialCondition) el.classList.add('label-next');
   if (isTimeOver) el.classList.add('time-over');
 
-  const { d, h, m } = dhm;
+  const { h, m } = dhm;
 
   const format = (elPart, num, unit) => {
+    if (!elPart) return;
     const numEl = elPart.querySelector('.mobcard-timer-num');
     const isHidden = unit === 'h' && (Number(num) === 0 || !num);
     elPart.classList.toggle('hidden', isHidden);
-    if (!isHidden) {
-      numEl.innerHTML = String(num || 0).padStart(2, '0').replace(/^0/, '&nbsp;');
+    if (!isHidden && numEl) {
+      const paddedLine = String(num || 0).padStart(2, '0').replace(/^0/, '&nbsp;');
+      if (numEl.innerHTML !== paddedLine) {
+        numEl.innerHTML = paddedLine;
+      }
     }
   };
 
   format(el.querySelector('.h-part'), h, 'h');
   format(el.querySelector('.m-part'), m, 'm');
-
-  return el;
 }
 
 // ─── スポーンポイント ───────────────────────────────────
@@ -305,7 +316,6 @@ export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, i
   el.style.setProperty('--point-y', `${point.y}%`);
 
   const pointNumber = parseInt(point.id.slice(-2), 10);
-  const titleText = `${pointNumber}${isCulledFlag ? " (済)" : ""}`;
 
   Object.assign(el.dataset, {
     locationId: point.id,
@@ -332,7 +342,6 @@ export function renderMobCard(mob) {
 
   const rank = mob.rank;
   const { nextConditionSpawnDate, minRepop, maxRepop } = mob.repopInfo || {};
-  const fmt = (val) => val ? formatMMDDHHmm(val) : "--/-- --:--";
 
   card.dataset.mobNo = mob.No;
   card.dataset.rank = rank;
@@ -345,10 +354,10 @@ export function renderMobCard(mob) {
 
   updateEl(card, '.mobcard-rank', { textContent: rank }, { rank });
 
-  updateEl(card, '[data-min-repop]', { textContent: fmt(minRepop) });
-  updateEl(card, '[data-max-repop]', { textContent: fmt(maxRepop) });
-  updateEl(card, '[data-next-possible]', { textContent: nextConditionSpawnDate ? fmt(nextConditionSpawnDate) : "--/-- --:--" });
-  updateEl(card, '[data-last-kill]', { textContent: fmt(mob.last_kill_time) });
+  updateEl(card, '[data-min-repop]', { textContent: formatOrPlaceholder(minRepop) });
+  updateEl(card, '[data-max-repop]', { textContent: formatOrPlaceholder(maxRepop) });
+  updateEl(card, '[data-next-possible]', { textContent: nextConditionSpawnDate ? formatOrPlaceholder(nextConditionSpawnDate) : "--/-- --:--" });
+  updateEl(card, '[data-last-kill]', { textContent: formatOrPlaceholder(mob.last_kill_time) });
 
   updateEl(card, '.condition-text', { innerHTML: processText(mob.condition || "特別な出現条件はありません。") });
 
@@ -363,7 +372,7 @@ export function renderMobCard(mob) {
 
   const mapSection = card.querySelector('.map-section');
   if (mapSection) {
-    if (mob.mapImage && mob.rank !== 'F') {
+    if (mob.mapImage) {
       mapSection.classList.remove('hidden');
       updateMapOverlay(card, mob);
     } else {
@@ -409,15 +418,17 @@ export function createSimpleMobItem(mob) {
 
 // ─── リアルタイム更新用 ─────────────────────────
 export function updateDetailCardRealtime(card, mob) {
-  updateProgressBar(card, mob);
-  updateProgressText(card, mob);
+  const timeLabelObj = computeTimeLabel(mob);
+  updateProgressBar(card, mob, timeLabelObj);
+  updateProgressText(card, mob, timeLabelObj);
   updateExpandablePanel(card, mob);
   updateMobCount(card, mob);
 }
 
-export function updateProgressBar(element, mob) {
-  const { labelStatus } = computeTimeLabel(mob);
+export function updateProgressBar(element, mob, timeLabelObj = null) {
+  const { labelStatus } = timeLabelObj || computeTimeLabel(mob);
   const { elapsedPercent } = mob.repopInfo || {};
+
   const status = labelStatus;
   const bar = element.querySelector('.mobcard-progress-bar, .moblist-bg-bar');
   const wrapper = element.querySelector('.mobcard-progress-container, .moblist-bg-gauge');
@@ -456,39 +467,55 @@ export function updateProgressBar(element, mob) {
   }
 }
 
-export function updateProgressText(element, mob) {
+export function updateProgressText(element, mob, timeLabelObj = null) {
   const { status, isInConditionWindow } = mob.repopInfo || {};
-  const { label, dhm, isSpecialCondition, isTimeOver, isInWindow } = computeTimeLabel(mob);
+  const timeLabel = timeLabelObj || computeTimeLabel(mob);
+  const { label, dhm, isSpecialCondition, isTimeOver, isInWindow } = timeLabel;
   const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
 
   const timeContainer = element.querySelector('.moblist-time');
   const percentEl = element.querySelector('.percent, .moblist-percent');
 
   if (timeContainer && element.classList.contains('moblist-item')) {
-    const timerNode = renderTimerRichHTML(label, dhm, isSpecialCondition, isTimeOver, isInWindow);
-    timeContainer.innerHTML = "";
-    const inner = document.createElement("div");
-    inner.className = "timer-inner-grid";
-    const labelSpan = document.createElement("span");
-    labelSpan.className = `timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''}`;
-    labelSpan.textContent = label;
-    inner.appendChild(timerNode);
-    inner.appendChild(labelSpan);
-    timeContainer.appendChild(inner);
+    let inner = timeContainer.querySelector('.timer-inner-grid');
+    if (!inner) {
+      timeContainer.innerHTML = "";
+      inner = document.createElement("div");
+      inner.className = "timer-inner-grid";
+      const timerNode = document.createElement('span');
+      timerNode.className = 'mobcard-timer';
+      const labelSpan = document.createElement("span");
+      labelSpan.className = "timer-label timer-label-base";
+      inner.appendChild(timerNode);
+      inner.appendChild(labelSpan);
+      timeContainer.appendChild(inner);
+    }
+    
+    updateTimerRichHTML(inner.querySelector('.mobcard-timer'), dhm, isSpecialCondition, isTimeOver);
+    const labelSpan = inner.querySelector('.timer-label-base');
+    const newClass = `timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''}`;
+    if (labelSpan.className !== newClass) labelSpan.className = newClass;
+    if (labelSpan.textContent !== label) labelSpan.textContent = label;
   }
 
   if (percentEl) {
     const { elapsedPercent } = mob.repopInfo || {};
     const percentValue = status === "MaxOver" ? "100" : String(Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0))));
 
-    let unit = percentEl.querySelector('.percent-unit');
-    if (!unit) {
-      unit = document.createElement('span');
+    let numNode = percentEl.firstChild;
+    if (!numNode || numNode.nodeType !== Node.TEXT_NODE) {
+      percentEl.innerHTML = "";
+      numNode = document.createTextNode(percentValue);
+      percentEl.appendChild(numNode);
+      const unit = document.createElement('span');
       unit.className = 'percent-unit';
       unit.textContent = '%';
+      percentEl.appendChild(unit);
+    } else {
+      if (numNode.nodeValue !== percentValue) {
+        numNode.nodeValue = percentValue;
+      }
     }
-    percentEl.textContent = percentValue;
-    percentEl.appendChild(unit);
     percentEl.classList.toggle("max-over", status === "MaxOver");
   }
 
@@ -512,10 +539,8 @@ export function updateExpandablePanel(card, mob) {
   const elNext = getEl(card, "[data-next-possible]", "nextPossible");
   const elLast = getEl(card, "[data-last-kill]", "lastKill");
 
-  const fmt = (val) => val ? formatMMDDHHmm(val) : "--/-- --:--";
-
-  if (elMin) elMin.textContent = fmt(minRepop);
-  if (elMax) elMax.textContent = fmt(maxRepop);
+  if (elMin) elMin.textContent = formatOrPlaceholder(minRepop);
+  if (elMax) elMax.textContent = formatOrPlaceholder(maxRepop);
 
   if (elNext) {
     if (mob.repopInfo?.nextConditionSpawnDate) {
@@ -531,7 +556,7 @@ export function updateExpandablePanel(card, mob) {
   }
 
   if (elLast) {
-    const val = fmt(mob.last_kill_time);
+    const val = formatOrPlaceholder(mob.last_kill_time);
     if (elLast.textContent !== val) elLast.textContent = val;
   }
 
@@ -674,21 +699,21 @@ export function updateMapOverlay(card, mob) {
   }
   if (mapContainer.classList.contains('hidden')) return;
 
-    if (mob.mapImage && mob.locations) {
-        const { spawnCullStatus, validSpawnPoints } = getSpawnCountInfo(mob);
-        const isOneLeft = (validSpawnPoints?.length || 0) === 1;
+  if (mob.mapImage && mob.locations) {
+    const { spawnCullStatus, validSpawnPoints } = getSpawnCountInfo(mob);
+    const isOneLeft = (validSpawnPoints?.length || 0) === 1;
 
-        const timeEl = card.querySelector('.map-update-time');
-        if (timeEl) {
-            let latest = 0;
-            if (spawnCullStatus) {
-                Object.values(spawnCullStatus).forEach(p => {
-                    if (p.culled_at?.seconds) latest = Math.max(latest, p.culled_at.seconds);
-                    if (p.uncull_at?.seconds) latest = Math.max(latest, p.uncull_at.seconds);
-                });
-            }
-            timeEl.textContent = latest > 0 ? `更新: ${formatMMDDHHmm(latest)}` : "更新: --/-- --:--";
-        }
+    const timeEl = card.querySelector('.map-update-time');
+    if (timeEl) {
+      let latest = 0;
+      if (spawnCullStatus) {
+        Object.values(spawnCullStatus).forEach(p => {
+          if (p.culled_at?.seconds) latest = Math.max(latest, p.culled_at.seconds);
+          if (p.uncull_at?.seconds) latest = Math.max(latest, p.uncull_at.seconds);
+        });
+      }
+      timeEl.textContent = latest > 0 ? `更新: ${formatMMDDHHmm(latest)}` : "更新: --/-- --:--";
+    }
 
     const currentPointsHash = (mob.locations ?? []).map(p => `${p.id}-${isCulled(spawnCullStatus?.[p.id], mob.No)}`).join("|") + `|${isOneLeft}`;
     if (mapOverlay._lastPointsHash !== currentPointsHash) {
@@ -706,8 +731,9 @@ export function updateMapOverlay(card, mob) {
 }
 
 export function updateSimpleMobItem(item, mob) {
-  updateProgressBar(item, mob);
-  updateProgressText(item, mob);
+  const timeLabelObj = computeTimeLabel(mob);
+  updateProgressBar(item, mob, timeLabelObj);
+  updateProgressText(item, mob, timeLabelObj);
   updateMobCount(item, mob);
   updateMemoIcon(item, mob);
 }
