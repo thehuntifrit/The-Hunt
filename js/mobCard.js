@@ -592,8 +592,7 @@ export function updateMobCount(card, mob) {
   if (!countContainer) return;
 
   const { countInfo } = getSpawnCountInfo(mob);
-
-  if (!countInfo) {
+  if (!countInfo || mob.rank === 'F') {
     if (countContainer.innerHTML !== "") countContainer.innerHTML = "";
     return;
   }
@@ -645,7 +644,7 @@ export function updateMapOverlay(card, mob) {
   const mapContainer = card.querySelector('.map-container');
   if (!mapContainer) return;
 
-  if (mob.rank === 'F') {
+  if (mob.rank === 'F' && !mob.mapImage) {
     mapContainer.classList.add('hidden');
     const mapSection = mapContainer.closest('.map-section');
     if (mapSection) mapSection.classList.add('hidden');
@@ -675,9 +674,21 @@ export function updateMapOverlay(card, mob) {
   }
   if (mapContainer.classList.contains('hidden')) return;
 
-  if (mob.mapImage && mob.locations) {
-    const { spawnCullStatus, validSpawnPoints } = getSpawnCountInfo(mob);
-    const isOneLeft = (validSpawnPoints?.length || 0) === 1;
+    if (mob.mapImage && mob.locations) {
+        const { spawnCullStatus, validSpawnPoints } = getSpawnCountInfo(mob);
+        const isOneLeft = (validSpawnPoints?.length || 0) === 1;
+
+        const timeEl = card.querySelector('.map-update-time');
+        if (timeEl) {
+            let latest = 0;
+            if (spawnCullStatus) {
+                Object.values(spawnCullStatus).forEach(p => {
+                    if (p.culled_at?.seconds) latest = Math.max(latest, p.culled_at.seconds);
+                    if (p.uncull_at?.seconds) latest = Math.max(latest, p.uncull_at.seconds);
+                });
+            }
+            timeEl.textContent = latest > 0 ? `更新: ${formatMMDDHHmm(latest)}` : "更新: --/-- --:--";
+        }
 
     const currentPointsHash = (mob.locations ?? []).map(p => `${p.id}-${isCulled(spawnCullStatus?.[p.id], mob.No)}`).join("|") + `|${isOneLeft}`;
     if (mapOverlay._lastPointsHash !== currentPointsHash) {
