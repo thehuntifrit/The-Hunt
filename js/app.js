@@ -837,12 +837,6 @@ function attachGlobalEventListeners() {
       return;
     }
 
-    const rankHeader = target.closest('.appnav-rank-header');
-    if (rankHeader) {
-      handleRankTabClick(rankHeader.closest(".appnav-rank-item").dataset.rank);
-      return;
-    }
-
     const filterBtn = target.closest(".area-filter-btn");
     if (filterBtn) {
       e.stopPropagation();

@@ -195,16 +195,16 @@ export const renderAreaFilterPanel = (customContainer = null) => {
 };
 
 export const handleRankTabClick = (rank) => {
+    if (!rank) return;
     const state = getState();
     const prevRank = state.filter.rank;
-    let clickStep = state.filter.clickStep || 1;
 
-    if (rank === prevRank) {
-        // すでに選択されている場合は 2(展開) と 3(格納) をトグル
-        clickStep = (state.filter.clickStep === 2) ? 3 : 2;
-        setFilter({ clickStep });
+    const isSameRank = normalizeRank(rank) === normalizeRank(prevRank);
+
+    if (isSameRank) {
+        const nextStep = (state.filter.clickStep === 2) ? 3 : 2;
+        setFilter({ clickStep: nextStep });
     } else {
-        // 新規選択時は 1(選択)
         setFilter({
             rank,
             clickStep: 1,
@@ -370,6 +370,17 @@ export function initAppNav() {
 
     initNotification();
 
+    if (nav) {
+        nav.addEventListener('click', (e) => {
+            const header = e.target.closest('.appnav-rank-header');
+            if (header) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleRankTabClick(header.dataset.rank);
+            }
+        });
+    }
+
     if (currentPanel !== "rank") {
         renderSidebarFilterAccordion();
     }
@@ -518,8 +529,8 @@ function updateErrorBadge() {
 }
 
 // ─── アコーディオン ─────────────────────────────────────
-function renderSidebarFilterAccordion(targetContainer = null) {
-    const container = targetContainer || DOM.filterAccordion;
+function renderSidebarFilterAccordion() {
+    const container = DOM.filterAccordion;
     if (!container) return;
 
     const ranks = [
@@ -530,15 +541,15 @@ function renderSidebarFilterAccordion(targetContainer = null) {
     ];
 
     const state = getState();
-    const activeRank = state.filter.rank || "ALL";
+    const activeRank = state.filter.rank || RANKS.ALL;
     const clickStep = state.filter.clickStep || 1;
 
     const fragment = document.createDocumentFragment();
 
-    const title = document.createElement("div");
-    title.className = "appnav-section-title";
-    title.textContent = "Rank Filter";
-    fragment.appendChild(title);
+    const titleDiv = document.createElement("div");
+    titleDiv.className = "appnav-section-title";
+    titleDiv.textContent = "Rank Filter";
+    fragment.appendChild(titleDiv);
 
     ranks.forEach(r => {
         const isActive = r.key === activeRank;
@@ -546,11 +557,12 @@ function renderSidebarFilterAccordion(targetContainer = null) {
 
         const itemEl = cloneTemplate('rank-accordion-item-template');
         if (itemEl) {
-            if (isActive) itemEl.classList.add('appnav-active');
-            if (isExpanded) itemEl.classList.add('appnav-is-expanded');
-            itemEl.dataset.rank = r.key;
+            const root = itemEl.querySelector('.appnav-rank-item') || itemEl;
+            if (isActive) root.classList.add('appnav-active');
+            if (isExpanded) root.classList.add('appnav-is-expanded');
+            root.dataset.rank = r.key;
 
-            const header = itemEl.querySelector(".appnav-rank-header");
+            const header = root.querySelector(".appnav-rank-header");
             if (header) {
                 header.dataset.rank = r.key;
                 header.textContent = r.label;
