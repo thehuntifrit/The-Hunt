@@ -354,9 +354,7 @@ html body.magnifier-active .mobcard-inner * {
     transform: scaleX(var(--prog-percent, 0));
 }
 
-.map-magnifier {
-    transform: translate(var(--mag-x), var(--mag-y)) translate(-50%, -50%);
-}
+/* 最初の定義を削除し、後方で一括管理します */
 
 .magnifier-content-wrapper {
     transform: translate(var(--mag-zoom-x), var(--mag-zoom-y)) scale(var(--mag-scale));
@@ -896,7 +894,7 @@ html body.magnifier-active .mobcard-inner * {
     position: fixed;
     top: 0;
     left: 0;
-    transform: translate(-50%, -50%);
+    transform: translate(var(--mag-x), var(--mag-y)) translate(-50%, -50%);
     z-index: var(--z-magnifier);
     width: 168px;
     height: 168px;
