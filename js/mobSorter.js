@@ -1,4 +1,4 @@
-import { getState } from "./dataManager.js";
+import { getState, RANKS } from "./dataManager.js";
 import { cloneTemplate } from "./mobCard.js";
 import { filterMobsByRankAndArea } from "./sidebar.js";
 import { DOM } from "./app.js";
@@ -85,9 +85,9 @@ export function invalidateSortCache() {
 
 export function rankPriority(rank) {
   switch (rank) {
-    case "S": return 0;
-    case "A": return 1;
-    case "F": return 2;
+    case RANKS.S: return 0;
+    case RANKS.A: return 1;
+    case RANKS.F: return 2;
     default: return 99;
   }
 }
@@ -137,9 +137,9 @@ export function allTabComparator(a, b) {
     if (at !== bt) return at - bt;
 
     const getMaxOverRankPriority = (r) => {
-      if (r === 'S') return 0;
-      if (r === 'F') return 1;
-      if (r === 'A') return 2;
+      if (r === RANKS.S) return 0;
+      if (r === RANKS.F) return 1;
+      if (r === RANKS.A) return 2;
       return 99;
     };
 

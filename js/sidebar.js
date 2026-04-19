@@ -1,4 +1,4 @@
-import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled, safeJsonParse } from "./dataManager.js";
+import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled, safeJsonParse, RANKS } from "./dataManager.js";
 import { filterAndRender } from "./app.js";
 import { openUserManual, closeUserManual } from "./readme.js";
 import { cloneTemplate, escapeHtml } from "./mobCard.js";
@@ -144,9 +144,9 @@ export function checkAndNotify(mob) {
 
 // ─── フィルタ ───────────────────────────────────────────
 function normalizeRank(rank) {
-    if (rank === 'S rank' || rank === 'S') return 'S';
-    if (rank === 'A rank' || rank === 'A') return 'A';
-    if (rank === 'FATE' || rank === 'F.A.T.E.' || rank === 'F') return 'F';
+    if (rank === RANKS.S_RANK || rank === RANKS.S) return RANKS.S;
+    if (rank === RANKS.A_RANK || rank === RANKS.A) return RANKS.A;
+    if (rank === RANKS.FATE || rank === RANKS.FATE_FULL || rank === RANKS.F) return RANKS.F;
     return rank;
 }
 
@@ -162,8 +162,8 @@ export const renderAreaFilterPanel = (customContainer = null) => {
     let currentSet = new Set();
     let isAllSelected = false;
 
-    if (state.filter.rank === 'ALL') {
-        items = ["S", "A", "F"];
+    if (state.filter.rank === RANKS.ALL) {
+        items = [RANKS.S, RANKS.A, RANKS.F];
         currentSet = state.filter.allRankSet instanceof Set ? state.filter.allRankSet : new Set();
         isAllSelected = items.length > 0 && currentSet.size === items.length;
     } else {
@@ -191,7 +191,7 @@ export const renderAreaFilterPanel = (customContainer = null) => {
         const isSelected = currentSet.has(item);
         const btn = document.createElement("button");
         btn.className = `area-filter-btn ${isSelected ? 'is-selected' : ''}`;
-        btn.textContent = (state.filter.rank === 'FATE' && item === 'F') ? 'FATE' : (state.filter.rank === 'ALL' ? (item === 'F' ? 'FATE' : `${item} rank`) : item);
+        btn.textContent = (state.filter.rank === RANKS.FATE && item === RANKS.F) ? 'FATE' : (state.filter.rank === RANKS.ALL ? (item === RANKS.F ? 'FATE' : `${item} rank`) : item);
         btn.dataset.value = item;
         btn.dataset.value = item;
         container.appendChild(btn);
@@ -297,9 +297,9 @@ export function filterMobsByRankAndArea(mobs) {
     const allExpansions = getAllAreas().length;
 
     const getMobRankKey = (rank) => {
-        if (rank === 'S' || rank === 'A') return rank;
-        if (rank === 'F') return 'F';
-        if (rank.startsWith('B')) return 'A';
+        if (rank === RANKS.S || rank === RANKS.A) return rank;
+        if (rank === RANKS.F) return RANKS.F;
+        if (rank.startsWith('B')) return RANKS.A;
         return null;
     };
 
@@ -557,7 +557,6 @@ function renderSidebarFilterAccordion(targetContainer = null) {
             if (isActive) itemEl.classList.add('appnav-active');
             if (isExpanded) itemEl.classList.add('appnav-is-expanded');
             itemEl.dataset.rank = r.key;
-            itemEl.style.setProperty('--current-rank', r.color);
 
             const header = itemEl.querySelector(".appnav-rank-header");
             if (header) {

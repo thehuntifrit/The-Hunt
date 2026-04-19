@@ -138,9 +138,8 @@
                 <p id="modal-mob-name" class="modal-mob-name"></p>
 
                 <form id="report-form" data-mob-no="">
-                    <div style="margin-bottom: 14px;">
-                        <label for="report-datetime" class="u-block u-text-sm font-medium text-gray-400"
-                            style="margin-bottom: 2px;">討伐日時
+                    <div class="u-mb-14">
+                        <label for="report-datetime" class="u-block u-text-sm font-medium text-gray-400 u-mb-2">討伐日時
                             (JST)</label>
                         <input type="datetime-local" id="report-datetime" name="kill-time" required
                             class="modal-input-field">
@@ -148,7 +147,7 @@
 
                     <div id="modal-status" class="modal-error-display"></div>
 
-                    <div class="u-flex u-justify-between u-items-center" style="margin-top: 21px;">
+                    <div class="u-flex u-justify-between u-items-center u-mt-21">
                         <div class="u-flex u-items-center u-gap-2">
                             <input type="checkbox" id="report-force-submit" name="force-submit" class="modal-checkbox">
                             <label for="report-force-submit" class="u-text-sm text-gray-300 select-none">修正する</label>
@@ -166,16 +165,14 @@
             <div class="modal-content-base">
                 <div class="modal-top-bar"></div>
 
-                <h2 class="text-glow"
-                    style="font-size: 18px; font-weight: 700; margin-bottom: 14px; color: var(--color-gold);">ユーザー認証
+                <h2 class="text-glow u-text-18 u-font-700 u-mb-14 u-text-gold">ユーザー認証
                     (キャラクター登録)</h2>
                 <div class="modal-auth-description">
                     <p>Lodestoneキャラクターとの紐付けが必要です。</p>
 
                     <div class="modal-auth-box">
                         <div>
-                            <div class="u-block text-xs font-semibold text-gray-500 uppercase"
-                                style="margin-bottom: 2px;">Step 1:
+                            <div class="u-block text-xs font-semibold text-gray-500 uppercase u-mb-2">Step 1:
                                 検証コードをコピー</div>
                             <div class="u-flex u-gap-2">
                                 <code id="auth-v-code" class="auth-code-display">----</code>
@@ -184,8 +181,7 @@
                         </div>
 
                         <div>
-                            <div class="u-block text-xs font-semibold text-gray-500 uppercase"
-                                style="margin-bottom: 2px;">Step 2:
+                            <div class="u-block text-xs font-semibold text-gray-500 uppercase u-mb-2">Step 2:
                                 Lodestoneプロフィールに貼り付け</div>
                             <div class="u-text-sm text-gray-300 space-y-2 leading-relaxed">
                                 <p>自己紹介欄に認証コードを貼り付けて保存</p>
@@ -202,8 +198,7 @@
                         </div>
 
                         <div>
-                            <label for="auth-lodestone-id" class="u-block text-xs font-semibold text-gray-500 uppercase"
-                                style="margin-bottom: 2px;">Step 3:
+                            <label for="auth-lodestone-id" class="u-block text-xs font-semibold text-gray-500 uppercase u-mb-2">Step 3:
                                 認証コードが正しく表示されるか確認し、開いているキャラクターページのURL、もしくはURL末尾の数字をコピーして貼り付け</label>
                             <input type="text" id="auth-lodestone-id" name="lodestone-id" maxlength="200"
                                 aria-label="LodestoneキャラクターページのURL、またはキャラクターIDを入力" class="modal-input-field">
@@ -211,7 +206,7 @@
                     </div>
                 </div>
 
-                <div id="auth-modal-status" class="u-text-sm text-center min-h-[18px]" style="margin-bottom: 14px;">
+                <div id="auth-modal-status" class="u-text-sm text-center min-h-[18px] u-mb-14">
                 </div>
 
                 <div class="u-flex justify-end gap-3">
@@ -277,8 +272,7 @@
 
                         <div class="mobcard-section map-section">
                             <div class="mobcard-section-label">出現マップ</div>
-                            <div class="map-container relative w-full pc-map-box overflow-hidden"
-                                style="margin-top: 4px;">
+                            <div class="map-container relative w-full pc-map-box overflow-hidden u-mt-4">
                                 <img class="mob-map-img w-full h-auto object-contain opacity-90 transition-opacity">
                                 <div class="map-overlay absolute inset-0"></div>
                             </div>

@@ -1037,17 +1037,20 @@ html body.magnifier-active .mobcard-inner * {
 }
 
 /* --- SECTION: OTHER --- */
-[data-rank="S"] {
+[data-rank="S"],
+[data-rank="S rank"] {
     --current-rank: var(--color-rank-s);
     --rank-text: rgba(255, 255, 255, 1);
 }
 
-[data-rank="A"] {
+[data-rank="A"],
+[data-rank="A rank"] {
     --current-rank: var(--color-rank-a);
     --rank-text: var(--color-rank-a);
 }
 
 [data-rank="F"],
+[data-rank="FATE"],
 [data-rank="F.A.T.E."] {
     --current-rank: var(--color-rank-f);
     --rank-text: var(--color-rank-f);
@@ -1132,3 +1135,17 @@ html body.magnifier-active .mobcard-inner * {
         padding: 12px 16px;
     }
 }
+
+/* --- SECTION: UTILS (Additional) --- */
+.u-mb-14 { margin-bottom: 14px !important; }
+.u-mb-4 { margin-bottom: 4px !important; }
+.u-mb-2 { margin-bottom: 2px !important; }
+.u-mt-21 { margin-top: 21px !important; }
+.u-mt-14 { margin-top: 14px !important; }
+.u-mt-4 { margin-top: 4px !important; }
+.u-text-18 { font-size: 18px !important; }
+.u-text-gold { color: var(--color-gold) !important; }
+.u-text-center { text-align: center !important; }
+.u-text-gray-400 { color: #9ca3af !important; }
+.u-text-red-400 { color: #f87171 !important; }
+.u-font-700 { font-weight: 700 !important; }

@@ -8,6 +8,23 @@ export const PROGRESS_CLASSES = {
     HIGHLIGHT_WHITE: "progress-highlight-white"
 };
 
+export const RANKS = {
+    S: "S",
+    A: "A",
+    F: "F",
+    ALL: "ALL",
+    S_RANK: "S rank",
+    A_RANK: "A rank",
+    FATE: "FATE",
+    FATE_FULL: "F.A.T.E."
+};
+
+const WORKER_TYPES = {
+    CALCULATE: "CALCULATE",
+    RESULT: "RESULT",
+    ERROR: "ERROR"
+};
+
 const MOB_DATA_URL = "./json/mob_data.json";
 const MOB_LOCATIONS_URL = "./json/mob_locations.json";
 const MAINTENANCE_URL = "./json/maintenance.json";
@@ -256,7 +273,7 @@ function initWorker() {
     state.worker = new Worker(new URL("./worker.js", import.meta.url), { type: "module" });
     state.worker.onmessage = (e) => {
         const { type, mobNo, repopInfo, spawnCache, error } = e.data;
-        if (type === "RESULT") {
+        if (type === WORKER_TYPES.RESULT) {
             const current = getState().mobs;
             const idx = current.findIndex(m => m.No === mobNo);
             state.pendingCalculationMobs.delete(mobNo);
@@ -278,7 +295,7 @@ function initWorker() {
 
                 window.dispatchEvent(new CustomEvent('mobUpdated', { detail: { mobNo, mob: current[idx] } }));
             }
-        } else if (type === "ERROR") {
+        } else if (type === WORKER_TYPES.ERROR) {
             state.pendingCalculationMobs.delete(mobNo);
             console.error(`時間計算エラー (Mob ${mobNo}):`, error);
         }
@@ -290,7 +307,7 @@ export function requestWorkerCalculation(mob, maintenance, options = {}) {
     if (!state.worker) initWorker();
     state.pendingCalculationMobs.add(mob.No);
     state.worker.postMessage({
-        type: "CALCULATE",
+        type: WORKER_TYPES.CALCULATE,
         mob,
         maintenance,
         options

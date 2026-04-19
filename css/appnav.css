@@ -382,9 +382,9 @@
             color: var(--rank-color);
         }
 
-        &[data-rank="S"] { --current-rank: var(--color-rank-s); }
-        &[data-rank="A"] { --current-rank: var(--color-rank-a); }
-        &[data-rank="F"] { --current-rank: var(--color-rank-f); }
+        &[data-rank="S"], &[data-rank="S rank"] { --current-rank: var(--color-rank-s); }
+        &[data-rank="A"], &[data-rank="A rank"] { --current-rank: var(--color-rank-a); }
+        &[data-rank="F"], &[data-rank="FATE"] { --current-rank: var(--color-rank-f); }
         &[data-rank="ALL"] { --current-rank: var(--color-all-rank); }
     }
 

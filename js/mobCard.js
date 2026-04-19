@@ -1,5 +1,5 @@
 import { getDurationDHMParts, formatDurationDHM, formatMMDDHHmm } from "./cal.js";
-import { getState, setOpenMobCardNo, isCulled, getStatusLabel } from "./dataManager.js";
+import { getState, setOpenMobCardNo, isCulled, getStatusLabel, RANKS } from "./dataManager.js";
 import { toggleCrushStatus } from "./server.js";
 import { openAuthModal, openReportModal } from "./modal.js";
 
@@ -182,7 +182,7 @@ export function computeTimeLabel(mob) {
   const isInWindow = !!info.isInConditionWindow;
   const isNextWindow = !isInWindow && !!info.nextConditionSpawnDate && (now < info.nextConditionSpawnDate.getTime() / 1000);
   const isTimedMob = !!(info.isInConditionWindow || info.nextConditionSpawnDate);
-  const isSpecialCondition = isTimedMob && (mob.rank === 'S') && (info.status !== "PopWindow");
+  const isSpecialCondition = isTimedMob && (mob.rank === RANKS.S) && (info.status !== "PopWindow");
 
   let labelStatus = info.status;
   if (isInWindow && (info.status === "MaxOver" || info.status === "PopWindow")) {
@@ -250,7 +250,7 @@ export function getSpawnCountInfo(mob) {
   const key = `${mob.area}_${instance}`;
   const mobLocationsData = state.mobLocations?.[key];
   const spawnCullStatus = mobLocationsData || mob.spawn_cull_status;
-  if (!mob.mapImage || !mob.locations || mob.rank === 'F') return { countHtml: "", remainingCount: 0, spawnCullStatus };
+  if (!mob.mapImage || !mob.locations || mob.rank === RANKS.F) return { countHtml: "", remainingCount: 0, spawnCullStatus };
   const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
   const remainingCount = validSpawnPoints.length;
   let countHtml = "";
@@ -265,7 +265,7 @@ export function getSpawnCountInfo(mob) {
 
 export function getValidSpawnPoints(mob, spawnCullStatus) {
   return (mob.locations ?? []).filter(point => {
-    const isTargetRank = point.mob_ranks.some(r => r === "S" || r === "A");
+    const isTargetRank = point.mob_ranks.some(r => r === RANKS.S || r === RANKS.A);
     if (!isTargetRank) return false;
     const pointStatus = spawnCullStatus?.[point.id];
     return !isCulled(pointStatus, mob.No, mob);
@@ -278,7 +278,7 @@ export function drawSpawnPoint(point, spawnCullStatus, mobNo, rank, isLastOne, i
 
   const pointStatus = spawnCullStatus?.[point.id];
   const isCulledFlag = isCulled(pointStatus, mobNo);
-  const isS_A_Cullable = point.mob_ranks.some(r => r === "S" || r === "A");
+  const isS_A_Cullable = point.mob_ranks.some(r => r === RANKS.S || r === RANKS.A);
   const isB_Only = point.mob_ranks.every(r => r.startsWith("B"));
 
   let colorClass = "";
@@ -374,7 +374,7 @@ export function renderMobCard(mob) {
 
   const reportBtn = card.querySelector('.moblist-report-btn');
   if (reportBtn) {
-    reportBtn.dataset.reportType = rank === 'A' ? 'instant' : 'modal';
+    reportBtn.dataset.reportType = rank === RANKS.A ? 'instant' : 'modal';
     reportBtn.dataset.mobNo = mob.No;
   }
 
@@ -604,7 +604,7 @@ export function updateMobCount(card, mob) {
 export function updateAreaInfo(card, mob) {
   const areaName = mob.area || "--";
   const expName = mob.Expansion || "--";
-  const rank = mob.rank || "A";
+  const rank = mob.rank || RANKS.A;
 
   card.querySelectorAll('.mob-rank-badge, .mobcard-rank').forEach(badge => {
     badge.textContent = rank;

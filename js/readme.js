@@ -16,7 +16,7 @@ export const openUserManual = async () => {
 
     if (!isLoaded) {
         try {
-            container.innerHTML = '<p style="text-align:center;color:#9ca3af">読み込み中...</p>';
+            container.innerHTML = '<p class="u-text-center u-text-gray-400">読み込み中...</p>';
             const response = await fetch('./README.md');
             if (!response.ok) throw new Error('Failed to load README');
 
@@ -31,7 +31,7 @@ export const openUserManual = async () => {
             updateAuthUI();
         } catch (error) {
             console.error(error);
-            container.innerHTML = '<p style="color:#f87171;text-align:center">マニュアルの読み込みに失敗しました。</p>';
+            container.innerHTML = '<p class="u-text-red-400 u-text-center">マニュアルの読み込みに失敗しました。</p>';
         }
     }
 };
