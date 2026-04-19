@@ -554,7 +554,7 @@ export function updateProgressBarsOptimized(force = false) {
   const filtered = getFilteredMobs();
   let anyStateChanged = false;
 
-  if (isTierC) {
+  if (isTierB) {
     filtered.forEach(mob => {
       const info = mob.repopInfo;
       if (!info || info.status === "Maintenance") return;
@@ -562,15 +562,29 @@ export function updateProgressBarsOptimized(force = false) {
       if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
       checkAndNotify(mob);
     });
+    lastTierBTime = now;
     lastTierCTime = now;
-    if (isTierB) lastTierBTime = now;
+  } else if (isTierC) {
+    filtered.forEach(mob => {
+      const info = mob.repopInfo;
+      if (!info || info.status === "Maintenance") return;
+
+      const boundary = info.nextBoundarySec || info.maxRepop || 0;
+      if (boundary && (boundary - nowSec) > 60) return;
+
+      if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
+      checkAndNotify(mob);
+    });
+    lastTierCTime = now;
   }
 
   if (anyStateChanged) {
     syncDomOrder();
   }
 
-  updateVisibleCards();
+  if (document.visibilityState === 'visible') {
+    updateVisibleCards();
+  }
 }
 
 function updateMobState(mob, nowSec, state) {
