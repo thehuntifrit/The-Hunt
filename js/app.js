@@ -522,6 +522,7 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     if (overlay) overlay.classList.add("hidden");
   }
 
+  updateVisibleCardsSet();
   updateVisibleCards();
 
   if (focusedMobNo) {
@@ -580,6 +581,7 @@ export function updateProgressBarsOptimized(force = false) {
 
   if (anyStateChanged) {
     syncDomOrder();
+    updateVisibleCardsSet();
   }
 
   if (document.visibilityState === 'visible') {
