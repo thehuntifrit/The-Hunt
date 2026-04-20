@@ -11,6 +11,7 @@ import { openUserManual } from "./readme.js";
 export const cardCache = new Map();
 
 const visibleCards = new Set();
+let hasUrgentMob = false;
 
 const CULLED_CLASS_MAP = {
   "color-b1": "color-b1-culled",
@@ -237,12 +238,19 @@ export async function renderMaintenanceStatus() {
 
 // ─── ヘッダー時刻 ───────────────────────────────────────
 let headerClocks = null;
+let lastLtStr = "";
+let lastEtStr = "";
 
 export function updateHeaderTime() {
   const now = new Date();
   const et = getEorzeaTime(now);
   const ltStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   const etStr = `${et.hours}:${et.minutes}`;
+
+  if (ltStr === lastLtStr && etStr === lastEtStr) return;
+
+  lastLtStr = ltStr;
+  lastEtStr = etStr;
 
   if (!headerClocks) {
     headerClocks = {
@@ -251,8 +259,8 @@ export function updateHeaderTime() {
     };
   }
 
-  headerClocks.lt.forEach(el => el.textContent = ltStr);
-  headerClocks.et.forEach(el => el.textContent = etStr);
+  headerClocks.lt.forEach(el => { if (el.textContent !== ltStr) el.textContent = ltStr; });
+  headerClocks.et.forEach(el => { if (el.textContent !== etStr) el.textContent = etStr; });
 }
 
 // ─── ソート＆描画 ───────────────────────────────────────
@@ -552,8 +560,15 @@ export function updateProgressBarsOptimized(force = false) {
 
   if (!isTierB && !isTierC) return;
 
+  // 3秒監視（Tier C）
+  if (isTierC && !isTierB && !hasUrgentMob && !force) {
+    lastTierCTime = now;
+    return;
+  }
+
   const filtered = getFilteredMobs();
   let anyStateChanged = false;
+  let foundUrgent = false;
 
   if (isTierB) {
     filtered.forEach(mob => {
@@ -562,33 +577,27 @@ export function updateProgressBarsOptimized(force = false) {
 
       if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
       checkAndNotify(mob);
+
+      const boundary = info.nextBoundarySec || info.maxRepop || 0;
+      if (boundary && (boundary - nowSec) <= 120) foundUrgent = true;
     });
     lastTierBTime = now;
     lastTierCTime = now;
+    hasUrgentMob = foundUrgent;
   } else if (isTierC) {
-    const hasActiveTarget = filtered.some(mob => {
-      const info = mob.repopInfo;
-      if (!info || info.status === "Maintenance") return false;
-      const boundary = info.nextBoundarySec || info.maxRepop || 0;
-      return boundary && (boundary - nowSec) <= 60;
-    });
-
-    if (!hasActiveTarget) {
-      lastTierCTime = now;
-      return;
-    }
-
     filtered.forEach(mob => {
       const info = mob.repopInfo;
       if (!info || info.status === "Maintenance") return;
 
       const boundary = info.nextBoundarySec || info.maxRepop || 0;
-      if (boundary && (boundary - nowSec) > 60) return;
-
-      if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
-      checkAndNotify(mob);
+      if (boundary && (boundary - nowSec) <= 60) {
+        foundUrgent = true;
+        if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
+        checkAndNotify(mob);
+      }
     });
     lastTierCTime = now;
+    hasUrgentMob = foundUrgent;
   }
 
   if (anyStateChanged) {
