@@ -566,6 +566,18 @@ export function updateProgressBarsOptimized(force = false) {
     lastTierBTime = now;
     lastTierCTime = now;
   } else if (isTierC) {
+    const hasActiveTarget = filtered.some(mob => {
+      const info = mob.repopInfo;
+      if (!info || info.status === "Maintenance") return false;
+      const boundary = info.nextBoundarySec || info.maxRepop || 0;
+      return boundary && (boundary - nowSec) <= 60;
+    });
+
+    if (!hasActiveTarget) {
+      lastTierCTime = now;
+      return;
+    }
+
     filtered.forEach(mob => {
       const info = mob.repopInfo;
       if (!info || info.status === "Maintenance") return;
@@ -581,7 +593,6 @@ export function updateProgressBarsOptimized(force = false) {
 
   if (anyStateChanged) {
     syncDomOrder();
-    updateVisibleCardsSet();
   }
 
   if (document.visibilityState === 'visible') {
