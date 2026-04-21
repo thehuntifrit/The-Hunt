@@ -199,7 +199,7 @@ export function computeTimeLabel(mob) {
 
   let targetSec = info.nextBoundarySec || info.maxRepop || 0;
 
-  if (info.nextConditionSpawnDate && (info.status === "Next" || info.status === "NextCondition")) {
+  if (info.nextConditionSpawnDate && (info.status === "Next" || info.status === "NextCondition" || info.status === "Maintenance")) {
     targetSec = info.nextConditionSpawnDate.getTime() / 1000;
   }
 
@@ -473,7 +473,7 @@ export function updateProgressText(element, mob, timeLabelObj = null) {
   const { status, isInConditionWindow } = mob.repopInfo || {};
   const timeLabel = timeLabelObj || computeTimeLabel(mob);
   const { label, dhm, isSpecialCondition, isTimeOver, isInWindow } = timeLabel;
-  const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop);
+  const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop || mob.repopInfo?.status === "Maintenance");
 
   const timeContainer = element.querySelector('.moblist-time');
   const percentEl = element.querySelector('.percent, .moblist-percent');
