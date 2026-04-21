@@ -318,6 +318,11 @@ html body.magnifier-active .mobcard-inner * {
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
+        display: none !important;
+    }
+
+    .loading-overlay.hidden .loading-spinner {
+        animation: none !important;
     }
 }
 
