@@ -1,4 +1,4 @@
-import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled, safeJsonParse, RANKS, CONFIG, DOM, handleAppError } from "./dataManager.js";
+import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled, safeJsonParse, RANKS, CONFIG, DOM, handleAppError, setTelopRead } from "./dataManager.js";
 import { filterAndRender } from "./app.js";
 import { openUserManual, closeUserManual } from "./readme.js";
 import { cloneTemplate, escapeHtml } from "./mobCard.js";
@@ -415,6 +415,9 @@ export async function togglePanel(panelName) {
     document.body.classList.add("sidebar-expanded");
     showPanel(panelName);
     currentPanel = panelName;
+    if (panelName === "telop") {
+        setTelopRead();
+    }
     setActiveNavItem(panelName);
     saveState("panel", panelName);
 }

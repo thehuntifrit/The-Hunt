@@ -169,7 +169,8 @@ export const state = {
     pendingMemoData: null,
     _filterVersion: 0,
     sMobMap: new Map(),
-    mobsMap: new Map()
+    mobsMap: new Map(),
+    hasUnreadTelop: false
 };
 
 if (state.filter.areaSets) {
@@ -271,6 +272,25 @@ export function setNotificationEnabled(enabled) {
     state.notificationEnabled = enabled;
     localStorage.setItem("huntNotificationEnabled", enabled ? "true" : "false");
     window.dispatchEvent(new CustomEvent('notificationSettingChanged', { detail: { enabled } }));
+}
+
+const LAST_SEEN_TELOP_KEY = "huntLastSeenTelopMessage";
+
+export function checkTelopUnread(msg) {
+    const message = msg || "";
+    if (message.trim() === "") {
+        state.hasUnreadTelop = false;
+        return;
+    }
+    const lastSeen = localStorage.getItem(LAST_SEEN_TELOP_KEY) || "";
+    state.hasUnreadTelop = message !== lastSeen;
+}
+
+export function setTelopRead() {
+    const currentMsg = (state.maintenance && state.maintenance.message) ? state.maintenance.message : "";
+    localStorage.setItem(LAST_SEEN_TELOP_KEY, currentMsg);
+    state.hasUnreadTelop = false;
+    window.dispatchEvent(new CustomEvent('maintenanceUpdated', { detail: { maintenance: state.maintenance } }));
 }
 
 // ─── IndexedDB Cache ────────────────────────────────────
@@ -412,6 +432,7 @@ async function loadMaintenance() {
         if (!res.ok) throw new Error("Maintenance data failed to load.");
         const data = await res.json();
         state.maintenance = (data && data.maintenance) ? data.maintenance : data;
+        checkTelopUnread(state.maintenance?.message);
         return state.maintenance;
     } catch (e) {
         handleAppError(e, "メンテ情報読み込み失敗", false);
@@ -862,10 +883,12 @@ export function startRealtime() {
         if (!state.initialLoadComplete) {
             if (normalized) {
                 state.maintenance = normalized;
+                checkTelopUnread(normalized.message);
             } else {
                 const fallback = await loadMaintenance();
                 if (fallback) {
                     state.maintenance = fallback;
+                    checkTelopUnread(fallback.message);
                 }
             }
             initialLoadState.maintenance = true;
@@ -873,6 +896,7 @@ export function startRealtime() {
         } else {
             if (!normalized) return;
             state.maintenance = normalized;
+            checkTelopUnread(normalized.message);
 
             const current = state.mobs;
             current.forEach(mob => {

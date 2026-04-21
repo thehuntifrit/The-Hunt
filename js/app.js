@@ -226,7 +226,7 @@ export async function renderMaintenanceStatus() {
     .forEach(btn => btn.classList.toggle("has-alert", hasMaintenance));
 
   document.querySelectorAll(`.appnav-btn[data-nav-id="telop"]`)
-    .forEach(btn => btn.classList.toggle("has-alert", hasMessage));
+    .forEach(btn => btn.classList.toggle("has-alert", state.hasUnreadTelop));
 
   const errorLogCount = window.errorLog ? window.errorLog.length : 0;
   const hasError = errorLogCount > 0;
