@@ -487,72 +487,72 @@ export function filterAndRender({ isInitialLoad = false } = {}) {
     }
   }
 
-    if (DOM.pcLeftList) {
-      syncDomOrder();
-    }
+  if (DOM.pcLeftList) {
+    syncDomOrder();
+  }
 
-    const detailContainer = document.getElementById("mobcard-detail");
-    const pane = document.getElementById("mobcard-pane");
+  const detailContainer = document.getElementById("mobcard-detail");
+  const pane = document.getElementById("mobcard-pane");
 
-    if (detailContainer && pane) {
-      const openMobNo = getState().openMobCardNo;
-      if (openMobNo) {
-        if (detailContainer.dataset.renderedMobNo !== String(openMobNo)) {
-          const targetMob = getState().mobs.find(m => m.No === openMobNo);
-          if (targetMob) {
-            detailContainer.innerHTML = "";
-            const newCard = createMobCard(targetMob, true);
-            detailContainer.appendChild(newCard);
-            observeCard(newCard);
-            detailContainer.dataset.renderedMobNo = String(openMobNo);
-          }
+  if (detailContainer && pane) {
+    const openMobNo = getState().openMobCardNo;
+    if (openMobNo) {
+      if (detailContainer.dataset.renderedMobNo !== String(openMobNo)) {
+        const targetMob = getState().mobs.find(m => m.No === openMobNo);
+        if (targetMob) {
+          detailContainer.innerHTML = "";
+          const newCard = createMobCard(targetMob, true);
+          detailContainer.appendChild(newCard);
+          observeCard(newCard);
+          detailContainer.dataset.renderedMobNo = String(openMobNo);
         }
-        pane.classList.add("is-active");
-        if (window.innerWidth < 1024) {
-          document.body.classList.add('body-lock');
-        }
-      } else {
-        if (detailContainer.dataset.renderedMobNo !== "none") {
-          detailContainer.innerHTML = window.innerWidth >= 1024 ? '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>' : "";
-          detailContainer.dataset.renderedMobNo = "none";
-        }
-        pane.classList.remove("is-active");
-        document.body.classList.remove('body-lock');
       }
+      pane.classList.add("is-active");
+      if (window.innerWidth < 1024) {
+        document.body.classList.add('body-lock');
+      }
+    } else {
+      if (detailContainer.dataset.renderedMobNo !== "none") {
+        detailContainer.innerHTML = window.innerWidth >= 1024 ? '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>' : "";
+        detailContainer.dataset.renderedMobNo = "none";
+      }
+      pane.classList.remove("is-active");
+      document.body.classList.remove('body-lock');
     }
+  }
 
-    if (isInitialLoad) {
-      isInitialSortingSuppressed = true;
+  if (isInitialLoad) {
+    isInitialSortingSuppressed = true;
 
-      setTimeout(() => {
-        isInitialSortingSuppressed = false;
-        sortAndRedistribute();
-      }, 100);
+    setTimeout(() => {
+      isInitialSortingSuppressed = false;
+      sortAndRedistribute();
+    }, 100);
 
-      isInitialLoading = false;
-      const overlay = document.getElementById("loading-overlay");
-      if (overlay) overlay.classList.add("hidden");
-    }
+    isInitialLoading = false;
+    const overlay = document.getElementById("loading-overlay");
+    if (overlay) overlay.classList.add("hidden");
+  }
 
-    updateVisibleCardsSet();
-    updateVisibleCards();
+  updateVisibleCardsSet();
+  updateVisibleCards();
 
-    if (focusedMobNo) {
-      const card = cardCache.get(String(focusedMobNo));
-      if (card && focusedAction) {
-        const input = card.querySelector(`input[data-action="${focusedAction}"]`);
-        if (input) {
-          input.focus();
-          if (selectionStart !== null && selectionEnd !== null) {
-            try { input.setSelectionRange(selectionStart, selectionEnd); } catch (e) { }
-          }
+  if (focusedMobNo) {
+    const card = cardCache.get(String(focusedMobNo));
+    if (card && focusedAction) {
+      const input = card.querySelector(`input[data-action="${focusedAction}"]`);
+      if (input) {
+        input.focus();
+        if (selectionStart !== null && selectionEnd !== null) {
+          try { input.setSelectionRange(selectionStart, selectionEnd); } catch (e) { }
         }
       }
     }
   }
+}
 
-  let lastTierBTime = 0;
-  let lastTierCTime = 0;
+let lastTierBTime = 0;
+let lastTierCTime = 0;
 
 export const updateProgressBarsOptimized = function(force = false) {
   if (document.visibilityState === 'hidden' && !force) return;
@@ -654,464 +654,464 @@ const updateMobState = function(mob, nowSec, state) {
   return hasSignificantChange;
 };
 
-  // ─── 報告処理 ───────────────────────────────────────────
-  export function showToast(message, type = "error") {
-    if (type === "error") {
-      console.error(message);
-    }
-    let container = document.getElementById("toast-container");
-    if (!container) {
-      container = document.createElement("div");
-      container.id = "toast-container";
-      container.className = "toast-container-wrapper";
-      document.body.appendChild(container);
-    }
+// ─── 報告処理 ───────────────────────────────────────────
+export function showToast(message, type = "error") {
+  if (type === "error") {
+    console.error(message);
+  }
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    container.className = "toast-container-wrapper";
+    document.body.appendChild(container);
+  }
 
-    const toast = document.createElement("div");
-    const colorClass = type === "error" ? "toast-error" : "toast-success";
-    toast.className = `toast-item-base ${colorClass} opacity-0 translate-x-full`;
-    toast.textContent = message;
-    toast.classList.add("whitespace-pre-wrap");
+  const toast = document.createElement("div");
+  const colorClass = type === "error" ? "toast-error" : "toast-success";
+  toast.className = `toast-item-base ${colorClass} opacity-0 translate-x-full`;
+  toast.textContent = message;
+  toast.classList.add("whitespace-pre-wrap");
 
-    container.appendChild(toast);
+  container.appendChild(toast);
 
+  requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        toast.classList.remove("translate-x-full", "opacity-0");
-      });
+      toast.classList.remove("translate-x-full", "opacity-0");
     });
+  });
 
-    setTimeout(() => {
-      toast.classList.add("translate-x-full", "opacity-0");
-      toast.addEventListener("transitionend", () => toast.remove());
-    }, CONFIG.TOAST_DURATION);
-  }
+  setTimeout(() => {
+    toast.classList.add("translate-x-full", "opacity-0");
+    toast.addEventListener("transitionend", () => toast.remove());
+  }, CONFIG.TOAST_DURATION);
+}
 
-  export function handleReportResult(result) {
-    if (!result.success) {
-      if (result.code === "permission-denied" || (result.error && result.error.includes("permission"))) {
-        showToast("アクセス権限エラーが発生しました。\n再度認証を行ってください。", "error");
-        openAuthModal();
-      } else {
-        showToast("報告エラー: " + (result.error || "不明なエラー"), "error");
-      }
-    } else {
-      showToast("討伐報告を送信しました", "success");
-    }
-  }
-
-  export async function handleInstantReport(mobNo) {
-    const result = await submitReport(mobNo, new Date().toISOString());
-    handleReportResult(result);
-  }
-
-  async function handleReportSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    const mobNo = parseInt(form.dataset.mobNo, 10);
-    const timeISO = form.elements["kill-time"].value;
-    const result = await submitReport(mobNo, timeISO);
-    handleReportResult(result);
-    if (result.success) closeReportModal();
-  }
-
-  // ─── スポーン操作 ───────────────────────────────────────
-  function applyOptimisticDOM(point, nextCulled) {
-    point.dataset.isCulled = String(nextCulled);
-
-    if (nextCulled) {
-      for (const [from, to] of Object.entries(CULLED_CLASS_MAP)) {
-        if (point.classList.contains(from)) {
-          point.classList.replace(from, to);
-          break;
-        }
-      }
-    } else {
-      for (const [from, to] of Object.entries(UNCULLED_CLASS_MAP)) {
-        if (point.classList.contains(from)) {
-          point.classList.replace(from, to);
-          break;
-        }
-      }
-    }
-  }
-
-  function applyOptimisticState(mobNo, area, locationId, nextCulled) {
-    const state = getState();
-    const instance = mobNo % 10;
-    const key = `${area}_${instance}`;
-    if (!state.mobLocations[key]) {
-      state.mobLocations[key] = {};
-    }
-    if (!state.mobLocations[key][locationId]) {
-      state.mobLocations[key][locationId] = {};
-    }
-
-    const now = { toMillis: () => Date.now() };
-    if (nextCulled) {
-      state.mobLocations[key][locationId].culled_at = now;
-    } else {
-      state.mobLocations[key][locationId].uncull_at = now;
-    }
-
-    state.mobs.forEach(m => {
-      if (m.area === area && (m.No % 10) === instance) {
-        m.spawn_cull_status = state.mobLocations[key];
-      }
-    });
-
-    window.dispatchEvent(new CustomEvent("locationsUpdated", {
-      detail: { locationsMap: state.mobLocations }
-    }));
-  }
-
-  function handleCrushToggle(e) {
-    const point = e.target.closest(".spawn-point");
-    if (!point) return;
-
-    const state = getState();
-    if (!state.isVerified) {
+export function handleReportResult(result) {
+  if (!result.success) {
+    if (result.code === "permission-denied" || (result.error && result.error.includes("permission"))) {
+      showToast("アクセス権限エラーが発生しました。\n再度認証を行ってください。", "error");
       openAuthModal();
+    } else {
+      showToast("報告エラー: " + (result.error || "不明なエラー"), "error");
+    }
+  } else {
+    showToast("討伐報告を送信しました", "success");
+  }
+}
+
+export async function handleInstantReport(mobNo) {
+  const result = await submitReport(mobNo, new Date().toISOString());
+  handleReportResult(result);
+}
+
+async function handleReportSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  const mobNo = parseInt(form.dataset.mobNo, 10);
+  const timeISO = form.elements["kill-time"].value;
+  const result = await submitReport(mobNo, timeISO);
+  handleReportResult(result);
+  if (result.success) closeReportModal();
+}
+
+// ─── スポーン操作 ───────────────────────────────────────
+function applyOptimisticDOM(point, nextCulled) {
+  point.dataset.isCulled = String(nextCulled);
+
+  if (nextCulled) {
+    for (const [from, to] of Object.entries(CULLED_CLASS_MAP)) {
+      if (point.classList.contains(from)) {
+        point.classList.replace(from, to);
+        break;
+      }
+    }
+  } else {
+    for (const [from, to] of Object.entries(UNCULLED_CLASS_MAP)) {
+      if (point.classList.contains(from)) {
+        point.classList.replace(from, to);
+        break;
+      }
+    }
+  }
+}
+
+function applyOptimisticState(mobNo, area, locationId, nextCulled) {
+  const state = getState();
+  const instance = mobNo % 10;
+  const key = `${area}_${instance}`;
+  if (!state.mobLocations[key]) {
+    state.mobLocations[key] = {};
+  }
+  if (!state.mobLocations[key][locationId]) {
+    state.mobLocations[key][locationId] = {};
+  }
+
+  const now = { toMillis: () => Date.now() };
+  if (nextCulled) {
+    state.mobLocations[key][locationId].culled_at = now;
+  } else {
+    state.mobLocations[key][locationId].uncull_at = now;
+  }
+
+  state.mobs.forEach(m => {
+    if (m.area === area && (m.No % 10) === instance) {
+      m.spawn_cull_status = state.mobLocations[key];
+    }
+  });
+
+  window.dispatchEvent(new CustomEvent("locationsUpdated", {
+    detail: { locationsMap: state.mobLocations }
+  }));
+}
+
+function handleCrushToggle(e) {
+  const point = e.target.closest(".spawn-point");
+  if (!point) return;
+
+  const state = getState();
+  if (!state.isVerified) {
+    openAuthModal();
+    return;
+  }
+
+  if (point.dataset.isInteractive !== "true") return;
+  if (point.dataset.isLastone === "true") return;
+
+  const card = e.target.closest(".mobcard-card");
+  if (!card) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const mobNo = parseInt(card.dataset.mobNo, 10);
+  const mob = state.mobs.find(m => m.No === mobNo);
+  if (!mob) return;
+
+  const locationId = point.dataset.locationId;
+  const area = mob.area;
+
+  const isTouchDevice = window.matchMedia("(hover: none)").matches;
+  if (isTouchDevice) {
+    const now = Date.now();
+    const timeDiff = now - lastClickTime;
+
+    if (locationId === lastClickLocationId && timeDiff < CONFIG.CLICK_THRESHOLD) {
+      lastClickTime = 0;
+      lastClickLocationId = null;
+    } else {
+      lastClickTime = now;
+      lastClickLocationId = locationId;
+      return;
+    }
+  }
+
+  const isCurrentlyCulled = point.dataset.isCulled === "true";
+  const nextCulled = !isCurrentlyCulled;
+
+  applyOptimisticDOM(point, nextCulled);
+  applyOptimisticState(mobNo, area, locationId, nextCulled);
+
+  toggleCrushStatus(mobNo, area, locationId, nextCulled).then(result => {
+    if (!result?.success) {
+      applyOptimisticDOM(point, !nextCulled);
+      applyOptimisticState(mobNo, area, locationId, !nextCulled);
+    }
+  });
+}
+
+export function attachLocationEvents() {
+  if (locationEventsAttached) return;
+
+  const moblistContainer = document.getElementById("moblist-container");
+  if (moblistContainer) {
+    moblistContainer.addEventListener("click", handleCrushToggle);
+  }
+
+  const mobcardDetail = document.getElementById("mobcard-detail");
+
+  if (mobcardDetail) {
+    mobcardDetail.addEventListener("click", handleCrushToggle);
+  }
+
+  const mobcardOverlay = document.getElementById("mobcard-overlay");
+  if (mobcardOverlay) {
+    mobcardOverlay.addEventListener("click", handleCrushToggle);
+  }
+
+  locationEventsAttached = true;
+}
+
+// ─── グローバルイベント管理（イベント委譲） ───────────────────────
+function attachGlobalEventListeners() {
+  let prevWidth = window.innerWidth;
+  window.addEventListener("resize", debounce(() => {
+    const currentWidth = window.innerWidth;
+    if ((prevWidth >= CONFIG.BREAKPOINT_PC) !== (currentWidth >= CONFIG.BREAKPOINT_PC)) {
+      prevWidth = currentWidth;
+      sortAndRedistribute();
+    }
+  }, CONFIG.DEBOUNCE_DELAY));
+
+  const appnav = document.getElementById('appnav');
+  if (appnav) {
+    appnav.addEventListener('transitionend', (e) => {
+    });
+  }
+
+  document.body.addEventListener('click', (e) => {
+    const target = e.target;
+
+    const navBtn = target.closest('.appnav-btn[data-nav-id]');
+    if (navBtn) {
+      const navId = navBtn.dataset.navId;
+      if (navId === 'notify') return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (navId === 'home') {
+        closePanel();
+        const container = document.getElementById("moblist-container");
+        if (container) container.scrollTo({ top: 0, behavior: "smooth" });
+        setActiveNavItem('home');
+      } else {
+        togglePanel(navId);
+      }
       return;
     }
 
-    if (point.dataset.isInteractive !== "true") return;
-    if (point.dataset.isLastone === "true") return;
-
-    const card = e.target.closest(".mobcard-card");
-    if (!card) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    const mobNo = parseInt(card.dataset.mobNo, 10);
-    const mob = state.mobs.find(m => m.No === mobNo);
-    if (!mob) return;
-
-    const locationId = point.dataset.locationId;
-    const area = mob.area;
-
-    const isTouchDevice = window.matchMedia("(hover: none)").matches;
-    if (isTouchDevice) {
-      const now = Date.now();
-      const timeDiff = now - lastClickTime;
-
-      if (locationId === lastClickLocationId && timeDiff < CONFIG.CLICK_THRESHOLD) {
-        lastClickTime = 0;
-        lastClickLocationId = null;
-      } else {
-        lastClickTime = now;
-        lastClickLocationId = locationId;
-        return;
-      }
+    const filterBtn = target.closest(".area-filter-btn");
+    if (filterBtn) {
+      e.stopPropagation();
+      handleAreaFilterClick(e);
+      return;
     }
 
-    const isCurrentlyCulled = point.dataset.isCulled === "true";
-    const nextCulled = !isCurrentlyCulled;
+    if (target.closest('.appnav-logo')) {
+      window.location.reload();
+      return;
+    }
 
-    applyOptimisticDOM(point, nextCulled);
-    applyOptimisticState(mobNo, area, locationId, nextCulled);
+    if (target === DOM.cardOverlayBackdrop) {
+      setOpenMobCardNo(null);
+      sortAndRedistribute({ immediate: true });
+    }
+  });
 
-    toggleCrushStatus(mobNo, area, locationId, nextCulled).then(result => {
-      if (!result?.success) {
-        applyOptimisticDOM(point, !nextCulled);
-        applyOptimisticState(mobNo, area, locationId, !nextCulled);
-      }
+  if (DOM.reportForm) {
+    DOM.reportForm.addEventListener('submit', (e) => {
+      if (typeof handleReportSubmit === 'function') handleReportSubmit(e);
     });
   }
 
-  export function attachLocationEvents() {
-    if (locationEventsAttached) return;
-
-    const moblistContainer = document.getElementById("moblist-container");
-    if (moblistContainer) {
-      moblistContainer.addEventListener("click", handleCrushToggle);
+  document.body.addEventListener('input', (e) => {
+    if (e.target.classList.contains('mobcard-memo-input') || e.target.matches("[data-action='save-memo']")) {
+      adjustMemoHeight(e.target);
     }
+  });
 
-    const mobcardDetail = document.getElementById("mobcard-detail");
-
-    if (mobcardDetail) {
-      mobcardDetail.addEventListener("click", handleCrushToggle);
-    }
-
-    const mobcardOverlay = document.getElementById("mobcard-overlay");
-    if (mobcardOverlay) {
-      mobcardOverlay.addEventListener("click", handleCrushToggle);
-    }
-
-    locationEventsAttached = true;
-  }
-
-  // ─── グローバルイベント管理（イベント委譲） ───────────────────────
-  function attachGlobalEventListeners() {
-    let prevWidth = window.innerWidth;
-    window.addEventListener("resize", debounce(() => {
-      const currentWidth = window.innerWidth;
-      if ((prevWidth >= CONFIG.BREAKPOINT_PC) !== (currentWidth >= CONFIG.BREAKPOINT_PC)) {
-        prevWidth = currentWidth;
-        sortAndRedistribute();
-      }
-    }, CONFIG.DEBOUNCE_DELAY));
-
-    const appnav = document.getElementById('appnav');
-    if (appnav) {
-      appnav.addEventListener('transitionend', (e) => {
-      });
-    }
-
-    document.body.addEventListener('click', (e) => {
-      const target = e.target;
-
-      const navBtn = target.closest('.appnav-btn[data-nav-id]');
-      if (navBtn) {
-        const navId = navBtn.dataset.navId;
-        if (navId === 'notify') return;
-        e.preventDefault();
-        e.stopPropagation();
-        if (navId === 'home') {
-          closePanel();
-          const container = document.getElementById("moblist-container");
-          if (container) container.scrollTo({ top: 0, behavior: "smooth" });
-          setActiveNavItem('home');
-        } else {
-          togglePanel(navId);
+  document.body.addEventListener('change', async (e) => {
+    const input = e.target;
+    if (input.classList.contains('mobcard-memo-input') || input.matches("[data-action='save-memo']")) {
+      const mobNo = parseInt(input.dataset.mobNo, 10);
+      const value = input.value.trim();
+      if (!isNaN(mobNo)) {
+        if (!getState().isVerified) {
+          input.value = '';
+          openAuthModal();
+          return;
         }
-        return;
+        await submitMemo(mobNo, value);
       }
+    }
+  });
 
-      const filterBtn = target.closest(".area-filter-btn");
-      if (filterBtn) {
-        e.stopPropagation();
-        handleAreaFilterClick(e);
-        return;
+  let touchStartX = 0;
+  document.body.addEventListener('touchstart', (e) => {
+    const reportBtn = e.target.closest('.report-side-bar');
+    if (reportBtn) touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  document.body.addEventListener('touchend', (e) => {
+    const reportBtn = e.target.closest('.report-side-bar');
+    if (reportBtn) {
+      const touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX - touchStartX > 30) {
+        const mobNo = parseInt(reportBtn.dataset.mobNo, 10);
+        if (reportBtn.dataset.reportType === 'modal') openReportModal(mobNo);
+        else reportBtn.click();
       }
+    }
+  }, { passive: true });
+}
 
-      if (target.closest('.appnav-logo')) {
-        window.location.reload();
-        return;
+// ─── イベント ───────────────────────────────────────────
+function initAppEventListeners() {
+  window.addEventListener('maintenanceUpdated', () => renderMaintenanceStatus());
+
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      setOpenMobCardNo(null);
+      document.querySelectorAll('.appnav-rank-item.appnav-active').forEach(el => el.classList.remove('appnav-active'));
+    }
+  });
+
+  window.addEventListener('initialDataLoaded', () => {
+    try {
+      renderMaintenanceStatus();
+      updateErrorPanel();
+      updateHeaderTime();
+      filterAndRender({ isInitialLoad: true });
+      lastTierBTime = 0;
+      lastTierCTime = 0;
+      updateProgressBarsOptimized();
+    } catch (e) {
+      console.error("初期ロード処理失敗:", e);
+    }
+  }, { once: true });
+
+  window.addEventListener('criticalDataLoadError', (e) => {
+    if (loadingTimeout) clearTimeout(loadingTimeout);
+    const overlay = DOM.loadingOverlay;
+    if (overlay) {
+      const spinner = overlay.querySelector('.loading-spinner');
+      if (spinner) spinner.classList.add('u-hidden');
+      const text = overlay.querySelector('.loading-text');
+      if (text) {
+        text.classList.add('u-pre-wrap', 'u-text-error');
+        text.textContent = e.detail.message;
       }
+    }
+  }, { once: true });
 
-      if (target === DOM.cardOverlayBackdrop) {
+  window.addEventListener('initialSortComplete', () => {
+    if (loadingTimeout) clearTimeout(loadingTimeout);
+    try {
+      renderMaintenanceStatus();
+      showColumnContainer();
+
+      const isFirstVisit = !localStorage.getItem("has_visited");
+      if (isFirstVisit) {
+        localStorage.setItem("has_visited", "true");
+        if (window.openUserManual) window.openUserManual();
+      }
+    } catch (e) {
+      console.error("初回描画失敗:", e);
+      showColumnContainer();
+    }
+  }, { once: true });
+
+  window.addEventListener('characterNameSet', () => renderMaintenanceStatus());
+
+  window.addEventListener('mobsBatchUpdated', (e) => {
+    const { mobNos } = e.detail;
+    const mobMap = getMobMap();
+    if (!mobMap) return;
+    mobNos.forEach(mobNo => {
+      const mob = mobMap.get(String(mobNo));
+      if (!mob) return;
+      checkAndNotify(mob);
+      const card = cardCache.get(String(mobNo));
+      if (card) updateCardFull(card, mob);
+    });
+    updateVisibleDetailCard(mobMap);
+    sortAndRedistribute();
+  });
+
+  window.addEventListener('mobUpdated', (e) => {
+    const { mobNo, mob } = e.detail;
+    const mobMap = getMobMap();
+    if (!mobMap) return;
+    const card = cardCache.get(String(mobNo));
+    if (card) updateCardFull(card, mob);
+    updateVisibleDetailCard(mobMap);
+    sortAndRedistribute();
+  });
+
+  window.addEventListener('filterChanged', () => {
+    invalidateFilterCache();
+    filterAndRender();
+  });
+
+  window.addEventListener('mobsUpdated', () => updateProgressBarsOptimized());
+  window.addEventListener('locationDataReady', () => updateVisibleCards());
+  window.addEventListener('locationsUpdated', () => {
+    invalidateFilterCache();
+    updateVisibleCards();
+  });
+
+  window.addEventListener('appNotify', (e) => {
+    const { message, type } = e.detail;
+    showToast(message, type);
+  });
+}
+
+function attachMobCardEvents() {
+  const containers = [
+    document.getElementById("moblist-container"),
+    document.getElementById("mobcard-detail")
+  ].filter(Boolean);
+
+  containers.forEach(c => c.addEventListener("click", handleGeneralClick));
+
+  const pane = document.getElementById("mobcard-pane");
+  if (pane) {
+    pane.addEventListener("click", (e) => {
+      if (e.target === pane && window.innerWidth < CONFIG.BREAKPOINT_PC) {
         setOpenMobCardNo(null);
         sortAndRedistribute({ immediate: true });
       }
     });
-
-    if (DOM.reportForm) {
-      DOM.reportForm.addEventListener('submit', (e) => {
-        if (typeof handleReportSubmit === 'function') handleReportSubmit(e);
-      });
-    }
-
-    document.body.addEventListener('input', (e) => {
-      if (e.target.classList.contains('mobcard-memo-input') || e.target.matches("[data-action='save-memo']")) {
-        adjustMemoHeight(e.target);
-      }
-    });
-
-    document.body.addEventListener('change', async (e) => {
-      const input = e.target;
-      if (input.classList.contains('mobcard-memo-input') || input.matches("[data-action='save-memo']")) {
-        const mobNo = parseInt(input.dataset.mobNo, 10);
-        const value = input.value.trim();
-        if (!isNaN(mobNo)) {
-          if (!getState().isVerified) {
-            input.value = '';
-            openAuthModal();
-            return;
-          }
-          await submitMemo(mobNo, value);
-        }
-      }
-    });
-
-    let touchStartX = 0;
-    document.body.addEventListener('touchstart', (e) => {
-      const reportBtn = e.target.closest('.report-side-bar');
-      if (reportBtn) touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-
-    document.body.addEventListener('touchend', (e) => {
-      const reportBtn = e.target.closest('.report-side-bar');
-      if (reportBtn) {
-        const touchEndX = e.changedTouches[0].screenX;
-        if (touchEndX - touchStartX > 30) {
-          const mobNo = parseInt(reportBtn.dataset.mobNo, 10);
-          if (reportBtn.dataset.reportType === 'modal') openReportModal(mobNo);
-          else reportBtn.click();
-        }
-      }
-    }, { passive: true });
   }
+}
 
-  // ─── イベント ───────────────────────────────────────────
-  function initAppEventListeners() {
-    window.addEventListener('maintenanceUpdated', () => renderMaintenanceStatus());
+function handleGeneralClick(e) {
+  const target = e.target;
+  const item = target.closest(".moblist-item, .mobcard-card");
+  if (!item) return;
 
-    window.addEventListener('pageshow', (event) => {
-      if (event.persisted) {
-        setOpenMobCardNo(null);
-        document.querySelectorAll('.appnav-rank-item.appnav-active').forEach(el => el.classList.remove('appnav-active'));
-      }
-    });
+  const mobNo = parseInt(item.dataset.mobNo, 10);
+  const mob = getState().mobs.find(m => m.No === mobNo);
+  if (!mob) return;
 
-    window.addEventListener('initialDataLoaded', () => {
-      try {
-        renderMaintenanceStatus();
-        updateErrorPanel();
-        updateHeaderTime();
-        filterAndRender({ isInitialLoad: true });
-        lastTierBTime = 0;
-        lastTierCTime = 0;
-        updateProgressBarsOptimized();
-      } catch (e) {
-        console.error("初期ロード処理失敗:", e);
-      }
-    }, { once: true });
-
-    window.addEventListener('criticalDataLoadError', (e) => {
-      if (loadingTimeout) clearTimeout(loadingTimeout);
-      const overlay = DOM.loadingOverlay;
-      if (overlay) {
-        const spinner = overlay.querySelector('.loading-spinner');
-        if (spinner) spinner.classList.add('u-hidden');
-        const text = overlay.querySelector('.loading-text');
-        if (text) {
-          text.classList.add('u-pre-wrap', 'u-text-error');
-          text.textContent = e.detail.message;
-        }
-      }
-    }, { once: true });
-
-    window.addEventListener('initialSortComplete', () => {
-      if (loadingTimeout) clearTimeout(loadingTimeout);
-      try {
-        renderMaintenanceStatus();
-        showColumnContainer();
-
-        const isFirstVisit = !localStorage.getItem("has_visited");
-        if (isFirstVisit) {
-          localStorage.setItem("has_visited", "true");
-          if (window.openUserManual) window.openUserManual();
-        }
-      } catch (e) {
-        console.error("初回描画失敗:", e);
-        showColumnContainer();
-      }
-    }, { once: true });
-
-    window.addEventListener('characterNameSet', () => renderMaintenanceStatus());
-
-    window.addEventListener('mobsBatchUpdated', (e) => {
-      const { mobNos } = e.detail;
-      const mobMap = getMobMap();
-      if (!mobMap) return;
-      mobNos.forEach(mobNo => {
-        const mob = mobMap.get(String(mobNo));
-        if (!mob) return;
-        checkAndNotify(mob);
-        const card = cardCache.get(String(mobNo));
-        if (card) updateCardFull(card, mob);
-      });
-      updateVisibleDetailCard(mobMap);
-      sortAndRedistribute();
-    });
-
-    window.addEventListener('mobUpdated', (e) => {
-      const { mobNo, mob } = e.detail;
-      const mobMap = getMobMap();
-      if (!mobMap) return;
-      const card = cardCache.get(String(mobNo));
-      if (card) updateCardFull(card, mob);
-      updateVisibleDetailCard(mobMap);
-      sortAndRedistribute();
-    });
-
-    window.addEventListener('filterChanged', () => {
-      invalidateFilterCache();
-      filterAndRender();
-    });
-
-    window.addEventListener('mobsUpdated', () => updateProgressBarsOptimized());
-    window.addEventListener('locationDataReady', () => updateVisibleCards());
-    window.addEventListener('locationsUpdated', () => {
-      invalidateFilterCache();
-      updateVisibleCards();
-    });
-
-    window.addEventListener('appNotify', (e) => {
-      const { message, type } = e.detail;
-      showToast(message, type);
-    });
-  }
-
-  function attachMobCardEvents() {
-    const containers = [
-      document.getElementById("moblist-container"),
-      document.getElementById("mobcard-detail")
-    ].filter(Boolean);
-
-    containers.forEach(c => c.addEventListener("click", handleGeneralClick));
-
-    const pane = document.getElementById("mobcard-pane");
-    if (pane) {
-      pane.addEventListener("click", (e) => {
-        if (e.target === pane && window.innerWidth < CONFIG.BREAKPOINT_PC) {
-          setOpenMobCardNo(null);
-          sortAndRedistribute({ immediate: true });
-        }
-      });
-    }
-  }
-
-  function handleGeneralClick(e) {
-    const target = e.target;
-    const item = target.closest(".moblist-item, .mobcard-card");
-    if (!item) return;
-
-    const mobNo = parseInt(item.dataset.mobNo, 10);
-    const mob = getState().mobs.find(m => m.No === mobNo);
-    if (!mob) return;
-
-    const reportBtn = target.closest(".moblist-report-btn");
-    if (reportBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (!getState().isVerified) {
-        openAuthModal();
-        return;
-      }
-      const type = reportBtn.dataset.reportType || (mob.rank === 'A' ? 'instant' : 'modal');
-      if (type === "modal") openReportModal(mobNo);
-      else handleInstantReport(mobNo, mob.rank);
+  const reportBtn = target.closest(".moblist-report-btn");
+  if (reportBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!getState().isVerified) {
+      openAuthModal();
       return;
     }
-
-    if (target.closest('[data-action="close-card"]')) {
-      e.stopPropagation();
-      setOpenMobCardNo(null);
-      sortAndRedistribute({ immediate: true });
-      return;
-    }
-
-    if (target.closest(".moblist-item") || target.classList.contains('mobcard-card')) {
-      const currentOpen = getState().openMobCardNo;
-      setOpenMobCardNo(currentOpen === mobNo ? null : mobNo);
-      sortAndRedistribute({ immediate: true });
-    }
+    const type = reportBtn.dataset.reportType || (mob.rank === 'A' ? 'instant' : 'modal');
+    if (type === "modal") openReportModal(mobNo);
+    else handleInstantReport(mobNo, mob.rank);
+    return;
   }
 
-  if (window.appInterval) clearInterval(window.appInterval);
-  window.appInterval = setInterval(() => {
-    if (document.visibilityState === 'hidden') return;
-    updateProgressBarsOptimized();
-    updateHeaderTime();
-  }, EORZEA_MINUTE_MS);
+  if (target.closest('[data-action="close-card"]')) {
+    e.stopPropagation();
+    setOpenMobCardNo(null);
+    sortAndRedistribute({ immediate: true });
+    return;
+  }
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      updateProgressBarsOptimized(true);
-    }
-  });
+  if (target.closest(".moblist-item") || target.classList.contains('mobcard-card')) {
+    const currentOpen = getState().openMobCardNo;
+    setOpenMobCardNo(currentOpen === mobNo ? null : mobNo);
+    sortAndRedistribute({ immediate: true });
+  }
+}
 
-  document.addEventListener('DOMContentLoaded', initApp);
+if (window.appInterval) clearInterval(window.appInterval);
+window.appInterval = setInterval(() => {
+  if (document.visibilityState === 'hidden') return;
+  updateProgressBarsOptimized();
+  updateHeaderTime();
+}, EORZEA_MINUTE_MS);
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    updateProgressBarsOptimized(true);
+  }
+});
+
+document.addEventListener('DOMContentLoaded', initApp);
