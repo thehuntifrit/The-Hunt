@@ -342,7 +342,7 @@
 }
 
 .sidebar-welcome-msg {
-    color: var(--color-cyan);
+    color: var(--color-white);
     font-weight: 700;
     margin-bottom: 8px;
     font-size: 13px;
