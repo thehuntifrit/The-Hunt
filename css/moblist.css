@@ -290,7 +290,7 @@
         inline-size: 100%;
         block-size: 100%;
         background: var(--color-progress-fill);
-        opacity: 0.3;
+        opacity: 0.5;
         transform: scaleX(var(--prog-percent, 0));
         transform-origin: left;
     }
