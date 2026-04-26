@@ -128,12 +128,14 @@ export function allTabComparator(a, b) {
     const aActive = aInfo.isInConditionWindow;
     const bActive = bInfo.isInConditionWindow;
 
-    if (aActive && !bActive) return -1;
-    if (!aActive && bActive) return 1;
+    if (a.rank !== RANKS.A && b.rank !== RANKS.A) {
+      if (aActive && !bActive) return -1;
+      if (!aActive && bActive) return 1;
 
-    const at = aInfo.maxRepop || 0;
-    const bt = bInfo.maxRepop || 0;
-    if (at !== bt) return at - bt;
+      const at = aInfo.maxRepop || 0;
+      const bt = bInfo.maxRepop || 0;
+      if (at !== bt) return at - bt;
+    }
 
     const getMaxOverRankPriority = (r) => {
       if (r === RANKS.S) return 0;
@@ -157,20 +159,26 @@ export function allTabComparator(a, b) {
   const isAConditionActive = !!aInfo.isInConditionWindow;
   const isBConditionActive = !!bInfo.isInConditionWindow;
 
-  if (isAConditionActive && !isBConditionActive) return -1;
-  if (!isAConditionActive && isBConditionActive) return 1;
+  if (a.rank !== RANKS.A && b.rank !== RANKS.A) {
+    if (isAConditionActive && !isBConditionActive) return -1;
+    if (!isAConditionActive && isBConditionActive) return 1;
+  }
 
-  if (getGroupKey(a) === "NEXT" && getGroupKey(b) === "NEXT") {
-    const at = aInfo.minRepop || Infinity;
-    const bt = bInfo.minRepop || Infinity;
-    if (at !== bt) return at - bt;
+  if (a.rank !== RANKS.A && b.rank !== RANKS.A) {
+    if (getGroupKey(a) === "NEXT" && getGroupKey(b) === "NEXT") {
+      const at = aInfo.minRepop || Infinity;
+      const bt = bInfo.minRepop || Infinity;
+      if (at !== bt) return at - bt;
+    }
   }
 
   const aPercent = aInfo.elapsedPercent || 0;
   const bPercent = bInfo.elapsedPercent || 0;
 
-  if (aPercent !== bPercent) {
-    return bPercent - aPercent;
+  if (a.rank !== RANKS.A && b.rank !== RANKS.A) {
+    if (aPercent !== bPercent) {
+      return bPercent - aPercent;
+    }
   }
 
   const rankDiff = rankPriority(a.rank) - rankPriority(b.rank);
