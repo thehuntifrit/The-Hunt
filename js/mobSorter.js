@@ -165,7 +165,8 @@ export function allTabComparator(a, b) {
   }
 
   if (a.rank !== RANKS.A && b.rank !== RANKS.A) {
-    if (getGroupKey(a) === "NEXT" && getGroupKey(b) === "NEXT") {
+    const gKey = getGroupKey(a);
+    if ((gKey === "NEXT" || gKey === "MAINTENANCE") && gKey === getGroupKey(b)) {
       const at = aInfo.minRepop || Infinity;
       const bt = bInfo.minRepop || Infinity;
       if (at !== bt) return at - bt;
