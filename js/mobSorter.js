@@ -159,27 +159,21 @@ export function allTabComparator(a, b) {
   const isAConditionActive = !!aInfo.isInConditionWindow;
   const isBConditionActive = !!bInfo.isInConditionWindow;
 
-  if (a.rank !== RANKS.A && b.rank !== RANKS.A) {
-    if (isAConditionActive && !isBConditionActive) return -1;
-    if (!isAConditionActive && isBConditionActive) return 1;
-  }
+  if (isAConditionActive && !isBConditionActive) return -1;
+  if (!isAConditionActive && isBConditionActive) return 1;
 
-  if (a.rank !== RANKS.A && b.rank !== RANKS.A) {
-    const gKey = getGroupKey(a);
-    if ((gKey === "NEXT" || gKey === "MAINTENANCE") && gKey === getGroupKey(b)) {
-      const at = aInfo.minRepop || Infinity;
-      const bt = bInfo.minRepop || Infinity;
-      if (at !== bt) return at - bt;
-    }
+  const gKey = getGroupKey(a);
+  if ((gKey === "NEXT" || gKey === "MAINTENANCE") && gKey === getGroupKey(b)) {
+    const at = aInfo.minRepop || Infinity;
+    const bt = bInfo.minRepop || Infinity;
+    if (at !== bt) return at - bt;
   }
 
   const aPercent = aInfo.elapsedPercent || 0;
   const bPercent = bInfo.elapsedPercent || 0;
 
-  if (a.rank !== RANKS.A && b.rank !== RANKS.A) {
-    if (aPercent !== bPercent) {
-      return bPercent - aPercent;
-    }
+  if (aPercent !== bPercent) {
+    return bPercent - aPercent;
   }
 
   const rankDiff = rankPriority(a.rank) - rankPriority(b.rank);
