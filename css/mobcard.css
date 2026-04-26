@@ -4,9 +4,8 @@
     flex-direction: column;
     padding: 0;
     background: var(--color-bg-panel);
-    border: 1px solid var(--color-border-normal);
+    border: 1px solid #111827;
     border-radius: 12px;
-    box-shadow: none;
     overflow: hidden;
     contain: layout style;
     inline-size: 100%;
@@ -26,14 +25,14 @@
     transition: opacity 0.4s ease cubic-bezier(0.16, 1, 0.3, 1);
 
     &.mobcard-highlight-white .mobcard-inner {
-        border-color: rgba(255, 255, 255, 0.4);
+        border-color: #6c727d;
     }
 
     .mobcard-inner {
-        background: transparent;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-top: 1px solid rgba(255, 255, 255, 0.25);
-        border-radius: 8px;
+        background: var(--color-bg-card);
+        border: 1px solid #374151;
+        border-top: 1px solid #4b5563;
+        border-radius: 11px;
         transition: border-color 0.4s ease, background 0.4s ease;
         display: flex;
         flex-direction: column;
@@ -79,12 +78,12 @@
         .mobcard-area-info {
             display: flex;
             align-items: center;
-            color: rgba(255, 255, 255, 0.7);
+            color: #bcbfc5;
             font-weight: 400;
             gap: 4px;
 
             .detail-expansion {
-                opacity: 0.6;
+                color: #8f949b;
             }
         }
 
@@ -93,8 +92,8 @@
             inset: auto;
             margin: 0;
             z-index: 2;
-            background: rgba(34, 211, 238, 0.1);
-            border: 1px solid rgba(34, 211, 238, 0.4);
+            background: #213947;
+            border: 1px solid #206d7e;
             border-radius: 4px;
             color: var(--color-cyan);
             font-family: 'Roboto', sans-serif;
@@ -111,13 +110,12 @@
             }
 
             &:hover {
-                background: rgba(34, 211, 238, 0.2);
+                background: #206371;
                 border-color: var(--color-cyan);
             }
 
             &:active {
                 transform: translateY(0);
-                opacity: 0.8;
             }
         }
     }
@@ -159,7 +157,7 @@
         font-weight: 900;
         line-height: 1;
         border-radius: 2px;
-        background: rgba(0, 0, 0, 0.4);
+        background: #131821;
         border: 1.5px solid currentColor;
         margin: 0;
         flex-shrink: 0;
@@ -198,7 +196,7 @@
 
     .mobcard-progress-container {
         height: 8px;
-        background: rgba(0, 0, 0, 0.6);
+        background: var(--color-progress-bg);
         border-radius: 4px;
         overflow: hidden;
         margin: -6px 0 0;
@@ -209,7 +207,7 @@
     .mobcard-progress-bar {
         height: 100%;
         width: 100%;
-        background: var(--color-progress-fill);
+        background: var(--color-progress-card);
         border-radius: 4px;
         transform: scaleX(var(--prog-percent, 0));
         transform-origin: left;
@@ -223,8 +221,8 @@
         max-width: 95vw;
 
         .mobcard-inner {
-            background: linear-gradient(135deg, rgba(30, 41, 59, 1), rgba(15, 23, 42, 1));
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid #4c5561;
             height: auto;
             max-height: 85vh;
             overflow-y: auto;
@@ -245,19 +243,16 @@
         .status-bar-inner,
         .progress-text>div,
         .memo-icon-container {
-            opacity: 0.3;
             filter: grayscale(100%);
         }
 
         .mobcard-report-bar {
-            opacity: 0.6;
             filter: grayscale(100%);
         }
 
         .mobcard-name {
             color: var(--color-white);
             text-shadow: none;
-            opacity: 0.5;
         }
     }
 
@@ -292,8 +287,8 @@
             position: sticky;
             inset-block-start: 0;
             z-index: 3;
-            background: rgba(15, 23, 42, 0.98);
-            border-block-end: 1px solid rgba(255, 255, 255, 0.15);
+            background: #0f172a;
+            border-block-end: 1px solid #414a56;
             border-start-start-radius: 0;
             border-start-end-radius: 0;
         }
@@ -306,24 +301,24 @@
         padding: 12px;
         position: sticky;
         bottom: 0;
-        background: rgba(255, 255, 255, 0.1);
+        background: #353e4b;
         z-index: 5;
-        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        border-top: 1px solid #414a56;
         flex-shrink: 0;
         transition: background-color 0.2s, color 0.2s;
         cursor: pointer;
         font-size: 13px;
         font-weight: 800;
         letter-spacing: 0.1em;
-        color: rgba(255, 255, 255, 0.8);
+        color: #d2d4d8;
 
         &:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: #414a56;
             color: var(--color-white);
         }
 
         &:active {
-            background: rgba(34, 211, 238, 0.2);
+            background: #206371;
             color: var(--color-cyan);
         }
     }
@@ -333,7 +328,7 @@
     text-align: right;
     font-size: 13px;
     font-weight: 800;
-    color: rgba(255, 255, 255, 0.95);
+    color: #f2f3f4;
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -354,7 +349,7 @@
 @supports (scrollbar-color: auto) {
     .mobcard-content {
         scrollbar-width: thin;
-        scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
+        scrollbar-color: #2a3341 #1f2937;
     }
 }
 
@@ -383,12 +378,6 @@
         font-weight: 700;
     }
 
-    .mobcard-timer-unit {
-        color: rgba(255, 255, 255, 0.4);
-        font-size: 12px;
-        margin-inline-start: 1px;
-    }
-
     &.label-next .mobcard-timer-num,
     &.label-next.mobcard-timer-over .mobcard-timer-num {
         color: var(--color-gold);
@@ -396,19 +385,19 @@
 }
 
 .mobcard-status-max {
-    background: var(--color-progress-ready);
+    background: var(--color-progress-list);
 }
 
 .mobcard-status-active,
 .mobcard-status-window,
 .mobcard-status-next {
-    background: var(--color-progress-fill);
+    background: var(--color-progress-card);
 }
 
 .mobcard-timer-label {
     color: var(--color-white);
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: #353e4b;
+    border: 1px solid #414a56;
     border-radius: 3px;
     padding: 2px 3px;
     font-size: 11px;
@@ -421,16 +410,16 @@
     font-weight: 700;
 
     &.mobcard-status-next {
-        background: rgba(148, 163, 184, 0.2);
+        background: #414c5b;
     }
 
     &.mobcard-status-window,
     &.mobcard-status-active {
-        background: rgba(16, 185, 129, 0.2);
+        background: #1e5c4d;
     }
 
     &.mobcard-status-max {
-        background: rgba(239, 68, 68, 0.2);
+        background: #653232;
     }
 
     &.mobcard-special {
@@ -439,9 +428,9 @@
 }
 
 .mobcard-memo-box {
-    background: rgba(34, 211, 238, 0.05);
+    background: #223e5a;
     border-radius: 6px;
-    border: 1px solid rgba(34, 211, 238, 0.5);
+    border: 1px solid #38849c;
     transition: border-color 0.2s;
     display: flex;
     align-items: center;
@@ -449,7 +438,7 @@
     overflow: hidden;
 
     &:focus-within {
-        border-color: rgba(34, 211, 238, 0.8);
+        border-color: var(--color-cyan);
     }
 }
 
@@ -465,13 +454,12 @@
     color: var(--color-cyan);
     letter-spacing: 0.05em;
     text-transform: lowercase;
-    opacity: 0.8;
 }
 
 .mobcard-memo-separator {
     width: 1px;
     height: 20px;
-    background: rgba(34, 211, 238, 0.3);
+    background: #2e657f;
 }
 
 .mobcard-memo-input {
@@ -491,7 +479,7 @@
     cursor: text;
 
     &::placeholder {
-        color: rgba(255, 255, 255, 0.45);
+        color: #848991;
     }
 }
 
@@ -518,14 +506,13 @@
             font-size: 11px;
             font-weight: 500;
             color: var(--color-white);
-            opacity: 0.8;
             margin-left: 8px;
         }
     }
 
     .condition-text {
         font-size: 11px;
-        color: rgba(255, 255, 255, 0.9);
+        color: #e8e9eb;
         line-height: 1.5;
         padding: 2px 8px;
         white-space: pre-wrap;
@@ -540,8 +527,8 @@
 }
 
 .mobcard-info-item {
-    background: rgba(48, 64, 94, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #303c51;
+    border: 1px solid #353e4b;
     border-radius: 4px;
     padding: 4px 10px 2px;
     display: flex;
@@ -620,8 +607,8 @@
         height: auto;
 
         &.moblist-selected .mobcard-inner {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(34, 211, 238, 0.3);
+            background: #313a47;
+            border-color: #205c69;
         }
     }
 
