@@ -172,7 +172,7 @@ export const submitReport = async (mobNo, timeISO) => {
             maintenance = maintenance.maintenance;
         }
 
-        const { minRepop } = getMaintenanceRepop(mob, mob.last_kill_time || 0, maintenance);
+        const { minRepop } = getMaintenanceRepop(mob, mob.last_kill_time || 0, maintenance, nowMs / 1000);
         const minRepopTimeMs = minRepop * 1000;
         const allowedTimeMs = minRepopTimeMs - CONFIG.REPORT_EARLY_THRESHOLD;
 

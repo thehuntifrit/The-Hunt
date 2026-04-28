@@ -405,7 +405,7 @@ export function calculateRepop(mob, maintenance, options = {}) {
   const maintenanceStartDate = parseDate(maint.start);
   if (!maintenanceStartDate) return baseResult("Unknown");
 
-  const { minRepop, maxRepop } = getMaintenanceRepop(mob, lastKill, maint);
+  const { minRepop, maxRepop } = getMaintenanceRepop(mob, lastKill, maint, now);
 
   const serverUpDate = parseDate(maint.serverUp || maint.end);
   const serverUp = serverUpDate ? serverUpDate.getTime() / 1000 : 0;
@@ -502,10 +502,10 @@ export function calculateRepop(mob, maintenance, options = {}) {
     status = "NextCondition";
   }
 
-  const isMaintenanceStop = !!(maintenanceStartDate && now >= maintenanceStart && !(serverUp > maintenanceStart && now >= serverUp));
+  const isMaintenanceStop = !!(maintenanceStartDate && now >= (maintenanceStart + 1800) && !(serverUp > maintenanceStart && now >= serverUp));
 
   let isBlockedByMaintenance = false;
-  if (maintenanceStart && now < maintenanceStart) {
+  if (maintenanceStart && now < (maintenanceStart + 1800)) {
     if (minRepop >= maintenanceStart) {
       isBlockedByMaintenance = true;
     } else if (nextConditionSpawnDate && nextConditionSpawnDate.getTime() / 1000 >= maintenanceStart) {
@@ -571,7 +571,7 @@ function baseResult(status) {
   };
 }
 
-export function getMaintenanceRepop(mob, lastKill, maintenance) {
+export function getMaintenanceRepop(mob, lastKill, maintenance, nowSec) {
   const maint = (maintenance && maintenance.maintenance) ? maintenance.maintenance : maintenance;
   const repopSec = mob.repopSeconds;
   const maxSec = mob.maxRepopSeconds;
@@ -580,12 +580,20 @@ export function getMaintenanceRepop(mob, lastKill, maintenance) {
     return { minRepop: lastKill + repopSec, maxRepop: lastKill + maxSec };
   }
 
-  const serverUpDate = parseDate(maint.serverUp || maint.end);
-  const serverUp = serverUpDate ? serverUpDate.getTime() / 1000 : 0;
-  const isRankF = mob.rank === "F";
-
   const maintenanceStart = parseDate(maint.start)?.getTime() / 1000 || 0;
-  if (lastKill === 0 || (serverUp > maintenanceStart && lastKill <= serverUp)) {
+  
+  // メンテナンス開始後30分(1800秒)の猶予期間中は、メンテナンスの再計算を適用しない
+  if (nowSec && nowSec < (maintenanceStart + 1800)) {
+    return { minRepop: lastKill + repopSec, maxRepop: lastKill + maxSec };
+  }
+
+  const isRankF = mob.rank === "F";
+  let serverUp = parseDate(maint.serverUp || maint.end)?.getTime() / 1000 || 0;
+  if (serverUp <= maintenanceStart) {
+    serverUp = maintenanceStart;
+  }
+
+  if (lastKill === 0 || lastKill <= serverUp) {
     const factor = isRankF ? 1 : MAINT_FACTOR;
     return {
       minRepop: serverUp + (repopSec * factor),
