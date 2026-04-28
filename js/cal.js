@@ -502,8 +502,7 @@ export function calculateRepop(mob, maintenance, options = {}) {
     status = "NextCondition";
   }
 
-  const isMaintenanceStop = !!(maintenanceStartDate &&
-    now >= maintenanceStart && ((serverUp > 0 && now < serverUp) || (serverUp === 0 && now < (parseDate(maint.end)?.getTime() / 1000 || 0))));
+  const isMaintenanceStop = !!(maintenanceStartDate && now >= maintenanceStart && !(serverUp > maintenanceStart && now >= serverUp));
 
   let isBlockedByMaintenance = false;
   if (maintenanceStart && now < maintenanceStart) {
@@ -585,7 +584,8 @@ export function getMaintenanceRepop(mob, lastKill, maintenance) {
   const serverUp = serverUpDate ? serverUpDate.getTime() / 1000 : 0;
   const isRankF = mob.rank === "F";
 
-  if (lastKill === 0 || (serverUp > 0 && lastKill <= serverUp)) {
+  const maintenanceStart = parseDate(maint.start)?.getTime() / 1000 || 0;
+  if (lastKill === 0 || (serverUp > maintenanceStart && lastKill <= serverUp)) {
     const factor = isRankF ? 1 : MAINT_FACTOR;
     return {
       minRepop: serverUp + (repopSec * factor),

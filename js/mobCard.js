@@ -43,7 +43,7 @@ export function processText(text) {
 
 export function renderNameWithInstance(container, name) {
   if (!container) return;
-  const match = name.match(/^([1-9])(.+)/);
+  const match = name.match(/^([1-9])_(.+)/);
   container.innerHTML = "";
   if (match) {
     const instance = match[1];
