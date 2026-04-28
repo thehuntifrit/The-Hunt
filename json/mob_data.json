@@ -1084,7 +1084,7 @@
     },
     "61051": {
       "rank": "A",
-      "name": "幻煌鳥",
+      "name": "1_幻煌鳥",
       "area": "ヤクテル樹海",
       "condition": "",
       "repopSeconds": 14400,
@@ -1092,7 +1092,23 @@
     },
     "61061": {
       "rank": "A",
-      "name": "ラシュイチャ",
+      "name": "1_ラシュイチャ",
+      "area": "ヤクテル樹海",
+      "condition": "",
+      "repopSeconds": 14400,
+      "maxRepopSeconds": 21600
+    },
+    "61052": {
+      "rank": "A",
+      "name": "2_幻煌鳥",
+      "area": "ヤクテル樹海",
+      "condition": "",
+      "repopSeconds": 14400,
+      "maxRepopSeconds": 21600
+    },
+    "61062": {
+      "rank": "A",
+      "name": "2_ラシュイチャ",
       "area": "ヤクテル樹海",
       "condition": "",
       "repopSeconds": 14400,
@@ -1165,7 +1181,15 @@
     },
     "62031": {
       "rank": "S",
-      "name": "ネヨーゾテール",
+      "name": "1_ネヨーゾテール",
+      "area": "ヤクテル樹海",
+      "condition": "「魚粉」を50個まとめて捨てる",
+      "repopSeconds": 302400,
+      "maxRepopSeconds": 475200
+    },
+    "62032": {
+      "rank": "S",
+      "name": "2_ネヨーゾテール",
       "area": "ヤクテル樹海",
       "condition": "「魚粉」を50個まとめて捨てる",
       "repopSeconds": 302400,
