@@ -532,12 +532,19 @@ export function calculateRepop(mob, maintenance, options = {}) {
     isBlockedByMaintenance,
     maintStart: maintenanceStart,
     maintEnd: serverUp || (parseDate(maint.end)?.getTime() / 1000 || 0),
-    nextBoundarySec: [
-      minRepop,
-      maxRepop,
-      nextConditionSpawnDate ? nextConditionSpawnDate.getTime() / 1000 : null,
-      conditionWindowEnd ? conditionWindowEnd.getTime() / 1000 : null
-    ].filter(t => t !== null && t > now).reduce((min, t) => Math.min(min, t), Infinity)
+    nextBoundarySec: (() => {
+      let bSec = [
+        minRepop,
+        maxRepop,
+        nextConditionSpawnDate ? nextConditionSpawnDate.getTime() / 1000 : null,
+        conditionWindowEnd ? conditionWindowEnd.getTime() / 1000 : null
+      ].filter(t => t !== null && t > now).reduce((min, t) => Math.min(min, t), Infinity);
+      
+      if (hasCondition && !nextConditionSpawnDate && skipConditionCalc) {
+        bSec = 0;
+      }
+      return bSec;
+    })()
   };
 }
 
