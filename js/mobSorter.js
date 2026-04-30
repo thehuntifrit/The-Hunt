@@ -169,6 +169,20 @@ export function allTabComparator(a, b) {
     if (at !== bt) return at - bt;
   }
 
+  if (getGroupKey(a) === "WINDOW" && getGroupKey(b) === "WINDOW") {
+    const at = aInfo.minRepop ?? Infinity;
+    const bt = bInfo.minRepop ?? Infinity;
+    if (at !== bt) return at - bt;
+
+    const rankDiff = rankPriority(a.rank) - rankPriority(b.rank);
+    if (rankDiff !== 0) return rankDiff;
+    if (a.ExpansionId !== b.ExpansionId) return b.ExpansionId - a.ExpansionId;
+    const pa = parseMobIdParts(a.No);
+    const pb = parseMobIdParts(b.No);
+    if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
+    return pa.instance - pb.instance;
+  }
+
   const aPercent = aInfo.elapsedPercent || 0;
   const bPercent = bInfo.elapsedPercent || 0;
 
