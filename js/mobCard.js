@@ -746,3 +746,5 @@ export function updateSimpleMobItem(item, mob) {
   updateMobCount(item, mob);
   updateMemoIcon(item, mob);
 }
+
+
