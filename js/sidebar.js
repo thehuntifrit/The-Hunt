@@ -588,3 +588,5 @@ function renderSidebarFilterAccordion() {
 window.addEventListener("filterChanged", () => {
     renderSidebarFilterAccordion();
 });
+
+

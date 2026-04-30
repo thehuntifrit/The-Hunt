@@ -379,3 +379,5 @@ export async function verifyLodestoneCharacter(lodestoneId, verificationCode) {
         };
     }
 }
+
+

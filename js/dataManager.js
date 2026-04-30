@@ -973,3 +973,5 @@ export function isCulled(pointStatus, mobNo, mob = null) {
 }
 
 
+
+

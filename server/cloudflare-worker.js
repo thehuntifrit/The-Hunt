@@ -218,3 +218,4 @@ async function verifySignature(jwk, headerB64, payloadB64, signatureB64) {
         data
     );
 }
+

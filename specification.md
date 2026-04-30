@@ -76,3 +76,5 @@
 - 定期ループ内で `calculateRepop` / `findNextSpawn` を無条件に呼び出す処理
 - Tier B の対象を「一部のモブ」に絞り込む処理
 - `updateVisibleCards` の visibility チェックを省略する処理
+
+
