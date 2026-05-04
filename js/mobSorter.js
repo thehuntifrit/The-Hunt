@@ -172,7 +172,7 @@ export function allTabComparator(a, b) {
   if (getGroupKey(a) === "WINDOW" && getGroupKey(b) === "WINDOW") {
     const at = aInfo.minRepop ?? Infinity;
     const bt = bInfo.minRepop ?? Infinity;
-    if (at !== bt) return at - bt;
+    if (aInfo.elapsedPercent !== bInfo.elapsedPercent) return (bInfo.elapsedPercent || 0) - (aInfo.elapsedPercent || 0);
 
     const rankDiff = rankPriority(a.rank) - rankPriority(b.rank);
     if (rankDiff !== 0) return rankDiff;
