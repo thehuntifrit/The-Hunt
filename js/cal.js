@@ -539,7 +539,7 @@ export function calculateRepop(mob, maintenance, options = {}) {
         nextConditionSpawnDate ? nextConditionSpawnDate.getTime() / 1000 : null,
         conditionWindowEnd ? conditionWindowEnd.getTime() / 1000 : null
       ].filter(t => t !== null && t > now).reduce((min, t) => Math.min(min, t), Infinity);
-      
+
       if (hasCondition && !nextConditionSpawnDate && skipConditionCalc) {
         bSec = 0;
       }
@@ -588,15 +588,14 @@ export function getMaintenanceRepop(mob, lastKill, maintenance, nowSec) {
   }
 
   const maintenanceStart = parseDate(maint.start)?.getTime() / 1000 || 0;
-  
-  // メンテナンス開始後30分(1800秒)の猶予期間中は、メンテナンスの再計算を適用しない
-  if (nowSec && nowSec < (maintenanceStart + 1800)) {
+
+  if (nowSec && nowSec >= maintenanceStart && nowSec < (maintenanceStart + 1800)) {
     return { minRepop: lastKill + repopSec, maxRepop: lastKill + maxSec };
   }
 
   const isRankF = mob.rank === "F";
   let serverUp = parseDate(maint.serverUp || maint.end)?.getTime() / 1000 || 0;
-  if (serverUp <= maintenanceStart) {
+  if (nowSec >= maintenanceStart && serverUp <= maintenanceStart) {
     serverUp = maintenanceStart;
   }
 
