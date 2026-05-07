@@ -217,7 +217,7 @@ function* getValidWeatherIntervals(mob, windowStart, windowEnd) {
 
       if (duration >= requiredSec) {
         const validPopStart = chainStart + requiredSec;
-        const intersectStart = Math.max(validPopStart, windowStart);
+        const intersectStart = validPopStart;
         const intersectEnd = Math.min(chainEnd, windowEnd);
 
         if (intersectStart < intersectEnd) {
@@ -296,7 +296,7 @@ function* getValidWeatherIntervals(mob, windowStart, windowEnd) {
     if (duration >= requiredSec) {
       const validPopStart = isContinuous ? activeStart + requiredSec : activeStart;
 
-      const intersectStart = Math.max(validPopStart, windowStart);
+      const intersectStart = validPopStart;
       const intersectEnd = Math.min(activeEnd, windowEnd);
 
       if (intersectStart < intersectEnd) {
@@ -331,7 +331,7 @@ function* getValidEtIntervals(mob, windowStart, windowEnd) {
           break;
         }
       }
-      const intersectStart = Math.max(start, windowStart);
+      const intersectStart = start;
       const intersectEnd = Math.min(end, windowEnd);
 
       if (intersectStart < intersectEnd) {
@@ -384,7 +384,7 @@ function findNextSpawn(mob, pointSec, searchLimit) {
         const finalEnd = eEnd;
 
         if (finalStart < finalEnd) {
-          return { start: finalStart, end: finalEnd };
+          return { start: eStart, end: finalEnd };
         }
       }
     }
@@ -463,7 +463,10 @@ export function calculateRepop(mob, maintenance, options = {}) {
     if (useCache) {
       result = mob._spawnCache.result;
     } else if (!skipConditionCalc || forceRecalc) {
-      result = findNextSpawn(mob, pointSec, searchLimit);
+      result = findNextSpawn(mob, minRepop, searchLimit);
+      if (result && result.end <= now) {
+        result = findNextSpawn(mob, now, searchLimit);
+      }
       mob._spawnCache = {
         key: cacheKey,
         result: result
