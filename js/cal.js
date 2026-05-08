@@ -345,7 +345,7 @@ function* getValidEtIntervals(mob, windowStart, windowEnd) {
   }
 }
 
-function findNextSpawn(mob, pointSec, searchLimit, appliedFactor = 1) {
+function findNextSpawn(mob, pointSec, searchLimit, appliedFactor = 1, nowSec = 0) {
   let moonPhases = [];
   if (!mob.moonPhase) {
     moonPhases.push([pointSec, searchLimit]);
@@ -384,6 +384,9 @@ function findNextSpawn(mob, pointSec, searchLimit, appliedFactor = 1) {
         const finalEnd = eEnd;
 
         if (finalStart < finalEnd) {
+          if (nowSec > 0 && finalEnd <= nowSec) {
+            continue;
+          }
           return { start: finalStart, end: finalEnd };
         }
       }
@@ -444,16 +447,46 @@ export function calculateRepop(mob, maintenance, options = {}) {
     return mob.repopInfo;
   }
 
-  if (hasCondition && (!skipConditionCalc || forceRecalc)) {
-    let result = findNextSpawn(mob, minRepop, searchLimit, appliedFactor);
-    if (result && result.end <= now) {
-      result = findNextSpawn(mob, now, searchLimit, appliedFactor);
+  if (hasCondition && !skipConditionCalc) {
+    let needRecalc = forceRecalc;
+
+    if (mob._spawnCache) {
+      if (mob._spawnCache.appliedFactor !== appliedFactor) {
+        needRecalc = true;
+      } else if (now >= mob._spawnCache.end) {
+        needRecalc = true;
+      }
+    } else {
+      needRecalc = true;
     }
-    if (result) {
-      const { start, end } = result;
-      nextConditionSpawnDate = new Date(start * 1000);
-      conditionWindowEnd = new Date(end * 1000);
-      isInConditionWindow = (now >= start && now < end && now >= minRepop);
+
+    if (needRecalc) {
+      const baseSec = Math.max(minRepop, now);
+      const searchAnchor = baseSec - 18000;
+      const searchLimit = baseSec + LIMIT_DAYS * 24 * 3600;
+
+      const result = findNextSpawn(mob, searchAnchor, searchLimit, appliedFactor, baseSec);
+
+      if (result) {
+        mob._spawnCache = {
+          appliedFactor,
+          start: result.start,
+          end: result.end
+        };
+      } else {
+        mob._spawnCache = null;
+      }
+    }
+
+    if (mob._spawnCache) {
+      const start = Math.max(mob._spawnCache.start, minRepop);
+      const end = mob._spawnCache.end;
+
+      if (start < end) {
+        nextConditionSpawnDate = new Date(start * 1000);
+        conditionWindowEnd = new Date(end * 1000);
+        isInConditionWindow = (now >= start && now < end && now >= minRepop);
+      }
     }
   }
 

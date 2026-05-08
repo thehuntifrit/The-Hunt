@@ -349,6 +349,9 @@ const idb = {
 // ─── Worker ─────────────────────────────────────────────
 let memorySpawnCache = null;
 
+// mobNoごとの境界タイマーを管理するMap
+const repopTimers = new Map();
+
 const saveSpawnCacheDebounced = (() => {
     let timeout;
     return (cache) => {
@@ -358,6 +361,38 @@ const saveSpawnCacheDebounced = (() => {
         }, CONFIG.IDB_SAVE_DEBOUNCE);
     };
 })();
+
+/**
+ * repopInfoのnextBoundarySecに基づいてタイマーをセットし、
+ * 境界到達時にforceRecalc: trueで再計算を投げる。
+ * これにより conditionWindowEnd を過ぎた瞬間に次のウィンドウを自動探索する。
+ */
+function scheduleRepopTimer(mobNo, repopInfo) {
+    // 既存タイマーをクリア
+    if (repopTimers.has(mobNo)) {
+        clearTimeout(repopTimers.get(mobNo));
+        repopTimers.delete(mobNo);
+    }
+
+    const bSec = repopInfo.nextBoundarySec;
+    if (!bSec || bSec === Infinity) return;
+
+    const nowSec = Date.now() / 1000;
+    const delayMs = (bSec - nowSec) * 1000;
+
+    // 既に過ぎているか、7日以上先は対象外
+    if (delayMs <= 0 || delayMs > 7 * 24 * 3600 * 1000) return;
+
+    const timer = setTimeout(() => {
+        repopTimers.delete(mobNo);
+        const mob = state.mobsMap.get(String(mobNo));
+        if (mob) {
+            requestWorkerCalculation(mob, state.maintenance, { forceRecalc: true });
+        }
+    }, delayMs);
+
+    repopTimers.set(mobNo, timer);
+}
 
 function initWorker() {
     if (state.worker) return;
@@ -379,6 +414,9 @@ function initWorker() {
                     memorySpawnCache[mobNo] = spawnCache;
                     saveSpawnCacheDebounced(memorySpawnCache);
                 }
+
+                // 境界タイマーをセット（条件ウィンドウ終端で自動再計算）
+                scheduleRepopTimer(mobNo, repopInfo);
 
                 if (!state.initialLoadComplete && state.pendingCalculationMobs.size === 0 && initialCalculationStarted) {
                     checkInitialLoadComplete();
@@ -699,6 +737,10 @@ export function startRealtime() {
     unsubscribes.forEach(fn => fn && fn());
     unsubscribes = [];
 
+    // startRealtime時に全タイマーをクリア
+    repopTimers.forEach(timer => clearTimeout(timer));
+    repopTimers.clear();
+
     state.initialLoadComplete = false;
     initialLoadState.status = false;
     initialLoadState.location = false;
@@ -971,7 +1013,3 @@ export function isCulled(pointStatus, mobNo, mob = null) {
 
     return false;
 }
-
-
-
-
