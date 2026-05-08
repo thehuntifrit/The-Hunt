@@ -382,11 +382,10 @@ export function renderMobCard(mob) {
     }
   }
 
-  const reportBtn = card.querySelector('.moblist-report-btn');
-  if (reportBtn) {
-    reportBtn.dataset.reportType = rank === RANKS.A ? 'instant' : 'modal';
-    reportBtn.dataset.mobNo = mob.No;
-  }
+  card.querySelectorAll('.moblist-report-btn').forEach(btn => {
+    btn.dataset.reportType = rank === RANKS.A ? 'instant' : 'modal';
+    btn.dataset.mobNo = mob.No;
+  });
 
   updateAreaInfo(card, mob);
   updateDetailCardRealtime(card, mob);

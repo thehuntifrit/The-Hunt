@@ -86,38 +86,6 @@
                 color: var(--color-text-secondary);
             }
         }
-
-        .moblist-report-btn {
-            position: relative;
-            inset: auto;
-            margin: 0;
-            z-index: 2;
-            background: #213947;
-            border: 1px solid #206d7e;
-            border-radius: 4px;
-            color: var(--color-cyan);
-            font-family: 'Roboto', sans-serif;
-            font-size: 10px;
-            font-weight: 800;
-            padding: 4px 6px;
-            letter-spacing: 0.1em;
-            transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
-            flex-shrink: 0;
-
-            &::before,
-            &::after {
-                display: none;
-            }
-
-            &:hover {
-                background: #206371;
-                border-color: var(--color-cyan);
-            }
-
-            &:active {
-                transform: translateY(0);
-            }
-        }
     }
 
     .mobcard-name {
@@ -310,30 +278,52 @@
 
     .mobcard-mobile-actions {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 12px;
+        align-items: stretch;
         position: sticky;
         bottom: 0;
-        background: #353e4b;
         z-index: 5;
         border-top: 1px solid #414a56;
         flex-shrink: 0;
-        transition: background-color 0.2s, color 0.2s;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 800;
-        letter-spacing: 0.1em;
-        color: #d2d4d8;
+        height: 30px;
 
-        &:hover {
+        .mobcard-close-btn,
+        .bottom-report-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .bottom-report-btn {
+            background: #213947;
+            color: var(--color-cyan);
+            border: none;
+            border-right: 1px solid #414a56;
+        }
+
+        .mobcard-close-btn {
+            background: #353e4b;
+            color: #d2d4d8;
+        }
+
+        .bottom-report-btn:hover {
+            background: #206371;
+            color: var(--color-white);
+        }
+
+        .mobcard-close-btn:hover {
             background: #414a56;
             color: var(--color-white);
         }
 
-        &:active {
-            background: #206371;
-            color: var(--color-cyan);
+        .bottom-report-btn:active,
+        .mobcard-close-btn:active {
+            filter: brightness(1.2);
         }
     }
 }
@@ -617,7 +607,7 @@
         max-inline-size: 96%;
         width: 100%;
         margin-inline: auto;
-        margin-block: 2dvh;
+        margin-block: 1dvh;
         height: auto;
 
         &.moblist-selected .mobcard-inner {
