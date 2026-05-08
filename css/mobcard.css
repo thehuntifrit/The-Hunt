@@ -285,6 +285,7 @@
         border-top: 1px solid #414a56;
         flex-shrink: 0;
         height: 30px;
+        -webkit-tap-highlight-color: transparent;
 
         .mobcard-close-btn,
         .bottom-report-btn {
@@ -298,7 +299,8 @@
             font-weight: 800;
             line-height: 1;
             letter-spacing: 0.1em;
-            transition: background-color 0.2s, color 0.2s;
+            transition: background-color 0.1s, color 0.1s;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .bottom-report-btn {
@@ -323,9 +325,14 @@
             color: var(--color-white);
         }
 
-        .bottom-report-btn:active,
+        .bottom-report-btn:active {
+            background: #2a7a8a;
+            color: var(--color-white);
+        }
+
         .mobcard-close-btn:active {
-            filter: brightness(1.2);
+            background: #4b5563;
+            color: var(--color-white);
         }
     }
 }
