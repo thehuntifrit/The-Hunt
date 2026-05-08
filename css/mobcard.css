@@ -637,11 +637,11 @@
         pointer-events: auto;
 
         .mobcard-card {
-            width: 92vw;
-            height: 92vh;
+            width: 96vw;
+            height: 96vh;
             max-width: none;
             max-inline-size: none;
-            max-height: 92vh;
+            max-height: 96vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
