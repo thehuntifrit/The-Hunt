@@ -24,7 +24,8 @@
           "scrollbar-width: thin",
           "mask-composite",
           "mask-composite: exclude",
-          "min-height: auto"
+          "min-height: auto",
+          "scrollbar-color"
         ]
       }
     ],

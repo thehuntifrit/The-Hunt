@@ -30,7 +30,7 @@
         left: 0;
         right: 0;
         z-index: var(--z-mobcard-mobile);
-        background: #0a0f1e;
+        background: var(--color-bg-panel);
         padding: 14px;
         overflow-y: auto;
         animation: mobcard-slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -132,7 +132,7 @@
         inset-inline-start: 0;
         inset-block: 0;
         inline-size: 3px;
-        background: #111827;
+        background: var(--color-bg-dark);
     }
 
     &.selected {
@@ -170,7 +170,7 @@
         font-weight: 500;
         line-height: 1;
         border-radius: 3px;
-        background: #0f172a;
+        background: var(--color-bg-panel);
         border: 1.5px solid var(--color-cyan);
         color: #ffffff;
         flex-shrink: 0;
@@ -184,22 +184,6 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         color: var(--color-white);
-
-        &[data-rank="S"] {
-            color: var(--color-white);
-        }
-
-        &[data-rank="A"] {
-            color: var(--color-rank-a);
-        }
-
-        &[data-rank="F"] {
-            color: var(--color-rank-f);
-        }
-
-        &[data-rank="S-active"] {
-            color: var(--color-white);
-        }
     }
 
     .moblist-count {
@@ -293,6 +277,20 @@
         background: var(--color-progress-list);
         transform: scaleX(var(--prog-percent, 0));
         transform-origin: left;
+    }
+
+    &[data-rank="S"] .moblist-bg-bar {
+        background: #4B412A;
+    }
+
+    &[data-rank="A"] .moblist-bg-bar {
+        background: #2A3B31;
+    }
+
+    &[data-rank="F"] .moblist-bg-bar,
+    &[data-rank="FATE"] .moblist-bg-bar,
+    &[data-rank="F.A.T.E."] .moblist-bg-bar {
+        background: #2D324B;
     }
 
     .moblist-percent {
@@ -389,4 +387,3 @@
         }
     }
 }
-

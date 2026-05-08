@@ -4,7 +4,7 @@
     flex-direction: column;
     padding: 0;
     background: var(--color-bg-panel);
-    border: 1px solid #111827;
+    border: 1px solid var(--color-bg-dark);
     border-radius: 12px;
     overflow: hidden;
     contain: layout style;
@@ -30,7 +30,7 @@
 
     .mobcard-inner {
         background: var(--color-bg-card);
-        border: 1px solid #374151;
+        border: 1px solid var(--color-border-normal);
         border-top: 1px solid #4b5563;
         border-radius: 11px;
         transition: border-color 0.4s ease, background 0.4s ease;
@@ -83,7 +83,7 @@
             gap: 4px;
 
             .detail-expansion {
-                color: #8f949b;
+                color: var(--color-text-secondary);
             }
         }
 
@@ -157,7 +157,7 @@
         font-weight: 900;
         line-height: 1;
         border-radius: 2px;
-        background: #131821;
+        background: var(--color-bg-dark);
         border: 1.5px solid currentColor;
         margin: 0;
         flex-shrink: 0;
@@ -186,7 +186,7 @@
         font-weight: 500;
         line-height: 1;
         border-radius: 3px;
-        background: #0f172a;
+        background: var(--color-bg-panel);
         border: 1.5px solid var(--color-cyan);
         color: #ffffff;
         flex-shrink: 0;
@@ -215,13 +215,27 @@
         box-shadow: none;
     }
 
+    &[data-rank="S"] .mobcard-progress-bar {
+        background: var(--color-rank-s);
+    }
+
+    &[data-rank="A"] .mobcard-progress-bar {
+        background: var(--color-rank-a);
+    }
+
+    &[data-rank="F"] .mobcard-progress-bar,
+    &[data-rank="FATE"] .mobcard-progress-bar,
+    &[data-rank="F.A.T.E."] .mobcard-progress-bar {
+        background: var(--color-rank-f);
+    }
+
     &.mobcard-floating {
         position: fixed;
         z-index: var(--z-mobcard-mobile);
         max-width: 95vw;
 
         .mobcard-inner {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
+            background: linear-gradient(135deg, #1e293b, var(--color-bg-panel));
             border: 1px solid #4c5561;
             height: auto;
             max-height: 85vh;
@@ -287,7 +301,7 @@
             position: sticky;
             inset-block-start: 0;
             z-index: 3;
-            background: #0f172a;
+            background: var(--color-bg-panel);
             border-block-end: 1px solid #414a56;
             border-start-start-radius: 0;
             border-start-end-radius: 0;
@@ -636,4 +650,3 @@
         }
     }
 }
-

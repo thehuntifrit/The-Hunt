@@ -108,7 +108,7 @@
         .appnav-panel {
             max-height: 0;
             overflow: hidden;
-            background: var(--color-bg-dark);
+            background: var(--color-bg-nav-panel);
             padding: 0 11px;
             display: flex;
             flex-direction: column;
@@ -185,7 +185,7 @@
 .appnav-divider {
     inline-size: 48px;
     block-size: 1px;
-    background: #282f3c;
+    background: var(--color-border-normal);
     margin: 2px auto;
 }
 
@@ -193,7 +193,7 @@
     inline-size: 100%;
     block-size: 52px;
     border: none;
-    background: #111827;
+    background: var(--color-bg-panel);
     color: var(--nav-text);
     cursor: pointer;
     display: flex;
@@ -207,7 +207,7 @@
     -webkit-tap-highlight-color: transparent;
 
     &:hover {
-        background: #1d2432;
+        background: var(--color-bg-panel-light);
     }
 
     &.nav-toggle-btn {
@@ -217,15 +217,12 @@
         }
 
         &.is-disabled {
-            filter: grayscale(1);
+            background: var(--color-bg-panel);
 
             .appnav-icon {
                 color: var(--color-text-secondary);
                 text-shadow: none;
-            }
-
-            .appnav-label {
-                color: var(--color-text-secondary);
+                filter: grayscale(1);
             }
         }
     }
@@ -287,8 +284,6 @@
     }
 }
 
-/* nav-badge-blink removed */
-
 @media (min-width: 1024px) {
     .appnav-btn.appnav-active::before {
         inset-inline-start: 0;
@@ -321,13 +316,13 @@
 
 #sidebar-panel-telop .appnav-section-title {
     padding-bottom: 8px;
-    border-bottom: 1px solid #333a47;
+    border-bottom: 1px solid var(--color-border-normal);
 }
 
 /* --- PANEL CONTENT --- */
 .appnav-alert,
 .js-error-content {
-    background: #1a212e;
+    background: var(--color-bg-nav-panel);
     border: 1px solid var(--color-border-normal);
     padding: 8px;
     text-align: center;
@@ -363,12 +358,12 @@
         padding: 4px 12px;
         font-family: 'Roboto', sans-serif;
         font-size: 16px;
-        background: var(--color-bg-panel-light);
-        border: 1px solid #333a47;
+        background: var(--color-nav-bg);
+        border: 1px solid var(--color-border-normal);
         color: var(--color-text-secondary);
 
         &:hover {
-            background: #2e3541;
+            background: var(--color-bg-panel-light);
         }
 
         &[data-rank] {
@@ -376,15 +371,29 @@
             color: var(--rank-color);
         }
 
-        &[data-rank="S"], &[data-rank="S rank"] { --current-rank: var(--color-rank-s); }
-        &[data-rank="A"], &[data-rank="A rank"] { --current-rank: var(--color-rank-a); }
-        &[data-rank="F"], &[data-rank="FATE"] { --current-rank: var(--color-rank-f); }
-        &[data-rank="ALL"] { --current-rank: var(--color-all-rank); }
+        &[data-rank="S"],
+        &[data-rank="S rank"] {
+            --current-rank: var(--color-rank-s);
+        }
+
+        &[data-rank="A"],
+        &[data-rank="A rank"] {
+            --current-rank: var(--color-rank-a);
+        }
+
+        &[data-rank="F"],
+        &[data-rank="FATE"] {
+            --current-rank: var(--color-rank-f);
+        }
+
+        &[data-rank="ALL"] {
+            --current-rank: var(--color-all-rank);
+        }
     }
 
     &.appnav-active .appnav-rank-header {
         --rank-color: var(--current-rank, var(--color-cyan));
-        background: color-mix(in srgb, var(--rank-color), var(--color-bg-nav-panel) 80%);
+        background: var(--color-bg-panel-light);
         border-color: var(--rank-color);
         color: var(--rank-color);
         box-shadow: none;
@@ -424,7 +433,7 @@
         font-family: 'Roboto', sans-serif;
         font-size: 15px;
         min-height: 24px;
-        background: var(--color-bg-panel);
+        background: var(--color-bg-nav-panel);
         border: 1px solid var(--color-border-normal);
         color: #8f949b;
         border-radius: 1px;
@@ -441,7 +450,7 @@
         }
 
         &.is-selected {
-            background: color-mix(in srgb, var(--color-cyan), var(--color-bg-nav-panel) 60%);
+            background: var(--color-ui-selected-mix);
             border-color: var(--color-cyan);
             color: var(--color-white);
         }
@@ -454,4 +463,3 @@
         }
     }
 }
-
