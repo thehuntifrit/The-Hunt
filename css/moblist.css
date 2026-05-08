@@ -280,17 +280,17 @@
     }
 
     &[data-rank="S"] .moblist-bg-bar {
-        background: #53472b;
+        background: #463a20;
     }
 
     &[data-rank="A"] .moblist-bg-bar {
-        background: #355040;
+        background: #234731;
     }
 
     &[data-rank="F"] .moblist-bg-bar,
     &[data-rank="FATE"] .moblist-bg-bar,
     &[data-rank="F.A.T.E."] .moblist-bg-bar {
-        background: #3a305c;
+        background: #42356e;
     }
 
     .moblist-percent {
