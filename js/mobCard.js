@@ -491,7 +491,7 @@ export function updateProgressText(element, mob, timeLabelObj = null) {
       inner.appendChild(labelSpan);
       timeContainer.appendChild(inner);
     }
-    
+
     updateTimerRichHTML(inner.querySelector('.mobcard-timer'), dhm, isSpecialCondition, isTimeOver);
     const labelSpan = inner.querySelector('.timer-label-base');
     const newClass = `timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''}`;

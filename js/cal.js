@@ -167,9 +167,9 @@ function calculateNextMoonStart(startSec, targetPhase) {
   return nextStartSec;
 }
 
-function* getValidWeatherIntervals(mob, windowStart, windowEnd) {
+function* getValidWeatherIntervals(mob, windowStart, windowEnd, appliedFactor = 1) {
   const requiredMinutes = mob.weatherDuration?.minutes || 0;
-  const requiredSec = requiredMinutes * 60;
+  const requiredSec = (requiredMinutes * 60) * appliedFactor;
   const isContinuous = requiredSec > WEATHER_CYCLE_SEC;
 
   if (!mob.weatherSeedRange && !mob.weatherSeedRanges) {
@@ -345,7 +345,7 @@ function* getValidEtIntervals(mob, windowStart, windowEnd) {
   }
 }
 
-function findNextSpawn(mob, pointSec, searchLimit) {
+function findNextSpawn(mob, pointSec, searchLimit, appliedFactor = 1) {
   let moonPhases = [];
   if (!mob.moonPhase) {
     moonPhases.push([pointSec, searchLimit]);
@@ -374,7 +374,7 @@ function findNextSpawn(mob, pointSec, searchLimit) {
     }
   }
   for (const [mStart, mEnd] of moonPhases) {
-    const weatherIterator = getValidWeatherIntervals(mob, mStart, mEnd);
+    const weatherIterator = getValidWeatherIntervals(mob, mStart, mEnd, appliedFactor);
 
     for (const [wStart, wEnd] of weatherIterator) {
       const etIterator = getValidEtIntervals(mob, wStart, wEnd);
@@ -384,7 +384,7 @@ function findNextSpawn(mob, pointSec, searchLimit) {
         const finalEnd = eEnd;
 
         if (finalStart < finalEnd) {
-          return { start: eStart, end: finalEnd };
+          return { start: finalStart, end: finalEnd };
         }
       }
     }
@@ -405,7 +405,7 @@ export function calculateRepop(mob, maintenance, options = {}) {
   const maintenanceStartDate = parseDate(maint.start);
   if (!maintenanceStartDate) return baseResult("Unknown");
 
-  const { minRepop, maxRepop } = getMaintenanceRepop(mob, lastKill, maint, now);
+  const { minRepop, maxRepop, appliedFactor } = getMaintenanceRepop(mob, lastKill, maint, now);
 
   const serverUpDate = parseDate(maint.serverUp || maint.end);
   const serverUp = serverUpDate ? serverUpDate.getTime() / 1000 : 0;
@@ -444,38 +444,13 @@ export function calculateRepop(mob, maintenance, options = {}) {
     return mob.repopInfo;
   }
 
-  if (hasCondition) {
-    const cacheKey = `${lastKill}_${maintenanceStart || 0}`;
-    let useCache = false;
-
-    if (mob._spawnCache && mob._spawnCache.key === cacheKey) {
-      if (mob._spawnCache.result) {
-        if (now < mob._spawnCache.result.end && mob._spawnCache.result.start >= minRepop) {
-          useCache = true;
-        }
-      } else {
-        useCache = true;
-      }
+  if (hasCondition && (!skipConditionCalc || forceRecalc)) {
+    let result = findNextSpawn(mob, minRepop, searchLimit, appliedFactor);
+    if (result && result.end <= now) {
+      result = findNextSpawn(mob, now, searchLimit, appliedFactor);
     }
-
-    let result = null;
-    let staleCache = null;
-    if (useCache) {
-      result = mob._spawnCache.result;
-    } else if (!skipConditionCalc || forceRecalc) {
-      result = findNextSpawn(mob, minRepop, searchLimit);
-      if (result && result.end <= now) {
-        result = findNextSpawn(mob, now, searchLimit);
-      }
-      mob._spawnCache = {
-        key: cacheKey,
-        result: result
-      };
-    }
-
-    const effective = result || staleCache;
-    if (effective) {
-      const { start, end } = effective;
+    if (result) {
+      const { start, end } = result;
       nextConditionSpawnDate = new Date(start * 1000);
       conditionWindowEnd = new Date(end * 1000);
       isInConditionWindow = (now >= start && now < end && now >= minRepop);
@@ -490,19 +465,27 @@ export function calculateRepop(mob, maintenance, options = {}) {
     timeRemaining = formatDurationColon(now - maxRepop);
   } else if (now < minRepop) {
     status = "Next";
-    timeRemaining = formatDurationColon(minRepop - now);
+    const nextConditionSec = nextConditionSpawnDate ? nextConditionSpawnDate.getTime() / 1000 : 0;
+    const target = (hasCondition && nextConditionSec > minRepop) ? nextConditionSec : minRepop;
+    timeRemaining = formatDurationColon(target - now);
   } else {
     status = "PopWindow";
     elapsedPercent = (now < minRepop || maxRepop <= minRepop) ? 0 : Math.min(100, Math.floor(((now - minRepop) / (maxRepop - minRepop)) * 100));
     timeRemaining = formatDurationColon(maxRepop - now);
+
+    if (hasCondition && nextConditionSpawnDate) {
+      const nextConditionSec = nextConditionSpawnDate.getTime() / 1000;
+      if (nextConditionSec > now) {
+        status = "NextCondition";
+        timeRemaining = formatDurationColon(nextConditionSec - now);
+      }
+    }
   }
 
   if (isInConditionWindow && now >= minRepop) {
     if (status !== "MaxOver") {
       status = "ConditionActive";
     }
-  } else if (hasCondition && nextConditionSpawnDate && now >= minRepop && now < nextConditionSpawnDate.getTime() / 1000 && status !== "MaxOver") {
-    status = "NextCondition";
   }
 
   const isMaintenanceStop = !!(maintenanceStartDate && now >= (maintenanceStart + 1800) && !(serverUp > maintenanceStart && now >= serverUp));
@@ -587,13 +570,13 @@ export function getMaintenanceRepop(mob, lastKill, maintenance, nowSec) {
   const maxSec = mob.maxRepopSeconds;
 
   if (!maint || !maint.start) {
-    return { minRepop: lastKill + repopSec, maxRepop: lastKill + maxSec };
+    return { minRepop: lastKill + repopSec, maxRepop: lastKill + maxSec, appliedFactor: 1 };
   }
 
   const maintenanceStart = parseDate(maint.start)?.getTime() / 1000 || 0;
 
   if (nowSec && nowSec >= maintenanceStart && nowSec < (maintenanceStart + 1800)) {
-    return { minRepop: lastKill + repopSec, maxRepop: lastKill + maxSec };
+    return { minRepop: lastKill + repopSec, maxRepop: lastKill + maxSec, appliedFactor: 1 };
   }
 
   const isRankF = mob.rank === "F";
@@ -606,11 +589,10 @@ export function getMaintenanceRepop(mob, lastKill, maintenance, nowSec) {
     const factor = isRankF ? 1 : MAINT_FACTOR;
     return {
       minRepop: serverUp + (repopSec * factor),
-      maxRepop: serverUp + (maxSec * factor)
+      maxRepop: serverUp + (maxSec * factor),
+      appliedFactor: factor
     };
   }
 
-  return { minRepop: lastKill + repopSec, maxRepop: lastKill + maxSec };
+  return { minRepop: lastKill + repopSec, maxRepop: lastKill + maxSec, appliedFactor: 1 };
 }
-
-
