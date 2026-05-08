@@ -31,7 +31,7 @@
         right: 0;
         z-index: var(--z-mobcard-mobile);
         background: var(--color-bg-dark);
-        padding: 14px;
+        padding: 2dvh 0;
         overflow-y: auto;
         animation: mobcard-slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
