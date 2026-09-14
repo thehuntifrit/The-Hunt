@@ -1,368 +1,275 @@
-/* --- UNIFIED BOTTOM NAVIGATION (PC & Mobile) --- */
+/* =========================================================
+   css / appnav.css  —  #appnav
+   ========================================================= */
+
+/* ── Sidebar (PC) ────────────────────────────────────────── */
 #appnav {
   position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  z-index: var(--z-sidebar);
+  background-color: var(--c-panel);
+  border-right: 1px solid var(--c-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Mobile: bottom bar */
+  top: auto;
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: var(--z-footer);
-  background: #070a12;
-  border-top: 1px solid var(--color-border-normal);
-  display: flex;
-  flex-direction: column-reverse;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  height: var(--footer-safe);
   width: 100%;
-  box-sizing: border-box;
+  border-right: none;
+  border-top: 1px solid var(--c-border);
 }
 
-#appnav .appnav-inner {
+.appnav-inner {
   display: flex;
-  flex-direction: column-reverse;
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
+  height: 100%;
 }
 
-#appnav .appnav-main-nav {
+/* ── Mobile: horizontal nav ──────────────────────────────── */
+.appnav-main-nav {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.appnav-top { display: none; } /* logo — hidden on mobile */
+
+.appnav-items-wrapper {
   display: flex;
   flex-direction: row;
+  align-items: flex-start;
   justify-content: space-around;
-  align-items: center;
-  height: var(--footer-height);
   width: 100%;
-  background: #070a12;
-  padding: 0 8px;
-  box-sizing: border-box;
+  height: var(--footer-h);
+  padding-top: 0;
 }
 
-#appnav .appnav-items-wrapper {
-  display: flex;
-  flex: 1;
-  justify-content: space-around;
-  align-items: center;
-  height: 100%;
-}
-
-#appnav .appnav-btn {
-  flex: 1;
-  max-width: 120px;
-  height: 100%;
+.appnav-btn {
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  gap: 3px;
+  height: var(--footer-h);
+  background: none;
   border: none;
-  color: var(--color-text-secondary);
   cursor: pointer;
+  padding: 0;
   position: relative;
-  padding: 4px 0;
-  gap: 2px;
-  transition: color var(--t-base);
-  -webkit-user-select: none;
-  user-select: none;
   -webkit-tap-highlight-color: transparent;
+  outline: none;
+  text-decoration: none;
 }
 
-#appnav .appnav-btn:hover {
-  color: var(--color-text-primary);
+.appnav-icon {
+  font-size: 20px;
+  line-height: 1;
+  filter: grayscale(60%) opacity(0.7);
+  transition: filter 0.15s;
 }
 
-#appnav .appnav-btn.active {
-  color: var(--color-cyan);
-}
-
-#appnav .appnav-btn.active::after {
-  content: "";
-  position: absolute;
-  bottom: 2px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--color-cyan);
-  box-shadow: 0 0 6px var(--color-cyan);
-}
-
-#appnav .appnav-btn .appnav-icon {
-  font-size: 18px;
+.appnav-label {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--c-text-lo);
+  transition: color 0.15s;
   line-height: 1;
 }
 
-#appnav .appnav-btn .appnav-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+/* active state */
+.appnav-btn.active .appnav-icon,
+.appnav-btn[data-active] .appnav-icon {
+  filter: grayscale(0%) opacity(1);
 }
-
-#appnav .appnav-panel {
-  max-height: 0;
-  overflow: hidden;
-  background: #0a0f1d;
-  padding: 0 16px;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  box-sizing: border-box;
-  transition:
-    max-height var(--t-base),
-    padding var(--t-base);
+.appnav-btn.active .appnav-label,
+.appnav-btn[data-active] .appnav-label {
+  color: var(--c-text-hi);
 }
-
-#appnav .appnav-panel.expanded {
-  max-height: 65vh;
-  padding: 12px 16px;
-  overflow-y: auto;
-  border-bottom: 1px solid var(--color-border-normal);
-}
-
-#appnav .appnav-top,
-#appnav .appnav-divider {
-  display: none;
-}
-
-/* --- COMMON ELEMENTS --- */
-.appnav-logo {
-  font-size: 18px;
-  font-weight: 950;
-  line-height: 0.7;
-  letter-spacing: -0.04em;
-  margin-top: 16px;
-  margin-bottom: 48px;
-  cursor: pointer;
-  text-align: left;
-  width: max-content;
-  width: -webkit-fit-content;
-  width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-}
-
-.appnav-logo .appnav-logo-the {
-  color: var(--color-cyan);
-  font-size: 16px;
-}
-
-.appnav-logo .appnav-logo-hunt {
-  color: var(--color-gold);
-  margin-top: -10px;
-}
-
-.appnav-logo .appnav-logo-refresh {
+.appnav-btn.active::after,
+.appnav-btn[data-active]::after {
+  content: '';
   position: absolute;
-  right: -24px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 16px;
-  color: var(--color-text-secondary);
-  opacity: 0;
-}
-
-.appnav-logo:hover {
-  opacity: 1;
-}
-
-.appnav-logo:hover .appnav-logo-refresh {
-  transform: translateY(-50%) rotate(180deg);
-  color: var(--color-cyan);
-}
-
-.appnav-btn.nav-toggle-btn .appnav-icon {
-  color: var(--color-cyan);
-  transition: color 0.3s ease;
-}
-
-.appnav-btn.nav-toggle-btn.is-disabled {
-  background: var(--color-bg-panel);
-}
-
-.appnav-btn.nav-toggle-btn.is-disabled .appnav-icon {
-  color: var(--color-text-secondary);
-  text-shadow: none;
-  filter: grayscale(1);
-}
-
-.appnav-btn.appnav-active {
-  color: var(--color-cyan);
-  background: var(--color-nav-active-bg);
-}
-
-.appnav-btn.has-alert {
-  color: var(--color-gold);
-}
-
-.appnav-btn.has-alert::after {
-  content: "";
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 6px;
-  height: 6px;
-  background: var(--color-nav-badge-error);
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
-  z-index: 10;
+  background-color: var(--c-cyan);
 }
+
+/* nav toggle (checkbox-based) */
+.nav-toggle-btn { cursor: pointer; }
+
+/* divider between nav items */
+.appnav-divider {
+  width: 1px;
+  height: 28px;
+  background-color: var(--c-border);
+  align-self: center;
+  flex-shrink: 0;
+}
+
+/* ── Slide-out panel ──────────────────────────────────────── */
+.appnav-panel {
+  display: none; /* opened by JS */
+  position: fixed;
+  bottom: var(--footer-safe);
+  left: 0;
+  width: 100%;
+  max-height: 60vh;
+  z-index: var(--z-sidebar);
+  background-color: #09111f;
+  border-top: 1px solid var(--c-border);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px;
+}
+.appnav-panel.is-open { display: block; }
+
+.js-appnav-panel-item { display: none; }
+.js-appnav-panel-item:not(.hidden) { display: block; }
 
 .appnav-section-title {
-  font-family: "Roboto", sans-serif;
   font-size: 11px;
-  font-weight: 800;
-  color: var(--color-white);
-  letter-spacing: 0.15em;
-  margin-bottom: 6px;
-  text-align: center;
-  text-transform: uppercase;
-  line-height: 1.4;
-  display: block;
-  margin-inline: 8px;
-}
-
-#sidebar-panel-telop .appnav-section-title {
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--color-border-normal);
-}
-
-/* --- PANEL CONTENT --- */
-.appnav-alert,
-.js-error-content {
-  background: var(--color-bg-nav-panel);
-  border: 1px solid var(--color-border-normal);
-  padding: 8px;
-  text-align: center;
-  color: var(--color-cyan);
-  font-size: 15px;
-  line-height: 1.5;
-}
-
-.sidebar-welcome-msg {
-  color: var(--color-white);
   font-weight: 700;
+  color: var(--c-text-lo);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 10px;
+}
+
+.appnav-alert {
+  font-size: 13px;
+  color: var(--c-text-lo);
+  line-height: 1.6;
+}
+
+.sidebar-welcome-area {
   margin-bottom: 8px;
+}
+
+/* ── Error list ──────────────────────────────────────────── */
+.appnav-error-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--c-border);
   font-size: 12px;
-  text-align: center;
 }
+.appnav-error-time { color: var(--c-text-lo); white-space: nowrap; }
+.error-msg { color: var(--c-offline-text); }
 
-.sidebar-welcome-name {
-  color: var(--color-gold);
-}
+/* ── Rank filter accordion ───────────────────────────────── */
+.appnav-filter-accordion { display: flex; flex-direction: column; gap: 6px; }
 
-/* Rank / Accordion Styles */
 .appnav-rank-item {
-  margin-bottom: 4px;
-  display: block;
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  overflow: hidden;
 }
 
-.appnav-rank-item:last-child {
-  margin-bottom: 0;
-}
-
-.appnav-rank-item .appnav-rank-header {
-  inline-size: 100%;
+.appnav-rank-header {
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  background-color: var(--c-surface);
+  border: none;
   cursor: pointer;
-  padding: 4px 12px;
-  font-family: "Roboto", sans-serif;
-  font-size: 16px;
-  background: var(--color-nav-bg);
-  border: 1px solid var(--color-border-normal);
-  color: var(--color-text-secondary);
-}
-
-.appnav-rank-item .appnav-rank-header:hover {
-  background: var(--color-bg-panel-light);
-}
-
-.appnav-rank-item .appnav-rank-header[data-rank] {
-  --rank-color: var(--current-rank, var(--color-cyan));
-  color: var(--rank-color);
-}
-
-.appnav-rank-item .appnav-rank-header[data-rank="S"],
-.appnav-rank-item .appnav-rank-header[data-rank="S rank"] {
-  --current-rank: var(--color-rank-s);
-}
-
-.appnav-rank-item .appnav-rank-header[data-rank="A"],
-.appnav-rank-item .appnav-rank-header[data-rank="A rank"] {
-  --current-rank: var(--color-rank-a);
-}
-
-.appnav-rank-item .appnav-rank-header[data-rank="F"],
-.appnav-rank-item .appnav-rank-header[data-rank="FATE"] {
-  --current-rank: var(--color-rank-f);
-}
-
-.appnav-rank-item .appnav-rank-header[data-rank="ALL"] {
-  --current-rank: var(--color-all-rank);
-}
-
-.appnav-rank-item.appnav-active .appnav-rank-header {
-  --rank-color: var(--current-rank, var(--color-cyan));
-  background: var(--color-bg-panel-light);
-  border-color: var(--rank-color);
-  color: var(--rank-color);
-  box-shadow: none;
-  text-shadow: none;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text-hi);
+  -webkit-tap-highlight-color: transparent;
+  text-align: left;
 }
 
 .appnav-area-expansion {
-  max-height: 0;
-  overflow: hidden;
-  background: var(--color-bg-nav-panel);
+  background-color: var(--c-bg);
+  padding: 8px;
 }
-
-.appnav-rank-item.appnav-is-expanded .appnav-area-expansion {
-  max-height: 1000px;
-}
-
-#appnav .appnav-panel .area-grid-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2px;
-  padding: 4px 8px;
-  margin: 0;
-}
-
-#appnav .appnav-panel .area-all-container {
-  grid-column: 1 / -1;
-  margin-top: 2px;
-  margin-bottom: 4px;
-}
-
-#appnav .appnav-panel .area-grid-container .area-filter-btn {
-  width: 100%;
-  padding: 2px 4px;
-  cursor: pointer;
-  font-family: "Roboto", sans-serif;
-  font-size: 15px;
-  min-height: 24px;
-  background: var(--color-bg-nav-panel);
-  border: 1px solid var(--color-border-normal);
-  color: #8f949b;
-  border-radius: 1px;
+.area-grid-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  margin: 0;
-  outline: none;
-  box-shadow: none;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-#appnav .appnav-panel .area-grid-container .area-filter-btn:hover {
-  background: var(--color-bg-panel-light);
-}
+/* ── PC layout override ───────────────────────────────────── */
+@media (min-width: 900px) {
+  #appnav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: auto;
+    right: auto;
+    width: 64px;
+    height: 100%;
+    border-top: none;
+    border-right: 1px solid var(--c-border);
+  }
+  .appnav-inner {
+    flex-direction: column;
+  }
+  .appnav-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 0 10px;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .appnav-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    gap: 0;
+  }
+  .appnav-logo-the  { font-size: 9px; color: var(--c-cyan); font-weight: 700; }
+  .appnav-logo-hunt { font-size: 12px; color: var(--c-gold); font-weight: 700; }
+  .appnav-logo-refresh { font-size: 12px; color: var(--c-text-lo); }
 
-#appnav .appnav-panel .area-grid-container .area-filter-btn.is-selected {
-  background: var(--color-ui-selected-mix);
-  border-color: var(--color-cyan);
-  color: var(--color-white);
-}
+  .appnav-items-wrapper {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: auto;
+    padding: 8px 0;
+    gap: 4px;
+  }
+  .appnav-btn {
+    width: 100%;
+    height: 52px;
+    flex: none;
+  }
+  .appnav-divider {
+    width: 36px;
+    height: 1px;
+    margin: 4px 0;
+  }
 
-#appnav .appnav-panel .area-grid-container .area-filter-btn.area-select-all {
-  width: 80%;
-  margin-inline: auto;
-  font-size: 15px;
-  letter-spacing: 0.02em;
+  /* panel becomes left-side flyout */
+  .appnav-panel {
+    top: 0;
+    left: 64px;
+    bottom: 0;
+    width: 240px;
+    max-height: none;
+    border-top: none;
+    border-right: 1px solid var(--c-border);
+  }
+
+  /* push main content right */
+  body { padding-left: 64px; }
+  #root-mobile-top-bar { display: none; }
 }
