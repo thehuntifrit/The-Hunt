@@ -99,7 +99,7 @@
 /* mob name */
 .mobcard-name {
   font-family: var(--font-ui);
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--c-text-hi);
   white-space: nowrap;
