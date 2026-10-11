@@ -216,7 +216,7 @@
 
 .appnav-alert {
   font-size: 15px;
-  color: var(--c-text-lo);
+  color: var(--c-text-hi);
   line-height: 1.6;
 }
 
