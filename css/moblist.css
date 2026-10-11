@@ -259,7 +259,7 @@
 
 .moblist-percent {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--c-text-hi);
   font-variant-numeric: tabular-nums;

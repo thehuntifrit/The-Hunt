@@ -83,7 +83,7 @@
 
   /* typography */
   --font-ui: 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Roboto Mono', monospace;
+  --font-mono: 'Roboto Mono', 'JetBrains Mono', monospace;
 }
 
 /* ── Base ────────────────────────────────────────────────── */
