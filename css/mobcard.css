@@ -121,14 +121,14 @@
 .mobcard-area-info {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
   overflow: hidden;
 }
 
 .detail-area {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--c-text-lo);
   white-space: nowrap;
   overflow: hidden;
@@ -137,7 +137,7 @@
 
 .detail-expansion {
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: 13px;
   color: var(--c-text-off);
   white-space: nowrap;
   flex-shrink: 0;
@@ -146,8 +146,8 @@
 .percent {
   flex-shrink: 0;
   font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 500;
   color: var(--c-cyan);
 }
 
@@ -186,8 +186,8 @@
 }
 
 .mobcard-section-label {
-  font-size: 10px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--c-cyan);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -202,7 +202,7 @@
 
 .map-update-time {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--c-text-hi);
   margin-left: 8px;
@@ -300,8 +300,8 @@
 
 .mobcard-label {
   font-family: var(--font-ui);
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--c-text-lo);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -316,7 +316,7 @@
 .mobcard-value {
   font-family: var(--font-mono);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--c-text-hi);
   line-height: 1.2;
   margin-left: auto;
@@ -327,7 +327,7 @@
 
 .mobcard-value .mobcard-timer-num {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .mobcard-value .mobcard-timer-unit {
@@ -344,7 +344,7 @@
 /* condition section & text box */
 .condition-section .condition-text,
 .condition-text {
-  font-size: 11px;
+  font-size: 13px;
   color: #e8e9eb;
   line-height: 1.5;
   padding: 8px 10px;
@@ -374,8 +374,8 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-ui);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
   border: none;
   border-right: 1px solid var(--c-border);

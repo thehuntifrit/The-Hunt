@@ -10,7 +10,8 @@
           "backdrop-filter",
           "user-select",
           "scrollbar-width",
-          "scrollbar-width: none"
+          "scrollbar-width: none",
+          "min-height: auto"
         ]
       }
     ]
