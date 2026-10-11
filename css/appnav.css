@@ -208,7 +208,7 @@
 .appnav-section-title {
   font-size: 11px;
   font-weight: 600;
-  color: var(--c-text-lo);
+  color: var(--c-text-sel);
   text-transform: uppercase;
   letter-spacing: 0.8px;
   margin-bottom: 0;
