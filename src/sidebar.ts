@@ -168,60 +168,44 @@ export const renderAreaFilterPanel = (customContainer: HTMLElement | null = null
 
     let items: string[] = [];
     let currentSet = new Set<string>();
-    let isAllSelected = false;
 
     if (stateVal.filter.rank === RANKS.ALL) {
         items = [RANKS.S, RANKS.A, RANKS.F];
         currentSet = stateVal.filter.allRankSet instanceof Set ? stateVal.filter.allRankSet : new Set();
-        isAllSelected = items.length > 0 && currentSet.size === items.length;
     } else {
         const expansionEntries = Object.entries(EXPANSION_MAP).sort((a, b) => Number(b[0]) - Number(a[0]));
         items = expansionEntries.map(e => e[1]);
         currentSet = (stateVal.filter.areaSets as any)[targetRankKey] instanceof Set ? (stateVal.filter.areaSets as any)[targetRankKey] : new Set();
-        isAllSelected = items.length > 0 && currentSet.size === items.length;
     }
 
-    const container = customContainer || document.querySelector("#appnav .appnav-rank-item.appnav-active .area-grid-container") as HTMLElement | null;
+    const container = customContainer || document.querySelector("#sidebar-panel-rank .area-grid-container") as HTMLElement | null;
     if (!container) return;
 
     container.innerHTML = "";
 
-    const allBtnWrapper = document.createElement("div");
-    allBtnWrapper.className = "area-all-container";
-    const allBtn = document.createElement("button");
-    allBtn.className = `area-filter-btn area-select-all ${isAllSelected ? 'is-selected' : ''}`;
-    allBtn.textContent = isAllSelected ? "全解除" : "全選択";
-    allBtn.dataset.value = "ALL";
-    allBtnWrapper.appendChild(allBtn);
-    container.appendChild(allBtnWrapper);
-
     items.forEach(item => {
         const isSelected = currentSet.has(item);
         const btn = document.createElement("button");
+        btn.type = "button";
         btn.className = `area-filter-btn ${isSelected ? 'is-selected' : ''}`;
         btn.textContent = (stateVal.filter.rank === RANKS.FATE && item === RANKS.F) ? 'FATE' : (stateVal.filter.rank === RANKS.ALL ? (item === RANKS.F ? 'FATE' : `${item} rank`) : item);
         btn.dataset.value = item;
         container.appendChild(btn);
     });
+
+    updateCarouselArrows();
 };
 
 export const handleRankTabClick = (rank: string): void => {
     if (!rank) return;
     const stateVal = getState();
-    const prevRank = stateVal.filter.rank;
+    if (stateVal.filter.rank === rank) return;
 
-    const isSameRank = normalizeRank(rank) === normalizeRank(prevRank);
-
-    if (isSameRank) {
-        const nextStep = (stateVal.filter.clickStep === 2) ? 3 : 2;
-        setFilter({ clickStep: nextStep });
-    } else {
-        setFilter({
-            rank,
-            clickStep: 1,
-            areaSets: stateVal.filter.areaSets
-        });
-    }
+    setFilter({
+        rank,
+        clickStep: 1,
+        areaSets: stateVal.filter.areaSets
+    });
 
     filterAndRender();
 };
@@ -240,13 +224,7 @@ export function handleAreaFilterClick(e: Event): void {
         const nextSet = new Set<string>(currentSet);
         const val = btn.dataset.value;
 
-        if (val === "ALL") {
-            if (currentSet.size === 3) {
-                nextSet.clear();
-            } else {
-                nextSet.add("S").add("A").add("F");
-            }
-        } else if (val) {
+        if (val) {
             if (nextSet.has(val)) nextSet.delete(val);
             else nextSet.add(val);
         }
@@ -262,8 +240,6 @@ export function handleAreaFilterClick(e: Event): void {
     }
 
     const targetRankKey = normalizeRank(uiRank);
-    const allAreas = getAllAreas();
-
     const currentSet =
         (stateVal.filter.areaSets as any)[targetRankKey] instanceof Set
             ? (stateVal.filter.areaSets as any)[targetRankKey]
@@ -272,13 +248,7 @@ export function handleAreaFilterClick(e: Event): void {
     const nextAreaSets = { ...stateVal.filter.areaSets };
     const val = btn.dataset.value || btn.dataset.area;
 
-    if (val === "ALL") {
-        if (currentSet.size === allAreas.length) {
-            nextAreaSets[targetRankKey] = new Set<string>();
-        } else {
-            nextAreaSets[targetRankKey] = new Set<string>(allAreas);
-        }
-    } else if (val) {
+    if (val) {
         const area = val;
         const next = new Set<string>(currentSet);
         if (next.has(area)) next.delete(area);
@@ -384,11 +354,11 @@ export function initAppNav(): void {
 
     nav.addEventListener('click', (e) => {
         const target = e.target as HTMLElement;
-        const header = target.closest('.appnav-rank-header') as HTMLElement | null;
-        if (header) {
+        const rankBtn = target.closest('.appnav-rank-tab, .appnav-rank-header') as HTMLElement | null;
+        if (rankBtn) {
             e.preventDefault();
             e.stopPropagation();
-            handleRankTabClick(header.dataset.rank || "");
+            handleRankTabClick(rankBtn.dataset.rank || "");
         }
     });
 
@@ -544,57 +514,92 @@ function updateErrorBadge(): void {
     });
 }
 
-// ─── アコーディオン ─────────────────────────────────────
+export function updateCarouselArrows(): void {
+    const carousel = document.querySelector("#sidebar-panel-rank .appnav-area-carousel") as HTMLElement | null;
+    if (!carousel) return;
+
+    const prevBtn = document.querySelector("#sidebar-panel-rank .carousel-arrow-prev") as HTMLElement | null;
+    const nextBtn = document.querySelector("#sidebar-panel-rank .carousel-arrow-next") as HTMLElement | null;
+
+    if (!prevBtn || !nextBtn) return;
+
+    const canScrollLeft = carousel.scrollLeft > 2;
+    const canScrollRight = carousel.scrollLeft + carousel.clientWidth < carousel.scrollWidth - 2;
+
+    if (carousel.scrollWidth > carousel.clientWidth + 4) {
+        prevBtn.classList.toggle("hidden", !canScrollLeft);
+        nextBtn.classList.toggle("hidden", !canScrollRight);
+    } else {
+        prevBtn.classList.add("hidden");
+        nextBtn.classList.add("hidden");
+    }
+}
+
+// ─── ランク＆エリアフィルター ─────────────────────────────
 function renderSidebarFilterAccordion(): void {
     const container = DOM.filterAccordion;
     if (!container) return;
 
-    const ranks = [
-        { key: RANKS.ALL, label: "ALL", color: "var(--color-all-rank)" },
-        { key: RANKS.S_RANK, label: "S rank", color: "var(--color-rank-s)" },
-        { key: RANKS.A_RANK, label: "A rank", color: "var(--color-rank-a)" },
-        { key: RANKS.FATE, label: "FATE", color: "var(--color-rank-f)" },
-    ];
-
     const stateVal = getState();
     const activeRank = stateVal.filter.rank || RANKS.ALL;
-    const clickStep = stateVal.filter.clickStep || 1;
 
-    const fragment = document.createDocumentFragment();
-
-    const titleDiv = document.createElement("div");
-    titleDiv.className = "appnav-section-title";
-    titleDiv.textContent = "Rank Filter";
-    fragment.appendChild(titleDiv);
-
-    ranks.forEach(r => {
-        const isActive = r.key === activeRank;
-        const isExpanded = isActive && clickStep === 2;
-
-        const itemEl = cloneTemplate('rank-accordion-item-template');
-        if (itemEl) {
-            const root = itemEl.querySelector('.appnav-rank-item') as HTMLElement || itemEl;
-            if (isActive) root.classList.add('appnav-active');
-            if (isExpanded) root.classList.add('appnav-is-expanded');
-            root.dataset.rank = r.key;
-
-            const header = root.querySelector(".appnav-rank-header") as HTMLElement | null;
-            if (header) {
-                header.dataset.rank = r.key;
-                header.textContent = r.label;
-            }
-            fragment.appendChild(itemEl);
+    let wrapper = container.querySelector(".appnav-filter-wrapper") as HTMLElement | null;
+    if (!wrapper) {
+        const templateEl = cloneTemplate('rank-filter-panel-template');
+        if (templateEl) {
+            container.innerHTML = "";
+            container.appendChild(templateEl);
+            wrapper = container.querySelector(".appnav-filter-wrapper");
         }
+    }
+
+    if (!wrapper) return;
+
+    const tabButtons = wrapper.querySelectorAll<HTMLButtonElement>(".appnav-rank-tab");
+    tabButtons.forEach(btn => {
+        const rank = btn.dataset.rank;
+        const isActive = rank === activeRank;
+        btn.classList.toggle("is-active", isActive);
     });
 
-    container.innerHTML = "";
-    container.appendChild(fragment);
-
-    const activeExpansion = container.querySelector(".appnav-rank-item.appnav-active .area-grid-container") as HTMLElement | null;
-    if (activeExpansion) {
-        activeExpansion.className = "area-grid-container appnav-area-grid";
-        renderAreaFilterPanel(activeExpansion);
+    const track = wrapper.querySelector(".area-grid-container") as HTMLElement | null;
+    if (track) {
+        renderAreaFilterPanel(track);
     }
+
+    const carousel = wrapper.querySelector(".appnav-area-carousel") as HTMLElement | null;
+    if (carousel && !(carousel as any)._hasScrollBound) {
+        (carousel as any)._hasScrollBound = true;
+        carousel.addEventListener("scroll", () => {
+            updateCarouselArrows();
+        }, { passive: true });
+    }
+
+    const prevBtn = wrapper.querySelector(".carousel-arrow-prev") as HTMLButtonElement | null;
+    if (prevBtn && !(prevBtn as any)._hasClickBound) {
+        (prevBtn as any)._hasClickBound = true;
+        prevBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (carousel) {
+                carousel.scrollBy({ left: -carousel.clientWidth * 0.8, behavior: "smooth" });
+            }
+        });
+    }
+
+    const nextBtn = wrapper.querySelector(".carousel-arrow-next") as HTMLButtonElement | null;
+    if (nextBtn && !(nextBtn as any)._hasClickBound) {
+        (nextBtn as any)._hasClickBound = true;
+        nextBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (carousel) {
+                carousel.scrollBy({ left: carousel.clientWidth * 0.8, behavior: "smooth" });
+            }
+        });
+    }
+
+    requestAnimationFrame(() => {
+        updateCarouselArrows();
+    });
 }
 
 // ─── イベントリスナー ───────────────────────────────────

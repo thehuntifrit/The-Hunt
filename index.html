@@ -91,9 +91,9 @@
                 </div>
                 <div id="sidebar-panel-rank" class="js-appnav-panel-item hidden">
                     <div class="appnav-section-header">
-                        <div class="appnav-section-title">Rank</div>
+                        <div class="appnav-section-title">Rank Filter</div>
                     </div>
-                    <div id="sidebar-filter-accordion" class="appnav-filter-accordion"></div>
+                    <div id="sidebar-filter-accordion" class="appnav-filter-container"></div>
                 </div>
             </div>
         </div>
@@ -368,11 +368,20 @@
             </div>
         </template>
 
-        <template id="rank-accordion-item-template">
-            <div class="appnav-rank-item">
-                <button class="appnav-rank-header"></button>
-                <div class="appnav-area-expansion">
-                    <div class="area-grid-container"></div>
+        <template id="rank-filter-panel-template">
+            <div class="appnav-filter-wrapper">
+                <div class="appnav-rank-tabs">
+                    <button type="button" class="appnav-rank-tab" data-rank="ALL">ALL</button>
+                    <button type="button" class="appnav-rank-tab" data-rank="S rank">S rank</button>
+                    <button type="button" class="appnav-rank-tab" data-rank="A rank">A rank</button>
+                    <button type="button" class="appnav-rank-tab" data-rank="FATE">FATE</button>
+                </div>
+                <div class="appnav-area-carousel-wrapper">
+                    <button type="button" class="carousel-arrow carousel-arrow-prev hidden" aria-label="前へ">‹</button>
+                    <div class="appnav-area-carousel">
+                        <div class="area-grid-container appnav-area-carousel-track"></div>
+                    </div>
+                    <button type="button" class="carousel-arrow carousel-arrow-next hidden" aria-label="次へ">›</button>
                 </div>
             </div>
         </template>

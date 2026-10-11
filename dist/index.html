@@ -9,11 +9,10 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;700&display=swap"
         rel="stylesheet">
-
     <script src="js/lib/marked.min.js"></script>
     <script src="js/lib/purify.min.js"></script>
-  <script type="module" crossorigin src="./assets/index-B_NUr7ee.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-jfzSYSvx.css">
+  <script type="module" crossorigin src="./assets/index-Ck_FmHC1.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CbIEBKQL.css">
 </head>
 
 <body class="">
@@ -64,21 +63,31 @@
                 </div>
             </div>
             <div class="appnav-panel">
+                <div class="appnav-panel-top-border"></div>
                 <div id="sidebar-panel-error" class="js-appnav-panel-item hidden">
-                    <div class="appnav-section-title">Error</div>
+                    <div class="appnav-section-header">
+                        <div class="appnav-section-title">Error</div>
+                    </div>
                     <div id="sidebar-error-content" class="appnav-alert js-error-content"></div>
                 </div>
                 <div id="sidebar-panel-telop" class="js-appnav-panel-item hidden">
-                    <div class="appnav-section-title">Information</div>
-                    <div id="sidebar-welcome-area" class="sidebar-welcome-area"></div>
+                    <div class="appnav-section-header">
+                        <div class="appnav-section-title">Information</div>
+                        <div id="sidebar-welcome-area" class="sidebar-welcome-area"></div>
+                    </div>
                     <div id="sidebar-telop-content" class="appnav-alert js-telop-content"></div>
                 </div>
                 <div id="sidebar-panel-maintenance" class="js-appnav-panel-item hidden">
-                    <div class="appnav-section-title">Maintenance</div>
+                    <div class="appnav-section-header">
+                        <div class="appnav-section-title">Maintenance</div>
+                    </div>
                     <div id="sidebar-maintenance-content" class="appnav-alert js-maintenance-content"></div>
                 </div>
                 <div id="sidebar-panel-rank" class="js-appnav-panel-item hidden">
-                    <div id="sidebar-filter-accordion" class="appnav-filter-accordion"></div>
+                    <div class="appnav-section-header">
+                        <div class="appnav-section-title">Rank Filter</div>
+                    </div>
+                    <div id="sidebar-filter-accordion" class="appnav-filter-container"></div>
                 </div>
             </div>
         </div>
@@ -110,15 +119,16 @@
         <div id="manual-modal" class="hidden">
             <div class="app-backdrop"></div>
             <div class="manual-modal-content">
-                <div class="manual-modal-top-border"></div>
-
-                <div class="manual-modal-header">
-                    <h2 class="manual-modal-title">
-                        <span class="text-cyan">The</span>
-                        <span class="text-yellow">Hunt</span>
-                        <span class="text-gray">USER GUIDE</span>
-                    </h2>
-                    <button id="close-manual-modal" class="manual-modal-close" aria-label="閉じる">✕</button>
+                <div class="manual-modal-chrome">
+                    <div class="manual-modal-top-border"></div>
+                    <div class="manual-modal-header">
+                        <h2 class="manual-modal-title">
+                            <span class="text-cyan">The</span>
+                            <span class="text-yellow">Hunt</span>
+                            <span class="text-gray">USER GUIDE</span>
+                        </h2>
+                        <button id="close-manual-modal" class="manual-modal-close" aria-label="閉じる">✕</button>
+                    </div>
                 </div>
 
                 <div id="readme-container" class="prose prose-invert prose-sm max-w-none">
@@ -352,11 +362,20 @@
             </div>
         </template>
 
-        <template id="rank-accordion-item-template">
-            <div class="appnav-rank-item">
-                <button class="appnav-rank-header"></button>
-                <div class="appnav-area-expansion">
-                    <div class="area-grid-container"></div>
+        <template id="rank-filter-panel-template">
+            <div class="appnav-filter-wrapper">
+                <div class="appnav-rank-tabs">
+                    <button type="button" class="appnav-rank-tab" data-rank="ALL">ALL</button>
+                    <button type="button" class="appnav-rank-tab" data-rank="S rank">S rank</button>
+                    <button type="button" class="appnav-rank-tab" data-rank="A rank">A rank</button>
+                    <button type="button" class="appnav-rank-tab" data-rank="FATE">FATE</button>
+                </div>
+                <div class="appnav-area-carousel-wrapper">
+                    <button type="button" class="carousel-arrow carousel-arrow-prev hidden" aria-label="前へ">‹</button>
+                    <div class="appnav-area-carousel">
+                        <div class="area-grid-container appnav-area-carousel-track"></div>
+                    </div>
+                    <button type="button" class="carousel-arrow carousel-arrow-next hidden" aria-label="次へ">›</button>
                 </div>
             </div>
         </template>
@@ -372,7 +391,6 @@
         <template id="memo-icon-template">
             <span class="memo-icon">📝</span>
         </template>
-
 
         <script>
             if ('serviceWorker' in navigator) {

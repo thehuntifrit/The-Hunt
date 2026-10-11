@@ -258,64 +258,166 @@
   color: var(--c-offline-text);
 }
 
-/* ── Rank filter accordion ───────────────────────────────── */
-.appnav-filter-accordion {
+/* ── Rank filter & expansion carousel ──────────────────────── */
+.appnav-filter-container {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
 }
 
-.appnav-rank-item {
-  border: 1px solid var(--c-border);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.appnav-rank-item.appnav-active {
-  border-color: var(--c-cyan);
-}
-
-.appnav-rank-header {
+.appnav-filter-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   width: 100%;
-  height: 36px;
+}
+
+.appnav-rank-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.appnav-rank-tab {
+  height: 38px;
   display: flex;
   align-items: center;
-  padding: 0 12px;
+  justify-content: center;
   background-color: var(--c-surface);
-  border: none;
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
   cursor: pointer;
   font-family: var(--font-ui);
   font-size: 13px;
   font-weight: 600;
-  color: var(--c-text-hi);
+  color: var(--c-text-lo);
+  transition: all 0.15s ease;
   -webkit-tap-highlight-color: transparent;
-  text-align: left;
+  user-select: none;
 }
 
-.appnav-rank-item.appnav-active .appnav-rank-header {
+.appnav-rank-tab:hover {
+  background-color: var(--c-surface-ho);
+  color: var(--c-text-hi);
+  border-color: var(--c-text-off);
+}
+
+.appnav-rank-tab.is-active {
   background-color: var(--c-surface-sel);
+  border-color: var(--c-cyan);
+  color: var(--c-cyan);
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.25);
+}
+
+/* Rank specific active accent subtle indicators */
+.appnav-rank-tab.is-active[data-rank="S rank"] {
+  border-color: var(--c-s);
+  color: var(--c-s);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.25);
+}
+.appnav-rank-tab.is-active[data-rank="A rank"] {
+  border-color: var(--c-a);
+  color: var(--c-a);
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.25);
+}
+.appnav-rank-tab.is-active[data-rank="FATE"] {
+  border-color: var(--c-f);
+  color: var(--c-f);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.25);
+}
+
+.appnav-area-carousel-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background-color: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  padding: 6px;
+}
+
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: rgba(20, 34, 56, 0.9);
+  border: 1px solid var(--c-border);
+  color: var(--c-text-hi);
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.15s ease;
+}
+
+.carousel-arrow:hover {
+  background-color: var(--c-surface-sel);
+  border-color: var(--c-cyan);
   color: var(--c-cyan);
 }
 
-.appnav-area-expansion {
-  background-color: var(--c-bg);
-  padding: 8px;
+.carousel-arrow-prev {
+  left: 4px;
 }
 
-.area-grid-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 8px 0;
+.carousel-arrow-next {
+  right: 4px;
 }
 
-.area-all-container {
+.appnav-area-carousel {
   width: 100%;
-  margin-bottom: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-border) transparent;
+}
+
+.appnav-area-carousel::-webkit-scrollbar {
+  height: 4px;
+}
+
+.appnav-area-carousel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.appnav-area-carousel::-webkit-scrollbar-thumb {
+  background: var(--c-border);
+  border-radius: 2px;
+}
+
+.appnav-area-carousel::-webkit-scrollbar-thumb:hover {
+  background: var(--c-text-off);
+}
+
+.area-grid-container.appnav-area-carousel-track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 6px;
+  width: 100%;
+  padding: 2px;
+}
+
+/* 1 page max 6 buttons visible: each button takes calc((100% - 5 * gap) / 6) */
+.area-grid-container.appnav-area-carousel-track .area-filter-btn {
+  flex: 0 0 calc((100% - (5 * 6px)) / 6);
+  min-width: 48px;
+  scroll-snap-align: start;
 }
 
 .area-filter-btn {
-  padding: 6px 10px;
+  padding: 6px 4px;
   cursor: pointer;
   font-family: var(--font-ui);
   font-size: 12px;
@@ -330,6 +432,8 @@
   outline: none;
   transition: all 0.15s ease;
   -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+  user-select: none;
 }
 
 .area-filter-btn:hover {
@@ -341,12 +445,6 @@
   background-color: var(--c-surface-sel);
   border-color: var(--c-cyan);
   color: var(--c-cyan);
-  font-weight: 600;
-}
-
-.area-filter-btn.area-select-all {
-  width: 100%;
-  font-size: 12px;
   font-weight: 600;
 }
 
