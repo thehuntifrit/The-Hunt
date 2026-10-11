@@ -316,11 +316,13 @@
   color: var(--c-s);
   box-shadow: 0 0 8px rgba(245, 158, 11, 0.25);
 }
+
 .appnav-rank-tab.is-active[data-rank="A rank"] {
   border-color: var(--c-a);
   color: var(--c-a);
   box-shadow: 0 0 8px rgba(34, 211, 238, 0.25);
 }
+
 .appnav-rank-tab.is-active[data-rank="FATE"] {
   border-color: var(--c-f);
   color: var(--c-f);

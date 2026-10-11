@@ -103,7 +103,7 @@
 /* name row */
 .moblist-name-row {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 5px;
   overflow: hidden;
 }
@@ -116,10 +116,10 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.1;
+  line-height: 1.2;
   min-width: 0;
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
 }
 
 .instance-badge {
@@ -140,6 +140,7 @@
   margin-right: 5px;
   box-shadow: 0 0 6px rgba(6, 182, 212, 0.3);
   font-family: var(--font-mono, monospace);
+  align-self: center;
 }
 
 .instance-badge::before {
@@ -151,17 +152,27 @@
 .moblist-count {
   flex-shrink: 0;
   font-family: var(--font-ui);
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--c-text-lo);
   white-space: nowrap;
+  display: inline-flex;
+  align-items: baseline;
 }
 
 .memo-icon-container {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: baseline;
+  line-height: 1;
 }
 
 .memo-icon {
-  font-size: 10px;
+  font-size: 11px;
+  line-height: 1;
+  display: inline-block;
+  vertical-align: baseline;
+  position: relative;
+  top: 1px;
 }
 
 /* area row (bottom row containing area on left & time on right) */
@@ -271,8 +282,35 @@
   font-size: 11px;
   color: var(--c-text-lo);
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 2px;
+  line-height: 1.2;
+}
+
+.pc-count-val.text-cyan {
+  color: var(--c-cyan) !important;
+}
+
+.pc-count-val .count-pin {
+  display: inline-block;
+  font-size: 10px;
+  line-height: 1;
+  position: relative;
+  top: 1px;
+  margin-right: 1px;
+}
+
+.pc-count-val .count-num {
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.pc-count-val .count-unit {
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  line-height: 1.2;
+  margin-left: 1px;
 }
 
 /* ── Selected row ────────────────────────────────────────── */

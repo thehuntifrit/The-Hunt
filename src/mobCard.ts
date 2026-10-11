@@ -682,7 +682,6 @@ export function updateMobCount(card: HTMLElement, mob: Mob): void {
     if (numEl) numEl.textContent = countInfo.type === 'single' ? String(countInfo.value) : `@${countInfo.value}`;
     if (unitEl) {
       unitEl.textContent = countInfo.unit;
-      unitEl.className = 'u-ml-1';
     }
 
     countContainer.innerHTML = "";
