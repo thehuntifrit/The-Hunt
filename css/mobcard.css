@@ -300,7 +300,7 @@
 
 .mobcard-label {
   font-family: var(--font-ui);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--c-text-lo);
   text-transform: uppercase;
@@ -326,7 +326,7 @@
 }
 
 .mobcard-value .mobcard-timer-num {
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 500;
 }
 
