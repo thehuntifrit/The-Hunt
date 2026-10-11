@@ -407,8 +407,8 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-ui);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 500;
   color: var(--c-text-lo);
   border: none;
   cursor: pointer;
@@ -579,7 +579,7 @@ html body.magnifier-active .mobcard-inner * {
   background-color: rgba(10, 18, 32, 0.92);
   color: #f0f4f8;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 8px;
   font-weight: 600;
   padding: 3px 7px;
   border-radius: 4px;
@@ -598,40 +598,40 @@ html body.magnifier-active .mobcard-inner * {
 
 /* ── Spawn point colors (Old CSS restored) ───────────────── */
 .color-b1 {
-  background-color: #22d3ee;
+  background-color: #4494f7;
   border: 2px solid #ffffff;
 }
 
 .color-b2 {
-  background-color: #f87171;
+  background-color: #fd5c5c;
   border: 2px solid #ffffff;
 }
 
 .color-b1-culled {
   background-color: #ffffff;
-  border: 2px solid #22d3ee;
+  border: 2px solid #4494f7;
 }
 
 .color-b2-culled {
   background-color: #ffffff;
-  border: 2px solid #f87171;
+  border: 2px solid #fd5c5c;
 }
 
 .color-lastone {
-  background-color: #10b981;
+  background-color: #34d399;
   border: 2px solid #ffffff;
 }
 
 .color-b1-only {
   background-color: #ffffff;
-  border: 2px solid #22d3ee;
+  border: 2px solid #4494f7;
   width: 10px;
   height: 10px;
 }
 
 .color-b2-only {
   background-color: #ffffff;
-  border: 2px solid #f87171;
+  border: 2px solid #fd5c5c;
   width: 10px;
   height: 10px;
 }
