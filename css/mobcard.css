@@ -204,7 +204,7 @@
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 500;
-  color: var(--c-text-hi);
+  color: var(--c-text-lo);
   margin-left: 8px;
 }
 
@@ -315,7 +315,7 @@
 
 .mobcard-value {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 500;
   color: var(--c-text-hi);
   line-height: 1.2;
