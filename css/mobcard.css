@@ -551,8 +551,8 @@ html body.magnifier-active .mobcard-inner * {
   position: absolute;
   left: var(--point-x);
   top: var(--point-y);
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   box-sizing: border-box;
   transform: translate(-50%, -50%);
