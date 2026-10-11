@@ -679,7 +679,7 @@ const updateMobState = function (mob: Mob, nowSec: number, state: any): boolean 
 };
 
 // ─── 報告処理 ───────────────────────────────────────────
-export function showToast(message: string, type = "error"): void {
+export function showToast(message: string, type: "error" | "success" | "info" = "error"): void {
   if (type === "error") {
     console.error(message);
   }
@@ -692,10 +692,9 @@ export function showToast(message: string, type = "error"): void {
   }
 
   const toast = document.createElement("div");
-  const colorClass = type === "error" ? "toast-error" : "toast-success";
-  toast.className = `toast-item-base ${colorClass} opacity-0 translate-x-full`;
+  const colorClass = type === "error" ? "toast-error" : type === "success" ? "toast-success" : "toast-info";
+  toast.className = `toast-item-base ${colorClass} opacity-0 translate-x-full whitespace-pre-wrap`;
   toast.textContent = message;
-  toast.classList.add("whitespace-pre-wrap");
 
   container.appendChild(toast);
 
@@ -707,7 +706,12 @@ export function showToast(message: string, type = "error"): void {
 
   setTimeout(() => {
     toast.classList.add("translate-x-full", "opacity-0");
-    toast.addEventListener("transitionend", () => toast.remove());
+    const removeToast = () => {
+      if (toast.parentElement) toast.remove();
+    };
+    toast.addEventListener("transitionend", removeToast, { once: true });
+    // Fallback removal in case transitionend does not fire
+    setTimeout(removeToast, 500);
   }, CONFIG.TOAST_DURATION);
 }
 
