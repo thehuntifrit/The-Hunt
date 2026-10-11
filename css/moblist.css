@@ -264,10 +264,10 @@
   color: var(--c-text-hi);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  background: #263554;
+  background: #5475b8;
   border: 1px solid #2f53c5;
   border-radius: 3px;
-  padding: 1px 2px;
+  padding: 1px 0px;
   width: 34px;
   line-height: 1;
   display: inline-flex;
