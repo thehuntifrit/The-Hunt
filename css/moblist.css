@@ -105,7 +105,7 @@
 .moblist-name-row {
   display: flex;
   align-items: baseline;
-  gap: 5px;
+  gap: 4px;
   overflow: hidden;
 }
 
@@ -127,10 +127,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 18px;
-  height: 15px;
+  min-width: 20px;
+  height: 18px;
   padding: 0 4px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1;
   border-radius: 3px;
@@ -146,14 +146,14 @@
 
 .instance-badge::before {
   content: '🌐';
-  font-size: 9px;
+  font-size: 12px;
   margin-right: 2px;
 }
 
 .moblist-count {
   flex-shrink: 0;
   font-family: var(--font-ui);
-  font-size: 14px;
+  font-size: 16px;
   color: var(--c-text-lo);
   white-space: nowrap;
   display: inline-flex;
@@ -282,7 +282,7 @@
 
 /* spawn count (pc-count-val) */
 .pc-count-val {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--c-text-lo);
   display: inline-flex;
   align-items: baseline;
@@ -296,7 +296,7 @@
 
 .pc-count-val .count-pin {
   display: inline-block;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1;
   position: relative;
   top: 1px;
@@ -305,15 +305,15 @@
 
 .pc-count-val .count-num {
   font-family: var(--font-mono, monospace);
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.2;
 }
 
 .pc-count-val .count-unit {
   font-family: var(--font-ui);
-  font-size: 10.5px;
+  font-size: 12px;
   line-height: 1.2;
-  margin-left: 1px;
+  margin-left: 0.5px;
 }
 
 /* ── Selected row ────────────────────────────────────────── */
