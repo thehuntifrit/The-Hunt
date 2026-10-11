@@ -315,7 +315,7 @@
 
 .mobcard-value {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--c-text-hi);
   line-height: 1.2;
@@ -368,7 +368,7 @@
 .mobcard-mobile-actions .bottom-report-btn,
 .mobcard-mobile-actions .moblist-report-btn {
   flex: 1 1 auto;
-  height: 44px;
+  height: 36px;
   border-radius: 0;
   display: flex;
   align-items: center;
@@ -400,7 +400,7 @@
 
 .mobcard-close-btn {
   flex: 0 0 90px;
-  height: 44px;
+  height: 36px;
   padding: 0;
   border-radius: 0;
   display: flex;
@@ -551,8 +551,8 @@ html body.magnifier-active .mobcard-inner * {
   position: absolute;
   left: var(--point-x);
   top: var(--point-y);
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   box-sizing: border-box;
   transform: translate(-50%, -50%);

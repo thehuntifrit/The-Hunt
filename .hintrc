@@ -11,7 +11,10 @@
           "user-select",
           "scrollbar-width",
           "scrollbar-width: none",
-          "min-height: auto"
+          "min-height: auto",
+          "-webkit-overflow-scrolling",
+          "scrollbar-width: thin",
+          "scrollbar-color"
         ]
       }
     ]
