@@ -331,7 +331,7 @@
 }
 
 .mobcard-value .mobcard-timer-unit {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 /* Next possible repop time in gold */
@@ -344,7 +344,7 @@
 /* condition section & text box */
 .condition-section .condition-text,
 .condition-text {
-  font-size: 16px;
+  font-size: 14px;
   color: #e8e9eb;
   line-height: 1.5;
   padding: 4px 8px;
@@ -374,7 +374,7 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-ui);
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   cursor: pointer;
   border: none;
