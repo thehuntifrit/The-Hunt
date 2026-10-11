@@ -240,7 +240,7 @@
 .mobcard-timer-num {
   font-family: var(--font-mono);
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--c-text-hi);
   font-variant-numeric: tabular-nums;
 }
