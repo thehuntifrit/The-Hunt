@@ -66,14 +66,15 @@ body {
   }
 
   #moblist-container {
-    flex: 0 0 440px;
+    flex: 1 1 auto;
+    max-width: 440px;
     border-right: 1px solid var(--c-border);
     padding-bottom: 16px;
   }
 
   #mobcard-pane {
     display: flex;
-    flex: 1 1 auto;
+    flex: 0 0 580px;
     padding: 16px;
     position: static;
     background-color: transparent;

@@ -532,6 +532,14 @@ html body.magnifier-active .mobcard-inner * {
   object-fit: contain;
 }
 
+@media (min-width: 900px) {
+  .mob-map-img {
+    width: 520px;
+    height: 520px;
+    max-width: 100%;
+  }
+}
+
 .map-overlay {
   pointer-events: none;
   position: absolute;
