@@ -246,7 +246,7 @@
   align-items: flex-start;
   padding: 6px 0;
   border-bottom: 1px solid var(--c-border);
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .appnav-error-time {
