@@ -233,8 +233,8 @@
 }
 
 .mobcard-memo-prefix-text {
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--c-cyan);
   letter-spacing: 0.05em;
   text-transform: lowercase;
@@ -253,7 +253,7 @@
   border: none;
   padding: 0 10px;
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--c-text-hi);
   resize: none;
   outline: none;
@@ -331,7 +331,7 @@
 }
 
 .mobcard-value .mobcard-timer-unit {
-  font-size: 11px;
+  font-size: 16px;
 }
 
 /* Next possible repop time in gold */
