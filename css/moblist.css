@@ -258,23 +258,24 @@
 
 .moblist-percent {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  color: var(--c-text-lo);
+  color: var(--c-text-hi);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-}
-
-.moblist-percent::before {
-  content: '(';
-}
-
-.moblist-percent::after {
-  content: ')';
+  background: #353e4b;
+  border: 1px solid #414a56;
+  border-radius: 3px;
+  padding: 1px 4px;
+  min-width: 28px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .moblist-percent.max-over {
-  color: var(--c-red, #ef4444);
+  color: var(--c-text-hi);
 }
 
 /* spawn count (pc-count-val) */
