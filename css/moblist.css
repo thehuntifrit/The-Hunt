@@ -173,7 +173,7 @@
   display: inline-block;
   vertical-align: baseline;
   position: relative;
-  top: -1px;
+  top: -1.5px;
 }
 
 /* area row (bottom row containing area on left & time on right) */
