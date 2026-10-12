@@ -93,7 +93,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 2px;
+  gap: 4px;
   overflow: hidden;
   padding-left: calc(var(--row-stripe) + 8px);
   padding-right: 8px;
@@ -105,7 +105,7 @@
 .moblist-name-row {
   display: flex;
   align-items: baseline;
-  gap: 4px;
+  gap: 6px;
   overflow: hidden;
 }
 
@@ -168,12 +168,12 @@
 }
 
 .memo-icon {
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1;
   display: inline-block;
   vertical-align: baseline;
   position: relative;
-  top: 1px;
+  top: 0px;
 }
 
 /* area row (bottom row containing area on left & time on right) */
