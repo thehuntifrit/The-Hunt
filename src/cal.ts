@@ -411,8 +411,6 @@ export function calculateRepop(mob: Mob, maintenance: any, options: { skipCondit
   const { skipConditionCalc = false, forceRecalc = false } = options;
   const now = Date.now() / 1000;
   const lastKill = mob.last_kill_time || 0;
-  const repopSec = mob.repopSeconds;
-  const maxSec = mob.maxRepopSeconds;
 
   const maint = ((maintenance && maintenance.maintenance) ? maintenance.maintenance : maintenance) as any;
   if (!maint || !maint.start) return baseResult("Unknown");
@@ -425,8 +423,6 @@ export function calculateRepop(mob: Mob, maintenance: any, options: { skipCondit
   const serverUpDate = parseDate(maint.serverUp || maint.end);
   const serverUp = serverUpDate ? serverUpDate.getTime() / 1000 : 0;
   const maintenanceStart = maintenanceStartDate.getTime() / 1000;
-
-  const pointSec = Math.max(minRepop, now);
 
   const nextMinRepopDate = new Date(minRepop * 1000);
 
@@ -446,24 +442,43 @@ export function calculateRepop(mob: Mob, maintenance: any, options: { skipCondit
     mob.conditions
   );
 
-  if (!options.forceRecalc && mob.repopInfo && mob.repopInfo.nextBoundarySec && now < mob.repopInfo.nextBoundarySec) {
+  // ---- キャッシュ早期リターン ----
+  // minRepop / maxRepop が変わっていたら(討伐更新・メンテ係数変化)キャッシュは使わない
+  if (
+    !forceRecalc &&
+    mob.repopInfo &&
+    mob.repopInfo.nextBoundarySec &&
+    mob.repopInfo.minRepop === minRepop &&
+    mob.repopInfo.maxRepop === maxRepop &&
+    now < mob.repopInfo.nextBoundarySec
+  ) {
     if (now >= minRepop && maxRepop > minRepop) {
       mob.repopInfo.elapsedPercent = Math.min(100, Math.floor(((now - minRepop) / (maxRepop - minRepop)) * 100));
     } else {
       mob.repopInfo.elapsedPercent = 0;
     }
 
-    const tSec = mob.repopInfo.nextBoundarySec;
+    // 条件区間中は conditionWindowEnd を、それ以外は次の境界を基準にする
+    const cachedWindowEnd = mob.repopInfo.conditionWindowEnd
+      ? mob.repopInfo.conditionWindowEnd.getTime() / 1000
+      : null;
+    const tSec = (mob.repopInfo.isInConditionWindow && cachedWindowEnd !== null)
+      ? cachedWindowEnd
+      : mob.repopInfo.nextBoundarySec;
+
     mob.repopInfo.timeRemaining = formatDurationColon(Math.max(0, tSec - now));
     return mob.repopInfo;
   }
 
+  // ---- 条件区間の計算 ----
   if (hasCondition && !skipConditionCalc) {
     let needRecalc = forceRecalc;
 
     if (mob._spawnCache) {
       if (mob._spawnCache.appliedFactor !== appliedFactor) {
         needRecalc = true;
+      } else if (mob._spawnCache.minRepop !== minRepop) {
+        needRecalc = true; // 最短POPが変わったら再計算
       } else if (now >= mob._spawnCache.end) {
         needRecalc = true;
       }
@@ -481,6 +496,7 @@ export function calculateRepop(mob: Mob, maintenance: any, options: { skipCondit
       if (result) {
         mob._spawnCache = {
           appliedFactor,
+          minRepop,
           start: result.start,
           end: result.end
         };
@@ -501,37 +517,47 @@ export function calculateRepop(mob: Mob, maintenance: any, options: { skipCondit
     }
   }
 
-  let elapsedPercent = 0;
+  // ---- 進捗バー(minRepop〜maxRepop の割合。ここだけ maxRepop を使う) ----
+  const elapsedPercent = (now < minRepop || maxRepop <= minRepop)
+    ? 0
+    : Math.min(100, Math.floor(((now - minRepop) / (maxRepop - minRepop)) * 100));
 
-  if (now >= maxRepop) {
-    status = "MaxOver";
-    elapsedPercent = 100;
-    timeRemaining = formatDurationColon(now - maxRepop);
-  } else if (now < minRepop) {
-    status = "Next";
-    const nextConditionSec = nextConditionSpawnDate ? nextConditionSpawnDate.getTime() / 1000 : 0;
-    const target = (hasCondition && nextConditionSec > minRepop) ? nextConditionSec : minRepop;
-    timeRemaining = formatDurationColon(target - now);
-  } else {
-    status = "PopWindow";
-    elapsedPercent = (now < minRepop || maxRepop <= minRepop) ? 0 : Math.min(100, Math.floor(((now - minRepop) / (maxRepop - minRepop)) * 100));
-    timeRemaining = formatDurationColon(maxRepop - now);
+  // ---- 状態判定 ----
+  const useConditionLogic = hasCondition && !skipConditionCalc;
 
-    if (hasCondition && nextConditionSpawnDate) {
-      const nextConditionSec = nextConditionSpawnDate.getTime() / 1000;
-      if (nextConditionSec > now) {
-        status = "NextCondition";
-        timeRemaining = formatDurationColon(nextConditionSec - now);
-      }
-    }
-  }
+  if (useConditionLogic) {
+    // 時限モブ: 条件区間のみで判定し、maxRepop は介在させない
+    const nextConditionSec = nextConditionSpawnDate ? nextConditionSpawnDate.getTime() / 1000 : null;
+    const windowEndSec = conditionWindowEnd ? conditionWindowEnd.getTime() / 1000 : null;
 
-  if (isInConditionWindow && now >= minRepop) {
-    if (status !== "MaxOver") {
+    if (isInConditionWindow && windowEndSec !== null) {
+      // 時限時間に突入中: 条件終了までの残り
       status = "ConditionActive";
+      timeRemaining = formatDurationColon(windowEndSec - now);
+    } else if (nextConditionSec !== null && nextConditionSec > now) {
+      // 最短POPを含む(または超える)次の条件区間の開始まで
+      status = now < minRepop ? "Next" : "NextCondition";
+      timeRemaining = formatDurationColon(nextConditionSec - now);
+    } else {
+      // 条件区間が見つからない(検索範囲内にない)
+      status = now < minRepop ? "Next" : "Unknown";
+      timeRemaining = now < minRepop ? formatDurationColon(minRepop - now) : "";
+    }
+  } else {
+    // 時限なしモブ: 従来どおり
+    if (now >= maxRepop) {
+      status = "MaxOver";
+      timeRemaining = formatDurationColon(now - maxRepop);
+    } else if (now < minRepop) {
+      status = "Next";
+      timeRemaining = formatDurationColon(minRepop - now);
+    } else {
+      status = "PopWindow";
+      timeRemaining = formatDurationColon(maxRepop - now);
     }
   }
 
+  // ---- メンテナンス判定 ----
   const isMaintenanceStop = !!(maintenanceStartDate && now >= (maintenanceStart + 1800) && !(serverUp > maintenanceStart && now >= serverUp));
 
   let isBlockedByMaintenance = false;
@@ -545,6 +571,22 @@ export function calculateRepop(mob: Mob, maintenance: any, options: { skipCondit
 
   if (isMaintenanceStop || isBlockedByMaintenance) {
     status = "Maintenance";
+  }
+
+  // ---- 次の境界(時限モブは maxRepop を含めない) ----
+  const boundaryCandidates: (number | null)[] = [
+    minRepop,
+    useConditionLogic ? null : maxRepop,
+    nextConditionSpawnDate ? nextConditionSpawnDate.getTime() / 1000 : null,
+    conditionWindowEnd ? conditionWindowEnd.getTime() / 1000 : null
+  ];
+
+  let nextBoundarySec = boundaryCandidates
+    .filter((t): t is number => t !== null && t > now)
+    .reduce((minVal, t) => Math.min(minVal, t), Infinity);
+
+  if (hasCondition && !nextConditionSpawnDate && skipConditionCalc) {
+    nextBoundarySec = 0;
   }
 
   return {
@@ -562,19 +604,7 @@ export function calculateRepop(mob: Mob, maintenance: any, options: { skipCondit
     isBlockedByMaintenance,
     maintStart: maintenanceStart,
     maintEnd: serverUp || ((parseDate(maint?.end)?.getTime() ?? 0) / 1000),
-    nextBoundarySec: (() => {
-      let bSec = [
-        minRepop,
-        maxRepop,
-        nextConditionSpawnDate ? nextConditionSpawnDate.getTime() / 1000 : null,
-        conditionWindowEnd ? conditionWindowEnd.getTime() / 1000 : null
-      ].filter((t): t is number => t !== null && t > now).reduce((minVal, t) => Math.min(minVal, t), Infinity);
-
-      if (hasCondition && !nextConditionSpawnDate && skipConditionCalc) {
-        bSec = 0;
-      }
-      return bSec;
-    })()
+    nextBoundarySec
   };
 }
 

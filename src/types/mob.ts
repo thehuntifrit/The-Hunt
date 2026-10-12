@@ -45,6 +45,7 @@ export interface WeatherDuration {
 
 export interface SpawnCache {
   appliedFactor: number;
+  minRepop: number;
   start: number;
   end: number;
 }
