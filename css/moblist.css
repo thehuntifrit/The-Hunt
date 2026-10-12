@@ -205,7 +205,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 2px;
+  gap: 1px;
   padding-right: 0;
   white-space: nowrap;
 }
@@ -224,7 +224,7 @@
 /* timer inner parts (from #timer-rich-template) */
 .mobcard-timer {
   display: inline-flex;
-  gap: 2px;
+  gap: 1px;
   align-items: baseline;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -233,7 +233,7 @@
 .mobcard-timer-part {
   display: inline-flex;
   align-items: baseline;
-  min-inline-size: 2.2ch;
+  min-inline-size: 100px;
   justify-content: flex-end;
 }
 
@@ -267,7 +267,7 @@
   background: #2551aa;
   border: 1px solid #133296;
   border-radius: 3px;
-  padding: 2.5px 1.5px;
+  padding: 0.5px 0.5px;
   width: 30px;
   line-height: 1;
   display: inline-flex;
