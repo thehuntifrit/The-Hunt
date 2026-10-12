@@ -233,7 +233,7 @@
 .mobcard-timer-part {
   display: inline-flex;
   align-items: baseline;
-  min-inline-size: 16px;
+  min-inline-size: 32px;
   justify-content: flex-end;
 }
 
