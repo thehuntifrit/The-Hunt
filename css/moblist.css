@@ -146,7 +146,7 @@
 
 .instance-badge::before {
   content: '🌐';
-  font-size: 10px;
+  font-size: 9px;
   margin-right: 2px;
 }
 
@@ -267,7 +267,7 @@
   background: #2551aa;
   border: 1px solid #133296;
   border-radius: 3px;
-  padding: 0.5px 0.5px 0.5px;
+  padding: 0.5px 1px;
   width: 30px;
   line-height: 1;
   display: inline-flex;
