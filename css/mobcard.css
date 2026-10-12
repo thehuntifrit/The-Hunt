@@ -564,7 +564,7 @@ html body.magnifier-active .mobcard-inner * {
 
 .spawn-point:focus,
 .spawn-point:hover {
-  transform: translate(-50%, -50%) scale(2);
+  transform: translate(-50%, -50%) scale(1);
   z-index: 20;
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
   outline: none;
@@ -574,8 +574,8 @@ html body.magnifier-active .mobcard-inner * {
 .spawn-point[data-tooltip]::after {
   content: attr(data-tooltip);
   position: absolute;
-  bottom: calc(100% + 2px);
-  right: calc(100% + 2px);
+  bottom: calc(100% + 1px);
+  right: calc(100% + 1px);
   background-color: rgba(10, 18, 32, 0.92);
   color: #f0f4f8;
   font-family: var(--font-mono);
