@@ -267,14 +267,14 @@
   background: #2551aa;
   border: 1px solid #133296;
   border-radius: 3px;
-  padding: 0.5px 1px 0px 1px;
+  padding: 0.8px 1px 0px 1px;
   width: 30px;
   line-height: 1;
   display: inline-flex;
   align-items: flex-start;
   justify-content: flex-end;
   box-sizing: border-box;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .moblist-percent.max-over {
