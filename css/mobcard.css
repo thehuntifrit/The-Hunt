@@ -564,7 +564,7 @@ html body.magnifier-active .mobcard-inner * {
 
 .spawn-point:focus,
 .spawn-point:hover {
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, -50%) scale(1.5);
   z-index: 20;
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
   outline: none;
