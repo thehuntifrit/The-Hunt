@@ -268,13 +268,13 @@
   border: 1px solid #133296;
   border-radius: 3px;
   padding: 1px 1px;
-  padding-bottom: 1px;
   width: 32px;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
   box-sizing: border-box;
+  transform: translateY(-1px);
 }
 
 .moblist-percent.max-over {
