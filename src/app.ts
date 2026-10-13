@@ -177,21 +177,9 @@ export async function renderMaintenanceStatus(): Promise<void> {
       p.textContent = "現在予定されているメンテナンスはありません";
       return;
     }
-    const isPC = window.innerWidth >= 1024;
-    if (isPC) {
-      const startLine = document.createElement("div");
-      startLine.textContent = `${formatMMDDHHmm(maintenance.start_time)} ～`;
-      const endLine = document.createElement("div");
-      if (maintenance.end_time) {
-        endLine.innerHTML = `&nbsp;&nbsp;&nbsp;&nbsp;${formatMMDDHHmm(maintenance.end_time)}`;
-      }
-      p.appendChild(startLine);
-      p.appendChild(endLine);
-    } else {
-      const start = formatMMDDHHmm(maintenance.start_time);
-      const end = maintenance.end_time ? formatMMDDHHmm(maintenance.end_time) : "";
-      p.textContent = end ? `${start} ～ ${end}` : `${start} ～`;
-    }
+    const start = formatMMDDHHmm(maintenance.start_time);
+    const end = maintenance.end_time ? formatMMDDHHmm(maintenance.end_time) : "";
+    p.textContent = end ? `${start} ～ ${end}` : `${start} ～`;
   });
 
   const telopMsg = (maintenance && maintenance.message && maintenance.message.trim() !== "") ? maintenance.message : "";
@@ -1071,6 +1059,7 @@ function attachMobCardEvents(): void {
   const pane = document.getElementById("mobcard-pane");
   if (pane) {
     pane.addEventListener("click", (e) => {
+      closePanel();
       if (e.target === pane && window.innerWidth < CONFIG.BREAKPOINT_PC) {
         setOpenMobCardNo(null);
         sortAndRedistribute({ immediate: true });
@@ -1104,12 +1093,14 @@ function handleGeneralClick(e: Event): void {
 
   if (target.closest('[data-action="close-card"]')) {
     e.stopPropagation();
+    closePanel();
     setOpenMobCardNo(null);
     sortAndRedistribute({ immediate: true });
     return;
   }
 
   if (target.closest(".moblist-item") || target.classList.contains('mobcard-card')) {
+    closePanel();
     const currentOpen = getState().openMobCardNo;
     setOpenMobCardNo(currentOpen === mobNo ? null : mobNo);
     sortAndRedistribute({ immediate: true });

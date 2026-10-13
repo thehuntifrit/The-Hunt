@@ -8,10 +8,12 @@
   left: 0;
   right: 0;
   bottom: var(--footer-safe);
-  z-index: var(--z-modal);
+  z-index: calc(var(--z-footer) - 1);
 }
 
 #manual-modal .app-backdrop {
+  position: absolute;
+  inset: 0;
   z-index: 0;
 }
 
