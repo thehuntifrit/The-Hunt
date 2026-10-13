@@ -180,135 +180,57 @@ function calculateNextMoonStart(startSec: number, targetPhase: number): number {
 }
 
 function* getValidWeatherIntervals(mob: Mob, windowStart: number, windowEnd: number): Generator<[number, number], void, unknown> {
-  const requiredMinutes = mob.weatherDuration?.minutes || 0;
-  const requiredSec = requiredMinutes * 60;
-  const isContinuous = requiredSec > WEATHER_CYCLE_SEC;
+  const requiredSec = (mob.weatherDuration?.minutes || 0) * 60;
 
   if (!mob.weatherSeedRange && !mob.weatherSeedRanges) {
     yield [windowStart, windowEnd];
     return;
   }
 
-  let currentCursor = alignToWeatherCycle(windowStart);
+  const limitSec = LIMIT_DAYS * 24 * 3600;
+  const isWeatherAt = (sec: number) => checkWeatherInRange(mob, getEorzeaWeatherSeed(new Date(sec * 1000)));
   let loopSafety = 0;
 
-  if (checkWeatherInRange(mob, getEorzeaWeatherSeed(new Date(currentCursor * 1000)))) {
-    let chainStart = currentCursor;
-    let chainEnd = 0;
+  let cursor = alignToWeatherCycle(windowStart);
 
-    if (isContinuous) {
-      const searchBackLimit = windowStart - LIMIT_DAYS * 24 * 3600;
-      while (true) {
-        const prevTime = chainStart - WEATHER_CYCLE_SEC;
-        if (prevTime < searchBackLimit) break;
-
-        const seed = getEorzeaWeatherSeed(new Date(prevTime * 1000));
-        if (checkWeatherInRange(mob, seed)) {
-          chainStart = prevTime;
-        } else {
-          break;
-        }
-      }
-
-      let tempCursor = currentCursor;
-      while (true) {
-        if (loopSafety++ > MAX_SEARCH_ITERATIONS) break;
-
-        const nextTime = tempCursor + WEATHER_CYCLE_SEC;
-        const seed = getEorzeaWeatherSeed(new Date(nextTime * 1000));
-
-        if (checkWeatherInRange(mob, seed)) {
-          tempCursor = nextTime;
-        } else {
-          chainEnd = nextTime;
-          break;
-        }
-      }
-
-      const duration = chainEnd - chainStart;
-
-      if (duration >= requiredSec) {
-        const validPopStart = chainStart + requiredSec;
-        const intersectStart = validPopStart;
-        const intersectEnd = Math.min(chainEnd, windowEnd);
-
-        if (intersectStart < intersectEnd) {
-          yield [intersectStart, intersectEnd];
-        }
-      }
-
-      currentCursor = chainEnd;
-
-    } else {
-      chainStart = currentCursor;
-      let tempCursor = currentCursor;
-      while (true) {
-        if (loopSafety++ > MAX_SEARCH_ITERATIONS) break;
-
-        const nextTime = tempCursor + WEATHER_CYCLE_SEC;
-        const seed = getEorzeaWeatherSeed(new Date(nextTime * 1000));
-
-        if (checkWeatherInRange(mob, seed)) {
-          tempCursor = nextTime;
-        } else {
-          chainEnd = nextTime;
-          break;
-        }
-      }
-
-      const intersectStart = windowStart;
-      const intersectEnd = Math.min(chainEnd, windowEnd);
-
-      if (intersectStart < intersectEnd) {
-        yield [intersectStart, intersectEnd];
-      }
-
-      currentCursor = chainEnd;
+  // windowStart 時点で既に天候が始まっている場合に備え、連鎖の先頭まで遡る
+  if (isWeatherAt(cursor)) {
+    const searchBackLimit = windowStart - limitSec;
+    while (true) {
+      const prev = cursor - WEATHER_CYCLE_SEC;
+      if (prev < searchBackLimit) break;
+      if (!isWeatherAt(prev)) break;
+      cursor = prev;
     }
-
-  } else {
-    currentCursor += WEATHER_CYCLE_SEC;
   }
-
-  let cursor = currentCursor;
 
   while (cursor < windowEnd) {
     if (loopSafety++ > MAX_SEARCH_ITERATIONS) break;
 
+    // 天候が成立しているサイクルを探す
     let activeStart: number | null = null;
-    while (cursor < windowEnd + WEATHER_CYCLE_SEC) {
+    while (cursor < windowEnd) {
       if (loopSafety++ > MAX_SEARCH_ITERATIONS) break;
-      const seed = getEorzeaWeatherSeed(new Date(cursor * 1000));
-      if (checkWeatherInRange(mob, seed)) {
+      if (isWeatherAt(cursor)) {
         activeStart = cursor;
         break;
       }
       cursor += WEATHER_CYCLE_SEC;
-      if (cursor - windowStart > LIMIT_DAYS * 24 * 3600) break;
+      if (cursor - windowStart > limitSec) break;
     }
 
     if (activeStart === null) break;
 
-    let activeEnd = activeStart;
-    let tempCursor = activeStart;
-    while (true) {
+    // 連鎖の終端(天候が途切れる最初のサイクル開始)を探す
+    let activeEnd = activeStart + WEATHER_CYCLE_SEC;
+    while (isWeatherAt(activeEnd)) {
       if (loopSafety++ > MAX_SEARCH_ITERATIONS) break;
-
-      const nextTime = tempCursor + WEATHER_CYCLE_SEC;
-      const seed = getEorzeaWeatherSeed(new Date(nextTime * 1000));
-
-      if (checkWeatherInRange(mob, seed)) {
-        tempCursor = nextTime;
-      } else {
-        activeEnd = nextTime;
-        break;
-      }
+      activeEnd += WEATHER_CYCLE_SEC;
     }
-    const duration = activeEnd - activeStart;
-    if (duration >= requiredSec) {
-      const validPopStart = isContinuous ? activeStart + requiredSec : activeStart;
 
-      const intersectStart = validPopStart;
+    // 連鎖が必要継続時間に満たなければ不成立。満たす場合も、継続時間を満たした時点からが有効
+    if (activeEnd - activeStart >= requiredSec) {
+      const intersectStart = Math.max(activeStart + requiredSec, windowStart);
       const intersectEnd = Math.min(activeEnd, windowEnd);
 
       if (intersectStart < intersectEnd) {
@@ -343,7 +265,7 @@ function* getValidEtIntervals(mob: Mob, windowStart: number, windowEnd: number):
           break;
         }
       }
-      const intersectStart = start;
+      const intersectStart = Math.max(start, windowStart);
       const intersectEnd = Math.min(end, windowEnd);
 
       if (intersectStart < intersectEnd) {
@@ -444,30 +366,36 @@ export function calculateRepop(mob: Mob, maintenance: any, options: { skipCondit
 
   // ---- キャッシュ早期リターン ----
   // minRepop / maxRepop が変わっていたら(討伐更新・メンテ係数変化)キャッシュは使わない
+  // nextBoundarySec が有限でない(境界なし)場合もキャッシュは使わない
   if (
     !forceRecalc &&
     mob.repopInfo &&
     mob.repopInfo.nextBoundarySec &&
+    Number.isFinite(mob.repopInfo.nextBoundarySec) &&
     mob.repopInfo.minRepop === minRepop &&
     mob.repopInfo.maxRepop === maxRepop &&
     now < mob.repopInfo.nextBoundarySec
   ) {
+    const cached = mob.repopInfo;
+
     if (now >= minRepop && maxRepop > minRepop) {
-      mob.repopInfo.elapsedPercent = Math.min(100, Math.floor(((now - minRepop) / (maxRepop - minRepop)) * 100));
+      cached.elapsedPercent = Math.min(100, Math.floor(((now - minRepop) / (maxRepop - minRepop)) * 100));
     } else {
-      mob.repopInfo.elapsedPercent = 0;
+      cached.elapsedPercent = 0;
     }
 
-    // 条件区間中は conditionWindowEnd を、それ以外は次の境界を基準にする
-    const cachedWindowEnd = mob.repopInfo.conditionWindowEnd
-      ? mob.repopInfo.conditionWindowEnd.getTime() / 1000
-      : null;
-    const tSec = (mob.repopInfo.isInConditionWindow && cachedWindowEnd !== null)
-      ? cachedWindowEnd
-      : mob.repopInfo.nextBoundarySec;
+    const cachedStartSec = cached.nextConditionSpawnDate ? cached.nextConditionSpawnDate.getTime() / 1000 : null;
+    const cachedEndSec = cached.conditionWindowEnd ? cached.conditionWindowEnd.getTime() / 1000 : null;
 
-    mob.repopInfo.timeRemaining = formatDurationColon(Math.max(0, tSec - now));
-    return mob.repopInfo;
+    let tSec: number = cached.nextBoundarySec ?? now;
+    if (cached.isInConditionWindow && cachedEndSec !== null) {
+      tSec = cachedEndSec;        // 条件区間中 → 区間終了まで
+    } else if (cachedStartSec !== null && cachedStartSec > now) {
+      tSec = cachedStartSec;      // 次の条件区間の開始まで
+    }
+
+    cached.timeRemaining = formatDurationColon(Math.max(0, tSec - now));
+    return cached;
   }
 
   // ---- 条件区間の計算 ----
@@ -578,7 +506,10 @@ export function calculateRepop(mob: Mob, maintenance: any, options: { skipCondit
     minRepop,
     useConditionLogic ? null : maxRepop,
     nextConditionSpawnDate ? nextConditionSpawnDate.getTime() / 1000 : null,
-    conditionWindowEnd ? conditionWindowEnd.getTime() / 1000 : null
+    conditionWindowEnd ? conditionWindowEnd.getTime() / 1000 : null,
+    maintenanceStart,
+    maintenanceStart + 1800,
+    serverUp > maintenanceStart ? serverUp : null
   ];
 
   let nextBoundarySec = boundaryCandidates
