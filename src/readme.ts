@@ -32,7 +32,7 @@ export const openUserManual = async (): Promise<void> => {
             if (!response.ok) throw new Error('Failed to load README');
 
             const text = await response.text();
-            
+
             if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
                 marked.setOptions({
                     breaks: true,
@@ -73,7 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
     closeBtn?.addEventListener('click', closeUserManual);
 
     modal?.addEventListener('click', (e) => {
-        if (e.target === modal) closeUserManual();
+        const target = e.target as HTMLElement;
+        if (target === modal || target.classList.contains('app-backdrop')) closeUserManual();
     });
 
     document.addEventListener('keydown', (e) => {

@@ -338,7 +338,7 @@ export function drawSpawnPoint(point: SpawnPoint, spawnCullStatus: Record<string
 
   const pointNumber = parseInt(point.id.slice(-2), 10);
   const stateText = isLastOne ? "(確)" : isCulledFlag ? "(済)" : "";
-  el.title = rank === "F" ? stateText : `${pointNumber} ${stateText}`;
+  el.dataset.tooltip = rank === "F" ? stateText : `${pointNumber} ${stateText}`;
 
   Object.assign(el.dataset, {
     locationId: point.id,
@@ -426,7 +426,7 @@ export function createSimpleMobItem(mob: Mob): HTMLElement {
 
   const rankBadge = item.querySelector('.moblist-rank-badge') as HTMLElement | null;
   if (rankBadge) {
-    rankBadge.textContent = mob.rank === "FATE" ? "F" : mob.rank;
+    rankBadge.textContent = mob.rank;
     rankBadge.dataset.rank = mob.rank;
   }
 
@@ -439,6 +439,13 @@ export function createSimpleMobItem(mob: Mob): HTMLElement {
   const areaEl = item.querySelector('.moblist-area') as HTMLElement | null;
   if (areaEl) {
     areaEl.textContent = mob.area || "";
+  }
+
+  // リストのREPORTボタンにデータを設定
+  const reportBtn = item.querySelector('.moblist-report-btn') as HTMLElement | null;
+  if (reportBtn) {
+    reportBtn.dataset.mobNo = String(mob.No);
+    reportBtn.dataset.reportType = mob.rank === 'A' ? 'instant' : 'modal';
   }
 
   updateSimpleMobItem(item, mob);
@@ -472,6 +479,7 @@ export function updateProgressBar(element: HTMLElement, mob: Mob, timeLabelObj: 
 
   bar.classList.toggle('u-no-transition', noTransition);
   bar.style.setProperty('--prog-percent', String(flooredPct / 100));
+  bar.style.width = `${flooredPct}%`;
   bar.dataset.lastPct = String(flooredPct);
 
   if (bar.dataset.lastStatus !== status) {
@@ -484,6 +492,7 @@ export function updateProgressBar(element: HTMLElement, mob: Mob, timeLabelObj: 
 
     if (status === "Next" || status === "Maintenance") {
       bar.style.setProperty('--prog-percent', '0');
+      bar.style.width = '0%';
     }
   }
 
@@ -673,7 +682,6 @@ export function updateMobCount(card: HTMLElement, mob: Mob): void {
     if (numEl) numEl.textContent = countInfo.type === 'single' ? String(countInfo.value) : `@${countInfo.value}`;
     if (unitEl) {
       unitEl.textContent = countInfo.unit;
-      unitEl.className = 'u-ml-1';
     }
 
     countContainer.innerHTML = "";

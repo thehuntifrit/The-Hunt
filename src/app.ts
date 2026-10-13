@@ -1,4 +1,4 @@
-import { getState, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled, STATUS_LABELS, CONFIG, DOM, handleAppError } from "./dataManager";
+import { getState, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled, CONFIG, DOM, handleAppError } from "./dataManager";
 import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal";
 import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initGlobalMagnifier, adjustMemoHeight } from "./mobCard";
 import { getGroupKey, GROUP_LABELS, getOrCreateGroupSection, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, allTabComparator } from "./mobSorter";
@@ -37,7 +37,7 @@ async function initApp(): Promise<void> {
     initAppEventListeners();
     attachMobCardEvents();
     initGlobalMagnifier();
-    
+
     // 基礎データを確実に読み込んでからリアルタイムリスナーを開始
     await loadBaseMobData();
 
@@ -177,21 +177,9 @@ export async function renderMaintenanceStatus(): Promise<void> {
       p.textContent = "現在予定されているメンテナンスはありません";
       return;
     }
-    const isPC = window.innerWidth >= 1024;
-    if (isPC) {
-      const startLine = document.createElement("div");
-      startLine.textContent = `${formatMMDDHHmm(maintenance.start_time)} ～`;
-      const endLine = document.createElement("div");
-      if (maintenance.end_time) {
-        endLine.innerHTML = `&nbsp;&nbsp;&nbsp;&nbsp;${formatMMDDHHmm(maintenance.end_time)}`;
-      }
-      p.appendChild(startLine);
-      p.appendChild(endLine);
-    } else {
-      const start = formatMMDDHHmm(maintenance.start_time);
-      const end = maintenance.end_time ? formatMMDDHHmm(maintenance.end_time) : "";
-      p.textContent = end ? `${start} ～ ${end}` : `${start} ～`;
-    }
+    const start = formatMMDDHHmm(maintenance.start_time);
+    const end = maintenance.end_time ? formatMMDDHHmm(maintenance.end_time) : "";
+    p.textContent = end ? `${start} ～ ${end}` : `${start} ～`;
   });
 
   const telopMsg = (maintenance && maintenance.message && maintenance.message.trim() !== "") ? maintenance.message : "";
@@ -204,7 +192,6 @@ export async function renderMaintenanceStatus(): Promise<void> {
     const welcome = document.createElement("div");
     welcome.className = "sidebar-welcome-msg";
 
-    welcome.appendChild(document.createTextNode("ようこそ "));
     const nameSpan = document.createElement("span");
     nameSpan.className = "sidebar-welcome-name";
     nameSpan.textContent = nameToDisplay;
@@ -306,9 +293,12 @@ function updateVisibleCardsSet(): void {
   });
 }
 
-const handleScroll = debounce(updateVisibleCardsSet, 200);
+const handleScroll = debounce(updateVisibleCardsSet, 80);
 window.addEventListener('scroll', handleScroll, { passive: true });
 window.addEventListener('resize', handleScroll, { passive: true });
+// PC版では #moblist-container が実際のスクロールコンテナなので、そちらにもリスナーを追加
+const moblistEl = document.getElementById('moblist-container');
+if (moblistEl) moblistEl.addEventListener('scroll', handleScroll, { passive: true });
 
 export function observeCard(el: HTMLElement): void {
   if (el) {
@@ -666,7 +656,7 @@ const updateMobState = function (mob: Mob, nowSec: number, state: any): boolean 
 };
 
 // ─── 報告処理 ───────────────────────────────────────────
-export function showToast(message: string, type = "error"): void {
+export function showToast(message: string, type: "error" | "success" | "info" = "error"): void {
   if (type === "error") {
     console.error(message);
   }
@@ -679,10 +669,9 @@ export function showToast(message: string, type = "error"): void {
   }
 
   const toast = document.createElement("div");
-  const colorClass = type === "error" ? "toast-error" : "toast-success";
-  toast.className = `toast-item-base ${colorClass} opacity-0 translate-x-full`;
+  const colorClass = type === "error" ? "toast-error" : type === "success" ? "toast-success" : "toast-info";
+  toast.className = `toast-item-base ${colorClass} opacity-0 translate-x-full whitespace-pre-wrap`;
   toast.textContent = message;
-  toast.classList.add("whitespace-pre-wrap");
 
   container.appendChild(toast);
 
@@ -694,7 +683,12 @@ export function showToast(message: string, type = "error"): void {
 
   setTimeout(() => {
     toast.classList.add("translate-x-full", "opacity-0");
-    toast.addEventListener("transitionend", () => toast.remove());
+    const removeToast = () => {
+      if (toast.parentElement) toast.remove();
+    };
+    toast.addEventListener("transitionend", removeToast, { once: true });
+    // Fallback removal in case transitionend does not fire
+    setTimeout(removeToast, 500);
   }, CONFIG.TOAST_DURATION);
 }
 
@@ -1065,6 +1059,7 @@ function attachMobCardEvents(): void {
   const pane = document.getElementById("mobcard-pane");
   if (pane) {
     pane.addEventListener("click", (e) => {
+      closePanel();
       if (e.target === pane && window.innerWidth < CONFIG.BREAKPOINT_PC) {
         setOpenMobCardNo(null);
         sortAndRedistribute({ immediate: true });
@@ -1098,12 +1093,14 @@ function handleGeneralClick(e: Event): void {
 
   if (target.closest('[data-action="close-card"]')) {
     e.stopPropagation();
+    closePanel();
     setOpenMobCardNo(null);
     sortAndRedistribute({ immediate: true });
     return;
   }
 
   if (target.closest(".moblist-item") || target.classList.contains('mobcard-card')) {
+    closePanel();
     const currentOpen = getState().openMobCardNo;
     setOpenMobCardNo(currentOpen === mobNo ? null : mobNo);
     sortAndRedistribute({ immediate: true });

@@ -33,14 +33,12 @@ jobs:
           node-version: 22
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build project with Vite
-        run: |
-          # リポジトリ名を取得して BASE_PATH に設定 (例: /test/ や /The-Hunt/)
-          REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
-          export BASE_PATH="/${REPO_NAME}/"
-          npm run build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+        run: npm run build
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v4

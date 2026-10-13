@@ -4,37 +4,67 @@
 
 #manual-modal {
   position: fixed;
-  inset: 0;
-  z-index: var(--z-modal);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--footer-safe);
+  z-index: calc(var(--z-footer) - 1);
 }
+
+#manual-modal .app-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
 .manual-modal-content {
   position: absolute;
   inset: 0;
+  z-index: 1;
   background-color: #0a1220;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
+
+@media (min-width: 900px) {
+  .manual-modal-content {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: var(--layout-w);
+    border-left: 1px solid var(--c-border);
+    border-right: 1px solid var(--c-border);
+  }
+}
+
+.manual-modal-chrome {
+  flex-shrink: 0;
+  background-color: #0a1220;
+  z-index: 10;
+}
+
 .manual-modal-top-border {
   height: 3px;
   background: linear-gradient(90deg, var(--c-cyan), var(--c-f));
 }
+
 .manual-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 18px 14px;
   border-bottom: 1px solid var(--c-border);
-  position: sticky;
-  top: 0;
-  background-color: #0a1220;
-  z-index: 1;
 }
+
 .manual-modal-title {
   font-size: 18px;
   font-weight: 700;
   display: flex;
   gap: 6px;
 }
+
 .manual-modal-close {
   width: 32px;
   height: 32px;
@@ -47,16 +77,37 @@
   color: var(--c-text-lo);
   font-size: 14px;
   cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  z-index: 11;
   -webkit-tap-highlight-color: transparent;
 }
+
 #readme-container {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 18px;
   font-size: 14px;
   line-height: 1.7;
-  color: var(--c-text-lo);
+  color: var(--c-text-hi);
 }
+
 #readme-container h1,
 #readme-container h2,
-#readme-container h3 { color: var(--c-text-hi); margin: 16px 0 8px; }
-#readme-container p  { margin-bottom: 10px; }
-#readme-container code { font-family: var(--font-mono); font-size: 12px; background: var(--c-surface); padding: 1px 5px; border-radius: 3px; }
+#readme-container h3 {
+  color: var(--c-text-hi);
+  margin: 16px 0 8px;
+}
+
+#readme-container p {
+  margin-bottom: 10px;
+}
+
+#readme-container code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--c-surface);
+  padding: 1px 5px;
+  border-radius: 3px;
+}

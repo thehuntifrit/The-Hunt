@@ -2,33 +2,29 @@
    css / appnav.css  —  #appnav
    ========================================================= */
 
-/* ── Sidebar (PC) ────────────────────────────────────────── */
+/* ── Mobile (base): bottom bar ───────────────────────────── */
 #appnav {
   position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
-  z-index: var(--z-sidebar);
-  background-color: var(--c-panel);
-  border-right: 1px solid var(--c-border);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  /* Mobile: bottom bar */
-  top: auto;
   bottom: 0;
   left: 0;
   right: 0;
-  height: var(--footer-safe);
+  top: auto;
   width: 100%;
-  border-right: none;
+  height: var(--footer-safe);
+  z-index: var(--z-footer);
+  background-color: var(--c-panel);
   border-top: 1px solid var(--c-border);
+  border-right: none;
+  display: flex;
+  flex-direction: column;
 }
 
 .appnav-inner {
   display: flex;
   width: 100%;
   height: 100%;
+  max-width: var(--layout-w);
+  margin: 0 auto;
 }
 
 /* ── Mobile: horizontal nav ──────────────────────────────── */
@@ -38,12 +34,16 @@
   width: 100%;
 }
 
-.appnav-top { display: none; } /* logo — hidden on mobile */
+.appnav-top {
+  display: none;
+}
+
+/* logo — hidden on mobile */
 
 .appnav-items-wrapper {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-around;
   width: 100%;
   height: var(--footer-h);
@@ -71,43 +71,79 @@
 .appnav-icon {
   font-size: 20px;
   line-height: 1;
-  filter: grayscale(60%) opacity(0.7);
-  transition: filter 0.15s;
+  opacity: 0.85;
+  transition: filter 0.15s, opacity 0.15s;
 }
 
 .appnav-label {
   font-family: var(--font-ui);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 500;
   color: var(--c-text-lo);
   transition: color 0.15s;
   line-height: 1;
 }
 
-/* active state */
+/* active state (Old CSS glow & highlight effect) */
+.appnav-btn.active,
+.appnav-btn.appnav-active,
+.appnav-btn[data-active] {
+  background-color: var(--c-surface-sel);
+}
+
 .appnav-btn.active .appnav-icon,
+.appnav-btn.appnav-active .appnav-icon,
 .appnav-btn[data-active] .appnav-icon {
-  filter: grayscale(0%) opacity(1);
+  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.8));
+  opacity: 1;
 }
+
 .appnav-btn.active .appnav-label,
+.appnav-btn.appnav-active .appnav-label,
 .appnav-btn[data-active] .appnav-label {
-  color: var(--c-text-hi);
+  color: #ffffff;
+  font-weight: 600;
+  text-shadow: 0 0 6px rgba(34, 211, 238, 0.6);
 }
+
+/* active top indicator bar with cyan glow */
 .appnav-btn.active::after,
+.appnav-btn.appnav-active::after,
 .appnav-btn[data-active]::after {
   content: '';
   position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
   background-color: var(--c-cyan);
+  box-shadow: 0 0 10px var(--c-cyan), 0 0 4px var(--c-cyan);
 }
 
 /* nav toggle (checkbox-based) */
-.nav-toggle-btn { cursor: pointer; }
+.nav-toggle-btn {
+  cursor: pointer;
+}
+
+/* 通知OFF（is-disabled または チェックなし）時のグレーアウト */
+.appnav-btn.is-disabled .appnav-icon,
+.appnav-btn.is-disabled .appnav-label,
+.appnav-btn:has(input[type="checkbox"]:not(:checked)) .appnav-icon,
+.appnav-btn:has(input[type="checkbox"]:not(:checked)) .appnav-label {
+  filter: grayscale(100%);
+  opacity: 0.35;
+}
+
+/* 通知ON（チェックあり かつ disabledでない）時のスタイル */
+.appnav-btn:not(.is-disabled):has(input[type="checkbox"]:checked) .appnav-icon {
+  filter: grayscale(0%);
+  opacity: 1;
+}
+
+.appnav-btn:not(.is-disabled):has(input[type="checkbox"]:checked) .appnav-label {
+  color: var(--c-cyan);
+}
 
 /* divider between nav items */
 .appnav-divider {
@@ -120,156 +156,336 @@
 
 /* ── Slide-out panel ──────────────────────────────────────── */
 .appnav-panel {
-  display: none; /* opened by JS */
+  display: none;
+  /* opened by JS */
   position: fixed;
   bottom: var(--footer-safe);
   left: 0;
   width: 100%;
   max-height: 60vh;
-  z-index: var(--z-sidebar);
+  z-index: var(--z-footer);
   background-color: #09111f;
   border-top: 1px solid var(--c-border);
+  overflow: hidden;
+  padding: 0;
+  flex-direction: column;
+}
+
+.appnav-panel-top-border {
+  height: 3px;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, var(--c-cyan), var(--c-f));
+}
+
+.appnav-panel.is-open,
+.appnav-panel.expanded,
+#appnav.expanded .appnav-panel {
+  display: flex;
+}
+
+.js-appnav-panel-item {
+  display: none;
+}
+
+.js-appnav-panel-item:not(.hidden) {
+  display: block;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   padding: 14px;
 }
-.appnav-panel.is-open { display: block; }
 
-.js-appnav-panel-item { display: none; }
-.js-appnav-panel-item:not(.hidden) { display: block; }
+.appnav-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--c-border);
+}
 
 .appnav-section-title {
   font-size: 11px;
-  font-weight: 700;
-  color: var(--c-text-lo);
+  font-weight: 600;
+  color: var(--c-text-sel);
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 
 .appnav-alert {
-  font-size: 13px;
-  color: var(--c-text-lo);
+  font-size: 15px;
+  color: var(--c-text-hi);
   line-height: 1.6;
 }
 
 .sidebar-welcome-area {
-  margin-bottom: 8px;
+  margin-bottom: 0;
+  min-width: 0;
+}
+
+.sidebar-welcome-msg {
+  font-size: 13px;
+  color: var(--c-text-lo);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.sidebar-welcome-name {
+  font-weight: 500;
+  color: var(--c-gold);
 }
 
 /* ── Error list ──────────────────────────────────────────── */
 .appnav-error-item {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: flex-start;
   padding: 6px 0;
   border-bottom: 1px solid var(--c-border);
-  font-size: 12px;
-}
-.appnav-error-time { color: var(--c-text-lo); white-space: nowrap; }
-.error-msg { color: var(--c-offline-text); }
-
-/* ── Rank filter accordion ───────────────────────────────── */
-.appnav-filter-accordion { display: flex; flex-direction: column; gap: 6px; }
-
-.appnav-rank-item {
-  border: 1px solid var(--c-border);
-  border-radius: 6px;
-  overflow: hidden;
+  font-size: 15px;
 }
 
-.appnav-rank-header {
+.appnav-error-time {
+  color: var(--c-text-lo);
+  white-space: nowrap;
+}
+
+.error-msg {
+  color: var(--c-offline-text);
+}
+
+/* ── Rank filter & expansion carousel ──────────────────────── */
+.appnav-filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.appnav-filter-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   width: 100%;
-  height: 36px;
+}
+
+.appnav-rank-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.appnav-rank-tab {
+  height: 32px;
   display: flex;
   align-items: center;
-  padding: 0 12px;
+  justify-content: center;
   background-color: var(--c-surface);
-  border: none;
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--c-text-lo);
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.appnav-rank-tab:hover {
+  background-color: var(--c-surface-ho);
+  color: var(--c-text-hi);
+  border-color: var(--c-text-off);
+}
+
+.appnav-rank-tab.is-active {
+  background-color: var(--c-surface-sel);
+  border-color: var(--c-cyan);
+  color: var(--c-cyan);
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.25);
+}
+
+/* Rank specific active accent subtle indicators */
+.appnav-rank-tab.is-active[data-rank="S rank"] {
+  border-color: var(--c-s);
+  color: var(--c-s);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.25);
+}
+
+.appnav-rank-tab.is-active[data-rank="A rank"] {
+  border-color: var(--c-a);
+  color: var(--c-a);
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.25);
+}
+
+.appnav-rank-tab.is-active[data-rank="FATE"] {
+  border-color: var(--c-f);
+  color: var(--c-f);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.25);
+}
+
+.appnav-area-carousel-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background-color: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  padding: 6px;
+}
+
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: rgba(20, 34, 56, 0.9);
+  border: 1px solid var(--c-border);
+  color: var(--c-text-hi);
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.15s ease;
+}
+
+.carousel-arrow:hover {
+  background-color: var(--c-surface-sel);
+  border-color: var(--c-cyan);
+  color: var(--c-cyan);
+}
+
+.carousel-arrow-prev {
+  left: 4px;
+}
+
+.carousel-arrow-next {
+  right: 4px;
+}
+
+.appnav-area-carousel {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-border) transparent;
+}
+
+.appnav-area-carousel::-webkit-scrollbar {
+  height: 4px;
+}
+
+.appnav-area-carousel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.appnav-area-carousel::-webkit-scrollbar-thumb {
+  background: var(--c-border);
+  border-radius: 2px;
+}
+
+.appnav-area-carousel::-webkit-scrollbar-thumb:hover {
+  background: var(--c-text-off);
+}
+
+.area-grid-container.appnav-area-carousel-track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 6px;
+  width: 100%;
+  padding: 2px;
+}
+
+/* 1 page max 6 buttons visible: each button takes calc((100% - 5 * gap) / 6) */
+.area-grid-container.appnav-area-carousel-track .area-filter-btn {
+  flex: 0 0 calc((100% - (5 * 6px)) / 6);
+  min-width: 48px;
+  scroll-snap-align: start;
+}
+
+.area-filter-btn {
+  padding: 6px 4px;
   cursor: pointer;
   font-family: var(--font-ui);
   font-size: 13px;
-  font-weight: 600;
-  color: var(--c-text-hi);
+  font-weight: 500;
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+  color: var(--c-text-lo);
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  transition: all 0.15s ease;
   -webkit-tap-highlight-color: transparent;
-  text-align: left;
+  white-space: nowrap;
+  user-select: none;
 }
 
-.appnav-area-expansion {
-  background-color: var(--c-bg);
-  padding: 8px;
-}
-.area-grid-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+.area-filter-btn:hover {
+  background-color: var(--c-surface-ho);
+  color: var(--c-text-hi);
 }
 
-/* ── PC layout override ───────────────────────────────────── */
+.area-filter-btn.is-selected {
+  background-color: var(--c-surface-sel);
+  border-color: var(--c-cyan);
+  color: var(--c-cyan);
+  font-weight: 600;
+}
+
+.appnav-btn.has-alert::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 25%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--c-gold);
+}
+
 @media (min-width: 900px) {
   #appnav {
-    position: fixed;
-    top: 0;
     left: 0;
-    bottom: auto;
-    right: auto;
-    width: 64px;
-    height: 100%;
-    border-top: none;
-    border-right: 1px solid var(--c-border);
-  }
-  .appnav-inner {
-    flex-direction: column;
-  }
-  .appnav-top {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 14px 0 10px;
-    border-bottom: 1px solid var(--c-border);
-  }
-  .appnav-logo {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    gap: 0;
-  }
-  .appnav-logo-the  { font-size: 9px; color: var(--c-cyan); font-weight: 700; }
-  .appnav-logo-hunt { font-size: 12px; color: var(--c-gold); font-weight: 700; }
-  .appnav-logo-refresh { font-size: 12px; color: var(--c-text-lo); }
-
-  .appnav-items-wrapper {
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    height: auto;
-    padding: 8px 0;
-    gap: 4px;
-  }
-  .appnav-btn {
+    right: 0;
     width: 100%;
-    height: 52px;
-    flex: none;
-  }
-  .appnav-divider {
-    width: 36px;
-    height: 1px;
-    margin: 4px 0;
+    max-width: none;
+    margin-inline: 0;
+    border-left: none;
+    border-right: none;
   }
 
-  /* panel becomes left-side flyout */
+  .appnav-inner {
+    max-width: var(--layout-w);
+    margin-inline: auto;
+    padding: 0;
+  }
+
   .appnav-panel {
-    top: 0;
-    left: 64px;
-    bottom: 0;
-    width: 240px;
-    max-height: none;
-    border-top: none;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: var(--layout-w);
+    margin-inline: 0;
+    border-left: 1px solid var(--c-border);
     border-right: 1px solid var(--c-border);
   }
-
-  /* push main content right */
-  body { padding-left: 64px; }
-  #root-mobile-top-bar { display: none; }
 }
