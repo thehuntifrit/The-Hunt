@@ -365,6 +365,11 @@
   opacity: 0.4;
 }
 
+/* ── State: Maintenance gray out ─────────────────────────── */
+.moblist-item.maintenance-gray-out {
+  filter: grayscale(100%) brightness(0.6);
+}
+
 /* ── State: pop window (flashing) ────────────────────────── */
 .moblist-item.pop-window .moblist-time,
 .moblist-item.pop-window .mobcard-timer-num {

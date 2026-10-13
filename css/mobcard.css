@@ -35,6 +35,18 @@
   max-height: calc(100dvh - var(--header-h) - var(--footer-safe));
 }
 
+.mobcard-card.maintenance-gray-out .mobcard-inner,
+.mobcard-card.mobcard-maintenance .mobcard-inner {
+  filter: grayscale(100%) brightness(0.6);
+  box-shadow: none;
+}
+
+.mobcard-card.maintenance-gray-out .mobcard-name,
+.mobcard-card.mobcard-maintenance .mobcard-name {
+  color: var(--c-text-hi);
+  text-shadow: none;
+}
+
 /* ── Card header ─────────────────────────────────────────── */
 .mobcard-header {
   flex-shrink: 0;
