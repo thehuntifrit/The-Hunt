@@ -211,10 +211,16 @@ export function computeTimeLabel(mob: Mob): TimeLabelResult {
 
   const label = getStatusLabel(labelStatus, mob.rank);
 
-  let targetSec = info.nextBoundarySec || info.maxRepop || 0;
+  const boundarySec = (info.nextBoundarySec && Number.isFinite(info.nextBoundarySec)) ? info.nextBoundarySec : 0;
+  let targetSec = boundarySec || info.maxRepop || 0;
 
   if (info.nextConditionSpawnDate && (info.status === "Next" || info.status === "NextCondition" || info.status === "Maintenance")) {
     targetSec = info.nextConditionSpawnDate.getTime() / 1000;
+  }
+
+  // 条件区間中は、最大POPに関係なく区間の終了までを表示する
+  if (labelStatus === "ConditionActive" && info.conditionWindowEnd) {
+    targetSec = info.conditionWindowEnd.getTime() / 1000;
   }
 
   const showAsOverdue = isTimeOverRaw && !isInWindow && !isNextWindow;
