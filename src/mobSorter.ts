@@ -110,6 +110,13 @@ export function parseMobIdParts(no: number): { mobNo: number; instance: number }
   return result;
 }
 
+// 経過%の比較用の値。画面表示(整数)に合わせて切り捨てる。
+// calculateRepop の結果は整数(切り捨て済み)、tick 更新の結果は小数で、
+// そのまま比較すると同率のモブが別の値として扱われ、ランク・拡張順に進まなくなる。
+function percentKey(info: { elapsedPercent?: number | null }): number {
+  return Math.floor(info.elapsedPercent || 0);
+}
+
 export function allTabComparator(a: Mob, b: Mob): number {
   const aInfo = a.repopInfo || { status: "Unknown", isInConditionWindow: false, maxRepop: 0, minRepop: 0, elapsedPercent: 0, isMaintenanceStop: false, isBlockedByMaintenance: false };
   const bInfo = b.repopInfo || { status: "Unknown", isInConditionWindow: false, maxRepop: 0, minRepop: 0, elapsedPercent: 0, isMaintenanceStop: false, isBlockedByMaintenance: false };
@@ -178,9 +185,9 @@ export function allTabComparator(a: Mob, b: Mob): number {
   }
 
   if (getGroupKey(a) === "WINDOW" && getGroupKey(b) === "WINDOW") {
-    const at = aInfo.minRepop ?? Infinity;
-    const bt = bInfo.minRepop ?? Infinity;
-    if (aInfo.elapsedPercent !== bInfo.elapsedPercent) return (bInfo.elapsedPercent || 0) - (aInfo.elapsedPercent || 0);
+    const aPct = percentKey(aInfo);
+    const bPct = percentKey(bInfo);
+    if (aPct !== bPct) return bPct - aPct;
 
     const rankDiff = rankPriority(a.rank) - rankPriority(b.rank);
     if (rankDiff !== 0) return rankDiff;
@@ -193,8 +200,8 @@ export function allTabComparator(a: Mob, b: Mob): number {
     return pa.instance - pb.instance;
   }
 
-  const aPercent = aInfo.elapsedPercent || 0;
-  const bPercent = bInfo.elapsedPercent || 0;
+  const aPercent = percentKey(aInfo);
+  const bPercent = percentKey(bInfo);
 
   if (aPercent !== bPercent) {
     return bPercent - aPercent;
