@@ -575,6 +575,7 @@ let lastTierBTime = 0;
 let lastTierCTime = 0;
 
 const URGENT_WINDOW_SEC = 125;   // 2分前通知(120秒)より少し広く取る
+const TICK_TOLERANCE_MS = 100;   // 周期判定の余裕(ミリ秒)
 
 export const updateProgressBarsOptimized = function (force = false): void {
   if (document.visibilityState === 'hidden' && !force) return;
@@ -583,8 +584,10 @@ export const updateProgressBarsOptimized = function (force = false): void {
   const now = Date.now();
   const nowSec = now / 1000;
 
-  const isTierB = force || (now - lastTierBTime >= CONFIG.TIER_B_UPDATE_INTERVAL);
-  const isTierC = force || (now - lastTierCTime >= EORZEA_MINUTE_MS);
+  // setInterval の発火は数ms揺らぎ、Date.now() は整数ミリ秒なので、
+  // 厳密に「>= 周期」で比べると約3割の周期が1回飛ばされる。余裕を持たせる。
+  const isTierB = force || (now - lastTierBTime >= CONFIG.TIER_B_UPDATE_INTERVAL - TICK_TOLERANCE_MS);
+  const isTierC = force || (now - lastTierCTime >= EORZEA_MINUTE_MS - TICK_TOLERANCE_MS);
 
   if (!isTierB && !isTierC) return;
 
