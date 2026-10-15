@@ -571,7 +571,6 @@ html body.magnifier-active .mobcard-inner * {
   cursor: pointer;
   pointer-events: auto;
   z-index: 5;
-  will-change: transform;
 }
 
 .spawn-point:focus,

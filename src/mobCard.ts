@@ -740,7 +740,7 @@ export function updateMapOverlay(card: HTMLElement, mob: Mob): void {
   }
 
   if (mapImg && mob.mapImage && mapImg.dataset.mobMap !== mob.mapImage) {
-    if (mapImg.decoding !== "sync") mapImg.decoding = "sync";
+    if (mapImg.decoding !== "async") mapImg.decoding = "async";
     mapImg.loading = "eager";
     mapImg.src = `./maps/${mob.mapImage}`;
     mapImg.alt = `${mob.area} Map`;

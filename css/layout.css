@@ -83,6 +83,7 @@ body {
     overflow: hidden;
     height: 100%;
     min-height: 0;
+    contain: layout paint style;
   }
 
   #mobcard-pane.is-active {
