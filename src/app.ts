@@ -12,7 +12,6 @@ import { Mob, CullStatus, RepopInfo } from "./types/mob";
 export const cardCache = new Map<string, HTMLElement>();
 
 const visibleCards = new Set<string>();
-let hasUrgentMob = false;
 
 const CULLED_CLASS_MAP: Record<string, string> = {
   "color-b1": "color-b1-culled",
@@ -271,15 +270,19 @@ function updateVisibleCardsSet(): void {
   if (!container) return;
 
   const vh = window.innerHeight;
-  const items = container.querySelectorAll('.moblist-item');
+  const items = Array.from(container.querySelectorAll<HTMLElement>('.moblist-item'));
   const mobMap = getMobMap();
+
+  // レイアウトの読み取りを先にまとめて行い、DOMの書き込みは最後にまとめる
+  // (読み取りと書き込みを交互にすると、カードごとにレイアウトが再計算される)
+  const rects = items.map(el => el.getBoundingClientRect());
 
   const prevVisible = new Set(visibleCards);
   visibleCards.clear();
+  const toUpdate: Array<[HTMLElement, Mob]> = [];
 
-  items.forEach(el => {
-    const htmlEl = el as HTMLElement;
-    const rect = htmlEl.getBoundingClientRect();
+  items.forEach((htmlEl, i) => {
+    const rect = rects[i];
     if (rect.bottom > -100 && rect.top < vh + 100) {
       const mobNo = htmlEl.dataset.mobNo!;
       visibleCards.add(mobNo);
@@ -287,10 +290,12 @@ function updateVisibleCardsSet(): void {
 
       if (!prevVisible.has(mobNo)) {
         const mob = mobMap.get(mobNo);
-        if (mob) updateCardFull(htmlEl, mob);
+        if (mob) toUpdate.push([htmlEl, mob]);
       }
     }
   });
+
+  toUpdate.forEach(([el, mob]) => updateCardFull(el, mob));
 }
 
 const handleScroll = debounce(updateVisibleCardsSet, 80);
@@ -462,6 +467,47 @@ export const syncDomOrder = function (): void {
   }
 };
 
+// 詳細ペイン(PC右ペイン / モバイルのオーバーレイ)だけを描き直す。
+// 一覧の再ソートやDOM並べ替えは行わない。
+function renderDetailPane(): void {
+  const detailContainer = document.getElementById("mobcard-detail");
+  const pane = document.getElementById("mobcard-pane");
+
+  if (!detailContainer || !pane) return;
+
+  const openMobNo = getState().openMobCardNo;
+  if (openMobNo) {
+    if (detailContainer.dataset.renderedMobNo !== String(openMobNo)) {
+      const targetMob = getState().mobs.find(m => m.No === openMobNo);
+      if (targetMob) {
+        detailContainer.innerHTML = "";
+        const newCard = createMobCard(targetMob, true);
+        detailContainer.appendChild(newCard);
+        observeCard(newCard);
+        detailContainer.dataset.renderedMobNo = String(openMobNo);
+      }
+    }
+    pane.classList.add("is-active");
+    if (window.innerWidth < 1024) {
+      document.body.classList.add('body-lock');
+    }
+  } else {
+    if (detailContainer.dataset.renderedMobNo !== "none") {
+      detailContainer.innerHTML = window.innerWidth >= 1024 ? '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>' : "";
+      detailContainer.dataset.renderedMobNo = "none";
+    }
+    pane.classList.remove("is-active");
+    document.body.classList.remove('body-lock');
+  }
+}
+
+// カードの開閉専用。並び順は変わらないので、詳細ペインの描き直しだけを行う。
+function showDetailOnly(): void {
+  if (!getState().initialLoadComplete) return;
+  renderDetailPane();
+  updateVisibleDetailCard(getMobMap());
+}
+
 export function filterAndRender(options: { isInitialLoad?: boolean } = {}): void {
   const { isInitialLoad = false } = options;
   const state = getState();
@@ -493,35 +539,7 @@ export function filterAndRender(options: { isInitialLoad?: boolean } = {}): void
     syncDomOrder();
   }
 
-  const detailContainer = document.getElementById("mobcard-detail");
-  const pane = document.getElementById("mobcard-pane");
-
-  if (detailContainer && pane) {
-    const openMobNo = getState().openMobCardNo;
-    if (openMobNo) {
-      if (detailContainer.dataset.renderedMobNo !== String(openMobNo)) {
-        const targetMob = getState().mobs.find(m => m.No === openMobNo);
-        if (targetMob) {
-          detailContainer.innerHTML = "";
-          const newCard = createMobCard(targetMob, true);
-          detailContainer.appendChild(newCard);
-          observeCard(newCard);
-          detailContainer.dataset.renderedMobNo = String(openMobNo);
-        }
-      }
-      pane.classList.add("is-active");
-      if (window.innerWidth < 1024) {
-        document.body.classList.add('body-lock');
-      }
-    } else {
-      if (detailContainer.dataset.renderedMobNo !== "none") {
-        detailContainer.innerHTML = window.innerWidth >= 1024 ? '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>' : "";
-        detailContainer.dataset.renderedMobNo = "none";
-      }
-      pane.classList.remove("is-active");
-      document.body.classList.remove('body-lock');
-    }
-  }
+  renderDetailPane();
 
   if (isInitialLoad) {
     isInitialSortingSuppressed = true;
@@ -572,7 +590,6 @@ export const updateProgressBarsOptimized = function (force = false): void {
 
   const filtered = getFilteredMobs();
   let anyStateChanged = false;
-  let foundUrgent = false;
 
   if (isTierB) {
     filtered.forEach(mob => {
@@ -581,9 +598,6 @@ export const updateProgressBarsOptimized = function (force = false): void {
 
       if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
       checkAndNotify(mob);
-
-      const boundary = info.nextBoundarySec || info.maxRepop || 0;
-      if (boundary && (boundary - nowSec) <= URGENT_WINDOW_SEC) foundUrgent = true;
     });
     lastTierBTime = now;
     lastTierCTime = now;
@@ -595,15 +609,12 @@ export const updateProgressBarsOptimized = function (force = false): void {
 
       const boundary = info.nextBoundarySec || info.maxRepop || 0;
       if (boundary && (boundary - nowSec) <= URGENT_WINDOW_SEC) {
-        foundUrgent = true;
         if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
         checkAndNotify(mob);
       }
     });
     lastTierCTime = now;
   }
-
-  hasUrgentMob = foundUrgent;
 
   if (anyStateChanged) {
     syncDomOrder();
@@ -620,15 +631,16 @@ const updateMobState = function (mob: Mob, nowSec: number, state: any): boolean 
 
   let hasSignificantChange = false;
   const oldStatus = info.status;
-  let calculationTriggered = false;
 
+  // 状態が切り替わる時刻を越えたときだけ再計算する。
+  // NextCondition は nextBoundarySec(次の条件区間の開始)で捕まえられるため、
+  // 毎回再計算になる条件は入れない。
   const isBoundaryCrossed = (info.nextBoundarySec && nowSec >= info.nextBoundarySec) ||
     (info.maxRepop && nowSec >= info.maxRepop && info.status !== "MaxOver") ||
-    (info.minRepop && nowSec >= info.minRepop && (info.status === "Next" || info.status === "NextCondition"));
+    (info.minRepop && nowSec >= info.minRepop && info.status === "Next");
 
   if (isBoundaryCrossed) {
     mob.repopInfo = calculateRepop(mob, state.maintenance);
-    calculationTriggered = true;
     hasSignificantChange = true;
   } else {
     if (info.maxRepop && nowSec >= info.maxRepop) {
@@ -893,7 +905,7 @@ function attachGlobalEventListeners(): void {
 
     if (target === DOM.cardOverlayBackdrop) {
       setOpenMobCardNo(null);
-      sortAndRedistribute({ immediate: true });
+      showDetailOnly();
     }
   });
 
@@ -1060,7 +1072,7 @@ function attachMobCardEvents(): void {
       closePanel();
       if (e.target === pane && window.innerWidth < CONFIG.BREAKPOINT_PC) {
         setOpenMobCardNo(null);
-        sortAndRedistribute({ immediate: true });
+        showDetailOnly();
       }
     });
   }
@@ -1093,7 +1105,7 @@ function handleGeneralClick(e: Event): void {
     e.stopPropagation();
     closePanel();
     setOpenMobCardNo(null);
-    sortAndRedistribute({ immediate: true });
+    showDetailOnly();
     return;
   }
 
@@ -1101,7 +1113,7 @@ function handleGeneralClick(e: Event): void {
     closePanel();
     const currentOpen = getState().openMobCardNo;
     setOpenMobCardNo(currentOpen === mobNo ? null : mobNo);
-    sortAndRedistribute({ immediate: true });
+    showDetailOnly();
   }
 }
 
