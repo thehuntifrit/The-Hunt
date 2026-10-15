@@ -556,6 +556,8 @@ export function filterAndRender(options: { isInitialLoad?: boolean } = {}): void
 let lastTierBTime = 0;
 let lastTierCTime = 0;
 
+const URGENT_WINDOW_SEC = 125;   // 2分前通知(120秒)より少し広く取る
+
 export const updateProgressBarsOptimized = function (force = false): void {
   if (document.visibilityState === 'hidden' && !force) return;
 
@@ -567,11 +569,6 @@ export const updateProgressBarsOptimized = function (force = false): void {
   const isTierC = force || (now - lastTierCTime >= EORZEA_MINUTE_MS);
 
   if (!isTierB && !isTierC) return;
-
-  if (isTierC && !isTierB && !hasUrgentMob && !force) {
-    lastTierCTime = now;
-    return;
-  }
 
   const filtered = getFilteredMobs();
   let anyStateChanged = false;
@@ -586,26 +583,27 @@ export const updateProgressBarsOptimized = function (force = false): void {
       checkAndNotify(mob);
 
       const boundary = info.nextBoundarySec || info.maxRepop || 0;
-      if (boundary && (boundary - nowSec) <= 120) foundUrgent = true;
+      if (boundary && (boundary - nowSec) <= URGENT_WINDOW_SEC) foundUrgent = true;
     });
     lastTierBTime = now;
     lastTierCTime = now;
-    hasUrgentMob = foundUrgent;
-  } else if (isTierC) {
+  } else {
+    // 細かい周期: 境界が近いモブだけを更新・通知する(全モブの走査は読み取りのみで軽い)
     filtered.forEach(mob => {
       const info = mob.repopInfo;
       if (!info || info.status === "Maintenance") return;
 
       const boundary = info.nextBoundarySec || info.maxRepop || 0;
-      if (boundary && (boundary - nowSec) <= 60) {
+      if (boundary && (boundary - nowSec) <= URGENT_WINDOW_SEC) {
         foundUrgent = true;
         if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
         checkAndNotify(mob);
       }
     });
     lastTierCTime = now;
-    hasUrgentMob = foundUrgent;
   }
+
+  hasUrgentMob = foundUrgent;
 
   if (anyStateChanged) {
     syncDomOrder();
