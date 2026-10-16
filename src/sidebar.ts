@@ -108,6 +108,35 @@ export async function sendBrowserNotification(title: string, body: string): Prom
     }
 }
 
+// 通知時刻ちょうどに checkAndNotify を再実行するためのタイマー。
+// 周期的な更新(数秒おき)を待たずに通知できる。
+// 発火時は最新の repopInfo で改めて判定するので、討伐報告などで時刻が変わっていても誤通知しない。
+const recheckTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const RECHECK_HORIZON_MS = 10 * 60 * 1000;   // これより先の通知は、次回の checkAndNotify で仕掛ける
+const RECHECK_MARGIN_MS = 30;                // タイマーが僅かに早く発火しても取りこぼさないための余裕
+
+function scheduleRecheck(mobNo: number, key: string, delayMs: number): void {
+    if (delayMs > RECHECK_HORIZON_MS) return;
+    if (recheckTimers.has(key) || notifiedCycles.has(key)) return;
+
+    const timer = setTimeout(() => {
+        recheckTimers.delete(key);
+        const mob = getState().mobsMap.get(String(mobNo));
+        if (mob) checkAndNotify(mob);
+    }, delayMs + RECHECK_MARGIN_MS);
+
+    recheckTimers.set(key, timer);
+}
+
+function fireNotification(mob: Mob, kind: "before" | "at"): void {
+    const body = kind === "before" ? `まもなく（2分前）` : `時間なう！`;
+    if (window.innerWidth >= 1024) {
+        sendBrowserNotification(`【POP info】 ${mob.name}`, body);
+    } else {
+        playNotificationSound();
+    }
+}
+
 export function checkAndNotify(mob: Mob): void {
     const state = getState();
     if (!state.notificationEnabled) return;
@@ -125,22 +154,12 @@ export function checkAndNotify(mob: Mob): void {
     const atKey = `${cycleKeyBase}-at`;
 
     if (now >= beforeTime && now < spawnTime && !notifiedCycles.has(beforeKey)) {
-        const body = `まもなく（2分前）`;
-        if (window.innerWidth >= 1024) {
-            sendBrowserNotification(`【POP info】 ${mob.name}`, body);
-        } else {
-            playNotificationSound();
-        }
+        fireNotification(mob, "before");
         notifiedCycles.add(beforeKey);
     }
 
     if (now >= spawnTime && now <= endTime && !notifiedCycles.has(atKey)) {
-        const body = `時間なう！`;
-        if (window.innerWidth >= 1024) {
-            sendBrowserNotification(`【POP info】 ${mob.name}`, body);
-        } else {
-            playNotificationSound();
-        }
+        fireNotification(mob, "at");
         notifiedCycles.add(atKey);
     }
 
@@ -148,6 +167,10 @@ export function checkAndNotify(mob: Mob): void {
         if (notifiedCycles.has(beforeKey)) notifiedCycles.delete(beforeKey);
         if (notifiedCycles.has(atKey)) notifiedCycles.delete(atKey);
     }
+
+    // 通知時刻がまだ先なら、その時刻ちょうどに再判定するタイマーを仕掛ける
+    if (now < beforeTime) scheduleRecheck(mob.No, beforeKey, beforeTime - now);
+    if (now < spawnTime) scheduleRecheck(mob.No, atKey, spawnTime - now);
 }
 
 // ─── フィルタ ───────────────────────────────────────────
