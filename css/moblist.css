@@ -276,10 +276,19 @@
   justify-content: flex-end;
   box-sizing: border-box;
   margin-bottom: 1px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .moblist-percent.max-over {
-  color: var(--c-text-hi);
+  color: #ffe4e6;
+  background: #881337;
+  border-color: #f43f5e;
+}
+
+.moblist-percent.pct-0 {
+  color: var(--c-text-off);
+  background: #1e293b;
+  border-color: #4b5563;
 }
 
 /* spawn count (pc-count-val) */
@@ -348,10 +357,48 @@
   background-color: var(--c-surface-ho);
 }
 
-/* ── State: Timed mob in condition window (White Glow) ───── */
+/* ── State: Timed mob in condition window (Side Brackets + Subtle Tint) ───── */
 .moblist-item.moblist-highlight-white {
-  border-color: #f0f4f8;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+  background-color: #1a2942;
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* Side bracket accents (left and right corner brackets) */
+.moblist-item.moblist-highlight-white::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: calc(var(--row-h) * 2 / 3 + 4px);
+  bottom: calc(var(--row-prog-h) + 3px);
+  width: 6px;
+  border-top: 2px solid #ffffff;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.moblist-item.moblist-highlight-white .moblist-info-col {
+  position: relative;
+}
+
+.moblist-item.moblist-highlight-white .moblist-info-col::before {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  bottom: 1px;
+  width: 5px;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+  pointer-events: none;
+  opacity: 0.9;
 }
 
 /* ── State: Timed mob next condition countdown (Gold timer) ── */
@@ -423,31 +470,99 @@
 
 /* ── #status-group-template ──────────────────────────────── */
 .status-group {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .status-group-separator {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 4px 4px;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  background: linear-gradient(90deg, #101c30 0%, #0c1524 100%);
+  border: 1px solid var(--c-border);
+  border-left: 4px solid var(--c-cyan);
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
 }
 
-.status-group-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--c-text-lo);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  white-space: nowrap;
+.status-group-separator:hover {
+  background: linear-gradient(90deg, #162640 0%, #0f1c30 100%);
+  border-color: #385177;
+}
+
+.status-group-separator:active {
+  opacity: 0.8;
 }
 
 .status-group-separator::before,
 .status-group-separator::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background-color: var(--c-border);
+  display: none;
+}
+
+/* Category-specific accent bars */
+.status-group[data-group-key="WINDOW"] .status-group-separator {
+  border-left-color: var(--c-gold);
+  background: linear-gradient(90deg, #241d0c 0%, #0e1624 100%);
+}
+.status-group[data-group-key="WINDOW"] .status-group-label {
+  color: #fde68a;
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.35);
+}
+
+.status-group[data-group-key="MAX_OVER"] .status-group-separator {
+  border-left-color: #f43f5e;
+  background: linear-gradient(90deg, #271017 0%, #0e1624 100%);
+}
+.status-group[data-group-key="MAX_OVER"] .status-group-label {
+  color: #fecdd3;
+}
+
+.status-group[data-group-key="NEXT"] .status-group-separator {
+  border-left-color: var(--c-cyan);
+}
+.status-group[data-group-key="NEXT"] .status-group-label {
+  color: #a5f3fc;
+}
+
+.status-group[data-group-key="MAINTENANCE"] .status-group-separator {
+  border-left-color: #64748b;
+  background: linear-gradient(90deg, #181d26 0%, #0e1624 100%);
+}
+.status-group[data-group-key="MAINTENANCE"] .status-group-label {
+  color: #94a3b8;
+}
+
+.status-group-label {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-hi);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+  flex: 1 1 auto;
+}
+
+.status-group-toggle-icon {
+  font-size: 10px;
+  color: var(--c-text-lo);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+}
+
+.status-group.is-collapsed .status-group-toggle-icon {
+  transform: rotate(-90deg);
+}
+
+.status-group.is-collapsed .group-columns {
+  display: none !important;
 }
 
 .group-columns {

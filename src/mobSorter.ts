@@ -31,8 +31,32 @@ export function getOrCreateGroupSection(groupKey: "MAINTENANCE" | "MAX_OVER" | "
   const section = cloneTemplate('status-group-template') as HTMLElement;
   if (!section) return { section: document.createElement('section'), cols: [] };
 
+  section.dataset.groupKey = groupKey;
+  const separator = section.querySelector(".status-group-separator") as HTMLElement | null;
   const labelEl = section.querySelector(".status-group-label");
   if (labelEl) labelEl.textContent = GROUP_LABELS[groupKey];
+
+  if (separator) {
+    separator.setAttribute("role", "button");
+    separator.setAttribute("tabindex", "0");
+    separator.title = "クリックで折りたたみ / 展開";
+    const chevron = document.createElement("span");
+    chevron.className = "status-group-toggle-icon";
+    chevron.textContent = "▼";
+    separator.appendChild(chevron);
+
+    const toggleCollapse = () => {
+      section.classList.toggle("is-collapsed");
+    };
+
+    separator.addEventListener("click", toggleCollapse);
+    separator.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleCollapse();
+      }
+    });
+  }
 
   const cols = [
     section.querySelector(".col-1") as HTMLElement,
