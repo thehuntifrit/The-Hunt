@@ -222,13 +222,18 @@ export const renderAreaFilterPanel = (customContainer: HTMLElement | null = null
 export const handleRankTabClick = (rank: string): void => {
     if (!rank) return;
     const stateVal = getState();
-    if (stateVal.filter.rank === rank) return;
+    const prevRank = stateVal.filter.rank;
 
-    setFilter({
-        rank,
-        clickStep: 1,
-        areaSets: stateVal.filter.areaSets
-    });
+    if (prevRank === rank) {
+        const nextStep = stateVal.filter.clickStep === 2 ? 1 : 2;
+        setFilter({ clickStep: nextStep });
+    } else {
+        setFilter({
+            rank,
+            clickStep: 1,
+            areaSets: stateVal.filter.areaSets
+        });
+    }
 
     filterAndRender();
 };
@@ -402,11 +407,17 @@ export async function togglePanel(panelName: string): Promise<void> {
         const modal = DOM.manualModal;
         if (modal && !modal.classList.contains('hidden')) {
             closeUserManual();
+            setActiveNavItem(null);
         } else {
-            if (typeof openUserManual === "function") openUserManual();
+            closePanel();
+            if (typeof openUserManual === "function") await openUserManual();
+            setActiveNavItem("manual");
         }
         return;
     }
+
+    // 他のパネルを開くときは説明モーダルを閉じる
+    closeUserManual();
 
     const nav = DOM.appNav;
     if (!nav) return;
@@ -428,6 +439,8 @@ export async function togglePanel(panelName: string): Promise<void> {
 }
 
 export function closePanel(): void {
+    closeUserManual();
+
     const nav = DOM.appNav;
     if (!nav) return;
 
@@ -585,8 +598,14 @@ function renderSidebarFilterAccordion(): void {
         btn.classList.toggle("is-active", isActive);
     });
 
+    const isCarouselOpen = stateVal.filter.clickStep === 2;
+    const carouselWrapper = wrapper.querySelector(".appnav-area-carousel-wrapper") as HTMLElement | null;
+    if (carouselWrapper) {
+        carouselWrapper.classList.toggle("hidden", !isCarouselOpen);
+    }
+
     const track = wrapper.querySelector(".area-grid-container") as HTMLElement | null;
-    if (track) {
+    if (track && isCarouselOpen) {
         renderAreaFilterPanel(track);
     }
 

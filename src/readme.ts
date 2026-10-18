@@ -70,16 +70,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = DOM.manualModal;
     const closeBtn = DOM.closeManualModalBtn;
 
-    closeBtn?.addEventListener('click', closeUserManual);
+    const handleClose = () => {
+        closeUserManual();
+        const activeNav = document.querySelector(".appnav-btn[data-nav-id='manual'].appnav-active");
+        if (activeNav) {
+            import("./sidebar").then(m => m.setActiveNavItem("home"));
+        }
+    };
+
+    closeBtn?.addEventListener('click', handleClose);
 
     modal?.addEventListener('click', (e) => {
         const target = e.target as HTMLElement;
-        if (target === modal || target.classList.contains('app-backdrop')) closeUserManual();
+        if (target === modal || target.classList.contains('app-backdrop')) handleClose();
     });
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
-            closeUserManual();
+            handleClose();
         }
     });
 });

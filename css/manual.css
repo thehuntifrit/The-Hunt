@@ -4,7 +4,7 @@
 
 #manual-modal {
   position: fixed;
-  top: 0;
+  top: var(--header-h);
   left: 0;
   right: 0;
   bottom: var(--footer-safe);

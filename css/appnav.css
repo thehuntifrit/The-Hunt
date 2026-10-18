@@ -419,7 +419,9 @@
 }
 
 .area-filter-btn {
-  padding: 6px 4px;
+  height: 28px;
+  line-height: 1;
+  padding: 0 4px;
   cursor: pointer;
   font-family: var(--font-ui);
   font-size: 13px;
@@ -436,6 +438,7 @@
   -webkit-tap-highlight-color: transparent;
   white-space: nowrap;
   user-select: none;
+  box-sizing: border-box;
 }
 
 .area-filter-btn:hover {
