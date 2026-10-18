@@ -357,12 +357,12 @@
   background-color: var(--c-surface-ho);
 }
 
-/* ── State: Timed mob in condition window (Outer Left & Right Glow) ───── */
+/* ── State: Timed mob in condition window (Inner Glow) ───── */
 .moblist-item.moblist-highlight-white {
   background-color: #1a2a44;
   border-color: var(--c-border);
   box-shadow: -4px 0 8px -1px rgba(255, 255, 255, 0.75),
-               4px 0 8px -1px rgba(255, 255, 255, 0.75);
+    4px 0 8px -1px rgba(255, 255, 255, 0.75);
 }
 
 /* ── State: Timed mob next condition countdown (Gold timer) ── */
