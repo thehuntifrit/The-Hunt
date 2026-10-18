@@ -649,6 +649,18 @@ body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point[data-too
   visibility: hidden !important;
 }
 
+/* 拡大鏡内のクローンは操作対象にしない */
+.magnifier-clone,
+.magnifier-clone * {
+  pointer-events: none !important;
+}
+
+.magnifier-clone .spawn-point:hover,
+.magnifier-clone .spawn-point:focus {
+  transform: translate(-50%, -50%) !important;
+  box-shadow: none !important;
+}
+
 /* ── Spawn point colors (Old CSS restored) ───────────────── */
 .color-b1 {
   background-color: #4494f7;

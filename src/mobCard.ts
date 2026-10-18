@@ -79,7 +79,6 @@ export function initGlobalMagnifier(): void {
     activeMapImg = null;
     activeMapContainer = null;
     activeMapContainerRect = null;
-    wrapper.innerHTML = '';
     window.removeEventListener('mousemove', onMagnifierMouseMove);
   };
 
@@ -136,16 +135,24 @@ export function initGlobalMagnifier(): void {
     activeMapImg = mapImg;
     activeMapContainerRect = activeMapContainer.getBoundingClientRect();
 
-    wrapper.innerHTML = '';
-    const clone = mapContainer.cloneNode(true) as HTMLElement;
+    const overlay = mapContainer.querySelector('.map-overlay') as HTMLElement | null;
+    const currentKey = `${mapImg.dataset.mobMap ?? ''}|${(overlay as any)?._lastPointsHash ?? ''}`;
+    const reuse = !!wrapper.firstElementChild && wrapper.dataset.cacheKey === currentKey;
 
-    clone.classList.remove('w-full', 'u-w-full', 'pc-map-box', 'cursor-crosshair', '!cursor-crosshair');
-    clone.classList.add('magnifier-clone');
+    if (!reuse) {
+      wrapper.innerHTML = '';
+      const clone = mapContainer.cloneNode(true) as HTMLElement;
 
-    clone.style.setProperty('--map-w', `${mapContainer.offsetWidth}px`);
-    clone.style.setProperty('--map-h', `${mapContainer.offsetHeight}px`);
+      clone.classList.remove('w-full', 'u-w-full', 'pc-map-box', 'cursor-crosshair', '!cursor-crosshair');
+      clone.classList.add('magnifier-clone');
 
-    wrapper.appendChild(clone);
+      clone.style.setProperty('--map-w', `${mapContainer.offsetWidth}px`);
+      clone.style.setProperty('--map-h', `${mapContainer.offsetHeight}px`);
+
+      wrapper.appendChild(clone);
+      wrapper.dataset.cacheKey = currentKey;
+    }
+
     magnifier.classList.remove('hidden');
     DOM.body.classList.add('magnifier-active');
 
