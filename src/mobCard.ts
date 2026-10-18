@@ -514,7 +514,7 @@ export function updateProgressBar(element: HTMLElement, mob: Mob, timeLabelObj: 
 export function updateProgressText(element: HTMLElement, mob: Mob, timeLabelObj: TimeLabelResult | null = null): void {
   const { status } = mob.repopInfo || {};
   const timeLabel = timeLabelObj || computeTimeLabel(mob);
-  const { label, dhm, isSpecialCondition, isTimeOver } = timeLabel;
+  const { label, labelStatus, dhm, isSpecialCondition, isTimeOver, isTimedMob } = timeLabel;
   const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop || mob.repopInfo?.status === "Maintenance");
 
   const timeContainer = element.querySelector('.moblist-time') as HTMLElement | null;
@@ -536,10 +536,12 @@ export function updateProgressText(element: HTMLElement, mob: Mob, timeLabelObj:
     }
 
     updateTimerRichHTML(inner.querySelector('.mobcard-timer') as HTMLElement, dhm, isSpecialCondition, isTimeOver);
+    const isTimedLabel = isTimedMob && (labelStatus === "ConditionActive" || labelStatus === "NextCondition");
     const labelSpan = inner.querySelector('.timer-label-base') as HTMLElement;
-    const newClass = `timer-label timer-label-base ${status ? 'status-' + status.toLowerCase() : ''} ${isSpecialCondition ? 'is-special' : ''}`;
+    const newClass = `timer-label timer-label-base ${isTimedLabel ? 'status-' + labelStatus!.toLowerCase() + ' is-timed-badge' : ''} ${isSpecialCondition ? 'is-special' : ''}`;
     if (labelSpan.className !== newClass) labelSpan.className = newClass;
-    if (labelSpan.textContent !== label) labelSpan.textContent = label;
+    const displayText = isTimedLabel ? label : "";
+    if (labelSpan.textContent !== displayText) labelSpan.textContent = displayText;
   }
 
   if (percentEl) {
