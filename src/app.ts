@@ -409,6 +409,8 @@ export const sortAndRedistribute = (options: { immediate?: boolean } = {}): void
   }
 };
 
+const collapsedGroups = new Set<string>();
+
 export const syncDomOrder = function (): void {
   if (!DOM.pcLeftList) return;
 
@@ -424,7 +426,7 @@ export const syncDomOrder = function (): void {
   const nodeMap = new Map<string, HTMLElement>();
   currentNodes.forEach(node => {
     if (node.dataset.mobNo) nodeMap.set(`mob-${node.dataset.mobNo}`, node);
-    else if (node.classList.contains('moblist-group-header')) nodeMap.set(`header-${node.textContent}`, node);
+    else if (node.dataset.groupKey) nodeMap.set(`header-${node.dataset.groupKey}`, node);
   });
 
   const groupOrder = ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"];
@@ -433,23 +435,66 @@ export const syncDomOrder = function (): void {
     if (groupMobs.length === 0) return;
 
     const headerText = (GROUP_LABELS as any)[key];
-    const headerKey = `header-${headerText}`;
+    const headerKey = `header-${key}`;
     let header = nodeMap.get(headerKey);
+    const isCollapsed = collapsedGroups.has(key);
+
     if (!header) {
       header = document.createElement("div");
-      header.className = "moblist-group-header font-bold text-gray-500 uppercase mt-2 mb-1 border-b border-gray-700/50 pb-1 pl-1";
-      header.textContent = headerText;
+      header.className = "moblist-group-header status-group-separator";
+      header.dataset.groupKey = key;
+      header.setAttribute("role", "button");
+      header.setAttribute("tabindex", "0");
+      header.title = "クリックで折りたたみ / 展開";
+
+      const labelSpan = document.createElement("span");
+      labelSpan.className = "status-group-label";
+      labelSpan.textContent = headerText;
+      header.appendChild(labelSpan);
+
+      const countBadge = document.createElement("span");
+      countBadge.className = "status-group-count";
+      header.appendChild(countBadge);
+
+      const toggleIcon = document.createElement("span");
+      toggleIcon.className = "status-group-toggle-icon";
+      toggleIcon.textContent = "▼";
+      header.appendChild(toggleIcon);
+
+      const toggleHandler = () => {
+        if (collapsedGroups.has(key)) {
+          collapsedGroups.delete(key);
+        } else {
+          collapsedGroups.add(key);
+        }
+        syncDomOrder();
+      };
+
+      header.addEventListener("click", toggleHandler);
+      header.addEventListener("keydown", (e: KeyboardEvent) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleHandler();
+        }
+      });
     }
+
+    header.classList.toggle("is-collapsed", isCollapsed);
+    const countEl = header.querySelector(".status-group-count");
+    if (countEl) countEl.textContent = `(${groupMobs.length})`;
+
     idealNodes.push(header);
 
-    groupMobs.forEach(m => {
-      const itemKey = `mob-${m.No}`;
-      let item = nodeMap.get(itemKey);
-      if (!item) {
-        item = createSimpleMobItem(m);
-      }
-      idealNodes.push(item);
-    });
+    if (!isCollapsed) {
+      groupMobs.forEach(m => {
+        const itemKey = `mob-${m.No}`;
+        let item = nodeMap.get(itemKey);
+        if (!item) {
+          item = createSimpleMobItem(m);
+        }
+        idealNodes.push(item);
+      });
+    }
   });
 
   for (let i = 0; i < idealNodes.length; i++) {
