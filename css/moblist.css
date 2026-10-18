@@ -313,7 +313,7 @@
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 400;
-  color: var(--c-text-hi);
+  color: #86a4df;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   background: #2551aa;
@@ -331,13 +331,13 @@
 }
 
 .moblist-percent.max-over {
-  color: var(--c-text-hi);
+  color: #d49ea7;
   background: #720a1b;
   border-color: #470309;
 }
 
 .moblist-percent.pct-0 {
-  color: var(--c-text-off);
+  color: #7d838b;
   background: #1e293b;
   border-color: #4b5563;
 }
