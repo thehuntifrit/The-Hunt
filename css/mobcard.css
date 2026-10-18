@@ -627,6 +627,22 @@ html body.magnifier-active .mobcard-inner * {
   opacity: 1;
 }
 
+/* 拡大鏡起動中（html body.magnifier-active）は背面マップ側のホバー拡大およびツールチップを無効化 */
+html body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point:hover,
+html body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point:focus {
+  transform: translate(-50%, -50%) !important;
+  box-shadow: none !important;
+}
+
+html body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point[data-tooltip]::after {
+  display: none !important;
+}
+
+/* 拡大鏡クローン内（.magnifier-clone）のツールチップ自体も拡大鏡内で巨大化しないよう非表示または通常化 */
+.magnifier-clone .spawn-point[data-tooltip]::after {
+  display: none !important;
+}
+
 /* ── Spawn point colors (Old CSS restored) ───────────────── */
 .color-b1 {
   background-color: #4494f7;
