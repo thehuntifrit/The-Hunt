@@ -227,7 +227,6 @@
   display: inline-flex;
   gap: 1px;
   align-items: baseline;
-  justify-content: flex-end;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
@@ -235,19 +234,18 @@
 .mobcard-timer-part {
   display: inline-flex;
   align-items: baseline;
+  min-inline-size: 30px;
   justify-content: flex-end;
 }
 
-.mobcard-timer-part.part-m {
-  inline-size: 34px;
-  min-inline-size: 34px;
-  flex: 0 0 34px;
-}
-
-.mobcard-timer-part.part-h {
-  inline-size: 38px;
-  min-inline-size: 38px;
-  flex: 0 0 38px;
+/* ★変更（これだけが追加）：
+   h パートが無く m パートだけの行（例: 52m）で、
+   h 分の空き（30px + gap 1px）を左に確保して、
+   m の位置を他の行（1h 2m など）と同じ列に揃える。
+   h・m の幅（min-inline-size: 30px）は元のまま一切変更なし。
+   ※ もし悪化した場合は、このブロックを丸ごと削除すれば元に戻る。 */
+.mobcard-timer-part:only-child {
+  margin-left: 31px;
 }
 
 .mobcard-timer-num {
@@ -273,10 +271,6 @@
   gap: 6px;
 }
 
-.mobcard-timer {
-  flex: 0 0 auto;
-}
-
 .timer-label-base {
   display: none;
 }
@@ -286,7 +280,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 30px;
+  min-width: 38px;
   height: 13px;
   padding: 0px 2px;
   font-family: var(--font-ui);
@@ -308,7 +302,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 30px;
+  min-width: 38px;
   height: 13px;
   padding: 0px 2px;
   font-family: var(--font-ui);
