@@ -37,7 +37,6 @@ async function initApp(): Promise<void> {
     attachMobCardEvents();
     initGlobalMagnifier();
 
-    // 基礎データを確実に読み込んでからリアルタイムリスナーを開始
     await loadBaseMobData();
 
     initializeAuth().then(async (userId) => {
@@ -272,9 +271,6 @@ function updateVisibleCardsSet(): void {
   const vh = window.innerHeight;
   const items = Array.from(container.querySelectorAll<HTMLElement>('.moblist-item'));
   const mobMap = getMobMap();
-
-  // レイアウトの読み取りを先にまとめて行い、DOMの書き込みは最後にまとめる
-  // (読み取りと書き込みを交互にすると、カードごとにレイアウトが再計算される)
   const rects = items.map(el => el.getBoundingClientRect());
 
   const prevVisible = new Set(visibleCards);
