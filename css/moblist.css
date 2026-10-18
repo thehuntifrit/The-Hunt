@@ -280,7 +280,7 @@
 }
 
 .moblist-percent.max-over {
-  color: #000000;
+  color: var(--c-text-hi);
   background: #d4697b;
   border-color: #b3222e;
 }
