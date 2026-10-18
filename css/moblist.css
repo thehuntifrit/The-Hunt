@@ -357,17 +357,14 @@
   background-color: var(--c-surface-ho);
 }
 
-/* ── State: Timed mob in condition window (Outer borders + Tint + Subtle Accent) ───── */
+/* ── State: Timed mob in condition window (Left & Right brackets only, NO top/bottom borders) ───── */
 .moblist-item.moblist-highlight-white {
   background-color: #1a2a44;
-  border-top-color: #ffffff;
-  border-bottom-color: #ffffff;
+  border-top-color: var(--c-border);
+  border-bottom-color: var(--c-border);
+  border-left-color: #ffffff;
   border-right: 3px solid #ffffff;
-  box-shadow: inset 3px 0 0 #ffffff, 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-.moblist-item.moblist-highlight-white .moblist-report-btn {
-  border-left-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 /* ── State: Timed mob next condition countdown (Gold timer) ── */
