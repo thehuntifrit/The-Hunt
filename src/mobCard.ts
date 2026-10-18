@@ -71,7 +71,7 @@ export function initGlobalMagnifier(): void {
   let activeMapImg: HTMLImageElement | null = null;
   let activeMapContainer: HTMLElement | null = null;
   let activeMapContainerRect: DOMRect | null = null;
-  let magnifierRect: DOMRect | null = null;
+  let magnifierRect: DOMRect | null = null; // サイズは固定なので、最初の1回だけ取得して使い回す
 
   const closeMagnifier = () => {
     magnifier.classList.add('hidden');
@@ -94,9 +94,7 @@ export function initGlobalMagnifier(): void {
       return;
     }
 
-    magnifier.style.setProperty('--mag-x', `${e.clientX}px`);
-    magnifier.style.setProperty('--mag-y', `${e.clientY}px`);
-
+    // 表示中に1回だけ取得する(以降は使い回し)
     if (!magnifierRect) {
       magnifierRect = magnifier.getBoundingClientRect();
     }
@@ -106,9 +104,9 @@ export function initGlobalMagnifier(): void {
     const translateX = centerX - (x * CONFIG.MAP_ZOOM_SCALE);
     const translateY = centerY - (y * CONFIG.MAP_ZOOM_SCALE);
 
-    wrapper.style.setProperty('--mag-zoom-x', `${translateX}px`);
-    wrapper.style.setProperty('--mag-zoom-y', `${translateY}px`);
-    wrapper.style.setProperty('--mag-scale', String(CONFIG.MAP_ZOOM_SCALE));
+    // CSS変数ではなく transform を直接書く(子孫のスタイル再計算を起こさない)
+    magnifier.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%)`;
+    wrapper.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(${CONFIG.MAP_ZOOM_SCALE})`;
   };
 
   let magnifierRafId: number | null = null;
@@ -132,24 +130,29 @@ export function initGlobalMagnifier(): void {
     if (!mapImg) return;
 
     e.preventDefault();
+
+    // ① 読み取りを先にまとめる
+    const rect = mapContainer.getBoundingClientRect();
+    const mapW = mapContainer.offsetWidth;
+    const mapH = mapContainer.offsetHeight;
+
     activeMapContainer = mapContainer;
     activeMapImg = mapImg;
-    activeMapContainerRect = activeMapContainer.getBoundingClientRect();
+    activeMapContainerRect = rect;
 
+    // ② その後に DOM を書き込む
     wrapper.innerHTML = '';
     const clone = mapContainer.cloneNode(true) as HTMLElement;
 
     clone.classList.remove('w-full', 'u-w-full', 'pc-map-box', 'cursor-crosshair', '!cursor-crosshair');
     clone.classList.add('magnifier-clone');
 
-    clone.style.setProperty('--map-w', `${mapContainer.offsetWidth}px`);
-    clone.style.setProperty('--map-h', `${mapContainer.offsetHeight}px`);
+    clone.style.setProperty('--map-w', `${mapW}px`);
+    clone.style.setProperty('--map-h', `${mapH}px`);
 
     wrapper.appendChild(clone);
     magnifier.classList.remove('hidden');
     DOM.body.classList.add('magnifier-active');
-
-    magnifierRect = magnifier.getBoundingClientRect();
 
     window.addEventListener('mousemove', onMagnifierMouseMove);
     updateMagnifier(e);

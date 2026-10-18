@@ -484,7 +484,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  transform: translate(var(--mag-x), var(--mag-y)) translate(-50%, -50%);
+  will-change: transform;
   z-index: var(--z-magnifier);
   width: 168px;
   height: 168px;
@@ -503,7 +503,6 @@
 .magnifier-content-wrapper {
   position: absolute;
   transform-origin: 0 0;
-  transform: translate(var(--mag-zoom-x), var(--mag-zoom-y)) scale(var(--mag-scale));
   width: var(--map-w);
   height: var(--map-h);
 }
@@ -516,10 +515,8 @@
   box-shadow: none;
 }
 
-html body.magnifier-active,
-html body.magnifier-active *,
-html body.magnifier-active .mobcard-inner,
-html body.magnifier-active .mobcard-inner * {
+html body.magnifier-active .map-container,
+html body.magnifier-active .map-container * {
   cursor: none;
 }
 
