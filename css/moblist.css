@@ -278,7 +278,7 @@
   font-weight: 400;
   line-height: 1;
   border-radius: 3px;
-  color: #fff;
+  color: var(--c-gold);
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.25));
   border: 1px solid rgba(245, 158, 11, 0.6);
   box-shadow: 0 0 4px rgba(245, 158, 11, 0.2);
@@ -301,7 +301,7 @@
   font-weight: 400;
   line-height: 1;
   border-radius: 3px;
-  color: var(--c-gold);
+  color: #fff;
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.5), rgba(5, 150, 105, 0.6));
   border: 1px solid #10b981;
   box-shadow: 0 0 6px rgba(16, 185, 129, 0.35);
