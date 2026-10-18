@@ -297,10 +297,18 @@
   user-select: none;
 }
 
+.appnav-rank-tab[data-rank="ALL"] {
+  color: var(--c-all);
+}
+
 .appnav-rank-tab:hover {
   background-color: var(--c-surface-ho);
   color: var(--c-text-hi);
   border-color: var(--c-text-off);
+}
+
+.appnav-rank-tab[data-rank="ALL"]:hover {
+  color: var(--c-all);
 }
 
 .appnav-rank-tab.is-active {
@@ -311,6 +319,12 @@
 }
 
 /* Rank specific active accent subtle indicators */
+.appnav-rank-tab.is-active[data-rank="ALL"] {
+  border-color: var(--c-all);
+  color: var(--c-all);
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.25);
+}
+
 .appnav-rank-tab.is-active[data-rank="S rank"] {
   border-color: var(--c-s);
   color: var(--c-s);
