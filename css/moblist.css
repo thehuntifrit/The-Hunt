@@ -357,48 +357,17 @@
   background-color: var(--c-surface-ho);
 }
 
-/* ── State: Timed mob in condition window (Side Brackets + Subtle Tint) ───── */
+/* ── State: Timed mob in condition window (Outer borders + Tint + Subtle Accent) ───── */
 .moblist-item.moblist-highlight-white {
-  background-color: #1a2942;
-  border-color: rgba(255, 255, 255, 0.45);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  background-color: #1a2a44;
+  border-top-color: #ffffff;
+  border-bottom-color: #ffffff;
+  border-right: 3px solid #ffffff;
+  box-shadow: inset 3px 0 0 #ffffff, 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-/* Side bracket accents (left and right corner brackets) */
-.moblist-item.moblist-highlight-white::after {
-  content: '';
-  position: absolute;
-  top: 3px;
-  right: calc(var(--row-h) * 2 / 3 + 4px);
-  bottom: calc(var(--row-prog-h) + 3px);
-  width: 6px;
-  border-top: 2px solid #ffffff;
-  border-right: 2px solid #ffffff;
-  border-bottom: 2px solid #ffffff;
-  border-top-right-radius: 3px;
-  border-bottom-right-radius: 3px;
-  pointer-events: none;
-  opacity: 0.9;
-}
-
-.moblist-item.moblist-highlight-white .moblist-info-col {
-  position: relative;
-}
-
-.moblist-item.moblist-highlight-white .moblist-info-col::before {
-  content: '';
-  position: absolute;
-  top: 1px;
-  left: 2px;
-  bottom: 1px;
-  width: 5px;
-  border-top: 2px solid #ffffff;
-  border-left: 2px solid #ffffff;
-  border-bottom: 2px solid #ffffff;
-  border-top-left-radius: 3px;
-  border-bottom-left-radius: 3px;
-  pointer-events: none;
-  opacity: 0.9;
+.moblist-item.moblist-highlight-white .moblist-report-btn {
+  border-left-color: rgba(255, 255, 255, 0.4);
 }
 
 /* ── State: Timed mob next condition countdown (Gold timer) ── */
