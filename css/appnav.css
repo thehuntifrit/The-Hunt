@@ -301,9 +301,20 @@
   color: var(--c-all);
 }
 
+.appnav-rank-tab[data-rank="S rank"] {
+  color: var(--c-s);
+}
+
+.appnav-rank-tab[data-rank="A rank"] {
+  color: var(--c-a);
+}
+
+.appnav-rank-tab[data-rank="FATE"] {
+  color: var(--c-f);
+}
+
 .appnav-rank-tab:hover {
   background-color: var(--c-surface-ho);
-  color: var(--c-text-hi);
   border-color: var(--c-text-off);
 }
 
@@ -311,10 +322,21 @@
   color: var(--c-all);
 }
 
+.appnav-rank-tab[data-rank="S rank"]:hover {
+  color: var(--c-s);
+}
+
+.appnav-rank-tab[data-rank="A rank"]:hover {
+  color: var(--c-a);
+}
+
+.appnav-rank-tab[data-rank="FATE"]:hover {
+  color: var(--c-f);
+}
+
 .appnav-rank-tab.is-active {
   background-color: var(--c-surface-sel);
   border-color: var(--c-cyan);
-  color: var(--c-cyan);
   box-shadow: 0 0 8px rgba(34, 211, 238, 0.25);
 }
 
@@ -322,25 +344,25 @@
 .appnav-rank-tab.is-active[data-rank="ALL"] {
   border-color: var(--c-all);
   color: var(--c-all);
-  box-shadow: 0 0 8px rgba(244, 63, 94, 0.25);
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.3);
 }
 
 .appnav-rank-tab.is-active[data-rank="S rank"] {
   border-color: var(--c-s);
   color: var(--c-s);
-  box-shadow: 0 0 8px rgba(245, 158, 11, 0.25);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
 }
 
 .appnav-rank-tab.is-active[data-rank="A rank"] {
   border-color: var(--c-a);
   color: var(--c-a);
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.25);
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.3);
 }
 
 .appnav-rank-tab.is-active[data-rank="FATE"] {
   border-color: var(--c-f);
   color: var(--c-f);
-  box-shadow: 0 0 8px rgba(168, 85, 247, 0.25);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.3);
 }
 
 .appnav-area-carousel-wrapper {
