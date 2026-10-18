@@ -125,6 +125,9 @@
 }
 
 #readme-container h1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 22px;
   color: var(--c-cyan);
   padding-bottom: 8px;
@@ -133,6 +136,9 @@
 }
 
 #readme-container h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 17px;
   color: #7dd3fc;
   padding-bottom: 6px;
@@ -141,6 +147,9 @@
 }
 
 #readme-container h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 15px;
   color: var(--c-gold);
   margin-top: 18px;

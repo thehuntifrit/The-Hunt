@@ -526,12 +526,12 @@ export function updateProgressText(element: HTMLElement, mob: Mob, timeLabelObj:
       timeContainer.innerHTML = "";
       inner = document.createElement("div");
       inner.className = "timer-inner-grid";
-      const timerNode = document.createElement('span');
-      timerNode.className = 'mobcard-timer';
       const labelSpan = document.createElement("span");
       labelSpan.className = "timer-label timer-label-base";
-      inner.appendChild(timerNode);
+      const timerNode = document.createElement('span');
+      timerNode.className = 'mobcard-timer';
       inner.appendChild(labelSpan);
+      inner.appendChild(timerNode);
       timeContainer.appendChild(inner);
     }
 

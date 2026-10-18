@@ -59,10 +59,10 @@ export const CONFIG = {
 export const STATUS_LABELS: Record<string, string | { S: string; others: string }> = {
     Maintenance: "停止",
     MaxOver: "超過",
-    ConditionActive: "なう",
+    ConditionActive: "なう！",
     PopWindow: "残り",
     Next: { S: "次回", others: "残り" },
-    NextCondition: { S: "次回", others: "残り" },
+    NextCondition: "次まで",
     Unknown: "未定"
 };
 
