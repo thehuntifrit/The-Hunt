@@ -203,10 +203,12 @@ export function computeTimeLabel(mob: Mob): TimeLabelResult {
   const isSpecialCondition = isTimedMob && (mob.rank === RANKS.S) && (info.status !== "PopWindow");
 
   let labelStatus = info.status;
-  if (isInWindow && (info.status === "MaxOver" || info.status === "PopWindow")) {
-    labelStatus = "ConditionActive";
-  } else if (isNextWindow && (info.status === "MaxOver" || info.status === "PopWindow")) {
-    labelStatus = "NextCondition";
+  if (isTimedMob) {
+    if (isInWindow) {
+      labelStatus = "ConditionActive";
+    } else if (isNextWindow || info.nextConditionSpawnDate) {
+      labelStatus = "NextCondition";
+    }
   }
 
   const label = getStatusLabel(labelStatus, mob.rank);
