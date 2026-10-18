@@ -224,7 +224,9 @@
 
 /* timer inner parts (from #timer-rich-template) */
 .mobcard-timer {
-  display: inline-flex;
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-template-columns: 38px 38px;
   gap: 1px;
   align-items: baseline;
   font-family: var(--font-mono);
@@ -234,8 +236,8 @@
 .mobcard-timer-part {
   display: inline-flex;
   align-items: baseline;
-  min-inline-size: 30px;
   justify-content: flex-end;
+  min-inline-size: 0;
 }
 
 .mobcard-timer-num {
@@ -259,6 +261,10 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.mobcard-timer {
+  flex: 0 0 auto;
 }
 
 .timer-label-base {
