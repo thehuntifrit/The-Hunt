@@ -283,9 +283,9 @@
   font-weight: 400;
   line-height: 1;
   border-radius: 3px;
-  color: var(--c-gold);
+  color: #f8d18c;
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.25));
-  border: 1px solid rgba(245, 158, 11, 0.6);
+  border: 1px solid #6d4608ff;
   white-space: nowrap;
   flex-shrink: 0;
   box-sizing: border-box;
