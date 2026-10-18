@@ -225,7 +225,7 @@
 /* timer inner parts (from #timer-rich-template) */
 .mobcard-timer {
   display: inline-flex;
-  gap: 1px;
+  gap: 2px;
   align-items: baseline;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -238,14 +238,6 @@
   justify-content: flex-end;
 }
 
-/* ★変更（これだけが追加）：
-   「次まで」「なう！」ラベルが付いている行で、h が 0 のとき
-   （JS が h パートに hidden クラスを付けて display:none にしている）、
-   h パートを「見えないまま幅だけ確保」する。
-   → ラベルの位置が、h がある行（1h 2m など）と同じ位置に揃う。
-   h・m の幅（min-inline-size: 30px）は元のまま一切変更なし。
-   ラベルが無い行には影響しない（エリア名が余計に省略されない）。
-   ※ もし悪化した場合は、このブロックを丸ごと削除すれば元に戻る。 */
 .timer-label-base.is-timed-badge+.mobcard-timer .mobcard-timer-part.h-part.hidden {
   display: inline-flex !important;
   visibility: hidden;
