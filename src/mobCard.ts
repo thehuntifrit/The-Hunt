@@ -156,8 +156,6 @@ export function initGlobalMagnifier(): void {
     magnifier.classList.remove('hidden');
     DOM.body.classList.add('magnifier-active');
 
-    magnifierRect = magnifier.getBoundingClientRect();
-
     window.addEventListener('mousemove', onMagnifierMouseMove);
     updateMagnifier(e);
   }, { capture: true });

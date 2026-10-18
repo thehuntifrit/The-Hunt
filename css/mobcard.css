@@ -494,10 +494,12 @@
   background-color: #050d18;
   pointer-events: none;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+  will-change: transform;
 }
 
 .map-magnifier.hidden {
-  display: none;
+  visibility: hidden;
+  opacity: 0;
 }
 
 .magnifier-content-wrapper {
@@ -516,10 +518,12 @@
   box-shadow: none;
 }
 
-html body.magnifier-active,
-html body.magnifier-active *,
-html body.magnifier-active .mobcard-inner,
-html body.magnifier-active .mobcard-inner * {
+html body.magnifier-active {
+  cursor: none;
+}
+
+html body.magnifier-active .map-container,
+html body.magnifier-active .map-container * {
   cursor: none;
 }
 
