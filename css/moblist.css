@@ -313,7 +313,7 @@
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 400;
-  color: #86a4df;
+  color: #aec6f7;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   background: #2551aa;
@@ -337,7 +337,7 @@
 }
 
 .moblist-percent.pct-0 {
-  color: #7d838b;
+  color: #b1b8c0;
   background: #1e293b;
   border-color: #4b5563;
 }
