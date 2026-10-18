@@ -627,20 +627,26 @@ html body.magnifier-active .mobcard-inner * {
   opacity: 1;
 }
 
-/* 拡大鏡起動中（html body.magnifier-active）は背面マップ側のホバー拡大およびツールチップを無効化 */
-html body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point:hover,
-html body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point:focus {
+/* 拡大鏡起動中（body.magnifier-active）は背面マップ上のホバー・ポインターイベントを完全に遮断 */
+body.magnifier-active .map-container:not(.magnifier-clone),
+body.magnifier-active .map-container:not(.magnifier-clone) *,
+body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point {
+  pointer-events: none !important;
+}
+
+body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point:hover,
+body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point:focus {
   transform: translate(-50%, -50%) !important;
   box-shadow: none !important;
 }
 
-html body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point[data-tooltip]::after {
-  display: none !important;
-}
-
-/* 拡大鏡クローン内（.magnifier-clone）のツールチップ自体も拡大鏡内で巨大化しないよう非表示または通常化 */
+body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point::after,
+body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point[data-tooltip]::after,
+.magnifier-clone .spawn-point::after,
 .magnifier-clone .spawn-point[data-tooltip]::after {
   display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 /* ── Spawn point colors (Old CSS restored) ───────────────── */
