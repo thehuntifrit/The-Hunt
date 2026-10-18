@@ -134,6 +134,9 @@ export function parseMobIdParts(no: number): { mobNo: number; instance: number }
   return result;
 }
 
+// 経過%の比較用の値。画面表示(整数)に合わせて切り捨てる。
+// calculateRepop の結果は整数(切り捨て済み)、tick 更新の結果は小数で、
+// そのまま比較すると同率のモブが別の値として扱われ、ランク・拡張順に進まなくなる。
 function percentKey(info: { elapsedPercent?: number | null }): number {
   return Math.floor(info.elapsedPercent || 0);
 }
@@ -187,9 +190,9 @@ export function allTabComparator(a: Mob, b: Mob): number {
 
     const pa = parseMobIdParts(a.No);
     const pb = parseMobIdParts(b.No);
-    if (pa.instance !== pb.instance) return pa.instance - pb.instance;
+    if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
 
-    return pa.mobNo - pb.mobNo;
+    return pa.instance - pb.instance;
   }
 
   const isAConditionActive = !!aInfo.isInConditionWindow;
@@ -217,9 +220,8 @@ export function allTabComparator(a: Mob, b: Mob): number {
     }
     const pa = parseMobIdParts(a.No);
     const pb = parseMobIdParts(b.No);
-    if (pa.instance !== pb.instance) return pa.instance - pb.instance;
-
-    return pa.mobNo - pb.mobNo;
+    if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
+    return pa.instance - pb.instance;
   }
 
   const aPercent = percentKey(aInfo);
@@ -235,9 +237,10 @@ export function allTabComparator(a: Mob, b: Mob): number {
   if (a.ExpansionId !== b.ExpansionId && a.ExpansionId !== undefined && b.ExpansionId !== undefined) {
     return b.ExpansionId - a.ExpansionId;
   }
+
   const pa = parseMobIdParts(a.No);
   const pb = parseMobIdParts(b.No);
-  if (pa.instance !== pb.instance) return pa.instance - pb.instance;
+  if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
 
-  return pa.mobNo - pb.mobNo;
+  return pa.instance - pb.instance;
 }
