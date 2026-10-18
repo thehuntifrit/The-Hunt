@@ -270,7 +270,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
+  min-width: 32px;
   height: 13px;
   padding: 0 4px;
   font-family: var(--font-ui);
@@ -293,7 +293,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
+  min-width: 32px;
   height: 13px;
   padding: 0 4px;
   font-family: var(--font-ui);
@@ -301,7 +301,7 @@
   font-weight: 400;
   line-height: 1;
   border-radius: 3px;
-  color: #036454;
+  color: var(--c-text-hi);
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.5), rgba(5, 150, 105, 0.6));
   border: 1px solid #10b981;
   box-shadow: 0 0 6px rgba(16, 185, 129, 0.35);
