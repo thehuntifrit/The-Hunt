@@ -225,7 +225,7 @@
 /* timer inner parts (from #timer-rich-template) */
 .mobcard-timer {
   display: inline-flex;
-  gap: 2px;
+  gap: 0px;
   align-items: baseline;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
