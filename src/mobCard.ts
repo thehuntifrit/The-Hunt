@@ -79,6 +79,7 @@ export function initGlobalMagnifier(): void {
     activeMapImg = null;
     activeMapContainer = null;
     activeMapContainerRect = null;
+    wrapper.innerHTML = '';
     window.removeEventListener('mousemove', onMagnifierMouseMove);
   };
 
@@ -135,26 +136,20 @@ export function initGlobalMagnifier(): void {
     activeMapImg = mapImg;
     activeMapContainerRect = activeMapContainer.getBoundingClientRect();
 
-    const overlay = mapContainer.querySelector('.map-overlay') as HTMLElement | null;
-    const currentKey = `${mapImg.dataset.mobMap ?? ''}|${(overlay as any)?._lastPointsHash ?? ''}|${mapContainer.offsetWidth}x${mapContainer.offsetHeight}`;
-    const reuse = !!wrapper.firstElementChild && wrapper.dataset.cacheKey === currentKey;
+    wrapper.innerHTML = '';
+    const clone = mapContainer.cloneNode(true) as HTMLElement;
 
-    if (!reuse) {
-      wrapper.innerHTML = '';
-      const clone = mapContainer.cloneNode(true) as HTMLElement;
+    clone.classList.remove('w-full', 'u-w-full', 'pc-map-box', 'cursor-crosshair', '!cursor-crosshair');
+    clone.classList.add('magnifier-clone');
 
-      clone.classList.remove('w-full', 'u-w-full', 'pc-map-box', 'cursor-crosshair', '!cursor-crosshair');
-      clone.classList.add('magnifier-clone');
+    clone.style.setProperty('--map-w', `${mapContainer.offsetWidth}px`);
+    clone.style.setProperty('--map-h', `${mapContainer.offsetHeight}px`);
 
-      clone.style.setProperty('--map-w', `${mapContainer.offsetWidth}px`);
-      clone.style.setProperty('--map-h', `${mapContainer.offsetHeight}px`);
-
-      wrapper.appendChild(clone);
-      wrapper.dataset.cacheKey = currentKey;
-    }
-
+    wrapper.appendChild(clone);
     magnifier.classList.remove('hidden');
     DOM.body.classList.add('magnifier-active');
+
+    magnifierRect = magnifier.getBoundingClientRect();
 
     window.addEventListener('mousemove', onMagnifierMouseMove);
     updateMagnifier(e);
