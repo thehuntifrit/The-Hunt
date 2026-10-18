@@ -211,12 +211,12 @@
   line-height: 1.65;
 }
 
-#readme-container li > p {
+#readme-container li>p {
   margin-bottom: 6px;
 }
 
-#readme-container li > ul,
-#readme-container li > ol {
+#readme-container li>ul,
+#readme-container li>ol {
   margin-top: 6px;
   margin-bottom: 6px;
   padding-left: 18px;
@@ -262,7 +262,7 @@
   color: var(--c-text-lo);
 }
 
-#readme-container blockquote > :last-child {
+#readme-container blockquote> :last-child {
   margin-bottom: 0;
 }
 

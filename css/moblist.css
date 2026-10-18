@@ -444,9 +444,9 @@
   padding: 6px 12px;
   margin-top: 4px;
   margin-bottom: 6px;
-  background: linear-gradient(90deg, #182232 0%, #0d1522 100%);
-  border: 1px solid #2b3b55;
-  border-left: 4px solid #6366f1;
+  background: linear-gradient(90deg, #14261c 0%, #0c1812 100%);
+  border: 1px solid #25402f;
+  border-left: 4px solid #22c55e;
   border-radius: 6px;
   cursor: pointer;
   -webkit-user-select: none;
@@ -456,8 +456,8 @@
 }
 
 .status-group-separator:hover {
-  background: linear-gradient(90deg, #1e2c40 0%, #111a2a 100%);
-  border-color: #3e5478;
+  background: linear-gradient(90deg, #1a3324 0%, #101f17 100%);
+  border-color: #33593f;
 }
 
 .status-group-separator:active {
@@ -473,7 +473,7 @@
   font-family: var(--font-ui);
   font-size: 12px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: #e2f5e8;
   text-transform: uppercase;
   letter-spacing: 0.8px;
   white-space: nowrap;
@@ -482,14 +482,14 @@
 .status-group-count {
   font-family: var(--font-mono);
   font-size: 12px;
-  color: #94a3b8;
+  color: #8fb09b;
   margin-left: 2px;
   margin-right: auto;
 }
 
 .status-group-toggle-icon {
   font-size: 10px;
-  color: #94a3b8;
+  color: #8fb09b;
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
