@@ -224,11 +224,10 @@
 
 /* timer inner parts (from #timer-rich-template) */
 .mobcard-timer {
-  display: inline-grid;
-  grid-auto-flow: column;
-  grid-template-columns: 38px 38px;
+  display: inline-flex;
   gap: 1px;
   align-items: baseline;
+  justify-content: flex-end;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
@@ -237,7 +236,18 @@
   display: inline-flex;
   align-items: baseline;
   justify-content: flex-end;
-  min-inline-size: 0;
+}
+
+.mobcard-timer-part.part-m {
+  inline-size: 34px;
+  min-inline-size: 34px;
+  flex: 0 0 34px;
+}
+
+.mobcard-timer-part.part-h {
+  inline-size: 38px;
+  min-inline-size: 38px;
+  flex: 0 0 38px;
 }
 
 .mobcard-timer-num {
@@ -276,7 +286,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 38px;
+  min-width: 30px;
   height: 13px;
   padding: 0px 2px;
   font-family: var(--font-ui);
@@ -298,7 +308,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 38px;
+  min-width: 30px;
   height: 13px;
   padding: 0px 2px;
   font-family: var(--font-ui);
