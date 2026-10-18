@@ -619,6 +619,7 @@ const URGENT_WINDOW_SEC = 125;   // 2分前通知(120秒)より少し広く取�
 const TICK_TOLERANCE_MS = 100;   // 周期判定の余裕(ミリ秒)
 
 export const updateProgressBarsOptimized = function (force = false): void {
+  if (document.body.classList.contains('magnifier-active')) return;
   if (document.visibilityState === 'hidden' && !force) return;
 
   const state = getState();
