@@ -503,36 +503,48 @@
   display: none;
 }
 
-/* Category-specific accent bars */
-.status-group[data-group-key="WINDOW"] .status-group-separator {
+/* Category-specific accent bars (both on section wrapper or direct header) */
+.status-group[data-group-key="WINDOW"] .status-group-separator,
+.status-group-separator[data-group-key="WINDOW"] {
   border-left-color: var(--c-gold);
   background: linear-gradient(90deg, #241d0c 0%, #0e1624 100%);
 }
-.status-group[data-group-key="WINDOW"] .status-group-label {
+
+.status-group[data-group-key="WINDOW"] .status-group-label,
+.status-group-separator[data-group-key="WINDOW"] .status-group-label {
   color: #fde68a;
   text-shadow: 0 0 8px rgba(245, 158, 11, 0.35);
 }
 
-.status-group[data-group-key="MAX_OVER"] .status-group-separator {
+.status-group[data-group-key="MAX_OVER"] .status-group-separator,
+.status-group-separator[data-group-key="MAX_OVER"] {
   border-left-color: #f43f5e;
   background: linear-gradient(90deg, #271017 0%, #0e1624 100%);
 }
-.status-group[data-group-key="MAX_OVER"] .status-group-label {
+
+.status-group[data-group-key="MAX_OVER"] .status-group-label,
+.status-group-separator[data-group-key="MAX_OVER"] .status-group-label {
   color: #fecdd3;
 }
 
-.status-group[data-group-key="NEXT"] .status-group-separator {
+.status-group[data-group-key="NEXT"] .status-group-separator,
+.status-group-separator[data-group-key="NEXT"] {
   border-left-color: var(--c-cyan);
 }
-.status-group[data-group-key="NEXT"] .status-group-label {
+
+.status-group[data-group-key="NEXT"] .status-group-label,
+.status-group-separator[data-group-key="NEXT"] .status-group-label {
   color: #a5f3fc;
 }
 
-.status-group[data-group-key="MAINTENANCE"] .status-group-separator {
+.status-group[data-group-key="MAINTENANCE"] .status-group-separator,
+.status-group-separator[data-group-key="MAINTENANCE"] {
   border-left-color: #64748b;
   background: linear-gradient(90deg, #181d26 0%, #0e1624 100%);
 }
-.status-group[data-group-key="MAINTENANCE"] .status-group-label {
+
+.status-group[data-group-key="MAINTENANCE"] .status-group-label,
+.status-group-separator[data-group-key="MAINTENANCE"] .status-group-label {
   color: #94a3b8;
 }
 
@@ -544,7 +556,14 @@
   text-transform: uppercase;
   letter-spacing: 0.8px;
   white-space: nowrap;
-  flex: 1 1 auto;
+}
+
+.status-group-count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--c-text-lo);
+  margin-left: 2px;
+  margin-right: auto;
 }
 
 .status-group-toggle-icon {
@@ -557,7 +576,8 @@
   margin-left: auto;
 }
 
-.status-group.is-collapsed .status-group-toggle-icon {
+.status-group.is-collapsed .status-group-toggle-icon,
+.status-group-separator.is-collapsed .status-group-toggle-icon {
   transform: rotate(-90deg);
 }
 
