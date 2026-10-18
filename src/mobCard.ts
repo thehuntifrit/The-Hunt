@@ -136,7 +136,7 @@ export function initGlobalMagnifier(): void {
     activeMapContainerRect = activeMapContainer.getBoundingClientRect();
 
     const overlay = mapContainer.querySelector('.map-overlay') as HTMLElement | null;
-    const currentKey = `${mapImg.dataset.mobMap ?? ''}|${(overlay as any)?._lastPointsHash ?? ''}`;
+    const currentKey = `${mapImg.dataset.mobMap ?? ''}|${(overlay as any)?._lastPointsHash ?? ''}|${mapContainer.offsetWidth}x${mapContainer.offsetHeight}`;
     const reuse = !!wrapper.firstElementChild && wrapper.dataset.cacheKey === currentKey;
 
     if (!reuse) {
