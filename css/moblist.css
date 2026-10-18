@@ -272,7 +272,7 @@
   justify-content: center;
   min-width: 28px;
   height: 13px;
-  padding: 0 4px;
+  padding: -2px 2px;
   font-family: var(--font-ui);
   font-size: 10px;
   font-weight: 400;
@@ -294,7 +294,7 @@
   justify-content: center;
   min-width: 28px;
   height: 13px;
-  padding: 0 4px;
+  padding: -2px 2x;
   font-family: var(--font-ui);
   font-size: 10px;
   font-weight: 400;
