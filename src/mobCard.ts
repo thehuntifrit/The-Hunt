@@ -402,7 +402,7 @@ export function renderMobCard(mob: Mob): HTMLElement {
 
   const mapSection = card.querySelector('.map-section') as HTMLElement | null;
   if (mapSection) {
-    if (mob.mapImage) {
+    if (mob.rank !== RANKS.F && mob.rank !== 'F' && mob.mapImage) {
       mapSection.classList.remove('hidden');
       updateMapOverlay(card, mob);
     } else {
@@ -721,9 +721,21 @@ export function updateMapOverlay(card: HTMLElement, mob: Mob): void {
   const mapContainer = card.querySelector('.map-container') as HTMLElement | null;
   if (!mapContainer) return;
 
-  if (mob.rank === 'F' && !mob.mapImage) {
+  const mapSection = mapContainer.closest('.map-section') as HTMLElement | null;
+
+  if (mob.rank === 'F' || mob.rank === RANKS.F) {
     mapContainer.classList.add('hidden');
-    const mapSection = mapContainer.closest('.map-section') as HTMLElement | null;
+    if (mapSection) mapSection.classList.add('hidden');
+    const mapOverlay = mapContainer.querySelector('.map-overlay') as HTMLElement | null;
+    if (mapOverlay) {
+      mapOverlay.innerHTML = "";
+      delete (mapOverlay as any)._lastPointsHash;
+    }
+    return;
+  }
+
+  if (!mob.mapImage) {
+    mapContainer.classList.add('hidden');
     if (mapSection) mapSection.classList.add('hidden');
     return;
   }

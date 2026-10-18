@@ -270,9 +270,10 @@
   resize: none;
   outline: none;
   width: 100%;
-  line-height: 1.25;
+  line-height: 24px;
   height: 24px;
   max-height: 24px;
+  box-sizing: border-box;
   overflow: hidden !important;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -280,6 +281,7 @@
   -moz-user-select: text;
   -ms-user-select: text;
   user-select: text;
+  align-self: center;
 }
 
 .mobcard-memo-input::-webkit-scrollbar {
@@ -525,30 +527,43 @@ html body.magnifier-active .mobcard-inner * {
   position: relative;
   width: 100%;
   max-width: 100%;
+  aspect-ratio: 1 / 1;
 }
 
 .pc-map-box {
-  max-height: none;
   width: 100%;
   max-width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  aspect-ratio: 1 / 1;
 }
 
 .mob-map-img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  aspect-ratio: 1 / 1;
   max-width: 100%;
-  object-fit: contain;
+  object-fit: fill;
 }
 
 @media (min-width: 900px) {
+  .map-container.pc-map-box {
+    width: 520px;
+    height: 520px;
+    max-width: 520px;
+    max-height: 520px;
+    flex-shrink: 0;
+    margin-inline: auto;
+  }
+
   .mob-map-img {
     width: 520px;
     height: 520px;
-    max-width: 100%;
+    max-width: 520px;
+    max-height: 520px;
+    flex-shrink: 0;
   }
 }
 
@@ -556,6 +571,8 @@ html body.magnifier-active .mobcard-inner * {
   pointer-events: none;
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   cursor: crosshair;
 }
 
