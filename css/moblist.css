@@ -225,7 +225,7 @@
 /* timer inner parts (from #timer-rich-template) */
 .mobcard-timer {
   display: inline-flex;
-  gap: 0px;
+  gap: 1px;
   align-items: baseline;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -238,9 +238,39 @@
   justify-content: flex-end;
 }
 
+/* ★変更（これだけが追加）：
+   「次まで」「なう！」ラベルが付いている行で、h が 0 のとき
+   （JS が h パートに hidden クラスを付けて display:none にしている）、
+   h パートを「見えないまま幅だけ確保」する。
+   → ラベルの位置が、h がある行（1h 2m など）と同じ位置に揃う。
+   h・m の幅（min-inline-size: 30px）は元のまま一切変更なし。
+   ラベルが無い行には影響しない（エリア名が余計に省略されない）。
+   ※ もし悪化した場合は、このブロックを丸ごと削除すれば元に戻る。 */
 .timer-label-base.is-timed-badge+.mobcard-timer .mobcard-timer-part.h-part.hidden {
   display: inline-flex !important;
   visibility: hidden;
+}
+
+/* ★変更2：h の数字を「3桁分の固定幅・右寄せ」にして、2桁と3桁のズレをなくす。
+   - 数字の枠を 3ch（等幅フォントの数字3個分）に固定し右寄せ
+     → 2桁・1桁は同じ枠の中で右寄せになるので、3桁と単位 h の位置が揃う
+   - h の後ろ（単位の右余白）を 2px 削る（元 1px → -1px）
+     → h と m の間隔も 2px 詰まる
+   - h パートの min-inline-size: 30px は外す（枠の幅は数字の枠で決まる）
+   m パートは一切変更なし。
+   ※ 悪化した場合は、このブロック（★変更2）を丸ごと削除すれば元に戻る。 */
+.mobcard-timer-part.h-part {
+  min-inline-size: 0;
+}
+
+.mobcard-timer-part.h-part .mobcard-timer-num {
+  min-inline-size: 3ch;
+  text-align: right;
+}
+
+.mobcard-timer-part.h-part .mobcard-timer-unit {
+  margin-right: -1px;
+  /* 元は 1px。2px 削った値 */
 }
 
 .mobcard-timer-num {
@@ -275,7 +305,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 30px;
+  min-width: 38px;
   height: 13px;
   padding: 0px 2px;
   font-family: var(--font-ui);
@@ -283,9 +313,9 @@
   font-weight: 400;
   line-height: 1;
   border-radius: 3px;
-  color: #f8d18c;
+  color: var(--c-gold);
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.25));
-  border: 1px solid #6d4608ff;
+  border: 1px solid rgba(245, 158, 11, 0.6);
   white-space: nowrap;
   flex-shrink: 0;
   box-sizing: border-box;
@@ -297,7 +327,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 30px;
+  min-width: 38px;
   height: 13px;
   padding: 0px 2px;
   font-family: var(--font-ui);
