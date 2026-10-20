@@ -430,7 +430,7 @@ export function calculateRepop(mob: Mob, maintenance: any, options: { skipCondit
       nextConditionSec: cachedStartSec,
       windowEndSec: cachedEndSec,
       isInWindow: !!cached.isInConditionWindow,
-      fallbackSec: cached.nextBoundarySec ?? now
+      fallbackSec: maxRepop
     }));
     return cached;
   }
