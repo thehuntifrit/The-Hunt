@@ -216,10 +216,8 @@ export function computeTimeLabel(mob: Mob): TimeLabelResult {
 
   const label = getStatusLabel(labelStatus, mob.rank);
 
-  let targetSec = info.status === "PopWindow"
-    ? (info.maxRepop || 0)
-    : (((info.nextBoundarySec && Number.isFinite(info.nextBoundarySec)) ? info.nextBoundarySec : 0) || info.maxRepop || 0);
-
+  let targetSec = ((info.minRepop && now < info.minRepop) ? info.minRepop : info.maxRepop) || 0;
+  
   if (info.nextConditionSpawnDate && (info.status === "Next" || info.status === "NextCondition" || info.status === "Maintenance")) {
     targetSec = info.nextConditionSpawnDate.getTime() / 1000;
   }
