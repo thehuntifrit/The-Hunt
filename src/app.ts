@@ -689,10 +689,9 @@ const updateMobState = function (mob: Mob, nowSec: number, state: any): boolean 
       info.elapsedPercent = 100;
       info.timeRemaining = formatDurationColon(nowSec - info.maxRepop);
     } else {
-      const targetSec = info.status === "PopWindow"
-        ? (info.maxRepop || 0)
-        : (info.nextBoundarySec || info.maxRepop || 0);
+      const targetSec = info.nextBoundarySec || info.maxRepop || 0;
       info.timeRemaining = formatDurationColon(Math.max(0, targetSec - nowSec));
+
       if (info.minRepop && info.maxRepop) {
         const range = info.maxRepop - info.minRepop;
         info.elapsedPercent = (range <= 0 || nowSec < info.minRepop) ? 0 : Math.min(100, ((nowSec - info.minRepop) / range) * 100);

@@ -427,7 +427,7 @@ export function calculateRepop(mob: Mob, maintenance: any, options: { skipCondit
       nextConditionSec: cachedStartSec,
       windowEndSec: cachedEndSec,
       isInWindow: !!cached.isInConditionWindow,
-      fallbackSec: maxRepop
+      fallbackSec: cached.nextBoundarySec ?? now
     }));
     return cached;
   }
@@ -502,6 +502,7 @@ export function calculateRepop(mob: Mob, maintenance: any, options: { skipCondit
     status = "ConditionActive";
   }
 
+  // 残り時間は状態に応じて決める(条件区間中は区間終了まで。最大POPで途切れない)
   timeRemaining = formatDurationColon(getRemainingSec({
     status,
     now,
