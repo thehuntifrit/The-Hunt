@@ -676,9 +676,6 @@ const updateMobState = function (mob: Mob, nowSec: number, state: any): boolean 
   let hasSignificantChange = false;
   const oldStatus = info.status;
 
-  // 状態が切り替わる時刻を越えたときだけ再計算する。
-  // NextCondition は nextBoundarySec(次の条件区間の開始)で捕まえられるため、
-  // 毎回再計算になる条件は入れない。
   const isBoundaryCrossed = (info.nextBoundarySec && nowSec >= info.nextBoundarySec) ||
     (info.maxRepop && nowSec >= info.maxRepop && info.status !== "MaxOver") ||
     (info.minRepop && nowSec >= info.minRepop && info.status === "Next");
@@ -692,9 +689,10 @@ const updateMobState = function (mob: Mob, nowSec: number, state: any): boolean 
       info.elapsedPercent = 100;
       info.timeRemaining = formatDurationColon(nowSec - info.maxRepop);
     } else {
-      const targetSec = info.nextBoundarySec || info.maxRepop || 0;
+      const targetSec = info.status === "PopWindow"
+        ? (info.maxRepop || 0)
+        : (info.nextBoundarySec || info.maxRepop || 0);
       info.timeRemaining = formatDurationColon(Math.max(0, targetSec - nowSec));
-
       if (info.minRepop && info.maxRepop) {
         const range = info.maxRepop - info.minRepop;
         info.elapsedPercent = (range <= 0 || nowSec < info.minRepop) ? 0 : Math.min(100, ((nowSec - info.minRepop) / range) * 100);

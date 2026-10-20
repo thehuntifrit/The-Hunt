@@ -398,9 +398,6 @@ export function calculateRepop(mob: Mob, maintenance: any, options: { skipCondit
     mob.conditions
   );
 
-  // ---- キャッシュ早期リターン ----
-  // minRepop / maxRepop が変わっていたら(討伐更新・メンテ係数変化)キャッシュは使わない
-  // nextBoundarySec が有限でない(境界なし)場合もキャッシュは使わない
   if (
     !forceRecalc &&
     mob.repopInfo &&
@@ -505,7 +502,6 @@ export function calculateRepop(mob: Mob, maintenance: any, options: { skipCondit
     status = "ConditionActive";
   }
 
-  // 残り時間は状態に応じて決める(条件区間中は区間終了まで。最大POPで途切れない)
   timeRemaining = formatDurationColon(getRemainingSec({
     status,
     now,
