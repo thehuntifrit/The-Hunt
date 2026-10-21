@@ -199,7 +199,8 @@ export function computeTimeLabel(mob: Mob): TimeLabelResult {
   }
 
   const isMaint = !!(info.status === "Maintenance" || info.isMaintenanceStop || info.isBlockedByMaintenance);
-  const isTimeOverRaw = (info.status === "MaxOver");
+  // 変更①: status は Maintenance に上書きされるため、最大超えは時刻で判定する
+  const isTimeOverRaw = !!info.maxRepop && now >= info.maxRepop;
   const isInWindow = !!info.isInConditionWindow;
   const isNextWindow = !isInWindow && !!info.nextConditionSpawnDate && (now < info.nextConditionSpawnDate.getTime() / 1000);
   const isTimedMob = !!(info.isInConditionWindow || info.nextConditionSpawnDate);
@@ -216,15 +217,19 @@ export function computeTimeLabel(mob: Mob): TimeLabelResult {
 
   const label = getStatusLabel(labelStatus, mob.rank);
 
-  let targetSec = ((info.minRepop && now < info.minRepop) ? info.minRepop : info.maxRepop) || 0;
-  
-  if (info.nextConditionSpawnDate && (info.status === "Next" || info.status === "NextCondition" || info.status === "Maintenance")) {
-    targetSec = info.nextConditionSpawnDate.getTime() / 1000;
-  }
+  // 変更②: 表示の基準時刻。nextBoundarySec(メンテ時刻を含む)は使わない
+  const windowStartSec = info.nextConditionSpawnDate ? info.nextConditionSpawnDate.getTime() / 1000 : null;
+  const windowEndSec = info.conditionWindowEnd ? info.conditionWindowEnd.getTime() / 1000 : null;
 
-  // 条件区間中は、最大POPに関係なく区間の終了までを表示する
-  if (labelStatus === "ConditionActive" && info.conditionWindowEnd) {
-    targetSec = info.conditionWindowEnd.getTime() / 1000;
+  let targetSec: number;
+  if (isInWindow && windowEndSec !== null) {
+    targetSec = windowEndSec;                       // 出現区間中: 区間終了まで
+  } else if (windowStartSec !== null && windowStartSec > now) {
+    targetSec = windowStartSec;                     // 時限モブ: 次の区間開始まで
+  } else if (info.minRepop && now < info.minRepop) {
+    targetSec = info.minRepop;                      // 最短POP前: 最短POPまで
+  } else {
+    targetSec = info.maxRepop || 0;                 // POP WINDOW: 最大POPまで
   }
 
   const showAsOverdue = isTimeOverRaw && !isInWindow && !isNextWindow;
