@@ -297,9 +297,9 @@
   font-weight: 400;
   line-height: 1;
   border-radius: 3px;
-  color: var(--c-gold);
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.25));
-  border: 1px solid rgba(245, 158, 11, 0.6);
+  color: var(--c-text-hi);
+  background: #805100;
+  border: 1px solid #f59f0b;
   white-space: nowrap;
   flex-shrink: 0;
   box-sizing: border-box;
@@ -320,7 +320,7 @@
   line-height: 1;
   border-radius: 3px;
   color: var(--c-text-hi);
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.5), rgba(5, 150, 105, 0.6));
+  background: #00662e;
   border: 1px solid #059162;
   white-space: nowrap;
   flex-shrink: 0;
@@ -332,7 +332,7 @@
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 400;
-  color: #cadafaff;
+  color: #cadafa;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   background: #2551aa;
