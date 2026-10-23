@@ -302,7 +302,7 @@
   white-space: nowrap;
   flex-shrink: 0;
   box-sizing: border-box;
-  margin-bottom: 0px;
+  margin-bottom: 1px;
 }
 
 /* NextCondition (次まで) badge */
@@ -323,7 +323,7 @@
   white-space: nowrap;
   flex-shrink: 0;
   box-sizing: border-box;
-  margin-bottom: 0px;
+  margin-bottom: 1px;
 }
 
 .moblist-percent {
