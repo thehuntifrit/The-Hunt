@@ -289,7 +289,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 38px;
+  min-width: 36px;
   height: 12px;
   padding: 1px 1px 0px;
   font-family: var(--font-ui);
@@ -311,7 +311,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 38px;
+  min-width: 36px;
   height: 12px;
   padding: 1px 1px 0px;
   font-family: var(--font-ui);
