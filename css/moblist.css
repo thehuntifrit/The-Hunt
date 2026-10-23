@@ -336,8 +336,9 @@
   background: #2551aa;
   border: 1px solid #4c7ddd;
   border-radius: 3px;
-  padding: 0px 0px -1px 0px;
-  width: 32px;
+  padding: 0;
+  width: 30px;
+  height: 18px;
   line-height: 1;
   display: inline-flex;
   align-items: flex-start;
