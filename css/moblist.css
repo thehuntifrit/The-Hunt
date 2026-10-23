@@ -330,7 +330,7 @@
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 400;
-  color: #cadafa;
+  color: var(--c-text-hi);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   background: #2551aa;
@@ -348,7 +348,7 @@
 }
 
 .moblist-percent.max-over {
-  color: #d49ea7;
+  color: #e2c9cdff;
   background: #72050e;
   border-color: #ac1831;
 }
