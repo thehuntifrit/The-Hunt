@@ -343,7 +343,7 @@
   align-items: flex-start;
   justify-content: flex-end;
   box-sizing: border-box;
-  margin-bottom: 1px;
+  margin-bottom: 2px;
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
