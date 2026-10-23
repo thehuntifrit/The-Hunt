@@ -333,8 +333,8 @@
   color: #cadafa;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  background: #2551aa;
-  border: 1px solid #133296;
+  background: #133296;
+  border: 1px solid #2551aa;
   border-radius: 3px;
   padding: 1px 1px 0px 0px;
   width: 29px;
@@ -349,8 +349,8 @@
 
 .moblist-percent.max-over {
   color: #d49ea7;
-  background: #720a1b;
-  border-color: #470309;
+  background: #470309;
+  border-color: #720a1b;
 }
 
 .moblist-percent.pct-0 {
