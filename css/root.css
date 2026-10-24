@@ -25,11 +25,11 @@
   /* rank */
   --c-all: #f43f5e;
   --c-all-dark: #3b0d14;
-  --c-s: #fcb740;
+  --c-s: #e6aa44;
   --c-s-dark: #3d2800;
-  --c-a: #83eafa;
+  --c-a: #69bfcc;
   --c-a-dark: #062030;
-  --c-f: #c489fcff;
+  --c-f: #a66fda;
   --c-f-dark: #1e0840;
 
   /* text */
@@ -44,9 +44,9 @@
 
   /* progress */
   --c-prog-bg: #050d18;
-  --c-prog-s: #fcb740;
-  --c-prog-a: #83eafa;
-  --c-prog-f: #c489fcff;
+  --c-prog-s: #e6aa44;
+  --c-prog-a: #69bfcc;
+  --c-prog-f: #a66fda;
 
   /* status */
   --c-offline-bg: #3b1313;
