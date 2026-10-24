@@ -33,7 +33,7 @@
   --c-f-dark: #1e0840;
 
   /* text */
-  --c-text-hi: #f0f4f8;
+  --c-text-hi: #eeeeee;
   --c-text-lo: #8fa3c0;
   --c-text-sel: #22d3ee;
   --c-text-off: #526988;
@@ -44,7 +44,7 @@
 
   /* progress */
   --c-prog-bg: #050d18;
-  --c-prog-s: #f59e0b;
+  --c-prog-s: #f7a821;
   --c-prog-a: #22d3ee;
   --c-prog-f: #a855f7;
 
@@ -52,7 +52,7 @@
   --c-offline-bg: #3b1313;
   --c-offline-text: #f87171;
   --c-error: #ef4444;
-  --c-gold: #f59e0b;
+  --c-gold: #e2a337ff;
   --c-cyan: #22d3ee;
   --c-emerald: #10b981;
 
