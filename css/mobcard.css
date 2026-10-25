@@ -16,6 +16,8 @@
   left: 0;
   right: 0;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   max-height: calc(100dvh - var(--header-h) - var(--footer-safe));
   z-index: var(--z-card-mob);
   transform: translateY(100%);
@@ -34,6 +36,11 @@
   height: 100%;
   max-height: calc(100dvh - var(--header-h) - var(--footer-safe));
   background-color: var(--c-surface);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .mobcard-card.maintenance-gray-out .mobcard-inner,
@@ -56,6 +63,10 @@
   position: sticky;
   top: 0;
   z-index: 1;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .header-top-row {
@@ -174,14 +185,17 @@
 /* progress bar in header */
 .mobcard-progress-container {
   width: 100%;
+  max-width: 100%;
   height: 6px;
   border-radius: 2px;
   background-color: var(--c-prog-bg);
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .mobcard-progress-bar {
   height: 100%;
+  max-width: 100%;
   width: calc(var(--prog-percent, 0) * 100%);
   background-color: var(--c-prog-a);
   border-radius: 2px;
@@ -198,12 +212,20 @@
   flex-direction: column;
   gap: 8px;
   background-color: var(--c-surface);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* ── Sections ────────────────────────────────────────────── */
 .mobcard-section {
   padding: 0;
   border-bottom: none;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .mobcard-section-label {
@@ -241,6 +263,8 @@
   border-radius: 6px;
   overflow: hidden;
   min-height: 34px;
+  width: 100%;
+  box-sizing: border-box;
   transition: border-color 0.2s;
 }
 
@@ -309,31 +333,37 @@
 /* ── Info grid (4 repop times) ───────────────────────────── */
 .mobcard-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 4px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .mobcard-info-item {
   background-color: #303c51;
   border: 1px solid #353e4b;
   border-radius: 4px;
-  padding: 6px 10px;
+  padding: 5px 6px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: 4px;
   min-height: auto;
   line-height: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .mobcard-label {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--c-text-lo);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
   margin-bottom: 0;
   line-height: 1;
   padding-right: 0;
@@ -344,7 +374,7 @@
 
 .mobcard-value {
   font-family: var(--font-mono);
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--c-text-hi);
   line-height: 1;
@@ -354,16 +384,17 @@
   font-variant-numeric: tabular-nums;
   display: inline-flex;
   align-items: center;
+  min-width: 0;
 }
 
 .mobcard-value .mobcard-timer-num {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1;
 }
 
 .mobcard-value .mobcard-timer-unit {
-  font-size: 13px;
+  font-size: 11px;
   line-height: 1;
 }
 
@@ -385,6 +416,9 @@
   border: 1px solid var(--c-border);
   border-radius: 6px;
   white-space: pre-wrap;
+  word-break: break-word;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* ── Mobile action bar ───────────────────────────────────── */
@@ -396,6 +430,8 @@
   border-top: 1px solid var(--c-border);
   background-color: var(--c-surface);
   overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mobcard-mobile-actions .bottom-report-btn,
@@ -488,6 +524,28 @@
     overflow-y: auto;
     overflow-x: hidden;
     min-height: 0;
+  }
+
+  .mobcard-info-item {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .mobcard-label {
+    font-size: 13px;
+    letter-spacing: 0.05em;
+  }
+
+  .mobcard-value {
+    font-size: 18px;
+  }
+
+  .mobcard-value .mobcard-timer-num {
+    font-size: 16px;
+  }
+
+  .mobcard-value .mobcard-timer-unit {
+    font-size: 13px;
   }
 
   .mobcard-mobile-actions {
