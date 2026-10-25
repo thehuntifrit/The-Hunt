@@ -150,16 +150,60 @@ export const state: AppState = {
     initialLoadComplete: false,
     worker: null,
 
-    filter: (() => {
+    filter: ((): FilterState => {
         const val = localStorage.getItem("huntFilterState");
-        const parsed = safeJsonParse(val, {});
-        if (parsed.clickStep === undefined) parsed.clickStep = 1;
+        const parsed = safeJsonParse(val, null);
+        const allAreas = Array.from(new Set(Object.values(EXPANSION_MAP)));
+        const allRanks = [RANKS.S, RANKS.A, RANKS.F];
+
+        if (!parsed) {
+            return {
+                rank: RANKS.ALL,
+                clickStep: 2,
+                areaSets: {
+                    S: new Set<string>(allAreas),
+                    A: new Set<string>(allAreas),
+                    F: new Set<string>(allAreas),
+                    ALL: new Set<string>(allAreas)
+                },
+                allRankSet: new Set<string>(allRanks)
+            };
+        }
+
+        const clickStep = parsed.clickStep !== undefined ? parsed.clickStep : 2;
+
+        const rawAreaSets = parsed.areaSets;
+        const isOldEmptyAreaSets = !rawAreaSets || (
+            (!rawAreaSets.S || rawAreaSets.S.length === 0) &&
+            (!rawAreaSets.A || rawAreaSets.A.length === 0) &&
+            (!rawAreaSets.F || rawAreaSets.F.length === 0)
+        );
+
+        const areaSets: Record<string, Set<string>> = isOldEmptyAreaSets
+            ? {
+                S: new Set<string>(allAreas),
+                A: new Set<string>(allAreas),
+                F: new Set<string>(allAreas),
+                ALL: new Set<string>(allAreas)
+            }
+            : {
+                S: new Set<string>(Array.isArray(rawAreaSets?.S) ? rawAreaSets.S : allAreas),
+                A: new Set<string>(Array.isArray(rawAreaSets?.A) ? rawAreaSets.A : allAreas),
+                F: new Set<string>(Array.isArray(rawAreaSets?.F) ? rawAreaSets.F : allAreas),
+                ALL: new Set<string>(Array.isArray(rawAreaSets?.ALL) ? rawAreaSets.ALL : allAreas)
+            };
+
+        const allRankSet = new Set<string>(
+            Array.isArray(parsed.allRankSet) && parsed.allRankSet.length > 0
+                ? parsed.allRankSet
+                : allRanks
+        );
 
         return {
-            rank: parsed.rank || "ALL",
-            clickStep: parsed.clickStep,
-            areaSets: parsed.areaSets || { S: [], A: [], F: [], ALL: [] },
-            allRankSet: parsed.allRankSet || []
+            rank: parsed.rank || RANKS.ALL,
+            clickStep,
+            areaSets,
+            allRankSet
         };
     })(),
     openMobCardNo: null,
@@ -175,26 +219,6 @@ export const state: AppState = {
     hasUnreadTelop: false,
     mobLocations: {}
 };
-
-if (state.filter.areaSets) {
-    for (const k in state.filter.areaSets) {
-        const v = (state.filter.areaSets as any)[k];
-        (state.filter.areaSets as any)[k] = new Set(v || []);
-    }
-} else {
-    state.filter.areaSets = {
-        S: new Set<string>(),
-        A: new Set<string>(),
-        F: new Set<string>(),
-        ALL: new Set<string>()
-    };
-}
-
-if (Array.isArray(state.filter.allRankSet)) {
-    state.filter.allRankSet = new Set(state.filter.allRankSet);
-} else if (!(state.filter.allRankSet instanceof Set)) {
-    state.filter.allRankSet = new Set<string>();
-}
 
 // ─── State Accessors ────────────────────────────────────
 export function getState(): AppState {

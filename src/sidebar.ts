@@ -319,7 +319,7 @@ export function filterMobsByRankAndArea(mobs: Mob[]): Mob[] {
         if (uiRank === 'ALL') {
             if (filterKey !== 'S' && filterKey !== 'A' && filterKey !== 'F') return false;
 
-            if (allRankSet && allRankSet.size > 0 && allRankSet.size < 3) {
+            if (allRankSet && allRankSet.size < 3) {
                 if (!allRankSet.has(filterKey)) return false;
             }
 

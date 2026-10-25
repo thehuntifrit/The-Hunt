@@ -428,7 +428,7 @@ export const syncDomOrder = function (): void {
   const groupOrder = ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"];
   groupOrder.forEach(key => {
     const groupMobs = groups[key];
-    if (groupMobs.length === 0) return;
+    if (key === "MAINTENANCE" && groupMobs.length === 0) return;
 
     const headerText = (GROUP_LABELS as any)[key];
     const headerKey = `header-${key}`;

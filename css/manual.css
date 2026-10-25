@@ -220,12 +220,12 @@
 }
 
 /* hr の直後が h2 以外のとき、上に余白をあける */
-#readme-container hr + :not(h2) {
+#readme-container hr+ :not(h2) {
   margin-top: 22px;
 }
 
 /* hr 以外(段落・リスト等)の直後の h2 は、上に余白をあける */
-#readme-container :not(hr) + h2 {
+#readme-container :not(hr)+h2 {
   margin-top: 24px;
 }
 
