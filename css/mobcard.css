@@ -193,7 +193,7 @@
   flex: 1 1 auto;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 10px 8px 14px;
+  padding: 10px 14px 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -543,7 +543,6 @@ html body.magnifier-active .map-container * {
   position: relative;
   width: 100%;
   max-width: 100%;
-  aspect-ratio: 1 / 1;
 }
 
 .pc-map-box {
@@ -552,33 +551,30 @@ html body.magnifier-active .map-container * {
   display: flex;
   align-items: center;
   justify-content: center;
-  aspect-ratio: 1 / 1;
 }
 
 .mob-map-img {
   display: block;
   width: 100%;
-  height: 100%;
-  aspect-ratio: 1 / 1;
+  height: auto;
   max-width: 100%;
-  object-fit: fill;
 }
 
 @media (min-width: 900px) {
   .map-container.pc-map-box {
     width: 520px;
-    height: 520px;
-    max-width: 520px;
-    max-height: 520px;
+    max-width: 100%;
+    height: auto;
+    max-height: none;
     flex-shrink: 0;
     margin-inline: auto;
   }
 
   .mob-map-img {
     width: 520px;
-    height: 520px;
-    max-width: 520px;
-    max-height: 520px;
+    max-width: 100%;
+    height: auto;
+    max-height: none;
     flex-shrink: 0;
   }
 }
