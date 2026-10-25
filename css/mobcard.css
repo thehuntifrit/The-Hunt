@@ -33,6 +33,7 @@
   flex-direction: column;
   height: 100%;
   max-height: calc(100dvh - var(--header-h) - var(--footer-safe));
+  background-color: var(--c-surface);
 }
 
 .mobcard-card.maintenance-gray-out .mobcard-inner,
@@ -51,7 +52,6 @@
 .mobcard-header {
   flex-shrink: 0;
   padding: 10px 14px 4px;
-  border-bottom: 1px solid var(--c-border);
   background-color: var(--c-surface);
   position: sticky;
   top: 0;
@@ -197,6 +197,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  background-color: var(--c-surface);
 }
 
 /* ── Sections ────────────────────────────────────────────── */

@@ -295,7 +295,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
+  min-width: 34px;
   height: 16px;
   padding: 0 4px;
   font-family: var(--font-ui);
@@ -316,7 +316,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
+  min-width: 34px;
   height: 16px;
   padding: 0 4px;
   font-family: var(--font-ui);
@@ -334,7 +334,7 @@
 
 .moblist-percent {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--c-text-hi);
   font-variant-numeric: tabular-nums;
