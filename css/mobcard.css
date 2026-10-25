@@ -63,6 +63,7 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 6px;
+  line-height: 1;
 }
 
 .header-left {
@@ -119,6 +120,9 @@
   text-overflow: ellipsis;
   margin: 0;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* mid row: area info + percent */
@@ -128,6 +132,7 @@
   justify-content: space-between;
   gap: 8px;
   margin-bottom: 6px;
+  line-height: 1;
 }
 
 .mobcard-area-info {
@@ -213,6 +218,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  line-height: 1;
 }
 
 .map-update-time {
@@ -246,6 +252,7 @@
   align-items: center;
   padding: 0 8px 0 10px;
   flex-shrink: 0;
+  line-height: 1;
 }
 
 .mobcard-memo-prefix-text {
@@ -254,6 +261,7 @@
   color: var(--c-cyan);
   letter-spacing: 0.05em;
   text-transform: lowercase;
+  line-height: 1;
 }
 
 .mobcard-memo-separator {
@@ -315,6 +323,7 @@
   justify-content: space-between;
   gap: 6px;
   min-height: auto;
+  line-height: 1;
 }
 
 .mobcard-label {
@@ -342,15 +351,19 @@
   text-align: right;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
 }
 
 .mobcard-value .mobcard-timer-num {
   font-size: 16px;
   font-weight: 500;
+  line-height: 1;
 }
 
 .mobcard-value .mobcard-timer-unit {
   font-size: 13px;
+  line-height: 1;
 }
 
 /* Next possible repop time in gold */
