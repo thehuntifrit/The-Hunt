@@ -51,30 +51,42 @@
 }
 
 .manual-modal-header {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 18px;
+  justify-content: center;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--c-border);
 }
 
 .manual-modal-title {
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 700;
+  color: var(--c-cyan);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
   display: flex;
   align-items: center;
-  gap: 4px;
-  line-height: 1;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+  margin: 0;
+  padding: 0 40px;
+  width: 100%;
 }
 
-.manual-modal-subtitle {
-  color: var(--c-text-hi);
-  font-size: 15px;
-  font-weight: 600;
-  margin-left: 4px;
+@media (max-width: 600px) {
+  .manual-modal-title {
+    font-size: 20px;
+    letter-spacing: 1px;
+  }
 }
 
 .manual-modal-close {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 32px;
   height: 32px;
   display: flex;
@@ -87,7 +99,6 @@
   font-size: 14px;
   cursor: pointer;
   pointer-events: auto;
-  position: relative;
   z-index: 11;
   transition: all 0.15s ease;
   -webkit-tap-highlight-color: transparent;
@@ -101,7 +112,7 @@
 
 .manual-modal-close:active {
   background-color: var(--c-surface-sel);
-  transform: scale(0.96);
+  transform: translateY(-50%) scale(0.96);
 }
 
 #readme-container {
