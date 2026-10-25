@@ -118,7 +118,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   margin: 0;
-  line-height: 1.2;
+  line-height: 1;
 }
 
 /* mid row: area info + percent */
@@ -145,6 +145,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1;
 }
 
 .detail-expansion {
@@ -153,6 +154,7 @@
   color: var(--c-text-off);
   white-space: nowrap;
   flex-shrink: 0;
+  line-height: 1;
 }
 
 .percent {
@@ -161,6 +163,7 @@
   font-size: 16px;
   font-weight: 500;
   color: var(--c-cyan);
+  line-height: 1;
 }
 
 /* progress bar in header */
@@ -208,7 +211,7 @@
   padding-left: 7px;
   border-left: 2px solid var(--c-cyan);
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
 }
 
@@ -218,13 +221,14 @@
   font-weight: 500;
   color: var(--c-text-lo);
   margin-left: 8px;
+  line-height: 1;
 }
 
 /* ── Memo ────────────────────────────────────────────────── */
 .mobcard-memo-box {
   display: flex;
   align-items: center;
-  gap: 6;
+  gap: 6px;
   background-color: #223e5a;
   border: 1px solid #38849c;
   border-radius: 6px;
@@ -282,8 +286,6 @@
   -moz-user-select: text;
   -ms-user-select: text;
   user-select: text;
-  display: flex;
-  align-items: center;
   align-self: center;
 }
 
@@ -335,7 +337,7 @@
   font-size: 18px;
   font-weight: 500;
   color: var(--c-text-hi);
-  line-height: 1.2;
+  line-height: 1;
   margin-left: auto;
   text-align: right;
   white-space: nowrap;

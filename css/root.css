@@ -414,7 +414,7 @@ textarea {
   font-weight: 700;
   color: #646a75;
   letter-spacing: 0.05em;
-  line-height: normal;
+  line-height: 1;
   font-family: var(--font-ui);
 }
 
@@ -424,7 +424,7 @@ textarea {
   font-weight: 700;
   color: var(--c-gold);
   font-variant-numeric: tabular-nums;
-  line-height: normal;
+  line-height: 1;
 }
 
 .mobile-clock-val:not(:last-child) {
