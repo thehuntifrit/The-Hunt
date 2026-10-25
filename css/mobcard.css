@@ -50,7 +50,7 @@
 /* ── Card header ─────────────────────────────────────────── */
 .mobcard-header {
   flex-shrink: 0;
-  padding: 10px 14px 8px;
+  padding: 10px 14px 4px;
   border-bottom: 1px solid var(--c-border);
   background-color: var(--c-surface);
   position: sticky;
@@ -193,7 +193,7 @@
   flex: 1 1 auto;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 4px 6px;
+  padding: 10px 8px 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;

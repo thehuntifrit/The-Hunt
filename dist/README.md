@@ -1,10 +1,3 @@
-<!-- markdownlint-disable MD033 MD041 -->
-<div align="center">
-
-# The Hunt 利用ガイド
-
-</div>
-<!-- markdownlint-enable MD033 -->
 
 本サイトは『FINAL FANTASY XIV』のモブハントの情報共有及びその管理を行うためのツールです。
 ユーザー間でのリアルタイムな情報共有により、効率的な探索を支援することを目的としています。
