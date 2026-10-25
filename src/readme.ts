@@ -1,6 +1,7 @@
 import { getState, setLodestoneId, setCharacterName, setVerified, extractLodestoneId, DOM } from "./dataManager";
 import { verifyLodestoneCharacter, registerUserToFirestore } from "./server";
 import { cloneTemplate } from "./mobCard";
+import readmeContent from "../README.md?raw";
 
 // グローバルロードされる marked, DOMPurify の定義
 declare const marked: any;
@@ -20,18 +21,7 @@ export const openUserManual = async (): Promise<void> => {
 
     if (!isLoaded) {
         try {
-            const loadingMsg = cloneTemplate('ui-message-template');
-            if (loadingMsg) {
-                loadingMsg.className = "u-text-center u-text-gray-400";
-                loadingMsg.textContent = "読み込み中...";
-                container.innerHTML = "";
-                container.appendChild(loadingMsg);
-            }
-
-            const response = await fetch('./README.md');
-            if (!response.ok) throw new Error('Failed to load README');
-
-            const text = await response.text();
+            const text = readmeContent;
 
             if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
                 marked.setOptions({
