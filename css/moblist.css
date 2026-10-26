@@ -299,7 +299,7 @@
   height: 16px;
   padding: 1px 1px 0;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 400;
   line-height: 1;
   border-radius: 3px;
@@ -320,7 +320,7 @@
   height: 16px;
   padding: 1px 1px 0;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 400;
   line-height: 1;
   border-radius: 3px;
@@ -335,7 +335,7 @@
 .moblist-percent {
   font-family: var(--font-mono);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--c-text-hi);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
