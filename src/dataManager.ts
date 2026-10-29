@@ -418,6 +418,10 @@ function scheduleRepopTimer(mobNo: number, repopInfo: RepopInfo) {
     repopTimers.set(mobNo, timer);
 }
 
+const WORKER_PENDING_TIMEOUT_MS = 10000;
+const pendingSince = new Map<number, number>();
+const rerunAfterPending = new Set<number>();
+
 function initWorker() {
     if (state.worker) return;
     state.worker = new Worker(new URL("./workers/calWorker.ts", import.meta.url), { type: "module" });
@@ -427,6 +431,7 @@ function initWorker() {
             const current = state.mobs;
             const idx = current.findIndex(m => m.No === mobNo);
             state.pendingCalculationMobs.delete(mobNo);
+            pendingSince.delete(mobNo);
             if (idx !== -1) {
                 if (repopInfo.nextMinRepopDate) repopInfo.nextMinRepopDate = new Date(repopInfo.nextMinRepopDate);
                 if (repopInfo.nextConditionSpawnDate) repopInfo.nextConditionSpawnDate = new Date(repopInfo.nextConditionSpawnDate);
@@ -449,15 +454,30 @@ function initWorker() {
             }
         } else if (type === WORKER_TYPES.ERROR) {
             state.pendingCalculationMobs.delete(mobNo);
+            pendingSince.delete(mobNo);
             console.error(`時間計算エラー (Mob ${mobNo}):`, error);
+        }
+
+        // 計算中に届いた強制再計算要求を、完了後に最新データでやり直す
+        if (mobNo !== undefined && rerunAfterPending.delete(mobNo)) {
+            const m = state.mobsMap.get(String(mobNo));
+            if (m) requestWorkerCalculation(m, state.maintenance, { forceRecalc: true });
         }
     };
 }
 
 export function requestWorkerCalculation(mob: Mob, maintenance: any, options: { forceRecalc?: boolean } = {}): void {
-    if (state.pendingCalculationMobs.has(mob.No)) return;
+    if (state.pendingCalculationMobs.has(mob.No)) {
+        const since = pendingSince.get(mob.No) || 0;
+        if (Date.now() - since < WORKER_PENDING_TIMEOUT_MS) {
+            if (options.forceRecalc) rerunAfterPending.add(mob.No);
+            return;
+        }
+        // 応答が返らないまま残っているpendingは破棄して再計算する
+    }
     if (!state.worker) initWorker();
     state.pendingCalculationMobs.add(mob.No);
+    pendingSince.set(mob.No, Date.now());
     state.worker!.postMessage({
         type: WORKER_TYPES.CALCULATE,
         mob,
@@ -771,35 +791,43 @@ function checkInitialLoadComplete(): void {
 }
 
 // ─── リアルタイム ───────────────────────────────────────
-export function startRealtime(): void {
+export function startRealtime(options: { resume?: boolean } = {}): void {
+    const { resume = false } = options;
+
     unsubscribes.forEach(fn => fn && fn());
     unsubscribes = [];
 
-    repopTimers.forEach(timer => clearTimeout(timer));
-    repopTimers.clear();
+    if (!resume) {
+        repopTimers.forEach(timer => clearTimeout(timer));
+        repopTimers.clear();
 
-    state.initialLoadComplete = false;
-    initialLoadState.status = false;
-    initialLoadState.location = false;
-    initialLoadState.memo = false;
-    initialLoadState.maintenance = false;
+        state.initialLoadComplete = false;
+        initialLoadState.status = false;
+        initialLoadState.location = false;
+        initialLoadState.memo = false;
+        initialLoadState.maintenance = false;
 
-    if (initialLoadTimer) clearTimeout(initialLoadTimer);
-    initialLoadTimer = setTimeout(() => {
-        if (!state.initialLoadComplete) {
-            console.warn("Firestore initial load timed out. Forcing completion with available data.");
-            if (!initialLoadState.status) initialLoadState.status = true;
-            if (!initialLoadState.maintenance) {
-                initialLoadState.maintenance = true;
-                if (!state.maintenance) {
-                    loadMaintenance().then(fallback => {
-                        if (fallback) state.maintenance = fallback;
-                    });
+        if (initialLoadTimer) clearTimeout(initialLoadTimer);
+        initialLoadTimer = setTimeout(() => {
+            if (!state.initialLoadComplete) {
+                console.warn("Firestore initial load timed out. Forcing completion with available data.");
+                if (!initialLoadState.status) initialLoadState.status = true;
+                if (!initialLoadState.maintenance) {
+                    initialLoadState.maintenance = true;
+                    if (!state.maintenance) {
+                        loadMaintenance().then(fallback => {
+                            if (fallback) state.maintenance = fallback;
+                        });
+                    }
                 }
+                // 応答の返らないワーカー計算で初期ロードが止まらないようにする
+                initialCalculationStarted = true;
+                state.pendingCalculationMobs.clear();
+                pendingSince.clear();
+                checkInitialLoadComplete();
             }
-            checkInitialLoadComplete();
-        }
-    }, CONFIG.FIRESTORE_LOAD_TIMEOUT);
+        }, CONFIG.FIRESTORE_LOAD_TIMEOUT);
+    }
 
     const unsubStatus = subscribeMobStatusDocs((mobStatusDataMap: any) => {
         if (state.mobs.length === 0) {
@@ -1049,3 +1077,24 @@ export function isCulled(pointStatus: CullStatus | undefined, mobNo: number, mob
 
     return false;
 }
+
+// ─── 長時間の非表示(セーブモード等)からの復帰 ───────────
+const RESUME_REFRESH_THRESHOLD_MS = 30000;
+let hiddenAt = 0;
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+        hiddenAt = Date.now();
+        return;
+    }
+    if (!hiddenAt) return;
+    const awayMs = Date.now() - hiddenAt;
+    hiddenAt = 0;
+    if (awayMs < RESUME_REFRESH_THRESHOLD_MS) return;
+    if (state.mobs.length === 0) return;
+
+    state.pendingCalculationMobs.clear();
+    pendingSince.clear();
+    rerunAfterPending.clear();
+    startRealtime({ resume: true });
+});

@@ -70,37 +70,87 @@ export async function getUserData(uid: string): Promise<any | null> {
     return null;
 }
 
+function listenWithRetry(
+    attach: (onOk: () => void, onError: (err: any) => void) => () => void
+): () => void {
+    let stopped = false;
+    let attempt = 0;
+    let retryTimer: any = null;
+    let unsub: (() => void) | null = null;
+
+    const start = () => {
+        if (stopped) return;
+        unsub = attach(
+            () => { attempt = 0; },
+            (err) => {
+                console.warn("Firestore listener error, will retry:", err);
+                if (unsub) { try { unsub(); } catch (e) { } unsub = null; }
+                if (stopped) return;
+                const delay = Math.min(30000, 1000 * 2 ** attempt);
+                attempt++;
+                retryTimer = setTimeout(start, delay);
+            }
+        );
+    };
+    start();
+
+    return () => {
+        stopped = true;
+        clearTimeout(retryTimer);
+        if (unsub) unsub();
+    };
+}
+
 export function subscribeMobStatusDocs(onUpdate: (data: any) => void): () => void {
     const docIds = ["s_latest", "a_latest", "f_latest"];
     const mobStatusDataMap: Record<string, any> = {};
     const unsubs = docIds.map(id =>
-        onSnapshot(doc(db, "mob_status", id), (snap: any) => {
-            const data = snap.data();
-            if (data) mobStatusDataMap[id] = data;
-            onUpdate(mobStatusDataMap);
-        })
+        listenWithRetry((onOk, onError) =>
+            onSnapshot(doc(db, "mob_status", id), (snap: any) => {
+                onOk();
+                const data = snap.data();
+                if (data) mobStatusDataMap[id] = data;
+                onUpdate(mobStatusDataMap);
+            }, onError)
+        )
     );
     return () => unsubs.forEach(u => u());
 }
 
 export function subscribeMobMemos(onUpdate: (data: any) => void): () => void {
     const memoDocRef = doc(db, "shared_data", "memo");
-    const unsub = onSnapshot(memoDocRef, (snap: any) => {
-        const data = snap.data() || {};
-        onUpdate(data);
-    });
-    return unsub;
+    return listenWithRetry((onOk, onError) =>
+        onSnapshot(memoDocRef, (snap: any) => {
+            onOk();
+            onUpdate(snap.data() || {});
+        }, onError)
+    );
 }
 
 export function subscribeMaintenance(onUpdate: (data: any) => void): () => void {
     const maintenanceDocRef = doc(db, "shared_data", "maintenance");
-    const unsub = onSnapshot(maintenanceDocRef, (snap: any) => {
-        const data = snap.data() || null;
-        onUpdate(data);
-    }, (err: any) => {
-        onUpdate(null);
-    });
-    return unsub;
+    return listenWithRetry((onOk, onError) =>
+        onSnapshot(maintenanceDocRef, (snap: any) => {
+            onOk();
+            onUpdate(snap.data() || null);
+        }, (err: any) => {
+            onUpdate(null);
+            onError(err);
+        })
+    );
+}
+
+export function subscribeMobLocations(onUpdate: (data: any) => void): () => void {
+    return listenWithRetry((onOk, onError) =>
+        onSnapshot(collection(db, "mob_locations"), (snapshot: any) => {
+            onOk();
+            const map: Record<string, any> = {};
+            snapshot.forEach((docSnap: any) => {
+                map[docSnap.id] = normalizePoints(docSnap.data());
+            });
+            onUpdate(map);
+        }, onError)
+    );
 }
 
 function normalizePoints(data: any): Record<string, any> {
@@ -119,20 +169,6 @@ function normalizePoints(data: any): Record<string, any> {
         }
     }
     return result;
-}
-
-export function subscribeMobLocations(onUpdate: (data: any) => void): () => void {
-    const unsub = onSnapshot(collection(db, "mob_locations"), (snapshot: any) => {
-        const map: Record<string, any> = {};
-        snapshot.forEach((docSnap: any) => {
-            const docId = docSnap.id;
-            const data = docSnap.data();
-            const normalized = normalizePoints(data);
-            map[docId] = normalized;
-        });
-        onUpdate(map);
-    });
-    return unsub;
 }
 
 function ensureAuth(): { lodestoneId: string; userId: string; mobs: Mob[] } | null {
