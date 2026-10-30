@@ -478,12 +478,31 @@ export function requestWorkerCalculation(mob: Mob, maintenance: any, options: { 
     if (!state.worker) initWorker();
     state.pendingCalculationMobs.add(mob.No);
     pendingSince.set(mob.No, Date.now());
-    state.worker!.postMessage({
-        type: WORKER_TYPES.CALCULATE,
-        mob,
-        maintenance,
-        options
-    });
+
+    // spawn_cull_status は時間計算に使わない。楽観更新で関数(toMillis)が入ると
+    // structured clone に失敗するため、ワーカーには送らない
+    const { spawn_cull_status, ...mobForWorker } = mob as any;
+
+    try {
+        state.worker!.postMessage({
+            type: WORKER_TYPES.CALCULATE,
+            mob: mobForWorker,
+            maintenance,
+            options
+        });
+    } catch (e) {
+        state.pendingCalculationMobs.delete(mob.No);
+        pendingSince.delete(mob.No);
+        handleAppError(e, `計算要求の送信失敗 (Mob ${mob.No})`, false);
+
+        // ワーカーが使えなくてもメインスレッドで計算して反映する
+        try {
+            mob.repopInfo = calculateRepop(mob, maintenance, options);
+            window.dispatchEvent(new CustomEvent('mobUpdated', { detail: { mobNo: mob.No, mob } }));
+        } catch (err) {
+            handleAppError(err, `メインスレッド計算失敗 (Mob ${mob.No})`, false);
+        }
+    }
 }
 
 // 境界を過ぎているのに状態が進んでいないモブを、ワーカーで再計算させる
