@@ -1,4 +1,4 @@
-import { getState, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled, CONFIG, DOM, handleAppError } from "./dataManager";
+import { getState, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled, CONFIG, DOM, handleAppError, recalcIfStale } from "./dataManager";
 import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal";
 import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initGlobalMagnifier, adjustMemoHeight } from "./mobCard";
 import { getGroupKey, GROUP_LABELS, getOrCreateGroupSection, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, allTabComparator } from "./mobSorter";
@@ -702,6 +702,8 @@ const updateMobState = function (mob: Mob, nowSec: number, state: any): boolean 
   if (oldStatus !== mob.repopInfo!.status) {
     hasSignificantChange = true;
   }
+
+  recalcIfStale(mob, nowSec);
 
   return hasSignificantChange;
 };

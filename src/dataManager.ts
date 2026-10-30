@@ -486,6 +486,24 @@ export function requestWorkerCalculation(mob: Mob, maintenance: any, options: { 
     });
 }
 
+// 境界を過ぎているのに状態が進んでいないモブを、ワーカーで再計算させる
+const lastStaleRecalc = new Map<number, number>();
+const STALE_RECALC_INTERVAL_MS = 15000;
+
+export function recalcIfStale(mob: Mob, nowSec: number): void {
+    const info = mob.repopInfo;
+    if (!info || info.status === "Maintenance" || info.status === "MaxOver") return;
+
+    const boundary = info.nextBoundarySec || info.maxRepop || 0;
+    if (!boundary || boundary > nowSec) return;
+
+    const nowMs = Date.now();
+    if (nowMs - (lastStaleRecalc.get(mob.No) || 0) < STALE_RECALC_INTERVAL_MS) return;
+    lastStaleRecalc.set(mob.No, nowMs);
+
+    requestWorkerCalculation(mob, state.maintenance, { forceRecalc: true });
+}
+
 // ─── データ加工 ─────────────────────────────────────────
 function processMobData(rawMobData: any, maintenance: any, options: { skipConditionCalc?: boolean } = {}): Mob[] {
     const { skipConditionCalc = false } = options;
