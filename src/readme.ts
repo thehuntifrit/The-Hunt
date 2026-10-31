@@ -1,5 +1,5 @@
 import { getState, setLodestoneId, setCharacterName, setVerified, extractLodestoneId, DOM } from "./dataManager";
-import { verifyLodestoneCharacter, registerUserToFirestore } from "./server";
+import { verifyLodestoneCharacter, fetchVerificationCode } from "./server";
 import { cloneTemplate } from "./mobCard";
 import readmeContent from "../README.md?raw";
 
@@ -142,12 +142,11 @@ async function updateAuthUI(): Promise<void> {
         verifyBtn.disabled = true;
 
         try {
-            const result = await verifyLodestoneCharacter(lodestoneId, currentVCode);
+            const result = await verifyLodestoneCharacter(lodestoneId);
             verifyBtn.disabled = false;
 
             if (result.success && result.characterName) {
                 statusEl.textContent = "検証成功！登録しています...";
-                await registerUserToFirestore(lodestoneId, result.characterName);
                 setLodestoneId(lodestoneId);
                 setCharacterName(result.characterName);
                 setVerified(true);
