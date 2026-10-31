@@ -1,5 +1,5 @@
 import { getState, setLodestoneId, setCharacterName, setVerified, extractLodestoneId, DOM, handleAppError } from "./dataManager";
-import { verifyLodestoneCharacter, registerUserToFirestore } from "./server";
+import { verifyLodestoneCharacter, fetchVerificationCode } from "./server";
 import { renderNameWithInstance } from "./mobCard";
 
 export async function openReportModal(mobNo: number): Promise<void> {
@@ -44,13 +44,9 @@ export function closeReportModal(): void {
 let currentVerificationCode = "";
 
 export function openAuthModal(): void {
-    const arr = new Uint8Array(6);
-    crypto.getRandomValues(arr);
-    const code = Array.from(arr).map(b => b.toString(36).toUpperCase()).join('').substring(0, 8);
-    currentVerificationCode = "HUNT-" + code;
-
+    currentVerificationCode = "";
     if (DOM.authVCode) {
-        DOM.authVCode.textContent = currentVerificationCode;
+        DOM.authVCode.textContent = "取得中...";
     }
     if (DOM.authStatus) {
         DOM.authStatus.textContent = "";
@@ -58,6 +54,18 @@ export function openAuthModal(): void {
     }
     if (DOM.authModal) {
         DOM.authModal.classList.remove("hidden");
+    }
+    void loadVerificationCode();
+}
+
+async function loadVerificationCode(): Promise<void> {
+    const code = await fetchVerificationCode();
+    if (code) {
+        currentVerificationCode = code;
+        if (DOM.authVCode) DOM.authVCode.textContent = code;
+    } else if (DOM.authStatus) {
+        DOM.authStatus.textContent = "認証コードを取得できませんでした。ページを再読み込みしてください。";
+        DOM.authStatus.classList.add('text-error');
     }
 }
 
@@ -115,13 +123,12 @@ export function initModal(): void {
             DOM.authVerifyBtn.disabled = true;
 
             try {
-                const result = await verifyLodestoneCharacter(lodestoneId, currentVerificationCode);
+                const result = await verifyLodestoneCharacter(lodestoneId);
 
                 if (result.success && result.characterName) {
                     DOM.authStatus.textContent = `検証成功！ようこそ、${result.characterName}さん。`;
                     DOM.authStatus.classList.add('text-success');
 
-                    await registerUserToFirestore(lodestoneId, result.characterName);
                     setLodestoneId(lodestoneId);
                     setCharacterName(result.characterName);
                     setVerified(true);

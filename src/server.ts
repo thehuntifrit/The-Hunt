@@ -5,7 +5,7 @@ import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, getDoc, T
 // @ts-ignore
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 // @ts-ignore
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app-check.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken as getAppCheckToken } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app-check.js";
 
 import { getState, DOM, CONFIG, handleAppError } from "./dataManager";
 import { closeReportModal } from "./modal";
@@ -24,6 +24,10 @@ const FIREBASE_CONFIG = {
 const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
 const auth = getAuth(app);
+const appCheck = initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider('6LeFtbYsAAAAAJETFxeUWd2IOe92slrZcYcZFHeT'),
+    isTokenAutoRefreshEnabled: true
+});
 
 // Initialize Firebase App Check
 if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
@@ -59,10 +63,12 @@ export async function initializeAuth(): Promise<string | null> {
 
 export async function getUserData(uid: string): Promise<any | null> {
     try {
-        const userDocRef = doc(db, "users", uid);
-        const userSnap = await getDoc(userDocRef);
-        if (userSnap.exists()) {
-            return userSnap.data();
+        const user = auth.currentUser;
+        if (!user || user.uid !== uid) return null;
+        const result = await user.getIdTokenResult();
+        const c = result.claims as any;
+        if (c.verified === true && c.lid) {
+            return { lodestone_id: String(c.lid), character_name: c.cname ? String(c.cname) : "" };
         }
     } catch (error) {
         handleAppError(error, "ユーザーデータ取得失敗", false);
@@ -77,17 +83,24 @@ function listenWithRetry(
     let attempt = 0;
     let retryTimer: any = null;
     let unsub: (() => void) | null = null;
+    const MAX_ATTEMPTS = 8;
 
     const start = () => {
         if (stopped) return;
         unsub = attach(
             () => { attempt = 0; },
             (err) => {
-                console.warn("Firestore listener error, will retry:", err);
                 if (unsub) { try { unsub(); } catch (e) { } unsub = null; }
                 if (stopped) return;
-                const delay = Math.min(30000, 1000 * 2 ** attempt);
+
                 attempt++;
+                if (attempt > MAX_ATTEMPTS) {
+                    handleAppError(err, "サーバー接続に失敗しました。ページを再読み込みしてください", true);
+                    return;
+                }
+                // 枠の枯渇は長めに待つ。ジッターで再試行の集中を避ける
+                const base = err?.code === "resource-exhausted" ? 60000 : 1000;
+                const delay = Math.min(300000, base * 2 ** (attempt - 1)) * (0.5 + Math.random());
                 retryTimer = setTimeout(start, delay);
             }
         );
@@ -336,93 +349,87 @@ export const toggleCrushStatus = async (mobNo: number, area: string, locationId:
     }
 };
 
-export async function registerUserToFirestore(lodestoneId: string, characterName: string): Promise<void> {
-    try {
-        let user = auth.currentUser;
-        if (!user) {
-            await initializeAuth();
-            user = auth.currentUser;
-        }
-        if (!user) return;
+const VERIFICATION_PROXY_URL = "https://icy-resonance-2526.the-hunt-ifrit.workers.dev/";
 
-        const userDocRef = doc(db, "users", user.uid);
-        await setDoc(userDocRef, {
-            lodestone_id: lodestoneId,
-            character_name: characterName,
-            updated_at: Timestamp.now()
-        }, { merge: true });
+async function workerFetch(path: string, init: RequestInit = {}): Promise<Response> {
+    let user = auth.currentUser;
+    if (!user) {
+        await initializeAuth();
+        user = auth.currentUser;
+    }
+    if (!user) throw new Error("Firebase Auth user could not be initialized.");
+
+    const headers: Record<string, string> = {
+        ...(init.headers as Record<string, string> | undefined),
+        'Authorization': `Bearer ${await user.getIdToken()}`
+    };
+    try {
+        const appCheckToken = await getAppCheckToken(appCheck, false);
+        headers['X-Firebase-AppCheck'] = appCheckToken.token;
+    } catch (e) {
+        console.warn("App Check token unavailable:", e);
+    }
+    return fetch(`${VERIFICATION_PROXY_URL}${path}`, { ...init, headers });
+}
+
+export async function fetchVerificationCode(): Promise<string | null> {
+    try {
+        const response = await workerFetch('code');
+        if (!response.ok) return null;
+        const data = await response.json();
+        return typeof data?.code === 'string' ? data.code : null;
     } catch (error) {
-        handleAppError(error, "Firestoreユーザー登録失敗", false);
+        handleAppError(error, "認証コード取得失敗", false);
+        return null;
     }
 }
 
-const VERIFICATION_PROXY_URL = "https://icy-resonance-2526.the-hunt-ifrit.workers.dev/";
+const VERIFY_ERROR_MESSAGES: Record<string, string> = {
+    invalid_id: "ロードストーンのIDが正しくありません。",
+    unauthorized: "認証エラーが発生しました。ページを再読み込みして試してください。",
+    forbidden: "アクセスが拒否されました。",
+    region: "アクセスが拒否されました。日本国外からのアクセス、またはプロキシ利用は制限されています。",
+    appcheck: "アプリの正当性を確認できませんでした。ページを再読み込みして試してください。",
+    not_found: "キャラクターが見つかりませんでした。",
+    code_not_found: "検証コードが自己紹介文に見つかりませんでした。保存から反映まで最大5分程度かかる場合があります。また、言語設定が日本語(JP)であることを確認してください。",
+    rate_limited: "試行回数が多すぎます。しばらく待ってからやり直してください。",
+    upstream: "ロードストーンに接続できませんでした。しばらくしてからやり直してください。",
+    parse_failed: "ロードストーンのページを解析できませんでした。管理者に連絡してください。",
+    claims_failed: "認証情報の登録に失敗しました。しばらくしてからやり直してください。",
+    server_config: "サーバーの設定に問題があります。管理者に連絡してください。"
+};
 
-export async function verifyLodestoneCharacter(lodestoneId: string, verificationCode: string): Promise<{ success: boolean; characterName?: string; error?: string }> {
+export async function verifyLodestoneCharacter(lodestoneId: string): Promise<{ success: boolean; characterName?: string; error?: string }> {
     if (!VERIFICATION_PROXY_URL) {
-        return {
-            success: false,
-            error: "認証プロキシのURLが設定されていません。管理者に連絡してください。"
-        };
+        return { success: false, error: "認証プロキシのURLが設定されていません。管理者に連絡してください。" };
     }
 
     try {
-        let user = auth.currentUser;
-        if (!user) {
-            console.log("Auth user is null, initializing...");
-            await initializeAuth();
-            user = auth.currentUser;
-        }
-
-        if (!user) {
-            throw new Error("Firebase Auth user could not be initialized.");
-        }
-
-        const token = await user.getIdToken();
-        const fetchUrl = `${VERIFICATION_PROXY_URL}?lodestoneId=${encodeURIComponent(lodestoneId)}`;
-
-        const response = await fetch(fetchUrl, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+        const response = await workerFetch('verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lodestoneId })
         });
 
-        if (!response.ok) {
-            if (response.status === 404) {
-                return { success: false, error: "キャラクターが見つかりませんでした。" };
+        let data: any = null;
+        try { data = await response.json(); } catch { /* JSON以外のレスポンス */ }
+
+        if (response.ok && data?.success) {
+            // 付与されたカスタムクレームをトークンに取り込む
+            const user = auth.currentUser;
+            if (!user) throw new Error("Firebase Auth user is missing.");
+            await user.getIdToken(true);
+            const claims = (await user.getIdTokenResult()).claims as any;
+            if (claims.verified !== true) {
+                return { success: false, error: "認証情報の反映に失敗しました。ページを再読み込みして試してください。" };
             }
-            if (response.status === 401) {
-                return { success: false, error: "認証エラーが発生しました。ページを再読み込みして試してください。" };
-            }
-            if (response.status === 403) {
-                return { success: false, error: "アクセスが拒否されました。日本国外からのアクセス、またはプロキシ利用は制限されています。" };
-            }
-            throw new Error(`プロキシ・サーバーエラー: ${response.status}`);
+            return { success: true, characterName: data.characterName };
         }
 
-        const html = await response.text();
-        const parser = new DOMParser();
-        const parsedDoc = parser.parseFromString(html, "text/html");
-
-        const bioEl = parsedDoc.querySelector(".character__selfintroduction");
-        const nameEl = parsedDoc.querySelector(".frame__chara__box .frame__chara__name");
-
-        const bio = bioEl?.textContent?.trim() || "";
-        const name = nameEl?.textContent?.trim() || "Unknown";
-
-        if (bio.includes(verificationCode)) {
-            return { success: true, characterName: name };
-        } else {
-            return {
-                success: false,
-                error: "検証コードが自己紹介文に見つかりませんでした。保存から反映まで最大5分程度かかる場合があります。また、言語設定が日本語(JP)であることを確認してください。"
-            };
-        }
+        const message = VERIFY_ERROR_MESSAGES[data?.reason] || `認証に失敗しました。(${response.status})`;
+        return { success: false, error: message };
     } catch (error: any) {
         handleAppError(error, "Lodestone認証失敗");
-        return {
-            success: false,
-            error: `認証に失敗しました。(${error.message || "Unknown Error"})`
-        };
+        return { success: false, error: `認証に失敗しました。(${error.message || "Unknown Error"})` };
     }
 }
