@@ -389,13 +389,13 @@
 
 .pc-count-val .count-num {
   font-family: var(--font-mono, monospace);
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1;
 }
 
 .pc-count-val .count-unit {
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1;
   margin-left: 0.5px;
 }
