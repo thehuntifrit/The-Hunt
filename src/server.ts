@@ -24,17 +24,13 @@ const FIREBASE_CONFIG = {
 const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
 const auth = getAuth(app);
-const appCheck = initializeAppCheck(app, {
-    provider: new ReCaptchaEnterpriseProvider('6LeFtbYsAAAAAJETFxeUWd2IOe92slrZcYcZFHeT'),
-    isTokenAutoRefreshEnabled: true
-});
 
 // Initialize Firebase App Check
 if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
     (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
 }
 
-initializeAppCheck(app, {
+const appCheck = initializeAppCheck(app, {
     provider: new ReCaptchaEnterpriseProvider('6LeFtbYsAAAAAJETFxeUWd2IOe92slrZcYcZFHeT'),
     isTokenAutoRefreshEnabled: true
 });
