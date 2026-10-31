@@ -2,45 +2,57 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function myLodestoneId() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.lodestone_id;
+    // Workerが付与したカスタムクレーム(Lodestone認証済み)があるか
+    function verified() {
+      return request.auth != null && request.auth.token.verified == true;
     }
 
-    function isVerified() {
-      return request.auth != null && myLodestoneId() != null;
-    }
-
-    // User profiles: Only the owner can read or write their own profile
+    // 以前の認証情報置き場。今はクライアントから一切触らせない
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if false;
     }
 
-    // Mob status/reports: Public read, only verified users can update
+    // 討伐報告: 読み取りは公開。書き込みは認証済みユーザーが「1回につき1モブ」だけ
+    // (キーがモブ番号で動的なため、値の中身まではルールで検証できない)
     match /mob_status/{docId} {
       allow read: if true;
-      allow create, update: if isVerified();
+      allow create: if verified()
+        && docId in ['s_latest', 'a_latest', 'f_latest']
+        && request.resource.data.size() <= 1;
+      allow update: if verified()
+        && docId in ['s_latest', 'a_latest', 'f_latest']
+        && request.resource.data.diff(resource.data).affectedKeys().size() <= 1
+        && request.resource.data.size() < 500;   // ドキュメント肥大化の安全弁
       allow delete: if false;
     }
 
-    // Mob locations: Public read, only verified users can update
-    match /mob_locations/{mobId} {
+    // スポーン位置: 1回の操作で書くのは culled_at / uncull_at と reporter_id の2項目
+    match /mob_locations/{docId} {
       allow read: if true;
-      allow create, update: if isVerified();
+      allow create: if verified()
+        && docId.size() < 60
+        && request.resource.data.size() <= 2;
+      allow update: if verified()
+        && request.resource.data.diff(resource.data).affectedKeys().size() <= 2
+        && request.resource.data.size() < 1000;  // ドキュメント肥大化の安全弁
       allow delete: if false;
     }
 
-    // Maintenance info: Public read, no public write allowed
+    // メンテナンス情報: 読み取りのみ
     match /shared_data/maintenance {
       allow read: if true;
       allow write: if false;
     }
 
-    // Memos: Public read, only verified users can update
+    // メモ: 認証済みユーザーが「1回につき1モブ」だけ
     match /shared_data/memo {
       allow read: if true;
-      allow create, update: if isVerified();
+      allow create: if verified()
+        && request.resource.data.size() <= 1;
+      allow update: if verified()
+        && request.resource.data.diff(resource.data).affectedKeys().size() <= 1
+        && request.resource.data.size() < 500;   // ドキュメント肥大化の安全弁
       allow delete: if false;
     }
   }
 }
-
