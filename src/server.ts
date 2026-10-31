@@ -287,14 +287,15 @@ export const submitMemo = async (mobNo: number, memoText: string): Promise<Repor
     const mob = mobs.find(m => m.No === mobNo);
     if (!mob) return { success: false, error: "Mobデータエラー" };
 
-    if (memoText && memoText.length > CONFIG.MEMO_MAX_LENGTH) {
+    const cleanMemo = memoText ? memoText.replace(/[\r\n]/g, '').trim() : "";
+    if (cleanMemo && cleanMemo.length > CONFIG.MEMO_MAX_LENGTH) {
         return { success: false, error: "メモは30文字以内で入力してください" };
     }
 
     try {
         const docRef = doc(db, "shared_data", "memo");
 
-        if (!memoText || memoText.trim() === "") {
+        if (!cleanMemo) {
             await setDoc(docRef, {
                 [mobNo]: []
             }, { merge: true });
@@ -302,7 +303,7 @@ export const submitMemo = async (mobNo: number, memoText: string): Promise<Repor
         }
 
         const memoData = {
-            memo_text: memoText,
+            memo_text: cleanMemo,
             created_at: Timestamp.now(),
             reporter_id: lodestoneId
         };

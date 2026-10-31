@@ -400,7 +400,7 @@ export function renderMobCard(mob: Mob): HTMLElement {
 
   updateEl(card, '.condition-text', { innerHTML: processText(mob.condition || "特別な出現条件はありません。") });
 
-  const memoEl = card.querySelector('.mobcard-memo-input') as HTMLTextAreaElement | null;
+  const memoEl = card.querySelector('.mobcard-memo-input') as (HTMLInputElement | HTMLTextAreaElement) | null;
   if (memoEl) {
     if (document.activeElement !== memoEl) {
       memoEl.value = mob.memo_text || '';
@@ -623,7 +623,7 @@ export function updateExpandablePanel(card: HTMLElement, mob: Mob): void {
     if (elLast.textContent !== val) elLast.textContent = val;
   }
 
-  const elMemoInput = getEl(card, ".mobcard-memo-input", "memoInput") as HTMLTextAreaElement | null;
+  const elMemoInput = getEl(card, ".mobcard-memo-input", "memoInput") as (HTMLInputElement | HTMLTextAreaElement) | null;
   if (elMemoInput) {
     if (elMemoInput.dataset.mobNo !== String(mob.No)) elMemoInput.dataset.mobNo = String(mob.No);
     if (document.activeElement !== elMemoInput) {

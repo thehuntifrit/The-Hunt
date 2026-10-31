@@ -967,7 +967,7 @@ function attachGlobalEventListeners(): void {
     const input = e.target as HTMLInputElement;
     if (input.classList.contains('mobcard-memo-input') || input.matches("[data-action='save-memo']")) {
       const mobNo = parseInt(input.dataset.mobNo!, 10);
-      const value = input.value.trim();
+      const value = input.value.replace(/[\r\n]/g, '').trim();
       if (!isNaN(mobNo)) {
         if (!getState().isVerified) {
           input.value = '';
@@ -975,6 +975,15 @@ function attachGlobalEventListeners(): void {
           return;
         }
         await submitMemo(mobNo, value);
+      }
+    }
+  });
+
+  document.body.addEventListener('keydown', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains('mobcard-memo-input') || target.matches("[data-action='save-memo']")) {
+      if (e.key === 'Enter' && !e.isComposing) {
+        (target as HTMLElement).blur();
       }
     }
   });
