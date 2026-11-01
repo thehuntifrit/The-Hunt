@@ -127,7 +127,7 @@ export function parseMobIdParts(no: number): { mobNo: number; instance: number }
   }
   const str = String(no).padStart(5, "0");
   const result = {
-    mobNo: parseInt(str.slice(2, 4), 10),
+    mobNo: parseInt(str.slice(1, 4), 10),
     instance: parseInt(str[4], 10),
   };
   mobIdPartsCache.set(no, result);
@@ -190,9 +190,8 @@ export function allTabComparator(a: Mob, b: Mob): number {
 
     const pa = parseMobIdParts(a.No);
     const pb = parseMobIdParts(b.No);
-    if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
-
-    return pa.instance - pb.instance;
+    if (pa.instance !== pb.instance) return pa.instance - pb.instance;
+    return pa.mobNo - pb.mobNo;
   }
 
   const isAConditionActive = !!aInfo.isInConditionWindow;
@@ -220,8 +219,8 @@ export function allTabComparator(a: Mob, b: Mob): number {
     }
     const pa = parseMobIdParts(a.No);
     const pb = parseMobIdParts(b.No);
-    if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
-    return pa.instance - pb.instance;
+    if (pa.instance !== pb.instance) return pa.instance - pb.instance;
+    return pa.mobNo - pb.mobNo;
   }
 
   const aPercent = percentKey(aInfo);
@@ -240,7 +239,6 @@ export function allTabComparator(a: Mob, b: Mob): number {
 
   const pa = parseMobIdParts(a.No);
   const pb = parseMobIdParts(b.No);
-  if (pa.mobNo !== pb.mobNo) return pa.mobNo - pb.mobNo;
-
-  return pa.instance - pb.instance;
+  if (pa.instance !== pb.instance) return pa.instance - pb.instance;
+  return pa.mobNo - pb.mobNo;
 }

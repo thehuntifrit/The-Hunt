@@ -10,7 +10,7 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken as getAppChec
 import { getState, DOM, CONFIG, handleAppError } from "./dataManager";
 import { closeReportModal } from "./modal";
 import { getMaintenanceRepop } from "./cal";
-import { Mob } from "./types/mob";
+import { Mob, getRankFromNo } from "./types/mob";
 
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyBikwjGsjL_PVFhx3Vj-OeJCocKA_hQOgU",
@@ -247,9 +247,10 @@ export const submitReport = async (mobNo: number, timeISO: string): Promise<Repo
     closeReportModal();
 
     try {
+        const rank = getRankFromNo(mob.No);
         let collectionSuffix = "s_latest";
-        if (mob.rank === "A") collectionSuffix = "a_latest";
-        else if (mob.rank === "F") collectionSuffix = "f_latest";
+        if (rank === "A") collectionSuffix = "a_latest";
+        else if (rank === "F") collectionSuffix = "f_latest";
 
         const docRef = doc(db, "mob_status", collectionSuffix);
 

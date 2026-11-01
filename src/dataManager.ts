@@ -30,9 +30,9 @@ const WORKER_TYPES = {
 const MOB_DATA_URL = "./json/mob_data.json";
 const MOB_LOCATIONS_URL = "./json/mob_locations.json";
 const MAINTENANCE_URL = "./json/maintenance.json";
-const MOB_DATA_CACHE_KEY = "mobDataCache";
-const MOB_STATUS_CACHE_KEY = "mobStatusCache";
-const SPAWN_CACHE_KEY = "spawnConditionCache";
+const MOB_DATA_CACHE_KEY = "mobDataCache_v2";
+const MOB_STATUS_CACHE_KEY = "mobStatusCache_v2";
+const SPAWN_CACHE_KEY = "spawnConditionCache_v2";
 const LOCATIONS_CACHE_KEY = "mobLocationsCache";
 
 // ─── 設定値 ─────────────────────────────────────────────

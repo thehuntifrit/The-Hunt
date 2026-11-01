@@ -1,5 +1,16 @@
-/** モブ番号: 5桁数値 (EEMMN = 拡張版2桁 + モブID2桁 + インスタンス1桁) */
+/** モブ番号: 5桁数値 (E AA S I = 拡張1桁 + エリア2桁 + 枠1桁 + インスタンス1桁) */
 export type MobNo = number;
+
+/**
+ * モブ番号からランクを判定 (5桁: E AA S I の 4桁目 S を参照)
+ * S = 1, 2 / A = 3, 4, 5 / F = 6, 7, 8, 9
+ */
+export function getRankFromNo(no: number): "S" | "A" | "F" {
+  const slot = Math.floor(no / 10) % 10;
+  if (slot <= 2) return "S";
+  if (slot <= 5) return "A";
+  return "F";
+}
 
 export type MobRank = "S" | "A" | "F" | "B1" | "B2";
 
