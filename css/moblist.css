@@ -111,7 +111,7 @@
 }
 
 .moblist-name {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 15px;
   font-weight: 500;
   color: var(--c-text-hi);
@@ -153,7 +153,7 @@
 
 .moblist-count {
   flex-shrink: 0;
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 13px;
   color: var(--c-text-lo);
   white-space: nowrap;
@@ -230,7 +230,7 @@
 }
 
 .moblist-area {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 12px;
   color: var(--c-text-lo);
   white-space: nowrap;
@@ -318,7 +318,7 @@
   margin-left: 1px;
   margin-right: 1px;
   line-height: 1;
-  transform: translateY(0px);
+  transform: translateY(-1px);
 }
 
 /* timer-inner-grid layout (label + timer side by side) */
@@ -423,7 +423,7 @@
 }
 
 .pc-count-val .count-unit {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 13px;
   line-height: 1;
   margin-left: 0.5px;
@@ -573,7 +573,7 @@
 }
 
 .status-group-label {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 12px;
   font-weight: 700;
   color: #e2f5e8;
