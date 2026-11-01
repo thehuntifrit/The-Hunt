@@ -1098,10 +1098,16 @@ function initAppEventListeners(): void {
   });
 
   window.addEventListener('mobsUpdated', () => updateProgressBarsOptimized());
-  window.addEventListener('locationDataReady', () => updateVisibleCards());
+  window.addEventListener('locationDataReady', () => {
+    updateVisibleCards();
+    const mobMap = getMobMap();
+    if (mobMap) updateVisibleDetailCard(mobMap);
+  });
   window.addEventListener('locationsUpdated', () => {
     invalidateFilterCache();
     updateVisibleCards();
+    const mobMap = getMobMap();
+    if (mobMap) updateVisibleDetailCard(mobMap);
   });
 
   window.addEventListener('appNotify', (e: any) => {
