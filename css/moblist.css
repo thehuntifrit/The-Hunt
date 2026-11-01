@@ -318,7 +318,7 @@
   margin-left: 1px;
   margin-right: 1px;
   line-height: 1;
-  transform: translateY(1px);
+  transform: translateY(-1px);
 }
 
 /* timer-inner-grid layout (label + timer side by side) */
