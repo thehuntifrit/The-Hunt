@@ -163,17 +163,59 @@
 }
 
 .memo-icon-container {
+  position: relative;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   line-height: 1;
+  cursor: pointer;
 }
 
 .memo-icon {
+  position: relative;
   font-size: 12px;
   line-height: 1;
   display: inline-flex;
   align-items: center;
+}
+
+.memo-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #14253d;
+  color: #e5f2ff;
+  border: 1px solid #38849c;
+  padding: 5px 9px;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-width: 220px;
+  min-width: 60px;
+  width: max-content;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.memo-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px;
+  border-style: solid;
+  border-color: #38849c transparent transparent transparent;
+}
+
+.memo-icon-container:hover .memo-tooltip,
+.memo-icon:hover .memo-tooltip {
+  display: block;
 }
 
 /* area row (bottom row containing area on left & time on right) */
@@ -236,7 +278,7 @@
 
 .mobcard-timer-part {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   line-height: 1;
   min-inline-size: 30px;
   justify-content: flex-end;
@@ -276,6 +318,7 @@
   margin-left: 1px;
   margin-right: 1px;
   line-height: 1;
+  transform: translateY(1px);
 }
 
 /* timer-inner-grid layout (label + timer side by side) */
@@ -290,43 +333,29 @@
   display: none;
 }
 
-/* ConditionActive (なう！) badge */
+/* ConditionActive (🔆) badge */
 .timer-label-base.status-conditionactive {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 34px;
-  height: 16px;
-  padding: 1px 1px 0;
-  font-family: var(--font-ui);
-  font-size: 11px;
-  font-weight: 400;
+  font-size: 13px;
   line-height: 1;
-  border-radius: 3px;
-  color: var(--c-text-hi);
-  background: #5c3a00;
-  border: 1px solid #b67a11;
+  background: transparent;
+  border: none;
   white-space: nowrap;
   flex-shrink: 0;
   box-sizing: border-box;
 }
 
-/* NextCondition (次まで) badge */
+/* NextCondition (🔜) badge */
 .timer-label-base.status-nextcondition {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 34px;
-  height: 16px;
-  padding: 1px 1px 0;
-  font-family: var(--font-ui);
-  font-size: 11px;
-  font-weight: 400;
+  font-size: 13px;
   line-height: 1;
-  border-radius: 3px;
-  color: #b1b8c0;
-  background: #1e293b;
-  border: 1px solid #4b5563;
+  background: transparent;
+  border: none;
   white-space: nowrap;
   flex-shrink: 0;
   box-sizing: border-box;

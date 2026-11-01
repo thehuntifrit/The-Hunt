@@ -176,7 +176,8 @@
   width: 100%;
   max-height: 60vh;
   z-index: var(--z-footer);
-  background-color: #09111f;
+  background-color: #122036;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
   border-top: 1px solid var(--c-border);
   overflow: hidden;
   padding: 0;

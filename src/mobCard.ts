@@ -661,15 +661,22 @@ export function updateMemoIcon(card: HTMLElement, mob: Mob): void {
   const memoIconContainer = getEl(card, '.memo-icon-container', 'memoIconContainer');
   if (!memoIconContainer) return;
   const shouldShowMemo = shouldDisplayMemo(mob);
+  const memoText = (mob.memo_text || '').trim();
 
-  if ((memoIconContainer as any)._lastShow === shouldShowMemo) return;
+  if ((memoIconContainer as any)._lastShow === shouldShowMemo && (memoIconContainer as any)._lastText === memoText) return;
   (memoIconContainer as any)._lastShow = shouldShowMemo;
+  (memoIconContainer as any)._lastText = memoText;
 
   memoIconContainer.innerHTML = '';
   if (shouldShowMemo) {
     memoIconContainer.classList.remove('hidden');
-    const el = cloneTemplate('memo-icon-template');
-    if (el) memoIconContainer.appendChild(el);
+    const el = cloneTemplate('memo-icon-template') as HTMLElement | null;
+    if (el) {
+      const tip = el.querySelector('.memo-tooltip');
+      if (tip) tip.textContent = memoText;
+      el.setAttribute('title', memoText);
+      memoIconContainer.appendChild(el);
+    }
   } else {
     memoIconContainer.classList.add('hidden');
   }
