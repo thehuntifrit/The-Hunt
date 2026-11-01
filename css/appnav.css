@@ -69,6 +69,10 @@
 }
 
 .appnav-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 20px;
   line-height: 1;
   opacity: 0.85;
@@ -94,6 +98,10 @@
 .appnav-btn.active .appnav-icon,
 .appnav-btn.appnav-active .appnav-icon,
 .appnav-btn[data-active] .appnav-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.8));
   opacity: 1;
 }
@@ -137,6 +145,10 @@
 
 /* 通知ON（チェックあり かつ disabledでない）時のスタイル */
 .appnav-btn:not(.is-disabled):has(input[type="checkbox"]:checked) .appnav-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   filter: grayscale(0%);
   opacity: 1;
 }
@@ -489,15 +501,16 @@
   font-weight: 600;
 }
 
-.appnav-btn.has-alert::before {
+.appnav-btn.has-alert .appnav-icon::after {
   content: '';
   position: absolute;
-  top: 8px;
-  right: 25%;
+  top: -2px;
+  right: -5px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background-color: var(--c-gold);
+  pointer-events: none;
 }
 
 @media (min-width: 900px) {
