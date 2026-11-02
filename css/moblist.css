@@ -312,13 +312,13 @@
 }
 
 .mobcard-timer-unit {
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-family: var(--font-ui);
+  font-size: 13px;
   color: var(--c-text-lo);
   margin-left: 1px;
   margin-right: 1px;
   line-height: 1;
-  transform: translateY(-1px);
+  transform: translateY(0px);
 }
 
 /* timer-inner-grid layout (label + timer side by side) */
