@@ -409,7 +409,9 @@ export function calculateRepop(mob: Mob, maintenance: any, options: { skipCondit
   ) {
     const cached = mob.repopInfo;
 
-    if (now >= minRepop && maxRepop > minRepop) {
+    if (now >= maxRepop) {
+      cached.elapsedPercent = 100;
+    } else if (now >= minRepop && maxRepop > minRepop) {
       cached.elapsedPercent = Math.min(100, Math.floor(((now - minRepop) / (maxRepop - minRepop)) * 100));
     } else {
       cached.elapsedPercent = 0;
