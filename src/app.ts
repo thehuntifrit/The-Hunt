@@ -330,7 +330,7 @@ export function updateCardFull(card: HTMLElement, mob: Mob): void {
   }
 
   const memoHash = `${mob.memo_updated_at || 0}:${mob.memo_text || ""}`;
-  const stateHash = `${info.status}|${info.timeRemaining}|${info.isInConditionWindow}|${cullHash}|${memoHash}`;
+  const stateHash = `${info.status}|${info.timeRemaining}|${info.elapsedPercent}|${info.isInConditionWindow}|${cullHash}|${memoHash}`;
 
   if ((card as any)._lastStateHash === stateHash) return;
   (card as any)._lastStateHash = stateHash;
