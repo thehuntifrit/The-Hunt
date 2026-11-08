@@ -719,7 +719,7 @@
   padding: 14px 20px 18px;
 }
 
-/* ひし形の飾り: ポップアップと同じく外周の四隅 */
+/* ── ひし形の飾り: ポップアップと同じく外周の四隅 ── */
 .appnav-panel.is-docked .ff-corner {
   display: block;
   position: absolute;
@@ -751,7 +751,21 @@
   right: -4px;
 }
 
-/* タイトル周り・✕ボタン(ポップアップと同じ) */
+/* モバイル: 画面端で切れないよう、左右のひし形を内側へ */
+@media (max-width: 899px) {
+
+  .appnav-panel.is-docked .ff-corner.tl,
+  .appnav-panel.is-docked .ff-corner.bl {
+    left: 2px;
+  }
+
+  .appnav-panel.is-docked .ff-corner.tr,
+  .appnav-panel.is-docked .ff-corner.br {
+    right: 2px;
+  }
+}
+
+/* ── タイトル周り・✕ボタン(ポップアップと同じ) ── */
 .appnav-panel.is-docked .appnav-section-header {
   padding-right: 32px;
   border-bottom-color: rgba(216, 196, 138, .35);
@@ -793,66 +807,10 @@
   outline: none;
 }
 
-/* ── ボタン類: ゴールド細枠 + 角小さめ + 暗いグラデ ── */
-.appnav-panel.is-docked .appnav-rank-tab,
-.appnav-panel.is-docked .area-filter-btn {
-  border-radius: 2px;
-}
-
-/* 非選択のボタン(選択中はこれまでのランク色・シアンの枠を残すため :not で除外) */
-.appnav-panel.is-docked .appnav-rank-tab:not(.is-active),
-.appnav-panel.is-docked .area-filter-btn:not(.is-selected) {
-  background: linear-gradient(180deg, rgba(34, 48, 76, .9), rgba(14, 22, 38, .95));
-  border-color: rgba(216, 196, 138, .4);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
-}
-
-.appnav-panel.is-docked .appnav-rank-tab:not(.is-active):hover,
-.appnav-panel.is-docked .area-filter-btn:not(.is-selected):hover {
-  border-color: #d8c48a;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 0 6px rgba(216, 196, 138, .25);
-}
-
-/* 選択中のエリアボタン: シアンの枠に発光を足す */
-.appnav-panel.is-docked .area-filter-btn.is-selected {
-  box-shadow: 0 0 8px rgba(34, 211, 238, .35);
-}
-
-/* エリアのカルーセル枠と矢印(✕と同じ丸ボタン) */
-.appnav-panel.is-docked .appnav-area-carousel-wrapper {
-  background: rgba(3, 7, 14, .45);
-  border: 1px solid rgba(216, 196, 138, .35);
-  border-radius: 2px;
-}
-
-.appnav-panel.is-docked .carousel-arrow {
-  color: #d8c48a;
-  background: rgba(0, 0, 0, .55);
-  border-color: rgba(216, 196, 138, .55);
-}
-
-.appnav-panel.is-docked .carousel-arrow:hover {
-  color: #fff;
-  border-color: var(--c-cyan);
-  box-shadow: 0 0 8px rgba(34, 211, 238, .6);
-}
-
-/* モバイル: 画面端で切れないよう、左右のひし形を内側へ */
-@media (max-width: 899px) {
-
-  .appnav-panel.is-docked .ff-corner.tl,
-  .appnav-panel.is-docked .ff-corner.bl {
-    left: 2px;
-  }
-
-  .appnav-panel.is-docked .ff-corner.tr,
-  .appnav-panel.is-docked .ff-corner.br {
-    right: 2px;
-  }
-}
-
 /* =========================================================
-   RANK Filter: ボタンらしい立体感・配置の調整 (.is-docked)
+   RANK Filter ボタン — FF14風メニューボタン
+   面取り(角を斜めにカット) + 金のグラデ枠 + 光沢のある面
+   clip-path とグラデーションだけで描く(blur/filter/アニメなし)
    ========================================================= */
 .appnav-panel.is-docked .appnav-filter-wrapper {
   gap: 12px;
@@ -862,96 +820,106 @@
   gap: 8px;
 }
 
-.appnav-panel.is-docked .appnav-area-carousel-wrapper {
-  padding: 8px;
-}
-
-/* 下に落ちる影が切れないよう、トラックの下に余白を足す */
-.appnav-panel.is-docked .area-grid-container.appnav-area-carousel-track {
-  padding: 2px 2px 5px;
-}
-
-/* サイズと文字 */
-.appnav-panel.is-docked .appnav-rank-tab,
-.appnav-panel.is-docked .area-filter-btn {
+.appnav-panel.is-docked :is(.appnav-rank-tab, .area-filter-btn) {
+  --b: 5px;
+  /* 面取りの大きさ(外形) */
+  --bi: 4.4px;
+  /* 面取りの大きさ(内側の面)= --b - 0.6px で枠が約1pxに */
   position: relative;
-  border-radius: 3px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
+  isolation: isolate;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  clip-path: polygon(var(--b) 0, calc(100% - var(--b)) 0, 100% var(--b), 100% calc(100% - var(--b)),
+      calc(100% - var(--b)) 100%, var(--b) 100%, 0 calc(100% - var(--b)), 0 var(--b));
+  transition: transform 0.08s ease;
 }
 
 .appnav-panel.is-docked .appnav-rank-tab {
   height: 38px;
   font-size: 15px;
+  --b: 6px;
+  --bi: 5.4px;
 }
 
 .appnav-panel.is-docked .area-filter-btn {
   height: 32px;
+  font-size: 13px;
 }
 
-/* 面の上端のハイライトと、下端の影(ベベル) */
-.appnav-panel.is-docked .appnav-rank-tab::before,
-.appnav-panel.is-docked .area-filter-btn::before {
+/* 枠(金のグラデーション) */
+.appnav-panel.is-docked :is(.appnav-rank-tab, .area-filter-btn)::before {
   content: "";
   position: absolute;
-  left: 1px;
-  right: 1px;
-  top: 1px;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.22);
+  inset: 0;
+  z-index: -2;
   pointer-events: none;
+  background: linear-gradient(180deg, #e8d9a6 0%, #9a8a5c 50%, #6f6038 100%);
 }
 
-.appnav-panel.is-docked .appnav-rank-tab::after,
-.appnav-panel.is-docked .area-filter-btn::after {
+/* 面(上に光沢、下に向かって暗くなる) */
+.appnav-panel.is-docked :is(.appnav-rank-tab, .area-filter-btn)::after {
   content: "";
   position: absolute;
-  left: 1px;
-  right: 1px;
-  bottom: 1px;
-  height: 2px;
-  background: rgba(0, 0, 0, 0.4);
+  inset: 1px;
+  z-index: -1;
   pointer-events: none;
+  clip-path: polygon(var(--bi) 0, calc(100% - var(--bi)) 0, 100% var(--bi), 100% calc(100% - var(--bi)),
+      calc(100% - var(--bi)) 100%, var(--bi) 100%, 0 calc(100% - var(--bi)), 0 var(--bi));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0, rgba(255, 255, 255, 0) 48%),
+    linear-gradient(180deg, #27375a 0%, #131d33 100%);
 }
 
-/* 未選択: 浮き上がった面 */
-.appnav-panel.is-docked .appnav-rank-tab:not(.is-active),
+/* 未選択のエリアボタンの文字 */
 .appnav-panel.is-docked .area-filter-btn:not(.is-selected) {
-  background: linear-gradient(180deg, rgba(52, 70, 104, 0.95) 0%, rgba(18, 28, 48, 0.98) 100%);
-  border-color: rgba(216, 196, 138, 0.55);
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
+  color: #c3cde0;
 }
 
-.appnav-panel.is-docked .appnav-rank-tab:not(.is-active):hover,
+/* ホバー: 枠が明るい金に、面が少し明るく */
+.appnav-panel.is-docked :is(.appnav-rank-tab:not(.is-active), .area-filter-btn:not(.is-selected)):hover::before {
+  background: linear-gradient(180deg, #fff3c4 0%, #c9b57a 50%, #8f7d4d 100%);
+}
+
+.appnav-panel.is-docked :is(.appnav-rank-tab:not(.is-active), .area-filter-btn:not(.is-selected)):hover::after {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0, rgba(255, 255, 255, 0) 48%),
+    linear-gradient(180deg, #324770 0%, #18253f 100%);
+}
+
 .appnav-panel.is-docked .area-filter-btn:not(.is-selected):hover {
-  background: linear-gradient(180deg, rgba(68, 90, 132, 0.95) 0%, rgba(26, 40, 68, 0.98) 100%);
-  border-color: #d8c48a;
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5), 0 0 8px rgba(216, 196, 138, 0.3);
+  color: #fff;
 }
 
-/* 選択中: 下端にランク色(文字色)の光る線を引く。枠色・発光は既存のランク色のまま */
-.appnav-panel.is-docked .appnav-rank-tab.is-active::after,
-.appnav-panel.is-docked .area-filter-btn.is-selected::after {
+/* 選択中: 枠がランク色(文字色)になり、面はその色が透けて下ほど色づく */
+.appnav-panel.is-docked :is(.appnav-rank-tab.is-active, .area-filter-btn.is-selected)::before {
   background: currentColor;
-  box-shadow: 0 0 6px currentColor;
+}
+
+.appnav-panel.is-docked :is(.appnav-rank-tab.is-active, .area-filter-btn.is-selected)::after {
+  background: linear-gradient(180deg, rgba(8, 14, 28, 0.93) 0%, rgba(8, 14, 28, 0.72) 100%);
 }
 
 /* 押した感触 */
-.appnav-panel.is-docked .appnav-rank-tab:active,
-.appnav-panel.is-docked .area-filter-btn:active {
+.appnav-panel.is-docked :is(.appnav-rank-tab, .area-filter-btn):active {
   transform: translateY(1px);
 }
 
-/* キーボード操作時のフォーカス */
-.appnav-panel.is-docked .appnav-rank-tab:focus-visible,
-.appnav-panel.is-docked .area-filter-btn:focus-visible {
-  outline: 2px solid var(--c-cyan);
-  outline-offset: 2px;
+/* キーボード操作時: 枠がシアンになる(clip-path で outline は切れるため) */
+.appnav-panel.is-docked :is(.appnav-rank-tab, .area-filter-btn):focus-visible {
+  outline: none;
+}
+
+.appnav-panel.is-docked :is(.appnav-rank-tab, .area-filter-btn):focus-visible::before {
+  background: var(--c-cyan);
 }
 
 /* =========================================================
-   RANK Filter: エリア(拡張)ボタンのスクロール領域 (.is-docked)
+   RANK Filter: エリア(拡張)ボタンのスクロール領域
    囲みなし。端のフェードはマスクで表現(背景色に依存しない)
    ========================================================= */
 .appnav-panel.is-docked .appnav-area-carousel-wrapper {
@@ -976,7 +944,6 @@
 .appnav-panel.is-docked .appnav-area-carousel {
   scroll-padding-inline: 2px;
   scrollbar-width: none;
-  /* バーは出さない(矢印とスワイプで操作できる) */
   -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent 100%);
   mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent 100%);
 }
@@ -990,12 +957,21 @@
   padding: 2px 2px 5px;
 }
 
-/* 矢印ボタン: 囲みがなくなったので、端いっぱいに寄せる */
+/* 矢印ボタン(✕と同じ丸ボタン) */
 .appnav-panel.is-docked .carousel-arrow {
   width: 28px;
   height: 28px;
   font-size: 18px;
+  color: #d8c48a;
+  background: rgba(0, 0, 0, .55);
+  border-color: rgba(216, 196, 138, .55);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.55);
+}
+
+.appnav-panel.is-docked .carousel-arrow:hover {
+  color: #fff;
+  border-color: var(--c-cyan);
+  box-shadow: 0 0 8px rgba(34, 211, 238, .6);
 }
 
 .appnav-panel.is-docked .carousel-arrow-prev {
