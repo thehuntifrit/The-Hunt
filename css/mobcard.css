@@ -3,14 +3,21 @@
    FF14風UI(ゴールド枠・上端グラデ帯・四隅ブラケット)に統一
    ========================================================= */
 
+/* モバイルのボトムシートがヘッダーの下に潜らないための余白(上端の帯・枠・影の分) */
+:root {
+  --mobcard-top-gap: 10px;
+}
+
 /* ── Card wrapper ────────────────────────────────────────── */
 .mobcard-card {
   background: linear-gradient(180deg, #182238 0%, #0b1120 100%);
   border-radius: 4px 4px 0 0;
-  border: 1px solid #9a8a5c;                       /* くすんだゴールド */
+  border: 1px solid #9a8a5c;
+  /* くすんだゴールド */
   border-bottom: none;
   box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.7),                  /* 外側の黒縁 */
+    0 0 0 1px rgba(0, 0, 0, 0.7),
+    /* 外側の黒縁 */
     0 -6px 24px rgba(0, 0, 0, 0.6),
     inset 0 0 40px rgba(56, 189, 248, 0.05);
   overflow: hidden;
@@ -22,7 +29,7 @@
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  max-height: calc(100dvh - var(--header-h) - var(--footer-safe));
+  max-height: calc(100dvh - var(--header-h) - var(--footer-safe) - var(--mobcard-top-gap));
   z-index: var(--z-card-mob);
   transform: translateY(100%);
   transition: transform 0.22s cubic-bezier(0.32, 0, 0.67, 0);
@@ -83,7 +90,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  max-height: calc(100dvh - var(--header-h) - var(--footer-safe));
+  max-height: calc(100dvh - var(--header-h) - var(--footer-safe) - var(--mobcard-top-gap));
   background: transparent;
   width: 100%;
   max-width: 100%;
@@ -625,7 +632,8 @@
 /* ── PC: static right pane ───────────────────────────────── */
 @media (min-width: 900px) {
   .mobcard-card {
-    position: relative;      /* 上端帯・角飾りの基準にするため static から変更(レイアウトは同じ) */
+    position: relative;
+    /* 上端帯・角飾りの基準にするため static から変更(レイアウトは同じ) */
     z-index: auto;
     height: 100%;
     max-height: 100%;
