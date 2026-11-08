@@ -952,80 +952,45 @@
 
 /* =========================================================
    RANK Filter: エリア(拡張)ボタンのスクロール領域 (.is-docked)
+   囲みなし。端のフェードはマスクで表現(背景色に依存しない)
    ========================================================= */
-
-/* 枠: 凹んだ溝のように見せる */
 .appnav-panel.is-docked .appnav-area-carousel-wrapper {
-  padding: 8px 8px 6px;
-  background: linear-gradient(180deg, rgba(3, 7, 14, 0.7), rgba(8, 14, 26, 0.5));
-  border: 1px solid rgba(216, 196, 138, 0.4);
-  border-radius: 3px;
-  box-shadow:
-    inset 0 2px 6px rgba(0, 0, 0, 0.6),
-    0 1px 0 rgba(255, 255, 255, 0.05);
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  --fade-l: 0px;
+  --fade-r: 0px;
+}
+
+/* 矢印が出ている側(まだスクロールできる側)だけ、端をフェードさせる */
+.appnav-panel.is-docked .appnav-area-carousel-wrapper:has(.carousel-arrow-prev:not(.hidden)) {
+  --fade-l: 40px;
+}
+
+.appnav-panel.is-docked .appnav-area-carousel-wrapper:has(.carousel-arrow-next:not(.hidden)) {
+  --fade-r: 40px;
 }
 
 .appnav-panel.is-docked .appnav-area-carousel {
   scroll-padding-inline: 2px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(216, 196, 138, 0.5) rgba(216, 196, 138, 0.1);
+  scrollbar-width: none;
+  /* バーは出さない(矢印とスワイプで操作できる) */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent 100%);
 }
 
-/* 下に落ちるボタンの影が切れないよう、余白を足す */
-.appnav-panel.is-docked .area-grid-container.appnav-area-carousel-track {
-  padding: 2px 2px 6px;
-}
-
-/* スクロールバー: 金色の細いつまみ */
 .appnav-panel.is-docked .appnav-area-carousel::-webkit-scrollbar {
-  height: 5px;
+  display: none;
 }
 
-.appnav-panel.is-docked .appnav-area-carousel::-webkit-scrollbar-track {
-  background: rgba(216, 196, 138, 0.1);
-  border-radius: 3px;
+/* 下に落ちるボタンの影が切れないよう、余白を確保 */
+.appnav-panel.is-docked .area-grid-container.appnav-area-carousel-track {
+  padding: 2px 2px 5px;
 }
 
-.appnav-panel.is-docked .appnav-area-carousel::-webkit-scrollbar-thumb {
-  background: linear-gradient(90deg, rgba(216, 196, 138, 0.6), rgba(216, 196, 138, 0.35));
-  border-radius: 3px;
-}
-
-.appnav-panel.is-docked .appnav-area-carousel::-webkit-scrollbar-thumb:hover {
-  background: rgba(216, 196, 138, 0.85);
-}
-
-/* 左右の端のフェード: 「まだ先がある」ことを示す(矢印が出ている側だけ表示) */
-.appnav-panel.is-docked .appnav-area-carousel-wrapper::before,
-.appnav-panel.is-docked .appnav-area-carousel-wrapper::after {
-  content: "";
-  position: absolute;
-  top: 1px;
-  bottom: 1px;
-  width: 32px;
-  z-index: 4;
-  /* 矢印(z-index: 5)の下、ボタンの上 */
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.appnav-panel.is-docked .appnav-area-carousel-wrapper::before {
-  left: 1px;
-  background: linear-gradient(90deg, rgba(8, 13, 24, 0.96), rgba(8, 13, 24, 0));
-}
-
-.appnav-panel.is-docked .appnav-area-carousel-wrapper::after {
-  right: 1px;
-  background: linear-gradient(270deg, rgba(8, 13, 24, 0.96), rgba(8, 13, 24, 0));
-}
-
-.appnav-panel.is-docked .appnav-area-carousel-wrapper:has(.carousel-arrow-prev:not(.hidden))::before,
-.appnav-panel.is-docked .appnav-area-carousel-wrapper:has(.carousel-arrow-next:not(.hidden))::after {
-  opacity: 1;
-}
-
-/* 矢印ボタン: 少し大きく、丸ボタンの意匠はそのまま */
+/* 矢印ボタン: 囲みがなくなったので、端いっぱいに寄せる */
 .appnav-panel.is-docked .carousel-arrow {
   width: 28px;
   height: 28px;
@@ -1034,9 +999,9 @@
 }
 
 .appnav-panel.is-docked .carousel-arrow-prev {
-  left: 6px;
+  left: 2px;
 }
 
 .appnav-panel.is-docked .carousel-arrow-next {
-  right: 6px;
+  right: 2px;
 }
