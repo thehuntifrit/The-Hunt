@@ -521,11 +521,7 @@
   color: var(--c-bg);
 }
 
-/* ── #status-group-template ──────────────────────────────── */
-.status-group {
-  margin-bottom: 10px;
-}
-
+/* ── Status group separator ──────────────────────────────── */
 .status-group-separator {
   display: flex;
   align-items: center;
@@ -590,23 +586,8 @@
   line-height: 1;
 }
 
-.status-group.is-collapsed .status-group-toggle-icon,
 .status-group-separator.is-collapsed .status-group-toggle-icon {
   transform: rotate(-90deg);
-}
-
-.status-group.is-collapsed .group-columns {
-  display: none !important;
-}
-
-.group-columns {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.group-columns > .moblist-item:last-child {
-  margin-bottom: 0;
 }
 
 /* ── POP WINDOW 特別強調（赤黒の帯・赤枠ライン・背景・経過%） ── */

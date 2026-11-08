@@ -490,15 +490,6 @@ export const sortAndRedistribute = (options: { immediate?: boolean } = {}): void
 
 const collapsedGroups = new Set<string>();
 
-interface GroupElements {
-  section: HTMLElement;
-  header: HTMLElement;
-  countEl: HTMLElement;
-  columns: HTMLElement;
-}
-
-const groupMap = new Map<string, GroupElements>();
-
 export const syncDomOrder = function (): void {
   if (!DOM.pcLeftList) return;
 
@@ -509,25 +500,26 @@ export const syncDomOrder = function (): void {
     groups[getGroupKey(m)].push(m);
   });
 
-  const mobNodeMap = new Map<string, HTMLElement>();
-  DOM.pcLeftList.querySelectorAll<HTMLElement>('.moblist-item').forEach(node => {
-    if (node.dataset.mobNo) mobNodeMap.set(node.dataset.mobNo, node);
+  const idealNodes: HTMLElement[] = [];
+  const currentNodes = Array.from(DOM.pcLeftList.children) as HTMLElement[];
+  const nodeMap = new Map<string, HTMLElement>();
+  currentNodes.forEach(node => {
+    if (node.dataset.mobNo) nodeMap.set(`mob-${node.dataset.mobNo}`, node);
+    else if (node.dataset.groupKey) nodeMap.set(`header-${node.dataset.groupKey}`, node);
   });
 
   const groupOrder = ["MAX_OVER", "WINDOW", "NEXT", "MAINTENANCE"];
-  const idealSections: HTMLElement[] = [];
-
   groupOrder.forEach(key => {
     const groupMobs = groups[key];
     if (key === "MAINTENANCE" && groupMobs.length === 0) return;
 
-    let g = groupMap.get(key);
-    if (!g) {
-      const section = document.createElement("section");
-      section.className = "status-group";
-      section.dataset.groupKey = key;
+    const headerText = (GROUP_LABELS as any)[key];
+    const headerKey = `header-${key}`;
+    let header = nodeMap.get(headerKey);
+    const isCollapsed = collapsedGroups.has(key);
 
-      const header = document.createElement("div");
+    if (!header) {
+      header = document.createElement("div");
       header.className = "moblist-group-header status-group-separator";
       header.dataset.groupKey = key;
       header.setAttribute("role", "button");
@@ -536,7 +528,7 @@ export const syncDomOrder = function (): void {
 
       const labelSpan = document.createElement("span");
       labelSpan.className = "status-group-label";
-      labelSpan.textContent = (GROUP_LABELS as any)[key];
+      labelSpan.textContent = headerText;
       header.appendChild(labelSpan);
 
       const countBadge = document.createElement("span");
@@ -564,64 +556,38 @@ export const syncDomOrder = function (): void {
           toggleHandler();
         }
       });
-
-      const columns = document.createElement("div");
-      columns.className = "group-columns";
-
-      section.appendChild(header);
-      section.appendChild(columns);
-
-      g = { section, header, countEl: countBadge, columns };
-      groupMap.set(key, g);
     }
 
-    const isCollapsed = collapsedGroups.has(key);
-    g.section.classList.toggle("is-collapsed", isCollapsed);
-    g.header.classList.toggle("is-collapsed", isCollapsed);
-    g.countEl.textContent = `(${groupMobs.length})`;
+    header.classList.toggle("is-collapsed", isCollapsed);
+    const countEl = header.querySelector(".status-group-count");
+    if (countEl) countEl.textContent = `(${groupMobs.length})`;
+
+    idealNodes.push(header);
 
     if (!isCollapsed) {
-      const idealItems: HTMLElement[] = [];
       groupMobs.forEach(m => {
-        const itemKey = String(m.No);
-        let item = mobNodeMap.get(itemKey);
+        const itemKey = `mob-${m.No}`;
+        let item = nodeMap.get(itemKey);
         if (!item) {
           item = createSimpleMobItem(m);
         }
         item.dataset.groupKey = key;
-        idealItems.push(item);
+        idealNodes.push(item);
       });
-
-      for (let i = 0; i < idealItems.length; i++) {
-        const ideal = idealItems[i];
-        const current = g.columns.children[i] as HTMLElement | null;
-        if (current !== ideal) {
-          g.columns.insertBefore(ideal, current || null);
-        }
-        observeCard(ideal);
-      }
-
-      while (g.columns.children.length > idealItems.length) {
-        g.columns.removeChild(g.columns.lastChild!);
-      }
-    } else {
-      while (g.columns.firstChild) {
-        g.columns.removeChild(g.columns.firstChild);
-      }
     }
-
-    idealSections.push(g.section);
   });
 
-  for (let i = 0; i < idealSections.length; i++) {
-    const ideal = idealSections[i];
+  for (let i = 0; i < idealNodes.length; i++) {
+    const ideal = idealNodes[i];
     const current = DOM.pcLeftList.children[i] as HTMLElement | null;
+
     if (current !== ideal) {
       DOM.pcLeftList.insertBefore(ideal, current || null);
     }
+    if (ideal.dataset.mobNo) observeCard(ideal);
   }
 
-  while (DOM.pcLeftList.children.length > idealSections.length) {
+  while (DOM.pcLeftList.children.length > idealNodes.length) {
     DOM.pcLeftList.removeChild(DOM.pcLeftList.lastChild!);
   }
 };
