@@ -527,7 +527,7 @@
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  margin-top: 4px;
+  margin-top: 10px;
   margin-bottom: 6px;
   background: linear-gradient(90deg, #14261c 0%, #0c1812 100%);
   border: 1px solid #25402f;
@@ -539,6 +539,10 @@
   transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   line-height: 1;
+}
+
+.status-group-separator:first-child {
+  margin-top: 4px;
 }
 
 .status-group-separator:hover {
