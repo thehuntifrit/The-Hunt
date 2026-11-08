@@ -1,14 +1,18 @@
 /* =========================================================
    css / mobcard.css  —  #mobcard-pane #mobcard-card-template #global-magnifier
+   FF14風UI(ゴールド枠・上端グラデ帯・四隅ブラケット)に統一
    ========================================================= */
 
 /* ── Card wrapper ────────────────────────────────────────── */
 .mobcard-card {
-  background-color: var(--c-surface);
-  border-radius: 12px 12px 0 0;
-  border: 1px solid var(--c-border);
+  background: linear-gradient(180deg, #182238 0%, #0b1120 100%);
+  border-radius: 4px 4px 0 0;
+  border: 1px solid #9a8a5c;                       /* くすんだゴールド */
   border-bottom: none;
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.7),                  /* 外側の黒縁 */
+    0 -6px 24px rgba(0, 0, 0, 0.6),
+    inset 0 0 40px rgba(56, 189, 248, 0.05);
   overflow: hidden;
   /* Mobile: bottom-sheet */
   position: fixed;
@@ -30,12 +34,57 @@
   transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
 }
 
+/* 上端のグラデ帯(告知パネルと同じ。ランクで色が変わる) */
+.mobcard-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--c-cyan), var(--c-f));
+  z-index: 3;
+  pointer-events: none;
+}
+
+.mobcard-card:has(.mobcard-rank[data-rank="S"])::before {
+  background: linear-gradient(90deg, var(--c-s), var(--c-gold));
+}
+
+.mobcard-card:has(.mobcard-rank[data-rank="F"])::before {
+  background: linear-gradient(90deg, var(--c-f), var(--c-cyan));
+}
+
+/* 四隅のブラケット(内側の角飾り) */
+.mobcard-card::after {
+  content: "";
+  position: absolute;
+  inset: 6px 4px 4px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.8;
+  background:
+    linear-gradient(#d8c48a, #d8c48a) top left / 10px 1px no-repeat,
+    linear-gradient(#d8c48a, #d8c48a) top left / 1px 10px no-repeat,
+    linear-gradient(#d8c48a, #d8c48a) top right / 10px 1px no-repeat,
+    linear-gradient(#d8c48a, #d8c48a) top right / 1px 10px no-repeat,
+    linear-gradient(#d8c48a, #d8c48a) bottom left / 10px 1px no-repeat,
+    linear-gradient(#d8c48a, #d8c48a) bottom left / 1px 10px no-repeat,
+    linear-gradient(#d8c48a, #d8c48a) bottom right / 10px 1px no-repeat,
+    linear-gradient(#d8c48a, #d8c48a) bottom right / 1px 10px no-repeat;
+}
+
+.mobcard-card.maintenance-gray-out::before,
+.mobcard-card.maintenance-gray-out::after {
+  filter: grayscale(100%) brightness(0.6);
+}
+
 .mobcard-inner {
   display: flex;
   flex-direction: column;
   height: 100%;
   max-height: calc(100dvh - var(--header-h) - var(--footer-safe));
-  background-color: var(--c-surface);
+  background: transparent;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -56,8 +105,8 @@
 /* ── Card header ─────────────────────────────────────────── */
 .mobcard-header {
   flex-shrink: 0;
-  padding: 10px 14px 4px;
-  background-color: var(--c-surface);
+  padding: 13px 16px 10px;
+  background-color: #182238;
   position: sticky;
   top: 0;
   z-index: 1;
@@ -65,6 +114,17 @@
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
+}
+
+/* ヘッダー下の金色フェード罫線 */
+.mobcard-header::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(216, 196, 138, 0.65), rgba(216, 196, 138, 0.08));
 }
 
 .header-top-row {
@@ -88,7 +148,7 @@
   flex-shrink: 0;
   width: 26px;
   height: 26px;
-  border-radius: 6px;
+  border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -97,13 +157,21 @@
   font-weight: 700;
   background-color: var(--c-a-dark);
   color: var(--c-a);
-  border: 1.5px solid var(--c-a);
+  border: 1px solid var(--c-a);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.55),
+    0 0 8px color-mix(in srgb, var(--c-a) 40%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .mobcard-rank[data-rank="S"] {
   background-color: var(--c-s-dark);
   color: var(--c-s);
   border-color: var(--c-s);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.55),
+    0 0 8px color-mix(in srgb, var(--c-s) 40%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .mobcard-rank[data-rank="A"] {
@@ -116,6 +184,10 @@
   background-color: var(--c-f-dark);
   color: var(--c-f);
   border-color: var(--c-f);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.55),
+    0 0 8px color-mix(in srgb, var(--c-f) 40%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 /* mob name */
@@ -123,7 +195,9 @@
   font-family: var(--font-ui);
   font-size: 18px;
   font-weight: 700;
+  letter-spacing: 0.02em;
   color: var(--c-text-hi);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -140,7 +214,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 7px;
   line-height: 1;
 }
 
@@ -177,6 +251,7 @@
   font-size: 16px;
   font-weight: 500;
   color: var(--c-cyan);
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.45);
   line-height: 1;
 }
 
@@ -185,8 +260,10 @@
   width: 100%;
   max-width: 100%;
   height: 6px;
-  border-radius: 2px;
+  border-radius: 1px;
   background-color: var(--c-prog-bg);
+  border: 1px solid rgba(216, 196, 138, 0.3);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -196,7 +273,10 @@
   max-width: 100%;
   width: calc(var(--prog-percent, 0) * 100%);
   background-color: var(--c-prog-a);
-  border-radius: 2px;
+  /* 色は従来どおり background-color で決まる。上に光沢だけ重ねる */
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 60%, rgba(0, 0, 0, 0.15));
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.35);
+  border-radius: 1px;
   transition: width 0.3s ease;
 }
 
@@ -205,15 +285,30 @@
   flex: 1 1 auto;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 10px 14px 14px;
+  padding: 12px 16px 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  background-color: var(--c-surface);
+  gap: 10px;
+  background: transparent;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(216, 196, 138, 0.35) transparent;
+}
+
+.mobcard-content::-webkit-scrollbar {
+  width: 5px;
+}
+
+.mobcard-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mobcard-content::-webkit-scrollbar-thumb {
+  background: rgba(216, 196, 138, 0.35);
+  border-radius: 2px;
 }
 
 /* ── Sections ────────────────────────────────────────────── */
@@ -226,28 +321,41 @@
   box-sizing: border-box;
 }
 
+/* セクション見出し: シアンのひし形 + 金色フェード下線 */
 .mobcard-section-label {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--c-cyan);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
   margin-top: 2px;
-  margin-bottom: 5px;
-  padding-left: 7px;
-  border-left: 2px solid var(--c-cyan);
+  margin-bottom: 7px;
+  padding-bottom: 5px;
+  background: linear-gradient(90deg, rgba(216, 196, 138, 0.5), rgba(216, 196, 138, 0.05)) bottom / 100% 1px no-repeat;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 8px;
   line-height: 1;
+}
+
+.mobcard-section-label::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  transform: rotate(45deg);
+  background: var(--c-cyan);
+  box-shadow: 0 0 6px rgba(34, 211, 238, 0.7);
 }
 
 .map-update-time {
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 500;
+  letter-spacing: 0;
   color: var(--c-text-lo);
-  margin-left: 8px;
+  margin-left: auto;
   line-height: 1;
 }
 
@@ -256,18 +364,20 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background-color: #223e5a;
-  border: 1px solid #38849c;
-  border-radius: 6px;
+  background: rgba(3, 7, 14, 0.55);
+  border: 1px solid rgba(216, 196, 138, 0.35);
+  border-radius: 2px;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.55);
   overflow: hidden;
   min-height: 34px;
   width: 100%;
   box-sizing: border-box;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .mobcard-memo-box:focus-within {
   border-color: var(--c-cyan);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.55), 0 0 8px rgba(34, 211, 238, 0.3);
 }
 
 .mobcard-memo-prefix-area {
@@ -290,7 +400,7 @@
 .mobcard-memo-separator {
   width: 1px;
   height: 20px;
-  background-color: #2e657f;
+  background-color: rgba(216, 196, 138, 0.4);
   display: block;
 }
 
@@ -332,17 +442,18 @@
 .mobcard-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
+  gap: 5px;
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
 }
 
 .mobcard-info-item {
-  background-color: #303c51;
-  border: 1px solid #353e4b;
-  border-radius: 4px;
-  padding: 5px 6px;
+  background: linear-gradient(180deg, rgba(34, 48, 76, 0.9), rgba(14, 22, 38, 0.95));
+  border: 1px solid rgba(216, 196, 138, 0.3);
+  border-radius: 2px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 6px 7px;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -396,6 +507,15 @@
   line-height: 1;
 }
 
+/* 次回出現: 金枠で強調 */
+.mobcard-info-item.mobcard-highlight {
+  border-color: rgba(216, 196, 138, 0.75);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 14px rgba(216, 196, 138, 0.12),
+    0 0 6px rgba(216, 196, 138, 0.2);
+}
+
 /* Next possible repop time in gold */
 .mobcard-highlight .mobcard-value,
 .mobcard-info-item.mobcard-highlight .mobcard-value,
@@ -409,10 +529,11 @@
   font-size: 13px;
   color: #e8e9eb;
   line-height: 1.5;
-  padding: 4px 8px;
-  background-color: #142238;
-  border: 1px solid var(--c-border);
-  border-radius: 6px;
+  padding: 6px 9px;
+  background: rgba(3, 7, 14, 0.5);
+  border: 1px solid rgba(216, 196, 138, 0.28);
+  border-radius: 2px;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.45);
   white-space: pre-wrap;
   word-break: break-word;
   width: 100%;
@@ -425,8 +546,8 @@
   display: flex;
   gap: 0;
   padding: 0;
-  border-top: 1px solid var(--c-border);
-  background-color: var(--c-surface);
+  border-top: 1px solid rgba(216, 196, 138, 0.5);
+  background-color: rgba(3, 7, 14, 0.45);
   overflow: hidden;
   width: 100%;
   box-sizing: border-box;
@@ -435,23 +556,30 @@
 .mobcard-mobile-actions .bottom-report-btn,
 .mobcard-mobile-actions .moblist-report-btn {
   flex: 1 1 auto;
-  height: 36px;
+  height: 38px;
   border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-ui);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   border: none;
-  border-right: 1px solid var(--c-border);
+  border-right: 1px solid rgba(216, 196, 138, 0.5);
   outline: none;
   -webkit-tap-highlight-color: transparent;
   background-color: var(--c-cyan);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, 0.14));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
   color: #000;
-  letter-spacing: 0.5px;
-  transition: opacity 0.15s;
+  letter-spacing: 0.16em;
+  transition: opacity 0.15s, box-shadow 0.15s;
+}
+
+.mobcard-mobile-actions .bottom-report-btn:hover,
+.mobcard-mobile-actions .moblist-report-btn:hover {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 0 10px rgba(34, 211, 238, 0.55);
 }
 
 .mobcard-mobile-actions .bottom-report-btn:active,
@@ -467,7 +595,7 @@
 
 .mobcard-close-btn {
   flex: 0 0 90px;
-  height: 36px;
+  height: 38px;
   padding: 0;
   border-radius: 0;
   display: flex;
@@ -476,12 +604,18 @@
   font-family: var(--font-ui);
   font-size: 13px;
   font-weight: 500;
-  color: var(--c-text-lo);
+  letter-spacing: 0.1em;
+  color: #d8c48a;
   border: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  background-color: rgba(255, 255, 255, 0.05);
-  transition: background-color 0.15s, opacity 0.15s;
+  background-color: rgba(0, 0, 0, 0.35);
+  transition: background-color 0.15s, color 0.15s, opacity 0.15s;
+}
+
+.mobcard-close-btn:hover {
+  color: #fff;
+  background-color: rgba(34, 211, 238, 0.12);
 }
 
 .mobcard-close-btn:active {
@@ -491,14 +625,18 @@
 /* ── PC: static right pane ───────────────────────────────── */
 @media (min-width: 900px) {
   .mobcard-card {
-    position: static;
+    position: relative;      /* 上端帯・角飾りの基準にするため static から変更(レイアウトは同じ) */
+    z-index: auto;
     height: 100%;
     max-height: 100%;
     transform: none !important;
     transition: none;
-    border-radius: 10px;
-    border: 1px solid var(--c-border);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+    border: 1px solid #9a8a5c;
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.7),
+      0 8px 28px rgba(0, 0, 0, 0.45),
+      inset 0 0 40px rgba(56, 189, 248, 0.05);
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -525,7 +663,7 @@
   }
 
   .mobcard-info-item {
-    padding: 6px 10px;
+    padding: 7px 11px;
     gap: 6px;
   }
 
@@ -593,12 +731,19 @@ html body.magnifier-active .map-container * {
 }
 
 .map-container {
-  border-radius: 6px;
+  border-radius: 2px;
   overflow: hidden;
   background-color: var(--c-bg);
   position: relative;
   width: 100%;
   max-width: 100%;
+}
+
+/* マップの枠: border ではなく box-shadow で描く(座標計算に影響させないため) */
+.map-container:not(.magnifier-clone) {
+  box-shadow:
+    0 0 0 1px rgba(216, 196, 138, 0.5),
+    0 0 0 2px rgba(0, 0, 0, 0.6);
 }
 
 .pc-map-box {
