@@ -1,7 +1,5 @@
 import { AppState } from "./types/state";
 import { Mob } from "./types/mob";
-
-// 外部から後ほど dataManager.ts として定義される関数をインポートすることを想定
 import { getState, RANKS, DOM } from "./dataManager";
 import { cloneTemplate } from "./mobCard";
 import { filterMobsByRankAndArea } from "./sidebar";

@@ -43,14 +43,12 @@
   overflow: hidden;
 }
 
-.mobcard-card.maintenance-gray-out .mobcard-inner,
-.mobcard-card.mobcard-maintenance .mobcard-inner {
+.mobcard-card.maintenance-gray-out .mobcard-inner {
   filter: grayscale(100%) brightness(0.6);
   box-shadow: none;
 }
 
-.mobcard-card.maintenance-gray-out .mobcard-name,
-.mobcard-card.mobcard-maintenance .mobcard-name {
+.mobcard-card.maintenance-gray-out .mobcard-name {
   color: var(--c-text-hi);
   text-shadow: none;
 }

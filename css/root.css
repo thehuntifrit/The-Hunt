@@ -223,14 +223,6 @@ textarea {
   overflow: hidden;
 }
 
-.pr-1 {
-  padding-right: 4px;
-}
-
-.relative {
-  position: relative;
-}
-
 .absolute {
   position: absolute;
 }
@@ -250,32 +242,12 @@ textarea {
   height: 100%;
 }
 
-.h-auto {
-  height: auto;
-}
-
-.object-contain {
-  object-fit: contain;
-}
-
-.opacity-90 {
-  opacity: 0.9;
-}
-
-.transition-opacity {
-  transition: opacity 0.2s;
-}
-
 .space-y-2>*+* {
   margin-top: 8px;
 }
 
 .leading-relaxed {
   line-height: 1.6;
-}
-
-.min-h-\[18px\] {
-  min-height: 18px;
 }
 
 .text-xs {

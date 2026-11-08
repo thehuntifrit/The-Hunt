@@ -6,10 +6,6 @@ import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos, subsc
 // ─── 定数 ───────────────────────────────────────────────
 export const EXPANSION_MAP: Record<number, string> = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
 
-export const PROGRESS_CLASSES = {
-    HIGHLIGHT_WHITE: "progress-highlight-white"
-};
-
 export const RANKS = {
     S: "S",
     A: "A",
@@ -43,7 +39,6 @@ export const CONFIG = {
     CLICK_THRESHOLD: 1000,
     DEBOUNCE_DELAY: 100,
     BREAKPOINT_PC: 1024,
-    REPOP_CALC_DELAY: 2000,
     NOTIFICATION_OFFSET_MS: 120000,
     MAINTENANCE_SHOW_BEFORE_MS: 604800000,
     MAINTENANCE_SHOW_AFTER_MS: 345600000,
@@ -59,10 +54,10 @@ export const CONFIG = {
 export const STATUS_LABELS: Record<string, string | { S: string; others: string }> = {
     Maintenance: "停止",
     MaxOver: "超過",
-    ConditionActive: "🔆",
+    ConditionActive: "⭕",
     PopWindow: "残り",
     Next: { S: "次回", others: "残り" },
-    NextCondition: "🔜",
+    NextCondition: "😴",
     Unknown: "未定"
 };
 
@@ -1056,15 +1051,6 @@ export function startRealtime(options: { resume?: boolean } = {}): void {
 }
 
 // ─── ユーティリティ ─────────────────────────────────────
-export function recalculateMob(mobNo: number): Mob | undefined {
-    const stateVal = getState();
-    const mob = stateVal.mobsMap.get(String(mobNo));
-    if (!mob) return;
-
-    requestWorkerCalculation(mob, stateVal.maintenance, { forceRecalc: true });
-    return mob;
-}
-
 export function updateAllMobCullStatuses(locationsMap: any = state.mobLocations): void {
     const current = state.mobs;
     state.mobLocations = locationsMap;

@@ -1,7 +1,7 @@
 import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled, safeJsonParse, RANKS, CONFIG, DOM, handleAppError, setTelopRead } from "./dataManager";
 import { filterAndRender } from "./app";
 import { openUserManual, closeUserManual } from "./readme";
-import { cloneTemplate, escapeHtml } from "./mobCard";
+import { cloneTemplate } from "./mobCard";
 import { Mob } from "./types/mob";
 
 // ─── 定数・DOM ──────────────────────────────────────────
@@ -12,6 +12,67 @@ const notifiedCycles = new Set<string>();
 let currentPanel: string | null = null;
 (window as any).errorLog = (window as any).errorLog || [];
 const MAX_ERROR_LOG = 50;
+
+// ─── ポップアップ表示(告知/メンテ/エラー) ───────────────
+const POPUP_PANELS = new Set(["telop", "maintenance", "error"]);
+let popupBackdrop: HTMLElement | null = null;
+
+function ensurePopupChrome(): void {
+    const panelArea = DOM.appNav?.querySelector(".appnav-panel") as HTMLElement | null;
+    if (!panelArea || popupBackdrop) return;
+
+    popupBackdrop = document.createElement("div");
+    popupBackdrop.className = "appnav-backdrop";
+    popupBackdrop.addEventListener("click", closePanel);
+    popupBackdrop.addEventListener("wheel", (e) => e.preventDefault(), { passive: false });
+    document.body.appendChild(popupBackdrop);
+
+    ["tl", "tr", "bl", "br"].forEach(pos => {
+        const corner = document.createElement("i");
+        corner.className = `ff-corner ${pos}`;
+        panelArea.appendChild(corner);
+    });
+
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "appnav-popup-close";
+    closeBtn.setAttribute("aria-label", "閉じる");
+    closeBtn.textContent = "✕";
+    closeBtn.addEventListener("click", closePanel);
+    panelArea.appendChild(closeBtn);
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && currentPanel && POPUP_PANELS.has(currentPanel)) closePanel();
+    });
+}
+
+function applyPanelMode(panelName: string | null): void {
+    const nav = DOM.appNav;
+    const panelArea = nav?.querySelector(".appnav-panel") as HTMLElement | null;
+    const isPopup = !!panelName && POPUP_PANELS.has(panelName);
+
+    panelArea?.classList.toggle("is-popup", isPopup);
+    if (panelArea) {
+        if (isPopup) {
+            panelArea.setAttribute("role", "dialog");
+            panelArea.setAttribute("aria-modal", "true");
+        } else {
+            panelArea.removeAttribute("role");
+            panelArea.removeAttribute("aria-modal");
+        }
+    }
+    popupBackdrop?.classList.toggle("is-open", isPopup);
+
+    // ポップアップは下から押し上げるパネルではないので、本文の余白調整は不要
+    if (isPopup) DOM.body.classList.remove("sidebar-expanded");
+
+    // フッター以外の背面をクリック・フォーカス不可にする
+    Array.from(document.body.children).forEach(el => {
+        if (el === popupBackdrop || el.tagName === "SCRIPT") return;
+        if (nav && el.contains(nav)) return;   // フッターを含む要素は対象外
+        el.toggleAttribute("inert", isPopup);
+    });
+}
 
 // ─── 通知 ───────────────────────────────────────────────
 export function initNotification(): void {
@@ -49,7 +110,7 @@ export function initNotification(): void {
         }
     });
 
-    toggle.addEventListener('change', (e) => {
+    toggle.addEventListener('change', (e: Event) => {
         const target = e.target as HTMLInputElement;
         const enabled = target.checked;
         if (label) {
@@ -366,9 +427,11 @@ export function initAppNav(): void {
     if (!nav) return;
 
     captureErrors();
+    ensurePopupChrome();
 
     const stored = loadSidebarState();
-    if (stored.panel && stored.panel !== "manual") {
+    // ポップアップ系のパネルは、リロード時に勝手に開かないよう復元しない
+    if (stored.panel && stored.panel !== "manual" && !POPUP_PANELS.has(stored.panel)) {
         currentPanel = stored.panel;
         nav.classList.add("expanded");
         document.body.classList.add("sidebar-expanded");
@@ -446,6 +509,7 @@ export function closePanel(): void {
 
     nav.classList.remove("expanded");
     DOM.body.classList.remove("sidebar-expanded");
+    applyPanelMode(null);   // ← 追加した1行
 
     const panelArea = nav.querySelector(".appnav-panel") as HTMLElement | null;
     if (panelArea) {
@@ -458,10 +522,10 @@ export function closePanel(): void {
 
     DOM.appNavPanelItems.forEach(p => p.classList.add("hidden"));
 }
-
 function showPanel(panelName: string): void {
     const nav = DOM.appNav;
     if (!nav) return;
+    applyPanelMode(panelName);
     const panelArea = nav.querySelector(".appnav-panel") as HTMLElement | null;
     if (panelArea) panelArea.classList.add("expanded");
 
@@ -469,11 +533,11 @@ function showPanel(panelName: string): void {
     const target = document.getElementById(`sidebar-panel-${panelName}`);
     if (target) {
         target.classList.remove("hidden");
-        syncPanelContents(panelName, target);
+        syncPanelContents(panelName);
     }
 }
 
-async function syncPanelContents(panelName: string, container: HTMLElement): Promise<void> {
+async function syncPanelContents(panelName: string): Promise<void> {
     if (panelName === "rank") renderSidebarFilterAccordion();
     else if (panelName === "error") updateErrorPanel();
     else if (panelName === "telop" || panelName === "maintenance") {
@@ -514,7 +578,7 @@ function captureErrors(): void {
     });
 }
 
-export function updateErrorPanel(targetContainer: HTMLElement | null = null): void {
+export function updateErrorPanel(): void {
     const panels = document.querySelectorAll(".js-error-content");
     if (panels.length === 0) return;
 

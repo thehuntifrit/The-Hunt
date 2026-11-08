@@ -1,7 +1,5 @@
 import { getDurationDHMParts, formatDurationDHM, formatMMDDHHmm, DHMParts } from "./cal";
-import { getState, setOpenMobCardNo, isCulled, getStatusLabel, RANKS, DOM, CONFIG } from "./dataManager";
-import { toggleCrushStatus } from "./server";
-import { openAuthModal, openReportModal } from "./modal";
+import { getState, isCulled, getStatusLabel, RANKS, DOM, CONFIG } from "./dataManager";
 import { Mob, SpawnPoint, CullStatus, RepopInfo } from "./types/mob";
 
 // ─── 汎用ユーティリティ ─────────────────────────────────
@@ -21,7 +19,7 @@ export function cloneTemplate(id: string): HTMLElement | null {
 }
 
 // ─── ユーティリティ ─────────────────────────────────────
-export const formatOrPlaceholder = (val: any): string => val ? formatMMDDHHmm(val) : "--/-- --:--";
+const formatOrPlaceholder = (val: any): string => val ? formatMMDDHHmm(val) : "--/-- --:--";
 
 const ESCAPE_MAP: Record<string, string> = {
   '&': '&amp;',
@@ -198,7 +196,6 @@ export function computeTimeLabel(mob: Mob): TimeLabelResult {
     return { label: "", timeValue: "--/-- --:--", isSpecialCondition: false, isTimeOver: false, isTimedMob: false, dhm: null, isInWindow: false };
   }
 
-  const isMaint = !!(info.status === "Maintenance" || info.isMaintenanceStop || info.isBlockedByMaintenance);
   // 変更①: status は Maintenance に上書きされるため、最大超えは時刻で判定する
   const isTimeOverRaw = !!info.maxRepop && now >= info.maxRepop;
   const isInWindow = !!info.isInConditionWindow;
@@ -318,7 +315,7 @@ export function getValidSpawnPoints(mob: Mob, spawnCullStatus: Record<string, Cu
   });
 }
 
-export function drawSpawnPoint(point: SpawnPoint, spawnCullStatus: Record<string, CullStatus>, mobNo: number, rank: string, isLastOne: boolean, isS_LastOne: boolean): HTMLElement | null {
+export function drawSpawnPoint(point: SpawnPoint, spawnCullStatus: Record<string, CullStatus>, mobNo: number, rank: string, isLastOne: boolean): HTMLElement | null {
   const el = cloneTemplate('spawn-point-template');
   if (!el) return null;
 
@@ -803,7 +800,7 @@ export function updateMapOverlay(card: HTMLElement, mob: Mob): void {
       const fragment = document.createDocumentFragment();
       (mob.locations ?? []).forEach(point => {
         const isThisPointTheLastOne = isOneLeft && point.id === validSpawnPoints[0]?.id;
-        const pointEl = drawSpawnPoint(point, spawnCullStatus, mob.No, point.mob_ranks.includes("B2") ? "B2" : point.mob_ranks.includes("B1") ? "B1" : point.mob_ranks[0], isThisPointTheLastOne, isOneLeft);
+        const pointEl = drawSpawnPoint(point, spawnCullStatus, mob.No, point.mob_ranks.includes("B2") ? "B2" : point.mob_ranks.includes("B1") ? "B1" : point.mob_ranks[0], isThisPointTheLastOne);
         if (pointEl) fragment.appendChild(pointEl);
       });
       mapOverlay.appendChild(fragment);

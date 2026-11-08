@@ -1,5 +1,5 @@
 import { getState, setLodestoneId, setCharacterName, setVerified, extractLodestoneId, DOM } from "./dataManager";
-import { verifyLodestoneCharacter, fetchVerificationCode } from "./server";
+import { verifyLodestoneCharacter } from "./server";
 import { cloneTemplate } from "./mobCard";
 import readmeContent from "../README.md?raw";
 

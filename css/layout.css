@@ -106,8 +106,4 @@ body {
     min-height: 0;
     overflow: hidden;
   }
-
-  #mobcard-clocks {
-    display: flex;
-  }
 }

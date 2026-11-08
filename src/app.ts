@@ -1,12 +1,11 @@
-import { getState, updateAllMobCullStatuses, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, isCulled, CONFIG, DOM, handleAppError, recalcIfStale } from "./dataManager";
-import { calculateRepop, getDurationDHMParts, formatDurationDHM, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal";
-import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateAreaInfo, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initGlobalMagnifier, adjustMemoHeight } from "./mobCard";
-import { getGroupKey, GROUP_LABELS, getOrCreateGroupSection, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, allTabComparator } from "./mobSorter";
-import { closeReportModal, openAuthModal, openReportModal, initModal, closeAuthModal } from "./modal";
-import { handleAreaFilterClick, handleRankTabClick, initAppNav, initNotification, togglePanel, closePanel, setActiveNavItem, checkAndNotify, updateErrorPanel } from "./sidebar";
+import { getState, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, CONFIG, DOM, handleAppError, recalcIfStale } from "./dataManager";
+import { calculateRepop, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal";
+import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initGlobalMagnifier, adjustMemoHeight } from "./mobCard";
+import { getGroupKey, GROUP_LABELS, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache } from "./mobSorter";
+import { closeReportModal, openAuthModal, openReportModal, initModal } from "./modal";
+import { handleAreaFilterClick, initAppNav, togglePanel, closePanel, setActiveNavItem, checkAndNotify, updateErrorPanel } from "./sidebar";
 import { initializeAuth, getUserData, submitReport, submitMemo, toggleCrushStatus } from "./server";
-import { openUserManual } from "./readme";
-import { Mob, CullStatus, RepopInfo } from "./types/mob";
+import { Mob, RepopInfo } from "./types/mob";
 
 // ─── 定数 ──────────────────────────────────────────────
 export const cardCache = new Map<string, HTMLElement>();
@@ -24,7 +23,6 @@ const UNCULLED_CLASS_MAP: Record<string, string> = {
 };
 
 let isInitialLoading = false;
-let isInitialSortingSuppressed = false;
 let lastClickTime = 0;
 let lastClickLocationId: string | null = null;
 let locationEventsAttached = false;
@@ -297,9 +295,94 @@ function updateVisibleCardsSet(): void {
 const handleScroll = debounce(updateVisibleCardsSet, 80);
 window.addEventListener('scroll', handleScroll, { passive: true });
 window.addEventListener('resize', handleScroll, { passive: true });
-// PC版では #moblist-container が実際のスクロールコンテナなので、そちらにもリスナーを追加
+
 const moblistEl = document.getElementById('moblist-container');
 if (moblistEl) moblistEl.addEventListener('scroll', handleScroll, { passive: true });
+
+function attachMoblistBackgroundWheel(): void {
+  const main = document.querySelector('.main-content-area') as HTMLElement | null;
+  if (!main || (main as any).__moblistBgWheelAttached) return;
+  (main as any).__moblistBgWheelAttached = true;
+
+  const EASE = 0.18;
+  let current = 0;
+  let target = 0;
+  let rafId: number | null = null;
+  let lastTs = 0;
+
+  const stop = () => {
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+  };
+
+  const step = (ts: number) => {
+    const el = document.getElementById('moblist-container');
+    if (!el) { rafId = null; return; }
+
+    const dt = lastTs ? Math.min(ts - lastTs, 50) : 16.67;
+    lastTs = ts;
+
+    const diff = target - current;
+    if (Math.abs(diff) < 0.5) {
+      current = target;
+      el.scrollTop = current;
+      rafId = null;
+      lastTs = 0;
+      return;
+    }
+
+    current += diff * (1 - Math.pow(1 - EASE, dt / 16.67));
+    el.scrollTop = current;
+    rafId = requestAnimationFrame(step);
+  };
+
+  const listEl = document.getElementById('moblist-container');
+  if (listEl) {
+    listEl.addEventListener('wheel', stop, { passive: true });
+    listEl.addEventListener('pointerdown', stop, { passive: true });
+  }
+
+  main.addEventListener('wheel', (e: Event) => {
+    const we = e as WheelEvent;
+    if (we.defaultPrevented || we.deltaY === 0) return;
+
+    const t = we.target instanceof Element ? we.target : null;
+    if (!t) return;
+    if (t.closest('#manual-modal:not(.hidden), #report-modal:not(.hidden), #auth-modal:not(.hidden)')) return;
+
+    const list = document.getElementById('moblist-container');
+    if (!list || list.scrollHeight <= list.clientHeight) return;
+    if (t.closest('#moblist-container')) return;
+    if (t.closest('.mobcard-card')) return;
+
+    const pane = document.getElementById('mobcard-pane');
+    if (pane && pane.classList.contains('is-active') && window.innerWidth < 900 && t.closest('#mobcard-pane')) {
+      return;
+    }
+
+    we.preventDefault();
+
+    let delta = we.deltaY;
+    if (we.deltaMode === 1) delta *= 16;
+    else if (we.deltaMode === 2) delta *= list.clientHeight;
+
+    if (rafId === null) {
+      current = list.scrollTop;
+      target = current;
+    }
+
+    const max = list.scrollHeight - list.clientHeight;
+    target = Math.max(0, Math.min(max, target + delta));
+
+    if (rafId === null) {
+      lastTs = 0;
+      rafId = requestAnimationFrame(step);
+    }
+  }, { passive: false });
+}
+attachMoblistBackgroundWheel();
 
 export function observeCard(el: HTMLElement): void {
   if (el) {
@@ -583,10 +666,7 @@ export function filterAndRender(options: { isInitialLoad?: boolean } = {}): void
   renderDetailPane();
 
   if (isInitialLoad) {
-    isInitialSortingSuppressed = true;
-
     setTimeout(() => {
-      isInitialSortingSuppressed = false;
       sortAndRedistribute();
     }, 100);
 
