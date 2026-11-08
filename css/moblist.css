@@ -604,3 +604,44 @@
   flex-direction: column;
   gap: 0;
 }
+
+/* ── POP WINDOW グループ特別強調（赤黒の帯・囲みライン・背景） ── */
+.status-group[data-group-key="WINDOW"] {
+  position: relative;
+  background: linear-gradient(180deg, rgba(43, 12, 17, 0.45) 0%, rgba(18, 5, 8, 0.25) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 8px;
+  padding: 4px 4px 1px;
+  margin-bottom: 12px;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.15), inset 0 0 18px rgba(239, 68, 68, 0.06);
+}
+
+.status-group[data-group-key="WINDOW"].is-collapsed {
+  padding-bottom: 4px;
+}
+
+.status-group[data-group-key="WINDOW"] .status-group-separator {
+  background: linear-gradient(90deg, #361016 0%, #1c080b 100%);
+  border: 1px solid #6b1d2b;
+  border-left: 4px solid #ef4444;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+  margin-top: 0;
+}
+
+.status-group[data-group-key="WINDOW"] .status-group-separator:hover {
+  background: linear-gradient(90deg, #44141c 0%, #260a0f 100%);
+  border-color: #8c2638;
+}
+
+.status-group[data-group-key="WINDOW"] .status-group-label {
+  color: #ffe4e6;
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+}
+
+.status-group[data-group-key="WINDOW"] .status-group-count {
+  color: #fca5a5;
+}
+
+.status-group[data-group-key="WINDOW"] .status-group-toggle-icon {
+  color: #fca5a5;
+}
