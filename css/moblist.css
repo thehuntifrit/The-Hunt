@@ -466,8 +466,14 @@
     7px 0 8px -4px rgba(255, 255, 255, 0.75);
 }
 
-.moblist-item .timer-label-base.status-nextcondition + .mobcard-timer.label-next .mobcard-timer-num {
-  color: #5aa9bb;
+/* 今(時間内): 金色 */
+.moblist-item .timer-label-base.status-conditionactive+.mobcard-timer .mobcard-timer-num {
+  color: var(--c-gold);
+}
+
+/* 次の出現条件まで: シアン */
+.moblist-item .timer-label-base.status-nextcondition+.mobcard-timer .mobcard-timer-num {
+  color: var(--c-cyan);
 }
 
 /* ── State: Maintenance gray out ─────────────────────────── */

@@ -12,10 +12,12 @@
 .mobcard-card {
   background: linear-gradient(180deg, #182238 0%, #0b1120 100%);
   border-radius: 4px 4px 0 0;
-  border: 1px solid #9a8a5c;                       /* くすんだゴールド */
+  border: 1px solid #9a8a5c;
+  /* くすんだゴールド */
   border-bottom: none;
   box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.7),                  /* 外側の黒縁 */
+    0 0 0 1px rgba(0, 0, 0, 0.7),
+    /* 外側の黒縁 */
     0 -6px 24px rgba(0, 0, 0, 0.6),
     inset 0 0 40px rgba(56, 189, 248, 0.05);
   overflow: hidden;
@@ -40,19 +42,23 @@
 }
 
 /* 上端のグラデ帯: ランク色の同系色内で変化させる(A=シアン→青 / S=橙→淡い黄 / FATE=紫→フューシャ) */
+/* --mc-to は事前計算したHex値(元の意図: ランク色 + 目標色 の混色。ランク色を変えたら再計算する) */
 .mobcard-card {
   --mc-from: var(--c-a);
-  --mc-to: color-mix(in srgb, var(--c-a) 35%, #2563eb);
+  --mc-to: #248aec;
+  /* #22d3ee 35% + #2563eb 65% */
 }
 
 .mobcard-card:has(.mobcard-rank[data-rank="S"]) {
   --mc-from: var(--c-s);
-  --mc-to: color-mix(in srgb, var(--c-s) 40%, #fef08a);
+  --mc-to: #facf57;
+  /* #f59e0b 40% + #fef08a 60% */
 }
 
 .mobcard-card:has(.mobcard-rank[data-rank="F"]) {
   --mc-from: var(--c-f);
-  --mc-to: color-mix(in srgb, var(--c-f) 40%, #e879f9);
+  --mc-to: #ce6bf8;
+  /* #a855f7 40% + #e879f9 60% */
 }
 
 .mobcard-card::before {
@@ -172,7 +178,8 @@
   border: 1px solid var(--c-a);
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.55),
-    0 0 8px color-mix(in srgb, var(--c-a) 40%, transparent),
+    0 0 8px rgba(34, 211, 238, 0.4),
+    /* var(--c-a) 40% */
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
@@ -182,7 +189,8 @@
   border-color: var(--c-s);
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.55),
-    0 0 8px color-mix(in srgb, var(--c-s) 40%, transparent),
+    0 0 8px rgba(245, 158, 11, 0.4),
+    /* var(--c-s) 40% */
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
@@ -198,7 +206,8 @@
   border-color: var(--c-f);
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.55),
-    0 0 8px color-mix(in srgb, var(--c-f) 40%, transparent),
+    0 0 8px rgba(168, 85, 247, 0.4),
+    /* var(--c-f) 40% */
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
@@ -637,7 +646,8 @@
 /* ── PC: static right pane ───────────────────────────────── */
 @media (min-width: 900px) {
   .mobcard-card {
-    position: relative;      /* 上端帯・角飾りの基準にするため static から変更 */
+    position: relative;
+    /* 上端帯・角飾りの基準にするため static から変更 */
     /* relative ではモバイル用の bottom/left/right が効いて上にずれるので、必ず解除する */
     top: auto;
     bottom: auto;
