@@ -590,12 +590,13 @@
   animation: appnav-pop .18s ease-out;
 }
 
-/* 内側の細い金線(二重枠) */
-.appnav-panel.is-popup::before {
+/* 二重枠の内側の線: 外周と同じ明るさ・等間隔で引く */
+.appnav-panel.is-popup::before,
+.appnav-panel.is-docked::before {
   content: "";
   position: absolute;
-  inset: 4px;
-  border: 1px solid rgba(200,180,120,.22);
+  inset: 6px 3px 3px;   /* 上は上端の帯(3px)の下に3pxあける。左右下は3px */
+  border: 1px solid rgba(216, 196, 138, .4);
   pointer-events: none;
 }
 
@@ -711,15 +712,6 @@
   box-shadow:
     0 -6px 24px rgba(0, 0, 0, .55),
     inset 0 0 40px rgba(56, 189, 248, .05);
-}
-
-/* 内側の細い金線(二重枠) */
-.appnav-panel.is-docked::before {
-  content: "";
-  position: absolute;
-  inset: 4px;
-  border: 1px solid rgba(200,180,120,.22);
-  pointer-events: none;
 }
 
 .appnav-panel.is-docked .js-appnav-panel-item:not(.hidden) {
