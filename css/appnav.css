@@ -854,11 +854,22 @@
 /* =========================================================
    RANK Filter: ボタンらしい立体感・配置の調整 (.is-docked)
    ========================================================= */
-.appnav-panel.is-docked .appnav-filter-wrapper { gap: 12px; }
-.appnav-panel.is-docked .appnav-rank-tabs { gap: 8px; }
-.appnav-panel.is-docked .appnav-area-carousel-wrapper { padding: 8px; }
+.appnav-panel.is-docked .appnav-filter-wrapper {
+  gap: 12px;
+}
+
+.appnav-panel.is-docked .appnav-rank-tabs {
+  gap: 8px;
+}
+
+.appnav-panel.is-docked .appnav-area-carousel-wrapper {
+  padding: 8px;
+}
+
 /* 下に落ちる影が切れないよう、トラックの下に余白を足す */
-.appnav-panel.is-docked .area-grid-container.appnav-area-carousel-track { padding: 2px 2px 5px; }
+.appnav-panel.is-docked .area-grid-container.appnav-area-carousel-track {
+  padding: 2px 2px 5px;
+}
 
 /* サイズと文字 */
 .appnav-panel.is-docked .appnav-rank-tab,
@@ -869,24 +880,36 @@
   letter-spacing: 0.04em;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
 }
-.appnav-panel.is-docked .appnav-rank-tab { height: 38px; font-size: 15px; }
-.appnav-panel.is-docked .area-filter-btn { height: 32px; }
+
+.appnav-panel.is-docked .appnav-rank-tab {
+  height: 38px;
+  font-size: 15px;
+}
+
+.appnav-panel.is-docked .area-filter-btn {
+  height: 32px;
+}
 
 /* 面の上端のハイライトと、下端の影(ベベル) */
 .appnav-panel.is-docked .appnav-rank-tab::before,
 .appnav-panel.is-docked .area-filter-btn::before {
   content: "";
   position: absolute;
-  left: 1px; right: 1px; top: 1px;
+  left: 1px;
+  right: 1px;
+  top: 1px;
   height: 1px;
   background: rgba(255, 255, 255, 0.22);
   pointer-events: none;
 }
+
 .appnav-panel.is-docked .appnav-rank-tab::after,
 .appnav-panel.is-docked .area-filter-btn::after {
   content: "";
   position: absolute;
-  left: 1px; right: 1px; bottom: 1px;
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
   height: 2px;
   background: rgba(0, 0, 0, 0.4);
   pointer-events: none;
@@ -899,6 +922,7 @@
   border-color: rgba(216, 196, 138, 0.55);
   box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
 }
+
 .appnav-panel.is-docked .appnav-rank-tab:not(.is-active):hover,
 .appnav-panel.is-docked .area-filter-btn:not(.is-selected):hover {
   background: linear-gradient(180deg, rgba(68, 90, 132, 0.95) 0%, rgba(26, 40, 68, 0.98) 100%);
@@ -924,4 +948,95 @@
 .appnav-panel.is-docked .area-filter-btn:focus-visible {
   outline: 2px solid var(--c-cyan);
   outline-offset: 2px;
+}
+
+/* =========================================================
+   RANK Filter: エリア(拡張)ボタンのスクロール領域 (.is-docked)
+   ========================================================= */
+
+/* 枠: 凹んだ溝のように見せる */
+.appnav-panel.is-docked .appnav-area-carousel-wrapper {
+  padding: 8px 8px 6px;
+  background: linear-gradient(180deg, rgba(3, 7, 14, 0.7), rgba(8, 14, 26, 0.5));
+  border: 1px solid rgba(216, 196, 138, 0.4);
+  border-radius: 3px;
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.6),
+    0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.appnav-panel.is-docked .appnav-area-carousel {
+  scroll-padding-inline: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(216, 196, 138, 0.5) rgba(216, 196, 138, 0.1);
+}
+
+/* 下に落ちるボタンの影が切れないよう、余白を足す */
+.appnav-panel.is-docked .area-grid-container.appnav-area-carousel-track {
+  padding: 2px 2px 6px;
+}
+
+/* スクロールバー: 金色の細いつまみ */
+.appnav-panel.is-docked .appnav-area-carousel::-webkit-scrollbar {
+  height: 5px;
+}
+
+.appnav-panel.is-docked .appnav-area-carousel::-webkit-scrollbar-track {
+  background: rgba(216, 196, 138, 0.1);
+  border-radius: 3px;
+}
+
+.appnav-panel.is-docked .appnav-area-carousel::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, rgba(216, 196, 138, 0.6), rgba(216, 196, 138, 0.35));
+  border-radius: 3px;
+}
+
+.appnav-panel.is-docked .appnav-area-carousel::-webkit-scrollbar-thumb:hover {
+  background: rgba(216, 196, 138, 0.85);
+}
+
+/* 左右の端のフェード: 「まだ先がある」ことを示す(矢印が出ている側だけ表示) */
+.appnav-panel.is-docked .appnav-area-carousel-wrapper::before,
+.appnav-panel.is-docked .appnav-area-carousel-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  width: 32px;
+  z-index: 4;
+  /* 矢印(z-index: 5)の下、ボタンの上 */
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.appnav-panel.is-docked .appnav-area-carousel-wrapper::before {
+  left: 1px;
+  background: linear-gradient(90deg, rgba(8, 13, 24, 0.96), rgba(8, 13, 24, 0));
+}
+
+.appnav-panel.is-docked .appnav-area-carousel-wrapper::after {
+  right: 1px;
+  background: linear-gradient(270deg, rgba(8, 13, 24, 0.96), rgba(8, 13, 24, 0));
+}
+
+.appnav-panel.is-docked .appnav-area-carousel-wrapper:has(.carousel-arrow-prev:not(.hidden))::before,
+.appnav-panel.is-docked .appnav-area-carousel-wrapper:has(.carousel-arrow-next:not(.hidden))::after {
+  opacity: 1;
+}
+
+/* 矢印ボタン: 少し大きく、丸ボタンの意匠はそのまま */
+.appnav-panel.is-docked .carousel-arrow {
+  width: 28px;
+  height: 28px;
+  font-size: 18px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.55);
+}
+
+.appnav-panel.is-docked .carousel-arrow-prev {
+  left: 6px;
+}
+
+.appnav-panel.is-docked .carousel-arrow-next {
+  right: 6px;
 }
