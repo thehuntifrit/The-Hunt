@@ -705,26 +705,22 @@
   }
 }
 
-/* =========================================================
-   Docked mode (RANK など): .appnav-panel.is-docked
-   ポップアップと同じ FF14 風の枠・飾り・ボタンに揃える
-   ========================================================= */
 .appnav-panel.is-docked {
-  overflow: visible;                          /* 上端の飾りを見せる(中身は各パネル側でスクロール) */
-  background: linear-gradient(180deg, rgba(24,34,56,.97) 0%, rgba(9,14,26,.98) 100%);
+  overflow: visible;
+  background: linear-gradient(180deg, rgba(24, 34, 56, .97) 0%, rgba(9, 14, 26, .98) 100%);
   border-color: #9a8a5c;
   border-radius: 3px 3px 0 0;
   box-shadow:
-    0 -6px 24px rgba(0,0,0,.55),
-    inset 0 0 40px rgba(56,189,248,.05);
+    0 -6px 24px rgba(0, 0, 0, .55),
+    inset 0 0 40px rgba(56, 189, 248, .05);
 }
 
 /* 内側の細い金線(二重枠) */
 .appnav-panel.is-docked::before {
   content: "";
   position: absolute;
-  inset: 4px;
-  border: 1px solid rgba(200,180,120,.22);
+  inset: 7px 6px 6px;
+  border: 1px solid rgba(200, 180, 120, .22);
   pointer-events: none;
 }
 
@@ -732,7 +728,7 @@
   padding: 14px 20px 18px;
 }
 
-/* 上端のひし形飾り(下端はフッターに接するので出さない) */
+/* ひし形の飾り: 内側の金線の四隅に乗せる(外にはみ出さない) */
 .appnav-panel.is-docked .ff-corner {
   display: block;
   position: absolute;
@@ -740,25 +736,43 @@
   height: 7px;
   background: #d8c48a;
   transform: rotate(45deg);
-  box-shadow: 0 0 6px rgba(216,196,138,.6);
+  box-shadow: 0 0 6px rgba(216, 196, 138, .6);
   pointer-events: none;
 }
-.appnav-panel.is-docked .ff-corner.tl { top: -4px; left: 10px; }
-.appnav-panel.is-docked .ff-corner.tr { top: -4px; right: 10px; }
-.appnav-panel.is-docked .ff-corner.bl,
-.appnav-panel.is-docked .ff-corner.br { display: none; }
+
+.appnav-panel.is-docked .ff-corner.tl {
+  top: 3.5px;
+  left: 2.5px;
+}
+
+.appnav-panel.is-docked .ff-corner.tr {
+  top: 3.5px;
+  right: 2.5px;
+}
+
+.appnav-panel.is-docked .ff-corner.bl {
+  bottom: 2.5px;
+  left: 2.5px;
+}
+
+.appnav-panel.is-docked .ff-corner.br {
+  bottom: 2.5px;
+  right: 2.5px;
+}
 
 /* タイトル周り・✕ボタン(ポップアップと同じ) */
 .appnav-panel.is-docked .appnav-section-header {
   padding-right: 32px;
-  border-bottom-color: rgba(216,196,138,.35);
+  border-bottom-color: rgba(216, 196, 138, .35);
 }
+
 .appnav-panel.is-docked .appnav-section-title {
   font-size: 13px;
   font-weight: 700;
   letter-spacing: .16em;
   color: var(--c-cyan);
 }
+
 .appnav-panel.is-docked .appnav-popup-close {
   display: flex;
   align-items: center;
@@ -773,17 +787,18 @@
   line-height: 1;
   font-size: 12px;
   color: #d8c48a;
-  background: rgba(0,0,0,.35);
-  border: 1px solid rgba(216,196,138,.55);
+  background: rgba(0, 0, 0, .35);
+  border: 1px solid rgba(216, 196, 138, .55);
   border-radius: 50%;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
+
 .appnav-panel.is-docked .appnav-popup-close:hover,
 .appnav-panel.is-docked .appnav-popup-close:focus-visible {
   color: #fff;
   border-color: var(--c-cyan);
-  box-shadow: 0 0 8px rgba(34,211,238,.6);
+  box-shadow: 0 0 8px rgba(34, 211, 238, .6);
   outline: none;
 }
 
@@ -796,35 +811,37 @@
 /* 非選択のボタン(選択中はこれまでのランク色・シアンの枠を残すため :not で除外) */
 .appnav-panel.is-docked .appnav-rank-tab:not(.is-active),
 .appnav-panel.is-docked .area-filter-btn:not(.is-selected) {
-  background: linear-gradient(180deg, rgba(34,48,76,.9), rgba(14,22,38,.95));
-  border-color: rgba(216,196,138,.4);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  background: linear-gradient(180deg, rgba(34, 48, 76, .9), rgba(14, 22, 38, .95));
+  border-color: rgba(216, 196, 138, .4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
 }
+
 .appnav-panel.is-docked .appnav-rank-tab:not(.is-active):hover,
 .appnav-panel.is-docked .area-filter-btn:not(.is-selected):hover {
   border-color: #d8c48a;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 0 6px rgba(216,196,138,.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 0 6px rgba(216, 196, 138, .25);
 }
 
 /* 選択中のエリアボタン: シアンの枠に発光を足す */
 .appnav-panel.is-docked .area-filter-btn.is-selected {
-  box-shadow: 0 0 8px rgba(34,211,238,.35);
+  box-shadow: 0 0 8px rgba(34, 211, 238, .35);
 }
 
 /* エリアのカルーセル枠と矢印(✕と同じ丸ボタン) */
 .appnav-panel.is-docked .appnav-area-carousel-wrapper {
-  background: rgba(3,7,14,.45);
-  border: 1px solid rgba(216,196,138,.35);
+  background: rgba(3, 7, 14, .45);
+  border: 1px solid rgba(216, 196, 138, .35);
   border-radius: 2px;
 }
+
 .appnav-panel.is-docked .carousel-arrow {
   color: #d8c48a;
-  background: rgba(0,0,0,.55);
-  border-color: rgba(216,196,138,.55);
+  background: rgba(0, 0, 0, .55);
+  border-color: rgba(216, 196, 138, .55);
 }
+
 .appnav-panel.is-docked .carousel-arrow:hover {
   color: #fff;
   border-color: var(--c-cyan);
-  box-shadow: 0 0 8px rgba(34,211,238,.6);
+  box-shadow: 0 0 8px rgba(34, 211, 238, .6);
 }
-
