@@ -850,3 +850,78 @@
     right: 2px;
   }
 }
+
+/* =========================================================
+   RANK Filter: ボタンらしい立体感・配置の調整 (.is-docked)
+   ========================================================= */
+.appnav-panel.is-docked .appnav-filter-wrapper { gap: 12px; }
+.appnav-panel.is-docked .appnav-rank-tabs { gap: 8px; }
+.appnav-panel.is-docked .appnav-area-carousel-wrapper { padding: 8px; }
+/* 下に落ちる影が切れないよう、トラックの下に余白を足す */
+.appnav-panel.is-docked .area-grid-container.appnav-area-carousel-track { padding: 2px 2px 5px; }
+
+/* サイズと文字 */
+.appnav-panel.is-docked .appnav-rank-tab,
+.appnav-panel.is-docked .area-filter-btn {
+  position: relative;
+  border-radius: 3px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
+}
+.appnav-panel.is-docked .appnav-rank-tab { height: 38px; font-size: 15px; }
+.appnav-panel.is-docked .area-filter-btn { height: 32px; }
+
+/* 面の上端のハイライトと、下端の影(ベベル) */
+.appnav-panel.is-docked .appnav-rank-tab::before,
+.appnav-panel.is-docked .area-filter-btn::before {
+  content: "";
+  position: absolute;
+  left: 1px; right: 1px; top: 1px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.22);
+  pointer-events: none;
+}
+.appnav-panel.is-docked .appnav-rank-tab::after,
+.appnav-panel.is-docked .area-filter-btn::after {
+  content: "";
+  position: absolute;
+  left: 1px; right: 1px; bottom: 1px;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+/* 未選択: 浮き上がった面 */
+.appnav-panel.is-docked .appnav-rank-tab:not(.is-active),
+.appnav-panel.is-docked .area-filter-btn:not(.is-selected) {
+  background: linear-gradient(180deg, rgba(52, 70, 104, 0.95) 0%, rgba(18, 28, 48, 0.98) 100%);
+  border-color: rgba(216, 196, 138, 0.55);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
+}
+.appnav-panel.is-docked .appnav-rank-tab:not(.is-active):hover,
+.appnav-panel.is-docked .area-filter-btn:not(.is-selected):hover {
+  background: linear-gradient(180deg, rgba(68, 90, 132, 0.95) 0%, rgba(26, 40, 68, 0.98) 100%);
+  border-color: #d8c48a;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5), 0 0 8px rgba(216, 196, 138, 0.3);
+}
+
+/* 選択中: 下端にランク色(文字色)の光る線を引く。枠色・発光は既存のランク色のまま */
+.appnav-panel.is-docked .appnav-rank-tab.is-active::after,
+.appnav-panel.is-docked .area-filter-btn.is-selected::after {
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+}
+
+/* 押した感触 */
+.appnav-panel.is-docked .appnav-rank-tab:active,
+.appnav-panel.is-docked .area-filter-btn:active {
+  transform: translateY(1px);
+}
+
+/* キーボード操作時のフォーカス */
+.appnav-panel.is-docked .appnav-rank-tab:focus-visible,
+.appnav-panel.is-docked .area-filter-btn:focus-visible {
+  outline: 2px solid var(--c-cyan);
+  outline-offset: 2px;
+}
