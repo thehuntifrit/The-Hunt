@@ -466,9 +466,8 @@
     7px 0 8px -4px rgba(255, 255, 255, 0.75);
 }
 
-/* ── State: Timed mob next condition countdown (Gold timer) ── */
-.moblist-item .mobcard-timer.label-next .mobcard-timer-num {
-  color: var(--c-gold);
+.moblist-item .timer-label-base.status-nextcondition + .mobcard-timer.label-next .mobcard-timer-num {
+  color: #5aa9bb;
 }
 
 /* ── State: Maintenance gray out ─────────────────────────── */
