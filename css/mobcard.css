@@ -39,7 +39,22 @@
   transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-/* 上端のグラデ帯(告知パネルと同じ。ランクで色が変わる) */
+/* 上端のグラデ帯: ランク色の同系色内で変化させる(A=シアン→青 / S=橙→淡い黄 / FATE=紫→フューシャ) */
+.mobcard-card {
+  --mc-from: var(--c-a);
+  --mc-to: color-mix(in srgb, var(--c-a) 35%, #2563eb);
+}
+
+.mobcard-card:has(.mobcard-rank[data-rank="S"]) {
+  --mc-from: var(--c-s);
+  --mc-to: color-mix(in srgb, var(--c-s) 40%, #fef08a);
+}
+
+.mobcard-card:has(.mobcard-rank[data-rank="F"]) {
+  --mc-from: var(--c-f);
+  --mc-to: color-mix(in srgb, var(--c-f) 40%, #e879f9);
+}
+
 .mobcard-card::before {
   content: "";
   position: absolute;
@@ -47,17 +62,9 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--c-cyan), var(--c-f));
+  background: linear-gradient(90deg, var(--mc-from), var(--mc-to));
   z-index: 3;
   pointer-events: none;
-}
-
-.mobcard-card:has(.mobcard-rank[data-rank="S"])::before {
-  background: linear-gradient(90deg, var(--c-s), var(--c-gold));
-}
-
-.mobcard-card:has(.mobcard-rank[data-rank="F"])::before {
-  background: linear-gradient(90deg, var(--c-f), var(--c-cyan));
 }
 
 /* 四隅のブラケット(内側の角飾り) */
