@@ -52,6 +52,7 @@ function applyPanelMode(panelName: string | null): void {
     const isPopup = !!panelName && POPUP_PANELS.has(panelName);
 
     panelArea?.classList.toggle("is-popup", isPopup);
+    panelArea?.classList.toggle("is-docked", !!panelName && !isPopup);
     if (panelArea) {
         if (isPopup) {
             panelArea.setAttribute("role", "dialog");
