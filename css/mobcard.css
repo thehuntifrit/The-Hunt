@@ -6,6 +6,8 @@
 /* モバイルのボトムシートがヘッダーの下に潜らないための余白(上端の帯・枠・影の分) */
 :root {
   --mobcard-top-gap: 0px;
+  --mc-actions-h: 39px;
+  /* 下部ボタン帯の高さ(ボタン38px + 上罫線1px)。ボタンの高さを変えたらここも合わせる */
 }
 
 /* ── Card wrapper ────────────────────────────────────────── */
@@ -77,7 +79,8 @@
 .mobcard-card::after {
   content: "";
   position: absolute;
-  inset: 6px 4px 4px;
+  inset: 6px 4px calc(var(--mc-actions-h) + 4px);
+  /* 下は REPORT/CLOSE の帯の上に収める */
   z-index: 2;
   pointer-events: none;
   opacity: 0.8;
