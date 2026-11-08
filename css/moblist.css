@@ -605,6 +605,10 @@
   gap: 0;
 }
 
+.group-columns > .moblist-item:last-child {
+  margin-bottom: 0;
+}
+
 /* ── POP WINDOW 特別強調（赤黒の帯・赤枠ライン・背景・経過%） ── */
 /* 1. 帯（セパレーター）の赤黒スタイル */
 .status-group-separator[data-group-key="WINDOW"],
