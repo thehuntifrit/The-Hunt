@@ -577,6 +577,15 @@ export function updateProgressText(element: HTMLElement, mob: Mob, timeLabelObj:
     }
     percentEl.classList.toggle("max-over", status === "MaxOver");
     percentEl.classList.toggle("pct-0", (status === "Next" || raw === 0) && status !== "MaxOver");
+
+    let pctTier = "blue";
+    if (raw >= 80) pctTier = "orange";
+    else if (raw >= 60) pctTier = "yellow";
+    else if (raw >= 30) pctTier = "green";
+
+    if (percentEl.dataset.pctTier !== pctTier) {
+      percentEl.dataset.pctTier = pctTier;
+    }
   }
 
   element.classList.toggle("is-pre-repop", status === "Next" || status === "Maintenance");

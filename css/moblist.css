@@ -645,3 +645,22 @@
 .status-group[data-group-key="WINDOW"] .status-group-toggle-icon {
   color: #fca5a5;
 }
+
+/* POP WINDOW 内の経過% カラーパレット (0-30:青, 30-60:緑, 60-80:黄, 80-100:オレンジ) */
+.status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="green"]:not(.max-over):not(.pct-0) {
+  background: #156a38;
+  border-color: #2bb664;
+  color: #eafff2;
+}
+
+.status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="yellow"]:not(.max-over):not(.pct-0) {
+  background: #7d5a08;
+  border-color: #d49e1e;
+  color: #fffbeb;
+}
+
+.status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0) {
+  background: #943806;
+  border-color: #e86319;
+  color: #fff5eb;
+}
