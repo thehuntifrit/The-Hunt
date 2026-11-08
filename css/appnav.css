@@ -595,7 +595,8 @@
 .appnav-panel.is-docked::before {
   content: "";
   position: absolute;
-  inset: 6px 3px 3px;   /* 上は上端の帯(3px)の下に3pxあける。左右下は3px */
+  inset: 6px 3px 3px;
+  /* 上は上端の帯(3px)の下に3pxあける。左右下は3px */
   border: 1px solid rgba(216, 196, 138, .4);
   pointer-events: none;
 }
@@ -726,13 +727,29 @@
   height: 7px;
   background: #d8c48a;
   transform: rotate(45deg);
-  box-shadow: 0 0 6px rgba(216,196,138,.6);
+  box-shadow: 0 0 6px rgba(216, 196, 138, .6);
   pointer-events: none;
 }
-.appnav-panel.is-docked .ff-corner.tl { top: -4px;    left: -4px; }
-.appnav-panel.is-docked .ff-corner.tr { top: -4px;    right: -4px; }
-.appnav-panel.is-docked .ff-corner.bl { bottom: -4px; left: -4px; }
-.appnav-panel.is-docked .ff-corner.br { bottom: -4px; right: -4px; }
+
+.appnav-panel.is-docked .ff-corner.tl {
+  top: -4px;
+  left: -4px;
+}
+
+.appnav-panel.is-docked .ff-corner.tr {
+  top: -4px;
+  right: -4px;
+}
+
+.appnav-panel.is-docked .ff-corner.bl {
+  bottom: -4px;
+  left: -4px;
+}
+
+.appnav-panel.is-docked .ff-corner.br {
+  bottom: -4px;
+  right: -4px;
+}
 
 /* タイトル周り・✕ボタン(ポップアップと同じ) */
 .appnav-panel.is-docked .appnav-section-header {
@@ -818,4 +835,18 @@
   color: #fff;
   border-color: var(--c-cyan);
   box-shadow: 0 0 8px rgba(34, 211, 238, .6);
+}
+
+/* モバイル: 画面端で切れないよう、左右のひし形を内側へ */
+@media (max-width: 899px) {
+
+  .appnav-panel.is-docked .ff-corner.tl,
+  .appnav-panel.is-docked .ff-corner.bl {
+    left: 2px;
+  }
+
+  .appnav-panel.is-docked .ff-corner.tr,
+  .appnav-panel.is-docked .ff-corner.br {
+    right: 2px;
+  }
 }
