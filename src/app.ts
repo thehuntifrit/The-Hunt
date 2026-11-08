@@ -571,6 +571,7 @@ export const syncDomOrder = function (): void {
         if (!item) {
           item = createSimpleMobItem(m);
         }
+        item.dataset.groupKey = key;
         idealNodes.push(item);
       });
     }

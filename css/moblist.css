@@ -605,60 +605,66 @@
   gap: 0;
 }
 
-/* ── POP WINDOW グループ特別強調（赤黒の帯・囲みライン・背景） ── */
-.status-group[data-group-key="WINDOW"] {
-  position: relative;
-  background: linear-gradient(180deg, rgba(43, 12, 17, 0.45) 0%, rgba(18, 5, 8, 0.25) 100%);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  border-radius: 8px;
-  padding: 4px 4px 1px;
-  margin-bottom: 12px;
-  box-shadow: 0 0 14px rgba(239, 68, 68, 0.15), inset 0 0 18px rgba(239, 68, 68, 0.06);
-}
-
-.status-group[data-group-key="WINDOW"].is-collapsed {
-  padding-bottom: 4px;
-}
-
+/* ── POP WINDOW 特別強調（赤黒の帯・赤枠ライン・背景・経過%） ── */
+/* 1. 帯（セパレーター）の赤黒スタイル */
+.status-group-separator[data-group-key="WINDOW"],
 .status-group[data-group-key="WINDOW"] .status-group-separator {
   background: linear-gradient(90deg, #361016 0%, #1c080b 100%);
   border: 1px solid #6b1d2b;
   border-left: 4px solid #ef4444;
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
-  margin-top: 0;
 }
 
+.status-group-separator[data-group-key="WINDOW"]:hover,
 .status-group[data-group-key="WINDOW"] .status-group-separator:hover {
   background: linear-gradient(90deg, #44141c 0%, #260a0f 100%);
   border-color: #8c2638;
 }
 
+.status-group-separator[data-group-key="WINDOW"] .status-group-label,
 .status-group[data-group-key="WINDOW"] .status-group-label {
   color: #ffe4e6;
   text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
 }
 
+.status-group-separator[data-group-key="WINDOW"] .status-group-count,
 .status-group[data-group-key="WINDOW"] .status-group-count {
   color: #fca5a5;
 }
 
+.status-group-separator[data-group-key="WINDOW"] .status-group-toggle-icon,
 .status-group[data-group-key="WINDOW"] .status-group-toggle-icon {
   color: #fca5a5;
 }
 
-/* POP WINDOW 内の経過% カラーパレット (0-30:青, 30-60:緑, 60-80:黄, 80-100:オレンジ) */
+/* 2. POP WINDOW 内のモブアイテム（赤枠ラインと赤黒背景） */
+.moblist-item[data-group-key="WINDOW"] {
+  background: linear-gradient(90deg, rgba(46, 12, 18, 0.45) 0%, rgba(20, 34, 56, 0.95) 100%);
+  border-color: rgba(239, 68, 68, 0.45);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(239, 68, 68, 0.08);
+}
+
+.moblist-item[data-group-key="WINDOW"]:hover:not(.is-selected):not(.selected) {
+  border-color: rgba(239, 68, 68, 0.75);
+  background: linear-gradient(90deg, rgba(58, 16, 24, 0.55) 0%, rgba(29, 48, 78, 0.95) 100%);
+}
+
+/* 3. POP WINDOW 内の経過% カラーパレット (0-30:青, 30-60:緑, 60-80:黄, 80-100:オレンジ) */
+.moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="green"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="green"]:not(.max-over):not(.pct-0) {
   background: #156a38;
   border-color: #2bb664;
   color: #eafff2;
 }
 
+.moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="yellow"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="yellow"]:not(.max-over):not(.pct-0) {
   background: #7d5a08;
   border-color: #d49e1e;
   color: #fffbeb;
 }
 
+.moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0) {
   background: #943806;
   border-color: #e86319;
