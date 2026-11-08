@@ -580,10 +580,8 @@
   max-height: calc(100dvh - var(--footer-safe) - 32px);
   margin: 0;
   overflow: visible;
-  /* 四隅の飾りを見せるため */
   background: linear-gradient(180deg, rgba(24, 34, 56, .97) 0%, rgba(9, 14, 26, .98) 100%);
   border: 1px solid #9a8a5c;
-  /* くすんだゴールド */
   border-radius: 3px;
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, .7),
@@ -597,7 +595,7 @@
   content: "";
   position: absolute;
   inset: 4px;
-  border: 1px solid rgba(200, 180, 120, .22);
+  border: 1px solid rgba(200,180,120,.22);
   pointer-events: none;
 }
 
@@ -719,8 +717,8 @@
 .appnav-panel.is-docked::before {
   content: "";
   position: absolute;
-  inset: 7px 6px 6px;
-  border: 1px solid rgba(200, 180, 120, .22);
+  inset: 4px;
+  border: 1px solid rgba(200,180,120,.22);
   pointer-events: none;
 }
 
@@ -728,7 +726,7 @@
   padding: 14px 20px 18px;
 }
 
-/* ひし形の飾り: 内側の金線の四隅に乗せる(外にはみ出さない) */
+/* ひし形の飾り: ポップアップと同じく外周の四隅 */
 .appnav-panel.is-docked .ff-corner {
   display: block;
   position: absolute;
@@ -736,29 +734,13 @@
   height: 7px;
   background: #d8c48a;
   transform: rotate(45deg);
-  box-shadow: 0 0 6px rgba(216, 196, 138, .6);
+  box-shadow: 0 0 6px rgba(216,196,138,.6);
   pointer-events: none;
 }
-
-.appnav-panel.is-docked .ff-corner.tl {
-  top: 3.5px;
-  left: 2.5px;
-}
-
-.appnav-panel.is-docked .ff-corner.tr {
-  top: 3.5px;
-  right: 2.5px;
-}
-
-.appnav-panel.is-docked .ff-corner.bl {
-  bottom: 2.5px;
-  left: 2.5px;
-}
-
-.appnav-panel.is-docked .ff-corner.br {
-  bottom: 2.5px;
-  right: 2.5px;
-}
+.appnav-panel.is-docked .ff-corner.tl { top: -4px;    left: -4px; }
+.appnav-panel.is-docked .ff-corner.tr { top: -4px;    right: -4px; }
+.appnav-panel.is-docked .ff-corner.bl { bottom: -4px; left: -4px; }
+.appnav-panel.is-docked .ff-corner.br { bottom: -4px; right: -4px; }
 
 /* タイトル周り・✕ボタン(ポップアップと同じ) */
 .appnav-panel.is-docked .appnav-section-header {
