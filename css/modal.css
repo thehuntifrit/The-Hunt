@@ -98,7 +98,7 @@ label[for="report-force-submit"] {
 
 /* 時間エリアとボタンエリアの間隔を詰める */
 #report-form .u-mt-21 {
-  margin-top: 10px;
+  margin-top: 4px;
 }
 
 #report-form .u-mb-14 {
@@ -160,12 +160,12 @@ label[for="report-force-submit"] {
 .btn-primary-yellow,
 .btn-secondary,
 .btn-copy {
-  height: 38px;
-  padding: 0 16px;
+  height: 32px;
+  padding: 0 8px;
   border-radius: 6px;
   font-family: var(--font-ui);
-  font-size: 15px;
-  font-weight: 400;
+  font-size: 16px;
+  font-weight: 500;
   cursor: pointer;
   border: none;
   outline: none;
