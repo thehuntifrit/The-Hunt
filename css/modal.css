@@ -44,7 +44,7 @@
 }
 
 .modal-mob-name {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--c-text-hi);
   margin-bottom: 16px;
@@ -59,7 +59,7 @@
   border-radius: 6px;
   color: var(--c-text-hi);
   font-family: var(--font-ui);
-  font-size: 14px;
+  font-size: 18px;
   outline: none;
   -webkit-user-select: text;
   -moz-user-select: text;
@@ -78,7 +78,7 @@
 }
 
 .modal-error-display {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--c-error);
   min-height: 16px;
   margin-top: 6px;
@@ -89,7 +89,7 @@
 }
 
 .modal-auth-description {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--c-text-lo);
   line-height: 1.6;
 }
@@ -124,7 +124,7 @@
 
 .modal-auth-note {
   margin-top: 8px;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--c-text-off);
 }
 
@@ -136,7 +136,7 @@
   padding: 0 16px;
   border-radius: 6px;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   border: none;
