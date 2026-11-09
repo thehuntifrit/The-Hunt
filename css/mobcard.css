@@ -6,8 +6,6 @@
 /* モバイルのボトムシートがヘッダーの下に潜らないための余白(上端の帯・枠・影の分) */
 :root {
   --mobcard-top-gap: 0px;
-  --mc-actions-h: 39px;
-  /* 下部ボタン帯の高さ(ボタン38px + 上罫線1px)。ボタンの高さを変えたらここも合わせる */
 }
 
 /* ── Card wrapper ────────────────────────────────────────── */
@@ -75,12 +73,14 @@
   pointer-events: none;
 }
 
-/* 四隅のブラケット(内側の角飾り) */
+/* 上側2つの角飾り(内側のブラケット)。上端の帯(3px)の下に、左右の余白と同じ4pxあけて置く */
 .mobcard-card::after {
   content: "";
   position: absolute;
-  inset: 6px 4px calc(var(--mc-actions-h) + 4px);
-  /* 下は REPORT/CLOSE の帯の上に収める */
+  top: 7px;
+  left: 4px;
+  right: 4px;
+  height: 10px;
   z-index: 2;
   pointer-events: none;
   opacity: 0.8;
@@ -88,11 +88,7 @@
     linear-gradient(#d8c48a, #d8c48a) top left / 10px 1px no-repeat,
     linear-gradient(#d8c48a, #d8c48a) top left / 1px 10px no-repeat,
     linear-gradient(#d8c48a, #d8c48a) top right / 10px 1px no-repeat,
-    linear-gradient(#d8c48a, #d8c48a) top right / 1px 10px no-repeat,
-    linear-gradient(#d8c48a, #d8c48a) bottom left / 10px 1px no-repeat,
-    linear-gradient(#d8c48a, #d8c48a) bottom left / 1px 10px no-repeat,
-    linear-gradient(#d8c48a, #d8c48a) bottom right / 10px 1px no-repeat,
-    linear-gradient(#d8c48a, #d8c48a) bottom right / 1px 10px no-repeat;
+    linear-gradient(#d8c48a, #d8c48a) top right / 1px 10px no-repeat;
 }
 
 .mobcard-card.maintenance-gray-out::before,
