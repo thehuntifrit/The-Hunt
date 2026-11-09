@@ -1,69 +1,216 @@
 /* =========================================================
    css / modal.css  —  #report-modal #auth-modal
+   FF14風UI(ゴールド枠・上端グラデ帯・二重枠・角のひし形)に統一
+
+   目次
+   1. 暗幕と、ウィンドウの置き場所
+   2. ウィンドウ              (枠 / 上端の帯 / 二重線 / ひし形 / アニメーション)
+   3. 見出し                  (モブ名 / 認証のタイトル)
+   4. フォーム部品            (入力欄 / チェックボックス / エラー表示)
+   5. 報告モーダル固有
+   6. 認証モーダル固有
+   7. ボタン
+
+   ※ ひし形(.ff-corner)は、modal.ts の initModal() が各ウィンドウに追加する
    ========================================================= */
 
+
+/* =========================================================
+   1. 暗幕と、ウィンドウの置き場所
+   ========================================================= */
 .app-backdrop {
   position: fixed;
   inset: 0;
   z-index: var(--z-modal-bd);
-  background-color: rgba(4, 8, 18, 0.80);
+  background-color: rgba(3, 7, 14, 0.72);
 }
 
-.modal-content-base {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: calc(100% - 32px);
-  max-width: 480px;
-  z-index: var(--z-modal);
-  background-color: #0d1829;
-  border: 1px solid var(--c-border);
-  border-radius: 12px;
-  padding: 20px 18px 24px;
-  max-height: calc(100vh - var(--header-h) - var(--footer-h) - 32px);
+/* 報告・認証モーダル: 暗幕の中央にウィンドウを置く。
+   内容が画面より高いときは、ウィンドウではなく暗幕側がスクロールする
+   (ウィンドウの外にはみ出す角のひし形を、切らずに見せるため) */
+.report-modal-backdrop,
+.auth-modal-backdrop {
+  display: flex;
+  padding: 16px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: modal-fade 0.16s ease-out;
+}
+
+
+/* =========================================================
+   2. ウィンドウ
+   ========================================================= */
+.modal-content-base {
+  position: relative;
+  margin: auto;
+  /* 空きがあれば中央、足りなければ上から並ぶ */
+  width: 100%;
+  max-width: 480px;
+  padding: 20px 22px 22px;
+  background: linear-gradient(180deg, rgba(24, 34, 56, 0.97) 0%, rgba(9, 14, 26, 0.98) 100%);
+  border: 1px solid #9a8a5c;
+  border-radius: 3px;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.7),
+    0 12px 40px rgba(0, 0, 0, 0.65),
+    inset 0 0 40px rgba(56, 189, 248, 0.05);
+  animation: modal-pop 0.18s ease-out;
+}
+
+/* 上端のグラデーション帯(フッターのパネルと同じ) */
+.modal-content-base::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--c-cyan), var(--c-f));
+  pointer-events: none;
+}
+
+/* 二重枠の内側の線: 外周と同じ明るさ・等間隔 */
+.modal-content-base::after {
+  content: "";
+  position: absolute;
+  inset: 6px 3px 3px;
+  border: 1px solid rgba(216, 196, 138, 0.4);
+  pointer-events: none;
+}
+
+/* 四隅のひし形(外周の角に乗せる) */
+.modal-content-base .ff-corner {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: #d8c48a;
+  transform: rotate(45deg);
+  box-shadow: 0 0 6px rgba(216, 196, 138, 0.6);
+  pointer-events: none;
+}
+
+.modal-content-base .ff-corner.tl {
+  top: -4px;
+  left: -4px;
+}
+
+.modal-content-base .ff-corner.tr {
+  top: -4px;
+  right: -4px;
+}
+
+.modal-content-base .ff-corner.bl {
+  bottom: -4px;
+  left: -4px;
+}
+
+.modal-content-base .ff-corner.br {
+  bottom: -4px;
+  right: -4px;
+}
+
+/* 報告モーダルは小さめ */
+.report-modal-backdrop .modal-content-base {
+  max-width: 360px;
+  padding: 18px 18px 20px;
 }
 
 @media (min-width: 900px) {
   .modal-content-base {
     max-width: 520px;
   }
-}
 
-.report-modal-backdrop {
-  z-index: var(--z-modal-bd);
-}
-
-.report-modal-backdrop .modal-content-base {
-  max-width: 360px;
-  padding: 16px 16px 20px;
-}
-
-@media (min-width: 900px) {
   .report-modal-backdrop .modal-content-base {
     max-width: 380px;
   }
 }
 
+@keyframes modal-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .report-modal-backdrop,
+  .auth-modal-backdrop,
+  .modal-content-base {
+    animation: none;
+  }
+}
+
+
+/* =========================================================
+   3. 見出し(シアンのひし形 + 金色フェード下線)
+   ========================================================= */
+.modal-mob-name,
+.modal-content-base>h2 {
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  background: linear-gradient(90deg, rgba(216, 196, 138, 0.5), rgba(216, 196, 138, 0.05)) bottom / 100% 1px no-repeat;
+  line-height: 1.3;
+}
+
+.modal-mob-name::before,
+.modal-content-base>h2::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 10px;
+  vertical-align: middle;
+  transform: rotate(45deg);
+  background: var(--c-cyan);
+  box-shadow: 0 0 6px rgba(34, 211, 238, 0.7);
+}
+
+/* 報告モーダル: モブ名 */
 .modal-mob-name {
   font-size: 18px;
   font-weight: 700;
   color: var(--c-text-hi);
-  margin-bottom: 16px;
 }
 
+/* 認証モーダル: タイトル */
+.modal-content-base>h2 {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--c-cyan);
+}
+
+
+/* =========================================================
+   4. フォーム部品
+   ========================================================= */
+
+/* 入力欄: 暗い凹み。フォーカスでシアンに光る */
 .modal-input-field {
   width: 100%;
   height: 40px;
   padding: 0 12px;
-  background-color: var(--c-bg);
-  border: 1px solid var(--c-border);
-  border-radius: 6px;
+  background: rgba(3, 7, 14, 0.55);
+  border: 1px solid rgba(216, 196, 138, 0.35);
+  border-radius: 2px;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.55);
   color: var(--c-text-hi);
   font-family: var(--font-ui);
   font-size: 18px;
   outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
   -webkit-user-select: text;
   -moz-user-select: text;
   -ms-user-select: text;
@@ -72,6 +219,7 @@
 
 .modal-input-field:focus {
   border-color: var(--c-cyan);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.55), 0 0 8px rgba(34, 211, 238, 0.3);
 }
 
 .modal-checkbox {
@@ -82,7 +230,20 @@
   cursor: pointer;
 }
 
-/* 「修正する」ラベルのフォントサイズ */
+/* エラー表示 */
+.modal-error-display {
+  font-size: 14px;
+  color: var(--c-error);
+  min-height: 16px;
+  margin-top: 6px;
+}
+
+
+/* =========================================================
+   5. 報告モーダル固有
+   ========================================================= */
+
+/* 「修正する」ラベル */
 label[for="report-force-submit"] {
   font-size: 15px;
   color: var(--c-text-hi);
@@ -105,34 +266,30 @@ label[for="report-force-submit"] {
   margin-bottom: 6px;
 }
 
-.modal-error-display {
-  font-size: 14px;
-  color: var(--c-error);
-  min-height: 16px;
-  margin-top: 6px;
-}
 
-.auth-modal-backdrop {
-  z-index: var(--z-modal-bd);
-}
-
+/* =========================================================
+   6. 認証モーダル固有
+   ========================================================= */
 .modal-auth-description {
   font-size: 14px;
   color: var(--c-text-lo);
   line-height: 1.6;
 }
 
+/* 手順(Step 1〜3)を入れる、暗い凹みの箱 */
 .modal-auth-box {
   display: flex;
   flex-direction: column;
   gap: 16px;
   margin-top: 14px;
   padding: 14px;
-  background-color: var(--c-bg);
-  border: 1px solid var(--c-border);
-  border-radius: 8px;
+  background: rgba(3, 7, 14, 0.5);
+  border: 1px solid rgba(216, 196, 138, 0.28);
+  border-radius: 2px;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
+/* 検証コード */
 .auth-code-display {
   display: inline-block;
   font-family: var(--font-mono);
@@ -141,9 +298,9 @@ label[for="report-force-submit"] {
   color: var(--c-gold);
   letter-spacing: 2px;
   padding: 6px 12px;
-  background-color: #0d1422;
-  border: 1px solid var(--c-border);
-  border-radius: 4px;
+  background: rgba(3, 7, 14, 0.6);
+  border: 1px solid rgba(216, 196, 138, 0.4);
+  border-radius: 2px;
   -webkit-user-select: text;
   -moz-user-select: text;
   -ms-user-select: text;
@@ -156,43 +313,79 @@ label[for="report-force-submit"] {
   color: var(--c-text-off);
 }
 
+/* 検証の状態表示(上の行の高さを確保して、文字が出ても位置が動かないようにする) */
+#auth-modal-status {
+  min-height: 18px;
+}
+
+#auth-modal-status.text-success {
+  color: var(--c-emerald);
+}
+
+/* error は success の後ろに置く: 両方のクラスが付いたとき、error を優先するため */
+#auth-modal-status.text-error {
+  color: var(--c-error);
+}
+
+
+/* =========================================================
+   7. ボタン
+   ========================================================= */
 .btn-primary-cyan,
 .btn-primary-yellow,
 .btn-secondary,
 .btn-copy {
-  height: 32px;
-  padding: 0 6px;
-  border-radius: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 3px;
   font-family: var(--font-ui);
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   cursor: pointer;
   border: none;
   outline: none;
   -webkit-tap-highlight-color: transparent;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s, box-shadow 0.15s, border-color 0.15s, color 0.15s;
+}
+
+/* 主ボタン: 光沢のある塗り(カードの REPORT ボタンと同じ) */
+.btn-primary-cyan,
+.btn-primary-yellow {
+  color: #000;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, 0.14));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .btn-primary-cyan {
   background-color: var(--c-cyan);
-  color: #000;
 }
 
 .btn-primary-yellow {
   background-color: var(--c-gold);
-  color: #000;
 }
 
-.btn-secondary {
-  background-color: transparent;
-  border: 1px solid var(--c-border);
-  color: var(--c-text-lo);
+.btn-primary-cyan:hover {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 0 10px rgba(34, 211, 238, 0.55);
 }
 
+.btn-primary-yellow:hover {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 0 10px rgba(253, 182, 60, 0.55);
+}
+
+/* 副ボタン: 暗い青の面 + 暗い金の枠(RANK のボタンと同じ) */
+.btn-secondary,
 .btn-copy {
-  background-color: var(--c-surface);
-  border: 1px solid var(--c-border);
-  color: var(--c-text-hi);
+  background: linear-gradient(180deg, #1d2a47 0%, #111b30 100%);
+  border: 1px solid #5c5035;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.45);
+  color: #aebbd2;
+}
+
+.btn-secondary:hover,
+.btn-copy:hover {
+  border-color: #a8965f;
+  color: #fff;
 }
 
 .btn-primary-cyan:active,
@@ -200,4 +393,23 @@ label[for="report-force-submit"] {
 .btn-secondary:active,
 .btn-copy:active {
   opacity: 0.7;
+}
+
+/* 処理中(検証中など)は押せない */
+.btn-primary-cyan:disabled,
+.btn-primary-yellow:disabled,
+.btn-secondary:disabled,
+.btn-copy:disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* キーボード操作時 */
+.btn-primary-cyan:focus-visible,
+.btn-primary-yellow:focus-visible,
+.btn-secondary:focus-visible,
+.btn-copy:focus-visible {
+  outline: 2px solid var(--c-cyan);
+  outline-offset: 2px;
 }
