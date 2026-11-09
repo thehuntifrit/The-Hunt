@@ -1,15 +1,40 @@
 /* =========================================================
    css / mobcard.css  —  #mobcard-pane #mobcard-card-template #global-magnifier
-   FF14風UI(ゴールド枠・上端グラデ帯・四隅ブラケット)に統一
+   FF14風UI(ゴールド枠・上端グラデ帯・上側のブラケット)に統一
+
+   目次
+   0. 変数
+   1. カードの枠            (.mobcard-card / 上端の帯 / 角飾り / メンテ中のグレー表示)
+   2. ヘッダー              (ランクバッジ / モブ名 / エリア / % / 進捗バー)
+   3. 内容領域              (スクロール / セクション見出し)
+   4. メモ
+   5. 時刻グリッドと出現条件 (最短・最大・次回・前回 / 出現条件)
+   6. 下部ボタン            (REPORT / CLOSE)
+   7. 出現マップ            (マップ画像 / オーバーレイ)
+   8. スポーンポイント      (点 / ツールチップ / 色)
+   9. 拡大鏡                (右クリックの拡大表示)
    ========================================================= */
 
-/* モバイルのボトムシートがヘッダーの下に潜らないための余白(上端の帯・枠・影の分) */
+
+/* =========================================================
+   0. 変数
+   ========================================================= */
 :root {
+  /* モバイルのボトムシートがヘッダーの下に潜らないための余白(上端の帯・枠・影の分) */
   --mobcard-top-gap: 0px;
 }
 
-/* ── Card wrapper ────────────────────────────────────────── */
+
+/* =========================================================
+   1. カードの枠
+   ========================================================= */
 .mobcard-card {
+  /* 上端の帯の色(ランクごとに下で上書き)。--mc-to は事前計算したHex値:
+     元の意図 = ランク色 + 目標色の混色。ランク色を変えたら再計算する
+     A: #22d3ee 35% + #2563eb 65% */
+  --mc-from: var(--c-a);
+  --mc-to: #248aec;
+
   background: linear-gradient(180deg, #182238 0%, #0b1120 100%);
   border-radius: 4px 4px 0 0;
   border: 1px solid #9a8a5c;
@@ -21,7 +46,7 @@
     0 -6px 24px rgba(0, 0, 0, 0.6),
     inset 0 0 40px rgba(56, 189, 248, 0.05);
   overflow: hidden;
-  /* Mobile: bottom-sheet */
+  /* モバイル: ボトムシート */
   position: fixed;
   bottom: var(--footer-safe);
   left: 0;
@@ -41,14 +66,7 @@
   transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-/* 上端のグラデ帯: ランク色の同系色内で変化させる(A=シアン→青 / S=橙→淡い黄 / FATE=紫→フューシャ) */
-/* --mc-to は事前計算したHex値(元の意図: ランク色 + 目標色 の混色。ランク色を変えたら再計算する) */
-.mobcard-card {
-  --mc-from: var(--c-a);
-  --mc-to: #248aec;
-  /* #22d3ee 35% + #2563eb 65% */
-}
-
+/* 上端の帯: ランク色の同系色内で変化させる(A=シアン→青 / S=橙→淡い黄 / FATE=紫→フューシャ) */
 .mobcard-card:has(.mobcard-rank[data-rank="S"]) {
   --mc-from: var(--c-s);
   --mc-to: #facf57;
@@ -91,11 +109,6 @@
     linear-gradient(#d8c48a, #d8c48a) top right / 1px 10px no-repeat;
 }
 
-.mobcard-card.maintenance-gray-out::before,
-.mobcard-card.maintenance-gray-out::after {
-  filter: grayscale(100%) brightness(0.6);
-}
-
 .mobcard-inner {
   display: flex;
   flex-direction: column;
@@ -109,6 +122,44 @@
   overflow: hidden;
 }
 
+/* PC: 右ペインの中に固定(ボトムシートにしない) */
+@media (min-width: 900px) {
+  .mobcard-card {
+    position: relative;
+    /* 上端帯・角飾りの基準にするため static から変更 */
+    /* relative ではモバイル用の bottom/left/right が効いて上にずれるので、必ず解除する */
+    top: auto;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    z-index: auto;
+    height: 100%;
+    max-height: 100%;
+    transform: none !important;
+    transition: none;
+    border-radius: 3px;
+    border: 1px solid #9a8a5c;
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.7),
+      0 8px 28px rgba(0, 0, 0, 0.45),
+      inset 0 0 40px rgba(56, 189, 248, 0.05);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .mobcard-inner {
+    max-height: 100%;
+    min-height: 0;
+  }
+}
+
+/* メンテナンス中: グレー表示 */
+.mobcard-card.maintenance-gray-out::before,
+.mobcard-card.maintenance-gray-out::after {
+  filter: grayscale(100%) brightness(0.6);
+}
+
 .mobcard-card.maintenance-gray-out .mobcard-inner {
   filter: grayscale(100%) brightness(0.6);
   box-shadow: none;
@@ -119,7 +170,10 @@
   text-shadow: none;
 }
 
-/* ── Card header ─────────────────────────────────────────── */
+
+/* =========================================================
+   2. ヘッダー
+   ========================================================= */
 .mobcard-header {
   flex-shrink: 0;
   padding: 13px 16px 10px;
@@ -144,6 +198,7 @@
   background: linear-gradient(90deg, rgba(216, 196, 138, 0.65), rgba(216, 196, 138, 0.08));
 }
 
+/* 1行目: ランクバッジ + モブ名 */
 .header-top-row {
   display: flex;
   align-items: center;
@@ -160,8 +215,10 @@
   min-width: 0;
 }
 
-/* rank badge */
+/* ランクバッジ(既定は A。S と FATE だけ色を上書き) */
 .mobcard-rank {
+  --rk-glow: rgba(34, 211, 238, 0.4);
+  /* var(--c-a) 40% */
   flex-shrink: 0;
   width: 26px;
   height: 26px;
@@ -177,40 +234,27 @@
   border: 1px solid var(--c-a);
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.55),
-    0 0 8px rgba(34, 211, 238, 0.4),
-    /* var(--c-a) 40% */
+    0 0 8px var(--rk-glow),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .mobcard-rank[data-rank="S"] {
+  --rk-glow: rgba(245, 158, 11, 0.4);
+  /* var(--c-s) 40% */
   background-color: var(--c-s-dark);
   color: var(--c-s);
   border-color: var(--c-s);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.55),
-    0 0 8px rgba(245, 158, 11, 0.4),
-    /* var(--c-s) 40% */
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-.mobcard-rank[data-rank="A"] {
-  background-color: var(--c-a-dark);
-  color: var(--c-a);
-  border-color: var(--c-a);
 }
 
 .mobcard-rank[data-rank="F"] {
+  --rk-glow: rgba(168, 85, 247, 0.4);
+  /* var(--c-f) 40% */
   background-color: var(--c-f-dark);
   color: var(--c-f);
   border-color: var(--c-f);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.55),
-    0 0 8px rgba(168, 85, 247, 0.4),
-    /* var(--c-f) 40% */
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-/* mob name */
+/* モブ名 */
 .mobcard-name {
   font-family: var(--font-ui);
   font-size: 18px;
@@ -228,7 +272,7 @@
   gap: 4px;
 }
 
-/* mid row: area info + percent */
+/* 2行目: エリア情報 + % */
 .header-mid-row {
   display: flex;
   align-items: center;
@@ -275,7 +319,7 @@
   line-height: 1;
 }
 
-/* progress bar in header */
+/* 進捗バー */
 .mobcard-progress-container {
   width: 100%;
   max-width: 100%;
@@ -300,7 +344,10 @@
   transition: width 0.3s ease;
 }
 
-/* ── Card content (scrollable) ───────────────────────────── */
+
+/* =========================================================
+   3. 内容領域(スクロール)
+   ========================================================= */
 .mobcard-content {
   flex: 1 1 auto;
   overflow-y: auto;
@@ -318,6 +365,13 @@
   scrollbar-color: rgba(216, 196, 138, 0.35) transparent;
 }
 
+/* PC: 右ペインの高さの中でスクロールさせる */
+@media (min-width: 900px) {
+  .mobcard-content {
+    min-height: 0;
+  }
+}
+
 .mobcard-content::-webkit-scrollbar {
   width: 5px;
 }
@@ -331,7 +385,6 @@
   border-radius: 2px;
 }
 
-/* ── Sections ────────────────────────────────────────────── */
 .mobcard-section {
   padding: 0;
   border-bottom: none;
@@ -369,6 +422,7 @@
   box-shadow: 0 0 6px rgba(34, 211, 238, 0.7);
 }
 
+/* 見出しの右端に出す、マップの更新時刻 */
 .map-update-time {
   font-family: var(--font-mono);
   font-size: 14px;
@@ -379,7 +433,10 @@
   line-height: 1;
 }
 
-/* ── Memo ────────────────────────────────────────────────── */
+
+/* =========================================================
+   4. メモ
+   ========================================================= */
 .mobcard-memo-box {
   display: flex;
   align-items: center;
@@ -458,7 +515,12 @@
   color: var(--c-text-off);
 }
 
-/* ── Info grid (4 repop times) ───────────────────────────── */
+
+/* =========================================================
+   5. 時刻グリッドと出現条件
+   ========================================================= */
+
+/* 最短・最大・次回・前回の4マス */
 .mobcard-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -527,7 +589,32 @@
   line-height: 1;
 }
 
-/* 次回出現: 金枠で強調 */
+/* PC: 文字を少し大きく */
+@media (min-width: 900px) {
+  .mobcard-info-item {
+    padding: 7px 11px;
+    gap: 6px;
+  }
+
+  .mobcard-label {
+    font-size: 13px;
+    letter-spacing: 0.05em;
+  }
+
+  .mobcard-value {
+    font-size: 18px;
+  }
+
+  .mobcard-value .mobcard-timer-num {
+    font-size: 16px;
+  }
+
+  .mobcard-value .mobcard-timer-unit {
+    font-size: 13px;
+  }
+}
+
+/* 次回出現: 金枠と金色の文字で強調 */
 .mobcard-info-item.mobcard-highlight {
   border-color: rgba(216, 196, 138, 0.75);
   box-shadow:
@@ -536,14 +623,12 @@
     0 0 6px rgba(216, 196, 138, 0.2);
 }
 
-/* Next possible repop time in gold */
 .mobcard-highlight .mobcard-value,
-.mobcard-info-item.mobcard-highlight .mobcard-value,
 .mobcard-value.text-yellow {
   color: var(--c-gold) !important;
 }
 
-/* condition section & text box */
+/* 出現条件のテキストボックス */
 .condition-section .condition-text,
 .condition-text {
   font-size: 13px;
@@ -560,7 +645,10 @@
   box-sizing: border-box;
 }
 
-/* ── Mobile action bar ───────────────────────────────────── */
+
+/* =========================================================
+   6. 下部ボタン(REPORT / CLOSE)
+   ========================================================= */
 .mobcard-mobile-actions {
   flex-shrink: 0;
   display: flex;
@@ -642,120 +730,10 @@
   opacity: 0.6;
 }
 
-/* ── PC: static right pane ───────────────────────────────── */
-@media (min-width: 900px) {
-  .mobcard-card {
-    position: relative;
-    /* 上端帯・角飾りの基準にするため static から変更 */
-    /* relative ではモバイル用の bottom/left/right が効いて上にずれるので、必ず解除する */
-    top: auto;
-    bottom: auto;
-    left: auto;
-    right: auto;
-    z-index: auto;
-    height: 100%;
-    max-height: 100%;
-    transform: none !important;
-    transition: none;
-    border-radius: 3px;
-    border: 1px solid #9a8a5c;
-    box-shadow:
-      0 0 0 1px rgba(0, 0, 0, 0.7),
-      0 8px 28px rgba(0, 0, 0, 0.45),
-      inset 0 0 40px rgba(56, 189, 248, 0.05);
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-  }
 
-  .mobcard-inner {
-    height: 100%;
-    max-height: 100%;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .mobcard-header {
-    flex-shrink: 0;
-  }
-
-  .mobcard-content {
-    flex: 1 1 auto;
-    overflow-y: auto;
-    overflow-x: hidden;
-    min-height: 0;
-  }
-
-  .mobcard-info-item {
-    padding: 7px 11px;
-    gap: 6px;
-  }
-
-  .mobcard-label {
-    font-size: 13px;
-    letter-spacing: 0.05em;
-  }
-
-  .mobcard-value {
-    font-size: 18px;
-  }
-
-  .mobcard-value .mobcard-timer-num {
-    font-size: 16px;
-  }
-
-  .mobcard-value .mobcard-timer-unit {
-    font-size: 13px;
-  }
-
-  .mobcard-mobile-actions {
-    flex-shrink: 0;
-  }
-}
-
-/* ── #global-magnifier / map ─────────────────────────────── */
-.map-magnifier {
-  position: fixed;
-  top: 0;
-  left: 0;
-  will-change: transform;
-  z-index: var(--z-magnifier);
-  width: 168px;
-  height: 168px;
-  border: 4px solid var(--c-cyan);
-  border-radius: 9999px;
-  overflow: hidden;
-  background-color: #050d18;
-  pointer-events: none;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
-}
-
-.map-magnifier.hidden {
-  display: none;
-}
-
-.magnifier-content-wrapper {
-  position: absolute;
-  transform-origin: 0 0;
-  width: var(--map-w);
-  height: var(--map-h);
-}
-
-.magnifier-clone {
-  width: var(--map-w, 100%) !important;
-  height: var(--map-h, 100%) !important;
-  margin: 0;
-  border: none;
-  box-shadow: none;
-}
-
-html body.magnifier-active .map-container,
-html body.magnifier-active .map-container * {
-  cursor: none;
-}
-
+/* =========================================================
+   7. 出現マップ
+   ========================================================= */
 .map-container {
   border-radius: 2px;
   overflow: hidden;
@@ -787,6 +765,7 @@ html body.magnifier-active .map-container * {
   max-width: 100%;
 }
 
+/* PC: マップは520px固定 */
 @media (min-width: 900px) {
   .map-container.pc-map-box {
     width: 520px;
@@ -806,6 +785,7 @@ html body.magnifier-active .map-container * {
   }
 }
 
+/* スポーンポイントを重ねる層 */
 .map-overlay {
   pointer-events: none;
   position: absolute;
@@ -815,6 +795,10 @@ html body.magnifier-active .map-container * {
   cursor: crosshair;
 }
 
+
+/* =========================================================
+   8. スポーンポイント
+   ========================================================= */
 .spawn-point {
   position: absolute;
   left: var(--point-x);
@@ -837,7 +821,7 @@ html body.magnifier-active .map-container * {
   outline: none;
 }
 
-/* ── Spawn point tooltip (upper-left) ────────────────────── */
+/* ツールチップ(点の左上に出す) */
 .spawn-point[data-tooltip]::after {
   content: attr(data-tooltip);
   position: absolute;
@@ -863,41 +847,7 @@ html body.magnifier-active .map-container * {
   opacity: 1;
 }
 
-/* 拡大鏡起動中（body.magnifier-active）は背面マップ上のホバー・ポインターイベントを完全に遮断 */
-body.magnifier-active .map-container:not(.magnifier-clone),
-body.magnifier-active .map-container:not(.magnifier-clone) *,
-body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point {
-  pointer-events: none !important;
-}
-
-body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point:hover,
-body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point:focus {
-  transform: translate(-50%, -50%) !important;
-  box-shadow: none !important;
-}
-
-body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point::after,
-body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point[data-tooltip]::after,
-.magnifier-clone .spawn-point::after,
-.magnifier-clone .spawn-point[data-tooltip]::after {
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-}
-
-/* 拡大鏡内のクローンは操作対象にしない */
-.magnifier-clone,
-.magnifier-clone * {
-  pointer-events: none !important;
-}
-
-.magnifier-clone .spawn-point:hover,
-.magnifier-clone .spawn-point:focus {
-  transform: translate(-50%, -50%) !important;
-  box-shadow: none !important;
-}
-
-/* ── Spawn point colors (Old CSS restored) ───────────────── */
+/* 点の色 */
 .color-b1 {
   background-color: #4494f7;
   border: 2px solid #ffffff;
@@ -935,4 +885,84 @@ body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point[data-too
   border: 2px solid #fd5c5c;
   width: 10px;
   height: 10px;
+}
+
+
+/* =========================================================
+   9. 拡大鏡
+   ========================================================= */
+.map-magnifier {
+  position: fixed;
+  top: 0;
+  left: 0;
+  will-change: transform;
+  z-index: var(--z-magnifier);
+  width: 168px;
+  height: 168px;
+  border: 4px solid var(--c-cyan);
+  border-radius: 9999px;
+  overflow: hidden;
+  background-color: #050d18;
+  pointer-events: none;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+}
+
+.map-magnifier.hidden {
+  display: none;
+}
+
+.magnifier-content-wrapper {
+  position: absolute;
+  transform-origin: 0 0;
+  width: var(--map-w);
+  height: var(--map-h);
+}
+
+/* 拡大鏡の中に入れるマップのコピー */
+.magnifier-clone {
+  width: var(--map-w, 100%) !important;
+  height: var(--map-h, 100%) !important;
+  margin: 0;
+  border: none;
+  box-shadow: none;
+}
+
+/* 拡大鏡の起動中: マップ上ではカーソルを消す */
+html body.magnifier-active .map-container,
+html body.magnifier-active .map-container * {
+  cursor: none;
+}
+
+/* 起動中は、背面マップ上のホバー・ポインターイベントを完全に遮断 */
+body.magnifier-active .map-container:not(.magnifier-clone),
+body.magnifier-active .map-container:not(.magnifier-clone) *,
+body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point {
+  pointer-events: none !important;
+}
+
+body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point:hover,
+body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point:focus {
+  transform: translate(-50%, -50%) !important;
+  box-shadow: none !important;
+}
+
+body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point::after,
+body.magnifier-active .map-container:not(.magnifier-clone) .spawn-point[data-tooltip]::after,
+.magnifier-clone .spawn-point::after,
+.magnifier-clone .spawn-point[data-tooltip]::after {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* 拡大鏡内のコピーは操作対象にしない */
+.magnifier-clone,
+.magnifier-clone * {
+  pointer-events: none !important;
+}
+
+.magnifier-clone .spawn-point:hover,
+.magnifier-clone .spawn-point:focus {
+  transform: translate(-50%, -50%) !important;
+  box-shadow: none !important;
 }

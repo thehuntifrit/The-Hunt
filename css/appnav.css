@@ -1,8 +1,21 @@
 /* =========================================================
    css / appnav.css  —  #appnav
+
+   目次
+   1. フッターバー        (#appnav / .appnav-btn / 通知トグル / アラート点)
+   2. パネル共通          (.appnav-panel の土台 / 見出し / 中身)
+   3. パネルの種類
+      3-1. ポップアップ   (.is-popup: 告知 / メンテ / エラー)
+      3-2. ドック         (.is-docked: RANK)
+      3-3. 共通の装飾     (二重枠 / ✕ボタン / ひし形)
+   4. 告知・メンテ・エラーの中身
+   5. RANK フィルター     (ランクタブ / エリアボタン / スクロール領域)
    ========================================================= */
 
-/* ── Mobile (base): bottom bar ───────────────────────────── */
+
+/* =========================================================
+   1. フッターバー
+   ========================================================= */
 #appnav {
   position: fixed;
   bottom: 0;
@@ -27,18 +40,16 @@
   margin: 0 auto;
 }
 
-/* ── Mobile: horizontal nav ──────────────────────────────── */
 .appnav-main-nav {
   display: flex;
   flex-direction: column;
   width: 100%;
 }
 
+/* ロゴ: モバイルでは非表示 */
 .appnav-top {
   display: none;
 }
-
-/* logo — hidden on mobile */
 
 .appnav-items-wrapper {
   display: flex;
@@ -50,6 +61,7 @@
   padding-top: 0;
 }
 
+/* ── ナビボタン ── */
 .appnav-btn {
   flex: 1 1 0;
   display: flex;
@@ -88,7 +100,7 @@
   line-height: 1;
 }
 
-/* active state (Old CSS glow & highlight effect) */
+/* 選択中 */
 .appnav-btn.active,
 .appnav-btn.appnav-active,
 .appnav-btn[data-active] {
@@ -114,7 +126,7 @@
   text-shadow: 0 0 6px rgba(34, 211, 238, 0.6);
 }
 
-/* active top indicator bar with cyan glow */
+/* 選択中: 上端のシアンのインジケーター */
 .appnav-btn.active::after,
 .appnav-btn.appnav-active::after,
 .appnav-btn[data-active]::after {
@@ -129,12 +141,25 @@
   box-shadow: 0 0 10px var(--c-cyan), 0 0 4px var(--c-cyan);
 }
 
-/* nav toggle (checkbox-based) */
+/* 更新・未読などのアラート点 */
+.appnav-btn.has-alert .appnav-icon::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--c-gold);
+  pointer-events: none;
+}
+
+/* ── 通知トグル(チェックボックス式) ── */
 .nav-toggle-btn {
   cursor: pointer;
 }
 
-/* 通知OFF（is-disabled または チェックなし）時のグレーアウト */
+/* OFF(is-disabled またはチェックなし): グレーアウト */
 .appnav-btn.is-disabled .appnav-icon,
 .appnav-btn.is-disabled .appnav-label,
 .appnav-btn:has(input[type="checkbox"]:not(:checked)) .appnav-icon,
@@ -143,7 +168,7 @@
   opacity: 0.35;
 }
 
-/* 通知ON（チェックあり かつ disabledでない）時のスタイル */
+/* ON(チェックあり かつ disabled でない) */
 .appnav-btn:not(.is-disabled):has(input[type="checkbox"]:checked) .appnav-icon {
   position: relative;
   display: inline-flex;
@@ -157,7 +182,7 @@
   color: var(--c-cyan);
 }
 
-/* divider between nav items */
+/* ボタン間の区切り線 */
 .appnav-divider {
   width: 1px;
   height: 28px;
@@ -166,354 +191,7 @@
   flex-shrink: 0;
 }
 
-/* ── Slide-out panel ──────────────────────────────────────── */
-.appnav-panel {
-  display: none;
-  /* opened by JS */
-  position: fixed;
-  bottom: var(--footer-safe);
-  left: 0;
-  width: 100%;
-  max-height: 60vh;
-  z-index: var(--z-footer);
-  background-color: #122036;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
-  border-top: 1px solid var(--c-border);
-  overflow: hidden;
-  padding: 0;
-  flex-direction: column;
-}
-
-.appnav-panel-top-border {
-  height: 3px;
-  flex-shrink: 0;
-  background: linear-gradient(90deg, var(--c-cyan), var(--c-f));
-}
-
-.appnav-panel.is-open,
-.appnav-panel.expanded,
-#appnav.expanded .appnav-panel {
-  display: flex;
-}
-
-.js-appnav-panel-item {
-  display: none;
-}
-
-.js-appnav-panel-item:not(.hidden) {
-  display: block;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 14px;
-}
-
-.appnav-section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid var(--c-border);
-}
-
-.appnav-section-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--c-text-sel);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-bottom: 0;
-}
-
-.appnav-alert {
-  font-size: 15px;
-  color: var(--c-text-hi);
-  line-height: 1.6;
-}
-
-.sidebar-welcome-area {
-  margin-bottom: 0;
-  min-width: 0;
-}
-
-.sidebar-welcome-msg {
-  font-size: 13px;
-  color: var(--c-text-lo);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 180px;
-}
-
-.sidebar-welcome-name {
-  font-weight: 500;
-  color: var(--c-gold);
-}
-
-/* ── Error list ──────────────────────────────────────────── */
-.appnav-error-item {
-  display: flex;
-  gap: 6px;
-  align-items: flex-start;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--c-border);
-  font-size: 15px;
-}
-
-.appnav-error-time {
-  color: var(--c-text-lo);
-  white-space: nowrap;
-}
-
-.error-msg {
-  color: var(--c-offline-text);
-}
-
-/* ── Rank filter & expansion carousel ──────────────────────── */
-.appnav-filter-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.appnav-filter-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-
-.appnav-rank-tabs {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  width: 100%;
-}
-
-.appnav-rank-tab {
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: 6px;
-  cursor: pointer;
-  font-family: var(--font-ui);
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--c-text-lo);
-  transition: all 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
-
-.appnav-rank-tab[data-rank="ALL"] {
-  color: var(--c-all);
-}
-
-.appnav-rank-tab[data-rank="S rank"] {
-  color: var(--c-s);
-}
-
-.appnav-rank-tab[data-rank="A rank"] {
-  color: var(--c-a);
-}
-
-.appnav-rank-tab[data-rank="FATE"] {
-  color: var(--c-f);
-}
-
-.appnav-rank-tab:hover {
-  background-color: var(--c-surface-ho);
-  border-color: var(--c-text-off);
-}
-
-.appnav-rank-tab[data-rank="ALL"]:hover {
-  color: var(--c-all);
-}
-
-.appnav-rank-tab[data-rank="S rank"]:hover {
-  color: var(--c-s);
-}
-
-.appnav-rank-tab[data-rank="A rank"]:hover {
-  color: var(--c-a);
-}
-
-.appnav-rank-tab[data-rank="FATE"]:hover {
-  color: var(--c-f);
-}
-
-.appnav-rank-tab.is-active {
-  background-color: var(--c-surface-sel);
-  border-color: var(--c-cyan);
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.25);
-}
-
-/* Rank specific active accent subtle indicators */
-.appnav-rank-tab.is-active[data-rank="ALL"] {
-  border-color: var(--c-all);
-  color: var(--c-all);
-  box-shadow: 0 0 8px rgba(244, 63, 94, 0.3);
-}
-
-.appnav-rank-tab.is-active[data-rank="S rank"] {
-  border-color: var(--c-s);
-  color: var(--c-s);
-  box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
-}
-
-.appnav-rank-tab.is-active[data-rank="A rank"] {
-  border-color: var(--c-a);
-  color: var(--c-a);
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.3);
-}
-
-.appnav-rank-tab.is-active[data-rank="FATE"] {
-  border-color: var(--c-f);
-  color: var(--c-f);
-  box-shadow: 0 0 8px rgba(168, 85, 247, 0.3);
-}
-
-.appnav-area-carousel-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  background-color: var(--c-bg);
-  border: 1px solid var(--c-border);
-  border-radius: 6px;
-  padding: 6px;
-}
-
-.carousel-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: rgba(20, 34, 56, 0.9);
-  border: 1px solid var(--c-border);
-  color: var(--c-text-hi);
-  font-size: 16px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 5;
-  transition: all 0.15s ease;
-}
-
-.carousel-arrow:hover {
-  background-color: var(--c-surface-sel);
-  border-color: var(--c-cyan);
-  color: var(--c-cyan);
-}
-
-.carousel-arrow-prev {
-  left: 4px;
-}
-
-.carousel-arrow-next {
-  right: 4px;
-}
-
-.appnav-area-carousel {
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-behavior: smooth;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: var(--c-border) transparent;
-}
-
-.appnav-area-carousel::-webkit-scrollbar {
-  height: 4px;
-}
-
-.appnav-area-carousel::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.appnav-area-carousel::-webkit-scrollbar-thumb {
-  background: var(--c-border);
-  border-radius: 2px;
-}
-
-.appnav-area-carousel::-webkit-scrollbar-thumb:hover {
-  background: var(--c-text-off);
-}
-
-.area-grid-container.appnav-area-carousel-track {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: 6px;
-  width: 100%;
-  padding: 2px;
-}
-
-/* 1 page max 6 buttons visible: each button takes calc((100% - 5 * gap) / 6) */
-.area-grid-container.appnav-area-carousel-track .area-filter-btn {
-  flex: 0 0 calc((100% - (5 * 6px)) / 6);
-  min-width: 48px;
-  scroll-snap-align: start;
-}
-
-.area-filter-btn {
-  height: 28px;
-  line-height: 1;
-  padding: 0 4px;
-  cursor: pointer;
-  font-family: var(--font-ui);
-  font-size: 13px;
-  font-weight: 500;
-  background-color: var(--c-surface);
-  border: 1px solid var(--c-border);
-  color: var(--c-text-lo);
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  outline: none;
-  transition: all 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-  white-space: nowrap;
-  user-select: none;
-  box-sizing: border-box;
-}
-
-.area-filter-btn:hover {
-  background-color: var(--c-surface-ho);
-  color: var(--c-text-hi);
-}
-
-.area-filter-btn.is-selected {
-  background-color: var(--c-surface-sel);
-  border-color: var(--c-cyan);
-  color: var(--c-cyan);
-  font-weight: 600;
-}
-
-.appnav-btn.has-alert .appnav-icon::after {
-  content: '';
-  position: absolute;
-  top: -2px;
-  right: -5px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: var(--c-gold);
-  pointer-events: none;
-}
-
+/* PC: フッターは全幅、中身はレイアウト幅に収める */
 @media (min-width: 900px) {
   #appnav {
     left: 0;
@@ -530,7 +208,37 @@
     margin-inline: auto;
     padding: 0;
   }
+}
 
+
+/* =========================================================
+   2. パネル共通 (.appnav-panel)
+   ========================================================= */
+.appnav-panel {
+  display: none;
+  /* JS で開く */
+  position: fixed;
+  bottom: var(--footer-safe);
+  left: 0;
+  width: 100%;
+  max-height: 60vh;
+  z-index: var(--z-footer);
+  background-color: #122036;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+  border-top: 1px solid var(--c-border);
+  overflow: hidden;
+  padding: 0;
+  flex-direction: column;
+}
+
+.appnav-panel.is-open,
+.appnav-panel.expanded,
+#appnav.expanded .appnav-panel {
+  display: flex;
+}
+
+/* PC: レイアウト幅に収めて中央寄せ */
+@media (min-width: 900px) {
   .appnav-panel {
     left: 50%;
     right: auto;
@@ -543,9 +251,59 @@
   }
 }
 
+/* 上端のグラデーション帯 */
+.appnav-panel-top-border {
+  height: 3px;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, var(--c-cyan), var(--c-f));
+}
+
+/* 中身の領域(スクロール) */
+.js-appnav-panel-item {
+  display: none;
+}
+
+.js-appnav-panel-item:not(.hidden) {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px;
+}
+
+/* 見出し行(✕ボタンと重ならないよう右に余白) */
+.appnav-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 10px;
+  padding-right: 32px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(216, 196, 138, .35);
+}
+
+.appnav-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-cyan);
+  text-transform: uppercase;
+  letter-spacing: .16em;
+  margin-bottom: 0;
+}
+
+
 /* =========================================================
-   Popup mode (告知 / メンテ / エラー): .appnav-panel.is-popup
+   3. パネルの種類
    ========================================================= */
+
+/* 3-0. ポップアップとドックで共通の見た目 ──────────────── */
+.appnav-panel:is(.is-popup, .is-docked) {
+  overflow: visible;
+  background: linear-gradient(180deg, rgba(24, 34, 56, .97) 0%, rgba(9, 14, 26, .98) 100%);
+}
+
+/* 3-1. ポップアップ (.is-popup: 告知 / メンテ / エラー) ───── */
 .appnav-backdrop {
   display: none;
   position: fixed;
@@ -562,11 +320,6 @@
   display: block;
 }
 
-.appnav-popup-close,
-.appnav-panel .ff-corner {
-  display: none;
-}
-
 .appnav-panel.is-popup {
   top: calc(50% - var(--footer-safe) / 2);
   /* フッターを除いた領域の中央 */
@@ -579,8 +332,6 @@
   max-height: calc(100vh - var(--footer-safe) - 32px);
   max-height: calc(100dvh - var(--footer-safe) - 32px);
   margin: 0;
-  overflow: visible;
-  background: linear-gradient(180deg, rgba(24, 34, 56, .97) 0%, rgba(9, 14, 26, .98) 100%);
   border: 1px solid #9a8a5c;
   border-radius: 3px;
   box-shadow:
@@ -590,94 +341,8 @@
   animation: appnav-pop .18s ease-out;
 }
 
-/* 二重枠の内側の線: 外周と同じ明るさ・等間隔で引く */
-.appnav-panel.is-popup::before,
-.appnav-panel.is-docked::before {
-  content: "";
-  position: absolute;
-  inset: 6px 3px 3px;
-  /* 上は上端の帯(3px)の下に3pxあける。左右下は3px */
-  border: 1px solid rgba(216, 196, 138, .4);
-  pointer-events: none;
-}
-
 .appnav-panel.is-popup .js-appnav-panel-item:not(.hidden) {
   padding: 14px 20px 20px;
-}
-
-/* タイトル周り(✕と重ならないよう右に余白) */
-.appnav-panel.is-popup .appnav-section-header {
-  padding-right: 32px;
-  border-bottom-color: rgba(216, 196, 138, .35);
-}
-
-.appnav-panel.is-popup .appnav-section-title {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: .16em;
-  color: var(--c-cyan);
-}
-
-/* ✕ボタン */
-.appnav-panel.is-popup .appnav-popup-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 2;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  line-height: 1;
-  font-size: 12px;
-  color: #d8c48a;
-  background: rgba(0, 0, 0, .35);
-  border: 1px solid rgba(216, 196, 138, .55);
-  border-radius: 50%;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.appnav-panel.is-popup .appnav-popup-close:hover,
-.appnav-panel.is-popup .appnav-popup-close:focus-visible {
-  color: #fff;
-  border-color: var(--c-cyan);
-  box-shadow: 0 0 8px rgba(34, 211, 238, .6);
-  outline: none;
-}
-
-/* 四隅のひし形飾り */
-.appnav-panel.is-popup .ff-corner {
-  display: block;
-  position: absolute;
-  width: 7px;
-  height: 7px;
-  background: #d8c48a;
-  transform: rotate(45deg);
-  box-shadow: 0 0 6px rgba(216, 196, 138, .6);
-  pointer-events: none;
-}
-
-.appnav-panel.is-popup .ff-corner.tl {
-  top: -4px;
-  left: -4px;
-}
-
-.appnav-panel.is-popup .ff-corner.tr {
-  top: -4px;
-  right: -4px;
-}
-
-.appnav-panel.is-popup .ff-corner.bl {
-  bottom: -4px;
-  left: -4px;
-}
-
-.appnav-panel.is-popup .ff-corner.br {
-  bottom: -4px;
-  right: -4px;
 }
 
 @keyframes appnav-fade {
@@ -705,13 +370,8 @@
   }
 }
 
-/* =========================================================
-   Docked mode (RANK): .appnav-panel.is-docked
-   (二重枠の ::before は、上の Popup ブロックの共通ルールで定義済み)
-   ========================================================= */
+/* 3-2. ドック (.is-docked: RANK。フッターに付随) ─────────── */
 .appnav-panel.is-docked {
-  overflow: visible;
-  background: linear-gradient(180deg, rgba(24, 34, 56, .97) 0%, rgba(9, 14, 26, .98) 100%);
   border-color: #9a8a5c;
   border-radius: 3px 3px 0 0;
   box-shadow:
@@ -723,66 +383,25 @@
   padding: 14px 20px 18px;
 }
 
-/* ── ひし形の飾り: ポップアップと同じく外周の四隅 ── */
-.appnav-panel.is-docked .ff-corner {
-  display: block;
+/* 3-3. 共通の装飾 (ポップアップ・ドックの両方) ─────────────── */
+
+/* 二重枠の内側の線: 外周と同じ明るさ・等間隔で引く */
+.appnav-panel:is(.is-popup, .is-docked)::before {
+  content: "";
   position: absolute;
-  width: 7px;
-  height: 7px;
-  background: #d8c48a;
-  transform: rotate(45deg);
-  box-shadow: 0 0 6px rgba(216, 196, 138, .6);
+  inset: 6px 3px 3px;
+  /* 上は上端の帯(3px)の下に3pxあける。左右下は3px */
+  border: 1px solid rgba(216, 196, 138, .4);
   pointer-events: none;
 }
 
-.appnav-panel.is-docked .ff-corner.tl {
-  top: -4px;
-  left: -4px;
+/* ✕ボタン・ひし形は、普段は非表示 */
+.appnav-popup-close,
+.appnav-panel .ff-corner {
+  display: none;
 }
 
-.appnav-panel.is-docked .ff-corner.tr {
-  top: -4px;
-  right: -4px;
-}
-
-.appnav-panel.is-docked .ff-corner.bl {
-  bottom: -4px;
-  left: -4px;
-}
-
-.appnav-panel.is-docked .ff-corner.br {
-  bottom: -4px;
-  right: -4px;
-}
-
-/* モバイル: 画面端で切れないよう、左右のひし形を内側へ */
-@media (max-width: 899px) {
-
-  .appnav-panel.is-docked .ff-corner.tl,
-  .appnav-panel.is-docked .ff-corner.bl {
-    left: 2px;
-  }
-
-  .appnav-panel.is-docked .ff-corner.tr,
-  .appnav-panel.is-docked .ff-corner.br {
-    right: 2px;
-  }
-}
-
-/* ── タイトル周り・✕ボタン(ポップアップと同じ) ── */
-.appnav-panel.is-docked .appnav-section-header {
-  padding-right: 32px;
-  border-bottom-color: rgba(216, 196, 138, .35);
-}
-
-.appnav-panel.is-docked .appnav-section-title {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: .16em;
-  color: var(--c-cyan);
-}
-
-.appnav-panel.is-docked .appnav-popup-close {
+.appnav-panel:is(.is-popup, .is-docked) .appnav-popup-close {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -803,78 +422,153 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.appnav-panel.is-docked .appnav-popup-close:hover,
-.appnav-panel.is-docked .appnav-popup-close:focus-visible {
+.appnav-panel:is(.is-popup, .is-docked) .appnav-popup-close:hover,
+.appnav-panel:is(.is-popup, .is-docked) .appnav-popup-close:focus-visible {
   color: #fff;
   border-color: var(--c-cyan);
   box-shadow: 0 0 8px rgba(34, 211, 238, .6);
   outline: none;
 }
 
+/* 四隅のひし形(外周の角に乗せる) */
+.appnav-panel:is(.is-popup, .is-docked) .ff-corner {
+  display: block;
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: #d8c48a;
+  transform: rotate(45deg);
+  box-shadow: 0 0 6px rgba(216, 196, 138, .6);
+  pointer-events: none;
+}
+
+.appnav-panel:is(.is-popup, .is-docked) .ff-corner.tl {
+  top: -4px;
+  left: -4px;
+}
+
+.appnav-panel:is(.is-popup, .is-docked) .ff-corner.tr {
+  top: -4px;
+  right: -4px;
+}
+
+.appnav-panel:is(.is-popup, .is-docked) .ff-corner.bl {
+  bottom: -4px;
+  left: -4px;
+}
+
+.appnav-panel:is(.is-popup, .is-docked) .ff-corner.br {
+  bottom: -4px;
+  right: -4px;
+}
+
+/* モバイルのドック: 画面端で切れないよう、左右のひし形を内側へ */
+@media (max-width: 899px) {
+
+  .appnav-panel.is-docked .ff-corner.tl,
+  .appnav-panel.is-docked .ff-corner.bl {
+    left: 2px;
+  }
+
+  .appnav-panel.is-docked .ff-corner.tr,
+  .appnav-panel.is-docked .ff-corner.br {
+    right: 2px;
+  }
+}
+
+
 /* =========================================================
-   RANK Filter ボタン — 控えめな面 + 選択中だけランク色で塗る
-   clip-path は使わず、他のパネル・カードと同じ 2〜3px の角丸に揃える
+   4. 告知・メンテ・エラーの中身
    ========================================================= */
-.appnav-panel.is-docked .appnav-filter-wrapper {
+.appnav-alert {
+  font-size: 15px;
+  color: var(--c-text-hi);
+  line-height: 1.6;
+}
+
+/* ようこそメッセージ */
+.sidebar-welcome-area {
+  margin-bottom: 0;
+  min-width: 0;
+}
+
+.sidebar-welcome-msg {
+  font-size: 13px;
+  color: var(--c-text-lo);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.sidebar-welcome-name {
+  font-weight: 500;
+  color: var(--c-gold);
+}
+
+/* エラー一覧 */
+.appnav-error-item {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--c-border);
+  font-size: 15px;
+}
+
+.appnav-error-time {
+  color: var(--c-text-lo);
+  white-space: nowrap;
+}
+
+.error-msg {
+  color: var(--c-offline-text);
+}
+
+
+/* =========================================================
+   5. RANK フィルター
+   ========================================================= */
+.appnav-filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.appnav-filter-wrapper {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
+  width: 100%;
 }
 
-.appnav-panel.is-docked .appnav-rank-tabs {
-  gap: 8px;
-}
-
-/* ランクごとの強調色(選択中の枠・塗り・光に使う) */
-.appnav-panel.is-docked .appnav-rank-tab[data-rank="ALL"] {
-  --rk: var(--c-all);
-}
-
-.appnav-panel.is-docked .appnav-rank-tab[data-rank="S rank"] {
-  --rk: var(--c-s);
-}
-
-.appnav-panel.is-docked .appnav-rank-tab[data-rank="A rank"] {
-  --rk: var(--c-a);
-}
-
-.appnav-panel.is-docked .appnav-rank-tab[data-rank="FATE"] {
-  --rk: var(--c-f);
-}
-
-.appnav-panel.is-docked .area-filter-btn {
+/* ── 5-1. ボタン共通(ランクタブ / エリアボタン) ──────────────
+   未選択: 枠は暗い金、面は暗い青で、色はほとんど付けない
+   選択中: 枠がランク色で太くなり、面がランク色に染まり、文字は白 */
+:is(.appnav-rank-tab, .area-filter-btn) {
   --rk: var(--c-cyan);
-}
-
-/* 未選択: 枠は暗い金、面は暗い青。色はほとんど付けない */
-.appnav-panel.is-docked :is(.appnav-rank-tab, .area-filter-btn) {
+  /* 選択中の強調色(ランクごとに上書き) */
   position: relative;
   isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
   border: 1px solid #5c5035;
   border-radius: 3px;
   background: linear-gradient(180deg, #1d2a47 0%, #111b30 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.45);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
   transition: transform 0.08s ease;
-}
-
-.appnav-panel.is-docked .appnav-rank-tab {
-  height: 38px;
-  font-size: 15px;
-}
-
-.appnav-panel.is-docked .area-filter-btn {
-  height: 32px;
-  font-size: 13px;
-  border-radius: 2px;
-}
-
-.appnav-panel.is-docked .area-filter-btn:not(.is-selected) {
-  color: #aebbd2;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 /* 選択中に面を染めるための層(ふだんは透明) */
-.appnav-panel.is-docked :is(.appnav-rank-tab, .area-filter-btn)::before {
+:is(.appnav-rank-tab, .area-filter-btn)::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -885,103 +579,176 @@
   pointer-events: none;
 }
 
-/* ホバー(未選択のみ): 枠が少し明るい金に */
-.appnav-panel.is-docked :is(.appnav-rank-tab:not(.is-active), .area-filter-btn:not(.is-selected)):hover {
+/* ホバー(未選択のみ) */
+:is(.appnav-rank-tab:not(.is-active), .area-filter-btn:not(.is-selected)):hover {
   border-color: #a8965f;
   background: linear-gradient(180deg, #27385c 0%, #16233e 100%);
 }
 
-.appnav-panel.is-docked .area-filter-btn:not(.is-selected):hover {
+/* 押した感触 */
+:is(.appnav-rank-tab, .area-filter-btn):active {
+  transform: translateY(1px);
+}
+
+/* キーボード操作時 */
+:is(.appnav-rank-tab, .area-filter-btn):focus-visible {
+  outline: 2px solid var(--c-cyan);
+  outline-offset: 2px;
+}
+
+/* ── 5-2. ランクタブ (ALL / S / A / FATE) ── */
+.appnav-rank-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.appnav-rank-tab {
+  height: 38px;
+  font-size: 15px;
+}
+
+/* ランクごとの文字色と強調色 */
+.appnav-rank-tab[data-rank="ALL"] {
+  --rk: var(--c-all);
+  color: var(--c-all);
+}
+
+.appnav-rank-tab[data-rank="S rank"] {
+  --rk: var(--c-s);
+  color: var(--c-s);
+}
+
+.appnav-rank-tab[data-rank="A rank"] {
+  --rk: var(--c-a);
+  color: var(--c-a);
+}
+
+.appnav-rank-tab[data-rank="FATE"] {
+  --rk: var(--c-f);
+  color: var(--c-f);
+}
+
+/* ── 5-3. エリアボタン(拡張) ── */
+.area-filter-btn {
+  height: 32px;
+  padding: 0 4px;
+  line-height: 1;
+  font-size: 13px;
+  border-radius: 2px;
+  color: #aebbd2;
+  outline: none;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.area-filter-btn:not(.is-selected):hover {
   color: #fff;
 }
 
-/* 選択中: 枠がランク色で太くなり、面がランク色に染まり、文字は白 */
-.appnav-panel.is-docked :is(.appnav-rank-tab.is-active, .area-filter-btn.is-selected) {
+/* 1ページに最大6個: 各ボタンは calc((100% - 5 * gap) / 6) */
+.area-grid-container.appnav-area-carousel-track .area-filter-btn {
+  flex: 0 0 calc((100% - (5 * 6px)) / 6);
+  min-width: 48px;
+  scroll-snap-align: start;
+}
+
+/* ── 選択中の見た目(上のランク色・エリアボタンの指定より後ろに置くこと) ── */
+.appnav-rank-tab.is-active,
+.area-filter-btn.is-selected {
   border-color: var(--rk);
   color: #fff;
   box-shadow: inset 0 0 0 1px var(--rk), 0 0 6px -1px var(--rk);
 }
 
-.appnav-panel.is-docked :is(.appnav-rank-tab.is-active, .area-filter-btn.is-selected)::before {
+.appnav-rank-tab.is-active::before,
+.area-filter-btn.is-selected::before {
   opacity: 0.4;
 }
 
-/* 押した感触 */
-.appnav-panel.is-docked :is(.appnav-rank-tab, .area-filter-btn):active {
-  transform: translateY(1px);
-}
-
-/* キーボード操作時 */
-.appnav-panel.is-docked :is(.appnav-rank-tab, .area-filter-btn):focus-visible {
-  outline: 2px solid var(--c-cyan);
-  outline-offset: 2px;
-}
-
-/* =========================================================
-   RANK Filter: エリア(拡張)ボタンのスクロール領域
-   囲みなし。端のフェードはマスクで表現(背景色に依存しない)
-   ========================================================= */
-.appnav-panel.is-docked .appnav-area-carousel-wrapper {
+/* ── 5-4. エリアのスクロール領域(囲みなし) ──────────────────
+   端のフェードはマスクで表現(背景色に依存しない) */
+.appnav-area-carousel-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
   /* 左右に5pxずつ外へ広げる。トラックの内側余白(5px)と相殺され、ボタンの端が Rank タブの端と揃う。
      広げた分は、選択中ボタンの光が端で切れないための余白になる */
   width: calc(100% + 10px);
   margin-inline: -5px;
-  padding: 0;
-  background: none;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
   --fade-l: 0px;
   --fade-r: 0px;
 }
 
 /* 矢印が出ている側(まだスクロールできる側)だけ、端をフェードさせる */
-.appnav-panel.is-docked .appnav-area-carousel-wrapper:has(.carousel-arrow-prev:not(.hidden)) {
+.appnav-area-carousel-wrapper:has(.carousel-arrow-prev:not(.hidden)) {
   --fade-l: 40px;
 }
 
-.appnav-panel.is-docked .appnav-area-carousel-wrapper:has(.carousel-arrow-next:not(.hidden)) {
+.appnav-area-carousel-wrapper:has(.carousel-arrow-next:not(.hidden)) {
   --fade-r: 40px;
 }
 
-.appnav-panel.is-docked .appnav-area-carousel {
+.appnav-area-carousel {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
   scroll-padding-inline: 5px;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent 100%);
   mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent 100%);
 }
 
-.appnav-panel.is-docked .appnav-area-carousel::-webkit-scrollbar {
+.appnav-area-carousel::-webkit-scrollbar {
   display: none;
 }
 
-/* 下に落ちるボタンの影が切れないよう、余白を確保 */
-.appnav-panel.is-docked .area-grid-container.appnav-area-carousel-track {
+.area-grid-container.appnav-area-carousel-track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 6px;
+  width: 100%;
   padding: 5px 5px 6px;
   /* 選択中ボタンの光が切れないよう余白を確保 */
 }
 
-/* 矢印ボタン(✕と同じ丸ボタン) */
-.appnav-panel.is-docked .carousel-arrow {
+/* ── 5-5. 矢印ボタン(✕と同じ丸ボタン) ── */
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
   width: 28px;
   height: 28px;
-  font-size: 18px;
-  color: #d8c48a;
+  border-radius: 50%;
   background: rgba(0, 0, 0, .55);
-  border-color: rgba(216, 196, 138, .55);
+  border: 1px solid rgba(216, 196, 138, .55);
+  color: #d8c48a;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.55);
+  transition: all 0.15s ease;
 }
 
-.appnav-panel.is-docked .carousel-arrow:hover {
+.carousel-arrow:hover {
   color: #fff;
   border-color: var(--c-cyan);
   box-shadow: 0 0 8px rgba(34, 211, 238, .6);
 }
 
-.appnav-panel.is-docked .carousel-arrow-prev {
+.carousel-arrow-prev {
   left: 7px;
 }
 
-.appnav-panel.is-docked .carousel-arrow-next {
+.carousel-arrow-next {
   right: 7px;
 }
