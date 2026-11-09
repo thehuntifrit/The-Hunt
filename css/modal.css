@@ -104,6 +104,14 @@ label[for="report-force-submit"] {
   opacity: 0.85;
 }
 
+/* 時間エリアとボタンエリアの間隔を詰める */
+#report-form .u-mt-21 {
+  margin-top: 10px;
+}
+#report-form .u-mb-14 {
+  margin-bottom: 6px;
+}
+
 .modal-error-display {
   font-size: 14px;
   color: var(--c-error);
