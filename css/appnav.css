@@ -705,6 +705,10 @@
   }
 }
 
+/* =========================================================
+   Docked mode (RANK): .appnav-panel.is-docked
+   (二重枠の ::before は、上の Popup ブロックの共通ルールで定義済み)
+   ========================================================= */
 .appnav-panel.is-docked {
   overflow: visible;
   background: linear-gradient(180deg, rgba(24, 34, 56, .97) 0%, rgba(9, 14, 26, .98) 100%);
@@ -918,6 +922,10 @@
    囲みなし。端のフェードはマスクで表現(背景色に依存しない)
    ========================================================= */
 .appnav-panel.is-docked .appnav-area-carousel-wrapper {
+  /* 左右に5pxずつ外へ広げる。トラックの内側余白(5px)と相殺され、ボタンの端が Rank タブの端と揃う。
+     広げた分は、選択中ボタンの光が端で切れないための余白になる */
+  width: calc(100% + 10px);
+  margin-inline: -5px;
   padding: 0;
   background: none;
   border: none;
@@ -937,7 +945,7 @@
 }
 
 .appnav-panel.is-docked .appnav-area-carousel {
-  scroll-padding-inline: 2px;
+  scroll-padding-inline: 5px;
   scrollbar-width: none;
   -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent 100%);
   mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent 100%);
@@ -971,9 +979,9 @@
 }
 
 .appnav-panel.is-docked .carousel-arrow-prev {
-  left: 2px;
+  left: 7px;
 }
 
 .appnav-panel.is-docked .carousel-arrow-next {
-  right: 2px;
+  right: 7px;
 }
