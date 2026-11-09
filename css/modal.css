@@ -83,9 +83,25 @@
 }
 
 .modal-checkbox {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   accent-color: var(--c-cyan);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* 「修正する」ラベルのフォントサイズ */
+label[for="report-force-submit"] {
+  font-size: 15px;
+  color: var(--c-text-hi);
+  cursor: pointer;
+}
+
+/* datetime-local のカレンダーアイコンをシアンに */
+#report-datetime::-webkit-calendar-picker-indicator {
+  filter: invert(1) sepia(1) saturate(5) hue-rotate(155deg) brightness(1.1);
+  cursor: pointer;
+  opacity: 0.85;
 }
 
 .modal-error-display {
