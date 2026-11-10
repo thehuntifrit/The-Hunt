@@ -177,11 +177,18 @@
   box-shadow: 0 0 6px rgba(34, 211, 238, 0.7);
 }
 
-/* 報告モーダル: モブ名 */
+/* 報告モーダル: モブ名
+   ひし形・インスタンス番号のバッジ・名前を、縦方向の中央で揃える */
 .modal-mob-name {
+  display: flex;
+  align-items: center;
   font-size: 18px;
   font-weight: 700;
   color: var(--c-text-hi);
+}
+
+.modal-mob-name::before {
+  flex: none;
 }
 
 /* 認証モーダル: タイトル */
