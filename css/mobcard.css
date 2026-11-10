@@ -154,9 +154,12 @@
   }
 }
 
-/* メンテナンス中: グレー表示。カード全体(背景・上端の帯・角飾りを含む)にまとめてかける。
-   中身(.mobcard-inner)だけにかけると、背景だけ色が残って上部と内容部の色が食い違う */
-.mobcard-card.maintenance-gray-out {
+/* メンテナンス中: 中身(文字・バッジ・マップなど)と上端の帯・角飾りだけをグレーにする。
+   カードの背景は紺色のまま残す(背景までグレーにすると、内容がほとんど見えなくなるため)。
+   ヘッダーの背景は透明なので、上部と内容部は同じ紺色になる */
+.mobcard-card.maintenance-gray-out::before,
+.mobcard-card.maintenance-gray-out::after,
+.mobcard-card.maintenance-gray-out .mobcard-inner {
   filter: grayscale(100%) brightness(0.6);
 }
 
