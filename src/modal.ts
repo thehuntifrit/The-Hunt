@@ -78,6 +78,15 @@ export function closeAuthModal(): void {
 // ─── モーダル初期化 ───
 
 export function initModal(): void {
+    document.querySelectorAll<HTMLElement>(".modal-content-base").forEach(win => {
+        if (win.querySelector(".ff-corner")) return;
+        ["tl", "tr", "bl", "br"].forEach(pos => {
+            const corner = document.createElement("i");
+            corner.className = `ff-corner ${pos}`;
+            win.appendChild(corner);
+        });
+    });
+
     if (DOM.cancelReportBtn) {
         DOM.cancelReportBtn.addEventListener("click", closeReportModal);
     }

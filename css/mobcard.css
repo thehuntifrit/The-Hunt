@@ -154,15 +154,10 @@
   }
 }
 
-/* メンテナンス中: グレー表示 */
-.mobcard-card.maintenance-gray-out::before,
-.mobcard-card.maintenance-gray-out::after {
+/* メンテナンス中: グレー表示。カード全体(背景・上端の帯・角飾りを含む)にまとめてかける。
+   中身(.mobcard-inner)だけにかけると、背景だけ色が残って上部と内容部の色が食い違う */
+.mobcard-card.maintenance-gray-out {
   filter: grayscale(100%) brightness(0.6);
-}
-
-.mobcard-card.maintenance-gray-out .mobcard-inner {
-  filter: grayscale(100%) brightness(0.6);
-  box-shadow: none;
 }
 
 .mobcard-card.maintenance-gray-out .mobcard-name {
@@ -177,7 +172,8 @@
 .mobcard-header {
   flex-shrink: 0;
   padding: 13px 16px 10px;
-  background-color: #182238;
+  /* 背景は付けない: カード本体のグラデーションがそのまま見え、内容領域と同じ色になる */
+  background: transparent;
   position: sticky;
   top: 0;
   z-index: 1;
