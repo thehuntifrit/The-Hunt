@@ -286,9 +286,11 @@
   line-height: 1;
 }
 
-/* 「@23」の「@」は、字体の特性で数字より下に沈むので、先頭の1文字だけ少し持ち上げる */
-.pc-count-val .count-num::first-letter {
-  vertical-align: 1px;
+/* 「@23」の「@」は、字体の特性で数字より下に沈むので、少し持ち上げる
+   (「@」は mobCard.ts の updateMobCount が、別の要素として出す) */
+.pc-count-val .count-at {
+  position: relative;
+  top: -1px;
 }
 
 .pc-count-val .count-unit {

@@ -710,7 +710,18 @@ export function updateMobCount(card: HTMLElement, mob: Mob): void {
     const numEl = el.querySelector('.count-num') as HTMLElement | null;
     const unitEl = el.querySelector('.count-unit') as HTMLElement | null;
 
-    if (numEl) numEl.textContent = countInfo.type === 'single' ? String(countInfo.value) : `@${countInfo.value}`;
+    if (numEl) {
+      if (countInfo.type === 'single') {
+        numEl.textContent = String(countInfo.value);
+      } else {
+        // 「@」は字体の特性で数字より下に沈むので、別の要素に分けて位置を調整できるようにする
+        numEl.textContent = "";
+        const at = document.createElement("span");
+        at.className = "count-at";
+        at.textContent = "@";
+        numEl.append(at, String(countInfo.value));
+      }
+    }
     if (unitEl) {
       unitEl.textContent = countInfo.unit;
     }
