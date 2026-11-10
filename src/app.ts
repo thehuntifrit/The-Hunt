@@ -346,7 +346,7 @@ function attachMoblistBackgroundWheel(): void {
 
   main.addEventListener('wheel', (e: Event) => {
     const we = e as WheelEvent;
-    if (we.defaultPrevented || we.deltaY === 0) return;
+    if (we.defaultPrevented || we.deltaY === 0 || we.ctrlKey) return;
 
     const t = we.target instanceof Element ? we.target : null;
     if (!t) return;
@@ -361,8 +361,6 @@ function attachMoblistBackgroundWheel(): void {
     if (pane && pane.classList.contains('is-active') && window.innerWidth < 900 && t.closest('#mobcard-pane')) {
       return;
     }
-
-    we.preventDefault();
 
     let delta = we.deltaY;
     if (we.deltaMode === 1) delta *= 16;
@@ -380,8 +378,9 @@ function attachMoblistBackgroundWheel(): void {
       lastTs = 0;
       rafId = requestAnimationFrame(step);
     }
-  }, { passive: false });
+  }, { passive: true });
 }
+
 attachMoblistBackgroundWheel();
 
 export function observeCard(el: HTMLElement): void {
