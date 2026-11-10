@@ -261,7 +261,9 @@
   font-size: 14px;
   color: var(--c-text-lo);
   display: inline-flex;
-  align-items: center;
+  /* 数字(等幅フォント)と「番」(日本語フォント)は、字体が違って中心がずれるので、
+     箱の中央ではなく文字の基準線で揃える */
+  align-items: baseline;
   gap: 2px;
   line-height: 1;
 }
@@ -282,6 +284,11 @@
   font-family: var(--font-mono, monospace);
   font-weight: 400;
   line-height: 1;
+}
+
+/* 「@23」の「@」は、字体の特性で数字より下に沈むので、先頭の1文字だけ少し持ち上げる */
+.pc-count-val .count-num::first-letter {
+  vertical-align: 1px;
 }
 
 .pc-count-val .count-unit {
