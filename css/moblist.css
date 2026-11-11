@@ -695,7 +695,7 @@
   background-color: #1a2a44;
   border-color: var(--c-border);
   box-shadow: -7px 0 8px -4px rgba(255, 255, 255, 0.9),
-    7px 0 8px -4px rgba(255, 255, 255, 0.9);
+    7px 0 2px -4px rgba(255, 255, 255, 0.9);
 }
 
 /* メンテナンス中: グレーアウト */
