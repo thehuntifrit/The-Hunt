@@ -296,6 +296,11 @@ label[for="report-force-submit"] {
   box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
+/* Step 1 の行(検証コード + Copy ボタン): 高さが違うので、縦の中央で揃える */
+.modal-auth-box .u-flex {
+  align-items: center;
+}
+
 /* 検証コード */
 .auth-code-display {
   display: inline-block;

@@ -282,6 +282,8 @@
 
 .pc-count-val .count-num {
   font-family: var(--font-mono, monospace);
+  /* 細い字体で小さく見えるので、「番」(13px)に合わせて1px大きくする */
+  font-size: 15px;
   font-weight: 400;
   line-height: 1;
 }

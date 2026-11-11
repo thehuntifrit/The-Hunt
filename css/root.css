@@ -101,7 +101,14 @@ body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  overscroll-behavior: none;
+}
+
+/* スマホの引っ張り更新・バウンスを防ぐ(タッチ端末のみ。PCでは付けない) */
+@media (pointer: coarse) {
+  html,
+  body {
+    overscroll-behavior: none;
+  }
 }
 
 input,
