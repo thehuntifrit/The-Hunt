@@ -699,3 +699,8 @@
     opacity: 0.25;
   }
 }
+
+/* スクロール中は行のマウス反応を止める(マウスの下を行が通り過ぎるたびの再描画を避ける) */
+#moblist-container.is-scrolling .moblist-item {
+  pointer-events: none;
+}

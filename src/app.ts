@@ -299,6 +299,16 @@ window.addEventListener('resize', handleScroll, { passive: true });
 const moblistEl = document.getElementById('moblist-container');
 if (moblistEl) moblistEl.addEventListener('scroll', handleScroll, { passive: true });
 
+// スクロール中だけ印を付ける(止まって約0.12秒後に外す)。印の間は、行がマウスに反応しない
+if (moblistEl) {
+  let scrollIdleTimer: number | undefined;
+  moblistEl.addEventListener('scroll', () => {
+    if (!moblistEl.classList.contains('is-scrolling')) moblistEl.classList.add('is-scrolling');
+    window.clearTimeout(scrollIdleTimer);
+    scrollIdleTimer = window.setTimeout(() => moblistEl.classList.remove('is-scrolling'), 120);
+  }, { passive: true });
+}
+
 function attachMoblistBackgroundWheel(): void {
   const main = document.querySelector('.main-content-area') as HTMLElement | null;
   if (!main || (main as any).__moblistBgWheelAttached) return;
