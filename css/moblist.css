@@ -258,6 +258,14 @@
 }
 
 .pc-count-val {
+  /* 縦位置の微調整(+で下、-で上)。字体が違うので、見た目で合わせる */
+  --count-num-y: 0px;
+  /* 数字 */
+  --count-at-y: -1px;
+  /* 「@」(数字に対しての位置。数字が動くと一緒に動く) */
+  --count-unit-y: -1px;
+  /* 「番」 */
+
   font-size: 14px;
   color: var(--c-text-lo);
   display: inline-flex;
@@ -286,13 +294,17 @@
   font-size: 15px;
   font-weight: 400;
   line-height: 1;
+  position: relative;
+  top: var(--count-num-y);
 }
 
-/* 「@23」の「@」は、字体の特性で数字より下に沈むので、少し持ち上げる
+/* 「@23」の「@」: 数字(15px)の中にあるが、大きさは数字から切り離して14pxに戻す。
+   さらに、字体の特性で数字より下に沈むので、少し持ち上げる
    (「@」は mobCard.ts の updateMobCount が、別の要素として出す) */
 .pc-count-val .count-at {
+  font-size: 14px;
   position: relative;
-  top: -1px;
+  top: var(--count-at-y);
 }
 
 .pc-count-val .count-unit {
@@ -300,6 +312,8 @@
   font-size: 13px;
   line-height: 1;
   margin-left: 0.5px;
+  position: relative;
+  top: var(--count-unit-y);
 }
 
 /* メモのアイコンとツールチップ */
@@ -698,9 +712,4 @@
   50% {
     opacity: 0.25;
   }
-}
-
-/* スクロール中は行のマウス反応を止める(マウスの下を行が通り過ぎるたびの再描画を避ける) */
-#moblist-container.is-scrolling .moblist-item {
-  pointer-events: none;
 }
