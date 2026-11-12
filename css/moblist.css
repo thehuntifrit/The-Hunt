@@ -691,7 +691,7 @@
    メンテナンス中の行は、下のグレー表示を優先する。
    ※ 全行にかかる filter なので、スクロールが重く感じたら、色の変数を差し替える方式に戻せる */
 .moblist-item.is-pre-repop:not(.maintenance-gray-out) {
-  filter: saturate(0.85);
+  filter: saturate(0.3);
 }
 
 /* メンテナンス中: グレーアウト */
