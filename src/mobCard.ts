@@ -704,27 +704,11 @@ export function updateMobCount(card: HTMLElement, mob: Mob): void {
 
   const el = cloneTemplate('spawn-count-template');
   if (el) {
-    if (countInfo.type === 'single') el.classList.add('text-cyan', 'font-bold');
-    else el.classList.add('font-bold');
+    el.classList.add(countInfo.type === 'single' ? 'is-single' : 'is-multiple');
+    el.title = countInfo.type === 'single' ? `${countInfo.value}番` : `残り${countInfo.value}か所`;
 
     const numEl = el.querySelector('.count-num') as HTMLElement | null;
-    const unitEl = el.querySelector('.count-unit') as HTMLElement | null;
-
-    if (numEl) {
-      if (countInfo.type === 'single') {
-        numEl.textContent = String(countInfo.value);
-      } else {
-        // 「@」は字体の特性で数字より下に沈むので、別の要素に分けて位置を調整できるようにする
-        numEl.textContent = "";
-        const at = document.createElement("span");
-        at.className = "count-at";
-        at.textContent = "@";
-        numEl.append(at, String(countInfo.value));
-      }
-    }
-    if (unitEl) {
-      unitEl.textContent = countInfo.unit;
-    }
+    if (numEl) numEl.textContent = String(countInfo.value);
 
     countContainer.innerHTML = "";
     countContainer.appendChild(el);
