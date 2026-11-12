@@ -251,7 +251,7 @@
 
 /* 残り地点(名前の後ろ)。mobCard.ts の updateMobCount が出す
    is-single  : 残り1か所 → ピン + 座標番号(シアンの塗り)
-   is-multiple: 残り複数  → ピン2つ + 残りの数(控えめな枠) */
+   is-multiple: 残り複数  → 「?」+ 残りの数(グレーの枠) */
 .moblist-count {
   flex-shrink: 0;
   display: inline-flex;
@@ -267,18 +267,16 @@
 }
 
 .count-badge.is-multiple {
-  background: rgba(143, 163, 192, 0.12);
-  /* var(--c-text-lo) 12% */
-  border: 1px solid rgba(143, 163, 192, 0.5);
-  /* var(--c-text-lo) 50% */
-  color: var(--c-text-lo);
+  background: rgba(174, 187, 210, 0.12);
+  border: 1px solid rgba(174, 187, 210, 0.55);
+  color: #aebbd2;
 }
 
 /* ピンの絵(文字や絵文字ではなく、図形で描く。色は文字色に連動) */
 .count-icon {
   flex: none;
-  width: 8px;
-  height: 10px;
+  width: 9px;
+  height: 11px;
   background: currentColor;
   -webkit-mask: var(--count-icon-img) center / contain no-repeat;
   mask: var(--count-icon-img) center / contain no-repeat;
@@ -289,8 +287,13 @@
 }
 
 .count-badge.is-multiple .count-icon {
-  width: 13px;
-  --count-icon-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='3 0 30.5 24'%3E%3Cpath fill-rule='evenodd' d='M12 1.5C7.9 1.5 4.5 4.8 4.5 8.9c0 5.4 7.5 13.6 7.5 13.6s7.5-8.2 7.5-13.6c0-4.1-3.4-7.4-7.5-7.4zm0 10.2a2.9 2.9 0 1 1 0-5.8 2.9 2.9 0 0 1 0 5.8z'/%3E%3Cpath transform='translate%2813 0%29' fill-rule='evenodd' d='M12 1.5C7.9 1.5 4.5 4.8 4.5 8.9c0 5.4 7.5 13.6 7.5 13.6s7.5-8.2 7.5-13.6c0-4.1-3.4-7.4-7.5-7.4zm0 10.2a2.9 2.9 0 1 1 0-5.8 2.9 2.9 0 0 1 0 5.8z'/%3E%3C/svg%3E");
+  display: none;
+}
+
+/* 複数: ピンの代わりに「?」(未確定: どこかは分からないが、いくつか残っている) */
+.count-badge.is-multiple::before {
+  content: "?";
+  font-weight: 700;
 }
 
 /* メモのアイコンとツールチップ */
