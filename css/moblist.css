@@ -225,6 +225,12 @@
    ========================================================= */
 .instance-badge,
 .count-badge {
+  /* 縦位置の微調整(+で下)。数字は字の形の都合で、箱の中央よりわずかに上に見えるので、少し下げる。
+     数字は Web フォント(端末が変わっても同じ形)なので、一度合わせれば端末に依存しない */
+  --badge-text-y: 0.5px;
+  /* 数字を下げる量 */
+  --count-icon-y: 0px;
+  /* ピン・@の絵を動かす量 */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -233,7 +239,7 @@
   height: 14px;
   padding: 0 4px;
   font-family: var(--font-mono, monospace);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1;
   border-radius: 2px;
@@ -242,6 +248,7 @@
 
 /* インスタンス番号(名前の前) */
 .instance-badge {
+  padding-top: calc(var(--badge-text-y) * 2);
   background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(59, 130, 246, 0.25));
   border: 1px solid var(--c-cyan, #06b6d4);
   color: #ffffff;
@@ -251,7 +258,7 @@
 
 /* 残り地点(名前の後ろ)。mobCard.ts の updateMobCount が出す
    is-single  : 残り1か所 → ピン + 座標番号(シアンの塗り)
-   is-multiple: 残り複数  → 「?」+ 残りの数(グレーの枠) */
+   is-multiple: 残り複数  → @の絵 + 残りの数(グレーの枠) */
 .moblist-count {
   flex-shrink: 0;
   display: inline-flex;
@@ -272,9 +279,16 @@
   color: #aebbd2;
 }
 
-/* ピンの絵(文字や絵文字ではなく、図形で描く。色は文字色に連動) */
+.count-badge .count-num {
+  position: relative;
+  top: var(--badge-text-y);
+}
+
+/* 絵(文字や絵文字ではなく、図形で描く。色は文字色に連動) */
 .count-icon {
   flex: none;
+  position: relative;
+  top: var(--count-icon-y);
   width: 9px;
   height: 11px;
   background: currentColor;
@@ -287,13 +301,8 @@
 }
 
 .count-badge.is-multiple .count-icon {
-  display: none;
-}
-
-/* 複数: ピンの代わりに「?」(未確定: どこかは分からないが、いくつか残っている) */
-.count-badge.is-multiple::before {
-  content: "?";
-  font-weight: 700;
+  width: 11px;
+  --count-icon-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3Cpath d='M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8'/%3E%3C/svg%3E");
 }
 
 /* メモのアイコンとツールチップ */
