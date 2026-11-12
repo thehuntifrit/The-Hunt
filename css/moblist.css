@@ -682,8 +682,8 @@
 .moblist-item.moblist-highlight-white {
   background-color: #1a2a44;
   border-color: var(--c-border);
-  box-shadow: -6px 1px 6px -4px rgba(255, 255, 255, 0.6),
-    6px 1px 6px -4px rgba(255, 255, 255, 0.6);
+  box-shadow: -6px -1px 6px -2px rgba(255, 255, 255, 0.6),
+    6px 1px 6px -2px rgba(255, 255, 255, 0.6);
 }
 
 /* リスポーン待ち(次のPOPまでまだ間がある行): 色の彩度を約15%下げて、POP WINDOW の行と区別する。
