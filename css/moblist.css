@@ -682,23 +682,54 @@
 .moblist-item.moblist-highlight-white {
   background-color: #1a2a44;
   border-color: var(--c-border);
-  box-shadow: -4px 0 6px -4px rgba(255, 255, 255, 0.75),
-    4px 0 6px -4px rgba(255, 255, 255, 0.75);
+  box-shadow: -6px 0 6px -1px rgba(255, 255, 255, 0.95),
+    6px 0 6px -1px rgba(255, 255, 255, 0.95);
 }
 
 /* リスポーン待ち(次のPOPまでまだ間がある行): 色の彩度を約15%下げて、POP WINDOW の行と区別する。
-   ランク色・シアン・金の変数を、この行の中だけ差し替える(色の値が変わるだけで、描画の負荷は増えない。
+   ランク色・シアン・金・文字色の変数を、この行の中だけ差し替える(色の値が変わるだけで、描画の負荷は増えない。
    filter: saturate() を全行にかけると、スクロールが重くなるため使わない)。
    元の値は右のコメント。ルートの色を変えたら、ここも計算し直す */
 .moblist-item.is-pre-repop {
-  --c-s: #daa750;   /* #e6aa44 */
-  --c-a: #70bac5;   /* #69bfcc */
-  --c-f: #a677d2;   /* #a66fda */
-  --c-cyan: #31c8df;   /* #22d3ee */
-  --c-gold: #efb24a;   /* #fdb63c */
-  --c-prog-s: #daa750;   /* #e6aa44 */
-  --c-prog-a: #70bac5;   /* #69bfcc */
-  --c-prog-f: #a677d2;   /* #a66fda */
+  --c-s: #daa750;
+  /* #e6aa44 */
+  --c-a: #70bac5;
+  /* #69bfcc */
+  --c-f: #a677d2;
+  /* #a66fda */
+  --c-cyan: #31c8df;
+  /* #22d3ee */
+  --c-gold: #efb24a;
+  /* #fdb63c */
+  --c-prog-s: #daa750;
+  /* #e6aa44 */
+  --c-prog-a: #70bac5;
+  /* #69bfcc */
+  --c-prog-f: #a677d2;
+  /* #a66fda */
+  /* 文字色(エリア名・時間の単位・補助の文字など。モブ名の白 #eee は無彩色なので対象外) */
+  --c-text-lo: #93a4bc;
+  /* #8fa3c0 */
+  --c-text-off: #566a84;
+  /* #526988 */
+  --c-text-sel: #31c8df;
+  /* #22d3ee */
+}
+
+/* 変数を使っていない固定色も、同じ割合(約15%)で下げる */
+.moblist-item.is-pre-repop .moblist-report-btn {
+  background-color: rgba(21, 171, 197, 0.18);
+  /* rgba(6, 182, 212, 0.18) */
+}
+
+.moblist-item.is-pre-repop .moblist-report-btn:hover {
+  background-color: rgba(21, 171, 197, 0.35);
+  /* rgba(6, 182, 212, 0.35) */
+}
+
+.moblist-item.is-pre-repop .instance-badge {
+  background: linear-gradient(135deg, rgba(21, 171, 197, 0.25), rgba(73, 133, 232, 0.25));
+  box-shadow: 0 0 6px rgba(21, 171, 197, 0.3);
 }
 
 /* メンテナンス中: グレーアウト */
