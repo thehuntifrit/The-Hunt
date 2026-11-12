@@ -686,6 +686,21 @@
     7px 0 8px -4px rgba(255, 255, 255, 0.75);
 }
 
+/* リスポーン待ち(次のPOPまでまだ間がある行): 色の彩度を約15%下げて、POP WINDOW の行と区別する。
+   ランク色・シアン・金の変数を、この行の中だけ差し替える(色の値が変わるだけで、描画の負荷は増えない。
+   filter: saturate() を全行にかけると、スクロールが重くなるため使わない)。
+   元の値は右のコメント。ルートの色を変えたら、ここも計算し直す */
+.moblist-item.is-pre-repop {
+  --c-s: #daa750;   /* #e6aa44 */
+  --c-a: #70bac5;   /* #69bfcc */
+  --c-f: #a677d2;   /* #a66fda */
+  --c-cyan: #31c8df;   /* #22d3ee */
+  --c-gold: #efb24a;   /* #fdb63c */
+  --c-prog-s: #daa750;   /* #e6aa44 */
+  --c-prog-a: #70bac5;   /* #69bfcc */
+  --c-prog-f: #a677d2;   /* #a66fda */
+}
+
 /* メンテナンス中: グレーアウト */
 .moblist-item.maintenance-gray-out {
   filter: grayscale(100%) brightness(0.6);
