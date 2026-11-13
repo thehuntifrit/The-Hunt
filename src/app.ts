@@ -28,9 +28,22 @@ let lastClickLocationId: string | null = null;
 let locationEventsAttached = false;
 let loadingTimeout: any = null;
 
+// ─── スクロールバーの幅を測って、CSS変数(--sbw)に入れる ─────────────
+// モブカードの内容領域は、右の余白(16px)の中にスクロールバーを収める。その幅の計算に使う
+function updateScrollbarWidthVar(): void {
+  const probe = document.createElement("div");
+  probe.style.cssText = "position:absolute;top:-9999px;width:100px;height:100px;overflow:scroll;scrollbar-width:thin;";
+  document.body.appendChild(probe);
+  const width = probe.offsetWidth - probe.clientWidth;
+  probe.remove();
+  document.documentElement.style.setProperty("--sbw", `${width}px`);
+}
+
 // ─── 初期化 ─────────────────────────────────────────────
 async function initApp(): Promise<void> {
   try {
+    updateScrollbarWidthVar();
+    window.addEventListener("resize", debounce(updateScrollbarWidthVar, 200));   // ズームの変更などに追従
     initAppEventListeners();
     attachMobCardEvents();
     initGlobalMagnifier();

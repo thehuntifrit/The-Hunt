@@ -353,6 +353,11 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: 12px 16px 16px;
+  /* スクロールバーの幅は、右の余白(16px)の中に収める。幅は app.ts が測って --sbw に入れる。
+     スクロールバーの有無で内側の幅が変わらないよう、常に場所を確保する(stable)。
+     こうして、タイトル(ヘッダー)と内容の右端が、いつも揃う */
+  scrollbar-gutter: stable;
+  padding-right: max(0px, calc(16px - var(--sbw, 0px)));
   display: flex;
   flex-direction: column;
   gap: 10px;
