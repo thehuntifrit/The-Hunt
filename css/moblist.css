@@ -700,12 +700,12 @@
    メンテナンス中の行は、下のグレー表示を優先する。
    ※ 全行にかかる filter なので、スクロールが重く感じたら、色の変数を差し替える方式に戻せる */
 .moblist-item.is-pre-repop:not(.maintenance-gray-out) {
-  filter: saturate(0.5);
+  filter: none;
 }
 
 /* メンテナンス中: グレーアウト */
 .moblist-item.maintenance-gray-out {
-  filter: grayscale(100%) brightness(0.6);
+  filter: none;
 }
 
 /* POP WINDOW 中: 時間の点滅 */
