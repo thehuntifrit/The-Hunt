@@ -177,8 +177,9 @@
   padding: 13px 16px 10px;
   /* 背景は付けない: カード本体のグラデーションがそのまま見え、内容領域と同じ色になる */
   background: transparent;
-  position: sticky;
-  top: 0;
+  /* sticky にしない: ヘッダーはスクロールする領域(.mobcard-content)の外にあるので固定は不要で、
+     overflow: hidden の中の sticky は、スクロールのたびに位置の再計算の対象になる */
+  position: relative;
   z-index: 1;
   width: 100%;
   max-width: 100%;
@@ -751,7 +752,9 @@
 
 .pc-map-box {
   width: 100%;
-  max-width: 100%;
+  /* 元の画像は 500x500。それより大きく表示すると、拡大の再計算が毎回走るので、上限を元の大きさにする */
+  max-width: 500px;
+  margin-inline: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -764,10 +767,10 @@
   max-width: 100%;
 }
 
-/* PC: マップは520px固定 */
+/* PC: マップは、元の画像と同じ500px固定 */
 @media (min-width: 900px) {
   .map-container.pc-map-box {
-    width: 520px;
+    width: 500px;
     max-width: 100%;
     height: auto;
     max-height: none;
@@ -776,7 +779,7 @@
   }
 
   .mob-map-img {
-    width: 520px;
+    width: 500px;
     max-width: 100%;
     height: auto;
     max-height: none;
@@ -837,7 +840,7 @@
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.12s;
+  /* transition は付けない: スクロール中に点がマウスの下を通るたびの再描画を減らすため */
   z-index: 30;
 }
 

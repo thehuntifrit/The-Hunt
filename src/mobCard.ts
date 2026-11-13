@@ -1,970 +1,822 @@
-/* =========================================================
-   css / mobcard.css  —  #mobcard-pane #mobcard-card-template #global-magnifier
-   FF14風UI(ゴールド枠・上端グラデ帯・上側のブラケット)に統一
+import { getDurationDHMParts, formatDurationDHM, formatMMDDHHmm, DHMParts } from "./cal";
+import { getState, isCulled, getStatusLabel, RANKS, DOM, CONFIG } from "./dataManager";
+import { Mob, SpawnPoint, CullStatus, RepopInfo } from "./types/mob";
 
-   目次
-   0. 変数
-   1. カードの枠            (.mobcard-card / 上端の帯 / 角飾り / メンテ中のグレー表示)
-   2. ヘッダー              (ランクバッジ / モブ名 / エリア / % / 進捗バー)
-   3. 内容領域              (スクロール / セクション見出し)
-   4. メモ
-   5. 時刻グリッドと出現条件 (最短・最大・次回・前回 / 出現条件)
-   6. 下部ボタン            (REPORT / CLOSE)
-   7. 出現マップ            (マップ画像 / オーバーレイ)
-   8. スポーンポイント      (点 / ツールチップ / 色)
-   9. 拡大鏡                (右クリックの拡大表示)
-   ========================================================= */
-
-
-/* =========================================================
-   0. 変数
-   ========================================================= */
-:root {
-  /* モバイルのボトムシートがヘッダーの下に潜らないための余白(上端の帯・枠・影の分) */
-  --mobcard - top - gap: 0px;
-}
-
-
-/* =========================================================
-   1. カードの枠
-   ========================================================= */
-.mobcard - card {
-  /* 上端の帯の色(ランクごとに下で上書き)。--mc-to は事前計算したHex値:
-     元の意図 = ランク色 + 目標色の混色。ランク色を変えたら再計算する
-     A: #22d3ee 35% + #2563eb 65% */
-  --mc - from: var(--c - a);
-  --mc - to: #248aec;
-
-  background: linear - gradient(180deg, #182238 0 %, #0b1120 100 %);
-  border - radius: 4px 4px 0 0;
-  border: 1px solid #9a8a5c;
-  /* くすんだゴールド */
-  border - bottom: none;
-  box - shadow:
-  0 0 0 1px rgba(0, 0, 0, 0.7),
-    /* 外側の黒縁 */
-    0 - 6px 24px rgba(0, 0, 0, 0.6),
-      inset 0 0 40px rgba(56, 189, 248, 0.05);
-  overflow: hidden;
-  /* モバイル: ボトムシート */
-  position: fixed;
-  bottom: var(--footer - safe);
-  left: 0;
-  right: 0;
-  width: 100 %;
-  max - width: 100 %;
-  box - sizing: border - box;
-  max - height: calc(100dvh - var(--header - h) - var(--footer - safe) - var(--mobcard - top - gap));
-  z - index: var(--z - card - mob);
-  transform: translateY(100 %);
-  transition: transform 0.22s cubic - bezier(0.32, 0, 0.67, 0);
-}
-
-.mobcard - card.is - open,
-.mobcard - card.visible {
-  transform: translateY(0);
-  transition - timing - function: cubic- bezier(0.33, 1, 0.68, 1);
-}
-
-/* 上端の帯: ランク色の同系色内で変化させる(A=シアン→青 / S=橙→淡い黄 / FATE=紫→フューシャ) */
-.mobcard - card: has(.mobcard - rank[data - rank="S"]) {
-  --mc - from: var(--c - s);
-  --mc - to: #facf57;
-  /* #f59e0b 40% + #fef08a 60% */
-}
-
-.mobcard - card: has(.mobcard - rank[data - rank="F"]) {
-  --mc - from: var(--c - f);
-  --mc - to: #ce6bf8;
-  /* #a855f7 40% + #e879f9 60% */
-}
-
-.mobcard - card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear - gradient(90deg, var(--mc - from), var(--mc - to));
-  z - index: 3;
-  pointer - events: none;
-}
-
-/* 上側2つの角飾り(内側のブラケット)。上端の帯(3px)の下に、左右の余白と同じ4pxあけて置く */
-.mobcard - card::after {
-  content: "";
-  position: absolute;
-  top: 7px;
-  left: 4px;
-  right: 4px;
-  height: 10px;
-  z - index: 2;
-  pointer - events: none;
-  opacity: 0.8;
-  background:
-  linear - gradient(#d8c48a, #d8c48a) top left / 10px 1px no - repeat,
-    linear - gradient(#d8c48a, #d8c48a) top left / 1px 10px no - repeat,
-      linear - gradient(#d8c48a, #d8c48a) top right / 10px 1px no - repeat,
-        linear - gradient(#d8c48a, #d8c48a) top right / 1px 10px no - repeat;
-}
-
-.mobcard - inner {
-  display: flex;
-  flex - direction: column;
-  height: 100 %;
-  max - height: calc(100dvh - var(--header - h) - var(--footer - safe) - var(--mobcard - top - gap));
-  background: transparent;
-  width: 100 %;
-  max - width: 100 %;
-  min - width: 0;
-  box - sizing: border - box;
-  overflow: hidden;
-}
-
-/* PC: 右ペインの中に固定(ボトムシートにしない) */
-@media(min - width: 900px) {
-  .mobcard - card {
-    position: relative;
-    /* 上端帯・角飾りの基準にするため static から変更 */
-    /* relative ではモバイル用の bottom/left/right が効いて上にずれるので、必ず解除する */
-    top: auto;
-    bottom: auto;
-    left: auto;
-    right: auto;
-    z - index: auto;
-    height: 100 %;
-    max - height: 100 %;
-    transform: none!important;
-    transition: none;
-    border - radius: 3px;
-    border: 1px solid #9a8a5c;
-    box - shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.7),
-      0 8px 28px rgba(0, 0, 0, 0.45),
-        inset 0 0 40px rgba(56, 189, 248, 0.05);
-    display: flex;
-    flex - direction: column;
-    min - height: 0;
-  }
-
-  .mobcard - inner {
-    max - height: 100 %;
-    min - height: 0;
+// ─── 汎用ユーティリティ ─────────────────────────────────
+function updateEl(parent: HTMLElement, selector: string, props: any = {}, dataset: Record<string, string> = {}): void {
+  const el = parent.querySelector(selector) as HTMLElement | null;
+  if (!el) return;
+  Object.assign(el, props);
+  for (const [key, val] of Object.entries(dataset)) {
+    el.dataset[key] = val;
   }
 }
 
-/* メンテナンス中: 中身(文字・バッジ・マップなど)と上端の帯・角飾りだけをグレーにする。
-   カードの背景は紺色のまま残す(背景までグレーにすると、内容がほとんど見えなくなるため)。
-   ヘッダーの背景は透明なので、上部と内容部は同じ紺色になる */
-.mobcard - card.maintenance - gray - out:: before,
-.mobcard - card.maintenance - gray - out:: after,
-.mobcard - card.maintenance - gray - out.mobcard - inner {
-  filter: grayscale(100 %) brightness(0.6);
+export function cloneTemplate(id: string): HTMLElement | null {
+  const template = document.getElementById(id) as HTMLTemplateElement | null;
+  if (!template) return null;
+  return (template.content.cloneNode(true) as DocumentFragment).firstElementChild as HTMLElement | null;
 }
 
-.mobcard - card.maintenance - gray - out.mobcard - name {
-  color: var(--c - text - hi);
-  text - shadow: none;
+// ─── ユーティリティ ─────────────────────────────────────
+const formatOrPlaceholder = (val: any): string => val ? formatMMDDHHmm(val) : "--/-- --:--";
+
+const ESCAPE_MAP: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;'
+};
+
+export function escapeHtml(str: string): string {
+  if (typeof str !== "string") return str;
+  return str.replace(/[&<>"']/g, function (m) {
+    return ESCAPE_MAP[m];
+  });
 }
 
-
-/* =========================================================
-   2. ヘッダー
-   ========================================================= */
-.mobcard - header {
-  flex - shrink: 0;
-  padding: 13px 16px 10px;
-  /* 背景は付けない: カード本体のグラデーションがそのまま見え、内容領域と同じ色になる */
-  background: transparent;
-  /* sticky にしない: ヘッダーはスクロールする領域(.mobcard-content)の外にあるので固定は不要で、
-     overflow: hidden の中の sticky は、スクロールのたびに位置の再計算の対象になる */
-  position: relative;
-  z - index: 1;
-  width: 100 %;
-  max - width: 100 %;
-  min - width: 0;
-  box - sizing: border - box;
+export function processText(text: string): string {
+  return escapeHtml(text).replace(/\/\//g, "<br>");
 }
 
-/* ヘッダー下の金色フェード罫線 */
-.mobcard - header::after {
-  content: "";
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 0;
-  height: 1px;
-  background: linear - gradient(90deg, rgba(216, 196, 138, 0.65), rgba(216, 196, 138, 0.08));
-}
-
-/* 1行目: ランクバッジ + モブ名 */
-.header - top - row {
-  display: flex;
-  align - items: center;
-  gap: 10px;
-  margin - bottom: 6px;
-  line - height: 1;
-}
-
-.header - left {
-  display: flex;
-  align - items: center;
-  gap: 10px;
-  flex: 1 1 auto;
-  min - width: 0;
-}
-
-/* ランクバッジ(既定は A。S と FATE だけ色を上書き) */
-.mobcard - rank {
-  --rk - glow: rgba(34, 211, 238, 0.4);
-  /* var(--c-a) 40% */
-  flex - shrink: 0;
-  width: 26px;
-  height: 26px;
-  border - radius: 3px;
-  display: flex;
-  align - items: center;
-  justify - content: center;
-  font - family: var(--font - ui);
-  font - size: 13px;
-  font - weight: 700;
-  background - color: var(--c - a - dark);
-  color: var(--c - a);
-  border: 1px solid var(--c - a);
-  box - shadow:
-  0 0 0 1px rgba(0, 0, 0, 0.55),
-    0 0 8px var(--rk - glow),
-      inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-.mobcard - rank[data - rank="S"] {
-  --rk - glow: rgba(245, 158, 11, 0.4);
-  /* var(--c-s) 40% */
-  background - color: var(--c - s - dark);
-  color: var(--c - s);
-  border - color: var(--c - s);
-}
-
-.mobcard - rank[data - rank="F"] {
-  --rk - glow: rgba(168, 85, 247, 0.4);
-  /* var(--c-f) 40% */
-  background - color: var(--c - f - dark);
-  color: var(--c - f);
-  border - color: var(--c - f);
-}
-
-/* モブ名 */
-.mobcard - name {
-  font - family: var(--font - ui);
-  font - size: 18px;
-  font - weight: 700;
-  letter - spacing: 0.02em;
-  color: var(--c - text - hi);
-  text - shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  white - space: nowrap;
-  overflow: hidden;
-  text - overflow: ellipsis;
-  margin: 0;
-  line - height: 1;
-  display: flex;
-  align - items: center;
-  gap: 4px;
-}
-
-/* 2行目: エリア情報 + % */
-.header - mid - row {
-  display: flex;
-  align - items: center;
-  justify - content: space - between;
-  gap: 8px;
-  margin - bottom: 7px;
-  line - height: 1;
-}
-
-.mobcard - area - info {
-  display: flex;
-  align - items: center;
-  gap: 4px;
-  min - width: 0;
-  overflow: hidden;
-}
-
-.detail - area {
-  font - family: var(--font - ui);
-  font - size: 13px;
-  color: var(--c - text - lo);
-  white - space: nowrap;
-  overflow: hidden;
-  text - overflow: ellipsis;
-  line - height: 1;
-}
-
-.detail - expansion {
-  font - family: var(--font - ui);
-  font - size: 13px;
-  color: var(--c - text - off);
-  white - space: nowrap;
-  flex - shrink: 0;
-  line - height: 1;
-}
-
-.percent {
-  flex - shrink: 0;
-  font - family: var(--font - mono);
-  font - size: 16px;
-  font - weight: 500;
-  color: var(--c - cyan);
-  text - shadow: 0 0 8px rgba(34, 211, 238, 0.45);
-  line - height: 1;
-}
-
-/* 進捗バー */
-.mobcard - progress - container {
-  width: 100 %;
-  max - width: 100 %;
-  height: 6px;
-  border - radius: 1px;
-  background - color: var(--c - prog - bg);
-  border: 1px solid rgba(216, 196, 138, 0.3);
-  box - shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
-  overflow: hidden;
-  box - sizing: border - box;
-}
-
-.mobcard - progress - bar {
-  height: 100 %;
-  max - width: 100 %;
-  width: calc(var(--prog - percent, 0) * 100 %);
-  background - color: var(--c - prog - a);
-  /* 色は従来どおり background-color で決まる。上に光沢だけ重ねる */
-  background - image: linear - gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 60 %, rgba(0, 0, 0, 0.15));
-  box - shadow: 0 0 8px rgba(34, 211, 238, 0.35);
-  border - radius: 1px;
-  transition: width 0.3s ease;
-}
-
-
-/* =========================================================
-   3. 内容領域(スクロール)
-   ========================================================= */
-.mobcard - content {
-  flex: 1 1 auto;
-  overflow - y: auto;
-  overflow - x: hidden;
-  padding: 12px 16px 16px;
-  display: flex;
-  flex - direction: column;
-  gap: 10px;
-  background: transparent;
-  width: 100 %;
-  max - width: 100 %;
-  min - width: 0;
-  box - sizing: border - box;
-  scrollbar - width: thin;
-  scrollbar - color: rgba(216, 196, 138, 0.35) transparent;
-}
-
-/* PC: 右ペインの高さの中でスクロールさせる */
-@media(min - width: 900px) {
-  .mobcard - content {
-    min - height: 0;
+export function renderNameWithInstance(container: HTMLElement, name: string): void {
+  if (!container) return;
+  const match = name.match(/^([1-9])_(.+)/);
+  container.innerHTML = "";
+  if (match) {
+    const instance = match[1];
+    const realName = match[2];
+    const badge = document.createElement("span");
+    badge.className = "instance-badge";
+    badge.textContent = instance;
+    container.appendChild(badge);
+    container.appendChild(document.createTextNode(realName));
+  } else {
+    container.textContent = name;
   }
 }
 
-.mobcard - content:: -webkit - scrollbar {
-  width: 5px;
+// ─── 拡大鏡 ─────────────────────────────────────────────
+export function initGlobalMagnifier(): void {
+  if ((window as any).magnifierInitialized) return;
+  (window as any).magnifierInitialized = true;
+
+  const magnifier = DOM.globalMagnifier as HTMLElement | null;
+  const wrapper = magnifier?.querySelector('.magnifier-content-wrapper') as HTMLElement | null;
+  if (!magnifier || !wrapper) return;
+
+  let activeMapImg: HTMLImageElement | null = null;
+  let activeMapContainer: HTMLElement | null = null;
+  let activeMapContainerRect: DOMRect | null = null;
+  let magnifierRect: DOMRect | null = null; // サイズは固定なので、最初の1回だけ取得して使い回す
+
+  const closeMagnifier = () => {
+    magnifier.classList.add('hidden');
+    DOM.body.classList.remove('magnifier-active');
+    activeMapImg = null;
+    activeMapContainer = null;
+    activeMapContainerRect = null;
+    wrapper.innerHTML = '';
+    window.removeEventListener('mousemove', onMagnifierMouseMove);
+  };
+
+  const updateMagnifier = (e: { clientX: number; clientY: number }) => {
+    if (!activeMapImg || !activeMapContainer || !activeMapContainerRect) return;
+
+    const x = e.clientX - activeMapContainerRect.left;
+    const y = e.clientY - activeMapContainerRect.top;
+
+    if (x < 0 || y < 0 || x > activeMapContainerRect.width || y > activeMapContainerRect.height) {
+      closeMagnifier();
+      return;
+    }
+
+    // 表示中に1回だけ取得する(以降は使い回し)
+    if (!magnifierRect) {
+      magnifierRect = magnifier.getBoundingClientRect();
+    }
+    const centerX = magnifierRect.width / 2;
+    const centerY = magnifierRect.height / 2;
+
+    const translateX = centerX - (x * CONFIG.MAP_ZOOM_SCALE);
+    const translateY = centerY - (y * CONFIG.MAP_ZOOM_SCALE);
+
+    // CSS変数ではなく transform を直接書く(子孫のスタイル再計算を起こさない)
+    magnifier.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%)`;
+    wrapper.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(${CONFIG.MAP_ZOOM_SCALE})`;
+  };
+
+  let magnifierRafId: number | null = null;
+  const onMagnifierMouseMove = (e: MouseEvent) => {
+    if (magnifierRafId) cancelAnimationFrame(magnifierRafId);
+    const x = e.clientX;
+    const y = e.clientY;
+    magnifierRafId = requestAnimationFrame(() => {
+      updateMagnifier({ clientX: x, clientY: y });
+    });
+  };
+
+  document.addEventListener('mousedown', (e: MouseEvent) => {
+    if (e.button !== 2) return;
+
+    const targetEl = e.target as HTMLElement;
+    const mapContainer = targetEl.closest('.map-container') as HTMLElement | null;
+    if (!mapContainer) return;
+
+    const mapImg = mapContainer.querySelector('.mob-map-img') as HTMLImageElement | null;
+    if (!mapImg) return;
+
+    e.preventDefault();
+
+    // ① 読み取りを先にまとめる
+    const rect = mapContainer.getBoundingClientRect();
+    const mapW = mapContainer.offsetWidth;
+    const mapH = mapContainer.offsetHeight;
+
+    activeMapContainer = mapContainer;
+    activeMapImg = mapImg;
+    activeMapContainerRect = rect;
+
+    // ② その後に DOM を書き込む
+    wrapper.innerHTML = '';
+    const clone = mapContainer.cloneNode(true) as HTMLElement;
+
+    clone.classList.remove('w-full', 'u-w-full', 'pc-map-box', 'cursor-crosshair', '!cursor-crosshair');
+    clone.classList.add('magnifier-clone');
+
+    clone.style.setProperty('--map-w', `${mapW}px`);
+    clone.style.setProperty('--map-h', `${mapH}px`);
+
+    wrapper.appendChild(clone);
+    magnifier.classList.remove('hidden');
+    DOM.body.classList.add('magnifier-active');
+
+    window.addEventListener('mousemove', onMagnifierMouseMove);
+    updateMagnifier(e);
+  }, { capture: true });
+
+  window.addEventListener('mouseup', (e: MouseEvent) => {
+    if (e.button === 2 && activeMapImg) {
+      closeMagnifier();
+    }
+  });
+
+  document.addEventListener('contextmenu', (e: MouseEvent) => {
+    const targetEl = e.target as HTMLElement;
+    if (targetEl.closest('.map-container')) {
+      e.preventDefault();
+    }
+  });
 }
 
-.mobcard - content:: -webkit - scrollbar - track {
-  background: transparent;
+// ─── タイマー表示 ────────────────────────────────────────
+export function shouldDisplayMemo(mob: Mob): boolean {
+  const hasMemo = mob.memo_text?.trim();
+  const isMemoNewer = (mob.memo_updated_at || 0) >= (mob.last_kill_time || 0);
+  return !!(hasMemo && (isMemoNewer || !mob.last_kill_time));
 }
 
-.mobcard - content:: -webkit - scrollbar - thumb {
-  background: rgba(216, 196, 138, 0.35);
-  border - radius: 2px;
+export interface TimeLabelResult {
+  label: string;
+  labelStatus?: string;
+  timeValue: string;
+  isSpecialCondition: boolean;
+  isTimeOver: boolean;
+  isTimedMob: boolean;
+  dhm: DHMParts | null;
+  isInWindow: boolean;
 }
 
-.mobcard - section {
-  padding: 0;
-  border - bottom: none;
-  width: 100 %;
-  max - width: 100 %;
-  min - width: 0;
-  box - sizing: border - box;
-}
+export function computeTimeLabel(mob: Mob): TimeLabelResult {
+  const info = mob.repopInfo || {} as RepopInfo;
+  const now = Date.now() / 1000;
 
-/* セクション見出し: シアンのひし形 + 金色フェード下線 */
-.mobcard - section - label {
-  font - size: 12px;
-  font - weight: 700;
-  color: var(--c - cyan);
-  text - transform: uppercase;
-  letter - spacing: 0.14em;
-  margin - top: 2px;
-  margin - bottom: 7px;
-  padding - bottom: 5px;
-  background: linear - gradient(90deg, rgba(216, 196, 138, 0.5), rgba(216, 196, 138, 0.05)) bottom / 100 % 1px no - repeat;
-  display: flex;
-  align - items: center;
-  justify - content: flex - start;
-  gap: 8px;
-  line - height: 1;
-}
-
-.mobcard - section - label::before {
-  content: "";
-  flex: none;
-  width: 6px;
-  height: 6px;
-  transform: rotate(45deg);
-  background: var(--c - cyan);
-  box - shadow: 0 0 6px rgba(34, 211, 238, 0.7);
-}
-
-/* 見出しの右端に出す、マップの更新時刻 */
-.map - update - time {
-  font - family: var(--font - mono);
-  font - size: 14px;
-  font - weight: 500;
-  letter - spacing: 0;
-  color: var(--c - text - lo);
-  margin - left: auto;
-  line - height: 1;
-}
-
-
-/* =========================================================
-   4. メモ
-   ========================================================= */
-.mobcard - memo - box {
-  display: flex;
-  align - items: center;
-  gap: 6px;
-  background: rgba(3, 7, 14, 0.55);
-  border: 1px solid rgba(216, 196, 138, 0.35);
-  border - radius: 2px;
-  box - shadow: inset 0 1px 4px rgba(0, 0, 0, 0.55);
-  overflow: hidden;
-  min - height: 34px;
-  width: 100 %;
-  box - sizing: border - box;
-  transition: border - color 0.2s, box - shadow 0.2s;
-}
-
-.mobcard - memo - box: focus - within {
-  border - color: var(--c - cyan);
-  box - shadow: inset 0 1px 4px rgba(0, 0, 0, 0.55), 0 0 8px rgba(34, 211, 238, 0.3);
-}
-
-.mobcard - memo - prefix - area {
-  display: flex;
-  align - items: center;
-  padding: 0 8px 0 10px;
-  flex - shrink: 0;
-  line - height: 1;
-}
-
-.mobcard - memo - prefix - text {
-  font - size: 14px;
-  font - weight: 600;
-  color: var(--c - cyan);
-  letter - spacing: 0.05em;
-  text - transform: lowercase;
-  line - height: 1;
-}
-
-.mobcard - memo - separator {
-  width: 1px;
-  height: 20px;
-  background - color: rgba(216, 196, 138, 0.4);
-  display: block;
-}
-
-.mobcard - memo - input {
-  flex: 1 1 auto;
-  background: transparent;
-  border: none;
-  padding: 0 10px;
-  margin: 0;
-  font - family: var(--font - ui);
-  font - size: 14px;
-  color: var(--c - text - hi);
-  resize: none;
-  outline: none;
-  width: 100 %;
-  line - height: 20px;
-  height: 20px;
-  max - height: 20px;
-  box - sizing: border - box;
-  overflow: hidden!important;
-  scrollbar - width: none;
-  -ms - overflow - style: none;
-  -webkit - user - select: text;
-  -moz - user - select: text;
-  -ms - user - select: text;
-  user - select: text;
-  align - self: center;
-}
-
-.mobcard - memo - input:: -webkit - scrollbar {
-  display: none;
-}
-
-.mobcard - memo - input::placeholder {
-  color: var(--c - text - off);
-}
-
-
-/* =========================================================
-   5. 時刻グリッドと出現条件
-   ========================================================= */
-
-/* 最短・最大・次回・前回の4マス */
-.mobcard - grid {
-  display: grid;
-  grid - template - columns: repeat(2, minmax(0, 1fr));
-  gap: 5px;
-  width: 100 %;
-  min - width: 0;
-  box - sizing: border - box;
-}
-
-.mobcard - info - item {
-  background: linear - gradient(180deg, rgba(34, 48, 76, 0.9), rgba(14, 22, 38, 0.95));
-  border: 1px solid rgba(216, 196, 138, 0.3);
-  border - radius: 2px;
-  box - shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  padding: 6px 7px;
-  display: flex;
-  flex - direction: row;
-  align - items: center;
-  justify - content: space - between;
-  gap: 4px;
-  min - height: auto;
-  line - height: 1;
-  min - width: 0;
-  box - sizing: border - box;
-  overflow: hidden;
-}
-
-.mobcard - label {
-  font - family: var(--font - ui);
-  font - size: 11px;
-  font - weight: 500;
-  color: var(--c - text - lo);
-  text - transform: uppercase;
-  letter - spacing: 0.02em;
-  margin - bottom: 0;
-  line - height: 1;
-  padding - right: 0;
-  border - right: none;
-  white - space: nowrap;
-  flex - shrink: 0;
-}
-
-.mobcard - value {
-  font - family: var(--font - mono);
-  font - size: 14px;
-  font - weight: 500;
-  color: var(--c - text - hi);
-  line - height: 1;
-  margin - left: auto;
-  text - align: right;
-  white - space: nowrap;
-  font - variant - numeric: tabular - nums;
-  display: inline - flex;
-  align - items: center;
-  min - width: 0;
-}
-
-.mobcard - value.mobcard - timer - num {
-  font - size: 14px;
-  font - weight: 500;
-  line - height: 1;
-}
-
-.mobcard - value.mobcard - timer - unit {
-  font - size: 11px;
-  line - height: 1;
-}
-
-/* PC: 文字を少し大きく */
-@media(min - width: 900px) {
-  .mobcard - info - item {
-    padding: 7px 11px;
-    gap: 6px;
+  if (!info.status) {
+    return { label: "", timeValue: "--/-- --:--", isSpecialCondition: false, isTimeOver: false, isTimedMob: false, dhm: null, isInWindow: false };
   }
 
-  .mobcard - label {
-    font - size: 13px;
-    letter - spacing: 0.05em;
+  // 変更①: status は Maintenance に上書きされるため、最大超えは時刻で判定する
+  const isTimeOverRaw = !!info.maxRepop && now >= info.maxRepop;
+  const isInWindow = !!info.isInConditionWindow;
+  const isNextWindow = !isInWindow && !!info.nextConditionSpawnDate && (now < info.nextConditionSpawnDate.getTime() / 1000);
+  const isTimedMob = !!(info.isInConditionWindow || info.nextConditionSpawnDate);
+  const isSpecialCondition = isTimedMob && (mob.rank === RANKS.S) && (info.status !== "PopWindow");
+
+  let labelStatus = info.status;
+  if (isTimedMob) {
+    if (isInWindow) {
+      labelStatus = "ConditionActive";
+    } else if (isNextWindow || info.nextConditionSpawnDate) {
+      labelStatus = "NextCondition";
+    }
   }
 
-  .mobcard - value {
-    font - size: 18px;
+  const label = getStatusLabel(labelStatus, mob.rank);
+
+  // 変更②: 表示の基準時刻。nextBoundarySec(メンテ時刻を含む)は使わない
+  const windowStartSec = info.nextConditionSpawnDate ? info.nextConditionSpawnDate.getTime() / 1000 : null;
+  const windowEndSec = info.conditionWindowEnd ? info.conditionWindowEnd.getTime() / 1000 : null;
+
+  let targetSec: number;
+  if (isInWindow && windowEndSec !== null) {
+    targetSec = windowEndSec;                       // 出現区間中: 区間終了まで
+  } else if (windowStartSec !== null && windowStartSec > now) {
+    targetSec = windowStartSec;                     // 時限モブ: 次の区間開始まで
+  } else if (info.minRepop && now < info.minRepop) {
+    targetSec = info.minRepop;                      // 最短POP前: 最短POPまで
+  } else {
+    targetSec = info.maxRepop || 0;                 // POP WINDOW: 最大POPまで
   }
 
-  .mobcard - value.mobcard - timer - num {
-    font - size: 16px;
+  const showAsOverdue = isTimeOverRaw && !isInWindow && !isNextWindow;
+
+  if (showAsOverdue && info.maxRepop) {
+    targetSec = info.maxRepop;
   }
 
-  .mobcard - value.mobcard - timer - unit {
-    font - size: 13px;
+  const secondsRemaining = Math.max(0, showAsOverdue ? (now - targetSec) : (targetSec - now));
+  const dhm = getDurationDHMParts(secondsRemaining);
+  const timeValue = formatDurationDHM(secondsRemaining);
+
+  return { label, labelStatus, timeValue, isSpecialCondition, isTimeOver: showAsOverdue, isTimedMob, dhm, isInWindow };
+}
+
+function updateTimerRichHTML(el: HTMLElement, dhm: DHMParts | null, isSpecialCondition: boolean, isTimeOver: boolean) {
+  if (!dhm) {
+    el.innerHTML = "--/-- --:--";
+    el.className = 'mobcard-timer';
+    return;
+  }
+
+  if (el.innerHTML.includes("--/-- --:--") || el.innerHTML === "") {
+    const templateNode = cloneTemplate('timer-rich-template');
+    if (templateNode) {
+      el.innerHTML = templateNode.innerHTML;
+    }
+  }
+
+  el.className = 'mobcard-timer';
+  if (isSpecialCondition) el.classList.add('label-next');
+  if (isTimeOver) el.classList.add('time-over');
+
+  const { h, m } = dhm;
+
+  const format = (elPart: HTMLElement | null, num: string, unit: string) => {
+    if (!elPart) return;
+    const numEl = elPart.querySelector('.mobcard-timer-num');
+    const isHidden = unit === 'h' && (Number(num) === 0 || !num);
+    elPart.classList.toggle('hidden', isHidden);
+    if (!isHidden && numEl) {
+      const paddedLine = String(num || 0).padStart(2, '0').replace(/^0/, '&nbsp;');
+      if (numEl.innerHTML !== paddedLine) {
+        numEl.innerHTML = paddedLine;
+      }
+    }
+  };
+
+  format(el.querySelector('.h-part') as HTMLElement | null, h, 'h');
+  format(el.querySelector('.m-part') as HTMLElement | null, m, 'm');
+}
+
+// ─── スポーンポイント ───────────────────────────────────
+export interface SpawnCountInfoResult {
+  countInfo: { type: string; value: number; unit: string } | null;
+  remainingCount: number;
+  spawnCullStatus: Record<string, CullStatus>;
+  validSpawnPoints: SpawnPoint[];
+}
+
+export function getSpawnCountInfo(mob: Mob): SpawnCountInfoResult {
+  const stateVal = getState();
+  const instance = mob.No % 10;
+  const key = `${mob.area}_${instance}`;
+  const mobLocationsData = stateVal.mobLocations?.[key];
+  const spawnCullStatus = mobLocationsData || mob.spawn_cull_status || {};
+  const validSpawnPoints = getValidSpawnPoints(mob, spawnCullStatus);
+  const remainingCount = validSpawnPoints.length;
+  let countInfo = null;
+
+  if (remainingCount === 1) {
+    const pointNumber = parseInt(validSpawnPoints[0]?.id?.slice(-2) || "0", 10);
+    countInfo = { type: 'single', value: pointNumber, unit: '番' };
+  } else if (remainingCount > 1) {
+    countInfo = { type: 'multiple', value: remainingCount, unit: '' };
+  }
+  return { countInfo, remainingCount, spawnCullStatus, validSpawnPoints };
+}
+
+export function getValidSpawnPoints(mob: Mob, spawnCullStatus: Record<string, CullStatus>): SpawnPoint[] {
+  return (mob.locations ?? []).filter(point => {
+    const isTargetRank = point.mob_ranks.some(r => r === RANKS.S || r === RANKS.A);
+    if (!isTargetRank) return false;
+    const pointStatus = spawnCullStatus?.[point.id];
+    return !isCulled(pointStatus, mob.No, mob);
+  });
+}
+
+export function drawSpawnPoint(point: SpawnPoint, spawnCullStatus: Record<string, CullStatus>, mobNo: number, rank: string, isLastOne: boolean): HTMLElement | null {
+  const el = cloneTemplate('spawn-point-template');
+  if (!el) return null;
+
+  const pointStatus = spawnCullStatus?.[point.id];
+  const isCulledFlag = isCulled(pointStatus, mobNo);
+  const isS_A_Cullable = point.mob_ranks.some(r => r === RANKS.S || r === RANKS.A);
+  const isB_Only = point.mob_ranks.every(r => r.startsWith("B"));
+
+  let colorClass = "";
+  let dataIsInteractive = "false";
+
+  if (isLastOne) {
+    colorClass = "color-lastone";
+    dataIsInteractive = "false";
+  } else if (isS_A_Cullable) {
+    const rankB = point.mob_ranks.find(r => r.startsWith("B"));
+    if (isCulledFlag) {
+      colorClass = rankB === "B1" ? "color-b1-culled" : "color-b2-culled";
+    } else {
+      colorClass = rankB === "B1" ? "color-b1" : "color-b2";
+    }
+    dataIsInteractive = "true";
+  } else if (isB_Only) {
+    const rankB = point.mob_ranks[0];
+    colorClass = rankB === "B1" ? "color-b1-only" : "color-b2-only";
+    dataIsInteractive = "false";
+  }
+
+  el.className = `spawn-point ${colorClass}`;
+  el.style.setProperty('--point-x', `${point.x}%`);
+  el.style.setProperty('--point-y', `${point.y}%`);
+
+  const pointNumber = parseInt(point.id.slice(-2), 10);
+  const stateText = isLastOne ? "(確)" : isCulledFlag ? "(済)" : "";
+  el.dataset.tooltip = rank === "F" ? stateText : `${pointNumber} ${stateText}`;
+
+  Object.assign(el.dataset, {
+    locationId: point.id,
+    mobNo: String(mobNo),
+    rank: rank,
+    isCulled: String(isCulledFlag),
+    isLastone: isLastOne ? "true" : "false",
+    isInteractive: dataIsInteractive
+  });
+
+  return el;
+}
+
+// ─── カード作成 ─────────────────────────────────────────
+export function createMobCard(mob: Mob, isDetailView = false): HTMLElement {
+  if (isDetailView) return renderMobCard(mob);
+  return createSimpleMobItem(mob);
+}
+
+export function renderMobCard(mob: Mob): HTMLElement {
+  const template = DOM.cardTemplate;
+  if (!template) return document.createElement('div');
+  const clone = template.content.cloneNode(true) as HTMLElement;
+  const card = clone.querySelector('.mobcard-card') as HTMLElement;
+
+  const rank = mob.rank;
+  const { nextConditionSpawnDate, minRepop, maxRepop } = mob.repopInfo || {};
+
+  card.dataset.mobNo = String(mob.No);
+  card.dataset.rank = rank;
+
+  const nameEl = card.querySelector('.mobcard-name') as HTMLElement | null;
+  if (nameEl) {
+    renderNameWithInstance(nameEl, mob.name);
+    nameEl.dataset.rank = rank;
+  }
+
+  updateEl(card, '.mobcard-rank', { textContent: rank }, { rank });
+
+  updateEl(card, '[data-min-repop]', { textContent: formatOrPlaceholder(minRepop) });
+  updateEl(card, '[data-max-repop]', { textContent: formatOrPlaceholder(maxRepop) });
+  updateEl(card, '[data-next-possible]', { textContent: nextConditionSpawnDate ? formatOrPlaceholder(nextConditionSpawnDate) : "--/-- --:--" });
+  updateEl(card, '[data-last-kill]', { textContent: formatOrPlaceholder(mob.last_kill_time) });
+
+  updateEl(card, '.condition-text', { innerHTML: processText(mob.condition || "特別な出現条件はありません。") });
+
+  const memoEl = card.querySelector('.mobcard-memo-input') as (HTMLInputElement | HTMLTextAreaElement) | null;
+  if (memoEl) {
+    if (document.activeElement !== memoEl) {
+      memoEl.value = mob.memo_text || '';
+    }
+    memoEl.dataset.mobNo = String(mob.No);
+    setTimeout(() => adjustMemoHeight(memoEl), 0);
+  }
+
+  const mapSection = card.querySelector('.map-section') as HTMLElement | null;
+  if (mapSection) {
+    if (mob.rank !== RANKS.F && mob.rank !== 'F' && mob.mapImage) {
+      mapSection.classList.remove('hidden');
+      updateMapOverlay(card, mob);
+    } else {
+      mapSection.classList.add('hidden');
+    }
+  }
+
+  card.querySelectorAll('.moblist-report-btn').forEach(btn => {
+    const htmlBtn = btn as HTMLElement;
+    htmlBtn.dataset.reportType = rank === RANKS.A ? 'instant' : 'modal';
+    htmlBtn.dataset.mobNo = String(mob.No);
+  });
+
+  updateAreaInfo(card, mob);
+  updateDetailCardRealtime(card, mob);
+
+  return card;
+}
+
+export function createSimpleMobItem(mob: Mob): HTMLElement {
+  const item = cloneTemplate('moblist-item-template');
+  if (!item) return document.createElement('div');
+
+  item.classList.add(`rank-${mob.rank.toLowerCase()}`);
+  item.dataset.mobNo = String(mob.No);
+  item.dataset.rank = mob.rank;
+
+  const rankBadge = item.querySelector('.moblist-rank-badge') as HTMLElement | null;
+  if (rankBadge) {
+    rankBadge.textContent = mob.rank;
+    rankBadge.dataset.rank = mob.rank;
+  }
+
+  const nameEl = item.querySelector('.moblist-name') as HTMLElement | null;
+  if (nameEl) {
+    renderNameWithInstance(nameEl, mob.name);
+    nameEl.dataset.rank = mob.rank;
+  }
+
+  const areaEl = item.querySelector('.moblist-area') as HTMLElement | null;
+  if (areaEl) {
+    areaEl.textContent = mob.area || "";
+  }
+
+  // リストのREPORTボタンにデータを設定
+  const reportBtn = item.querySelector('.moblist-report-btn') as HTMLElement | null;
+  if (reportBtn) {
+    reportBtn.dataset.mobNo = String(mob.No);
+    reportBtn.dataset.reportType = mob.rank === 'A' ? 'instant' : 'modal';
+  }
+
+  updateSimpleMobItem(item, mob);
+  return item;
+}
+
+// ─── リアルタイム更新用 ─────────────────────────
+export function updateDetailCardRealtime(card: HTMLElement, mob: Mob): void {
+  const timeLabelObj = computeTimeLabel(mob);
+  updateProgressBar(card, mob, timeLabelObj);
+  updateProgressText(card, mob, timeLabelObj);
+  updateExpandablePanel(card, mob);
+  updateMobCount(card, mob);
+}
+
+export function updateProgressBar(element: HTMLElement, mob: Mob, timeLabelObj: TimeLabelResult | null = null): void {
+  const { labelStatus } = timeLabelObj || computeTimeLabel(mob);
+  const { elapsedPercent } = mob.repopInfo || {};
+
+  const status = labelStatus;
+  const bar = element.querySelector('.mobcard-progress-bar, .moblist-bg-bar, .moblist-progress-bar') as HTMLElement | null;
+  const wrapper = element.querySelector('.mobcard-progress-container, .moblist-bg-gauge, .moblist-progress-line') as HTMLElement | null;
+  if (!bar) return;
+
+  const isDetail = element.classList.contains('mobcard-card');
+  const flooredPct = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
+  const lastPct = parseFloat(bar.dataset.lastPct || "NaN");
+
+  const isReset = isNaN(lastPct) || flooredPct === 0 || flooredPct < (lastPct || 0);
+  const noTransition = !isDetail || isReset || status === "Next" || status === "Maintenance";
+
+  bar.classList.toggle('u-no-transition', noTransition);
+  bar.style.setProperty('--prog-percent', String(flooredPct / 100));
+  bar.style.width = `${flooredPct}%`;
+  bar.dataset.lastPct = String(flooredPct);
+
+  if (bar.dataset.lastStatus !== status) {
+    bar.classList.remove('status-max-over', 'status-condition-active', 'status-pop-window', 'status-next');
+    if (status === "MaxOver") bar.classList.add("status-max-over");
+    else if (status === "ConditionActive") bar.classList.add("status-condition-active");
+    else if (status === "PopWindow") bar.classList.add("status-pop-window");
+    else if (status === "Next" || status === "NextCondition") bar.classList.add("status-next");
+    bar.dataset.lastStatus = status;
+
+    if (status === "Next" || status === "Maintenance") {
+      bar.style.setProperty('--prog-percent', '0');
+      bar.style.width = '0%';
+    }
+  }
+
+  if (wrapper && mob.repopInfo) {
+    const isInCondition = !!mob.repopInfo.isInConditionWindow && !mob.repopInfo.isMaintenanceStop && !mob.repopInfo.isBlockedByMaintenance;
+    const currentBlink = element.classList.contains('moblist-highlight-white');
+    if (element.classList.contains('moblist-item') && currentBlink !== isInCondition) {
+      element.classList.toggle('moblist-highlight-white', isInCondition);
+    }
   }
 }
 
-/* 次回出現: 金枠と金色の文字で強調 */
-.mobcard - info - item.mobcard - highlight {
-  border - color: rgba(216, 196, 138, 0.75);
-  box - shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 0 14px rgba(216, 196, 138, 0.12),
-      0 0 6px rgba(216, 196, 138, 0.2);
-}
+export function updateProgressText(element: HTMLElement, mob: Mob, timeLabelObj: TimeLabelResult | null = null): void {
+  const { status } = mob.repopInfo || {};
+  const timeLabel = timeLabelObj || computeTimeLabel(mob);
+  const { label, labelStatus, dhm, isSpecialCondition, isTimeOver, isTimedMob } = timeLabel;
+  const isMaint = !!(mob.repopInfo?.isBlockedByMaintenance || mob.repopInfo?.isMaintenanceStop || mob.repopInfo?.status === "Maintenance");
 
-.mobcard - highlight.mobcard - value,
-.mobcard - value.text - yellow {
-  color: var(--c - gold)!important;
-}
+  const timeContainer = element.querySelector('.moblist-time') as HTMLElement | null;
+  const percentEl = element.querySelector('.percent, .moblist-percent') as HTMLElement | null;
 
-/* 出現条件のテキストボックス */
-.condition - section.condition - text,
-.condition - text {
-  font - size: 13px;
-  color: #e8e9eb;
-  line - height: 1.5;
-  padding: 6px 9px;
-  background: rgba(3, 7, 14, 0.5);
-  border: 1px solid rgba(216, 196, 138, 0.28);
-  border - radius: 2px;
-  box - shadow: inset 0 1px 4px rgba(0, 0, 0, 0.45);
-  white - space: pre - wrap;
-  word -break: break-word;
-  width: 100 %;
-  box - sizing: border - box;
-}
+  if (timeContainer && element.classList.contains('moblist-item')) {
+    let inner = timeContainer.querySelector('.timer-inner-grid') as HTMLElement | null;
+    if (!inner) {
+      timeContainer.innerHTML = "";
+      inner = document.createElement("div");
+      inner.className = "timer-inner-grid";
+      const labelSpan = document.createElement("span");
+      labelSpan.className = "timer-label timer-label-base";
+      const timerNode = document.createElement('span');
+      timerNode.className = 'mobcard-timer';
+      inner.appendChild(labelSpan);
+      inner.appendChild(timerNode);
+      timeContainer.appendChild(inner);
+    }
 
-
-/* =========================================================
-   6. 下部ボタン(REPORT / CLOSE)
-   ========================================================= */
-.mobcard - mobile - actions {
-  flex - shrink: 0;
-  display: flex;
-  gap: 0;
-  padding: 0;
-  border - top: 1px solid rgba(216, 196, 138, 0.5);
-  background - color: rgba(3, 7, 14, 0.45);
-  overflow: hidden;
-  width: 100 %;
-  box - sizing: border - box;
-}
-
-.mobcard - mobile - actions.bottom - report - btn,
-.mobcard - mobile - actions.moblist - report - btn {
-  flex: 1 1 auto;
-  height: 38px;
-  border - radius: 0;
-  display: flex;
-  align - items: center;
-  justify - content: center;
-  font - family: var(--font - ui);
-  font - size: 15px;
-  font - weight: 700;
-  cursor: pointer;
-  border: none;
-  border - right: 1px solid rgba(216, 196, 138, 0.5);
-  outline: none;
-  -webkit - tap - highlight - color: transparent;
-  background - color: var(--c - cyan);
-  background - image: linear - gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 55 %, rgba(0, 0, 0, 0.14));
-  box - shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  color: #000;
-  letter - spacing: 0.16em;
-  transition: opacity 0.15s, box - shadow 0.15s;
-}
-
-.mobcard - mobile - actions.bottom - report - btn: hover,
-.mobcard - mobile - actions.moblist - report - btn:hover {
-  box - shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 0 10px rgba(34, 211, 238, 0.55);
-}
-
-.mobcard - mobile - actions.bottom - report - btn: active,
-.mobcard - mobile - actions.moblist - report - btn:active {
-  opacity: 0.7;
-}
-
-.mobcard - mobile - actions.bottom - report - btn: disabled,
-.mobcard - mobile - actions.moblist - report - btn:disabled {
-  opacity: 0.3;
-  pointer - events: none;
-}
-
-.mobcard - close - btn {
-  flex: 0 0 90px;
-  height: 38px;
-  padding: 0;
-  border - radius: 0;
-  display: flex;
-  align - items: center;
-  justify - content: center;
-  font - family: var(--font - ui);
-  font - size: 13px;
-  font - weight: 500;
-  letter - spacing: 0.1em;
-  color: #d8c48a;
-  border: none;
-  cursor: pointer;
-  -webkit - tap - highlight - color: transparent;
-  background - color: rgba(0, 0, 0, 0.35);
-  transition: background - color 0.15s, color 0.15s, opacity 0.15s;
-}
-
-.mobcard - close - btn:hover {
-  color: #fff;
-  background - color: rgba(34, 211, 238, 0.12);
-}
-
-.mobcard - close - btn:active {
-  opacity: 0.6;
-}
-
-
-/* =========================================================
-   7. 出現マップ
-   ========================================================= */
-.map - container {
-  border - radius: 2px;
-  overflow: hidden;
-  background - color: var(--c - bg);
-  position: relative;
-  width: 100 %;
-  max - width: 100 %;
-}
-
-/* マップの枠: border ではなく box-shadow で描く(座標計算に影響させないため) */
-.map - container: not(.magnifier - clone) {
-  box - shadow:
-  0 0 0 1px rgba(216, 196, 138, 0.5),
-    0 0 0 2px rgba(0, 0, 0, 0.6);
-}
-
-.pc - map - box {
-  width: 100 %;
-  /* 元の画像は 500x500。それより大きく表示すると、拡大の再計算が毎回走るので、上限を元の大きさにする */
-  max - width: 500px;
-  margin - inline: auto;
-  display: flex;
-  align - items: center;
-  justify - content: center;
-}
-
-.mob - map - img {
-  display: block;
-  width: 100 %;
-  height: auto;
-  max - width: 100 %;
-}
-
-/* PC: マップは、元の画像と同じ500px固定 */
-@media(min - width: 900px) {
-  .map - container.pc - map - box {
-    width: 500px;
-    max - width: 100 %;
-    height: auto;
-    max - height: none;
-    flex - shrink: 0;
-    margin - inline: auto;
+    updateTimerRichHTML(inner.querySelector('.mobcard-timer') as HTMLElement, dhm, isSpecialCondition, isTimeOver);
+    const isTimedLabel = isTimedMob && (labelStatus === "ConditionActive" || labelStatus === "NextCondition");
+    const labelSpan = inner.querySelector('.timer-label-base') as HTMLElement;
+    const newClass = `timer-label timer-label-base ${isTimedLabel ? 'status-' + labelStatus!.toLowerCase() + ' is-timed-badge' : ''} ${isSpecialCondition ? 'is-special' : ''}`;
+    if (labelSpan.className !== newClass) labelSpan.className = newClass;
+    const displayText = isTimedLabel ? label : "";
+    if (labelSpan.textContent !== displayText) labelSpan.textContent = displayText;
   }
 
-  .mob - map - img {
-    width: 500px;
-    max - width: 100 %;
-    height: auto;
-    max - height: none;
-    flex - shrink: 0;
+  if (percentEl) {
+    const { elapsedPercent } = mob.repopInfo || {};
+    const raw = Math.max(0, Math.min(100, elapsedPercent || 0));
+    const percentValue = status === "MaxOver" ? "100" : element.classList.contains('mobcard-card') ? raw.toFixed(1) : String(Math.floor(raw));
+
+    let numNode = percentEl.firstChild as Text | null;
+    if (!numNode || numNode.nodeType !== Node.TEXT_NODE) {
+      percentEl.innerHTML = "";
+      numNode = document.createTextNode(percentValue);
+      percentEl.appendChild(numNode);
+      const unit = document.createElement('span');
+      unit.className = 'percent-unit';
+      unit.textContent = '%';
+      percentEl.appendChild(unit);
+    } else {
+      if (numNode.nodeValue !== percentValue) {
+        numNode.nodeValue = percentValue;
+      }
+      if (!percentEl.querySelector('.percent-unit')) {
+        const unit = document.createElement('span');
+        unit.className = 'percent-unit';
+        unit.textContent = '%';
+        percentEl.appendChild(unit);
+      }
+    }
+    percentEl.classList.toggle("max-over", status === "MaxOver");
+    percentEl.classList.toggle("pct-0", (status === "Next" || raw === 0) && status !== "MaxOver");
+
+    let pctTier = "blue";
+    if (raw >= 80) pctTier = "orange";
+    else if (raw >= 60) pctTier = "yellow";
+    else if (raw >= 30) pctTier = "green";
+
+    if (percentEl.dataset.pctTier !== pctTier) {
+      percentEl.dataset.pctTier = pctTier;
+    }
+  }
+
+  element.classList.toggle("is-pre-repop", status === "Next" || status === "Maintenance");
+  element.classList.toggle("maintenance-gray-out", isMaint);
+}
+
+function getEl(parent: any, selector: string, key: string): HTMLElement | null {
+  if (!parent._cache) parent._cache = {};
+  if (parent._cache[key]) return parent._cache[key];
+  const el = parent.querySelector(selector) as HTMLElement | null;
+  if (el) parent._cache[key] = el;
+  return el;
+}
+
+export function updateExpandablePanel(card: HTMLElement, mob: Mob): void {
+  const { minRepop, maxRepop } = mob.repopInfo || {};
+
+  const elMin = getEl(card, "[data-min-repop]", "minRepop");
+  const elMax = getEl(card, "[data-max-repop]", "maxRepop");
+  const elNext = getEl(card, "[data-next-possible]", "nextPossible");
+  const elLast = getEl(card, "[data-last-kill]", "lastKill");
+
+  if (elMin) elMin.textContent = formatOrPlaceholder(minRepop);
+  if (elMax) elMax.textContent = formatOrPlaceholder(maxRepop);
+
+  if (elNext && mob.repopInfo) {
+    if (mob.repopInfo.nextConditionSpawnDate) {
+      const val = formatMMDDHHmm(mob.repopInfo.nextConditionSpawnDate);
+      if (elNext.textContent !== val) elNext.textContent = val;
+      elNext.classList.add('text-yellow');
+      elNext.classList.remove('text-secondary');
+    } else {
+      if (elNext.textContent !== "--/-- --:--") elNext.textContent = "--/-- --:--";
+      elNext.classList.remove('text-yellow');
+      elNext.classList.add('text-secondary');
+    }
+  }
+
+  if (elLast) {
+    const val = formatOrPlaceholder(mob.last_kill_time);
+    if (elLast.textContent !== val) elLast.textContent = val;
+  }
+
+  const elMemoInput = getEl(card, ".mobcard-memo-input", "memoInput") as (HTMLInputElement | HTMLTextAreaElement) | null;
+  if (elMemoInput) {
+    if (elMemoInput.dataset.mobNo !== String(mob.No)) elMemoInput.dataset.mobNo = String(mob.No);
+    if (document.activeElement !== elMemoInput) {
+      const newValue = mob.memo_text || "";
+      if (elMemoInput.value !== newValue) {
+        elMemoInput.value = newValue;
+        adjustMemoHeight(elMemoInput);
+      }
+    }
+  }
+
+  const elCondition = getEl(card, ".condition-text", "conditionText");
+  if (elCondition) {
+    const conditionText = mob.condition ? processText(mob.condition) : "特別な出現条件はありません。";
+    if (elCondition.innerHTML !== conditionText) elCondition.innerHTML = conditionText;
+
+    const isPCDetail = card.classList.contains('mobcard-card');
+    const sections = [
+      elCondition.closest('.mobcard-section'),
+      getEl(card, '.memo-section', 'memoSection'),
+      getEl(card, '.map-section', 'mapSection')
+    ].filter(Boolean) as HTMLElement[];
+
+    sections.forEach(section => {
+      if (isPCDetail && mob.condition) {
+        section.classList.add('condition-section-neon');
+      } else {
+        section.classList.remove('condition-section-neon');
+      }
+    });
   }
 }
 
-/* スポーンポイントを重ねる層 */
-.map - overlay {
-  pointer - events: none;
-  position: absolute;
-  inset: 0;
-  width: 100 %;
-  height: 100 %;
-  cursor: crosshair;
+export function updateMemoIcon(card: HTMLElement, mob: Mob): void {
+  const memoIconContainer = getEl(card, '.memo-icon-container', 'memoIconContainer');
+  if (!memoIconContainer) return;
+  const shouldShowMemo = shouldDisplayMemo(mob);
+  const memoText = (mob.memo_text || '').trim();
+
+  if ((memoIconContainer as any)._lastShow === shouldShowMemo && (memoIconContainer as any)._lastText === memoText) return;
+  (memoIconContainer as any)._lastShow = shouldShowMemo;
+  (memoIconContainer as any)._lastText = memoText;
+
+  memoIconContainer.innerHTML = '';
+  if (shouldShowMemo) {
+    memoIconContainer.classList.remove('hidden');
+    const el = cloneTemplate('memo-icon-template') as HTMLElement | null;
+    if (el) {
+      const tip = el.querySelector('.memo-tooltip');
+      if (tip) tip.textContent = memoText;
+      el.setAttribute('title', memoText);
+      memoIconContainer.appendChild(el);
+    }
+  } else {
+    memoIconContainer.classList.add('hidden');
+  }
 }
 
+export function updateMobCount(card: HTMLElement, mob: Mob): void {
+  const countContainer = getEl(card, '.moblist-count', 'mobCount');
+  if (!countContainer) return;
 
-/* =========================================================
-   8. スポーンポイント
-   ========================================================= */
-.spawn - point {
-  position: absolute;
-  left: var(--point - x);
-  top: var(--point - y);
-  width: 14px;
-  height: 14px;
-  border - radius: 50 %;
-  box - sizing: border - box;
-  transform: translate(-50 %, -50 %);
-  cursor: pointer;
-  pointer - events: auto;
-  z - index: 5;
-}
-
-.spawn - point: focus,
-.spawn - point:hover {
-  transform: translate(-50 %, -50 %) scale(1.5);
-  z - index: 20;
-  box - shadow: 0 0 8px rgba(255, 255, 255, 0.7);
-  outline: none;
-}
-
-/* ツールチップ(点の左上に出す) */
-.spawn - point[data - tooltip]::after {
-  content: attr(data - tooltip);
-  position: absolute;
-  bottom: calc(100 % + 1px);
-  right: calc(100 % + 1px);
-  background - color: rgba(10, 18, 32, 0.92);
-  color: #f0f4f8;
-  font - family: var(--font - mono);
-  font - size: 10px;
-  font - weight: 400;
-  padding: 1px 3px;
-  border - radius: 2px;
-  border: 1px solid var(--c - border);
-  white - space: nowrap;
-  pointer - events: none;
-  opacity: 0;
-  /* transition は付けない: スクロール中に点がマウスの下を通るたびの再描画を減らすため */
-  z - index: 30;
-}
-
-.spawn - point[data - tooltip]: hover:: after,
-.spawn - point[data - tooltip]: focus::after {
-  opacity: 1;
-}
-
-/* 点の色 */
-.color - b1 {
-  background - color: #4494f7;
-  border: 2px solid #ffffff;
-}
-
-.color - b2 {
-  background - color: #fd5c5c;
-  border: 2px solid #ffffff;
-}
-
-.color - b1 - culled {
-  background - color: #ffffff;
-  border: 2px solid #4494f7;
-}
-
-.color - b2 - culled {
-  background - color: #ffffff;
-  border: 2px solid #fd5c5c;
-}
-
-.color - lastone {
-  background - color: #34d399;
-  border: 2px solid #ffffff;
-}
-
-.color - b1 - only {
-  background - color: #ffffff;
-  border: 2px solid #4494f7;
-  width: 10px;
-  height: 10px;
-}
-
-.color - b2 - only {
-  background - color: #ffffff;
-  border: 2px solid #fd5c5c;
-  width: 10px;
-  height: 10px;
-}
-
-
-/* =========================================================
-   9. 拡大鏡
-   ========================================================= */
-.map - magnifier {
-  position: fixed;
-  top: 0;
-  left: 0;
-  will - change: transform;
-  z - index: var(--z - magnifier);
-  width: 168px;
-  height: 168px;
-  border: 4px solid var(--c - cyan);
-  border - radius: 9999px;
-  overflow: hidden;
-  background - color: #050d18;
-  pointer - events: none;
-  box - shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
-}
-
-.map - magnifier.hidden {
-  display: none;
-}
-
-.magnifier - content - wrapper {
-  position: absolute;
-  transform - origin: 0 0;
-  width: var(--map - w);
-  height: var(--map - h);
-}
-
-/* 拡大鏡の中に入れるマップのコピー */
-.magnifier - clone {
-  width: var(--map - w, 100 %)!important;
-  height: var(--map - h, 100 %)!important;
-  margin: 0;
-  border: none;
-  box - shadow: none;
-}
-
-/* 拡大鏡の起動中: マップ上ではカーソルを消す */
-html body.magnifier - active.map - container,
-  html body.magnifier - active.map - container * {
-    cursor: none;
+  const { countInfo } = getSpawnCountInfo(mob);
+  if (!countInfo || mob.rank === 'F') {
+    if (countContainer.innerHTML !== "") countContainer.innerHTML = "";
+    return;
   }
 
-/* 起動中は、背面マップ上のホバー・ポインターイベントを完全に遮断 */
-body.magnifier - active.map - container: not(.magnifier - clone),
-  body.magnifier - active.map - container: not(.magnifier - clone) *,
-    body.magnifier - active.map - container: not(.magnifier - clone).spawn - point {
-  pointer - events: none!important;
+  const cacheKey = `${countInfo.type}-${countInfo.value}`;
+  if ((countContainer as any)._lastCacheKey === cacheKey) return;
+  (countContainer as any)._lastCacheKey = cacheKey;
+
+  const el = cloneTemplate('spawn-count-template');
+  if (el) {
+    el.classList.add(countInfo.type === 'single' ? 'is-single' : 'is-multiple');
+    el.title = countInfo.type === 'single' ? `${countInfo.value}番` : `残り${countInfo.value}か所`;
+
+    const numEl = el.querySelector('.count-num') as HTMLElement | null;
+    if (numEl) numEl.textContent = String(countInfo.value);
+
+    countContainer.innerHTML = "";
+    countContainer.appendChild(el);
+  }
 }
 
-body.magnifier - active.map - container: not(.magnifier - clone).spawn - point: hover,
-  body.magnifier - active.map - container: not(.magnifier - clone).spawn - point:focus {
-  transform: translate(-50 %, -50 %)!important;
-  box - shadow: none!important;
+export function updateAreaInfo(card: HTMLElement, mob: Mob): void {
+  const areaName = mob.area || "--";
+  const expName = mob.Expansion || "--";
+  const rank = mob.rank || RANKS.A;
+
+  card.querySelectorAll('.mob-rank-badge, .mobcard-rank').forEach(badge => {
+    badge.textContent = rank;
+    (badge as HTMLElement).dataset.rank = rank;
+  });
+
+  card.querySelectorAll('.detail-area').forEach(el => el.textContent = areaName);
+  card.querySelectorAll('.detail-expansion').forEach(el => el.textContent = `| ${expName}`);
 }
 
-body.magnifier - active.map - container: not(.magnifier - clone).spawn - point:: after,
-  body.magnifier - active.map - container: not(.magnifier - clone).spawn - point[data - tooltip]:: after,
-.magnifier - clone.spawn - point:: after,
-.magnifier - clone.spawn - point[data - tooltip]::after {
-  display: none!important;
-  opacity: 0!important;
-  visibility: hidden!important;
+export function adjustMemoHeight(el: HTMLElement | null): void {
+  if (!el || el.tagName !== 'TEXTAREA') return;
+  const textArea = el as HTMLTextAreaElement;
+  textArea.style.setProperty('--memo-h', textArea.scrollHeight + 'px');
 }
 
-/* 拡大鏡内のコピーは操作対象にしない */
-.magnifier - clone,
-.magnifier - clone * {
-    pointer- events: none!important;
+export function updateMapOverlay(card: HTMLElement, mob: Mob): void {
+  const isDetail = card.classList.contains('mobcard-card');
+  const mapContainer = card.querySelector('.map-container') as HTMLElement | null;
+  if (!mapContainer) return;
+
+  const mapSection = mapContainer.closest('.map-section') as HTMLElement | null;
+
+  if (mob.rank === 'F' || mob.rank === RANKS.F) {
+    mapContainer.classList.add('hidden');
+    if (mapSection) mapSection.classList.add('hidden');
+    const mapOverlay = mapContainer.querySelector('.map-overlay') as HTMLElement | null;
+    if (mapOverlay) {
+      mapOverlay.innerHTML = "";
+      delete (mapOverlay as any)._lastPointsHash;
+    }
+    return;
+  }
+
+  if (!mob.mapImage) {
+    mapContainer.classList.add('hidden');
+    if (mapSection) mapSection.classList.add('hidden');
+    return;
+  }
+
+  const mapImg = mapContainer.querySelector('.mob-map-img') as HTMLImageElement | null;
+  const mapOverlay = mapContainer.querySelector('.map-overlay') as HTMLElement | null;
+  if (!mapOverlay) return;
+
+  if (!isDetail) {
+    if (mapOverlay.innerHTML !== "") {
+      mapOverlay.innerHTML = "";
+      delete (mapOverlay as any)._lastPointsHash;
+    }
+    return;
+  }
+
+  if (mapImg && mob.mapImage && mapImg.dataset.mobMap !== mob.mapImage) {
+    if (mapImg.decoding !== "async") mapImg.decoding = "async";
+    mapImg.loading = "eager";
+    mapImg.src = `./maps/${mob.mapImage}`;
+    mapImg.alt = `${mob.area} Map`;
+    mapImg.dataset.mobMap = mob.mapImage;
+    mapContainer.classList.remove('hidden');
+    delete mapContainer.dataset.locationLoading;
+  }
+  if (mapContainer.classList.contains('hidden')) return;
+
+  if (mob.mapImage && mob.locations) {
+    const { spawnCullStatus, validSpawnPoints } = getSpawnCountInfo(mob);
+    const isOneLeft = (validSpawnPoints?.length || 0) === 1;
+
+    const timeEl = card.querySelector('.map-update-time') as HTMLElement | null;
+    if (timeEl) {
+      let latest = 0;
+      if (spawnCullStatus) {
+        Object.values(spawnCullStatus).forEach(p => {
+          if (p.culled_at && (p.culled_at as any).seconds) latest = Math.max(latest, (p.culled_at as any).seconds);
+          if (p.uncull_at && (p.uncull_at as any).seconds) latest = Math.max(latest, (p.uncull_at as any).seconds);
+        });
+      }
+      timeEl.textContent = latest > 0 ? `更新: ${formatMMDDHHmm(latest)}` : "更新: --/-- --:--";
+    }
+
+    const currentPointsHash = (mob.locations ?? []).map(p => `${p.id}-${isCulled(spawnCullStatus?.[p.id], mob.No)}`).join("|") + `|${isOneLeft}`;
+    if ((mapOverlay as any)._lastPointsHash !== currentPointsHash) {
+      mapOverlay.innerHTML = "";
+      const fragment = document.createDocumentFragment();
+      (mob.locations ?? []).forEach(point => {
+        const isThisPointTheLastOne = isOneLeft && point.id === validSpawnPoints[0]?.id;
+        const pointEl = drawSpawnPoint(point, spawnCullStatus, mob.No, point.mob_ranks.includes("B2") ? "B2" : point.mob_ranks.includes("B1") ? "B1" : point.mob_ranks[0], isThisPointTheLastOne);
+        if (pointEl) fragment.appendChild(pointEl);
+      });
+      mapOverlay.appendChild(fragment);
+      (mapOverlay as any)._lastPointsHash = currentPointsHash;
+    }
+  }
 }
 
-.magnifier - clone.spawn - point: hover,
-.magnifier - clone.spawn - point:focus {
-  transform: translate(-50 %, -50 %)!important;
-  box - shadow: none!important;
+export function updateSimpleMobItem(item: HTMLElement, mob: Mob): void {
+  const timeLabelObj = computeTimeLabel(mob);
+  updateProgressBar(item, mob, timeLabelObj);
+  updateProgressText(item, mob, timeLabelObj);
+  updateMobCount(item, mob);
+  updateMemoIcon(item, mob);
 }
