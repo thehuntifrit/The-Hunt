@@ -14,7 +14,9 @@
           "min-height: auto",
           "-webkit-overflow-scrolling",
           "scrollbar-width: thin",
-          "scrollbar-color"
+          "scrollbar-color",
+          "scrollbar-gutter",
+          "scrollbar-gutter: stable"
         ]
       }
     ]
