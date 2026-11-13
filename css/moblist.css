@@ -273,7 +273,7 @@
   font-weight: 700;
   /* 確定側だけ大きく: フォント +1px(14px)。バッジの高さは、上下の余白が未確定側と同じ程度になる15px */
   font-size: 14px;
-  height: 16px;
+  height: 14px;
   min-width: 18px;
   padding: 0 5px;
   /* 数字がピンより少し上に見えるので、確定側だけ数字を下げる量を増やす(共通の既定は 0.5px) */
@@ -700,7 +700,7 @@
    メンテナンス中の行は、下のグレー表示を優先する。
    ※ 全行にかかる filter なので、スクロールが重く感じたら、色の変数を差し替える方式に戻せる */
 .moblist-item.is-pre-repop:not(.maintenance-gray-out) {
-  filter: saturate(0.85);
+  filter: saturate(0.5);
 }
 
 /* メンテナンス中: グレーアウト */
