@@ -271,11 +271,13 @@
   border: 1px solid var(--c-cyan);
   color: #04202a;
   font-weight: 700;
-  /* 確定側だけ大きく: フォント +1px(14px)。中身が収まるよう、バッジの高さも2px広げる */
+  /* 確定側だけ大きく: フォント +1px(14px)。バッジの高さは、上下の余白が未確定側と同じ程度になる15px */
   font-size: 14px;
-  height: 16px;
+  height: 15px;
   min-width: 18px;
   padding: 0 5px;
+  /* 数字がピンより少し上に見えるので、確定側だけ数字を下げる量を増やす(共通の既定は 0.5px) */
+  --badge-text-y: 1.3px;
 }
 
 .count-badge.is-multiple {
@@ -696,7 +698,7 @@
 /* リスポーン待ち(次のPOPまでまだ間がある行): 彩度をわずかに下げて、POP WINDOW の行と区別する。
    メンテナンス中のグレー表示と同じ filter で、行の中の色(文字・バッジ・絵文字・線)がまとめて同じ割合で下がる。
    メンテナンス中の行は、下のグレー表示を優先する。
-   ※ 全行にかかる filter なので、スクロールが重く感じたら、色の変数を差し替える方式に戻す */
+   ※ 全行にかかる filter なので、スクロールが重く感じたら、色の変数を差し替える方式に戻せる */
 .moblist-item.is-pre-repop:not(.maintenance-gray-out) {
   filter: saturate(0.85);
 }
