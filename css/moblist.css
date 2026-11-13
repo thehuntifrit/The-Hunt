@@ -273,11 +273,11 @@
   font-weight: 700;
   /* 確定側だけ大きく: フォント +1px(14px)。バッジの高さは、上下の余白が未確定側と同じ程度になる15px */
   font-size: 14px;
-  height: 15px;
+  height: 16px;
   min-width: 18px;
   padding: 0 5px;
   /* 数字がピンより少し上に見えるので、確定側だけ数字を下げる量を増やす(共通の既定は 0.5px) */
-  --badge-text-y: 1px;
+  --badge-text-y: 0.98px;
 }
 
 .count-badge.is-multiple {
