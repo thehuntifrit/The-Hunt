@@ -698,14 +698,14 @@
 /* リスポーン待ち(次のPOPまでまだ間がある行): 彩度をわずかに下げて、POP WINDOW の行と区別する。
    メンテナンス中のグレー表示と同じ filter で、行の中の色(文字・バッジ・絵文字・線)がまとめて同じ割合で下がる。
    メンテナンス中の行は、下のグレー表示を優先する。
-   ※ 全行にかかる filter なので、スクロールが重く感じたら、色の変数を差し替える方式に戻せる */
+   ※ 全行にかかる filter なので、スクロールが重く感じたら、色の変数を差し替える方式に戻す */
 .moblist-item.is-pre-repop:not(.maintenance-gray-out) {
-  filter: none;
+  filter: saturate(0.5);
 }
 
 /* メンテナンス中: グレーアウト */
 .moblist-item.maintenance-gray-out {
-  filter: none;
+  filter: grayscale(100%) brightness(0.6);
 }
 
 /* POP WINDOW 中: 時間の点滅 */
