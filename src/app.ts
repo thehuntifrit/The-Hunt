@@ -322,6 +322,19 @@ if (moblistEl) {
   }, { passive: true });
 }
 
+// スクロール中だけ、その領域に is-scrolling を付ける(止まって約0.12秒後に外す)。
+// 付いている間は、中の要素がマウスに反応しない(ホバーの再描画を避けるため)
+const scrollIdleTimers = new WeakMap<Element, number>();
+document.addEventListener("scroll", (e) => {
+  const el = e.target;
+  if (!(el instanceof HTMLElement)) return;
+  if (!el.matches("#moblist-container, .mobcard-content")) return;
+
+  if (!el.classList.contains("is-scrolling")) el.classList.add("is-scrolling");
+  window.clearTimeout(scrollIdleTimers.get(el));
+  scrollIdleTimers.set(el, window.setTimeout(() => el.classList.remove("is-scrolling"), 120));
+}, { capture: true, passive: true });
+
 function attachMoblistBackgroundWheel(): void {
   const main = document.querySelector('.main-content-area') as HTMLElement | null;
   if (!main || (main as any).__moblistBgWheelAttached) return;
