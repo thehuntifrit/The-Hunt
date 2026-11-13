@@ -1,7 +1,7 @@
 import { getState, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, CONFIG, DOM, handleAppError, recalcIfStale } from "./dataManager";
 import { calculateRepop, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal";
 import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initGlobalMagnifier, adjustMemoHeight } from "./mobCard";
-import { getGroupKey, GROUP_LABELS, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache } from "./mobSorter";
+import { getGroupKey, GROUP_LABELS, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, hasMobSortKeyChanged, rememberMobSortKeys } from "./mobSorter";
 import { closeReportModal, openAuthModal, openReportModal, initModal } from "./modal";
 import { handleAreaFilterClick, initAppNav, togglePanel, closePanel, setActiveNavItem, checkAndNotify, updateErrorPanel } from "./sidebar";
 import { initializeAuth, getUserData, submitReport, submitMemo, toggleCrushStatus } from "./server";
@@ -502,7 +502,6 @@ const collapsedGroups = new Set<string>();
 export const syncDomOrder = function (): void {
   if (!DOM.pcLeftList) return;
 
-  invalidateSortCache();
   const sortedMobs = getSortedFilteredMobs();
   const groups: Record<string, Mob[]> = { MAX_OVER: [], WINDOW: [], NEXT: [], MAINTENANCE: [] };
   sortedMobs.forEach(m => {
@@ -599,6 +598,9 @@ export const syncDomOrder = function (): void {
   while (DOM.pcLeftList.children.length > idealNodes.length) {
     DOM.pcLeftList.removeChild(DOM.pcLeftList.lastChild!);
   }
+
+  // 今回の並び順に対応するソート条件を保存する
+  rememberMobSortKeys(sortedMobs);
 };
 
 // 詳細ペイン(PC右ペイン / モバイルのオーバーレイ)だけを描き直す。
@@ -724,33 +726,51 @@ export const updateProgressBarsOptimized = function (force = false): void {
 
   const filtered = getFilteredMobs();
   let anyStateChanged = false;
+  let sortKeyChanged = false;
 
   if (isTierB) {
     filtered.forEach(mob => {
       const info = mob.repopInfo;
       if (!info || info.status === "Maintenance") return;
 
-      if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
+      if (updateMobState(mob, nowSec, state)) {
+        anyStateChanged = true;
+      }
+
+      if (hasMobSortKeyChanged(mob)) {
+        sortKeyChanged = true;
+      }
+
       checkAndNotify(mob);
     });
+
     lastTierBTime = now;
     lastTierCTime = now;
   } else {
-    // 細かい周期: 境界が近いモブだけを更新・通知する(全モブの走査は読み取りのみで軽い)
     filtered.forEach(mob => {
       const info = mob.repopInfo;
       if (!info || info.status === "Maintenance") return;
 
       const boundary = info.nextBoundarySec || info.maxRepop || 0;
+
       if (boundary && (boundary - nowSec) <= URGENT_WINDOW_SEC) {
-        if (updateMobState(mob, nowSec, state)) anyStateChanged = true;
+        if (updateMobState(mob, nowSec, state)) {
+          anyStateChanged = true;
+        }
+
+        if (hasMobSortKeyChanged(mob)) {
+          sortKeyChanged = true;
+        }
+
         checkAndNotify(mob);
       }
     });
+
     lastTierCTime = now;
   }
 
-  if (anyStateChanged) {
+  if (sortKeyChanged) {
+    invalidateSortCache();
     syncDomOrder();
   }
 
@@ -1160,27 +1180,55 @@ function initAppEventListeners(): void {
   window.addEventListener('mobsBatchUpdated', (e: any) => {
     const { mobNos } = e.detail;
     const mobMap = getMobMap();
+
     if (!mobMap) return;
+
+    let needsSort = false;
+
     mobNos.forEach((mobNo: number) => {
       const mob = mobMap.get(String(mobNo));
       if (!mob) return;
+
       checkAndNotify(mob);
+
       const card = cardCache.get(String(mobNo));
-      if (card) updateCardFull(card, mob);
+      if (card) {
+        updateCardFull(card, mob);
+      }
+
+      if (hasMobSortKeyChanged(mob)) {
+        needsSort = true;
+      }
     });
+
     updateVisibleDetailCard(mobMap);
-    sortAndRedistribute();
+
+    if (needsSort) {
+      invalidateSortCache();
+      sortAndRedistribute();
+    }
   });
 
   window.addEventListener('mobUpdated', (e: any) => {
     const { mobNo, mob } = e.detail;
     const mobMap = getMobMap();
+
     if (!mobMap) return;
+
     const card = cardCache.get(String(mobNo));
-    if (card) updateCardFull(card, mob);
+
+    if (card) {
+      updateCardFull(card, mob);
+    }
+
     updateVisibleDetailCard(mobMap);
-    sortAndRedistribute();
+
+    if (hasMobSortKeyChanged(mob)) {
+      invalidateSortCache();
+      sortAndRedistribute();
+    }
   });
+
 
   window.addEventListener('filterChanged', () => {
     invalidateFilterCache();

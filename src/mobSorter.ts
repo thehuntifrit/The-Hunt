@@ -75,6 +75,56 @@ let cachedFilteredMobs: Mob[] | null = null;
 let cachedSortedMobs: Mob[] | null = null;
 let sortCacheValid = false;
 
+// モブごとのソート条件を記録する。
+// ソート条件に変化がなければ、再ソートする必要はない。
+const mobSortSignatureCache = new Map<number, string>();
+
+function createMobSortSignature(mob: Mob): string {
+  const info = mob.repopInfo;
+
+  return [
+    info?.status ?? "Unknown",
+    !!info?.isMaintenanceStop,
+    !!info?.isBlockedByMaintenance,
+    !!info?.isInConditionWindow,
+    Math.floor(info?.elapsedPercent || 0),
+    info?.minRepop || 0,
+    info?.maxRepop || 0,
+    mob.rank,
+    mob.ExpansionId ?? "",
+    mob.No
+  ].join("|");
+}
+
+/**
+ * 前回記録したソート条件と比較する。
+ * 初回は記録だけを行い、変更ありとは判定しない。
+ */
+export function hasMobSortKeyChanged(mob: Mob): boolean {
+  const nextSignature = createMobSortSignature(mob);
+  const previousSignature = mobSortSignatureCache.get(mob.No);
+
+  if (previousSignature === undefined) {
+    mobSortSignatureCache.set(mob.No, nextSignature);
+    return false;
+  }
+
+  return previousSignature !== nextSignature;
+}
+
+/**
+ * 現在のモブのソート条件を記録する。
+ * ソート・DOM更新が完了した後に呼び出す。
+ */
+export function rememberMobSortKeys(mobs: Mob[]): void {
+  for (const mob of mobs) {
+    mobSortSignatureCache.set(
+      mob.No,
+      createMobSortSignature(mob)
+    );
+  }
+}
+
 export function getFilteredMobs(): Mob[] {
   const state = getState() as AppState;
   const version = state._filterVersion || 0;
