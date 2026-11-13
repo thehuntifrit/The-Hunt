@@ -828,6 +828,13 @@
   outline: none;
 }
 
+/* カードのスクロール中は、点のマウス反応を止める。
+   マップがスクロールで動く間、点がマウスの下を次々に通り、そのたびにホバー(拡大・光・重なり順の変更)の
+   再描画が走って、スクロールが引っかかるため。止まって約0.12秒後に、また反応する(app.ts が is-scrolling を付け外しする) */
+.mobcard-content.is-scrolling .spawn-point {
+  pointer-events: none;
+}
+
 /* ツールチップ(点の左上に出す) */
 .spawn-point[data-tooltip]::after {
   content: attr(data-tooltip);
