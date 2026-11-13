@@ -271,6 +271,11 @@
   border: 1px solid var(--c-cyan);
   color: #04202a;
   font-weight: 700;
+  /* 確定側だけ大きく: フォント +1px(14px)。中身が収まるよう、バッジの高さも2px広げる */
+  font-size: 14px;
+  height: 16px;
+  min-width: 18px;
+  padding: 0 5px;
 }
 
 .count-badge.is-multiple {
@@ -297,6 +302,8 @@
 }
 
 .count-badge.is-single .count-icon {
+  width: 10px;
+  height: 12px;
   --count-icon-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='3 0 18 24'%3E%3Cpath fill-rule='evenodd' d='M12 1.5C7.9 1.5 4.5 4.8 4.5 8.9c0 5.4 7.5 13.6 7.5 13.6s7.5-8.2 7.5-13.6c0-4.1-3.4-7.4-7.5-7.4zm0 10.2a2.9 2.9 0 1 1 0-5.8 2.9 2.9 0 0 1 0 5.8z'/%3E%3C/svg%3E");
 }
 
@@ -691,7 +698,7 @@
    メンテナンス中の行は、下のグレー表示を優先する。
    ※ 全行にかかる filter なので、スクロールが重く感じたら、色の変数を差し替える方式に戻す */
 .moblist-item.is-pre-repop:not(.maintenance-gray-out) {
-  filter: saturate(0.5);
+  filter: saturate(0.85);
 }
 
 /* メンテナンス中: グレーアウト */
