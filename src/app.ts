@@ -417,7 +417,7 @@ function attachMoblistBackgroundWheel(): void {
   }, { passive: true });
 }
 
-attachMoblistBackgroundWheel();
+// attachMoblistBackgroundWheel();
 
 export function observeCard(el: HTMLElement): void {
   if (el) {
