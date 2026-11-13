@@ -277,7 +277,7 @@
   min-width: 18px;
   padding: 0 5px;
   /* 数字がピンより少し上に見えるので、確定側だけ数字を下げる量を増やす(共通の既定は 0.5px) */
-  --badge-text-y: 1.3px;
+  --badge-text-y: 1.1px;
 }
 
 .count-badge.is-multiple {
