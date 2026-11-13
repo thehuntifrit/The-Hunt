@@ -119,6 +119,21 @@ function getEorzeaWeatherSeed(date: Date = new Date()): number {
   return step2 % 100;
 }
 
+// 天候シードは1400秒(ET8時間)ごとに固定される。サイクル番号をキーに使い回す
+const WEATHER_SEED_CACHE_MAX = 10000;
+const weatherSeedCache = new Map<number, number>();
+
+function getWeatherSeedAt(sec: number): number {
+  const cycle = Math.floor(sec / WEATHER_CYCLE_SEC);
+  let seed = weatherSeedCache.get(cycle);
+  if (seed === undefined) {
+    if (weatherSeedCache.size >= WEATHER_SEED_CACHE_MAX) weatherSeedCache.clear();
+    seed = getEorzeaWeatherSeed(new Date(cycle * WEATHER_CYCLE_SEC * 1000));
+    weatherSeedCache.set(cycle, seed);
+  }
+  return seed;
+}
+
 function checkWeatherInRange(mob: Mob, seed: number): boolean {
   if (mob.weatherSeedRange) {
     const [min, max] = mob.weatherSeedRange;
@@ -139,9 +154,8 @@ function checkTimeRange(timeRange: TimeRange, realSec: number): boolean {
 }
 
 function checkEtCondition(mob: Mob, realSec: number): boolean {
-  const { phase } = getEorzeaMoonInfo(new Date(realSec * 1000));
-
   if (mob.conditions) {
+    const { phase } = getEorzeaMoonInfo(new Date(realSec * 1000));
     const { firstNight, otherNights } = mob.conditions;
     if (firstNight?.timeRange && isFirstNightPhase(phase)) {
       return checkTimeRange(firstNight.timeRange, realSec);
@@ -188,7 +202,7 @@ function* getValidWeatherIntervals(mob: Mob, windowStart: number, windowEnd: num
   }
 
   const limitSec = LIMIT_DAYS * 24 * 3600;
-  const isWeatherAt = (sec: number) => checkWeatherInRange(mob, getEorzeaWeatherSeed(new Date(sec * 1000)));
+  const isWeatherAt = (sec: number) => checkWeatherInRange(mob, getWeatherSeedAt(sec));
   let loopSafety = 0;
 
   let cursor = alignToWeatherCycle(windowStart);
