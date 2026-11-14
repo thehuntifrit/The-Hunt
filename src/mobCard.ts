@@ -192,7 +192,7 @@ export interface TimeLabelResult {
 export function computeTimeLabel(mob: Mob): TimeLabelResult {
   const info = mob.repopInfo || {} as RepopInfo;
   const now = serverNow() / 1000;
-  
+
   if (!info.status) {
     return { label: "", timeValue: "--/-- --:--", isSpecialCondition: false, isTimeOver: false, isTimedMob: false, dhm: null, isInWindow: false };
   }
@@ -775,6 +775,8 @@ export function updateMapOverlay(card: HTMLElement, mob: Mob): void {
   if (mapImg && mob.mapImage && mapImg.dataset.mobMap !== mob.mapImage) {
     if (mapImg.decoding !== "async") mapImg.decoding = "async";
     mapImg.loading = "eager";
+    mapImg.classList.remove("is-loaded");
+    mapImg.onload = () => mapImg.classList.add("is-loaded");
     mapImg.src = `./maps/${mob.mapImage}`;
     mapImg.alt = `${mob.area} Map`;
     mapImg.dataset.mobMap = mob.mapImage;
