@@ -368,7 +368,7 @@ export function drawSpawnPoint(point: SpawnPoint, spawnCullStatus: Record<string
   const myId = getState().lodestoneId;
   const isMine = !!myId && String((pointStatus as any)?.reporter_id ?? "") === myId;
   const stateText = isLastOne ? "(確)" : isCulledFlag ? (isMine ? "(自分済)" : "(済)") : "";
-  el.dataset.tooltip = rank === "F" ? stateText : `${pointNumber} ${stateText}`;
+  el.dataset.tooltip = `${pointNumber} ${stateText}`;
 
   Object.assign(el.dataset, {
     locationId: point.id,
