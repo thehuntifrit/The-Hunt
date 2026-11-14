@@ -5,6 +5,7 @@ import { getGroupKey, GROUP_LABELS, getSortedFilteredMobs, getFilteredMobs, inva
 import { closeReportModal, openAuthModal, openReportModal, initModal } from "./modal";
 import { handleAreaFilterClick, initAppNav, togglePanel, closePanel, setActiveNavItem, checkAndNotify, updateErrorPanel } from "./sidebar";
 import { initializeAuth, getUserData, submitReport, submitMemo, toggleCrushStatus } from "./server";
+import { now as serverNow, startTimeSync } from "./servertime";
 import { Mob, RepopInfo } from "./types/mob";
 
 // ─── 定数 ──────────────────────────────────────────────
@@ -47,6 +48,8 @@ async function initApp(): Promise<void> {
     initAppEventListeners();
     attachMobCardEvents();
     initGlobalMagnifier();
+
+    startTimeSync();
 
     await loadBaseMobData();
 
@@ -140,7 +143,7 @@ async function getMaintenanceStatus(): Promise<MaintStatus> {
     };
   }
 
-  const now = new Date();
+  const now = new Date(serverNow());
   const start = new Date(maintenance.start);
   const end = new Date(maintenance.end);
   const showFrom = new Date(start.getTime() - CONFIG.MAINTENANCE_SHOW_BEFORE_MS);
@@ -249,7 +252,7 @@ let lastEtStr = "";
 export function updateHeaderTime(): void {
   if (document.visibilityState === 'hidden') return;
 
-  const now = new Date();
+  const now = new Date(serverNow());
   const et = getEorzeaTime(now);
   const ltStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   const etStr = `${et.hours}:${et.minutes}`;
@@ -730,8 +733,8 @@ export const updateProgressBarsOptimized = function (force = false): void {
   if (document.visibilityState === 'hidden' && !force) return;
 
   const state = getState();
-  const now = Date.now();
-  const nowSec = now / 1000;
+  const now = Date.now();            // 更新周期(経過時間)の判定用。補正しない
+  const nowSec = serverNow() / 1000; // 湧き時刻の判定用
 
   // setInterval の発火は数ms揺らぎ、Date.now() は整数ミリ秒なので、
   // 厳密に「>= 周期」で比べると約3割の周期が1回飛ばされる。余裕を持たせる。
@@ -885,7 +888,7 @@ export function handleReportResult(result: any): void {
 }
 
 export async function handleInstantReport(mobNo: number): Promise<void> {
-  const result = await submitReport(mobNo, new Date().toISOString());
+  const result = await submitReport(mobNo, new Date(serverNow()).toISOString());
   handleReportResult(result);
 }
 
@@ -933,8 +936,8 @@ function applyOptimisticState(mobNo: number, area: string, locationId: string, n
   if (!stateVal.mobLocations[key][locationId]) {
     stateVal.mobLocations[key][locationId] = {};
   }
-
-  const now = { toMillis: () => Date.now(), seconds: Math.floor(Date.now() / 1000) };
+  const t = serverNow();
+  const now = { toMillis: () => t, seconds: Math.floor(t / 1000) };
   if (nextCulled) {
     stateVal.mobLocations[key][locationId].culled_at = now;
   } else {

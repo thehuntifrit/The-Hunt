@@ -1,4 +1,5 @@
 import { Mob, RepopInfo, TimeRange } from "./types/mob";
+import { now as serverNow } from "./servertime";
 
 const ET_HOUR_SEC = 175;
 const WEATHER_CYCLE_SEC = 1400;
@@ -379,7 +380,7 @@ function getRemainingSec(p: {
 
 export function calculateRepop(mob: Mob, maintenance: any, options: { skipConditionCalc?: boolean; forceRecalc?: boolean } = {}): RepopInfo {
   const { skipConditionCalc = false, forceRecalc = false } = options;
-  const now = Date.now() / 1000;
+  const now = serverNow() / 1000;
   const lastKill = mob.last_kill_time || 0;
 
   const maint = ((maintenance && maintenance.maintenance) ? maintenance.maintenance : maintenance) as any;

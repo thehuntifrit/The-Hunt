@@ -1,12 +1,13 @@
 import { getState, setLodestoneId, setCharacterName, setVerified, extractLodestoneId, DOM, handleAppError } from "./dataManager";
 import { verifyLodestoneCharacter, fetchVerificationCode } from "./server";
+import { now as serverNow } from "./servertime";
 import { renderNameWithInstance } from "./mobCard";
 
 export async function openReportModal(mobNo: number): Promise<void> {
     const mob = getState().mobs.find(m => m.No === mobNo);
     if (!mob) return;
 
-    const now = new Date();
+    const now = new Date(serverNow());
     const localIso = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
         .toISOString()
         .slice(0, 16);

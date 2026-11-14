@@ -2,6 +2,7 @@ import { Mob, RepopInfo, CullStatus, SpawnCache } from "./types/mob";
 import { AppState, FilterState } from "./types/state";
 import { calculateRepop } from "./cal";
 import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos, subscribeMaintenance } from "./server";
+import { now as serverNow, getServerTimeOffset } from "./servertime";
 
 // ─── 定数 ───────────────────────────────────────────────
 export const EXPANSION_MAP: Record<number, string> = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
@@ -397,7 +398,7 @@ function scheduleRepopTimer(mobNo: number, repopInfo: RepopInfo) {
     const bSec = repopInfo.nextBoundarySec;
     if (!bSec || bSec === Infinity) return;
 
-    const nowSec = Date.now() / 1000;
+    const nowSec = serverNow() / 1000;
     const delayMs = (bSec - nowSec) * 1000;
 
     if (delayMs <= 0 || delayMs > 7 * 24 * 3600 * 1000) return;
@@ -483,7 +484,8 @@ export function requestWorkerCalculation(mob: Mob, maintenance: any, options: { 
             type: WORKER_TYPES.CALCULATE,
             mob: mobForWorker,
             maintenance,
-            options
+            options,
+            timeOffset: getServerTimeOffset()
         });
     } catch (e) {
         state.pendingCalculationMobs.delete(mob.No);

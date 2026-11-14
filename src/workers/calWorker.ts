@@ -1,10 +1,12 @@
 import { calculateRepop } from '../cal';
+import { setServerTimeOffset } from '../servertime';
 import type { Mob } from '../types/mob';
 
 self.onmessage = (e: MessageEvent) => {
-    const { type, mob, maintenance, options } = e.data;
+    const { type, mob, maintenance, options, timeOffset } = e.data;
     if (type === 'CALCULATE') {
         try {
+            setServerTimeOffset(timeOffset ?? 0);
             const repopInfo = calculateRepop(mob as Mob, maintenance, options ?? {});
             const serialized = {
                 ...repopInfo,

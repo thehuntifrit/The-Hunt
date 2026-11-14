@@ -10,6 +10,7 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken as getAppChec
 import { getState, DOM, CONFIG, handleAppError } from "./dataManager";
 import { closeReportModal } from "./modal";
 import { getMaintenanceRepop } from "./cal";
+import { now, WORKER_BASE_URL } from "./servertime";
 import { Mob, getRankFromNo } from "./types/mob";
 
 const FIREBASE_CONFIG = {
@@ -204,16 +205,17 @@ export const submitReport = async (mobNo: number, timeISO: string): Promise<Repo
     if (timeISO) {
         killTimeDate = new Date(timeISO);
         if (isNaN(killTimeDate.getTime())) {
-            killTimeDate = new Date();
+            killTimeDate = new Date(now());
         }
     } else {
-        killTimeDate = new Date();
+        killTimeDate = new Date(now());
     }
 
     const modalStatusEl = DOM.modalStatus;
     const forceSubmitEl = DOM.modalForceSubmit;
     const isForceSubmit = forceSubmitEl ? forceSubmitEl.checked : false;
-    const nowMs = Date.now();
+    const nowMs = now();
+
     if (killTimeDate.getTime() > nowMs + CONFIG.REPORT_FUTURE_THRESHOLD) {
         if (modalStatusEl) {
             modalStatusEl.textContent = "現在時刻より10分以上未来の時刻は報告できません。";
@@ -305,7 +307,7 @@ export const submitMemo = async (mobNo: number, memoText: string): Promise<Repor
 
         const memoData = {
             memo_text: cleanMemo,
-            created_at: Timestamp.now(),
+            created_at: Timestamp.fromMillis(now()),
             reporter_id: lodestoneId
         };
 
@@ -335,7 +337,7 @@ export const toggleCrushStatus = async (mobNo: number, area: string, locationId:
         const updateKey = `points.${locationId}.${fieldName}`;
 
         const updatePayload = {
-            [updateKey]: Timestamp.now(),
+            [updateKey]: Timestamp.fromMillis(now()),
             [`points.${locationId}.reporter_id`]: lodestoneId
         };
 
@@ -347,7 +349,7 @@ export const toggleCrushStatus = async (mobNo: number, area: string, locationId:
     }
 };
 
-const VERIFICATION_PROXY_URL = "https://icy-resonance-2526.the-hunt-ifrit.workers.dev/";
+const VERIFICATION_PROXY_URL = WORKER_BASE_URL;
 
 async function workerFetch(path: string, init: RequestInit = {}): Promise<Response> {
     let user = auth.currentUser;

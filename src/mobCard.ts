@@ -1,5 +1,6 @@
 import { getDurationDHMParts, formatDurationDHM, formatMMDDHHmm, DHMParts } from "./cal";
 import { getState, isCulled, getStatusLabel, RANKS, DOM, CONFIG } from "./dataManager";
+import { now as serverNow } from "./servertime";
 import { Mob, SpawnPoint, CullStatus, RepopInfo } from "./types/mob";
 
 // ─── 汎用ユーティリティ ─────────────────────────────────
@@ -190,8 +191,8 @@ export interface TimeLabelResult {
 
 export function computeTimeLabel(mob: Mob): TimeLabelResult {
   const info = mob.repopInfo || {} as RepopInfo;
-  const now = Date.now() / 1000;
-
+  const now = serverNow() / 1000;
+  
   if (!info.status) {
     return { label: "", timeValue: "--/-- --:--", isSpecialCondition: false, isTimeOver: false, isTimedMob: false, dhm: null, isInWindow: false };
   }
