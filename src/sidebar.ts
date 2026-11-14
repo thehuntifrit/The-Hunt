@@ -2,6 +2,7 @@ import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled, safeJsonPar
 import { filterAndRender } from "./app";
 import { openUserManual, closeUserManual } from "./readme";
 import { cloneTemplate } from "./mobCard";
+import { now as serverNow } from "./servertime";
 import { Mob } from "./types/mob";
 
 // ─── 定数・DOM ──────────────────────────────────────────
@@ -206,7 +207,7 @@ export function checkAndNotify(mob: Mob): void {
     const info = mob.repopInfo;
     if (!info || !info.nextConditionSpawnDate || !info.conditionWindowEnd) return;
 
-    const now = Date.now();
+    const now = serverNow();
     const spawnTime = info.nextConditionSpawnDate.getTime();
     const endTime = info.conditionWindowEnd.getTime();
     const beforeTime = spawnTime - CONFIG.NOTIFICATION_OFFSET_MS;
