@@ -75,6 +75,12 @@ export default {
         if (country && country !== 'JP') return reply(403, { success: false, reason: 'region' });
 
         const path = new URL(request.url).pathname;
+
+        // 時刻同期用(ログイン不要・シークレット不要)。Origin/UA/地域のチェックは上で通過済み
+        if (path === '/time' && request.method === 'GET') {
+            return reply(200, { t: Date.now() });
+        }
+
         const isCode = path === '/code' && request.method === 'GET';
         const isVerify = path === '/verify' && request.method === 'POST';
         if (!isCode && !isVerify) return reply(404, { success: false, reason: 'not_found_route' });
