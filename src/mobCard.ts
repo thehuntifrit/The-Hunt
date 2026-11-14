@@ -58,6 +58,21 @@ export function renderNameWithInstance(container: HTMLElement, name: string): vo
   }
 }
 
+// マップ画像の縦横比。一度読み込んだ画像は覚えておき、次回から画像が届く前に正しい枠を確保する
+const MAP_RATIO_KEY = "mapRatioCache_v1";
+const mapRatioCache: Record<string, string> = (() => {
+  try { return JSON.parse(localStorage.getItem(MAP_RATIO_KEY) || "{}") || {}; } catch { return {}; }
+})();
+
+function rememberMapRatio(name: string, w: number, h: number): string {
+  const ratio = `${w} / ${h}`;
+  if (mapRatioCache[name] !== ratio) {
+    mapRatioCache[name] = ratio;
+    try { localStorage.setItem(MAP_RATIO_KEY, JSON.stringify(mapRatioCache)); } catch { /* 保存できなくても動く */ }
+  }
+  return ratio;
+}
+
 // ─── 拡大鏡 ─────────────────────────────────────────────
 export function initGlobalMagnifier(): void {
   if ((window as any).magnifierInitialized) return;
@@ -773,11 +788,22 @@ export function updateMapOverlay(card: HTMLElement, mob: Mob): void {
   }
 
   if (mapImg && mob.mapImage && mapImg.dataset.mobMap !== mob.mapImage) {
+    const mapName = mob.mapImage;
     if (mapImg.decoding !== "async") mapImg.decoding = "async";
     mapImg.loading = "eager";
     mapImg.classList.remove("is-loaded");
-    mapImg.onload = () => mapImg.classList.add("is-loaded");
-    mapImg.src = `./maps/${mob.mapImage}`;
+
+    // 比率が分かっていれば、その形の枠を先に確保する。未知なら正方形(CSSの既定)
+    if (mapRatioCache[mapName]) mapContainer.style.setProperty("--map-ratio", mapRatioCache[mapName]);
+    else mapContainer.style.removeProperty("--map-ratio");
+
+    mapImg.onload = () => {
+      if (mapImg.naturalWidth && mapImg.naturalHeight) {
+        mapContainer.style.setProperty("--map-ratio", rememberMapRatio(mapName, mapImg.naturalWidth, mapImg.naturalHeight));
+      }
+      mapImg.classList.add("is-loaded");
+    };
+    mapImg.src = `./maps/${mapName}`;
     mapImg.alt = `${mob.area} Map`;
     mapImg.dataset.mobMap = mob.mapImage;
     mapContainer.classList.remove('hidden');
