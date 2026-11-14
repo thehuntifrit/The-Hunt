@@ -331,6 +331,11 @@ export function getValidSpawnPoints(mob: Mob, spawnCullStatus: Record<string, Cu
   });
 }
 
+// 点がこの割合(%)より端に近いと、ツールチップを反転して出す。
+// 点にマウスを乗せると1.5倍に拡大され、ツールチップも一緒に大きくなるため、その分を見込んだ値にしている
+const TOOLTIP_FLIP_X = 35;
+const TOOLTIP_FLIP_Y = 15;
+
 export function drawSpawnPoint(point: SpawnPoint, spawnCullStatus: Record<string, CullStatus>, mobNo: number, rank: string, isLastOne: boolean): HTMLElement | null {
   const el = cloneTemplate('spawn-point-template');
   if (!el) return null;
@@ -369,6 +374,9 @@ export function drawSpawnPoint(point: SpawnPoint, spawnCullStatus: Record<string
   const isMine = !!myId && String((pointStatus as any)?.reporter_id ?? "") === myId;
   const stateText = isLastOne ? "(確)" : isCulledFlag ? (isMine ? "(自分済)" : "(済)") : "";
   el.dataset.tooltip = `${pointNumber} ${stateText}`;
+
+  if (Number(point.x) < TOOLTIP_FLIP_X) el.dataset.tipX = "right";
+  if (Number(point.y) < TOOLTIP_FLIP_Y) el.dataset.tipY = "down";
 
   Object.assign(el.dataset, {
     locationId: point.id,

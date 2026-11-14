@@ -893,6 +893,18 @@
   z-index: 30;
 }
 
+/* 左端に近い点は右側へ、上端に近い点は下側へ出して、枠の外で切れるのを防ぐ
+   (向きは mobCard.ts の drawSpawnPoint が data-tip-x / data-tip-y で指定する) */
+.spawn-point[data-tip-x="right"]::after {
+  right: auto;
+  left: calc(100% + 1px);
+}
+
+.spawn-point[data-tip-y="down"]::after {
+  bottom: auto;
+  top: calc(100% + 1px);
+}
+
 .spawn-point[data-tooltip]:hover::after,
 .spawn-point[data-tooltip]:focus::after {
   opacity: 1;
