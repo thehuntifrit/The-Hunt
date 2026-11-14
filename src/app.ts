@@ -436,13 +436,14 @@ export function updateCardFull(card: HTMLElement, mob: Mob): void {
       const s = mob.spawn_cull_status[key];
       const c = (s.culled_at as any)?.seconds || 0;
       const u = (s.uncull_at as any)?.seconds || 0;
-      cullHash += `${key}:${c},${u};`;
+      const r = (s as any).reporter_id || "";
+      cullHash += `${key}:${c},${u},${r};`;
     }
   }
 
   const memoHash = `${mob.memo_updated_at || 0}:${mob.memo_text || ""}`;
-  const stateHash = `${info.status}|${info.timeRemaining}|${info.elapsedPercent}|${info.isInConditionWindow}|${cullHash}|${memoHash}`;
-
+  const stateHash = `${info.status}|${info.timeRemaining}|${info.elapsedPercent}|${info.isInConditionWindow}|${cullHash}|${memoHash}|${getState().lodestoneId || ""}`;
+  
   if ((card as any)._lastStateHash === stateHash) return;
   (card as any)._lastStateHash = stateHash;
 
@@ -943,6 +944,7 @@ function applyOptimisticState(mobNo: number, area: string, locationId: string, n
   } else {
     stateVal.mobLocations[key][locationId].uncull_at = now;
   }
+  (stateVal.mobLocations[key][locationId] as any).reporter_id = stateVal.lodestoneId;
 
   stateVal.mobs.forEach(m => {
     if (m.area === area && (m.No % 10) === instance) {

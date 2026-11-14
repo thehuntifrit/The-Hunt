@@ -365,7 +365,9 @@ export function drawSpawnPoint(point: SpawnPoint, spawnCullStatus: Record<string
   el.style.setProperty('--point-y', `${point.y}%`);
 
   const pointNumber = parseInt(point.id.slice(-2), 10);
-  const stateText = isLastOne ? "(確)" : isCulledFlag ? "(済)" : "";
+  const myId = getState().lodestoneId;
+  const isMine = !!myId && String((pointStatus as any)?.reporter_id ?? "") === myId;
+  const stateText = isLastOne ? "(確)" : isCulledFlag ? (isMine ? "(自分済)" : "(済)") : "";
   el.dataset.tooltip = rank === "F" ? stateText : `${pointNumber} ${stateText}`;
 
   Object.assign(el.dataset, {
@@ -827,7 +829,12 @@ export function updateMapOverlay(card: HTMLElement, mob: Mob): void {
       timeEl.textContent = latest > 0 ? `更新: ${formatMMDDHHmm(latest)}` : "更新: --/-- --:--";
     }
 
-    const currentPointsHash = (mob.locations ?? []).map(p => `${p.id}-${isCulled(spawnCullStatus?.[p.id], mob.No)}`).join("|") + `|${isOneLeft}`;
+    const myId = getState().lodestoneId || "";
+    const currentPointsHash = (mob.locations ?? []).map(p => {
+      const st = spawnCullStatus?.[p.id];
+      const mine = !!myId && String((st as any)?.reporter_id ?? "") === myId;
+      return `${p.id}-${isCulled(st, mob.No)}-${mine ? 1 : 0}`;
+    }).join("|") + `|${isOneLeft}`;
     if ((mapOverlay as any)._lastPointsHash !== currentPointsHash) {
       mapOverlay.innerHTML = "";
       const fragment = document.createDocumentFragment();
