@@ -654,6 +654,9 @@ export function updateExpandablePanel(card: HTMLElement, mob: Mob): void {
     const val = formatOrPlaceholder(mob.last_kill_time);
     if (elLast.textContent !== val) elLast.textContent = val;
   }
+  [elMin, elMax, elNext, elLast].forEach(el => {
+    if (el) el.classList.toggle('is-empty', el.textContent === "--/-- --:--");
+  });
 
   const elMemoInput = getEl(card, ".mobcard-memo-input", "memoInput") as (HTMLInputElement | HTMLTextAreaElement) | null;
   if (elMemoInput) {

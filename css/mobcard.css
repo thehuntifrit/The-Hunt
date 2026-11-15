@@ -600,6 +600,11 @@
   min-width: 0;
 }
 
+/* データがないときの「--/-- --:--」: 時刻の幅に近づける */
+.mobcard-value.is-empty {
+  letter-spacing: 0.12em;
+}
+
 .mobcard-value .mobcard-timer-num {
   font-size: 14px;
   font-weight: 500;
