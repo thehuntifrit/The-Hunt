@@ -1,0 +1,167 @@
+import { getState, setLodestoneId, setCharacterName, setVerified, extractLodestoneId, DOM } from "./dataManager";
+import { verifyLodestoneCharacter } from "./server";
+import { cloneTemplate } from "./mobCard";
+import readmeContent from "../README.md?raw";
+
+// グローバルロードされる marked, DOMPurify の定義
+declare const marked: any;
+declare const DOMPurify: any;
+
+let isLoaded = false;
+let currentVCode = "";
+
+export const openUserManual = async (): Promise<void> => {
+    const modal = DOM.manualModal;
+    const container = DOM.readmeContainer;
+    if (!modal || !container) return;
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+
+    if (!isLoaded) {
+        try {
+            const text = readmeContent;
+
+            if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+                marked.setOptions({
+                    breaks: true,
+                    gfm: true
+                });
+                const html = marked.parse(text);
+                container.innerHTML = DOMPurify.sanitize(html);
+            } else {
+                container.textContent = text;
+            }
+            isLoaded = true;
+            updateAuthUI();
+        } catch (error) {
+            console.error(error);
+            const errorMsg = cloneTemplate('ui-message-template');
+            if (errorMsg) {
+                errorMsg.className = "u-text-red-400 u-text-center";
+                errorMsg.textContent = "マニュアルの読み込みに失敗しました。";
+                container.innerHTML = "";
+                container.appendChild(errorMsg);
+            }
+        }
+    }
+};
+
+export const closeUserManual = (): void => {
+    const modal = document.getElementById('manual-modal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.classList.remove('overflow-hidden');
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = DOM.manualModal;
+    const closeBtn = DOM.closeManualModalBtn;
+
+    const handleClose = () => {
+        closeUserManual();
+        const activeNav = document.querySelector(".appnav-btn[data-nav-id='manual'].appnav-active");
+        if (activeNav) {
+            import("./sidebar").then(m => m.setActiveNavItem("home"));
+        }
+    };
+
+    closeBtn?.addEventListener('click', handleClose);
+
+    modal?.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        if (target === modal || target.classList.contains('app-backdrop')) handleClose();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+            handleClose();
+        }
+    });
+});
+
+window.addEventListener('characterNameSet', () => {
+    if (isLoaded) updateAuthUI();
+});
+
+async function updateAuthUI(): Promise<void> {
+    const authContainer = DOM.readmeAuthSession;
+    if (!authContainer) return;
+
+    const state = getState();
+    authContainer.innerHTML = "";
+
+    if (state.isVerified) {
+        const verifiedEl = cloneTemplate('auth-verified-template');
+        if (verifiedEl) authContainer.appendChild(verifiedEl);
+        return;
+    }
+
+    if (!currentVCode) {
+        const arr = new Uint8Array(6);
+        crypto.getRandomValues(arr);
+        const code = Array.from(arr).map(b => b.toString(36).toUpperCase()).join('').substring(0, 8);
+        currentVCode = "HUNT-" + code;
+    }
+
+    const formEl = cloneTemplate('auth-form-template');
+    if (!formEl) return;
+
+    const vcodeDisplay = formEl.querySelector('.auth-vcode-display');
+    const copyBtn = formEl.querySelector('.auth-copy-btn') as HTMLElement | null;
+    const verifyBtn = formEl.querySelector('.auth-verify-btn') as HTMLButtonElement | null;
+    const idInput = formEl.querySelector('.auth-id-input') as HTMLInputElement | null;
+    const statusEl = formEl.querySelector('.auth-status-msg');
+
+    if (vcodeDisplay) vcodeDisplay.textContent = currentVCode;
+
+    copyBtn?.addEventListener('click', () => {
+        navigator.clipboard.writeText(currentVCode);
+        const original = copyBtn.textContent;
+        copyBtn.textContent = "Done!";
+        setTimeout(() => {
+            if (copyBtn) copyBtn.textContent = original;
+        }, 2000);
+    });
+
+    verifyBtn?.addEventListener('click', async () => {
+        if (!idInput || !statusEl || !verifyBtn) return;
+        const raw = idInput.value.trim();
+        const lodestoneId = extractLodestoneId(raw);
+
+        if (!lodestoneId) {
+            statusEl.textContent = "正しいIDまたはURLを入力してください";
+            statusEl.className = "text-xs text-red-400";
+            return;
+        }
+
+        statusEl.textContent = "検証中...";
+        statusEl.className = "text-xs text-cyan-400 auth-status-msg";
+        verifyBtn.disabled = true;
+
+        try {
+            const result = await verifyLodestoneCharacter(lodestoneId);
+            verifyBtn.disabled = false;
+
+            if (result.success && result.characterName) {
+                statusEl.textContent = "検証成功！登録しています...";
+                setLodestoneId(lodestoneId);
+                setCharacterName(result.characterName);
+                setVerified(true);
+                updateAuthUI();
+            } else {
+                statusEl.textContent = result.error || "検証失敗";
+                statusEl.className = "text-xs text-red-400 auth-status-msg";
+                verifyBtn.disabled = false;
+            }
+        } catch (err: any) {
+            statusEl.textContent = `エラー: ${err.message || "通信失敗"}`;
+            statusEl.className = "text-xs text-red-400 auth-status-msg";
+            verifyBtn.disabled = false;
+        }
+    });
+
+    authContainer.appendChild(formEl);
+}

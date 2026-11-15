@@ -1,0 +1,651 @@
+import { Mob, RepopInfo, TimeRange } from "./types/mob";
+import { now as serverNow } from "./servertime";
+
+const ET_HOUR_SEC = 175;
+const WEATHER_CYCLE_SEC = 1400;
+const ET_DAY_SEC = ET_HOUR_SEC * 24;
+const MOON_CYCLE_SEC = ET_DAY_SEC * 32;
+const MOON_PHASE_DURATION_SEC = ET_DAY_SEC * 4;
+const MAX_SEARCH_ITERATIONS = 5000;
+const LIMIT_DAYS = 20;
+export const EORZEA_MINUTE_MS = 2917;
+export const MAINT_FACTOR = 0.6;
+
+function parseDate(input: any): Date | null {
+  if (!input) return null;
+  if (input instanceof Date) return input;
+  if (typeof input === "object" && typeof input.toDate === "function") return input.toDate();
+  if (typeof input === "object" && input.seconds !== undefined) return new Date(input.seconds * 1000);
+  const d = new Date(input);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+export function formatDurationDHM(seconds: number): string {
+  if (seconds < 0) seconds = 0;
+  const { h, m } = getDurationDHMParts(seconds);
+  const parts: string[] = [];
+  if (parseInt(h) > 0) parts.push(`${h.trim()}h`);
+  parts.push(`${m.trim()}m`);
+  return parts.join("/");
+}
+
+export interface DHMParts {
+  d: string;
+  h: string;
+  m: string;
+  rawD: number;
+  rawH: number;
+  rawM: number;
+  rawS: number;
+}
+
+export function getDurationDHMParts(seconds: number): DHMParts {
+  if (seconds < 0) seconds = 0;
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const toString = (v: number) => v.toString();
+  return { d: "0", h: toString(h), m: toString(m), rawD: 0, rawH: h, rawM: m, rawS: seconds };
+}
+
+export function formatDurationColon(seconds: number): string {
+  if (seconds < 0) seconds = 0;
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  return `${String(h).padStart(3, '\u00A0')}:${String(m).padStart(2, "0")}`;
+}
+
+export function debounce<T extends (...args: any[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
+  let timeout: any;
+  return function executed(...args: Parameters<T>) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
+
+export function getEorzeaTime(date: Date = new Date()): { hours: string; minutes: string } {
+  const unixMs = date.getTime();
+  const REAL_MS_PER_ET_HOUR = ET_HOUR_SEC * 1000;
+  const ET_HOURS_PER_DAY = 24;
+
+  const eorzeaTotalHours = Math.floor(unixMs / REAL_MS_PER_ET_HOUR);
+  const hours = eorzeaTotalHours % ET_HOURS_PER_DAY;
+
+  const remainingMs = unixMs % REAL_MS_PER_ET_HOUR;
+  const REAL_MS_PER_ET_MINUTE = REAL_MS_PER_ET_HOUR / 60;
+  const minutes = Math.floor(remainingMs / REAL_MS_PER_ET_MINUTE);
+
+  return {
+    hours: hours.toString().padStart(2, "0"),
+    minutes: minutes.toString().padStart(2, "0")
+  };
+}
+
+function getEtHourFromRealSec(realSec: number): number {
+  const ticks = Math.floor(realSec / ET_HOUR_SEC);
+  return ticks % 24;
+}
+
+function alignToEtHour(realSec: number): number {
+  return Math.floor(realSec / ET_HOUR_SEC) * ET_HOUR_SEC;
+}
+
+function alignToWeatherCycle(realSec: number): number {
+  return Math.floor(realSec / WEATHER_CYCLE_SEC) * WEATHER_CYCLE_SEC;
+}
+
+function getEorzeaMoonInfo(date: Date = new Date()): { phase: number; label: string | null } {
+  const unixSeconds = date.getTime() / 1000;
+  const EORZEA_SPEED_RATIO = 20.57142857142857;
+  const eorzeaTotalDays = (unixSeconds * EORZEA_SPEED_RATIO) / 86400;
+  const phase = (eorzeaTotalDays % 32) + 1;
+
+  let label: string | null = null;
+  if (phase >= 32.5 || phase < 4.5) label = "新月";
+  else if (phase >= 16.5 && phase < 20.5) label = "満月";
+
+  return { phase, label };
+}
+
+function getEorzeaWeatherSeed(date: Date = new Date()): number {
+  const unixSeconds = Math.floor(date.getTime() / 1000);
+  const eorzeanHours = Math.floor(unixSeconds / ET_HOUR_SEC);
+  const eorzeanDays = Math.floor(eorzeanHours / 24);
+
+  let timeChunk = (eorzeanHours % 24) - (eorzeanHours % 8);
+  timeChunk = (timeChunk + 8) % 24;
+
+  const seed = eorzeanDays * 100 + timeChunk;
+  const step1 = (seed << 11) ^ seed;
+  const step2 = ((step1 >>> 8) ^ step1) >>> 0;
+  return step2 % 100;
+}
+
+// 天候シードは1400秒(ET8時間)ごとに固定される。サイクル番号をキーに使い回す
+const WEATHER_SEED_CACHE_MAX = 10000;
+const weatherSeedCache = new Map<number, number>();
+
+function getWeatherSeedAt(sec: number): number {
+  const cycle = Math.floor(sec / WEATHER_CYCLE_SEC);
+  let seed = weatherSeedCache.get(cycle);
+  if (seed === undefined) {
+    if (weatherSeedCache.size >= WEATHER_SEED_CACHE_MAX) weatherSeedCache.clear();
+    seed = getEorzeaWeatherSeed(new Date(cycle * WEATHER_CYCLE_SEC * 1000));
+    weatherSeedCache.set(cycle, seed);
+  }
+  return seed;
+}
+
+function checkWeatherInRange(mob: Mob, seed: number): boolean {
+  if (mob.weatherSeedRange) {
+    const [min, max] = mob.weatherSeedRange;
+    return seed >= min && seed <= max;
+  }
+  if (mob.weatherSeedRanges) {
+    return mob.weatherSeedRanges.some(([min, max]) => seed >= min && seed <= max);
+  }
+  return false;
+}
+
+function checkTimeRange(timeRange: TimeRange, realSec: number): boolean {
+  const etHour = getEtHourFromRealSec(realSec);
+  const { start, end } = timeRange;
+
+  if (start < end) return etHour >= start && etHour < end;
+  return etHour >= start || etHour < end;
+}
+
+function checkEtCondition(mob: Mob, realSec: number): boolean {
+  if (mob.conditions) {
+    const { phase } = getEorzeaMoonInfo(new Date(realSec * 1000));
+    const { firstNight, otherNights } = mob.conditions;
+    if (firstNight?.timeRange && isFirstNightPhase(phase)) {
+      return checkTimeRange(firstNight.timeRange, realSec);
+    }
+    if (otherNights?.timeRange && isOtherNightsPhase(phase)) {
+      return checkTimeRange(otherNights.timeRange, realSec);
+    }
+    return false;
+  }
+
+  if (mob.timeRange) return checkTimeRange(mob.timeRange, realSec);
+  if (mob.timeRanges) return mob.timeRanges.some(tr => checkTimeRange(tr, realSec));
+
+  return true;
+}
+
+function isFirstNightPhase(phase: number): boolean {
+  return phase >= 32.5 || phase < 1.5;
+}
+
+function isOtherNightsPhase(phase: number): boolean {
+  return phase >= 1.5 && phase < 4.5;
+}
+
+function calculateNextMoonStart(startSec: number, targetPhase: number): number {
+  const startPhase = getEorzeaMoonInfo(new Date(startSec * 1000)).phase;
+  let phaseDiff = targetPhase - startPhase;
+  if (phaseDiff < 0) phaseDiff += 32;
+
+  let nextStartSec = startSec + phaseDiff * ET_DAY_SEC;
+
+  if (nextStartSec < startSec) {
+    nextStartSec += MOON_CYCLE_SEC;
+  }
+  return nextStartSec;
+}
+
+function* getValidWeatherIntervals(mob: Mob, windowStart: number, windowEnd: number): Generator<[number, number], void, unknown> {
+  const requiredSec = (mob.weatherDuration?.minutes || 0) * 60;
+
+  if (!mob.weatherSeedRange && !mob.weatherSeedRanges) {
+    yield [windowStart, windowEnd];
+    return;
+  }
+
+  const limitSec = LIMIT_DAYS * 24 * 3600;
+  const isWeatherAt = (sec: number) => checkWeatherInRange(mob, getWeatherSeedAt(sec));
+  let loopSafety = 0;
+
+  let cursor = alignToWeatherCycle(windowStart);
+
+  // windowStart 時点で既に天候が始まっている場合に備え、連鎖の先頭まで遡る
+  if (isWeatherAt(cursor)) {
+    const searchBackLimit = windowStart - limitSec;
+    while (true) {
+      const prev = cursor - WEATHER_CYCLE_SEC;
+      if (prev < searchBackLimit) break;
+      if (!isWeatherAt(prev)) break;
+      cursor = prev;
+    }
+  }
+
+  while (cursor < windowEnd) {
+    if (loopSafety++ > MAX_SEARCH_ITERATIONS) break;
+
+    // 天候が成立しているサイクルを探す
+    let activeStart: number | null = null;
+    while (cursor < windowEnd) {
+      if (loopSafety++ > MAX_SEARCH_ITERATIONS) break;
+      if (isWeatherAt(cursor)) {
+        activeStart = cursor;
+        break;
+      }
+      cursor += WEATHER_CYCLE_SEC;
+      if (cursor - windowStart > limitSec) break;
+    }
+
+    if (activeStart === null) break;
+
+    // 連鎖の終端(天候が途切れる最初のサイクル開始)を探す
+    let activeEnd = activeStart + WEATHER_CYCLE_SEC;
+    while (isWeatherAt(activeEnd)) {
+      if (loopSafety++ > MAX_SEARCH_ITERATIONS) break;
+      activeEnd += WEATHER_CYCLE_SEC;
+    }
+
+    // 連鎖が必要継続時間に満たなければ不成立。満たす場合も、継続時間を満たした時点からが有効
+    if (activeEnd - activeStart >= requiredSec) {
+      const intersectStart = Math.max(activeStart + requiredSec, windowStart);
+      const intersectEnd = Math.min(activeEnd, windowEnd);
+
+      if (intersectStart < intersectEnd) {
+        yield [intersectStart, intersectEnd];
+      }
+    }
+
+    cursor = activeEnd;
+  }
+}
+
+function* getValidEtIntervals(mob: Mob, windowStart: number, windowEnd: number): Generator<[number, number], void, unknown> {
+  if (!mob.timeRange && !mob.timeRanges && !mob.conditions) {
+    yield [windowStart, windowEnd];
+    return;
+  }
+  let cursor = alignToEtHour(windowStart);
+  let loopSafety = 0;
+
+  while (cursor < windowEnd) {
+    if (loopSafety++ > MAX_SEARCH_ITERATIONS) break;
+
+    if (checkEtCondition(mob, cursor)) {
+      const start = cursor;
+      let end = cursor + ET_HOUR_SEC;
+      let tempCursor = end;
+      while (tempCursor < windowEnd + ET_HOUR_SEC) {
+        if (checkEtCondition(mob, tempCursor)) {
+          end += ET_HOUR_SEC;
+          tempCursor += ET_HOUR_SEC;
+        } else {
+          break;
+        }
+      }
+      const intersectStart = Math.max(start, windowStart);
+      const intersectEnd = Math.min(end, windowEnd);
+
+      if (intersectStart < intersectEnd) {
+        yield [intersectStart, intersectEnd];
+      }
+
+      cursor = end;
+    } else {
+      cursor += ET_HOUR_SEC;
+    }
+  }
+}
+
+function findNextSpawn(mob: Mob, pointSec: number, searchLimit: number, nowSec = 0): { start: number; end: number } | null {
+  const moonPhases: [number, number][] = [];
+  if (!mob.moonPhase) {
+    moonPhases.push([pointSec, searchLimit]);
+  } else {
+    const targetPhase = mob.moonPhase === "新月" ? 32.5 : 16.5;
+    const startPhase = getEorzeaMoonInfo(new Date(pointSec * 1000)).phase;
+
+    if (
+      (mob.moonPhase === "新月" && (startPhase >= 32.5 || startPhase < 4.5)) ||
+      (mob.moonPhase === "満月" && (startPhase >= 16.5 && startPhase < 20.5))
+    ) {
+      let currentPhaseStart = pointSec - (startPhase - targetPhase) * ET_DAY_SEC;
+      while (currentPhaseStart > pointSec) currentPhaseStart -= MOON_CYCLE_SEC;
+
+      const currentPhaseEnd = currentPhaseStart + MOON_PHASE_DURATION_SEC;
+
+      if (currentPhaseEnd > pointSec) {
+        moonPhases.push([pointSec, currentPhaseEnd]);
+      }
+    }
+
+    let moonStart = calculateNextMoonStart(pointSec, targetPhase);
+    while (moonStart < searchLimit) {
+      moonPhases.push([moonStart, moonStart + MOON_PHASE_DURATION_SEC]);
+      moonStart += MOON_CYCLE_SEC;
+    }
+  }
+  for (const [mStart, mEnd] of moonPhases) {
+    const weatherIterator = getValidWeatherIntervals(mob, mStart, mEnd);
+
+    for (const [wStart, wEnd] of weatherIterator) {
+      const etIterator = getValidEtIntervals(mob, wStart, wEnd);
+
+      for (const [eStart, eEnd] of etIterator) {
+        const finalStart = Math.max(eStart, pointSec);
+        const finalEnd = eEnd;
+
+        if (finalStart < finalEnd) {
+          if (nowSec > 0 && finalEnd <= nowSec) {
+            continue;
+          }
+          return { start: finalStart, end: finalEnd };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// 状態ごとの「残り時間(秒)」を返す。通常経路とキャッシュ経路で同じ式を使う
+function getRemainingSec(p: {
+  status: string;
+  now: number;
+  minRepop: number;
+  maxRepop: number;
+  hasCondition: boolean;
+  nextConditionSec: number | null;
+  windowEndSec: number | null;
+  isInWindow: boolean;
+  fallbackSec: number;
+}): number {
+  // 条件区間中は、最短・最大POPに関係なく区間の終了までを残り時間とする
+  if (p.isInWindow && p.windowEndSec !== null && p.status !== "Maintenance") {
+    return p.windowEndSec - p.now;
+  }
+  switch (p.status) {
+    case "MaxOver":
+      return p.now - p.maxRepop;
+    case "Next": {
+      const t = (p.hasCondition && p.nextConditionSec !== null && p.nextConditionSec > p.minRepop)
+        ? p.nextConditionSec
+        : p.minRepop;
+      return t - p.now;
+    }
+    case "PopWindow":
+      return p.maxRepop - p.now;
+    case "NextCondition":
+      return (p.nextConditionSec ?? p.maxRepop) - p.now;
+    default:
+      return p.fallbackSec - p.now;
+  }
+}
+
+export function calculateRepop(mob: Mob, maintenance: any, options: { skipConditionCalc?: boolean; forceRecalc?: boolean } = {}): RepopInfo {
+  const { skipConditionCalc = false, forceRecalc = false } = options;
+  const now = serverNow() / 1000;
+  const lastKill = mob.last_kill_time || 0;
+
+  const maint = ((maintenance && maintenance.maintenance) ? maintenance.maintenance : maintenance) as any;
+  if (!maint || !maint.start) return baseResult("Unknown");
+
+  const maintenanceStartDate = parseDate(maint.start);
+  if (!maintenanceStartDate) return baseResult("Unknown");
+
+  const { minRepop, maxRepop, appliedFactor } = getMaintenanceRepop(mob, lastKill, maint, now);
+
+  const serverUpDate = parseDate(maint.serverUp || maint.end);
+  const serverUp = serverUpDate ? serverUpDate.getTime() / 1000 : 0;
+  const maintenanceStart = maintenanceStartDate.getTime() / 1000;
+
+  const nextMinRepopDate = new Date(minRepop * 1000);
+
+  let status: any = "Unknown";
+  let timeRemaining = "";
+  const conditionRemaining = null;
+  let nextConditionSpawnDate: Date | null = null;
+  let conditionWindowEnd: Date | null = null;
+  let isInConditionWindow = false;
+
+  const hasCondition = !!(
+    mob.moonPhase ||
+    mob.timeRange ||
+    mob.timeRanges ||
+    mob.weatherSeedRange ||
+    mob.weatherSeedRanges ||
+    mob.conditions
+  );
+
+  if (
+    !forceRecalc &&
+    mob.repopInfo &&
+    mob.repopInfo.nextBoundarySec &&
+    Number.isFinite(mob.repopInfo.nextBoundarySec) &&
+    mob.repopInfo.minRepop === minRepop &&
+    mob.repopInfo.maxRepop === maxRepop &&
+    now < mob.repopInfo.nextBoundarySec
+  ) {
+    const cached = mob.repopInfo;
+
+    if (now >= maxRepop) {
+      cached.elapsedPercent = 100;
+    } else if (now >= minRepop && maxRepop > minRepop) {
+      cached.elapsedPercent = Math.min(100, Math.floor(((now - minRepop) / (maxRepop - minRepop)) * 100));
+    } else {
+      cached.elapsedPercent = 0;
+    }
+
+    const cachedStartSec = cached.nextConditionSpawnDate ? cached.nextConditionSpawnDate.getTime() / 1000 : null;
+    const cachedEndSec = cached.conditionWindowEnd ? cached.conditionWindowEnd.getTime() / 1000 : null;
+
+    cached.timeRemaining = formatDurationColon(getRemainingSec({
+      status: String(cached.status),
+      now,
+      minRepop,
+      maxRepop,
+      hasCondition,
+      nextConditionSec: cachedStartSec,
+      windowEndSec: cachedEndSec,
+      isInWindow: !!cached.isInConditionWindow,
+      fallbackSec: cached.nextBoundarySec ?? now
+    }));
+    return cached;
+  }
+
+  // ---- 条件区間の計算 ----
+  if (hasCondition && !skipConditionCalc) {
+    let needRecalc = forceRecalc;
+
+    if (mob._spawnCache) {
+      if (mob._spawnCache.appliedFactor !== appliedFactor) {
+        needRecalc = true;
+      } else if (mob._spawnCache.minRepop !== minRepop) {
+        needRecalc = true; // 最短POPが変わったら再計算
+      } else if (now >= mob._spawnCache.end) {
+        needRecalc = true;
+      }
+    } else {
+      needRecalc = true;
+    }
+
+    if (needRecalc) {
+      const baseSec = Math.max(minRepop, now);
+      const searchAnchor = baseSec - 18000;
+      const searchLimit = baseSec + LIMIT_DAYS * 24 * 3600;
+
+      const result = findNextSpawn(mob, searchAnchor, searchLimit, baseSec);
+
+      if (result) {
+        mob._spawnCache = {
+          appliedFactor,
+          minRepop,
+          start: result.start,
+          end: result.end
+        };
+      } else {
+        mob._spawnCache = null;
+      }
+    }
+
+    if (mob._spawnCache) {
+      const start = Math.max(mob._spawnCache.start, minRepop);
+      const end = mob._spawnCache.end;
+
+      if (start < end) {
+        nextConditionSpawnDate = new Date(start * 1000);
+        conditionWindowEnd = new Date(end * 1000);
+        isInConditionWindow = (now >= start && now < end && now >= minRepop);
+      }
+    }
+  }
+
+  // ---- 状態判定(カテゴリ分けは最短・最大POPで決める) ----
+  let elapsedPercent = 0;
+
+  if (now >= maxRepop) {
+    status = "MaxOver";
+    elapsedPercent = 100;
+  } else if (now < minRepop) {
+    status = "Next";
+  } else {
+    status = "PopWindow";
+    elapsedPercent = (maxRepop <= minRepop)
+      ? 0
+      : Math.min(100, Math.floor(((now - minRepop) / (maxRepop - minRepop)) * 100));
+
+    if (hasCondition && nextConditionSpawnDate && nextConditionSpawnDate.getTime() / 1000 > now) {
+      status = "NextCondition";
+    }
+  }
+
+  if (isInConditionWindow && now >= minRepop && status !== "MaxOver") {
+    status = "ConditionActive";
+  }
+
+  // 残り時間は状態に応じて決める(条件区間中は区間終了まで。最大POPで途切れない)
+  timeRemaining = formatDurationColon(getRemainingSec({
+    status,
+    now,
+    minRepop,
+    maxRepop,
+    hasCondition,
+    nextConditionSec: nextConditionSpawnDate ? nextConditionSpawnDate.getTime() / 1000 : null,
+    windowEndSec: conditionWindowEnd ? conditionWindowEnd.getTime() / 1000 : null,
+    isInWindow: isInConditionWindow,
+    fallbackSec: maxRepop
+  }));
+
+  // ---- メンテナンス判定 ----
+  const isMaintenanceStop = !!(maintenanceStartDate && now >= (maintenanceStart + 1800) && !(serverUp > maintenanceStart && now >= serverUp));
+
+  let isBlockedByMaintenance = false;
+  if (maintenanceStart && now < (maintenanceStart + 1800)) {
+    if (minRepop >= maintenanceStart) {
+      isBlockedByMaintenance = true;
+    } else if (nextConditionSpawnDate && nextConditionSpawnDate.getTime() / 1000 >= maintenanceStart) {
+      isBlockedByMaintenance = true;
+    }
+  }
+
+  if (isMaintenanceStop || isBlockedByMaintenance) {
+    status = "Maintenance";
+  }
+
+  // ---- 次の境界(状態が切り替わる時刻。maxRepop も含む) ----
+  const boundaryCandidates: (number | null)[] = [
+    minRepop,
+    maxRepop,
+    nextConditionSpawnDate ? nextConditionSpawnDate.getTime() / 1000 : null,
+    conditionWindowEnd ? conditionWindowEnd.getTime() / 1000 : null,
+    maintenanceStart,
+    maintenanceStart + 1800,
+    serverUp > maintenanceStart ? serverUp : null
+  ];
+
+  let nextBoundarySec = boundaryCandidates
+    .filter((t): t is number => t !== null && t > now)
+    .reduce((minVal, t) => Math.min(minVal, t), Infinity);
+
+  if (hasCondition && !nextConditionSpawnDate && skipConditionCalc) {
+    nextBoundarySec = 0;
+  }
+
+  return {
+    minRepop,
+    maxRepop,
+    elapsedPercent,
+    timeRemaining,
+    conditionRemaining,
+    status,
+    nextMinRepopDate,
+    nextConditionSpawnDate,
+    conditionWindowEnd,
+    isInConditionWindow,
+    isMaintenanceStop,
+    isBlockedByMaintenance,
+    maintStart: maintenanceStart,
+    maintEnd: serverUp || ((parseDate(maint?.end)?.getTime() ?? 0) / 1000),
+    nextBoundarySec
+  };
+}
+
+export function formatMMDDHHmm(input: any): string {
+  if (!input) return "--/-- --:--";
+  let date: Date;
+  if (input instanceof Date) date = input;
+  else if (typeof input === "string") date = new Date(input);
+  else date = new Date(input * 1000);
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  return `${m}/${d} ${hh}:${mm}`;
+}
+
+function baseResult(status?: string): RepopInfo {
+  return {
+    minRepop: null,
+    maxRepop: null,
+    elapsedPercent: 0,
+    timeRemaining: "",
+    status: (status as any) || "Unknown",
+    nextMinRepopDate: null,
+    nextConditionSpawnDate: null,
+    conditionWindowEnd: null,
+    conditionRemaining: null,
+    isInConditionWindow: false,
+    isMaintenanceStop: false,
+    isBlockedByMaintenance: false,
+    nextBoundarySec: null
+  };
+}
+
+export function getMaintenanceRepop(mob: Mob, lastKill: number, maintenance: any, nowSec: number): { minRepop: number; maxRepop: number; appliedFactor: number } {
+  const maint = (maintenance && maintenance.maintenance) ? maintenance.maintenance : maintenance;
+  const repopSec = mob.repopSeconds;
+  const maxSec = mob.maxRepopSeconds;
+
+  if (!maint || !maint.start) {
+    return { minRepop: lastKill + repopSec, maxRepop: lastKill + maxSec, appliedFactor: 1 };
+  }
+
+  const maintenanceStart = (parseDate(maint?.start)?.getTime() ?? 0) / 1000;
+
+  if (nowSec && nowSec >= maintenanceStart && nowSec < (maintenanceStart + 1800)) {
+    return { minRepop: lastKill + repopSec, maxRepop: lastKill + maxSec, appliedFactor: 1 };
+  }
+
+  const isRankF = mob.rank === "F";
+  let serverUp = (parseDate(maint?.serverUp || maint?.end)?.getTime() ?? 0) / 1000;
+  if (nowSec >= maintenanceStart && serverUp <= maintenanceStart) {
+    serverUp = maintenanceStart;
+  }
+
+  if (lastKill === 0 || lastKill <= serverUp) {
+    const factor = isRankF ? 1 : MAINT_FACTOR;
+    return {
+      minRepop: serverUp + (repopSec * factor),
+      maxRepop: serverUp + (maxSec * factor),
+      appliedFactor: factor
+    };
+  }
+
+  return { minRepop: lastKill + repopSec, maxRepop: lastKill + maxSec, appliedFactor: 1 };
+}

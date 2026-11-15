@@ -1,0 +1,721 @@
+/* =========================================================
+   css / moblist.css  —  #moblist-container #moblist-item-template
+
+   目次
+   1. リスト全体とグループの帯   (#moblist-container / .status-group-separator)
+   2. 行の土台                   (.moblist-item / 左のランク色の線 / 情報カラム)
+   3. 名前の行                   (名前 / 🌐バッジ / @件数 / メモ)
+   4. エリアの行                 (エリア名 / 時間 + %)
+   5. タイマー                   (時間の表示 / 状態バッジ / 状態ごとの色)
+   6. 経過%                      (.moblist-percent)
+   7. 進捗ライン                 (行の下端)
+   8. 報告ボタン                 (右端の ⚔)
+   9. 行の状態                   (選択 / ホバー / 押下 / 出現中 / メンテ / 点滅)
+
+   ※ .mobcard-timer 系はカードの詳細表示とも共有している
+   ※ 「9. 行の状態」の背景色は同じ強さのルール同士のため、並び順が優先順位になる
+      (選択 → ホバー → 押下 → 出現中。後ろが勝つ)。順番を変えないこと
+   ========================================================= */
+
+
+/* =========================================================
+   1. リスト全体とグループの帯
+   ========================================================= */
+#moblist-container {
+  padding: 6px 10px 0;
+}
+
+/* ── グループの帯(TIME OVER / POP WINDOW など) ── */
+.status-group-separator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  margin-top: 10px;
+  margin-bottom: 6px;
+  background: linear-gradient(90deg, #14261c 0%, #0c1812 100%);
+  border: 1px solid #25402f;
+  border-left: 4px solid #22c55e;
+  border-radius: 3px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  line-height: 1;
+}
+
+.status-group-separator:first-child {
+  margin-top: 4px;
+}
+
+.status-group-separator:hover {
+  background: linear-gradient(90deg, #1a3324 0%, #101f17 100%);
+  border-color: #33593f;
+}
+
+.status-group-separator:active {
+  opacity: 0.8;
+}
+
+.status-group-separator::before,
+.status-group-separator::after {
+  display: none;
+}
+
+.status-group-label {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2f5e8;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.status-group-count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #8fb09b;
+  margin-left: 2px;
+  margin-right: auto;
+  line-height: 1;
+}
+
+.status-group-toggle-icon {
+  font-size: 10px;
+  color: #8fb09b;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  line-height: 1;
+}
+
+.status-group-separator.is-collapsed .status-group-toggle-icon {
+  transform: rotate(-90deg);
+}
+
+/* ── POP WINDOW の帯: 赤黒で強調 ── */
+.status-group-separator[data-group-key="WINDOW"],
+.status-group[data-group-key="WINDOW"] .status-group-separator {
+  background: linear-gradient(90deg, #361016 0%, #1c080b 100%);
+  border: 1px solid #6b1d2b;
+  border-left: 4px solid #ef4444;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+}
+
+.status-group-separator[data-group-key="WINDOW"]:hover,
+.status-group[data-group-key="WINDOW"] .status-group-separator:hover {
+  background: linear-gradient(90deg, #44141c 0%, #260a0f 100%);
+  border-color: #8c2638;
+}
+
+.status-group-separator[data-group-key="WINDOW"] .status-group-label,
+.status-group[data-group-key="WINDOW"] .status-group-label {
+  color: #ffe4e6;
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+}
+
+.status-group-separator[data-group-key="WINDOW"] .status-group-count,
+.status-group[data-group-key="WINDOW"] .status-group-count {
+  color: #fca5a5;
+}
+
+.status-group-separator[data-group-key="WINDOW"] .status-group-toggle-icon,
+.status-group[data-group-key="WINDOW"] .status-group-toggle-icon {
+  color: #fca5a5;
+}
+
+
+/* =========================================================
+   2. 行の土台
+   ========================================================= */
+.moblist-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: var(--row-h);
+  min-height: var(--row-h);
+  background-color: var(--c-surface);
+  border-radius: 3px;
+  border: 1px solid var(--c-border);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  margin-bottom: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  /* transition は付けない: スクロール中、マウスの下を行が通り過ぎるたびに背景色のアニメーションが走って
+     再描画が連続し、スクロールがぎこちなくなるため(ホバーの色は瞬時に切り替わる) */
+  contain: layout style;
+}
+
+/* 左端のランク色の線(A は既定の色。S と FATE だけ上書き) */
+.moblist-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--row-stripe);
+  height: 100%;
+  background-color: var(--c-a);
+}
+
+.moblist-item[data-rank="S"]::before {
+  background-color: var(--c-s);
+}
+
+.moblist-item[data-rank="F"]::before {
+  background-color: var(--c-f);
+}
+
+/* ランクバッジ: ランク色の線で区別できるので非表示 */
+.moblist-rank-badge {
+  display: none !important;
+}
+
+/* 情報カラム(名前の行 + エリアの行) */
+.moblist-info-col {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  overflow: hidden;
+  padding-left: calc(var(--row-stripe) + 8px);
+  padding-right: 8px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+
+/* =========================================================
+   3. 名前の行
+   ========================================================= */
+.moblist-name-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  overflow: hidden;
+  line-height: 1;
+}
+
+.moblist-name {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--c-text-hi);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* =========================================================
+   バッジ: インスタンス番号(名前の前) と 残り地点(名前の後ろ)
+   同じ形(高さ14px・角2px・数字は等幅フォント)で、絵文字は使わない
+   → 端末の絵文字・代替フォントの違いで、上下がずれない
+   ========================================================= */
+.instance-badge,
+.count-badge {
+  /* 縦位置の微調整(+で下)。数字は字の形の都合で、箱の中央よりわずかに上に見えるので、少し下げる。
+     数字は Web フォント(端末が変わっても同じ形)なので、一度合わせれば端末に依存しない */
+  --badge-text-y: 0.5px;
+  /* 数字を下げる量 */
+  --count-icon-y: 0px;
+  /* ピン・@の絵を動かす量 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 16px;
+  height: 14px;
+  padding: 0 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* インスタンス番号(名前の前) */
+.instance-badge {
+  padding-top: calc(var(--badge-text-y) * 2);
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(59, 130, 246, 0.25));
+  border: 1px solid var(--c-cyan, #06b6d4);
+  color: #ffffff;
+  margin-right: 5px;
+  box-shadow: 0 0 6px rgba(6, 182, 212, 0.3);
+}
+
+/* 残り地点(名前の後ろ)。mobCard.ts の updateMobCount が出す
+   is-single  : 残り1か所 → ピン + 座標番号(シアンの塗り)
+   is-multiple: 残り複数  → @の絵 + 残りの数(グレーの枠) */
+.moblist-count {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.count-badge.is-single {
+  background: var(--c-cyan);
+  border: 1px solid var(--c-cyan);
+  color: #04202a;
+  font-weight: 700;
+  /* 確定側だけ大きく: フォント +1px(14px)。バッジの高さは、上下の余白が未確定側と同じ程度になる15px */
+  font-size: 14px;
+  height: 14px;
+  min-width: 18px;
+  padding: 0 5px;
+  /* 数字がピンより少し上に見えるので、確定側だけ数字を下げる量を増やす(共通の既定は 0.5px) */
+  --badge-text-y: 0.8px;
+}
+
+.count-badge.is-multiple {
+  background: rgba(174, 187, 210, 0.12);
+  border: 1px solid rgba(174, 187, 210, 0.55);
+  color: #aebbd2;
+}
+
+.count-badge .count-num {
+  position: relative;
+  top: var(--badge-text-y);
+}
+
+/* 絵(文字や絵文字ではなく、図形で描く。色は文字色に連動) */
+.count-icon {
+  flex: none;
+  position: relative;
+  top: var(--count-icon-y);
+  width: 9px;
+  height: 11px;
+  background: currentColor;
+  -webkit-mask: var(--count-icon-img) center / contain no-repeat;
+  mask: var(--count-icon-img) center / contain no-repeat;
+}
+
+.count-badge.is-single .count-icon {
+  width: 10px;
+  height: 13px;
+  --count-icon-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='3 0 18 24'%3E%3Cpath fill-rule='evenodd' d='M12 1.5C7.9 1.5 4.5 4.8 4.5 8.9c0 5.4 7.5 13.6 7.5 13.6s7.5-8.2 7.5-13.6c0-4.1-3.4-7.4-7.5-7.4zm0 10.2a2.9 2.9 0 1 1 0-5.8 2.9 2.9 0 0 1 0 5.8z'/%3E%3C/svg%3E");
+}
+
+.count-badge.is-multiple .count-icon {
+  width: 11px;
+  --count-icon-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3Cpath d='M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8'/%3E%3C/svg%3E");
+}
+
+/* メモのアイコンとツールチップ */
+.memo-icon-container {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.memo-icon {
+  position: relative;
+  font-size: 12px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+.memo-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #14253d;
+  color: #e5f2ff;
+  border: 1px solid #38849c;
+  padding: 5px 9px;
+  border-radius: 2px;
+  font-size: 11px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-width: 220px;
+  min-width: 60px;
+  width: max-content;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.memo-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px;
+  border-style: solid;
+  border-color: #38849c transparent transparent transparent;
+}
+
+.memo-icon-container:hover .memo-tooltip,
+.memo-icon:hover .memo-tooltip {
+  display: block;
+}
+
+
+/* =========================================================
+   4. エリアの行(左: エリア名 / 右: 時間 + %)
+   ========================================================= */
+.moblist-area-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  overflow: hidden;
+  width: 100%;
+  line-height: 1;
+}
+
+.moblist-area {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--c-text-lo);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* 右側の列(時間 + %) */
+.moblist-time-col {
+  flex-shrink: 0;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding-right: 0;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+
+/* =========================================================
+   5. タイマー
+   ========================================================= */
+.moblist-time {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--c-text-hi);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+/* 状態バッジ + 時間を横に並べる */
+.timer-inner-grid {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+}
+
+/* 状態バッジ(ふだんは非表示。時限モブのときだけ表示) */
+.timer-label-base {
+  display: none;
+}
+
+/* 出現中(🔆)と、次の出現条件まで(🔜) */
+.timer-label-base.status-conditionactive,
+.timer-label-base.status-nextcondition {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  background: transparent;
+  border: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+/* ── 時間の中身(#timer-rich-template。カードの詳細とも共有) ── */
+.mobcard-timer {
+  display: inline-flex;
+  gap: 1px;
+  align-items: center;
+  line-height: 1;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.mobcard-timer-part {
+  display: inline-flex;
+  align-items: baseline;
+  line-height: 1;
+  min-inline-size: 30px;
+  justify-content: flex-end;
+}
+
+/* 時限モブでは、時間(h)が0でも幅を確保して、分の位置をそろえる */
+.timer-label-base.is-timed-badge+.mobcard-timer .mobcard-timer-part.h-part.hidden {
+  display: inline-flex !important;
+  visibility: hidden;
+}
+
+.mobcard-timer-part.h-part {
+  min-inline-size: 0;
+}
+
+.mobcard-timer-part.h-part .mobcard-timer-num {
+  min-inline-size: 3ch;
+  text-align: right;
+}
+
+.mobcard-timer-part.h-part .mobcard-timer-unit {
+  margin-right: 1px;
+}
+
+.mobcard-timer-num {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--c-text-hi);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.mobcard-timer-unit {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--c-text-lo);
+  margin-left: 1px;
+  margin-right: 1px;
+  line-height: 1;
+  transform: translateY(0px);
+}
+
+/* ── 状態ごとの時間の色(選択中の行の色より強いので、選択中でもこの色になる) ── */
+/* 今(時間内): 金色 */
+.moblist-item .timer-label-base.status-conditionactive+.mobcard-timer .mobcard-timer-num {
+  color: var(--c-gold);
+}
+
+/* 次の出現条件まで: シアン */
+.moblist-item .timer-label-base.status-nextcondition+.mobcard-timer .mobcard-timer-num {
+  color: var(--c-cyan);
+}
+
+
+/* =========================================================
+   6. 経過%
+   ========================================================= */
+.moblist-percent {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--c-text-hi);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  background: #2551aa;
+  border: 1px solid #4c7ddd;
+  border-radius: 2px;
+  padding: 1px 1px 0;
+  /* 幅を固定して、時間の位置を縦にそろえる */
+  width: 34px;
+  min-width: 34px;
+  flex: 0 0 34px;
+  height: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+/* 最大を超えた */
+.moblist-percent.max-over {
+  color: #e2c9cdff;
+  background: #72050e;
+  border-color: #ac1831;
+}
+
+/* 0% */
+.moblist-percent.pct-0 {
+  color: #b1b8c0;
+  background: #1e293b;
+  border-color: #4b5563;
+}
+
+/* POP WINDOW 内の経過%の色(0-30: 青 / 30-60: 緑 / 60-80: 黄 / 80-100: オレンジ。青は既定) */
+.moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="green"]:not(.max-over):not(.pct-0),
+.status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="green"]:not(.max-over):not(.pct-0) {
+  background: #156a38;
+  border-color: #2bb664;
+  color: #eafff2;
+}
+
+.moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="yellow"]:not(.max-over):not(.pct-0),
+.status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="yellow"]:not(.max-over):not(.pct-0) {
+  background: #7d5a08;
+  border-color: #d49e1e;
+  color: #fffbeb;
+}
+
+.moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0),
+.status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0) {
+  background: #943806;
+  border-color: #e86319;
+  color: #fff5eb;
+}
+
+
+/* =========================================================
+   7. 進捗ライン(行の下端。A は既定の色)
+   ========================================================= */
+.moblist-progress-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: calc(var(--row-h) * 2 / 3);
+  height: var(--row-prog-h);
+  background-color: var(--c-prog-bg);
+  overflow: hidden;
+}
+
+.moblist-progress-bar {
+  height: 100%;
+  width: calc(var(--prog-percent, 0) * 100%);
+  background-color: var(--c-prog-a);
+  border-radius: 0 1px 1px 0;
+}
+
+.moblist-item[data-rank="S"] .moblist-progress-bar {
+  background-color: var(--c-prog-s);
+}
+
+.moblist-item[data-rank="F"] .moblist-progress-bar {
+  background-color: var(--c-prog-f);
+}
+
+
+/* =========================================================
+   8. 報告ボタン(右端の ⚔)
+   ========================================================= */
+.moblist-item .moblist-report-btn {
+  flex: 0 0 calc(var(--row-h) * 2 / 3);
+  width: calc(var(--row-h) * 2 / 3);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(6, 182, 212, 0.18);
+  border: none;
+  border-left: 1px solid var(--c-border);
+  cursor: pointer;
+  color: var(--c-cyan);
+  font-size: 15px;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  transition: background-color 0.12s, color 0.12s;
+  z-index: 1;
+  position: relative;
+  margin-left: auto;
+  padding: 0;
+}
+
+.moblist-item .moblist-report-btn:hover {
+  background-color: rgba(6, 182, 212, 0.35);
+  color: #fff;
+}
+
+.moblist-item .moblist-report-btn:active {
+  background-color: var(--c-cyan);
+  color: var(--c-bg);
+}
+
+
+/* =========================================================
+   9. 行の状態
+   背景色は同じ強さのルール同士なので、並び順が優先順位
+   (選択 → ホバー → 押下 → 出現中。後ろが勝つ)
+   ========================================================= */
+
+/* 選択中の行 */
+.moblist-item.is-selected,
+.moblist-item.selected {
+  background-color: var(--c-surface-sel);
+  border-color: var(--c-border-sel);
+}
+
+.moblist-item.is-selected::before,
+.moblist-item.selected::before {
+  width: var(--row-stripe-sel);
+}
+
+.moblist-item.is-selected .moblist-time,
+.moblist-item.selected .moblist-time,
+.moblist-item.is-selected .mobcard-timer-num,
+.moblist-item.selected .mobcard-timer-num {
+  color: var(--c-text-sel);
+}
+
+/* ホバー(選択中は除く) */
+@media (hover: hover) {
+  .moblist-item:hover:not(.is-selected):not(.selected) {
+    background-color: var(--c-surface-ho);
+  }
+}
+
+/* 押下 */
+.moblist-item:active {
+  background-color: var(--c-surface-ho);
+}
+
+/* 時限モブが出現区間の中: 左右の白い光 */
+.moblist-item.moblist-highlight-white {
+  background-color: #1a2a44;
+  border-color: var(--c-border);
+  box-shadow: -6px 0 8px 0px rgba(255, 255, 255, 0.75),
+    6px 0 8px 0px rgba(255, 255, 255, 0.75);
+}
+
+/* リスポーン待ち(次のPOPまでまだ間がある行): 彩度をわずかに下げて、POP WINDOW の行と区別する。
+   メンテナンス中のグレー表示と同じ filter で、行の中の色(文字・バッジ・絵文字・線)がまとめて同じ割合で下がる。
+   メンテナンス中の行は、下のグレー表示を優先する。
+   ※ 全行にかかる filter なので、スクロールが重く感じたら、色の変数を差し替える方式に戻す */
+.moblist-item.is-pre-repop:not(.maintenance-gray-out) {
+  filter: saturate(0.5);
+}
+
+/* メンテナンス中: グレーアウト */
+.moblist-item.maintenance-gray-out {
+  filter: grayscale(100%) brightness(0.6);
+}
+
+/* POP WINDOW 中: 時間の点滅 */
+.moblist-item.pop-window .moblist-time,
+.moblist-item.pop-window .mobcard-timer-num {
+  animation: flash-amber 1s step-end infinite;
+}
+
+@keyframes flash-amber {
+  50% {
+    opacity: 0.25;
+  }
+}

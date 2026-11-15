@@ -1,0 +1,435 @@
+// @ts-ignore
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+// @ts-ignore
+import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, getDoc, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+// @ts-ignore
+import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+// @ts-ignore
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken as getAppCheckToken } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app-check.js";
+
+import { getState, DOM, CONFIG, handleAppError } from "./dataManager";
+import { closeReportModal } from "./modal";
+import { getMaintenanceRepop } from "./cal";
+import { now, WORKER_BASE_URL } from "./servertime";
+import { Mob, getRankFromNo } from "./types/mob";
+
+const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBikwjGsjL_PVFhx3Vj-OeJCocKA_hQOgU",
+    authDomain: "the-hunt-ifrit.firebaseapp.com",
+    projectId: "the-hunt-ifrit",
+    storageBucket: "the-hunt-ifrit.firebasestorage.app",
+    messagingSenderId: "285578581189",
+    appId: "1:285578581189:web:4d9826ee3f988a7519ccac"
+};
+
+const app = initializeApp(FIREBASE_CONFIG);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// Initialize Firebase App Check
+if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+    (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+}
+
+const appCheck = initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider('6LeFtbYsAAAAAJETFxeUWd2IOe92slrZcYcZFHeT'),
+    isTokenAutoRefreshEnabled: true
+});
+
+export async function initializeAuth(): Promise<string | null> {
+    return new Promise((resolve) => {
+        const unsubscribe = onAuthStateChanged(auth, (user: any) => {
+            if (user) {
+                unsubscribe();
+                resolve(user.uid);
+            } else {
+                signInAnonymously(auth)
+                    .catch((error: any) => {
+                        console.error("Anonymous sign-in failed:", error);
+                        unsubscribe();
+                        resolve(null);
+                    });
+            }
+        });
+        setTimeout(() => {
+            unsubscribe();
+            resolve(auth.currentUser ? auth.currentUser.uid : null);
+        }, CONFIG.AUTH_TIMEOUT);
+    });
+}
+
+export async function getUserData(uid: string): Promise<any | null> {
+    try {
+        const user = auth.currentUser;
+        if (!user || user.uid !== uid) return null;
+        const result = await user.getIdTokenResult();
+        const c = result.claims as any;
+        if (c.verified === true && c.lid) {
+            return { lodestone_id: String(c.lid), character_name: c.cname ? String(c.cname) : "" };
+        }
+    } catch (error) {
+        handleAppError(error, "ユーザーデータ取得失敗", false);
+    }
+    return null;
+}
+
+function listenWithRetry(
+    attach: (onOk: () => void, onError: (err: any) => void) => () => void
+): () => void {
+    let stopped = false;
+    let attempt = 0;
+    let retryTimer: any = null;
+    let unsub: (() => void) | null = null;
+    const MAX_ATTEMPTS = 8;
+
+    const start = () => {
+        if (stopped) return;
+        unsub = attach(
+            () => { attempt = 0; },
+            (err) => {
+                if (unsub) { try { unsub(); } catch (e) { } unsub = null; }
+                if (stopped) return;
+
+                attempt++;
+                if (attempt > MAX_ATTEMPTS) {
+                    handleAppError(err, "サーバー接続に失敗しました。ページを再読み込みしてください", true);
+                    return;
+                }
+                // 枠の枯渇は長めに待つ。ジッターで再試行の集中を避ける
+                const base = err?.code === "resource-exhausted" ? 60000 : 1000;
+                const delay = Math.min(300000, base * 2 ** (attempt - 1)) * (0.5 + Math.random());
+                retryTimer = setTimeout(start, delay);
+            }
+        );
+    };
+    start();
+
+    return () => {
+        stopped = true;
+        clearTimeout(retryTimer);
+        if (unsub) unsub();
+    };
+}
+
+export function subscribeMobStatusDocs(onUpdate: (data: any) => void): () => void {
+    const docIds = ["s_latest", "a_latest", "f_latest"];
+    const mobStatusDataMap: Record<string, any> = {};
+    const unsubs = docIds.map(id =>
+        listenWithRetry((onOk, onError) =>
+            onSnapshot(doc(db, "mob_status", id), (snap: any) => {
+                onOk();
+                const data = snap.data();
+                if (data) mobStatusDataMap[id] = data;
+                onUpdate(mobStatusDataMap);
+            }, onError)
+        )
+    );
+    return () => unsubs.forEach(u => u());
+}
+
+export function subscribeMobMemos(onUpdate: (data: any) => void): () => void {
+    const memoDocRef = doc(db, "shared_data", "memo");
+    return listenWithRetry((onOk, onError) =>
+        onSnapshot(memoDocRef, (snap: any) => {
+            onOk();
+            onUpdate(snap.data() || {});
+        }, onError)
+    );
+}
+
+export function subscribeMaintenance(onUpdate: (data: any) => void): () => void {
+    const maintenanceDocRef = doc(db, "shared_data", "maintenance");
+    return listenWithRetry((onOk, onError) =>
+        onSnapshot(maintenanceDocRef, (snap: any) => {
+            onOk();
+            onUpdate(snap.data() || null);
+        }, (err: any) => {
+            onUpdate(null);
+            onError(err);
+        })
+    );
+}
+
+export function subscribeMobLocations(onUpdate: (data: any) => void): () => void {
+    return listenWithRetry((onOk, onError) =>
+        onSnapshot(collection(db, "mob_locations"), (snapshot: any) => {
+            onOk();
+            const map: Record<string, any> = {};
+            snapshot.forEach((docSnap: any) => {
+                map[docSnap.id] = normalizePoints(docSnap.data());
+            });
+            onUpdate(map);
+        }, onError)
+    );
+}
+
+function normalizePoints(data: any): Record<string, any> {
+    const result: Record<string, any> = {};
+    for (const [key, value] of Object.entries(data)) {
+        if (key.startsWith("points.")) {
+            const [, locId, field] = key.split(".");
+            if (!result[locId]) result[locId] = {};
+            result[locId][field] = value;
+        }
+        else if (key === "points" && typeof value === "object" && value !== null) {
+            for (const [locId, locData] of Object.entries(value)) {
+                if (!result[locId]) result[locId] = {};
+                Object.assign(result[locId], locData!);
+            }
+        }
+    }
+    return result;
+}
+
+function ensureAuth(): { lodestoneId: string; userId: string; mobs: Mob[] } | null {
+    const { isVerified, lodestoneId, userId, mobs } = getState();
+    if (!isVerified || !lodestoneId || !userId) return null;
+    return { lodestoneId, userId, mobs };
+}
+
+export interface ReportResult {
+    success: boolean;
+    error?: string;
+    code?: string;
+}
+
+export const submitReport = async (mobNo: number, timeISO: string): Promise<ReportResult> => {
+    const authData = ensureAuth();
+    if (!authData) return { success: false, error: "認証エラー" };
+
+    const { lodestoneId, mobs } = authData;
+    const mob = mobs.find(m => m.No === mobNo);
+    if (!mob) return { success: false, error: "Mobデータが見つかりません" };
+
+    let killTimeDate: Date;
+    if (timeISO) {
+        killTimeDate = new Date(timeISO);
+        if (isNaN(killTimeDate.getTime())) {
+            killTimeDate = new Date(now());
+        }
+    } else {
+        killTimeDate = new Date(now());
+    }
+
+    const modalStatusEl = DOM.modalStatus;
+    const forceSubmitEl = DOM.modalForceSubmit;
+    const isForceSubmit = forceSubmitEl ? forceSubmitEl.checked : false;
+    const nowMs = now();
+
+    if (killTimeDate.getTime() > nowMs + CONFIG.REPORT_FUTURE_THRESHOLD) {
+        if (modalStatusEl) {
+            modalStatusEl.textContent = "現在時刻より10分以上未来の時刻は報告できません。";
+            modalStatusEl.classList.add("text-error");
+        }
+        return { success: false, error: "現在時刻より10分以上未来の時刻は報告できません。" };
+    }
+
+    if (!isForceSubmit && mob.last_kill_time) {
+        let maintenance = getState().maintenance;
+        if (maintenance && maintenance.maintenance) {
+            maintenance = maintenance.maintenance;
+        }
+
+        const { minRepop } = getMaintenanceRepop(mob, mob.last_kill_time || 0, maintenance, nowMs / 1000);
+        const minRepopTimeMs = minRepop * 1000;
+        const allowedTimeMs = minRepopTimeMs - CONFIG.REPORT_EARLY_THRESHOLD;
+
+        if (killTimeDate.getTime() < allowedTimeMs) {
+            const allowedDate = new Date(allowedTimeMs);
+            const timeStr = allowedDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+
+            if (modalStatusEl) {
+                modalStatusEl.textContent = `まだ湧き時間になっていません。\n最短でも ${timeStr} 以降である必要があります。\n(強制送信する場合はチェックを入れてください)`;
+                modalStatusEl.classList.add("text-error", "whitespace-pre-wrap");
+            }
+            return { success: false, error: `最短でも ${timeStr} 以降の時刻で報告してください。` };
+        }
+    }
+
+    closeReportModal();
+
+    try {
+        const rank = getRankFromNo(mob.No);
+        let collectionSuffix = "s_latest";
+        if (rank === "A") collectionSuffix = "a_latest";
+        else if (rank === "F") collectionSuffix = "f_latest";
+
+        const docRef = doc(db, "mob_status", collectionSuffix);
+
+        const prevTimeSeconds = mob.last_kill_time || 0;
+        const prevTimestamp = prevTimeSeconds > 0
+            ? Timestamp.fromMillis(prevTimeSeconds * 1000)
+            : null;
+
+        const newData = {
+            [mobNo]: {
+                last_kill_time: Timestamp.fromDate(killTimeDate),
+                prev_kill_time: prevTimestamp,
+                reporter_id: lodestoneId
+            }
+        };
+
+        await setDoc(docRef, newData, { merge: true });
+        return { success: true };
+
+    } catch (error: any) {
+        handleAppError(error, "報告送信失敗");
+        return {
+            success: false,
+            error: error.message || "通信失敗",
+            code: error.code || (error.message.includes("permission") ? "permission-denied" : "unknown")
+        };
+    }
+};
+
+export const submitMemo = async (mobNo: number, memoText: string): Promise<ReportResult> => {
+    const authData = ensureAuth();
+    if (!authData) return { success: false, error: "認証エラー" };
+
+    const { lodestoneId, mobs } = authData;
+    const mob = mobs.find(m => m.No === mobNo);
+    if (!mob) return { success: false, error: "Mobデータエラー" };
+
+    const cleanMemo = memoText ? memoText.replace(/[\r\n]/g, '').trim() : "";
+    if (cleanMemo && cleanMemo.length > CONFIG.MEMO_MAX_LENGTH) {
+        return { success: false, error: "メモは30文字以内で入力してください" };
+    }
+
+    try {
+        const docRef = doc(db, "shared_data", "memo");
+
+        if (!cleanMemo) {
+            await setDoc(docRef, {
+                [mobNo]: []
+            }, { merge: true });
+            return { success: true };
+        }
+
+        const memoData = {
+            memo_text: cleanMemo,
+            created_at: Timestamp.fromMillis(now()),
+            reporter_id: lodestoneId
+        };
+
+        await setDoc(docRef, {
+            [mobNo]: [memoData]
+        }, { merge: true });
+
+        return { success: true };
+
+    } catch (error: any) {
+        handleAppError(error, "メモ保存失敗");
+        return { success: false, error: error.message || "通信または認証に失敗しました。" };
+    }
+};
+
+export const toggleCrushStatus = async (mobNo: number, area: string, locationId: string, nextCulled: boolean): Promise<{ success: boolean }> => {
+    const authData = ensureAuth();
+    if (!authData) return { success: false };
+
+    const { lodestoneId } = authData;
+    if (!area) return { success: false };
+
+    try {
+        const instance = mobNo % 10;
+        const docRef = doc(db, "mob_locations", `${area}_${instance}`);
+        const fieldName = nextCulled ? "culled_at" : "uncull_at";
+        const updateKey = `points.${locationId}.${fieldName}`;
+
+        const updatePayload = {
+            [updateKey]: Timestamp.fromMillis(now()),
+            [`points.${locationId}.reporter_id`]: lodestoneId
+        };
+
+        await setDoc(docRef, updatePayload, { merge: true });
+        return { success: true };
+    } catch (error) {
+        handleAppError(error, "スポーン状態更新失敗", false);
+        return { success: false };
+    }
+};
+
+const VERIFICATION_PROXY_URL = WORKER_BASE_URL;
+
+async function workerFetch(path: string, init: RequestInit = {}): Promise<Response> {
+    let user = auth.currentUser;
+    if (!user) {
+        await initializeAuth();
+        user = auth.currentUser;
+    }
+    if (!user) throw new Error("Firebase Auth user could not be initialized.");
+
+    const headers: Record<string, string> = {
+        ...(init.headers as Record<string, string> | undefined),
+        'Authorization': `Bearer ${await user.getIdToken()}`
+    };
+    try {
+        const appCheckToken = await getAppCheckToken(appCheck, false);
+        headers['X-Firebase-AppCheck'] = appCheckToken.token;
+    } catch (e) {
+        console.warn("App Check token unavailable:", e);
+    }
+    return fetch(`${VERIFICATION_PROXY_URL}${path}`, { ...init, headers });
+}
+
+export async function fetchVerificationCode(): Promise<string | null> {
+    try {
+        const response = await workerFetch('code');
+        if (!response.ok) return null;
+        const data = await response.json();
+        return typeof data?.code === 'string' ? data.code : null;
+    } catch (error) {
+        handleAppError(error, "認証コード取得失敗", false);
+        return null;
+    }
+}
+
+const VERIFY_ERROR_MESSAGES: Record<string, string> = {
+    invalid_id: "ロードストーンのIDが正しくありません。",
+    unauthorized: "認証エラーが発生しました。ページを再読み込みして試してください。",
+    forbidden: "アクセスが拒否されました。",
+    region: "アクセスが拒否されました。日本国外からのアクセス、またはプロキシ利用は制限されています。",
+    appcheck: "アプリの正当性を確認できませんでした。ページを再読み込みして試してください。",
+    not_found: "キャラクターが見つかりませんでした。",
+    code_not_found: "検証コードが自己紹介文に見つかりませんでした。保存から反映まで最大5分程度かかる場合があります。また、言語設定が日本語(JP)であることを確認してください。",
+    rate_limited: "試行回数が多すぎます。しばらく待ってからやり直してください。",
+    upstream: "ロードストーンに接続できませんでした。しばらくしてからやり直してください。",
+    parse_failed: "ロードストーンのページを解析できませんでした。管理者に連絡してください。",
+    claims_failed: "認証情報の登録に失敗しました。しばらくしてからやり直してください。",
+    server_config: "サーバーの設定に問題があります。管理者に連絡してください。"
+};
+
+export async function verifyLodestoneCharacter(lodestoneId: string): Promise<{ success: boolean; characterName?: string; error?: string }> {
+    if (!VERIFICATION_PROXY_URL) {
+        return { success: false, error: "認証プロキシのURLが設定されていません。管理者に連絡してください。" };
+    }
+
+    try {
+        const response = await workerFetch('verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lodestoneId })
+        });
+
+        let data: any = null;
+        try { data = await response.json(); } catch { /* JSON以外のレスポンス */ }
+
+        if (response.ok && data?.success) {
+            // 付与されたカスタムクレームをトークンに取り込む
+            const user = auth.currentUser;
+            if (!user) throw new Error("Firebase Auth user is missing.");
+            await user.getIdToken(true);
+            const claims = (await user.getIdTokenResult()).claims as any;
+            if (claims.verified !== true) {
+                return { success: false, error: "認証情報の反映に失敗しました。ページを再読み込みして試してください。" };
+            }
+            return { success: true, characterName: data.characterName };
+        }
+
+        const message = VERIFY_ERROR_MESSAGES[data?.reason] || `認証に失敗しました。(${response.status})`;
+        return { success: false, error: message };
+    } catch (error: any) {
+        handleAppError(error, "Lodestone認証失敗");
+        return { success: false, error: `認証に失敗しました。(${error.message || "Unknown Error"})` };
+    }
+}
