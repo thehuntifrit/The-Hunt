@@ -543,9 +543,8 @@ async function syncPanelContents(panelName: string): Promise<void> {
     if (panelName === "rank") renderSidebarFilterAccordion();
     else if (panelName === "error") updateErrorPanel();
     else if (panelName === "telop" || panelName === "maintenance") {
-        const m = await import("./app");
-        if (typeof m.renderMaintenanceStatus === "function") {
-            m.renderMaintenanceStatus();
+        if (typeof (window as any).renderMaintenanceStatus === "function") {
+            (window as any).renderMaintenanceStatus();
         }
     }
 }
@@ -611,9 +610,9 @@ export function updateErrorPanel(): void {
 }
 
 function updateErrorBadge(): void {
-    import("./app").then(m => {
-        if (typeof m.renderMaintenanceStatus === "function") m.renderMaintenanceStatus();
-    });
+    if (typeof (window as any).renderMaintenanceStatus === "function") {
+        (window as any).renderMaintenanceStatus();
+    }
 }
 
 export function updateCarouselArrows(): void {

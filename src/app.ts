@@ -41,7 +41,16 @@ function updateScrollbarWidthVar(): void {
 }
 
 // ─── 初期化 ─────────────────────────────────────────────
+// ─── 初期化 ─────────────────────────────────────────────
+let isAppInitialized = false;
+
 async function initApp(): Promise<void> {
+  if (isAppInitialized || (window as any).__theHuntInitialized) {
+    return;
+  }
+  isAppInitialized = true;
+  (window as any).__theHuntInitialized = true;
+
   try {
     updateScrollbarWidthVar();
     window.addEventListener("resize", debounce(updateScrollbarWidthVar, 200));   // ズームの変更などに追従
@@ -443,7 +452,7 @@ export function updateCardFull(card: HTMLElement, mob: Mob): void {
 
   const memoHash = `${mob.memo_updated_at || 0}:${mob.memo_text || ""}`;
   const stateHash = `${info.status}|${info.timeRemaining}|${info.elapsedPercent}|${info.isInConditionWindow}|${cullHash}|${memoHash}|${getState().lodestoneId || ""}`;
-  
+
   if ((card as any)._lastStateHash === stateHash) return;
   (card as any)._lastStateHash = stateHash;
 
@@ -556,7 +565,7 @@ export const syncDomOrder = function (): void {
 
       const labelSpan = document.createElement("span");
       labelSpan.className = "status-group-label";
-      labelSpan.textContent = headerText;
+      labelSpan.textContent = headerText.replace(/^\S+\s+/, "");
       header.appendChild(labelSpan);
 
       const countBadge = document.createElement("span");
@@ -1347,4 +1356,8 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-document.addEventListener('DOMContentLoaded', initApp);
+if (document.readyState === "loading") {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
