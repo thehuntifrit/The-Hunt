@@ -12,7 +12,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
+  padding: 6px 0 6px 12px;
   margin-top: 10px;
   margin-bottom: 6px;
   background: linear-gradient(90deg, #236b43 0%, #17482e 100%);
@@ -58,7 +58,6 @@
   font-size: 12px;
   font-weight: 700;
   color: #f0fff5;
-  text-transform: uppercase;
   letter-spacing: 0.8px;
   white-space: nowrap;
   line-height: 1;
@@ -80,6 +79,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 calc(var(--row-h) * 2 / 3);
+  width: calc(var(--row-h) * 2 / 3);
   margin-left: auto;
   line-height: 1;
 }

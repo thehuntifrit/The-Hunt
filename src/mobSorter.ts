@@ -15,9 +15,9 @@ export function getGroupKey(mob: Mob): "MAINTENANCE" | "MAX_OVER" | "WINDOW" | "
 }
 
 export const GROUP_LABELS = {
-  MAX_OVER: "Time Over",
-  WINDOW: "Pop Window",
-  NEXT: "Respawning",
+  MAX_OVER: "Over",
+  WINDOW: "Open",
+  NEXT: "Cooldown",
   MAINTENANCE: "Maintenance"
 };
 

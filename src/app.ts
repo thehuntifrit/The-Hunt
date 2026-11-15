@@ -41,7 +41,6 @@ function updateScrollbarWidthVar(): void {
 }
 
 // ─── 初期化 ─────────────────────────────────────────────
-// ─── 初期化 ─────────────────────────────────────────────
 let isAppInitialized = false;
 
 async function initApp(): Promise<void> {
@@ -565,7 +564,7 @@ export const syncDomOrder = function (): void {
 
       const labelSpan = document.createElement("span");
       labelSpan.className = "status-group-label";
-      labelSpan.textContent = headerText.replace(/^\S+\s+/, "");
+      labelSpan.textContent = headerText;
       header.appendChild(labelSpan);
 
       const countBadge = document.createElement("span");
