@@ -104,33 +104,32 @@ function unlockAudio(): void {
     }
 }
 
-function openNotifyPopup(): void {
-    const popup = DOM.notifyPopup;
-    const btn = DOM.notifyBtn;
-    if (!popup || !btn) return;
-    popup.classList.add('is-open');
-    btn.setAttribute('aria-expanded', 'true');
+function openVolumePopup(): void {
+    DOM.notifyPopup?.classList.add('is-open');
 }
 
-function closeNotifyPopup(): void {
-    const popup = DOM.notifyPopup;
-    const btn = DOM.notifyBtn;
-    if (!popup || !btn) return;
-    popup.classList.remove('is-open');
-    btn.setAttribute('aria-expanded', 'false');
+function closeVolumePopup(): void {
+    DOM.notifyPopup?.classList.remove('is-open');
 }
 
 export function initNotification(): void {
     loadAudioBuffer();
 
-    const btn = DOM.notifyBtn;
+    const toggle = DOM.notificationToggle;
+    if (!toggle) return;
+
     const popup = DOM.notifyPopup;
     const volSlider = DOM.volumeSlider;
 
-    // 通知は常時ON、音量0でミュート扱い
-    setNotificationEnabled(true);
+    const isEnabled = getState().notificationEnabled;
+    toggle.checked = isEnabled;
 
-    // 音量スライダーの初期値を反映
+    const label = toggle.closest('.appnav-btn') as HTMLElement | null;
+    if (label) {
+        label.classList.toggle('is-disabled', !isEnabled);
+    }
+
+    // 音量スライダー初期値
     const vol = getState().notificationVolume;
     if (volSlider) {
         volSlider.value = String(vol);
@@ -138,23 +137,40 @@ export function initNotification(): void {
         if (valEl) valEl.textContent = String(vol);
     }
 
-    // ベルボタン → ポップアップ開閉
-    btn?.addEventListener('click', (e) => {
-        e.stopPropagation();
+    // ユーザー操作でAudioContext unlock
+    const onFirstUserAction = () => {
         unlockAudio();
-        if (popup?.classList.contains('is-open')) {
-            closeNotifyPopup();
-        } else {
-            openNotifyPopup();
+        document.removeEventListener('click', onFirstUserAction);
+        document.removeEventListener('touchstart', onFirstUserAction);
+    };
+    document.addEventListener('click', onFirstUserAction);
+    document.addEventListener('touchstart', onFirstUserAction);
+
+    // 通知設定変更イベント（外部からの同期用）
+    window.addEventListener('notificationSettingChanged', (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        if (detail && typeof detail.enabled === 'boolean') {
+            toggle.checked = detail.enabled;
+            if (label) {
+                label.classList.toggle('is-disabled', !detail.enabled);
+            }
         }
     });
 
-    // ポップアップ外クリック/タッチで閉じる
-    document.addEventListener('click', (e) => {
-        if (popup?.classList.contains('is-open') &&
-            !popup.contains(e.target as Node) &&
-            e.target !== btn) {
-            closeNotifyPopup();
+    // トグル変更
+    toggle.addEventListener('change', () => {
+        const enabled = toggle.checked;
+        if (label) {
+            label.classList.toggle('is-disabled', !enabled);
+        }
+        setNotificationEnabled(enabled);
+
+        if (enabled) {
+            requestNotificationPermission();
+            unlockAudio();
+            openVolumePopup();
+        } else {
+            closeVolumePopup();
         }
     });
 
@@ -167,18 +183,14 @@ export function initNotification(): void {
         if (gainNode) gainNode.gain.value = newVol / 100;
     });
 
-    // 最初のユーザー操作でunlock
-    const onFirstUserAction = () => {
-        unlockAudio();
-        document.removeEventListener('click', onFirstUserAction);
-        document.removeEventListener('touchstart', onFirstUserAction);
-    };
-    document.addEventListener('click', onFirstUserAction);
-    document.addEventListener('touchstart', onFirstUserAction);
-}
-
-function updateNotifyBtnStyle(_enabled: boolean): void {
-    // 常時ONのため何もしない
+    // ポップアップ外クリックで閉じる
+    document.addEventListener('click', (e) => {
+        if (popup?.classList.contains('is-open') &&
+            !popup.contains(e.target as Node) &&
+            !(label && label.contains(e.target as Node))) {
+            closeVolumePopup();
+        }
+    });
 }
 
 async function requestNotificationPermission(): Promise<void> {

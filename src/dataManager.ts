@@ -92,7 +92,6 @@ export const DOM = {
     readmeAuthSession: document.getElementById('readme-auth-session'),
     closeManualModalBtn: document.getElementById('close-manual-modal'),
     notificationToggle: document.getElementById('appnav-notification-toggle') as HTMLInputElement | null,
-    notifyBtn: document.querySelector('.js-notify-btn') as HTMLButtonElement | null,
     notifyPopup: document.querySelector('.js-notify-popup') as HTMLElement | null,
     volumeSlider: document.getElementById('notify-volume-slider') as HTMLInputElement | null,
     cancelReportBtn: document.getElementById('cancel-report'),

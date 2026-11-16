@@ -708,55 +708,40 @@
 }
 
 
-/* ===== 通知ポップアップ ===== */
-.notify-btn-wrap {
-  position: relative;
-  display: flex;
-  align-items: stretch;
-}
-
-.notify-popup {
+/* ===== 通知音量ポップアップ ===== */
+.notify-volume-popup {
   display: none;
   position: absolute;
-  bottom: calc(100% + 10px);
-  right: 0;
+  bottom: calc(100% + 8px);
+  right: 8px;
   background: var(--c-bg-panel, #1e2a38);
   border: 1px solid var(--c-border, #3a4a5a);
   border-radius: 10px;
-  padding: 12px 14px;
-  min-width: 200px;
+  padding: 10px 14px;
   z-index: 200;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
-  flex-direction: column;
-  gap: 10px;
-}
-
-.notify-popup.is-open {
-  display: flex;
-}
-
-.notify-popup-row {
-  display: flex;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-.notify-popup-label {
-  flex-shrink: 0;
+.notify-volume-popup.is-open {
+  display: flex;
+}
+
+.notify-volume-icon {
   font-size: 0.85rem;
-  color: var(--c-text, #cdd6f4);
+  flex-shrink: 0;
 }
 
-/* 音量スライダー */
 .js-volume-slider {
-  flex: 1;
+  width: 120px;
   accent-color: var(--c-cyan, #89dceb);
   cursor: pointer;
 }
 
-.notify-popup-volume-val {
+.notify-volume-val {
   font-size: 0.8rem;
   color: var(--c-text-muted, #888);
-  min-width: 2.5em;
+  min-width: 2em;
   text-align: right;
 }
