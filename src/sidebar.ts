@@ -96,12 +96,14 @@ async function loadAudioBuffer(): Promise<void> {
     }
 }
 
-function unlockAudio(): void {
+function unlockAudio(): Promise<void> {
     if (audioCtx && audioCtx.state === "suspended") {
-        audioCtx.resume().then(() => { audioUnlocked = true; });
-    } else {
-        audioUnlocked = true;
+        return audioCtx.resume()
+            .then(() => { audioUnlocked = audioCtx!.state === "running"; })
+            .catch(err => { handleAppError(err, "音声の有効化失敗", false); });
     }
+    audioUnlocked = true;
+    return Promise.resolve();
 }
 
 function openVolumePopup(): void {
@@ -139,12 +141,14 @@ export function initNotification(): void {
 
     // ユーザー操作でAudioContext unlock
     const onFirstUserAction = () => {
-        unlockAudio();
-        document.removeEventListener('click', onFirstUserAction);
-        document.removeEventListener('touchstart', onFirstUserAction);
+        unlockAudio().then(() => {
+            if (!audioUnlocked) return;   // 失敗したら次の操作で再試行
+            document.removeEventListener('click', onFirstUserAction);
+            document.removeEventListener('touchend', onFirstUserAction);
+        });
     };
     document.addEventListener('click', onFirstUserAction);
-    document.addEventListener('touchstart', onFirstUserAction);
+    document.addEventListener('touchend', onFirstUserAction);
 
     // 通知設定変更イベント（外部からの同期用）
     window.addEventListener('notificationSettingChanged', (e: Event) => {
@@ -167,9 +171,9 @@ export function initNotification(): void {
 
         if (enabled) {
             requestNotificationPermission();
-            unlockAudio();
+            const unlocking = unlockAudio();
             openVolumePopup();
-            playNotificationSound();
+            unlocking.then(() => playNotificationSound());
         } else {
             closeVolumePopup();
         }
@@ -205,6 +209,13 @@ export function initNotification(): void {
     label?.addEventListener('mouseup', cancelLongPress);
     label?.addEventListener('mouseleave', cancelLongPress);
     label?.addEventListener('click', (e) => {
+        // 音量バーが開いている間は、ベルを押しても OFF にしない
+        if (popup?.classList.contains('is-open') && getState().notificationEnabled) {
+            e.preventDefault();
+            e.stopPropagation();
+            isLongPress = false;
+            return;
+        }
         if (isLongPress) {
             e.preventDefault();
             e.stopPropagation();
@@ -212,41 +223,41 @@ export function initNotification(): void {
         }
     });
 
-    // 音量スライダー操作
-    volSlider?.addEventListener('input', () => {
-        const newVol = parseInt(volSlider.value, 10);
-        const valEl = popup?.querySelector('.js-volume-value') as HTMLElement | null;
-        if (valEl) valEl.textContent = String(newVol);
-        setNotificationVolume(newVol);
-        if (gainNode) gainNode.gain.value = newVol / 100;
-    });
+// 音量スライダー操作
+volSlider?.addEventListener('input', () => {
+    const newVol = parseInt(volSlider.value, 10);
+    const valEl = popup?.querySelector('.js-volume-value') as HTMLElement | null;
+    if (valEl) valEl.textContent = String(newVol);
+    setNotificationVolume(newVol);
+    if (gainNode) gainNode.gain.value = newVol / 100;
+});
 
-    // スライダー変更確定時にテスト再生
-    volSlider?.addEventListener('change', () => {
-        playNotificationSound();
-    });
+// スライダー変更確定時にテスト再生
+volSlider?.addEventListener('change', () => {
+    playNotificationSound();
+});
 
-    // ポップアップ外タップ/クリックで閉じる（capture: true で他の要素の stopPropagation をすり抜ける）
-    const handleOutside = (e: Event) => {
-        if (!popup?.classList.contains('is-open')) return;
-        const target = e.target as Node | null;
-        if (!target) return;
-        if (popup.contains(target) || (label && label.contains(target))) {
-            return;
-        }
+// ポップアップ外タップ/クリックで閉じる（capture: true で他の要素の stopPropagation をすり抜ける）
+const handleOutside = (e: Event) => {
+    if (!popup?.classList.contains('is-open')) return;
+    const target = e.target as Node | null;
+    if (!target) return;
+    if (popup.contains(target) || (label && label.contains(target))) {
+        return;
+    }
+    closeVolumePopup();
+};
+
+document.addEventListener('pointerdown', handleOutside, true);
+document.addEventListener('touchstart', handleOutside, true);
+document.addEventListener('click', handleOutside, true);
+
+// 画面スクロール時にも閉じる
+window.addEventListener('scroll', () => {
+    if (popup?.classList.contains('is-open')) {
         closeVolumePopup();
-    };
-
-    document.addEventListener('pointerdown', handleOutside, true);
-    document.addEventListener('touchstart', handleOutside, true);
-    document.addEventListener('click', handleOutside, true);
-
-    // 画面スクロール時にも閉じる
-    window.addEventListener('scroll', () => {
-        if (popup?.classList.contains('is-open')) {
-            closeVolumePopup();
-        }
-    }, { passive: true });
+    }
+}, { passive: true });
 }
 
 async function requestNotificationPermission(): Promise<void> {
