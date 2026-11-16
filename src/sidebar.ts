@@ -169,8 +169,46 @@ export function initNotification(): void {
             requestNotificationPermission();
             unlockAudio();
             openVolumePopup();
+            playNotificationSound();
         } else {
             closeVolumePopup();
+        }
+    });
+
+    // 長押しでスライダーを開閉（通知ONのまま音量窓だけ開きたい場合用）
+    let longPressTimer: ReturnType<typeof setTimeout> | null = null;
+    let isLongPress = false;
+    const startLongPress = () => {
+        isLongPress = false;
+        longPressTimer = setTimeout(() => {
+            isLongPress = true;
+            if (getState().notificationEnabled) {
+                if (popup?.classList.contains('is-open')) {
+                    closeVolumePopup();
+                } else {
+                    openVolumePopup();
+                }
+            }
+        }, 500);
+    };
+    const cancelLongPress = () => {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+        }
+    };
+
+    label?.addEventListener('touchstart', startLongPress, { passive: true });
+    label?.addEventListener('touchend', cancelLongPress);
+    label?.addEventListener('touchmove', cancelLongPress);
+    label?.addEventListener('mousedown', startLongPress);
+    label?.addEventListener('mouseup', cancelLongPress);
+    label?.addEventListener('mouseleave', cancelLongPress);
+    label?.addEventListener('click', (e) => {
+        if (isLongPress) {
+            e.preventDefault();
+            e.stopPropagation();
+            isLongPress = false;
         }
     });
 
@@ -181,6 +219,11 @@ export function initNotification(): void {
         if (valEl) valEl.textContent = String(newVol);
         setNotificationVolume(newVol);
         if (gainNode) gainNode.gain.value = newVol / 100;
+    });
+
+    // スライダー変更確定時にテスト再生
+    volSlider?.addEventListener('change', () => {
+        playNotificationSound();
     });
 
     // ポップアップ外クリックで閉じる

@@ -303,7 +303,7 @@
   height: 15px;
   min-width: 18px;
   padding: 0 3px;
-  --badge-text-y: 0.4px;
+  --badge-text-y: 0.5px;
 }
 
 .count-badge.is-multiple {
@@ -314,7 +314,7 @@
   font-size: 14px;
   height: 15px;
   padding: 0 3px;
-  --badge-text-y: 0.2px;
+  --badge-text-y: 0.3px;
 }
 
 .count-badge .count-num {
