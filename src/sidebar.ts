@@ -108,7 +108,7 @@ function openNotifyPopup(): void {
     const popup = DOM.notifyPopup;
     const btn = DOM.notifyBtn;
     if (!popup || !btn) return;
-    popup.hidden = false;
+    popup.classList.add('is-open');
     btn.setAttribute('aria-expanded', 'true');
 }
 
@@ -116,77 +116,58 @@ function closeNotifyPopup(): void {
     const popup = DOM.notifyPopup;
     const btn = DOM.notifyBtn;
     if (!popup || !btn) return;
-    popup.hidden = true;
+    popup.classList.remove('is-open');
     btn.setAttribute('aria-expanded', 'false');
 }
 
 export function initNotification(): void {
     loadAudioBuffer();
 
-    const toggle = DOM.notificationToggle;
     const btn = DOM.notifyBtn;
     const popup = DOM.notifyPopup;
     const volSlider = DOM.volumeSlider;
 
-    // 初期状態を反映
-    const state = getState();
-    if (toggle) toggle.checked = state.notificationEnabled;
+    // 通知は常時ON、音量0でミュート扱い
+    setNotificationEnabled(true);
+
+    // 音量スライダーの初期値を反映
+    const vol = getState().notificationVolume;
     if (volSlider) {
-        volSlider.value = String(state.notificationVolume);
+        volSlider.value = String(vol);
         const valEl = popup?.querySelector('.js-volume-value') as HTMLElement | null;
-        if (valEl) valEl.textContent = String(state.notificationVolume);
+        if (valEl) valEl.textContent = String(vol);
     }
-    updateNotifyBtnStyle(state.notificationEnabled);
 
     // ベルボタン → ポップアップ開閉
     btn?.addEventListener('click', (e) => {
         e.stopPropagation();
         unlockAudio();
-        if (popup?.hidden === false) {
+        if (popup?.classList.contains('is-open')) {
             closeNotifyPopup();
         } else {
             openNotifyPopup();
         }
     });
 
-    // ポップアップ外クリックで閉じる
+    // ポップアップ外クリック/タッチで閉じる
     document.addEventListener('click', (e) => {
-        if (popup && !popup.hidden && !popup.contains(e.target as Node) && e.target !== btn) {
+        if (popup?.classList.contains('is-open') &&
+            !popup.contains(e.target as Node) &&
+            e.target !== btn) {
             closeNotifyPopup();
         }
     });
 
-    // 通知トグル
-    toggle?.addEventListener('change', (e) => {
-        const enabled = (e.target as HTMLInputElement).checked;
-        setNotificationEnabled(enabled);
-        updateNotifyBtnStyle(enabled);
-        if (enabled) {
-            requestNotificationPermission();
-            unlockAudio();
-            if (audioUnlocked) playNotificationSound();
-        }
-    });
-
-    // 音量スライダー
+    // 音量スライダー操作
     volSlider?.addEventListener('input', () => {
-        const vol = parseInt(volSlider.value, 10);
+        const newVol = parseInt(volSlider.value, 10);
         const valEl = popup?.querySelector('.js-volume-value') as HTMLElement | null;
-        if (valEl) valEl.textContent = String(vol);
-        setNotificationVolume(vol);
-        if (gainNode) gainNode.gain.value = vol / 100;
+        if (valEl) valEl.textContent = String(newVol);
+        setNotificationVolume(newVol);
+        if (gainNode) gainNode.gain.value = newVol / 100;
     });
 
-    // 通知設定変更イベント（他からの変更を受け取る）
-    window.addEventListener('notificationSettingChanged', (e: Event) => {
-        const detail = (e as CustomEvent).detail;
-        if (detail && typeof detail.enabled === 'boolean') {
-            if (toggle) toggle.checked = detail.enabled;
-            updateNotifyBtnStyle(detail.enabled);
-        }
-    });
-
-    // 最初のユーザー操作でunlock（ポップアップを使わないケース向け）
+    // 最初のユーザー操作でunlock
     const onFirstUserAction = () => {
         unlockAudio();
         document.removeEventListener('click', onFirstUserAction);
@@ -196,10 +177,8 @@ export function initNotification(): void {
     document.addEventListener('touchstart', onFirstUserAction);
 }
 
-function updateNotifyBtnStyle(enabled: boolean): void {
-    const btn = DOM.notifyBtn;
-    if (!btn) return;
-    btn.classList.toggle('is-disabled', !enabled);
+function updateNotifyBtnStyle(_enabled: boolean): void {
+    // 常時ONのため何もしない
 }
 
 async function requestNotificationPermission(): Promise<void> {

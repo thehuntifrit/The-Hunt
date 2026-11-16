@@ -60,23 +60,18 @@
                     </button>
                     <div class="appnav-divider"></div>
                     <div class="notify-btn-wrap">
-                        <button class="appnav-btn nav-toggle-btn js-notify-btn" data-nav-id="notify"
-                            aria-label="通知" aria-expanded="false">
+                        <button class="appnav-btn js-notify-btn" data-nav-id="notify"
+                            aria-label="通知">
                             <span class="appnav-icon">🔔</span>
                             <span class="appnav-label">通知</span>
                         </button>
-                        <div class="notify-popup js-notify-popup" hidden>
-                            <label class="notify-popup-row">
-                                <span class="notify-popup-label">通知</span>
-                                <input type="checkbox" id="appnav-notification-toggle"
-                                    class="js-notify-toggle">
-                            </label>
-                            <label class="notify-popup-row js-volume-row">
+                        <div class="notify-popup js-notify-popup">
+                            <div class="notify-popup-row">
                                 <span class="notify-popup-label">🔊</span>
                                 <input type="range" id="notify-volume-slider"
                                     class="js-volume-slider" min="0" max="100" value="80" step="5">
                                 <span class="js-volume-value notify-popup-volume-val">80</span>
-                            </label>
+                            </div>
                         </div>
                     </div>
                 </div>

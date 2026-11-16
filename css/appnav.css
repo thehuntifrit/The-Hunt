@@ -711,9 +711,12 @@
 /* ===== 通知ポップアップ ===== */
 .notify-btn-wrap {
   position: relative;
+  display: flex;
+  align-items: stretch;
 }
 
 .notify-popup {
+  display: none;
   position: absolute;
   bottom: calc(100% + 10px);
   right: 0;
@@ -721,34 +724,27 @@
   border: 1px solid var(--c-border, #3a4a5a);
   border-radius: 10px;
   padding: 12px 14px;
-  min-width: 220px;
+  min-width: 200px;
   z-index: 200;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
-  display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.notify-popup.is-open {
+  display: flex;
 }
 
 .notify-popup-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  cursor: pointer;
 }
 
 .notify-popup-label {
   flex-shrink: 0;
   font-size: 0.85rem;
   color: var(--c-text, #cdd6f4);
-  min-width: 2.2em;
-}
-
-/* チェックボックス（通知ON/OFF） */
-.notify-popup-row input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--c-cyan, #89dceb);
-  cursor: pointer;
 }
 
 /* 音量スライダー */
@@ -756,12 +752,11 @@
   flex: 1;
   accent-color: var(--c-cyan, #89dceb);
   cursor: pointer;
-  height: 4px;
 }
 
 .notify-popup-volume-val {
   font-size: 0.8rem;
   color: var(--c-text-muted, #888);
-  min-width: 2em;
+  min-width: 2.5em;
   text-align: right;
 }
