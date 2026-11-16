@@ -706,3 +706,62 @@
 .carousel-arrow-next {
   right: 7px;
 }
+
+
+/* ===== 通知ポップアップ ===== */
+.notify-btn-wrap {
+  position: relative;
+}
+
+.notify-popup {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  background: var(--c-bg-panel, #1e2a38);
+  border: 1px solid var(--c-border, #3a4a5a);
+  border-radius: 10px;
+  padding: 12px 14px;
+  min-width: 220px;
+  z-index: 200;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notify-popup-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.notify-popup-label {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  color: var(--c-text, #cdd6f4);
+  min-width: 2.2em;
+}
+
+/* チェックボックス（通知ON/OFF） */
+.notify-popup-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--c-cyan, #89dceb);
+  cursor: pointer;
+}
+
+/* 音量スライダー */
+.js-volume-slider {
+  flex: 1;
+  accent-color: var(--c-cyan, #89dceb);
+  cursor: pointer;
+  height: 4px;
+}
+
+.notify-popup-volume-val {
+  font-size: 0.8rem;
+  color: var(--c-text-muted, #888);
+  min-width: 2em;
+  text-align: right;
+}

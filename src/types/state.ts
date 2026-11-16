@@ -20,6 +20,7 @@ export interface AppState {
   filter: FilterState;
   openMobCardNo: number | null;
   notificationEnabled: boolean;
+  notificationVolume: number;
   pendingCalculationMobs: Set<number>;
   pendingStatusMap: any | null;
   pendingMaintenanceData: any | null;

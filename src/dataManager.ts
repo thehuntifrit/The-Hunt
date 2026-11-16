@@ -92,6 +92,9 @@ export const DOM = {
     readmeAuthSession: document.getElementById('readme-auth-session'),
     closeManualModalBtn: document.getElementById('close-manual-modal'),
     notificationToggle: document.getElementById('appnav-notification-toggle') as HTMLInputElement | null,
+    notifyBtn: document.querySelector('.js-notify-btn') as HTMLButtonElement | null,
+    notifyPopup: document.querySelector('.js-notify-popup') as HTMLElement | null,
+    volumeSlider: document.getElementById('notify-volume-slider') as HTMLInputElement | null,
     cancelReportBtn: document.getElementById('cancel-report'),
     authCancelBtn: document.getElementById('auth-cancel')
 };
@@ -204,6 +207,7 @@ export const state: AppState = {
     })(),
     openMobCardNo: null,
     notificationEnabled: localStorage.getItem("huntNotificationEnabled") === "true",
+    notificationVolume: parseInt(localStorage.getItem("huntNotificationVolume") ?? "80", 10),
     pendingCalculationMobs: new Set<number>(),
     pendingStatusMap: null,
     pendingMaintenanceData: null,
@@ -295,6 +299,11 @@ export function setNotificationEnabled(enabled: boolean): void {
     state.notificationEnabled = enabled;
     localStorage.setItem("huntNotificationEnabled", enabled ? "true" : "false");
     window.dispatchEvent(new CustomEvent('notificationSettingChanged', { detail: { enabled } }));
+}
+
+export function setNotificationVolume(volume: number): void {
+    state.notificationVolume = Math.max(0, Math.min(100, volume));
+    localStorage.setItem("huntNotificationVolume", String(state.notificationVolume));
 }
 
 const LAST_SEEN_TELOP_KEY = "huntLastSeenTelopMessage";

@@ -1,4 +1,4 @@
-import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled, safeJsonParse, RANKS, CONFIG, DOM, handleAppError, setTelopRead } from "./dataManager";
+import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled, setNotificationVolume, safeJsonParse, RANKS, CONFIG, DOM, handleAppError, setTelopRead } from "./dataManager";
 import { filterAndRender } from "./app";
 import { openUserManual, closeUserManual } from "./readme";
 import { cloneTemplate } from "./mobCard";
@@ -79,9 +79,15 @@ function applyPanelMode(panelName: string | null): void {
 }
 
 // ─── 通知 ───────────────────────────────────────────────
+let gainNode: GainNode | null = null;
+
 async function loadAudioBuffer(): Promise<void> {
     try {
         audioCtx = new AudioContext();
+        gainNode = audioCtx.createGain();
+        gainNode.gain.value = getState().notificationVolume / 100;
+        gainNode.connect(audioCtx.destination);
+
         const res = await fetch(SOUND_FILE);
         const arrayBuf = await res.arrayBuffer();
         audioBuffer = await audioCtx.decodeAudioData(arrayBuf);
@@ -90,62 +96,110 @@ async function loadAudioBuffer(): Promise<void> {
     }
 }
 
+function unlockAudio(): void {
+    if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume().then(() => { audioUnlocked = true; });
+    } else {
+        audioUnlocked = true;
+    }
+}
+
+function openNotifyPopup(): void {
+    const popup = DOM.notifyPopup;
+    const btn = DOM.notifyBtn;
+    if (!popup || !btn) return;
+    popup.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+}
+
+function closeNotifyPopup(): void {
+    const popup = DOM.notifyPopup;
+    const btn = DOM.notifyBtn;
+    if (!popup || !btn) return;
+    popup.hidden = true;
+    btn.setAttribute('aria-expanded', 'false');
+}
+
 export function initNotification(): void {
     loadAudioBuffer();
 
     const toggle = DOM.notificationToggle;
-    if (!toggle) return;
+    const btn = DOM.notifyBtn;
+    const popup = DOM.notifyPopup;
+    const volSlider = DOM.volumeSlider;
 
-    const isEnabled = getState().notificationEnabled;
-    toggle.checked = isEnabled;
-
-    const label = toggle.closest('.appnav-btn') as HTMLElement | null;
-    if (label) {
-        label.classList.toggle('is-disabled', !isEnabled);
+    // 初期状態を反映
+    const state = getState();
+    if (toggle) toggle.checked = state.notificationEnabled;
+    if (volSlider) {
+        volSlider.value = String(state.notificationVolume);
+        const valEl = popup?.querySelector('.js-volume-value') as HTMLElement | null;
+        if (valEl) valEl.textContent = String(state.notificationVolume);
     }
+    updateNotifyBtnStyle(state.notificationEnabled);
 
-    const onFirstUserAction = () => {
-        // ユーザー操作でAudioContextをunlock
-        if (audioCtx && audioCtx.state === "suspended") {
-            audioCtx.resume().then(() => { audioUnlocked = true; });
+    // ベルボタン → ポップアップ開閉
+    btn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        unlockAudio();
+        if (popup?.hidden === false) {
+            closeNotifyPopup();
         } else {
-            audioUnlocked = true;
+            openNotifyPopup();
         }
+    });
+
+    // ポップアップ外クリックで閉じる
+    document.addEventListener('click', (e) => {
+        if (popup && !popup.hidden && !popup.contains(e.target as Node) && e.target !== btn) {
+            closeNotifyPopup();
+        }
+    });
+
+    // 通知トグル
+    toggle?.addEventListener('change', (e) => {
+        const enabled = (e.target as HTMLInputElement).checked;
+        setNotificationEnabled(enabled);
+        updateNotifyBtnStyle(enabled);
+        if (enabled) {
+            requestNotificationPermission();
+            unlockAudio();
+            if (audioUnlocked) playNotificationSound();
+        }
+    });
+
+    // 音量スライダー
+    volSlider?.addEventListener('input', () => {
+        const vol = parseInt(volSlider.value, 10);
+        const valEl = popup?.querySelector('.js-volume-value') as HTMLElement | null;
+        if (valEl) valEl.textContent = String(vol);
+        setNotificationVolume(vol);
+        if (gainNode) gainNode.gain.value = vol / 100;
+    });
+
+    // 通知設定変更イベント（他からの変更を受け取る）
+    window.addEventListener('notificationSettingChanged', (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        if (detail && typeof detail.enabled === 'boolean') {
+            if (toggle) toggle.checked = detail.enabled;
+            updateNotifyBtnStyle(detail.enabled);
+        }
+    });
+
+    // 最初のユーザー操作でunlock（ポップアップを使わないケース向け）
+    const onFirstUserAction = () => {
+        unlockAudio();
         document.removeEventListener('click', onFirstUserAction);
         document.removeEventListener('touchstart', onFirstUserAction);
     };
     document.addEventListener('click', onFirstUserAction);
     document.addEventListener('touchstart', onFirstUserAction);
+}
 
-    window.addEventListener('notificationSettingChanged', (e: Event) => {
-        const detail = (e as CustomEvent).detail;
-        if (detail && typeof detail.enabled === 'boolean') {
-            toggle.checked = detail.enabled;
-            if (label) {
-                label.classList.toggle('is-disabled', !detail.enabled);
-            }
-        }
-    });
-
-    toggle.addEventListener('change', (e: Event) => {
-        const target = e.target as HTMLInputElement;
-        const enabled = target.checked;
-        if (label) {
-            label.classList.toggle('is-disabled', !enabled);
-        }
-        setNotificationEnabled(enabled);
-
-        if (enabled) {
-            requestNotificationPermission();
-            // ONにした操作自体がユーザージェスチャーなのでunlock＋テスト再生
-            if (audioCtx && audioCtx.state === "suspended") {
-                audioCtx.resume().then(() => { audioUnlocked = true; playNotificationSound(); });
-            } else {
-                audioUnlocked = true;
-                playNotificationSound();
-            }
-        }
-    });
+function updateNotifyBtnStyle(enabled: boolean): void {
+    const btn = DOM.notifyBtn;
+    if (!btn) return;
+    btn.classList.toggle('is-disabled', !enabled);
 }
 
 async function requestNotificationPermission(): Promise<void> {
@@ -157,14 +211,13 @@ async function requestNotificationPermission(): Promise<void> {
 }
 
 export function playNotificationSound(): void {
-    if (!audioCtx || !audioBuffer) return;
+    if (!audioCtx || !audioBuffer || !gainNode) return;
     if (!audioUnlocked) return;
 
-    // suspendedなら再開してから再生
     const doPlay = () => {
         const source = audioCtx!.createBufferSource();
         source.buffer = audioBuffer!;
-        source.connect(audioCtx!.destination);
+        source.connect(gainNode!);
         source.start(0);
     };
 
