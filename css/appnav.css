@@ -716,11 +716,14 @@
   bottom: calc(100% + 8px);
   right: 8px;
   background: var(--c-bg-panel, #1e2a38);
-  border: 1px solid var(--c-border, #3a4a5a);
+  border: 1px solid var(--c-cyan);
   border-radius: 10px;
   padding: 10px 14px;
   z-index: 200;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 -4px 20px rgba(0, 0, 0, 0.6),
+    0 0 12px rgba(34, 211, 238, 0.3),
+    inset 0 0 12px rgba(20, 50, 70, 0.8);
   align-items: center;
   gap: 8px;
 }
