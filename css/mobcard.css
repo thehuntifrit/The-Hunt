@@ -600,9 +600,15 @@
   min-width: 0;
 }
 
-/* データがないときの「--/-- --:--」: 時刻の幅に近づける */
+/* データがないときの「--/-- --:--」: 時刻の幅に近づけ、色は薄くする */
 .mobcard-value.is-empty {
   letter-spacing: 0.12em;
+  color: var(--c-text-off);
+}
+
+/* 次回出現のマスは金色が !important で指定されているので、同じく !important で上書きする */
+.mobcard-highlight .mobcard-value.is-empty {
+  color: var(--c-text-off) !important;
 }
 
 .mobcard-value .mobcard-timer-num {

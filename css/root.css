@@ -57,8 +57,8 @@
   --c-emerald: #10b981;
 
   /* layout */
-  --header-h: 48px;
-  --footer-h: 52px;
+  --header-h: 36px;
+  --footer-h: 42px;
   --footer-safe: calc(var(--footer-h) + env(safe-area-inset-bottom, 0px));
   --layout-w: 1024px;
   --chrome-overhang: 40px;
@@ -105,6 +105,7 @@ body {
 
 /* スマホの引っ張り更新・バウンスを防ぐ(タッチ端末のみ。PCでは付けない) */
 @media (pointer: coarse) {
+
   html,
   body {
     overscroll-behavior: none;

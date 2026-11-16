@@ -1,21 +1,7 @@
-/* =========================================================
-   css / appnav.css  —  #appnav
-
-   目次
-   1. フッターバー        (#appnav / .appnav-btn / 通知トグル / アラート点)
-   2. パネル共通          (.appnav-panel の土台 / 見出し / 中身)
-   3. パネルの種類
-      3-1. ポップアップ   (.is-popup: 告知 / メンテ / エラー)
-      3-2. ドック         (.is-docked: RANK)
-      3-3. 共通の装飾     (二重枠 / ✕ボタン / ひし形)
-   4. 告知・メンテ・エラーの中身
-   5. RANK フィルター     (ランクタブ / エリアボタン / スクロール領域)
-   ========================================================= */
+/* appnav.css  —  #appnav */
 
 
-/* =========================================================
-   1. フッターバー
-   ========================================================= */
+/* ===== 1. フッターバー ===== */
 #appnav {
   position: fixed;
   bottom: 0;
@@ -61,14 +47,14 @@
   padding-top: 0;
 }
 
-/* ── ナビボタン ── */
+/* ナビボタン */
 .appnav-btn {
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   height: var(--footer-h);
   background: none;
   border: none;
@@ -85,7 +71,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1;
   opacity: 0.85;
   transition: filter 0.15s, opacity 0.15s;
@@ -126,7 +112,6 @@
   text-shadow: 0 0 6px rgba(34, 211, 238, 0.6);
 }
 
-/* 選択中: 上端のシアンのインジケーター */
 .appnav-btn.active::after,
 .appnav-btn.appnav-active::after,
 .appnav-btn[data-active]::after {
@@ -141,25 +126,24 @@
   box-shadow: 0 0 10px var(--c-cyan), 0 0 4px var(--c-cyan);
 }
 
-/* 更新・未読などのアラート点 */
+/* アラート点 */
 .appnav-btn.has-alert .appnav-icon::after {
   content: '';
   position: absolute;
-  top: -2px;
-  right: -5px;
+  top: -4px;
+  right: -6px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--c-gold);
+  background-color: var(--c-error);
   pointer-events: none;
 }
 
-/* ── 通知トグル(チェックボックス式) ── */
+/* 通知トグル */
 .nav-toggle-btn {
   cursor: pointer;
 }
 
-/* OFF(is-disabled またはチェックなし): グレーアウト */
 .appnav-btn.is-disabled .appnav-icon,
 .appnav-btn.is-disabled .appnav-label,
 .appnav-btn:has(input[type="checkbox"]:not(:checked)) .appnav-icon,
@@ -168,7 +152,6 @@
   opacity: 0.35;
 }
 
-/* ON(チェックあり かつ disabled でない) */
 .appnav-btn:not(.is-disabled):has(input[type="checkbox"]:checked) .appnav-icon {
   position: relative;
   display: inline-flex;
@@ -182,7 +165,6 @@
   color: var(--c-cyan);
 }
 
-/* ボタン間の区切り線 */
 .appnav-divider {
   width: 1px;
   height: 28px;
@@ -211,12 +193,9 @@
 }
 
 
-/* =========================================================
-   2. パネル共通 (.appnav-panel)
-   ========================================================= */
+/* ===== 2. パネル共通 ===== */
 .appnav-panel {
   display: none;
-  /* JS で開く */
   position: fixed;
   bottom: var(--footer-safe);
   left: 0;
@@ -237,7 +216,6 @@
   display: flex;
 }
 
-/* PC: レイアウト幅に収めて中央寄せ */
 @media (min-width: 900px) {
   .appnav-panel {
     left: 50%;
@@ -251,14 +229,12 @@
   }
 }
 
-/* 上端のグラデーション帯 */
 .appnav-panel-top-border {
   height: 3px;
   flex-shrink: 0;
   background: linear-gradient(90deg, var(--c-cyan), var(--c-f));
 }
 
-/* 中身の領域(スクロール) */
 .js-appnav-panel-item {
   display: none;
 }
@@ -271,15 +247,15 @@
   padding: 14px;
 }
 
-/* 見出し行(✕ボタンと重ならないよう右に余白) */
+/* 見出し行(右の余白は ✕ボタン用) */
 .appnav-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding-bottom: 10px;
+  padding-bottom: 8px;
   padding-right: 32px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   border-bottom: 1px solid rgba(216, 196, 138, .35);
 }
 
@@ -293,23 +269,20 @@
 }
 
 
-/* =========================================================
-   3. パネルの種類
-   ========================================================= */
+/* ===== 3. パネルの種類 ===== */
 
-/* 3-0. ポップアップとドックで共通の見た目 ──────────────── */
+/* 3-0. ポップアップとドックで共通 */
 .appnav-panel:is(.is-popup, .is-docked) {
   overflow: visible;
   background: linear-gradient(180deg, rgba(24, 34, 56, .97) 0%, rgba(9, 14, 26, .98) 100%);
 }
 
-/* 3-1. ポップアップ (.is-popup: 告知 / メンテ / エラー) ───── */
+/* 3-1. ポップアップ(告知 / メンテ / エラー) */
 .appnav-backdrop {
   display: none;
   position: fixed;
   inset: 0;
   z-index: calc(var(--z-footer) - 1);
-  /* フッターの下、ページ本体の上 */
   background: rgba(3, 7, 14, .72);
   overscroll-behavior: contain;
   touch-action: none;
@@ -322,7 +295,6 @@
 
 .appnav-panel.is-popup {
   top: calc(50% - var(--footer-safe) / 2);
-  /* フッターを除いた領域の中央 */
   bottom: auto;
   left: 50%;
   right: auto;
@@ -370,7 +342,7 @@
   }
 }
 
-/* 3-2. ドック (.is-docked: RANK。フッターに付随) ─────────── */
+/* 3-2. ドック(RANK) */
 .appnav-panel.is-docked {
   border-color: #9a8a5c;
   border-radius: 3px 3px 0 0;
@@ -383,19 +355,17 @@
   padding: 14px 20px 18px;
 }
 
-/* 3-3. 共通の装飾 (ポップアップ・ドックの両方) ─────────────── */
+/* 3-3. 共通の装飾 */
 
-/* 二重枠の内側の線: 外周と同じ明るさ・等間隔で引く */
+/* 二重枠の内側の線(上は上端の帯の下に3pxあける) */
 .appnav-panel:is(.is-popup, .is-docked)::before {
   content: "";
   position: absolute;
   inset: 6px 3px 3px;
-  /* 上は上端の帯(3px)の下に3pxあける。左右下は3px */
   border: 1px solid rgba(216, 196, 138, .4);
   pointer-events: none;
 }
 
-/* ✕ボタン・ひし形は、普段は非表示 */
 .appnav-popup-close,
 .appnav-panel .ff-corner {
   display: none;
@@ -430,7 +400,7 @@
   outline: none;
 }
 
-/* 四隅のひし形(外周の角に乗せる) */
+/* 四隅のひし形 */
 .appnav-panel:is(.is-popup, .is-docked) .ff-corner {
   display: block;
   position: absolute;
@@ -477,16 +447,13 @@
 }
 
 
-/* =========================================================
-   4. 告知・メンテ・エラーの中身
-   ========================================================= */
+/* ===== 4. 告知・メンテ・エラーの中身 ===== */
 .appnav-alert {
   font-size: 15px;
   color: var(--c-text-hi);
   line-height: 1.6;
 }
 
-/* ようこそメッセージ */
 .sidebar-welcome-area {
   margin-bottom: 0;
   min-width: 0;
@@ -506,7 +473,6 @@
   color: var(--c-gold);
 }
 
-/* エラー一覧 */
 .appnav-error-item {
   display: flex;
   gap: 6px;
@@ -526,9 +492,7 @@
 }
 
 
-/* =========================================================
-   5. RANK フィルター
-   ========================================================= */
+/* ===== 5. RANK フィルター ===== */
 .appnav-filter-container {
   display: flex;
   flex-direction: column;
@@ -542,12 +506,9 @@
   width: 100%;
 }
 
-/* ── 5-1. ボタン共通(ランクタブ / エリアボタン) ──────────────
-   未選択: 枠は暗い金、面は暗い青で、色はほとんど付けない
-   選択中: 枠がランク色で太くなり、面がランク色に染まり、文字は白 */
+/* 5-1. ボタン共通(ランクタブ / エリアボタン) */
 :is(.appnav-rank-tab, .area-filter-btn) {
   --rk: var(--c-cyan);
-  /* 選択中の強調色(ランクごとに上書き) */
   position: relative;
   isolation: isolate;
   display: inline-flex;
@@ -567,7 +528,7 @@
   user-select: none;
 }
 
-/* 選択中に面を染めるための層(ふだんは透明) */
+/* 選択中に面を染める層 */
 :is(.appnav-rank-tab, .area-filter-btn)::before {
   content: "";
   position: absolute;
@@ -579,24 +540,21 @@
   pointer-events: none;
 }
 
-/* ホバー(未選択のみ) */
 :is(.appnav-rank-tab:not(.is-active), .area-filter-btn:not(.is-selected)):hover {
   border-color: #a8965f;
   background: linear-gradient(180deg, #27385c 0%, #16233e 100%);
 }
 
-/* 押した感触 */
 :is(.appnav-rank-tab, .area-filter-btn):active {
   transform: translateY(1px);
 }
 
-/* キーボード操作時 */
 :is(.appnav-rank-tab, .area-filter-btn):focus-visible {
   outline: 2px solid var(--c-cyan);
   outline-offset: 2px;
 }
 
-/* ── 5-2. ランクタブ (ALL / S / A / FATE) ── */
+/* 5-2. ランクタブ */
 .appnav-rank-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -609,7 +567,6 @@
   font-size: 15px;
 }
 
-/* ランクごとの文字色と強調色 */
 .appnav-rank-tab[data-rank="ALL"] {
   --rk: var(--c-all);
   color: var(--c-all);
@@ -630,7 +587,7 @@
   color: var(--c-f);
 }
 
-/* ── 5-3. エリアボタン(拡張) ── */
+/* 5-3. エリアボタン */
 .area-filter-btn {
   height: 32px;
   padding: 0 4px;
@@ -647,14 +604,14 @@
   color: #fff;
 }
 
-/* 1ページに最大6個: 各ボタンは calc((100% - 5 * gap) / 6) */
+/* 1ページに最大6個 */
 .area-grid-container.appnav-area-carousel-track .area-filter-btn {
   flex: 0 0 calc((100% - (5 * 6px)) / 6);
   min-width: 48px;
   scroll-snap-align: start;
 }
 
-/* ── 選択中の見た目(上のランク色・エリアボタンの指定より後ろに置くこと) ── */
+/* 選択中(上のランク色・エリアボタンの指定より後ろに置くこと) */
 .appnav-rank-tab.is-active,
 .area-filter-btn.is-selected {
   border-color: var(--rk);
@@ -667,21 +624,19 @@
   opacity: 0.4;
 }
 
-/* ── 5-4. エリアのスクロール領域(囲みなし) ──────────────────
-   端のフェードはマスクで表現(背景色に依存しない) */
+/* 5-4. エリアのスクロール領域 */
 .appnav-area-carousel-wrapper {
   position: relative;
   display: flex;
   align-items: center;
-  /* 左右に5pxずつ外へ広げる。トラックの内側余白(5px)と相殺され、ボタンの端が Rank タブの端と揃う。
-     広げた分は、選択中ボタンの光が端で切れないための余白になる */
+  /* 左右5pxずつ広げて、ボタンの端を Rank タブの端に揃える(選択中の光が切れない余白にもなる) */
   width: calc(100% + 10px);
   margin-inline: -5px;
   --fade-l: 0px;
   --fade-r: 0px;
 }
 
-/* 矢印が出ている側(まだスクロールできる側)だけ、端をフェードさせる */
+/* 矢印が出ている側だけ、端をフェード */
 .appnav-area-carousel-wrapper:has(.carousel-arrow-prev:not(.hidden)) {
   --fade-l: 40px;
 }
@@ -714,10 +669,9 @@
   gap: 6px;
   width: 100%;
   padding: 5px 5px 6px;
-  /* 選択中ボタンの光が切れないよう余白を確保 */
 }
 
-/* ── 5-5. 矢印ボタン(✕と同じ丸ボタン) ── */
+/* 5-5. 矢印ボタン */
 .carousel-arrow {
   position: absolute;
   top: 50%;

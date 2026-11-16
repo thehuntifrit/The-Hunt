@@ -1,7 +1,7 @@
 # The Hunt — AI向けプロジェクト仕様書
 
 > **目的**: AIが本プロジェクトの仕様を素早く正確に理解し、誤った実装を防ぐための包括的ドキュメント。
-> 最終更新: 2026-10-04
+> 最終更新: 2026-11-16
 
 ---
 
@@ -18,19 +18,21 @@ FFXIV (ファイナルファンタジー14) **Ifritサーバー**のモブハン
 | --- | --- | --- |
 | フロントエンド | TypeScript + Vite | SPA（フレームワーク不使用） |
 | スタイリング | Vanilla CSS (8ファイル) | CSS変数によるテーマ管理 |
+| 時刻同期 | サーバータイム同期 (`servertime.ts`) | Cloudflare Worker への HEAD リクエストによる NTP 風オフセット補正 |
 | バックエンド | Firebase (Firestore, Auth, App Check) | SDK v12 ESM CDN直接インポート |
 | 認証 | Firebase Anonymous Auth + Lodestone認証 | Cloudflare Worker経由のスクレイピング |
 | 外部連携 | Faloop WebSocket → Firestore (Python) | サーバーサイドブリッジ |
 | ホスティング | Firebase Hosting / GitHub Pages | `.github/workflows/` でCI/CD |
-| PWA | Service Worker | 静的アセットのオフラインキャッシュ |
+| PWA | Service Worker | 静的アセットのオフラインキャッシュ (`public/sw.js`) |
 
-### ビルドコマンド
+### ビルド・開発コマンド
 
 ```bash
 npm run dev      # Vite開発サーバー (port 3000)
 npm run build    # tsc + vite build → dist/
 npm run preview  # ビルド結果プレビュー
 npm run check    # TypeScript型チェック (noEmit)
+# Windows環境では start-dev.bat のダブルクリック、または VS Code (Ctrl+Shift+B) でも起動可能
 ```
 
 ---
@@ -43,34 +45,38 @@ The-Hunt/
 ├── vite.config.js             # Vite設定
 ├── tsconfig.json              # TypeScript設定 (ES2022, strict)
 ├── package.json               # the-hunt v1.0.0
-├── sw.js                      # Service Worker (開発用)
+├── start-dev.bat              # ローカルテスト用起動バッチ (npm.cmd run dev)
+├── .vscode/tasks.json         # VS Code 開発タスク (Ctrl+Shift+B)
 ├── SPECIFICATION.md           # 本ドキュメント
+├── README.md                  # ユーザーマニュアル（アプリ内マニュアルと共通）
 │
 ├── src/                       # メインソースコード
-│   ├── app.ts                 # (1,151行) アプリ初期化・UIレンダリング・更新サイクル
-│   ├── dataManager.ts         # (1,028行) 状態管理・データロード・Firestore同期
-│   ├── server.ts              # (393行) Firebase Auth/Firestore CRUD
-│   ├── cal.ts                 # (644行) エオルゼア時間・天候・月齢・リポップ計算
-│   ├── mobCard.ts             # (786行) モブカード描画・マップ・スポーン地点
-│   ├── mobSorter.ts           # (216行) ソート・フィルタ・グループ化
-│   ├── sidebar.ts             # (604行) ナビ・通知・ランクフィルター
-│   ├── modal.ts               # (156行) 討伐報告モーダル・認証モーダル
-│   ├── readme.ts              # (171行) ユーザーマニュアル表示
+│   ├── app.ts                 # (1,362行) アプリ初期化・UIレンダリング・更新サイクル
+│   ├── dataManager.ts         # (1,125行) 状態管理・データロード・Firestore同期
+│   ├── server.ts              # (435行) Firebase Auth/Firestore CRUD・報告バリデーション
+│   ├── servertime.ts          # (80行) サーバー時刻同期・NTP風オフセット管理
+│   ├── cal.ts                 # (651行) エオルゼア時間・天候・月齢・リポップ計算
+│   ├── mobCard.ts             # (869行) モブカード描画・マップ・スポーン地点・拡大鏡
+│   ├── mobSorter.ts           # (289行) ソート・フィルタ・グループ化
+│   ├── sidebar.ts             # (715行) ナビ・通知・ランク/エリアフィルター
+│   ├── modal.ts               # (172行) 討伐報告モーダル・認証モーダル
+│   ├── readme.ts              # (167行) ユーザーマニュアル表示
 │   ├── types/
 │   │   ├── mob.ts             # Mob, RepopInfo, CullStatus 等の型定義
-│   │   └── state.ts           # AppState, FilterState の型定義
+│   │   ├── state.ts           # AppState, FilterState の型定義
+│   │   └── vite-env.d.ts      # Vite環境変数の型定義
 │   └── workers/
-│       └── calWorker.ts       # Web Worker（リポップ計算のオフロード）
+│       └── calWorker.ts       # (31行) Web Worker（リポップ計算のオフロード）
 │
 ├── css/                       # スタイルシート
-│   ├── root.css               # CSS変数・テーマ・リセット・ユーティリティ
-│   ├── layout.css             # メインレイアウト
-│   ├── loading.css            # ローディングオーバーレイ
-│   ├── appnav.css             # サイドナビゲーション
-│   ├── moblist.css            # モブリスト一覧
-│   ├── mobcard.css            # モブカード詳細パネル
-│   ├── modal.css              # モーダルダイアログ
-│   └── manual.css             # ユーザーマニュアル
+│   ├── root.css               # (507行) CSS変数・テーマ・リセット・ユーティリティ
+│   ├── layout.css             # (109行) メインレイアウト
+│   ├── loading.css            # (40行) ローディングオーバーレイ
+│   ├── appnav.css             # (708行) サイドナビゲーション
+│   ├── moblist.css            # (710行) モブリスト一覧
+│   ├── mobcard.css            # (1,042行) モブカード詳細パネル
+│   ├── modal.css              # (427行) モーダルダイアログ
+│   └── manual.css             # (369行) ユーザーマニュアル
 │
 ├── public/                    # 静的アセット (Viteのpublic)
 │   ├── json/
@@ -81,12 +87,12 @@ The-Hunt/
 │   ├── icon/                  # ファビコン
 │   ├── sound/                 # 通知音（リンクシェル音）
 │   ├── js/lib/                # 外部ライブラリ (marked, DOMPurify)
-│   └── sw.js                  # Service Worker (本番用)
+│   └── sw.js                  # Service Worker (本番用キャッシュ)
 │
 ├── server/                    # サーバーサイドコンポーネント
-│   ├── cloudflare-worker.js   # Lodestone認証プロキシ
+│   ├── cloudflare-worker.js   # Lodestone認証プロキシ・時刻取得
 │   ├── faloop.py              # Faloop WebSocket → Firestoreブリッジ
-│   └── Firebase Security      # Firestoreセキュリティルール
+│   └── firestore.rules        # Firestoreセキュリティルール
 │
 └── old/                       # 旧版（JS版バックアップ + specification.md）
 ```
@@ -101,17 +107,18 @@ The-Hunt/
 │  app.ts ─→ dataManager.ts ─→ server.ts ─→ Firebase (Firestore) │
 │    │              │                            ↕                 │
 │    │              ├─→ cal.ts (計算)     Firebase Auth + AppCheck │
+│    │              ├─→ servertime.ts (時刻補正)                   │
 │    │              └─→ calWorker.ts (Worker)                      │
 │    │                                                             │
-│    ├─→ mobCard.ts (カード描画)                                   │
+│    ├─→ mobCard.ts (カード描画・拡大鏡)                           │
 │    ├─→ mobSorter.ts (ソート・フィルタ)                           │
-│    ├─→ sidebar.ts (ナビ・通知)                                   │
+│    ├─→ sidebar.ts (ナビ・通知・フィルター)                       │
 │    └─→ modal.ts (モーダル)                                       │
 │                                                                  │
 └──────────────────────────────────────────────────────────────────┘
          ↕                              ↕
   Cloudflare Worker              Faloop WebSocket
-    (Lodestone認証)               (faloop.py → Firestore)
+(認証 / サーバー時刻同期)          (faloop.py → Firestore)
 ```
 
 ---
@@ -284,11 +291,13 @@ interface Mob {
 ## 8. 初期化フロー
 
 ```
-DOMContentLoaded
-  └→ initApp()
-      ├→ initAppEventListeners()       // イベント登録
-      ├→ attachMobCardEvents()          // カードクリックイベント
-      ├→ initGlobalMagnifier()          // 拡大鏡初期化
+起動 (DOMContentLoaded または readyState 判定)
+  └→ initApp() [二重実行ガード: isAppInitialized / __theHuntInitialized]
+      ├→ updateScrollbarWidthVar()      // スクロールバー幅(--sbw)の測定
+      ├→ initAppEventListeners()       // メンテ・通知等のイベント登録
+      ├→ attachMobCardEvents()          // カード・リストクリックイベント
+      ├→ initGlobalMagnifier()          // マップ拡大鏡初期化 (右クリック)
+      ├→ startTimeSync()                // サーバー時刻オフセット同期開始
       ├→ await loadBaseMobData()        // 基礎データロード
       │   ├→ IDB.get(mobDataCache)      // キャッシュから暫定表示
       │   ├→ fetch(mob_data.json)       // 最新データ取得
@@ -304,7 +313,10 @@ DOMContentLoaded
       │   ├→ subscribeMobMemos()        // メモ
       │   └→ subscribeMaintenance()     // メンテ
       │
-      ├→ initModal() / initAppNav() / etc.
+      ├→ initModal()                    // モーダル初期化 (FF風コーナー装飾)
+      ├→ initAppNav()                   // ナビゲーション・RANKカルーセル初期化
+      ├→ attachLocationEvents()         // スポーン地点タップイベント
+      ├→ attachGlobalEventListeners()   // ナビ開閉・メモ入力等のグローバルイベント
       └→ setTimeout(6s) → ローディングタイムアウト
 ```
 
@@ -420,12 +432,14 @@ Sモブは以下の条件の組み合わせで出現する:
 
 ## 11. モブステータスの定義
 
+`STATUS_LABELS` に基づく表示ラベルと意味:
+
 | ステータス | ラベル | 意味 |
 | --- | --- | --- |
-| `MaxOver` | 超過 | 最大リポップ時間を超過 |
-| `ConditionActive` | なう | リポップ窓内で特殊条件を**満たしている** |
-| `PopWindow` | 残り | リポップ窓内だが条件未充足（または条件なし） |
-| `NextCondition` | 次回(S) / 残り(他) | リポップ窓内だが次の条件待ち |
+| `MaxOver` | 超過 | 最大リポップ時間を超過 (Time Over) |
+| `ConditionActive` | ‼️ | リポップ窓内で特殊条件を満たし**出現中**（白光ハイライト） |
+| `PopWindow` | 残り | リポップ窓内だが条件未充足（または通常モブのPOP待ち） |
+| `NextCondition` | 🔜 | リポップ窓内だが次の出現条件ウィンドウ待ち |
 | `Next` | 次回(S) / 残り(他) | 最短リポップ時間に未到達 |
 | `Maintenance` | 停止 | メンテナンス中またはメンテによるリポップ停止 |
 
@@ -435,10 +449,10 @@ Sモブは以下の条件の組み合わせで出現する:
 
 ### グループ分類（優先順位順）
 
-1. `MAX_OVER` (🔚 Time Over) — 最優先
-2. `WINDOW` (⏳ Pop Window) — `PopWindow`, `ConditionActive`, `NextCondition`
-3. `NEXT` (🔜 Respawning) — リポップ待ち
-4. `MAINTENANCE` (🛠️ Maintenance) — メンテ停止中
+1. `MAX_OVER` ("Time Over") — 最優先
+2. `WINDOW` ("Pop Window") — `PopWindow`, `ConditionActive`, `NextCondition`
+3. `NEXT` ("Respawning") — リポップ待ち
+4. `MAINTENANCE` ("Maintenance") — メンテ停止中
 
 ### 同一グループ内のソート (`allTabComparator`)
 
@@ -472,12 +486,27 @@ Sモブは以下の条件の組み合わせで出現する:
 - モバイル (<1024px): オーバーレイとして表示 (`body-lock` で背面スクロール防止)
 - テンプレートベース (`#mobcard-card-template`) でDOM生成
 
-### 13.4 座標埋め（スポーン候補地調査）
+### 13.4 座標埋め（スポーン候補地調査）と拡大鏡
 
-- マップ上にスポーン地点をドット表示
-- 調査済み (culled) / 未調査 (unculled) を色で区別
-- PCは右クリックで拡大鏡、スマホはダブルタップでチェック切替
-- Firestoreにリアルタイム同期
+- **マップ上のスポーン地点表示**: 未調査 (B1/B2ランク色) / 調査済み (culled色) を区別
+- **操作方法**:
+  - パソコン: **左クリック1回**で調査済み/未調査をトグル切替
+  - スマホ: **1秒以内に素早く2回タップ（ダブルタップ）**でトグル切替（1タップでツールチップ表示）
+- **動的ツールチップ**:
+  - `地点番号 (自分済)`: 自身が調査した地点
+  - `地点番号 (済)`: 他ユーザーが調査した地点
+  - `地点番号 (確)`: 残り1箇所に特定された地点
+- **残数バッジ**: 残数が1箇所に特定されると「📍地点番号」に変化
+- **マップ拡大鏡 (PC)**:
+  - マップ上で**右クリック**を押している間、倍率2.0倍（`CONFIG.MAP_ZOOM_SCALE`）の拡大鏡オーバーレイ（`#global-magnifier`）を表示。
+  - rAF (requestAnimationFrame) による滑らかなマウス追従。
+- **リアルタイム同期**: Firestore `mob_locations` コレクションと即時双方向同期。
+
+### 13.5 モーダルダイアログ (modal.ts)
+
+- **FF風コーナー装飾**: `.modal-content-base` の4隅に `.ff-corner` を自動生成。
+- **討伐報告モーダル**: S/Fランクの討伐時刻手動入力、修正チェックボックス (`report-force-submit`)。
+- **Lodestone認証モーダル**: 認証コード生成・コピー・確認。
 
 ---
 
@@ -626,37 +655,45 @@ Sモブは以下の条件の組み合わせで出現する:
 
 ```
 app.ts
-  ├─ imports: dataManager, cal, mobCard, mobSorter, modal, sidebar, server, readme
-  └─ exports: filterAndRender, sortAndRedistribute, updateProgressBarsOptimized, ...
+  ├─ imports: dataManager, cal, mobCard, mobSorter, modal, sidebar, server, servertime, readme
+  └─ exports: filterAndRender, sortAndRedistribute, updateProgressBarsOptimized, updateCardFull, syncDomOrder, ...
+
+servertime.ts
+  ├─ imports: (none)
+  └─ exports: now, startTimeSync, getServerTimeOffset, setServerTimeOffset, WORKER_BASE_URL
 
 dataManager.ts
-  ├─ imports: types/mob, types/state, cal, server
-  └─ exports: state, getState, CONFIG, DOM, STATUS_LABELS, loadBaseMobData, startRealtime, ...
+  ├─ imports: types/mob, types/state, cal, server, servertime
+  └─ exports: state, getState, setMobs, setFilter, CONFIG, DOM, STATUS_LABELS, loadBaseMobData, startRealtime, ...
 
 server.ts
-  ├─ imports: dataManager, modal, cal, types/mob
+  ├─ imports: dataManager, modal, cal, types/mob, servertime
   ├─ external: Firebase SDK (ESM CDN, @ts-ignore)
-  └─ exports: initializeAuth, submitReport, submitMemo, toggleCrushStatus, subscribe*, ...
+  └─ exports: initializeAuth, getUserData, submitReport, submitMemo, toggleCrushStatus, subscribe*, ...
 
 cal.ts
-  ├─ imports: types/mob
-  └─ exports: calculateRepop, getMaintenanceRepop, getEorzeaTime, formatters, ...
+  ├─ imports: types/mob, servertime
+  └─ exports: calculateRepop, getMaintenanceRepop, getEorzeaTime, formatDurationColon, formatMMDDHHmm, ...
 
 mobCard.ts
-  ├─ imports: cal, dataManager, server, modal, types/mob
-  └─ exports: createMobCard, updateProgressBar, updateSimpleMobItem, ...
+  ├─ imports: cal, dataManager, server, modal, servertime, types/mob
+  └─ exports: createMobCard, updateProgressBar, updateProgressText, updateCardFull, initGlobalMagnifier, ...
 
 mobSorter.ts
   ├─ imports: types/state, types/mob, dataManager, mobCard, sidebar
-  └─ exports: getFilteredMobs, getSortedFilteredMobs, allTabComparator, ...
+  └─ exports: getFilteredMobs, getSortedFilteredMobs, allTabComparator, GROUP_LABELS, ...
 
 sidebar.ts
-  ├─ imports: dataManager, app, readme, mobCard, types/mob
-  └─ exports: initAppNav, checkAndNotify, togglePanel, handleRankTabClick, ...
+  ├─ imports: dataManager, app, readme, mobCard, servertime, types/mob
+  └─ exports: initAppNav, checkAndNotify, togglePanel, closePanel, handleRankTabClick, ...
 
 modal.ts
-  ├─ imports: dataManager, server, mobCard
+  ├─ imports: dataManager, server, servertime, mobCard
   └─ exports: openReportModal, closeReportModal, openAuthModal, closeAuthModal, initModal
+
+readme.ts
+  ├─ imports: dataManager, server, mobCard, README.md?raw
+  └─ exports: openUserManual, closeUserManual
 ```
 
 ---
@@ -665,20 +702,22 @@ modal.ts
 
 | キー | 値 | 説明 |
 | --- | --- | --- |
-| `APP_LOAD_TIMEOUT` | 6000ms | ローディングタイムアウト |
-| `TIER_B_UPDATE_INTERVAL` | 60000ms | Tier B更新間隔 |
+| `APP_LOAD_TIMEOUT` | 6000ms | ローディング画面の強制解除タイムアウト |
+| `TIER_B_UPDATE_INTERVAL` | 60000ms | Tier B（論理監視・通知判定）更新間隔 |
 | `TOAST_DURATION` | 4000ms | トースト表示時間 |
-| `CLICK_THRESHOLD` | 1000ms | ダブルタップ判定閾値 |
-| `DEBOUNCE_DELAY` | 100ms | デバウンス遅延 |
-| `BREAKPOINT_PC` | 1024px | PC/モバイル判定 |
-| `REPOP_CALC_DELAY` | 2000ms | リポップ計算遅延 |
-| `NOTIFICATION_OFFSET_MS` | 120000ms | 通知オフセット（2分前） |
-| `MAP_ZOOM_SCALE` | 2.0 | マップ拡大率 |
-| `AUTH_TIMEOUT` | 10000ms | 認証タイムアウト |
-| `REPORT_FUTURE_THRESHOLD` | 600000ms | 報告可能な未来の閾値（10分） |
-| `REPORT_EARLY_THRESHOLD` | 300000ms | 報告可能な最短時刻前の猶予（5分） |
-| `MEMO_MAX_LENGTH` | 30 | メモ最大文字数 |
-| `FIRESTORE_LOAD_TIMEOUT` | 8000ms | Firestoreロードタイムアウト |
+| `CLICK_THRESHOLD` | 1000ms | スポーン地点ダブルタップ判定閾値 |
+| `DEBOUNCE_DELAY` | 100ms | リサイズ等のデバウンス遅延 |
+| `BREAKPOINT_PC` | 1024px | PC / モバイルのレイアウト判定境界 |
+| `NOTIFICATION_OFFSET_MS` | 120000ms | 通知オフセット（POP/条件合致の2分前） |
+| `MAINTENANCE_SHOW_BEFORE_MS` | 604800000ms (7日) | メンテナンス予告表示開始期間 |
+| `MAINTENANCE_SHOW_AFTER_MS` | 345600000ms (4日) | メンテナンス終了後表示継続期間 |
+| `MAP_ZOOM_SCALE` | 2.0 | マップ拡大鏡のズーム倍率 |
+| `AUTH_TIMEOUT` | 10000ms | 認証処理タイムアウト |
+| `REPORT_FUTURE_THRESHOLD` | 600000ms (10分) | 報告可能な未来時刻の許容閾値 |
+| `REPORT_EARLY_THRESHOLD` | 300000ms (5分) | 最短POP前報告の許容閾値 |
+| `MEMO_MAX_LENGTH` | 30文字 | 共有メモの最大文字数 |
+| `IDB_SAVE_DEBOUNCE` | 2000ms | IndexedDB保存のデバウンス時間 |
+| `FIRESTORE_LOAD_TIMEOUT` | 8000ms | Firestore初期ロードタイムアウト |
 
 ---
 
