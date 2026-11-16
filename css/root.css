@@ -375,7 +375,7 @@ textarea {
 
 .root-mobile-title {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   font-family: var(--font-ui);
   letter-spacing: -0.3px;
   display: flex;
@@ -392,8 +392,8 @@ textarea {
 }
 
 .mobile-clock-label {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   color: #646a75;
   letter-spacing: 0.05em;
   line-height: 1;
@@ -402,7 +402,7 @@ textarea {
 
 .mobile-clock-val {
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--c-gold);
   font-variant-numeric: tabular-nums;

@@ -59,7 +59,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 4px 0 0;
   position: relative;
   -webkit-tap-highlight-color: transparent;
   outline: none;
@@ -131,7 +131,7 @@
   content: '';
   position: absolute;
   top: -4px;
-  right: -6px;
+  right: -8px;
   width: 6px;
   height: 6px;
   border-radius: 50%;

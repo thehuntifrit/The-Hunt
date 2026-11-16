@@ -2,7 +2,7 @@
 
 /* ===== 1. リスト全体とグループの帯 ===== */
 #moblist-container {
-  padding: 6px 10px 0;
+  padding: 2px 10px 0;
 }
 
 .status-group-separator {
@@ -55,7 +55,7 @@
 
 .status-group-label {
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   color: #f0fff5;
   letter-spacing: 0.8px;
@@ -65,7 +65,7 @@
 
 .status-group-count {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   color: #b7e4c7;
   margin-left: 2px;
   margin-right: auto;
@@ -302,7 +302,7 @@
   font-size: 14px;
   height: 14px;
   min-width: 18px;
-  padding: 0 5px;
+  padding: 0 3px;
   --badge-text-y: 0.8px;
 }
 
@@ -310,6 +310,7 @@
   background: rgba(174, 187, 210, 0.12);
   border: 1px solid rgba(174, 187, 210, 0.55);
   color: #aebbd2;
+  padding: 0 3px;
 }
 
 .count-badge .count-num {
