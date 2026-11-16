@@ -226,14 +226,27 @@ export function initNotification(): void {
         playNotificationSound();
     });
 
-    // ポップアップ外クリックで閉じる
-    document.addEventListener('click', (e) => {
-        if (popup?.classList.contains('is-open') &&
-            !popup.contains(e.target as Node) &&
-            !(label && label.contains(e.target as Node))) {
+    // ポップアップ外タップ/クリックで閉じる（capture: true で他の要素の stopPropagation をすり抜ける）
+    const handleOutside = (e: Event) => {
+        if (!popup?.classList.contains('is-open')) return;
+        const target = e.target as Node | null;
+        if (!target) return;
+        if (popup.contains(target) || (label && label.contains(target))) {
+            return;
+        }
+        closeVolumePopup();
+    };
+
+    document.addEventListener('pointerdown', handleOutside, true);
+    document.addEventListener('touchstart', handleOutside, true);
+    document.addEventListener('click', handleOutside, true);
+
+    // 画面スクロール時にも閉じる
+    window.addEventListener('scroll', () => {
+        if (popup?.classList.contains('is-open')) {
             closeVolumePopup();
         }
-    });
+    }, { passive: true });
 }
 
 async function requestNotificationPermission(): Promise<void> {
@@ -579,6 +592,7 @@ export function setActiveNavItem(id: string | null): void {
 }
 
 export async function togglePanel(panelName: string): Promise<void> {
+    closeVolumePopup();
     if (panelName === "manual") {
         const modal = DOM.manualModal;
         if (modal && !modal.classList.contains('hidden')) {
@@ -615,6 +629,7 @@ export async function togglePanel(panelName: string): Promise<void> {
 }
 
 export function closePanel(): void {
+    closeVolumePopup();
     closeUserManual();
 
     const nav = DOM.appNav;
