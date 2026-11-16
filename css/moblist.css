@@ -298,19 +298,23 @@
   background: var(--c-cyan);
   border: 1px solid var(--c-cyan);
   color: #04202a;
-  font-weight: 700;
-  font-size: 14px;
-  height: 14px;
+  font-weight: 600;
+  font-size: 15px;
+  height: 15px;
   min-width: 18px;
   padding: 0 3px;
-  --badge-text-y: 0.8px;
+  --badge-text-y: 0.4px;
 }
 
 .count-badge.is-multiple {
   background: rgba(174, 187, 210, 0.12);
   border: 1px solid rgba(174, 187, 210, 0.55);
   color: #aebbd2;
+  font-weight: 600;
+  font-size: 14px;
+  height: 15px;
   padding: 0 3px;
+  --badge-text-y: 0.2px;
 }
 
 .count-badge .count-num {
