@@ -8,7 +8,9 @@ import { Mob } from "./types/mob";
 // ─── 定数・DOM ──────────────────────────────────────────
 const SOUND_FILE = "./sound/01 FFXIV_Linkshell_Transmission.mp3";
 
-let audio: HTMLAudioElement | null = null;
+let audioCtx: AudioContext | null = null;
+let audioBuffer: AudioBuffer | null = null;
+let audioUnlocked = false;
 const notifiedCycles = new Set<string>();
 let currentPanel: string | null = null;
 (window as any).errorLog = (window as any).errorLog || [];
@@ -77,9 +79,19 @@ function applyPanelMode(panelName: string | null): void {
 }
 
 // ─── 通知 ───────────────────────────────────────────────
+async function loadAudioBuffer(): Promise<void> {
+    try {
+        audioCtx = new AudioContext();
+        const res = await fetch(SOUND_FILE);
+        const arrayBuf = await res.arrayBuffer();
+        audioBuffer = await audioCtx.decodeAudioData(arrayBuf);
+    } catch (e) {
+        handleAppError(e, "通知音の読み込み失敗", false);
+    }
+}
+
 export function initNotification(): void {
-    audio = new Audio(SOUND_FILE);
-    audio.load();
+    loadAudioBuffer();
 
     const toggle = DOM.notificationToggle;
     if (!toggle) return;
@@ -93,8 +105,11 @@ export function initNotification(): void {
     }
 
     const onFirstUserAction = () => {
-        if (getState().notificationEnabled) {
-            playNotificationSound(true);
+        // ユーザー操作でAudioContextをunlock
+        if (audioCtx && audioCtx.state === "suspended") {
+            audioCtx.resume().then(() => { audioUnlocked = true; });
+        } else {
+            audioUnlocked = true;
         }
         document.removeEventListener('click', onFirstUserAction);
         document.removeEventListener('touchstart', onFirstUserAction);
@@ -122,7 +137,13 @@ export function initNotification(): void {
 
         if (enabled) {
             requestNotificationPermission();
-            playNotificationSound(true);
+            // ONにした操作自体がユーザージェスチャーなのでunlock＋テスト再生
+            if (audioCtx && audioCtx.state === "suspended") {
+                audioCtx.resume().then(() => { audioUnlocked = true; playNotificationSound(); });
+            } else {
+                audioUnlocked = true;
+                playNotificationSound();
+            }
         }
     });
 }
@@ -135,22 +156,25 @@ async function requestNotificationPermission(): Promise<void> {
     }
 }
 
-export function playNotificationSound(isSilent = false): void {
-    if (!audio) return;
+export function playNotificationSound(): void {
+    if (!audioCtx || !audioBuffer) return;
+    if (!audioUnlocked) return;
 
-    if (isSilent) {
-        audio.muted = true;
-        audio.play().then(() => {
-            audio!.pause();
-            audio!.muted = false;
-        }).catch(() => { });
-        return;
+    // suspendedなら再開してから再生
+    const doPlay = () => {
+        const source = audioCtx!.createBufferSource();
+        source.buffer = audioBuffer!;
+        source.connect(audioCtx!.destination);
+        source.start(0);
+    };
+
+    if (audioCtx.state === "suspended") {
+        audioCtx.resume().then(doPlay).catch(err => {
+            handleAppError(err, "通知音の再生失敗", false);
+        });
+    } else {
+        doPlay();
     }
-
-    audio.currentTime = 0;
-    audio.play().catch(err => {
-        handleAppError(err, "通知音の再生失敗", false);
-    });
 }
 
 export async function sendBrowserNotification(title: string, body: string): Promise<void> {
