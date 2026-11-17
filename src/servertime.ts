@@ -1,21 +1,10 @@
-// ============================================================
-// servertime.ts — サーバー時刻の管理
-//
-// 認証Worker の GET /time からサーバー時刻を取得し、クライアント時刻とのずれ(オフセット)を
-// 保持する。補正した現在時刻 now() を、サイト内の「現在時刻」として使う。
-//
-// メインスレッドと Web Worker(calWorker)の両方から読み込まれるため、
-// トップレベルで Firebase や DOM を参照しないこと。
-// ============================================================
-
-// 認証Workerのベースurl(末尾スラッシュ付き)。server.ts の VERIFICATION_PROXY_URL もこれを使う
 export const WORKER_BASE_URL = "https://icy-resonance-2526.the-hunt-ifrit.workers.dev/";
 
-const TIME_SYNC_SAMPLES = 3;                    // 計測回数(往復時間が最小の結果を採用)
-const TIME_SYNC_MAX_RTT_MS = 3000;              // これを超えた計測は捨てる
-const TIME_SYNC_INTERVAL_MS = 15 * 60 * 1000;   // 再計測の間隔
+const TIME_SYNC_SAMPLES = 3;
+const TIME_SYNC_MAX_RTT_MS = 3000;
+const TIME_SYNC_INTERVAL_MS = 15 * 60 * 1000;
 
-let offset = 0; // サーバー時刻 − クライアント時刻(ms)
+let offset = 0;
 
 /** サーバー時刻に補正した現在時刻(ms)。同期前・同期失敗時はクライアント時刻と同じ */
 export function now(): number {

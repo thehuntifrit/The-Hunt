@@ -1,37 +1,22 @@
-/* mobcard.css */
-
-
-/* =========================================================
-   0. 変数
-   ========================================================= */
+/* 0. 変数 */
 :root {
-  /* モバイルのボトムシートがヘッダーの下に潜らないための余白(上端の帯・枠・影の分) */
   --mobcard-top-gap: 0px;
 }
 
-
-/* =========================================================
-   1. カードの枠
-   ========================================================= */
+/* 1. カード枠 */
 .mobcard-card {
-  /* 上端の帯の色(ランクごとに下で上書き)。--mc-to は事前計算したHex値:
-     元の意図 = ランク色 + 目標色の混色。ランク色を変えたら再計算する
-     A: #22d3ee 35% + #2563eb 65% */
   --mc-from: var(--c-a);
   --mc-to: #248aec;
 
   background: linear-gradient(180deg, #182238 0%, #0b1120 100%);
   border-radius: 4px 4px 0 0;
   border: 1px solid #9a8a5c;
-  /* くすんだゴールド */
   border-bottom: none;
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.7),
-    /* 外側の黒縁 */
     0 -6px 24px rgba(0, 0, 0, 0.6),
     inset 0 0 40px rgba(56, 189, 248, 0.05);
   overflow: hidden;
-  /* モバイル: ボトムシート */
   position: fixed;
   bottom: var(--footer-safe);
   left: 0;
@@ -46,8 +31,6 @@
   animation: mobcard-fade-in 0.18s ease-out;
 }
 
-/* カードが作られた時に、ふわっと表示する(フッターのポップアップと同じ動き)。
-   PCは transform を !important で固定しているため、個別プロパティの translate / scale を使う */
 @keyframes mobcard-fade-in {
   from {
     opacity: 0;
@@ -128,8 +111,6 @@
 @media (min-width: 900px) {
   .mobcard-card {
     position: relative;
-    /* 上端帯・角飾りの基準にするため static から変更 */
-    /* relative ではモバイル用の bottom/left/right が効いて上にずれるので、必ず解除する */
     top: auto;
     bottom: auto;
     left: auto;
@@ -156,9 +137,6 @@
   }
 }
 
-/* メンテナンス中: 中身(文字・バッジ・マップなど)と上端の帯・角飾りだけをグレーにする。
-   カードの背景は紺色のまま残す(背景までグレーにすると、内容がほとんど見えなくなるため)。
-   ヘッダーの背景は透明なので、上部と内容部は同じ紺色になる */
 .mobcard-card.maintenance-gray-out::before,
 .mobcard-card.maintenance-gray-out::after,
 .mobcard-card.maintenance-gray-out .mobcard-inner {
@@ -170,17 +148,11 @@
   text-shadow: none;
 }
 
-
-/* =========================================================
-   2. ヘッダー
-   ========================================================= */
+/* 2. ヘッダー */
 .mobcard-header {
   flex-shrink: 0;
   padding: 13px 16px 10px;
-  /* 背景は付けない: カード本体のグラデーションがそのまま見え、内容領域と同じ色になる */
   background: transparent;
-  /* sticky にしない: ヘッダーはスクロールする領域(.mobcard-content)の外にあるので固定は不要で、
-     overflow: hidden の中の sticky は、スクロールのたびに位置の再計算の対象になる */
   position: relative;
   z-index: 1;
   width: 100%;
@@ -189,7 +161,6 @@
   box-sizing: border-box;
 }
 
-/* ヘッダー下の金色フェード罫線 */
 .mobcard-header::after {
   content: "";
   position: absolute;
@@ -200,7 +171,6 @@
   background: linear-gradient(90deg, rgba(216, 196, 138, 0.65), rgba(216, 196, 138, 0.08));
 }
 
-/* 1行目: ランクバッジ + モブ名 */
 .header-top-row {
   display: flex;
   align-items: center;
@@ -217,10 +187,8 @@
   min-width: 0;
 }
 
-/* ランクバッジ(既定は A。S と FATE だけ色を上書き) */
 .mobcard-rank {
   --rk-glow: rgba(34, 211, 238, 0.4);
-  /* var(--c-a) 40% */
   flex-shrink: 0;
   width: 26px;
   height: 26px;
@@ -242,7 +210,6 @@
 
 .mobcard-rank[data-rank="S"] {
   --rk-glow: rgba(245, 158, 11, 0.4);
-  /* var(--c-s) 40% */
   background-color: var(--c-s-dark);
   color: var(--c-s);
   border-color: var(--c-s);
@@ -250,13 +217,11 @@
 
 .mobcard-rank[data-rank="F"] {
   --rk-glow: rgba(168, 85, 247, 0.4);
-  /* var(--c-f) 40% */
   background-color: var(--c-f-dark);
   color: var(--c-f);
   border-color: var(--c-f);
 }
 
-/* モブ名 */
 .mobcard-name {
   font-family: var(--font-ui);
   font-size: 18px;
@@ -347,17 +312,12 @@
 }
 
 
-/* =========================================================
-   3. 内容領域(スクロール)
-   ========================================================= */
+/* 3. 内容領域(スクロール) */
 .mobcard-content {
   flex: 1 1 auto;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 12px 16px 16px;
-  /* スクロールバーの幅は、右の余白(16px)の中に収める。幅は app.ts が測って --sbw に入れる。
-     スクロールバーの有無で内側の幅が変わらないよう、常に場所を確保する(stable)。
-     こうして、タイトル(ヘッダー)と内容の右端が、いつも揃う */
   scrollbar-gutter: stable;
   padding-right: max(0px, calc(16px - var(--sbw, 0px)));
   display: flex;
@@ -372,7 +332,6 @@
   scrollbar-color: rgba(216, 196, 138, 0.35) transparent;
 }
 
-/* PC: 右ペインの高さの中でスクロールさせる */
 @media (min-width: 900px) {
   .mobcard-content {
     min-height: 0;
@@ -401,7 +360,6 @@
   box-sizing: border-box;
 }
 
-/* セクション見出し: シアンのひし形 + 金色フェード下線 */
 .mobcard-section-label {
   font-size: 12px;
   font-weight: 700;
@@ -429,7 +387,6 @@
   box-shadow: 0 0 6px rgba(34, 211, 238, 0.7);
 }
 
-/* 見出しの右端に出す、マップの更新時刻 */
 .map-update-time {
   font-family: var(--font-mono);
   font-size: 14px;
@@ -440,10 +397,7 @@
   line-height: 1;
 }
 
-
-/* =========================================================
-   4. メモ
-   ========================================================= */
+/* 4. メモ */
 .mobcard-memo-box {
   display: flex;
   align-items: center;
@@ -523,11 +477,7 @@
 }
 
 
-/* =========================================================
-   5. 時刻グリッドと出現条件
-   ========================================================= */
-
-/* 最短・最大・次回・前回の4マス */
+/* 5. 時刻グリッドと出現条件 */
 .mobcard-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -664,9 +614,7 @@
 }
 
 
-/* =========================================================
-   6. 下部ボタン(REPORT / CLOSE)
-   ========================================================= */
+/* 6. 下部ボタン(REPORT / CLOSE) */
 .mobcard-mobile-actions {
   flex-shrink: 0;
   display: flex;
@@ -749,9 +697,7 @@
 }
 
 
-/* =========================================================
-   7. 出現マップ
-   ========================================================= */
+/* 7. 出現マップ */
 .map-container {
   border-radius: 2px;
   overflow: hidden;
@@ -759,12 +705,9 @@
   position: relative;
   width: 100%;
   max-width: 100%;
-  /* 画像が届く前から場所を確保する。比率は mobCard.ts が --map-ratio に入れる(未知の間は正方形)。
-     届いた瞬間に、下の内容が押し下げられてガクッと動くのを防ぐ */
   aspect-ratio: var(--map-ratio, 1 / 1);
 }
 
-/* マップの枠: border ではなく box-shadow で描く(座標計算に影響させないため) */
 .map-container:not(.magnifier-clone) {
   box-shadow:
     0 0 0 1px rgba(216, 196, 138, 0.5),
@@ -773,7 +716,6 @@
 
 .pc-map-box {
   width: 100%;
-  /* 元の画像は 500x500。それより大きく表示すると、拡大の再計算が毎回走るので、上限を元の大きさにする */
   max-width: 500px;
   margin-inline: auto;
   display: flex;
@@ -786,7 +728,6 @@
   width: 100%;
   height: auto;
   max-width: 100%;
-  /* 読み込みが終わるまでは透明。終わると is-loaded が付いて、ふわっと表示する(mobCard.ts が付ける) */
   opacity: 0;
   transition: opacity 0.35s ease;
 }
@@ -795,7 +736,6 @@
   opacity: 1;
 }
 
-/* PC: マップは、元の画像と同じ500px固定 */
 @media (min-width: 900px) {
   .map-container.pc-map-box {
     width: 500px;
@@ -815,7 +755,6 @@
   }
 }
 
-/* スポーンポイントを重ねる層 */
 .map-overlay {
   pointer-events: none;
   position: absolute;
@@ -826,7 +765,6 @@
   transition: opacity 0.35s ease;
 }
 
-/* 画像の読み込みが終わるまでは、点を隠して、操作も受け付けない */
 .map-container:has(.mob-map-img:not(.is-loaded)) .map-overlay {
   opacity: 0;
 }
@@ -835,10 +773,7 @@
   pointer-events: none;
 }
 
-
-/* =========================================================
-   8. スポーンポイント
-   ========================================================= */
+/* 8. スポーンポイント */
 .spawn-point {
   position: absolute;
   left: var(--point-x);
@@ -861,14 +796,10 @@
   outline: none;
 }
 
-/* カードのスクロール中は、点のマウス反応を止める。
-   マップがスクロールで動く間、点がマウスの下を次々に通り、そのたびにホバー(拡大・光・重なり順の変更)の
-   再描画が走って、スクロールが引っかかるため。止まって約0.12秒後に、また反応する(app.ts が is-scrolling を付け外しする) */
 .mobcard-content.is-scrolling .spawn-point {
   pointer-events: none;
 }
 
-/* ツールチップ(点の左上に出す) */
 .spawn-point[data-tooltip]::after {
   content: attr(data-tooltip);
   position: absolute;
@@ -885,12 +816,9 @@
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  /* transition は付けない: スクロール中に点がマウスの下を通るたびの再描画を減らすため */
   z-index: 30;
 }
 
-/* 左端に近い点は右側へ、上端に近い点は下側へ出して、枠の外で切れるのを防ぐ
-   (向きは mobCard.ts の drawSpawnPoint が data-tip-x / data-tip-y で指定する) */
 .spawn-point[data-tip-x="right"]::after {
   right: auto;
   left: calc(100% + 1px);
@@ -906,50 +834,7 @@
   opacity: 1;
 }
 
-/* 点の色 */
-.color-b1 {
-  background-color: #4494f7;
-  border: 2px solid #ffffff;
-}
-
-.color-b2 {
-  background-color: #fd5c5c;
-  border: 2px solid #ffffff;
-}
-
-.color-b1-culled {
-  background-color: #ffffff;
-  border: 2px solid #4494f7;
-}
-
-.color-b2-culled {
-  background-color: #ffffff;
-  border: 2px solid #fd5c5c;
-}
-
-.color-lastone {
-  background-color: #34d399;
-  border: 2px solid #ffffff;
-}
-
-.color-b1-only {
-  background-color: #ffffff;
-  border: 2px solid #4494f7;
-  width: 10px;
-  height: 10px;
-}
-
-.color-b2-only {
-  background-color: #ffffff;
-  border: 2px solid #fd5c5c;
-  width: 10px;
-  height: 10px;
-}
-
-
-/* =========================================================
-   9. 拡大鏡
-   ========================================================= */
+/* 9. 拡大鏡 */
 .map-magnifier {
   position: fixed;
   top: 0;

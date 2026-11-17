@@ -1,6 +1,4 @@
-/* =========================================================
-   css / manual.css  —  #manual-modal #readme-container
-   ========================================================= */
+/*manual.css*/
 
 #manual-modal {
   position: fixed;
@@ -142,7 +140,7 @@
   background: transparent;
 }
 
-/* ── Headings ────────────────────────────────────────────── */
+/* Headings */
 #readme-container h1,
 #readme-container h2,
 #readme-container h3,
@@ -192,7 +190,7 @@
   font-weight: 600;
 }
 
-/* ── Text Elements ───────────────────────────────────────── */
+/* Text Elements */
 #readme-container p {
   margin-top: 0;
   margin-bottom: 12px;
@@ -221,7 +219,7 @@
   color: #67e8f9;
 }
 
-/* ── Divider ─────────────────────────────────────────────── */
+/* Divider */
 #readme-container hr {
   height: 1px;
   background: var(--c-border);
@@ -240,7 +238,7 @@
   margin-top: 24px;
 }
 
-/* ── Lists ───────────────────────────────────────────────── */
+/* Lists */
 #readme-container ul,
 #readme-container ol {
   margin-top: 0;
@@ -273,7 +271,7 @@
   padding-left: 18px;
 }
 
-/* ── Code & Preformatted ─────────────────────────────────── */
+/* Code & Preformatted */
 #readme-container code {
   font-family: var(--font-mono), monospace;
   font-size: 12.5px;
@@ -303,7 +301,7 @@
   color: #f1f5f9;
 }
 
-/* ── Blockquote ──────────────────────────────────────────── */
+/* Blockquote */
 #readme-container blockquote {
   margin: 0 0 14px 0;
   padding: 8px 16px;
@@ -317,7 +315,7 @@
   margin-bottom: 0;
 }
 
-/* ── Tables ──────────────────────────────────────────────── */
+/* Tables */
 #readme-container table {
   width: 100%;
   border-collapse: collapse;

@@ -1,7 +1,4 @@
-/* appnav.css  —  #appnav */
-
-
-/* ===== 1. フッターバー ===== */
+/* 1. フッターバー */
 #appnav {
   position: fixed;
   bottom: 0;
@@ -194,7 +191,7 @@
 }
 
 
-/* ===== 2. パネル共通 ===== */
+/* 2. パネル共通 */
 .appnav-panel {
   display: none;
   position: fixed;
@@ -270,9 +267,7 @@
 }
 
 
-/* ===== 3. パネルの種類 ===== */
-
-/* 3-0. ポップアップとドックで共通 */
+/* 3. パネルの種類 */
 .appnav-panel:is(.is-popup, .is-docked) {
   overflow: visible;
   background: linear-gradient(180deg, rgba(24, 34, 56, .97) 0%, rgba(9, 14, 26, .98) 100%);
@@ -448,7 +443,7 @@
 }
 
 
-/* ===== 4. 告知・メンテ・エラーの中身 ===== */
+/* 4. 告知・メンテ・エラー */
 .appnav-alert {
   font-size: 15px;
   color: var(--c-text-hi);
@@ -493,7 +488,7 @@
 }
 
 
-/* ===== 5. RANK フィルター ===== */
+/* 5. RANK フィルター */
 .appnav-filter-container {
   display: flex;
   flex-direction: column;
@@ -709,7 +704,7 @@
 }
 
 
-/* ===== 通知音量ポップアップ ===== */
+/* 通知音量ポップアップ */
 .notify-volume-popup {
   display: none;
   position: absolute;

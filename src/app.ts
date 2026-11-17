@@ -8,7 +8,7 @@ import { initializeAuth, getUserData, submitReport, submitMemo, toggleCrushStatu
 import { now as serverNow, startTimeSync } from "./servertime";
 import { Mob, RepopInfo } from "./types/mob";
 
-// ─── 定数 ──────────────────────────────────────────────
+// 定数
 export const cardCache = new Map<string, HTMLElement>();
 
 const visibleCards = new Set<string>();
@@ -29,8 +29,7 @@ let lastClickLocationId: string | null = null;
 let locationEventsAttached = false;
 let loadingTimeout: any = null;
 
-// ─── スクロールバーの幅を測って、CSS変数(--sbw)に入れる ─────────────
-// モブカードの内容領域は、右の余白(16px)の中にスクロールバーを収める。その幅の計算に使う
+// スクロールバー幅計測
 function updateScrollbarWidthVar(): void {
   const probe = document.createElement("div");
   probe.style.cssText = "position:absolute;top:-9999px;width:100px;height:100px;overflow:scroll;scrollbar-width:thin;";
@@ -40,7 +39,7 @@ function updateScrollbarWidthVar(): void {
   document.documentElement.style.setProperty("--sbw", `${width}px`);
 }
 
-// ─── 初期化 ─────────────────────────────────────────────
+// 初期化
 let isAppInitialized = false;
 
 async function initApp(): Promise<void> {
@@ -130,7 +129,7 @@ export function showColumnContainer(): void {
   });
 }
 
-// ─── メンテナンス表示 ───────────────────────────────────
+// メンテナンス表示
 interface MaintStatus {
   is_active: boolean;
   scheduled: boolean;
@@ -252,7 +251,7 @@ export async function renderMaintenanceStatus(): Promise<void> {
     .forEach(btn => btn.classList.remove("has-alert"));
 }
 
-// ─── ヘッダー時刻 ───────────────────────────────────────
+// ヘッダー時刻
 let headerClocks: { lt: Element[]; et: Element[] } | null = null;
 let lastLtStr = "";
 let lastEtStr = "";
@@ -281,7 +280,7 @@ export function updateHeaderTime(): void {
   headerClocks.et.forEach(el => { if (el.textContent !== etStr) el.textContent = etStr; });
 }
 
-// ─── ソート＆描画 ───────────────────────────────────────
+// ソート＆描画
 function getMobMap(): Map<string, Mob> {
   return getState().mobsMap;
 }
@@ -848,7 +847,7 @@ const updateMobState = function (mob: Mob, nowSec: number, state: any): boolean 
   return hasSignificantChange;
 };
 
-// ─── 報告処理 ───────────────────────────────────────────
+// 報告処理
 export function showToast(message: string, type: "error" | "success" | "info" = "error"): void {
   if (type === "error") {
     console.error(message);
@@ -913,7 +912,7 @@ async function handleReportSubmit(e: Event): Promise<void> {
   if (result.success) closeReportModal();
 }
 
-// ─── スポーン操作 ───────────────────────────────────────
+// スポーン操作
 function applyOptimisticDOM(point: HTMLElement, nextCulled: boolean): void {
   point.dataset.isCulled = String(nextCulled);
 
@@ -1044,7 +1043,7 @@ export function attachLocationEvents(): void {
   locationEventsAttached = true;
 }
 
-// ─── グローバルイベント管理（イベント委譲） ───────────────────────
+// イベント委譲
 function attachGlobalEventListeners(): void {
   let prevWidth = window.innerWidth;
   window.addEventListener("resize", debounce(() => {
@@ -1150,7 +1149,7 @@ function attachGlobalEventListeners(): void {
   }, { passive: true });
 }
 
-// ─── イベント ───────────────────────────────────────────
+// イベント
 function initAppEventListeners(): void {
   window.addEventListener('maintenanceUpdated', () => renderMaintenanceStatus());
 

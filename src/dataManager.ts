@@ -4,7 +4,7 @@ import { calculateRepop } from "./cal";
 import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos, subscribeMaintenance } from "./server";
 import { now as serverNow, getServerTimeOffset } from "./servertime";
 
-// ─── 定数 ───────────────────────────────────────────────
+// 定数
 export const EXPANSION_MAP: Record<number, string> = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
 
 export const RANKS = {
@@ -32,7 +32,7 @@ const MOB_STATUS_CACHE_KEY = "mobStatusCache_v2";
 const SPAWN_CACHE_KEY = "spawnConditionCache_v2";
 const LOCATIONS_CACHE_KEY = "mobLocationsCache";
 
-// ─── 設定値 ─────────────────────────────────────────────
+// 設定値
 export const CONFIG = {
     APP_LOAD_TIMEOUT: 6000,
     TIER_B_UPDATE_INTERVAL: 60000,
@@ -136,7 +136,7 @@ export function handleAppError(error: any, context = "エラーが発生しま�
     }
 }
 
-// ─── State ──────────────────────────────────────────────
+// State
 export const state: AppState = {
     userId: localStorage.getItem("user_uuid") || null,
     lodestoneId: localStorage.getItem("lodestone_id") || null,
@@ -219,7 +219,7 @@ export const state: AppState = {
     mobLocations: {}
 };
 
-// ─── State Accessors ────────────────────────────────────
+// State Accessors
 export function getState(): AppState {
     return state;
 }
@@ -324,7 +324,7 @@ export function setTelopRead(): void {
     window.dispatchEvent(new CustomEvent('maintenanceUpdated', { detail: { maintenance: state.maintenance } }));
 }
 
-// ─── IndexedDB Cache ────────────────────────────────────
+// IndexedDB Cache
 const idb = {
     db: null as IDBDatabase | null,
     _initPromise: null as Promise<IDBDatabase> | null,
@@ -377,7 +377,7 @@ const idb = {
     }
 };
 
-// ─── Worker ─────────────────────────────────────────────
+// Worker
 let memorySpawnCache: Record<number, SpawnCache> | null = null;
 
 // mobNoごとの境界タイマーを管理するMap
@@ -542,7 +542,7 @@ export function recalcIfStale(mob: Mob, nowSec: number): void {
     requestWorkerCalculation(mob, state.maintenance, { forceRecalc: true });
 }
 
-// ─── データ加工 ─────────────────────────────────────────
+// データ加工
 function processMobData(rawMobData: any, maintenance: any, options: { skipConditionCalc?: boolean } = {}): Mob[] {
     const { skipConditionCalc = false } = options;
     return Object.entries(rawMobData.mobs).map(([no, mobVal]: [string, any]) => {
@@ -577,7 +577,7 @@ function processMobData(rawMobData: any, maintenance: any, options: { skipCondit
     });
 }
 
-// ─── データ読込 ─────────────────────────────────────────
+// データ読込
 async function loadMaintenance(): Promise<any> {
     try {
         const res = await fetch(MAINTENANCE_URL);

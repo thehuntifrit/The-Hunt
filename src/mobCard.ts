@@ -212,7 +212,7 @@ export function computeTimeLabel(mob: Mob): TimeLabelResult {
     return { label: "", timeValue: "--/-- --:--", isSpecialCondition: false, isTimeOver: false, isTimedMob: false, dhm: null, isInWindow: false };
   }
 
-  // 変更①: status は Maintenance に上書きされるため、最大超えは時刻で判定する
+  // status は Maintenance に上書きされるため、最大超えは時刻で判定する
   const isTimeOverRaw = !!info.maxRepop && now >= info.maxRepop;
   const isInWindow = !!info.isInConditionWindow;
   const isNextWindow = !isInWindow && !!info.nextConditionSpawnDate && (now < info.nextConditionSpawnDate.getTime() / 1000);
@@ -230,7 +230,7 @@ export function computeTimeLabel(mob: Mob): TimeLabelResult {
 
   const label = getStatusLabel(labelStatus, mob.rank);
 
-  // 変更②: 表示の基準時刻。nextBoundarySec(メンテ時刻を含む)は使わない
+  // 表示の基準時刻。nextBoundarySec(メンテ時刻を含む)は使わない
   const windowStartSec = info.nextConditionSpawnDate ? info.nextConditionSpawnDate.getTime() / 1000 : null;
   const windowEndSec = info.conditionWindowEnd ? info.conditionWindowEnd.getTime() / 1000 : null;
 

@@ -648,7 +648,7 @@ export function closePanel(): void {
 
     nav.classList.remove("expanded");
     DOM.body.classList.remove("sidebar-expanded");
-    applyPanelMode(null);   // ← 追加した1行
+    applyPanelMode(null);
 
     const panelArea = nav.querySelector(".appnav-panel") as HTMLElement | null;
     if (panelArea) {

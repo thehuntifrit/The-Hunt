@@ -1,11 +1,7 @@
-/* =========================================================
-   css / root.css  —  Design Tokens + Base Reset + #root-mobile-top-bar
-   ========================================================= */
-
-/* ── Google Fonts ────────────────────────────────────────── */
+/* Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&family=Roboto+Condensed:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap');
 
-/* ── Reset ───────────────────────────────────────────────── */
+/* Reset */
 *,
 *::before,
 *::after {
@@ -88,7 +84,7 @@
   --font-mono: 'Roboto Condensed', monospace;
 }
 
-/* ── Base ────────────────────────────────────────────────── */
+/* Base */
 html,
 body {
   height: 100%;
@@ -103,7 +99,6 @@ body {
   user-select: none;
 }
 
-/* スマホの引っ張り更新・バウンスを防ぐ(タッチ端末のみ。PCでは付けない) */
 @media (pointer: coarse) {
 
   html,
@@ -120,7 +115,7 @@ textarea {
   user-select: text;
 }
 
-/* ── Utility classes used in HTML ────────────────────────── */
+/* Utilities */
 .hidden {
   display: none !important;
 }
@@ -341,7 +336,7 @@ textarea {
   border-radius: 2px;
 }
 
-/* ── #root-mobile-top-bar ────────────────────────────────── */
+/* Mobile Top Bar */
 #root-mobile-top-bar {
   position: sticky;
   top: 0;
@@ -355,13 +350,11 @@ textarea {
   justify-content: space-between;
   padding: 0 14px;
   flex-shrink: 0;
-  /* Mobile: full width */
   left: 0;
   right: 0;
   width: 100%;
 }
 
-/* PC: full viewport width, inner content centered to layout-w */
 @media (min-width: 900px) {
   #root-mobile-top-bar {
     max-width: none;
@@ -413,7 +406,6 @@ textarea {
   margin-inline-end: 14px;
 }
 
-/* #ui-message-template */
 .u-msg {
   padding: 12px 16px;
   font-size: 13px;
@@ -421,7 +413,7 @@ textarea {
   text-align: center;
 }
 
-/* ── Toast Notifications ─────────────────────────────────── */
+/* Toast Notifications */
 .toast-container-wrapper {
   position: fixed;
   top: calc(var(--header-h) + 12px);

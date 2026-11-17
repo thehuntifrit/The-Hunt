@@ -1,23 +1,4 @@
-/* =========================================================
-   css / modal.css  —  #report-modal #auth-modal
-   FF14風UI(ゴールド枠・上端グラデ帯・二重枠・角のひし形)に統一
-
-   目次
-   1. 暗幕と、ウィンドウの置き場所
-   2. ウィンドウ              (枠 / 上端の帯 / 二重線 / ひし形 / アニメーション)
-   3. 見出し                  (モブ名 / 認証のタイトル)
-   4. フォーム部品            (入力欄 / チェックボックス / エラー表示)
-   5. 報告モーダル固有
-   6. 認証モーダル固有
-   7. ボタン
-
-   ※ ひし形(.ff-corner)は、modal.ts の initModal() が各ウィンドウに追加する
-   ========================================================= */
-
-
-/* =========================================================
-   1. 暗幕と、ウィンドウの置き場所
-   ========================================================= */
+/* 1. Backdrop */
 .app-backdrop {
   position: fixed;
   inset: 0;
@@ -25,9 +6,6 @@
   background-color: rgba(3, 7, 14, 0.72);
 }
 
-/* 報告・認証モーダル: 暗幕の中央にウィンドウを置く。
-   内容が画面より高いときは、ウィンドウではなく暗幕側がスクロールする
-   (ウィンドウの外にはみ出す角のひし形を、切らずに見せるため) */
 .report-modal-backdrop,
 .auth-modal-backdrop {
   display: flex;
@@ -37,14 +15,10 @@
   animation: modal-fade 0.16s ease-out;
 }
 
-
-/* =========================================================
-   2. ウィンドウ
-   ========================================================= */
+/* 2. Window */
 .modal-content-base {
   position: relative;
   margin: auto;
-  /* 空きがあれば中央、足りなければ上から並ぶ */
   width: 100%;
   max-width: 480px;
   padding: 20px 22px 22px;
@@ -58,7 +32,6 @@
   animation: modal-pop 0.18s ease-out;
 }
 
-/* 上端のグラデーション帯(フッターのパネルと同じ) */
 .modal-content-base::before {
   content: "";
   position: absolute;
@@ -70,7 +43,6 @@
   pointer-events: none;
 }
 
-/* 二重枠の内側の線: 外周と同じ明るさ・等間隔 */
 .modal-content-base::after {
   content: "";
   position: absolute;
@@ -79,7 +51,6 @@
   pointer-events: none;
 }
 
-/* 四隅のひし形(外周の角に乗せる) */
 .modal-content-base .ff-corner {
   position: absolute;
   width: 7px;
@@ -110,7 +81,6 @@
   right: -4px;
 }
 
-/* 報告モーダルは小さめ */
 .report-modal-backdrop .modal-content-base {
   max-width: 360px;
   padding: 18px 18px 20px;
@@ -152,10 +122,7 @@
   }
 }
 
-
-/* =========================================================
-   3. 見出し(シアンのひし形 + 金色フェード下線)
-   ========================================================= */
+/* 3. Header */
 .modal-mob-name,
 .modal-content-base>h2 {
   margin-bottom: 14px;
@@ -177,8 +144,6 @@
   box-shadow: 0 0 6px rgba(34, 211, 238, 0.7);
 }
 
-/* 報告モーダル: モブ名
-   ひし形・インスタンス番号のバッジ・名前を、縦方向の中央で揃える */
 .modal-mob-name {
   display: flex;
   align-items: center;
@@ -191,7 +156,6 @@
   flex: none;
 }
 
-/* 認証モーダル: タイトル */
 .modal-content-base>h2 {
   font-size: 16px;
   font-weight: 700;
@@ -199,12 +163,7 @@
   color: var(--c-cyan);
 }
 
-
-/* =========================================================
-   4. フォーム部品
-   ========================================================= */
-
-/* 入力欄: 暗い凹み。フォーカスでシアンに光る */
+/* 4. Form */
 .modal-input-field {
   width: 100%;
   height: 40px;
@@ -237,7 +196,6 @@
   cursor: pointer;
 }
 
-/* エラー表示 */
 .modal-error-display {
   font-size: 14px;
   color: var(--c-error);
@@ -245,26 +203,19 @@
   margin-top: 6px;
 }
 
-
-/* =========================================================
-   5. 報告モーダル固有
-   ========================================================= */
-
-/* 「修正する」ラベル */
+/* 5. Report Modal */
 label[for="report-force-submit"] {
   font-size: 15px;
   color: var(--c-text-hi);
   cursor: pointer;
 }
 
-/* datetime-local のカレンダーアイコンをシアンに */
 #report-datetime::-webkit-calendar-picker-indicator {
   filter: invert(1) sepia(1) saturate(5) hue-rotate(155deg) brightness(1.1);
   cursor: pointer;
   opacity: 0.85;
 }
 
-/* 時間エリアとボタンエリアの間隔を詰める */
 #report-form .u-mt-21 {
   margin-top: 4px;
 }
@@ -273,17 +224,13 @@ label[for="report-force-submit"] {
   margin-bottom: 6px;
 }
 
-
-/* =========================================================
-   6. 認証モーダル固有
-   ========================================================= */
+/* 6. Auth Modal */
 .modal-auth-description {
   font-size: 14px;
   color: var(--c-text-lo);
   line-height: 1.6;
 }
 
-/* 手順(Step 1〜3)を入れる、暗い凹みの箱 */
 .modal-auth-box {
   display: flex;
   flex-direction: column;
@@ -296,12 +243,10 @@ label[for="report-force-submit"] {
   box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
-/* Step 1 の行(検証コード + Copy ボタン): 高さが違うので、縦の中央で揃える */
 .modal-auth-box .u-flex {
   align-items: center;
 }
 
-/* 検証コード */
 .auth-code-display {
   display: inline-block;
   font-family: var(--font-mono);
@@ -325,7 +270,6 @@ label[for="report-force-submit"] {
   color: var(--c-text-off);
 }
 
-/* 検証の状態表示(上の行の高さを確保して、文字が出ても位置が動かないようにする) */
 #auth-modal-status {
   min-height: 18px;
 }
@@ -334,15 +278,11 @@ label[for="report-force-submit"] {
   color: var(--c-emerald);
 }
 
-/* error は success の後ろに置く: 両方のクラスが付いたとき、error を優先するため */
 #auth-modal-status.text-error {
   color: var(--c-error);
 }
 
-
-/* =========================================================
-   7. ボタン
-   ========================================================= */
+/* 7. Buttons */
 .btn-primary-cyan,
 .btn-primary-yellow,
 .btn-secondary,
@@ -361,7 +301,6 @@ label[for="report-force-submit"] {
   transition: opacity 0.15s, box-shadow 0.15s, border-color 0.15s, color 0.15s;
 }
 
-/* 主ボタン: 光沢のある塗り(カードの REPORT ボタンと同じ) */
 .btn-primary-cyan,
 .btn-primary-yellow {
   color: #000;
@@ -385,7 +324,6 @@ label[for="report-force-submit"] {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 0 10px rgba(253, 182, 60, 0.55);
 }
 
-/* 副ボタン: 暗い青の面 + 暗い金の枠(RANK のボタンと同じ) */
 .btn-secondary,
 .btn-copy {
   background: linear-gradient(180deg, #1d2a47 0%, #111b30 100%);
@@ -407,7 +345,6 @@ label[for="report-force-submit"] {
   opacity: 0.7;
 }
 
-/* 処理中(検証中など)は押せない */
 .btn-primary-cyan:disabled,
 .btn-primary-yellow:disabled,
 .btn-secondary:disabled,
@@ -417,7 +354,6 @@ label[for="report-force-submit"] {
   pointer-events: none;
 }
 
-/* キーボード操作時 */
 .btn-primary-cyan:focus-visible,
 .btn-primary-yellow:focus-visible,
 .btn-secondary:focus-visible,

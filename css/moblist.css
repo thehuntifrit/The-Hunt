@@ -1,6 +1,4 @@
-/* moblist.css */
-
-/* ===== 1. リスト全体とグループの帯 ===== */
+/* 1. リスト全体とグループ帯 */
 #moblist-container {
   padding: 2px 10px 0;
 }
@@ -178,7 +176,7 @@
 }
 
 
-/* ===== 2. 行の土台 ===== */
+/* 2. 行の土台 */
 .moblist-item {
   position: relative;
   display: flex;
@@ -235,7 +233,7 @@
 }
 
 
-/* ===== 3. 名前の行 ===== */
+/* 3. 名前の行 */
 .moblist-name-row {
   display: flex;
   align-items: center;
@@ -401,7 +399,7 @@
 }
 
 
-/* ===== 4. エリアの行 ===== */
+/* 4. エリアの行 */
 .moblist-area-row {
   display: flex;
   align-items: center;
@@ -437,7 +435,7 @@
 }
 
 
-/* ===== 5. タイマー ===== */
+/* 5. タイマー */
 .moblist-time {
   font-family: var(--font-mono);
   font-size: 16px;
@@ -538,7 +536,7 @@
 }
 
 
-/* ===== 6. 経過% ===== */
+/* 6. 経過% */
 .moblist-percent {
   font-family: var(--font-mono);
   font-size: 14px;
@@ -596,7 +594,7 @@
 }
 
 
-/* ===== 7. 進捗ライン ===== */
+/* 7. 進捗ライン */
 .moblist-progress-line {
   position: absolute;
   bottom: 0;
@@ -623,7 +621,7 @@
 }
 
 
-/* ===== 8. 報告ボタン ===== */
+/* 8. 報告ボタン */
 .moblist-item .moblist-report-btn {
   flex: 0 0 calc(var(--row-h) * 2 / 3);
   width: calc(var(--row-h) * 2 / 3);
@@ -657,7 +655,7 @@
 }
 
 
-/* ===== 9. 行の状態 ===== */
+/* 9. 行の状態 */
 /* 背景色は並び順が優先順位(選択 → ホバー → 押下 → 出現中)。順番を変えないこと */
 
 .moblist-item.is-selected,
