@@ -834,6 +834,46 @@
   opacity: 1;
 }
 
+/* 点の色 */
+.color-b1 {
+  background-color: #4494f7;
+  border: 2px solid #ffffff;
+}
+
+.color-b2 {
+  background-color: #fd5c5c;
+  border: 2px solid #ffffff;
+}
+
+.color-b1-culled {
+  background-color: #ffffff;
+  border: 2px solid #4494f7;
+}
+
+.color-b2-culled {
+  background-color: #ffffff;
+  border: 2px solid #fd5c5c;
+}
+
+.color-lastone {
+  background-color: #34d399;
+  border: 2px solid #ffffff;
+}
+
+.color-b1-only {
+  background-color: #ffffff;
+  border: 2px solid #4494f7;
+  width: 10px;
+  height: 10px;
+}
+
+.color-b2-only {
+  background-color: #ffffff;
+  border: 2px solid #fd5c5c;
+  width: 10px;
+  height: 10px;
+}
+
 /* 9. 拡大鏡 */
 .map-magnifier {
   position: fixed;
