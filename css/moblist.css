@@ -298,10 +298,10 @@
   color: #04202a;
   font-weight: 600;
   font-size: 15px;
-  height: 15px;
+  height: 16px;
   min-width: 18px;
   padding: 0 3px;
-  --badge-text-y: 0.6px;
+  --badge-text-y: 0.5px;
 }
 
 .count-badge.is-multiple {
@@ -310,9 +310,9 @@
   color: #aebbd2;
   font-weight: 600;
   font-size: 14px;
-  height: 15px;
+  height: 16px;
   padding: 0 3px;
-  --badge-text-y: 0.4px;
+  --badge-text-y: 0.3px;
 }
 
 .count-badge .count-num {
