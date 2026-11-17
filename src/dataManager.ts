@@ -393,6 +393,20 @@ const saveSpawnCacheDebounced = (() => {
     };
 })();
 
+const saveStatusCacheDebounced = (() => {
+    let timeout: any;
+    return () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            const statusToCache = state.mobs.reduce((acc: Record<number, any>, m) => {
+                acc[m.No] = { last_kill_time: m.last_kill_time, prev_kill_time: m.prev_kill_time };
+                return acc;
+            }, {});
+            idb.set(MOB_STATUS_CACHE_KEY, statusToCache);
+        }, CONFIG.IDB_SAVE_DEBOUNCE);
+    };
+})();
+
 /**
  * repopInfoのnextBoundarySecに基づいてタイマーをセットし、
  * 境界到達時にforceRecalc: trueで再計算を投げる。
@@ -601,14 +615,6 @@ async function loadLocationData(): Promise<void> {
 }
 
 function applyLocationsToState(locationsData: any): void {
-    state.baseMobData.forEach(mob => {
-        const locInfo = locationsData[mob.area];
-        if (locInfo) {
-            mob.locations = locInfo.locations || [];
-            mob.mapImage = locInfo.mapImage || "";
-        }
-    });
-
     state.mobs.forEach(mob => {
         const locInfo = locationsData[mob.area];
         if (locInfo) {
@@ -832,6 +838,18 @@ function checkInitialLoadComplete(): void {
     }
 }
 
+// 位置情報の差分判定用。キーごとの前回の内容を文字列で持つ
+const lastLocSig = new Map<string, string>();
+
+function locationSignature(dyn: any): string {
+    let sig = "";
+    for (const id in dyn) {
+        const s = dyn[id];
+        sig += `${id}:${s?.culled_at?.seconds || 0},${s?.uncull_at?.seconds || 0},${s?.reporter_id || ""};`;
+    }
+    return sig;
+}
+
 // ─── リアルタイム ───────────────────────────────────────
 export function startRealtime(options: { resume?: boolean } = {}): void {
     const { resume = false } = options;
@@ -906,11 +924,7 @@ export function startRealtime(options: { resume?: boolean } = {}): void {
 
         if (anyChanges) {
             if (state.initialLoadComplete) {
-                const statusToCache = state.mobs.reduce((acc: Record<number, any>, m) => {
-                    acc[m.No] = { last_kill_time: m.last_kill_time, prev_kill_time: m.prev_kill_time };
-                    return acc;
-                }, {});
-                idb.set(MOB_STATUS_CACHE_KEY, statusToCache);
+                saveStatusCacheDebounced();
 
                 window.dispatchEvent(new CustomEvent('mobsBatchUpdated', {
                     detail: {
@@ -934,6 +948,16 @@ export function startRealtime(options: { resume?: boolean } = {}): void {
         state.mobLocations = locationsMap;
         const updatedMobNos: number[] = [];
 
+        // 内容が変わったキーだけを調べる
+        const changedKeys = new Set<string>();
+        for (const key of Object.keys(locationsMap)) {
+            const sig = locationSignature(locationsMap[key]);
+            if (lastLocSig.get(key) !== sig) {
+                lastLocSig.set(key, sig);
+                changedKeys.add(key);
+            }
+        }
+
         const affectedAreas = new Set(Object.keys(locationsMap).map(k => k.split('_')[0]));
 
         state.mobs.forEach(m => {
@@ -943,7 +967,7 @@ export function startRealtime(options: { resume?: boolean } = {}): void {
                 const dyn = locationsMap[key];
                 if (dyn) {
                     m.spawn_cull_status = dyn;
-                    if (state.initialLoadComplete) {
+                    if (state.initialLoadComplete && changedKeys.has(key)) {
                         updatedMobNos.push(m.No);
                     }
                 }
@@ -953,13 +977,10 @@ export function startRealtime(options: { resume?: boolean } = {}): void {
         if (!state.initialLoadComplete) {
             initialLoadState.location = true;
             checkInitialLoadComplete();
-        } else {
+        } else if (changedKeys.size > 0) {
             if (updatedMobNos.length > 0) {
                 window.dispatchEvent(new CustomEvent('mobsBatchUpdated', {
-                    detail: {
-                        mobNos: updatedMobNos,
-                        updateType: 'location'
-                    }
+                    detail: { mobNos: updatedMobNos, updateType: 'location' }
                 }));
             }
             window.dispatchEvent(new CustomEvent('locationsUpdated', { detail: { locationsMap } }));

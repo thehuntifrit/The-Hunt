@@ -303,7 +303,7 @@
   height: 15px;
   min-width: 18px;
   padding: 0 3px;
-  --badge-text-y: 0.5px;
+  --badge-text-y: 0.6px;
 }
 
 .count-badge.is-multiple {
@@ -314,7 +314,7 @@
   font-size: 14px;
   height: 15px;
   padding: 0 3px;
-  --badge-text-y: 0.3px;
+  --badge-text-y: 0.4px;
 }
 
 .count-badge .count-num {
@@ -712,4 +712,8 @@
   50% {
     opacity: 0.25;
   }
+}
+
+#moblist-container.is-scrolling .moblist-item {
+  pointer-events: none;
 }

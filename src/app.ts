@@ -286,7 +286,7 @@ function getMobMap(): Map<string, Mob> {
   return getState().mobsMap;
 }
 
-function updateVisibleCardsSet(): void {
+function updateVisibleCardsSet(updateNew = true): void {
   const container = document.getElementById('moblist-container');
   if (!container) return;
 
@@ -313,10 +313,12 @@ function updateVisibleCardsSet(): void {
     }
   });
 
-  toUpdate.forEach(([el, mob]) => updateCardFull(el, mob));
+  if (updateNew) {
+    toUpdate.forEach(([el, mob]) => updateCardFull(el, mob));
+  }
 }
 
-const handleScroll = debounce(updateVisibleCardsSet, 80);
+const handleScroll = debounce(() => updateVisibleCardsSet(), 80);
 window.addEventListener('scroll', handleScroll, { passive: true });
 window.addEventListener('resize', handleScroll, { passive: true });
 
@@ -715,7 +717,7 @@ export function filterAndRender(options: { isInitialLoad?: boolean } = {}): void
     if (overlay) overlay.classList.add("hidden");
   }
 
-  updateVisibleCardsSet();
+  updateVisibleCardsSet(false);
   updateVisibleCards();
 
   if (focusedMobNo) {
