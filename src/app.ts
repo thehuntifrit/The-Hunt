@@ -1,6 +1,6 @@
 import { getState, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, CONFIG, DOM, handleAppError, recalcIfStale } from "./dataManager";
 import { calculateRepop, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal";
-import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initGlobalMagnifier, adjustMemoHeight } from "./mobCard";
+import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initGlobalMagnifier, adjustMemoHeight, preloadMapImages } from "./mobCard";
 import { getGroupKey, GROUP_LABELS, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, hasMobSortKeyChanged, rememberMobSortKeys } from "./mobSorter";
 import { closeReportModal, openAuthModal, openReportModal, initModal } from "./modal";
 import { handleAreaFilterClick, initAppNav, togglePanel, closePanel, setActiveNavItem, checkAndNotify, updateErrorPanel } from "./sidebar";
@@ -59,6 +59,7 @@ async function initApp(): Promise<void> {
     startTimeSync();
 
     await loadBaseMobData();
+    preloadMapImages(getState().mobs);
 
     initializeAuth().then(async (userId) => {
       if (userId) {
@@ -642,6 +643,7 @@ function renderDetailPane(): void {
 
   const openMobNo = getState().openMobCardNo;
   if (openMobNo) {
+    let cardEl: HTMLElement | null = null;
     if (detailContainer.dataset.renderedMobNo !== String(openMobNo)) {
       const targetMob = getState().mobs.find(m => m.No === openMobNo);
       if (targetMob) {
@@ -650,13 +652,28 @@ function renderDetailPane(): void {
         detailContainer.appendChild(newCard);
         observeCard(newCard);
         detailContainer.dataset.renderedMobNo = String(openMobNo);
+        cardEl = newCard;
       }
+    } else {
+      cardEl = detailContainer.querySelector(".mobcard-card") as HTMLElement | null;
     }
     pane.classList.add("is-active");
     if (window.innerWidth < 1024) {
       document.body.classList.add('body-lock');
     }
+    if (cardEl) {
+      void cardEl.offsetWidth;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          cardEl?.classList.add("is-open");
+        });
+      });
+    }
   } else {
+    const cardEl = detailContainer.querySelector(".mobcard-card") as HTMLElement | null;
+    if (cardEl) {
+      cardEl.classList.remove("is-open");
+    }
     if (detailContainer.dataset.renderedMobNo !== "none") {
       detailContainer.innerHTML = window.innerWidth >= 1024 ? '<div class="text-center text-gray-500 mt-20 text-sm">モブを選択すると詳細が表示されます</div>' : "";
       detailContainer.dataset.renderedMobNo = "none";

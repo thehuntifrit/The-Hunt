@@ -73,6 +73,37 @@ function rememberMapRatio(name: string, w: number, h: number): string {
   return ratio;
 }
 
+export function preloadMapImages(mobs: Mob[]): void {
+  if (!Array.isArray(mobs) || mobs.length === 0) return;
+  const mapNames = new Set<string>();
+  mobs.forEach(m => {
+    if (m.mapImage && m.rank !== 'F' && m.rank !== RANKS.F) {
+      mapNames.add(m.mapImage);
+    }
+  });
+
+  const runPreload = () => {
+    mapNames.forEach(name => {
+      const img = new Image();
+      img.src = `./maps/${name}`;
+      img.onload = () => {
+        if (img.naturalWidth && img.naturalHeight) {
+          rememberMapRatio(name, img.naturalWidth, img.naturalHeight);
+        }
+      };
+      if (typeof img.decode === "function") {
+        img.decode().catch(() => {});
+      }
+    });
+  };
+
+  if ("requestIdleCallback" in window) {
+    (window as any).requestIdleCallback(runPreload, { timeout: 2000 });
+  } else {
+    setTimeout(runPreload, 300);
+  }
+}
+
 // ─── 拡大鏡 ─────────────────────────────────────────────
 export function initGlobalMagnifier(): void {
   if ((window as any).magnifierInitialized) return;
@@ -817,6 +848,10 @@ export function updateMapOverlay(card: HTMLElement, mob: Mob): void {
       mapImg.classList.add("is-loaded");
     };
     mapImg.src = `./maps/${mapName}`;
+    if (mapImg.complete && mapImg.naturalWidth) {
+      mapContainer.style.setProperty("--map-ratio", rememberMapRatio(mapName, mapImg.naturalWidth, mapImg.naturalHeight));
+      mapImg.classList.add("is-loaded");
+    }
     mapImg.alt = `${mob.area} Map`;
     mapImg.dataset.mobMap = mob.mapImage;
     mapContainer.classList.remove('hidden');

@@ -664,15 +664,27 @@ export function closePanel(): void {
 function showPanel(panelName: string): void {
     const nav = DOM.appNav;
     if (!nav) return;
-    applyPanelMode(panelName);
     const panelArea = nav.querySelector(".appnav-panel") as HTMLElement | null;
-    if (panelArea) panelArea.classList.add("expanded");
+    const isPopup = !!panelName && POPUP_PANELS.has(panelName);
 
     DOM.appNavPanelItems.forEach(p => p.classList.add("hidden"));
     const target = document.getElementById(`sidebar-panel-${panelName}`);
     if (target) {
         target.classList.remove("hidden");
         syncPanelContents(panelName);
+    }
+
+    if (panelArea) panelArea.classList.add("expanded");
+
+    if (isPopup) {
+        if (panelArea) void panelArea.offsetWidth;
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                applyPanelMode(panelName);
+            });
+        });
+    } else {
+        applyPanelMode(panelName);
     }
 }
 

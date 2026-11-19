@@ -282,7 +282,7 @@
   background: rgba(3, 7, 14, .72);
   overscroll-behavior: contain;
   touch-action: none;
-  animation: appnav-fade .16s ease-out;
+  animation: appnav-fade .16s ease-out both;
 }
 
 .appnav-backdrop.is-open {
@@ -306,7 +306,8 @@
     0 0 0 1px rgba(0, 0, 0, .7),
     0 12px 40px rgba(0, 0, 0, .65),
     inset 0 0 40px rgba(56, 189, 248, .05);
-  animation: appnav-pop .18s ease-out;
+  animation: appnav-pop .18s ease-out both;
+  will-change: transform, opacity;
 }
 
 .appnav-panel.is-popup .js-appnav-panel-item:not(.hidden) {
@@ -314,19 +315,24 @@
 }
 
 @keyframes appnav-fade {
-  from {
-    opacity: 0
+  0% {
+    opacity: 0;
   }
 
-  to {
-    opacity: 1
+  100% {
+    opacity: 1;
   }
 }
 
 @keyframes appnav-pop {
-  from {
+  0% {
     opacity: 0;
-    transform: translate(-50%, calc(-50% + 6px)) scale(.97);
+    transform: translate(-50%, calc(-50% + 8px)) scale(.96);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 

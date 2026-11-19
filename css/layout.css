@@ -54,7 +54,8 @@ body {
   padding: 4px 14px;
 }
 
-#mobcard-pane.is-active .mobcard-card {
+#mobcard-pane.is-active .mobcard-card.is-open,
+#mobcard-pane.is-active .mobcard-card.visible {
   transform: translateY(0);
   transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
 }
