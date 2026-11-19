@@ -687,7 +687,7 @@
 }
 
 .moblist-item.moblist-highlight-white {
-  background-color: #2D5280;
+  background-color: #1D3B68;
   border-color: var(--c-border);
   box-shadow: 0px 0px 8px 6px rgba(255, 255, 255, 0.8);
   clip-path: inset(0px -8px 0px -8px round 5px);
