@@ -12,44 +12,44 @@
 
 :root {
   /* palette */
-  --c-bg: #070d17;
-  --c-surface: #142238;
-  --c-surface-ho: #1d304e;
-  --c-surface-sel: #18365d;
-  --c-panel: #0b1424;
+  --c-bg: #142744;
+  --c-surface: #294A73;
+  --c-surface-ho: #365A85;
+  --c-surface-sel: #3B6393;
+  --c-panel: #1C3456;
 
   /* rank */
-  --c-all: #f43f5e;
-  --c-all-dark: #3b0d14;
-  --c-s: #e6aa44;
-  --c-s-dark: #3d2800;
-  --c-a: #69bfcc;
-  --c-a-dark: #062030;
-  --c-f: #a66fda;
-  --c-f-dark: #1e0840;
+  --c-all: #D87991;
+  --c-all-dark: #3D1B28;
+  --c-s: #E2B85C;
+  --c-s-dark: #3D3016;
+  --c-a: #65B9D8;
+  --c-a-dark: #132E3D;
+  --c-f: #B18BE0;
+  --c-f-dark: #2C1A42;
 
   /* text */
-  --c-text-hi: #eeeeee;
-  --c-text-lo: #8fa3c0;
-  --c-text-sel: #22d3ee;
-  --c-text-off: #526988;
+  --c-text-hi: #F0F4FA;
+  --c-text-lo: #B8C9DF;
+  --c-text-sel: #FFFFFF;
+  --c-text-off: #8298B5;
 
   /* borders */
-  --c-border: #24385a;
-  --c-border-sel: #22d3ee;
+  --c-border: #6889B2;
+  --c-border-sel: #A4C2E6;
 
   /* progress */
-  --c-prog-bg: #050d18;
-  --c-prog-s: #e6aa44;
-  --c-prog-a: #69bfcc;
-  --c-prog-f: #a66fda;
+  --c-prog-bg: #142744;
+  --c-prog-s: #E2B85C;
+  --c-prog-a: #65B9D8;
+  --c-prog-f: #B18BE0;
 
   /* status */
   --c-offline-bg: #3b1313;
   --c-offline-text: #f87171;
   --c-error: #ef4444;
-  --c-gold: #fdb63c;
-  --c-cyan: #22d3ee;
+  --c-gold: #E2B85C;
+  --c-cyan: #65B9D8;
   --c-emerald: #10b981;
 
   /* layout */

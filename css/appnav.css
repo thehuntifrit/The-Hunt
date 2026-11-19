@@ -200,7 +200,7 @@
   width: 100%;
   max-height: 60vh;
   z-index: var(--z-footer);
-  background-color: #122036;
+  background-color: var(--c-panel);
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
   border-top: 1px solid var(--c-border);
   overflow: hidden;
@@ -270,7 +270,7 @@
 /* 3. パネルの種類 */
 .appnav-panel:is(.is-popup, .is-docked) {
   overflow: visible;
-  background: linear-gradient(180deg, rgba(24, 34, 56, .97) 0%, rgba(9, 14, 26, .98) 100%);
+  background: linear-gradient(180deg, rgba(41, 74, 115, .97) 0%, rgba(24, 44, 74, .98) 100%);
 }
 
 /* 3-1. ポップアップ(告知 / メンテ / エラー) */
