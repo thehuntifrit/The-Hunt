@@ -657,17 +657,12 @@ function renderDetailPane(): void {
     } else {
       cardEl = detailContainer.querySelector(".mobcard-card") as HTMLElement | null;
     }
+    if (cardEl) {
+      cardEl.classList.add("is-open");
+    }
     pane.classList.add("is-active");
     if (window.innerWidth < 1024) {
       document.body.classList.add('body-lock');
-    }
-    if (cardEl) {
-      void cardEl.offsetWidth;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          cardEl?.classList.add("is-open");
-        });
-      });
     }
   } else {
     const cardEl = detailContainer.querySelector(".mobcard-card") as HTMLElement | null;

@@ -665,7 +665,6 @@ function showPanel(panelName: string): void {
     const nav = DOM.appNav;
     if (!nav) return;
     const panelArea = nav.querySelector(".appnav-panel") as HTMLElement | null;
-    const isPopup = !!panelName && POPUP_PANELS.has(panelName);
 
     DOM.appNavPanelItems.forEach(p => p.classList.add("hidden"));
     const target = document.getElementById(`sidebar-panel-${panelName}`);
@@ -674,18 +673,8 @@ function showPanel(panelName: string): void {
         syncPanelContents(panelName);
     }
 
+    applyPanelMode(panelName);
     if (panelArea) panelArea.classList.add("expanded");
-
-    if (isPopup) {
-        if (panelArea) void panelArea.offsetWidth;
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                applyPanelMode(panelName);
-            });
-        });
-    } else {
-        applyPanelMode(panelName);
-    }
 }
 
 async function syncPanelContents(panelName: string): Promise<void> {
