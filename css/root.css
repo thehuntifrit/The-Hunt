@@ -12,7 +12,7 @@
 
 :root {
   /* palette */
-  --c-bg: #142744;
+  --c-bg: #0C182B;
   --c-surface: #294A73;
   --c-surface-ho: #365A85;
   --c-surface-sel: #3B6393;
@@ -39,7 +39,7 @@
   --c-border-sel: #A4C2E6;
 
   /* progress */
-  --c-prog-bg: #142744;
+  --c-prog-bg: #0C182B;
   --c-prog-s: #E2B85C;
   --c-prog-a: #65B9D8;
   --c-prog-f: #B18BE0;
