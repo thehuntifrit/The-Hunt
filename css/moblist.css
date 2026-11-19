@@ -440,7 +440,7 @@
   font-family: var(--font-mono);
   font-size: 16px;
   font-weight: 500;
-  color: var(--c-text-hi);
+  color: var(--c-text-lo);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   display: inline-flex;
@@ -512,7 +512,7 @@
   font-family: var(--font-mono);
   font-size: 16px;
   font-weight: 400;
-  color: var(--c-text-hi);
+  color: var(--c-text-lo);
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
@@ -544,8 +544,8 @@
   color: var(--c-text-hi);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  background: #2551aa;
-  border: 1px solid #4c7ddd;
+  background: #1B3D7A;
+  border: 1px solid #3363B5;
   border-radius: 2px;
   padding: 1px 1px 0;
   width: 34px;
@@ -561,36 +561,36 @@
 }
 
 .moblist-percent.max-over {
-  color: #e2c9cdff;
-  background: #72050e;
-  border-color: #ac1831;
+  color: var(--c-text-hi);
+  background: #52080E;
+  border-color: #851628;
 }
 
 .moblist-percent.pct-0 {
-  color: #b1b8c0;
-  background: #1e293b;
-  border-color: #4b5563;
+  color: var(--c-text-lo);
+  background: #16202E;
+  border-color: #334155;
 }
 
 .moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="green"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="green"]:not(.max-over):not(.pct-0) {
-  background: #156a38;
-  border-color: #2bb664;
-  color: #eafff2;
+  background: #11522C;
+  border-color: #1F8549;
+  color: var(--c-text-hi);
 }
 
 .moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="yellow"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="yellow"]:not(.max-over):not(.pct-0) {
-  background: #7d5a08;
-  border-color: #d49e1e;
-  color: #fffbeb;
+  background: #5C4308;
+  border-color: #997017;
+  color: var(--c-text-hi);
 }
 
 .moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0) {
-  background: #943806;
-  border-color: #e86319;
-  color: #fff5eb;
+  background: #6B2C08;
+  border-color: #AD4711;
+  color: var(--c-text-hi);
 }
 
 
@@ -687,7 +687,7 @@
 }
 
 .moblist-item.moblist-highlight-white {
-  background-color: #1D3B68;
+  background-color: #184E99;
   border-color: var(--c-border);
   box-shadow: 0px 0px 8px 6px rgba(255, 255, 255, 0.8);
   clip-path: inset(0px -8px 0px -8px round 5px);

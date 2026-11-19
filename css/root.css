@@ -12,11 +12,11 @@
 
 :root {
   /* palette */
-  --c-bg: #060B14;
-  --c-surface: #0E1F38;
-  --c-surface-ho: #162E52;
-  --c-surface-sel: #1D3B68;
-  --c-panel: #0A1322;
+  --c-bg: #050A12;
+  --c-surface: #0E2D5F;
+  --c-surface-ho: #123873;
+  --c-surface-sel: #184E99;
+  --c-panel: #08101E;
 
   /* rank */
   --c-all: #D87991;
@@ -29,17 +29,17 @@
   --c-f-dark: #2C1A42;
 
   /* text */
-  --c-text-hi: #F0F4FA;
-  --c-text-lo: #B8C9DF;
-  --c-text-sel: #FFFFFF;
-  --c-text-off: #8298B5;
+  --c-text-hi: #dbe5f0;
+  --c-text-lo: #8BA3BF;
+  --c-text-sel: #E8F0F8;
+  --c-text-off: #6B839E;
 
   /* borders */
-  --c-border: #334D6E;
-  --c-border-sel: #5C82B0;
+  --c-border: #3E5F8A;
+  --c-border-sel: #94B4DB;
 
   /* progress */
-  --c-prog-bg: #060B14;
+  --c-prog-bg: #050A12;
   --c-prog-s: #E2B85C;
   --c-prog-a: #65B9D8;
   --c-prog-f: #B18BE0;
