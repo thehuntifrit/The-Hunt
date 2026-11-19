@@ -19,7 +19,7 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  background-color: var(--c-bg);
+  background: linear-gradient(180deg, #0D3875 0%, #05142E 100%);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -39,7 +39,7 @@
 
 .manual-modal-chrome {
   flex-shrink: 0;
-  background-color: var(--c-bg);
+  background: transparent;
   z-index: 10;
 }
 
