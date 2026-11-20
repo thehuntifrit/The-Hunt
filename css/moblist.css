@@ -354,6 +354,7 @@
 
 .memo-icon {
   position: relative;
+  top: -0.5px;
   font-size: 12px;
   line-height: 1;
   display: inline-flex;

@@ -182,8 +182,13 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
+  padding: 0 4px;
+  /* 左右を4pxずつ内側へ寄せる(進捗バーは動かさない) */
   line-height: 1;
+  position: relative;
+  top: 2px;
+  /* ランクとモブ名を2px下げる(レイアウトは動かないので、エリア行との余白が2px狭くなる) */
 }
 
 .header-left {
@@ -197,14 +202,19 @@
 .mobcard-rank {
   --rk-glow: rgba(34, 211, 238, 0.4);
   flex-shrink: 0;
-  width: 26px;
-  height: 26px;
+  position: relative;
+  top: 10px;
+  /* モブ名の行とエリア名の行の中間あたりに置く(モブ名は動かさない) */
+  width: 30px;
+  height: 30px;
+  margin: -2px 0;
+  /* 箱は30pxに大きくしつつ、行の高さは従来の26pxぶんのままにする */
   border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   background-color: var(--c-a-dark);
   color: var(--c-a);
@@ -249,9 +259,12 @@
 /* 2行目: エリア情報 + % */
 .header-mid-row {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: 8px;
+  padding-left: 44px;
+  /* エリア名をモブ名の下から始める(寄せ4px + ランク30px + 隙間10px) */
+  padding-right: 4px;
   margin-bottom: 7px;
   line-height: 1;
 }
@@ -286,11 +299,11 @@
 .percent {
   flex-shrink: 0;
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
   color: var(--c-cyan);
-  text-shadow: 0 0 8px rgba(34, 211, 238, 0.45);
-  line-height: 1;
+  position: relative;
+  top: 3px;
 }
 
 /* 進捗バー */
@@ -504,7 +517,7 @@
   padding: 4px 7px;
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: 4px;
   min-height: auto;
@@ -531,7 +544,7 @@
 
 .mobcard-value {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--c-text-hi);
   line-height: 1;
@@ -540,7 +553,7 @@
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   min-width: 0;
 }
 
@@ -556,7 +569,7 @@
 }
 
 .mobcard-value .mobcard-timer-num {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   line-height: 1;
 }
@@ -657,6 +670,7 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
   color: #000;
   letter-spacing: 0.16em;
+  padding-left: 0.16em;
   transition: opacity 0.15s, box-shadow 0.15s;
 }
 
@@ -679,7 +693,7 @@
 .mobcard-close-btn {
   flex: 0 0 90px;
   height: 38px;
-  padding: 0;
+  padding: 0 0 0 0.1em;
   border-radius: 0;
   display: flex;
   align-items: center;
