@@ -601,11 +601,12 @@
 
 .moblist-item .moblist-percent {
   margin-right: 8px;
+  padding-right: -0.5px
 }
 
 /* 3桁(100)だけ、数字が右に寄って見えるぶんを補正する(中身が左へ0.5px動く)。2桁は補正なし */
 .moblist-item .moblist-percent[data-digits="3"] {
-  padding-right: 1px;
+  padding-right: 0.5px;
 }
 
 .moblist-percent.max-over,
