@@ -568,7 +568,7 @@
 .percent {
   --ring-size: 32px;
   --ring-w: 3px;
-  --ring-color: #4d90f5;
+  --ring-color: #2d6bc7;
   --ring-track: rgba(255, 255, 255, 0.14);
   position: relative;
   flex: 0 0 var(--ring-size);
@@ -611,7 +611,7 @@
 
 .moblist-percent.max-over,
 .percent.max-over {
-  --ring-color: #e5484d;
+  --ring-color: #bd373b;
 }
 
 .moblist-percent.pct-0,
@@ -623,17 +623,17 @@
 /* 出現中(POP WINDOW)は、進み具合でリングの色を変える */
 .moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="green"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="green"]:not(.max-over):not(.pct-0) {
-  --ring-color: #34b76b;
+  --ring-color: #25ad5e;
 }
 
 .moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="yellow"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="yellow"]:not(.max-over):not(.pct-0) {
-  --ring-color: #e0a82e;
+  --ring-color: #bb8c26;
 }
 
 .moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0) {
-  --ring-color: #ee7d3a;
+  --ring-color: #bb5f2a;
 }
 
 
