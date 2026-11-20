@@ -256,6 +256,14 @@
   align-items: center;
 }
 
+/* モブ名の文字部分: はみ出したら末尾を「…」にする(インスタンスバッジは縮めない) */
+.moblist-name .name-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* インスタンス番号・残り地点のバッジ */
 .instance-badge,
 .count-badge {
@@ -354,7 +362,8 @@
 
 .memo-icon {
   position: relative;
-  top: -0.5px;
+  top: -1px;
+  /* [調整] 名前の文字より下に見えるぶんを補正 */
   font-size: 12px;
   line-height: 1;
   display: inline-flex;

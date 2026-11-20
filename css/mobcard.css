@@ -256,6 +256,14 @@
   gap: 4px;
 }
 
+/* モブ名の文字部分: はみ出したら末尾を「…」にする(インスタンスバッジは縮めない) */
+.mobcard-name .name-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* 2行目: エリア情報 + % */
 .header-mid-row {
   display: flex;

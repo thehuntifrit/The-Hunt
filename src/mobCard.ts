@@ -45,6 +45,11 @@ export function renderNameWithInstance(container: HTMLElement, name: string): vo
   if (!container) return;
   const match = name.match(/^([1-9])_(.+)/);
   container.innerHTML = "";
+
+  // 名前の文字だけを span で包む(はみ出したら、この span だけが省略される)
+  const textEl = document.createElement("span");
+  textEl.className = "name-text";
+
   if (match) {
     const instance = match[1];
     const realName = match[2];
@@ -52,10 +57,11 @@ export function renderNameWithInstance(container: HTMLElement, name: string): vo
     badge.className = "instance-badge";
     badge.textContent = instance;
     container.appendChild(badge);
-    container.appendChild(document.createTextNode(realName));
+    textEl.textContent = realName;
   } else {
-    container.textContent = name;
+    textEl.textContent = name;
   }
+  container.appendChild(textEl);
 }
 
 // マップ画像の縦横比。一度読み込んだ画像は覚えておき、次回から画像が届く前に正しい枠を確保する
