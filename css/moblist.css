@@ -70,8 +70,6 @@
   margin-left: 2px;
   margin-right: auto;
   line-height: 1;
-  position: relative;
-  top: 1px;
 }
 
 .status-group-count::before {
@@ -79,8 +77,6 @@
   font-size: 10px;
   opacity: 0.5;
   margin-right: 2px;
-  position: relative;
-  top: -1px;
 }
 
 .status-group-count::after {
@@ -88,8 +84,6 @@
   font-size: 10px;
   opacity: 0.5;
   margin-left: 2px;
-  position: relative;
-  top: -1px;
 }
 
 .status-group-toggle-icon {
@@ -568,88 +562,77 @@
 }
 
 
-/* 6. 経過% */
-.moblist-percent {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--c-text-hi);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  background: #1B3D7A;
-  border: 1px solid #3363B5;
-  border-radius: 2px;
-  padding: 1px 1px 0;
-  width: 34px;
-  min-width: 34px;
-  flex: 0 0 34px;
-  height: 16px;
-  line-height: 1;
+/* 6. 経過%(リング) */
+/* 外側のリングが進み具合を表し、中に整数の%(記号なし)を置く。進み具合は --prog-percent(0〜1)をJSが渡す */
+.moblist-percent,
+.percent {
+  --ring-size: 32px;
+  --ring-w: 3px;
+  --ring-color: #4d90f5;
+  --ring-track: rgba(255, 255, 255, 0.14);
+  position: relative;
+  flex: 0 0 var(--ring-size);
+  width: var(--ring-size);
+  height: var(--ring-size);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-
-.moblist-percent.max-over {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
   color: var(--c-text-hi);
-  background: #630e15;
-  border-color: #813a46;
+  white-space: nowrap;
 }
 
-.moblist-percent.pct-0 {
+.moblist-percent::before,
+.percent::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(var(--ring-color) calc(var(--prog-percent, 0) * 360deg), var(--ring-track) calc(var(--prog-percent, 0) * 360deg + 0.8deg));
+  /* 縁のギザギザ対策: 内側と外側の縁を1pxぼかす */
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--ring-w) - 1px), #000 calc(100% - var(--ring-w)), #000 calc(100% - 1px), transparent 100%);
+  mask: radial-gradient(farthest-side, transparent calc(100% - var(--ring-w) - 1px), #000 calc(100% - var(--ring-w)), #000 calc(100% - 1px), transparent 100%);
+}
+
+.moblist-item .moblist-percent {
+  margin-right: 8px;
+}
+
+/* 3桁(100)だけ、数字が右に寄って見えるぶんを補正する(中身が左へ0.5px動く)。2桁は補正なし */
+.moblist-item .moblist-percent[data-digits="3"] {
+  padding-right: 1px;
+}
+
+.moblist-percent.max-over,
+.percent.max-over {
+  --ring-color: #e5484d;
+}
+
+.moblist-percent.pct-0,
+.percent.pct-0 {
+  --ring-color: var(--ring-track);
   color: var(--c-text-lo);
-  background: #16202E;
-  border-color: #334155;
 }
 
+/* 出現中(POP WINDOW)は、進み具合でリングの色を変える */
 .moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="green"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="green"]:not(.max-over):not(.pct-0) {
-  background: #11522C;
-  border-color: #1F8549;
-  color: var(--c-text-hi);
+  --ring-color: #34b76b;
 }
 
 .moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="yellow"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="yellow"]:not(.max-over):not(.pct-0) {
-  background: #5C4308;
-  border-color: #997017;
-  color: var(--c-text-hi);
+  --ring-color: #e0a82e;
 }
 
 .moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0) {
-  background: #85380b;
-  border-color: #ce7b4f;
-  color: var(--c-text-hi);
-}
-
-
-/* 7. 進捗ライン */
-.moblist-progress-line {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: calc(var(--row-h) * 2 / 3);
-  height: var(--row-prog-h);
-  background-color: var(--c-prog-bg);
-  overflow: hidden;
-}
-
-.moblist-progress-bar {
-  height: 100%;
-  width: calc(var(--prog-percent, 0) * 100%);
-  background-color: var(--c-prog-a);
-  border-radius: 0 1px 1px 0;
-}
-
-.moblist-item[data-rank="S"] .moblist-progress-bar {
-  background-color: var(--c-prog-s);
-}
-
-.moblist-item[data-rank="F"] .moblist-progress-bar {
-  background-color: var(--c-prog-f);
+  --ring-color: #ee7d3a;
 }
 
 

@@ -183,8 +183,8 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 2px;
-  padding: 0 4px;
-  /* 左右を4pxずつ内側へ寄せる(進捗バーは動かさない) */
+  padding: 0 52px 0 4px;
+  /* 左右を4pxずつ内側へ寄せる。右はリング(40px)と隙間のぶん広くあける */
   line-height: 1;
   position: relative;
   top: 2px;
@@ -272,8 +272,8 @@
   gap: 8px;
   padding-left: 42px;
   /* エリア名をモブ名の下から始める(寄せ4px + ランク30px + 隙間8px) */
-  padding-right: 4px;
-  margin-bottom: 7px;
+  padding-right: 52px;
+  margin-bottom: 0;
   line-height: 1;
 }
 
@@ -304,39 +304,27 @@
   line-height: 1;
 }
 
+/* 経過%のリング: タイトル帯の右端に、上下中央で置く(基本の形は moblist.css の「6. 経過%」) */
 .percent {
-  flex-shrink: 0;
-  font-family: var(--font-mono);
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--c-cyan);
-  position: relative;
-  top: 3px;
+  --ring-size: 40px;
+  --ring-w: 4px;
+  position: absolute;
+  right: 20px;
+  top: 18px;
+  /* ランクの中心の高さに合わせる(ヘッダー上余白13 + 行の半分13 + 行の下げ2 + ランクの下げ10 = 38px、リング40pxの半分20を引く) */
+  font-size: 14px;
 }
 
-/* 進捗バー */
-.mobcard-progress-container {
-  width: 100%;
-  max-width: 100%;
-  height: 6px;
-  border-radius: 1px;
-  background-color: var(--c-prog-bg);
-  border: 1px solid rgba(216, 196, 138, 0.3);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
-  overflow: hidden;
-  box-sizing: border-box;
+.percent[data-pct-tier="green"]:not(.max-over):not(.pct-0) {
+  --ring-color: #34b76b;
 }
 
-.mobcard-progress-bar {
-  height: 100%;
-  max-width: 100%;
-  width: calc(var(--prog-percent, 0) * 100%);
-  background-color: var(--c-prog-a);
-  /* 色は従来どおり background-color で決まる。上に光沢だけ重ねる */
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 60%, rgba(0, 0, 0, 0.15));
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.35);
-  border-radius: 1px;
-  transition: width 0.3s ease;
+.percent[data-pct-tier="yellow"]:not(.max-over):not(.pct-0) {
+  --ring-color: #e0a82e;
+}
+
+.percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0) {
+  --ring-color: #ee7d3a;
 }
 
 

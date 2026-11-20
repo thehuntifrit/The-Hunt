@@ -98,7 +98,7 @@ export function preloadMapImages(mobs: Mob[]): void {
         }
       };
       if (typeof img.decode === "function") {
-        img.decode().catch(() => {});
+        img.decode().catch(() => { });
       }
     });
   };
@@ -538,43 +538,25 @@ export function updateDetailCardRealtime(card: HTMLElement, mob: Mob): void {
 
 export function updateProgressBar(element: HTMLElement, mob: Mob, timeLabelObj: TimeLabelResult | null = null): void {
   const { labelStatus } = timeLabelObj || computeTimeLabel(mob);
-  const { elapsedPercent } = mob.repopInfo || {};
+  const { elapsedPercent, status: repopStatus } = mob.repopInfo || {};
 
-  const status = labelStatus;
-  const bar = element.querySelector('.mobcard-progress-bar, .moblist-bg-bar, .moblist-progress-bar') as HTMLElement | null;
-  const wrapper = element.querySelector('.mobcard-progress-container, .moblist-bg-gauge, .moblist-progress-line') as HTMLElement | null;
-  if (!bar) return;
-
-  const isDetail = element.classList.contains('mobcard-card');
-  const flooredPct = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
-  const lastPct = parseFloat(bar.dataset.lastPct || "NaN");
-
-  const isReset = isNaN(lastPct) || flooredPct === 0 || flooredPct < (lastPct || 0);
-  const noTransition = !isDetail || isReset || status === "Next" || status === "Maintenance";
-
-  bar.classList.toggle('u-no-transition', noTransition);
-  bar.style.setProperty('--prog-percent', String(flooredPct / 100));
-  bar.style.width = `${flooredPct}%`;
-  bar.dataset.lastPct = String(flooredPct);
-
-  if (bar.dataset.lastStatus !== status) {
-    bar.classList.remove('status-max-over', 'status-condition-active', 'status-pop-window', 'status-next');
-    if (status === "MaxOver") bar.classList.add("status-max-over");
-    else if (status === "ConditionActive") bar.classList.add("status-condition-active");
-    else if (status === "PopWindow") bar.classList.add("status-pop-window");
-    else if (status === "Next" || status === "NextCondition") bar.classList.add("status-next");
-    bar.dataset.lastStatus = status;
-
-    if (status === "Next" || status === "Maintenance") {
-      bar.style.setProperty('--prog-percent', '0');
-      bar.style.width = '0%';
+  // 進捗リング(%の丸)に進み具合(0〜1)を渡す。描くのはCSS
+  const ring = element.querySelector('.percent, .moblist-percent') as HTMLElement | null;
+  if (ring) {
+    let pct = Math.max(0, Math.min(100, Math.floor(elapsedPercent || 0)));
+    if (repopStatus === "MaxOver") pct = 100;
+    if (labelStatus === "Next" || labelStatus === "Maintenance") pct = 0;
+    const val = String(pct / 100);
+    if (ring.style.getPropertyValue('--prog-percent') !== val) {
+      ring.style.setProperty('--prog-percent', val);
     }
   }
 
-  if (wrapper && mob.repopInfo) {
+  // 白い点滅の切り替え(リストの行だけ)
+  if (element.classList.contains('moblist-item') && mob.repopInfo) {
     const isInCondition = !!mob.repopInfo.isInConditionWindow && !mob.repopInfo.isMaintenanceStop && !mob.repopInfo.isBlockedByMaintenance;
     const currentBlink = element.classList.contains('moblist-highlight-white');
-    if (element.classList.contains('moblist-item') && currentBlink !== isInCondition) {
+    if (currentBlink !== isInCondition) {
       element.classList.toggle('moblist-highlight-white', isInCondition);
     }
   }
@@ -616,28 +598,11 @@ export function updateProgressText(element: HTMLElement, mob: Mob, timeLabelObj:
   if (percentEl) {
     const { elapsedPercent } = mob.repopInfo || {};
     const raw = Math.max(0, Math.min(100, elapsedPercent || 0));
-    const percentValue = status === "MaxOver" ? "100" : element.classList.contains('mobcard-card') ? raw.toFixed(1) : String(Math.floor(raw));
+    const percentValue = status === "MaxOver" ? "100" : String(Math.floor(raw));
 
-    let numNode = percentEl.firstChild as Text | null;
-    if (!numNode || numNode.nodeType !== Node.TEXT_NODE) {
-      percentEl.innerHTML = "";
-      numNode = document.createTextNode(percentValue);
-      percentEl.appendChild(numNode);
-      const unit = document.createElement('span');
-      unit.className = 'percent-unit';
-      unit.textContent = '%';
-      percentEl.appendChild(unit);
-    } else {
-      if (numNode.nodeValue !== percentValue) {
-        numNode.nodeValue = percentValue;
-      }
-      if (!percentEl.querySelector('.percent-unit')) {
-        const unit = document.createElement('span');
-        unit.className = 'percent-unit';
-        unit.textContent = '%';
-        percentEl.appendChild(unit);
-      }
-    }
+    // %記号と小数点はなし。中身は整数だけ
+    if (percentEl.textContent !== percentValue) percentEl.textContent = percentValue;
+    percentEl.dataset.digits = String(percentValue.length);
     percentEl.classList.toggle("max-over", status === "MaxOver");
     percentEl.classList.toggle("pct-0", (status === "Next" || raw === 0) && status !== "MaxOver");
 
