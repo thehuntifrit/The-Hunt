@@ -568,7 +568,7 @@
 .percent {
   --ring-size: 32px;
   --ring-w: 3px;
-  --ring-color: #3d82e9;
+  --ring-color: #508fee;
   --ring-track: rgba(255, 255, 255, 0.14);
   position: relative;
   flex: 0 0 var(--ring-size);
