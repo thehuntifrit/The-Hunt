@@ -568,7 +568,7 @@
 .percent {
   --ring-size: 32px;
   --ring-w: 3px;
-  --ring-color: #2d6bc7;
+  --ring-color: #3d82e9;
   --ring-track: rgba(255, 255, 255, 0.14);
   position: relative;
   flex: 0 0 var(--ring-size);
@@ -604,14 +604,14 @@
   padding-right: -0.5px
 }
 
-/* 3桁(100)だけ、数字が右に寄って見えるぶんを補正する(中身が左へ0.5px動く)。2桁は補正なし */
+/* 3桁(100)だけ、数字が右に寄って見えるぶん862770を補正する(中身が左へ0.5px動く)。2桁は補正なし */
 .moblist-item .moblist-percent[data-digits="3"] {
   padding-right: 0.5px;
 }
 
 .moblist-percent.max-over,
 .percent.max-over {
-  --ring-color: #bd373b;
+  --ring-color: #af2b2f;
 }
 
 .moblist-percent.pct-0,
