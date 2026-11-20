@@ -296,7 +296,7 @@
   background: var(--c-cyan);
   border: 1px solid var(--c-cyan);
   color: #04202a;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 15px;
   height: 16px;
   min-width: 18px;
@@ -308,7 +308,7 @@
   background: rgba(174, 187, 210, 0.12);
   border: 1px solid rgba(174, 187, 210, 0.55);
   color: #aebbd2;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 14px;
   height: 16px;
   padding: 0 3px;
@@ -562,8 +562,8 @@
 
 .moblist-percent.max-over {
   color: var(--c-text-hi);
-  background: #52080E;
-  border-color: #851628;
+  background: #630e15;
+  border-color: #b43449;
 }
 
 .moblist-percent.pct-0 {
@@ -588,7 +588,7 @@
 
 .moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0) {
-  background: #6B2C08;
+  background: #85380b;
   border-color: #AD4711;
   color: var(--c-text-hi);
 }

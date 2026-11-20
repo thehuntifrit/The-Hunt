@@ -9,7 +9,7 @@ import { now as serverNow, startTimeSync } from "./servertime";
 import { Mob, RepopInfo } from "./types/mob";
 
 // 定数
-export const cardCache = new Map<string, HTMLElement>();
+export const cardCache = new Map<string, Set<HTMLElement>>();
 
 const visibleCards = new Set<string>();
 
@@ -304,7 +304,7 @@ function updateVisibleCardsSet(updateNew = true): void {
     if (rect.bottom > -100 && rect.top < vh + 100) {
       const mobNo = htmlEl.dataset.mobNo!;
       visibleCards.add(mobNo);
-      cardCache.set(mobNo, htmlEl);
+      observeCard(htmlEl);
 
       if (!prevVisible.has(mobNo)) {
         const mob = mobMap.get(mobNo);
@@ -423,16 +423,27 @@ function attachMoblistBackgroundWheel(): void {
 attachMoblistBackgroundWheel();
 
 export function observeCard(el: HTMLElement): void {
-  if (el) {
-    const mobNo = el.dataset.mobNo!;
-    cardCache.set(mobNo, el);
+  if (el && el.dataset.mobNo) {
+    const mobNo = el.dataset.mobNo;
+    let set = cardCache.get(mobNo);
+    if (!set) {
+      set = new Set<HTMLElement>();
+      cardCache.set(mobNo, set);
+    }
+    set.add(el);
   }
 }
 
 export function unobserveCard(el: HTMLElement): void {
-  if (el) {
-    const mobNo = el.dataset.mobNo!;
-    cardCache.delete(mobNo);
+  if (el && el.dataset.mobNo) {
+    const mobNo = el.dataset.mobNo;
+    const set = cardCache.get(mobNo);
+    if (set) {
+      set.delete(el);
+      if (set.size === 0) {
+        cardCache.delete(mobNo);
+      }
+    }
     visibleCards.delete(mobNo);
   }
 }
@@ -475,9 +486,11 @@ export function updateCardFull(card: HTMLElement, mob: Mob): void {
 export const updateVisibleCards = function (): void {
   const mobMap = getMobMap();
   for (const mobNoStr of visibleCards) {
-    const card = cardCache.get(mobNoStr);
+    const cards = cardCache.get(mobNoStr);
     const mob = mobMap.get(mobNoStr);
-    if (card && mob) updateCardFull(card, mob);
+    if (cards && mob) {
+      cards.forEach(card => updateCardFull(card, mob));
+    }
   }
   updateVisibleDetailCard(mobMap);
 };
@@ -732,13 +745,16 @@ export function filterAndRender(options: { isInitialLoad?: boolean } = {}): void
   updateVisibleCards();
 
   if (focusedMobNo) {
-    const card = cardCache.get(String(focusedMobNo));
-    if (card && focusedAction) {
-      const input = card.querySelector(`input[data-action="${focusedAction}"], textarea[data-action="${focusedAction}"]`) as HTMLInputElement | null;
-      if (input) {
-        input.focus();
-        if (selectionStart !== null && selectionEnd !== null) {
-          try { input.setSelectionRange(selectionStart, selectionEnd); } catch (e) { }
+    const cards = cardCache.get(String(focusedMobNo));
+    if (cards && focusedAction) {
+      for (const card of cards) {
+        const input = card.querySelector(`input[data-action="${focusedAction}"], textarea[data-action="${focusedAction}"]`) as HTMLInputElement | null;
+        if (input) {
+          input.focus();
+          if (selectionStart !== null && selectionEnd !== null) {
+            try { input.setSelectionRange(selectionStart, selectionEnd); } catch (e) { }
+          }
+          break;
         }
       }
     }
@@ -1126,6 +1142,19 @@ function attachGlobalEventListeners(): void {
           openAuthModal();
           return;
         }
+
+        // 楽観的更新: サーバー応答を待たずに手元のモブデータとUI（リスト＋詳細カード）を即時反映
+        const mobMap = getMobMap();
+        const mob = mobMap?.get(String(mobNo));
+        if (mob) {
+          mob.memo_text = value;
+          mob.memo_updated_at = Math.floor(serverNow() / 1000);
+          const cards = cardCache.get(String(mobNo));
+          if (cards) {
+            cards.forEach(card => updateCardFull(card, mob));
+          }
+        }
+
         await submitMemo(mobNo, value);
       }
     }
@@ -1233,9 +1262,9 @@ function initAppEventListeners(): void {
 
       checkAndNotify(mob);
 
-      const card = cardCache.get(String(mobNo));
-      if (card) {
-        updateCardFull(card, mob);
+      const cards = cardCache.get(String(mobNo));
+      if (cards) {
+        cards.forEach(card => updateCardFull(card, mob));
       }
 
       if (hasMobSortKeyChanged(mob)) {
@@ -1257,10 +1286,10 @@ function initAppEventListeners(): void {
 
     if (!mobMap) return;
 
-    const card = cardCache.get(String(mobNo));
+    const cards = cardCache.get(String(mobNo));
 
-    if (card) {
-      updateCardFull(card, mob);
+    if (cards) {
+      cards.forEach(card => updateCardFull(card, mob));
     }
 
     updateVisibleDetailCard(mobMap);
@@ -1270,7 +1299,6 @@ function initAppEventListeners(): void {
       sortAndRedistribute();
     }
   });
-
 
   window.addEventListener('filterChanged', () => {
     invalidateFilterCache();
