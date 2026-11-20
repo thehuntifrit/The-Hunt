@@ -473,6 +473,8 @@
   -ms-user-select: text;
   user-select: text;
   align-self: center;
+  position: relative;
+  top: 1px;
 }
 
 .mobcard-memo-input::-webkit-scrollbar {
