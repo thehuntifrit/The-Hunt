@@ -194,7 +194,7 @@
 .header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex: 1 1 auto;
   min-width: 0;
 }
@@ -241,7 +241,7 @@
 
 .mobcard-name {
   font-family: var(--font-ui);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.02em;
   color: var(--c-text-hi);
@@ -262,8 +262,8 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
-  padding-left: 44px;
-  /* エリア名をモブ名の下から始める(寄せ4px + ランク30px + 隙間10px) */
+  padding-left: 42px;
+  /* エリア名をモブ名の下から始める(寄せ4px + ランク30px + 隙間8px) */
   padding-right: 4px;
   margin-bottom: 7px;
   line-height: 1;
