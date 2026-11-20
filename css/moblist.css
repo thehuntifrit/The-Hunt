@@ -63,11 +63,33 @@
 
 .status-group-count {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 400;
   color: #b7e4c7;
+  opacity: 0.8;
   margin-left: 2px;
   margin-right: auto;
   line-height: 1;
+  position: relative;
+  top: 1px;
+}
+
+.status-group-count::before {
+  content: "(";
+  font-size: 10px;
+  opacity: 0.5;
+  margin-right: 2px;
+  position: relative;
+  top: -1px;
+}
+
+.status-group-count::after {
+  content: ")";
+  font-size: 10px;
+  opacity: 0.5;
+  margin-left: 2px;
+  position: relative;
+  top: -1px;
 }
 
 .status-group-toggle-icon {

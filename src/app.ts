@@ -611,7 +611,7 @@ export const syncDomOrder = function (): void {
 
     header.classList.toggle("is-collapsed", isCollapsed);
     const countEl = header.querySelector(".status-group-count");
-    if (countEl) countEl.textContent = `(${groupMobs.length})`;
+    if (countEl) countEl.textContent = String(groupMobs.length);
 
     idealNodes.push(header);
 
