@@ -318,7 +318,7 @@
 
 .percent[data-digits="3"] {
   padding-top: 1px;
-  padding-right: 1px;
+  padding-right: 0px;
 }
 
 .percent[data-pct-tier="green"]:not(.max-over):not(.pct-0) {
