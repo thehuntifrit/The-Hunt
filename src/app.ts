@@ -5,7 +5,7 @@ import { getGroupKey, GROUP_LABELS, getSortedFilteredMobs, getFilteredMobs, inva
 import { closeReportModal, openAuthModal, openReportModal, initModal } from "./modal";
 import { handleAreaFilterClick, initAppNav, togglePanel, closePanel, setActiveNavItem, checkAndNotify, updateErrorPanel } from "./sidebar";
 import { initializeAuth, getUserData, submitReport, submitMemo, toggleCrushStatus } from "./server";
-import { now as serverNow, startTimeSync } from "./servertime";
+import { now as serverNow, startTimeSync, onTimeSynced } from "./servertime";
 import { Mob, RepopInfo } from "./types/mob";
 
 // 定数
@@ -56,6 +56,7 @@ async function initApp(): Promise<void> {
     attachMobCardEvents();
     initGlobalMagnifier();
 
+    onTimeSynced(() => { updateHeaderTime(); scheduleHeaderClock(); });
     startTimeSync();
 
     await loadBaseMobData();
@@ -91,6 +92,7 @@ async function initApp(): Promise<void> {
     initModal();
     renderMaintenanceStatus();
     updateHeaderTime();
+    scheduleHeaderClock();
     initAppNav();
     attachLocationEvents();
     attachGlobalEventListeners();
@@ -256,6 +258,23 @@ export async function renderMaintenanceStatus(): Promise<void> {
 let headerClocks: { lt: Element[]; et: Element[] } | null = null;
 let lastLtStr = "";
 let lastEtStr = "";
+
+// ヘッダー時計を、LT/ETの「分」が切り替わる瞬間に合わせて更新する
+const ET_MINUTE_MS_EXACT = 175000 / 60;
+let headerTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleHeaderClock(): void {
+  if (headerTimer !== null) clearTimeout(headerTimer);
+  const t = serverNow();
+  const toNextLt = 60000 - (t % 60000);
+  const toNextEt = ET_MINUTE_MS_EXACT - (t % ET_MINUTE_MS_EXACT);
+  // 境界ちょうどだと早発火で前の表示のままになることがあるので、少し後ろにずらす
+  const delay = Math.min(toNextLt, toNextEt) + 5;
+  headerTimer = setTimeout(() => {
+    updateHeaderTime();
+    scheduleHeaderClock();
+  }, delay);
+}
 
 export function updateHeaderTime(): void {
   if (document.visibilityState === 'hidden') return;
@@ -1387,11 +1406,11 @@ if ((window as any).appInterval) clearInterval((window as any).appInterval);
 (window as any).appInterval = setInterval(() => {
   if (document.visibilityState === 'hidden') return;
   updateProgressBarsOptimized();
-  updateHeaderTime();
 }, EORZEA_MINUTE_MS);
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
+    updateHeaderTime();
     updateProgressBarsOptimized(true);
   }
 });

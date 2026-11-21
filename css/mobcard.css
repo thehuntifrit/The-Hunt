@@ -311,20 +311,21 @@
   position: absolute;
   right: 20px;
   top: 18px;
-  /* ランクの中心の高さに合わせる(ヘッダー上余白13 + 行の半分13 + 行の下げ2 + ランクの下げ10 = 38px、リング40pxの半分20を引く) */
   font-size: 14px;
+  padding-top: 1px;
+  padding-right: 1px;
 }
 
 .percent[data-pct-tier="green"]:not(.max-over):not(.pct-0) {
-  --ring-color: #34b76b;
+  --ring-color: var(--c-ring-green);
 }
 
 .percent[data-pct-tier="yellow"]:not(.max-over):not(.pct-0) {
-  --ring-color: #e0a82e;
+  --ring-color: var(--c-ring-yellow);
 }
 
 .percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0) {
-  --ring-color: #ee7d3a;
+  --ring-color: var(--c-ring-orange);
 }
 
 

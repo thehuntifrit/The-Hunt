@@ -21,6 +21,13 @@ export function setServerTimeOffset(ms: number): void {
     if (Number.isFinite(ms)) offset = ms;
 }
 
+const syncListeners: Array<() => void> = [];
+
+/** 同期でオフセットが更新されるたびに呼ばれるコールバックを登録する(メインスレッド用) */
+export function onTimeSynced(cb: () => void): void {
+    syncListeners.push(cb);
+}
+
 let syncing = false;
 
 /** Worker の /time に問い合わせて、ずれを更新する。全部失敗した場合は前回の値を維持する */
@@ -48,7 +55,10 @@ export async function syncTime(): Promise<void> {
             }
         }
 
-        if (best) offset = best.offset;
+        if (best) {
+            offset = best.offset;
+            syncListeners.forEach(cb => { try { cb(); } catch { /* 通知側の失敗は無視 */ } });
+        }
     } finally {
         syncing = false;
     }

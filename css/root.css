@@ -39,10 +39,11 @@
   --c-border-sel: #94B4DB;
 
   /* progress */
-  --c-prog-bg: #050A12;
-  --c-prog-s: #E2B85C;
-  --c-prog-a: #65B9D8;
-  --c-prog-f: #B18BE0;
+  --c-ring-blue: #508fee;
+  --c-ring-green: #25ad5e;
+  --c-ring-yellow: #bb8c26;
+  --c-ring-orange: #bb5f2a;
+  --c-ring-red: #af2b2f;
 
   /* status */
   --c-offline-bg: #3b1313;
@@ -66,7 +67,6 @@
   --row-stripe-sel: 6px;
   --row-badge: 28px;
   --row-radius: 6px;
-  --row-prog-h: 2px;
 
   /* z-index */
   --z-sidebar: 50;

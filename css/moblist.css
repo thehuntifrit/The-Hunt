@@ -434,6 +434,8 @@
   overflow: hidden;
   width: 100%;
   line-height: 1;
+  position: relative;
+  top: 2px;   
 }
 
 .moblist-area {
@@ -568,7 +570,7 @@
 .percent {
   --ring-size: 32px;
   --ring-w: 3px;
-  --ring-color: #508fee;
+  --ring-color: var(--c-ring-blue);
   --ring-track: rgba(255, 255, 255, 0.14);
   position: relative;
   flex: 0 0 var(--ring-size);
@@ -611,7 +613,7 @@
 
 .moblist-percent.max-over,
 .percent.max-over {
-  --ring-color: #af2b2f;
+  --ring-color: var(--c-ring-red);
 }
 
 .moblist-percent.pct-0,
@@ -623,17 +625,17 @@
 /* 出現中(POP WINDOW)は、進み具合でリングの色を変える */
 .moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="green"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="green"]:not(.max-over):not(.pct-0) {
-  --ring-color: #25ad5e;
+  --ring-color: var(--c-ring-green);
 }
 
 .moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="yellow"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="yellow"]:not(.max-over):not(.pct-0) {
-  --ring-color: #bb8c26;
+  --ring-color: var(--c-ring-yellow);
 }
 
 .moblist-item[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0),
 .status-group[data-group-key="WINDOW"] .moblist-percent[data-pct-tier="orange"]:not(.max-over):not(.pct-0) {
-  --ring-color: #bb5f2a;
+  --ring-color: var(--c-ring-orange);
 }
 
 
