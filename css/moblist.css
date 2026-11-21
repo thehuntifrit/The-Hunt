@@ -469,7 +469,7 @@
   font-size: 16px;
   font-weight: 500;
   color: var(--c-text-lo);
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: proportional-nums;
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
