@@ -604,7 +604,7 @@
 .moblist-item .moblist-percent {
   margin-right: 8px;
   padding-top: 1px;
-  padding-left: 1px;
+  padding-left: 0px;
 }
 
 /* 3桁(100)だけ、数字が右に寄って見えるぶん862770を補正する(中身が左へ0.5px動く)。2桁は補正なし */
