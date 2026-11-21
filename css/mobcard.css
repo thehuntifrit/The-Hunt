@@ -313,6 +313,11 @@
   top: 18px;
   font-size: 14px;
   padding-top: 1px;
+  padding-right: 0px;
+}
+
+.percent[data-digits="3"] {
+  padding-top: 1px;
   padding-right: 1px;
 }
 
