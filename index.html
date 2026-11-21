@@ -245,61 +245,61 @@
                         <div class="percent">0</div>
                     </div>
 
-                <div class="mobcard-content overflow-y-auto">
-                    <div class="mobcard-section memo-section">
-                        <div class="mobcard-memo-box">
-                            <div class="mobcard-memo-prefix-area">
-                                <span class="mobcard-memo-prefix-text">memo</span>
+                    <div class="mobcard-content overflow-y-auto">
+                        <div class="mobcard-section memo-section">
+                            <div class="mobcard-memo-box">
+                                <div class="mobcard-memo-prefix-area">
+                                    <span class="mobcard-memo-prefix-text">memo</span>
+                                </div>
+                                <div class="mobcard-memo-separator"></div>
+                                <input type="text" name="memo" aria-label="メモを入力"
+                                    class="mobcard-memo-input detail-memo-input" placeholder="全角30文字まで" maxlength="30"
+                                    data-action="save-memo">
                             </div>
-                            <div class="mobcard-memo-separator"></div>
-                            <input type="text" name="memo" aria-label="メモを入力"
-                                class="mobcard-memo-input detail-memo-input" placeholder="全角30文字まで" maxlength="30"
-                                data-action="save-memo">
+                        </div>
+
+                        <div class="mobcard-grid">
+                            <div class="mobcard-info-item">
+                                <div class="mobcard-label">最短日時：</div>
+                                <div class="mobcard-value" data-min-repop>--/-- --:--</div>
+                            </div>
+                            <div class="mobcard-info-item">
+                                <div class="mobcard-label">最大日時：</div>
+                                <div class="mobcard-value" data-max-repop>--/-- --:--</div>
+                            </div>
+                            <div class="mobcard-info-item mobcard-highlight">
+                                <div class="mobcard-label">次回出現：</div>
+                                <div class="mobcard-value" data-next-possible>--/-- --:--</div>
+                            </div>
+                            <div class="mobcard-info-item">
+                                <div class="mobcard-label">前回討伐：</div>
+                                <div class="mobcard-value" data-last-kill>--/-- --:--</div>
+                            </div>
+                        </div>
+
+                        <div class="mobcard-section map-section">
+                            <div class="mobcard-section-label">
+                                <span>出現マップ</span>
+                                <span class="map-update-time"></span>
+                            </div>
+                            <div class="map-container pc-map-box u-mt-4">
+                                <img class="mob-map-img">
+                                <div class="map-overlay absolute inset-0"></div>
+                            </div>
+                        </div>
+
+                        <div class="mobcard-section">
+                            <div class="mobcard-section-label">出現条件</div>
+                            <div class="section-content condition condition-text"></div>
                         </div>
                     </div>
 
-                    <div class="mobcard-grid">
-                        <div class="mobcard-info-item">
-                            <div class="mobcard-label">最短日時：</div>
-                            <div class="mobcard-value" data-min-repop>--/-- --:--</div>
-                        </div>
-                        <div class="mobcard-info-item">
-                            <div class="mobcard-label">最大日時：</div>
-                            <div class="mobcard-value" data-max-repop>--/-- --:--</div>
-                        </div>
-                        <div class="mobcard-info-item mobcard-highlight">
-                            <div class="mobcard-label">次回出現：</div>
-                            <div class="mobcard-value" data-next-possible>--/-- --:--</div>
-                        </div>
-                        <div class="mobcard-info-item">
-                            <div class="mobcard-label">前回討伐：</div>
-                            <div class="mobcard-value" data-last-kill>--/-- --:--</div>
-                        </div>
-                    </div>
-
-                    <div class="mobcard-section map-section">
-                        <div class="mobcard-section-label">
-                            <span>出現マップ</span>
-                            <span class="map-update-time"></span>
-                        </div>
-                        <div class="map-container pc-map-box u-mt-4">
-                            <img class="mob-map-img">
-                            <div class="map-overlay absolute inset-0"></div>
-                        </div>
-                    </div>
-
-                    <div class="mobcard-section">
-                        <div class="mobcard-section-label">出現条件</div>
-                        <div class="section-content condition condition-text"></div>
+                    <div class="mobcard-mobile-actions">
+                        <button class="moblist-report-btn bottom-report-btn" data-report-type=""
+                            data-mob-no="">REPORT</button>
+                        <div class="mobcard-close-btn" data-action="close-card">CLOSE</div>
                     </div>
                 </div>
-
-                <div class="mobcard-mobile-actions">
-                    <button class="moblist-report-btn bottom-report-btn" data-report-type=""
-                        data-mob-no="">REPORT</button>
-                    <div class="mobcard-close-btn" data-action="close-card">CLOSE</div>
-                </div>
-            </div>
             </div>
         </template>
 
