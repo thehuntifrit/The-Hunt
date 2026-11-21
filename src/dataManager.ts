@@ -1133,7 +1133,7 @@ export function isCulled(pointStatus: CullStatus | undefined, mobNo: number, mob
 }
 
 // ─── 長時間の非表示(セーブモード等)からの復帰 ───────────
-const RESUME_REFRESH_THRESHOLD_MS = 30000;
+const RESUME_REFRESH_THRESHOLD_MS = 10 * 60 * 1000;
 let hiddenAt = 0;
 
 document.addEventListener('visibilitychange', () => {

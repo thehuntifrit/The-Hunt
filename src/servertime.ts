@@ -1,8 +1,10 @@
 export const WORKER_BASE_URL = "https://icy-resonance-2526.the-hunt-ifrit.workers.dev/";
 
-const TIME_SYNC_SAMPLES = 3;
+const TIME_SYNC_FIRST_SAMPLES = 3;     // 起動時(接続確立の影響を避けるため多めに測る)
+const TIME_SYNC_REGULAR_SAMPLES = 2;   // 2回目以降
 const TIME_SYNC_MAX_RTT_MS = 3000;
-const TIME_SYNC_INTERVAL_MS = 15 * 60 * 1000;
+const TIME_SYNC_INTERVAL_MS = 60 * 60 * 1000;   // 定期同期: 60分
+const TIME_SYNC_RESUME_AWAY_MS = 10 * 60 * 1000; // 裏に10分以上いたら復帰時に再同期
 
 let offset = 0;
 
@@ -29,6 +31,7 @@ export function onTimeSynced(cb: () => void): void {
 }
 
 let syncing = false;
+let hasSynced = false;
 
 /** Worker の /time に問い合わせて、ずれを更新する。全部失敗した場合は前回の値を維持する */
 export async function syncTime(): Promise<void> {
@@ -36,8 +39,9 @@ export async function syncTime(): Promise<void> {
     syncing = true;
     try {
         let best: { rtt: number; offset: number } | null = null;
+        const samples = hasSynced ? TIME_SYNC_REGULAR_SAMPLES : TIME_SYNC_FIRST_SAMPLES;
 
-        for (let i = 0; i < TIME_SYNC_SAMPLES; i++) {
+        for (let i = 0; i < samples; i++) {
             try {
                 const t0 = Date.now();
                 const res = await fetch(`${WORKER_BASE_URL}time?_=${t0}`, { cache: "no-store" });
@@ -57,6 +61,7 @@ export async function syncTime(): Promise<void> {
 
         if (best) {
             offset = best.offset;
+            hasSynced = true;
             syncListeners.forEach(cb => { try { cb(); } catch { /* 通知側の失敗は無視 */ } });
         }
     } finally {
@@ -66,14 +71,23 @@ export async function syncTime(): Promise<void> {
 
 let started = false;
 
-/** 起動時に1回だけ呼ぶ(メインスレッド専用)。定期的な再同期と、タブ復帰時の再同期も設定する */
+/** 起動時に1回だけ呼ぶ(メインスレッド専用)。定期的な再同期と、長く裏にいた後の復帰時の再同期も設定する */
 export function startTimeSync(): void {
     if (started) return;
     started = true;
 
     void syncTime();
     setInterval(() => void syncTime(), TIME_SYNC_INTERVAL_MS);
+
+    let hiddenAt = 0;
     document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible") void syncTime();
+        if (document.visibilityState === "hidden") {
+            hiddenAt = Date.now();
+            return;
+        }
+        if (!hiddenAt) return;
+        const awayMs = Date.now() - hiddenAt;
+        hiddenAt = 0;
+        if (awayMs >= TIME_SYNC_RESUME_AWAY_MS) void syncTime();
     });
 }
