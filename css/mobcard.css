@@ -311,14 +311,14 @@
   position: absolute;
   right: 20px;
   top: 18px;
-  font-size: 14px;
+  font-size: 15px;
   padding-top: 1px;
-  padding-right: 0px;
+  padding-left: 0px;
 }
 
 .percent[data-digits="3"] {
   padding-top: 1px;
-  padding-right: 0px;
+  padding-left: 0px;
 }
 
 .percent[data-pct-tier="green"]:not(.max-over):not(.pct-0) {
