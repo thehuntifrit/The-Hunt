@@ -104,7 +104,7 @@ def save_to_firestore(data):
     
     try:
         doc_ref.set(update_payload, merge=True)
-        print(f"[{datetime.now()}] Saved: {mob_info.get('name')} ({mob_no_str}) in {doc_id}")
+        print(f"[{datetime.now()}] Firestore save completed: {doc_id}")
     except Exception as e:
         print(f"Error saving to Firestore: {e}")
 
