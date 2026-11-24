@@ -58,7 +58,7 @@ export const STATUS_LABELS: Record<string, string | { S: string; others: string 
     ConditionActive: "‼️",
     PopWindow: "残り",
     Next: { S: "次回", others: "残り" },
-    NextCondition: "🔜",
+    NextCondition: "⏳",
     Unknown: "未定"
 };
 

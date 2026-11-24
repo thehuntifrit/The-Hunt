@@ -1,3 +1,17 @@
-faloop-browser-data/
+# Node.js
 node_modules/
+
+# Playwright browser profile
+faloop-browser-data/
+
+# Credentials
+service-account.json
+.env
+.env.*
+
+# Generated data
+faloop-output/
+gaia-response.json
+ifrit-kills.json
+
 server/

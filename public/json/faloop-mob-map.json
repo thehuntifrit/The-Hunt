@@ -1,0 +1,716 @@
+{
+  "aegeiros": {
+    "mobNo": 50331,
+    "name": "アイゲイロス",
+    "rank": "A",
+    "area": "ガレマルド"
+  },
+  "agathos": {
+    "mobNo": 20341,
+    "name": "アガトス",
+    "rank": "A",
+    "area": "ドラヴァニア雲海"
+  },
+  "aglaope": {
+    "mobNo": 40411,
+    "name": "アグラオペ",
+    "rank": "S",
+    "area": "イル・メグ"
+  },
+  "agrippa_the_mighty": {
+    "mobNo": 11711,
+    "name": "アグリッパ",
+    "rank": "S",
+    "area": "モードゥナ"
+  },
+  "angada": {
+    "mobNo": 30541,
+    "name": "アンガダ",
+    "rank": "A",
+    "area": "ヤンサ"
+  },
+  "aqrabuamelu": {
+    "mobNo": 30241,
+    "name": "アクラブアメル",
+    "rank": "A",
+    "area": "ギラバニア山岳地帯"
+  },
+  "arch_eta": {
+    "mobNo": 50631,
+    "name": "アーチイータ",
+    "rank": "A",
+    "area": "ウルティマ・トゥーレ"
+  },
+  "archaeotania": {
+    "mobNo": 40661,
+    "name": "厄災のアルケオタニア：深海の討伐戦",
+    "rank": "F",
+    "area": "テンペスト"
+  },
+  "armstrong": {
+    "mobNo": 50311,
+    "name": "アームストロング",
+    "rank": "S",
+    "area": "ガレマルド"
+  },
+  "atticus_the_primogenitor": {
+    "mobNo": 60511,
+    "name": "先駆けのアティカス",
+    "rank": "S",
+    "area": "ヘリテージファウンド"
+  },
+  "baal": {
+    "mobNo": 40641,
+    "name": "バール",
+    "rank": "A",
+    "area": "テンペスト"
+  },
+  "behemoth": {
+    "mobNo": 11661,
+    "name": "手負いの魔獣「ベヒーモス」",
+    "rank": "F",
+    "area": "クルザス中央高地"
+  },
+  "bird_of_paradise": {
+    "mobNo": 20211,
+    "name": "極楽鳥",
+    "rank": "S",
+    "area": "アバラシア雲海"
+  },
+  "bone_crawler": {
+    "mobNo": 30211,
+    "name": "ボーンクローラー",
+    "rank": "S",
+    "area": "ギラバニア山岳地帯"
+  },
+  "bonnacon": {
+    "mobNo": 10411,
+    "name": "ボナコン",
+    "rank": "S",
+    "area": "西ラノシア"
+  },
+  "brontes": {
+    "mobNo": 11211,
+    "name": "ブロンテス",
+    "rank": "S",
+    "area": "中央ザナラーン"
+  },
+  "burfurlur_the_canny": {
+    "mobNo": 50111,
+    "name": "ブーフールー",
+    "rank": "S",
+    "area": "ラヴィリンソス"
+  },
+  "cats_eye": {
+    "mobNo": 60641,
+    "name": "キャッツアイ",
+    "rank": "A",
+    "area": "リビング・メモリー"
+  },
+  "chernobog": {
+    "mobNo": 10611,
+    "name": "チェルノボーグ",
+    "rank": "S",
+    "area": "外地ラノシア"
+  },
+  "chi": {
+    "mobNo": 50661,
+    "name": "カイのメモリーより：侵略兵器の破壊",
+    "rank": "F",
+    "area": "ウルティマ・トゥーレ"
+  },
+  "coeurlregina": {
+    "mobNo": 20461,
+    "name": "幻影の女王「クァールレギナ」",
+    "rank": "F",
+    "area": "高地ドラヴァニア"
+  },
+  "croakadile": {
+    "mobNo": 10211,
+    "name": "ケロゲロス",
+    "rank": "S",
+    "area": "低地ラノシア"
+  },
+  "croque_mitaine": {
+    "mobNo": 10111,
+    "name": "クロック・ミテーヌ",
+    "rank": "S",
+    "area": "中央ラノシア"
+  },
+  "daivadipa": {
+    "mobNo": 50261,
+    "name": "ムリガ信仰：偽りの神",
+    "rank": "F",
+    "area": "サベネア島"
+  },
+  "enkelados": {
+    "mobNo": 20231,
+    "name": "エンケドラス",
+    "rank": "A",
+    "area": "アバラシア雲海"
+  },
+  "erle": {
+    "mobNo": 30141,
+    "name": "アール",
+    "rank": "A",
+    "area": "ギラバニア辺境地帯"
+  },
+  "fan_ail": {
+    "mobNo": 50641,
+    "name": "ファン・アイル",
+    "rank": "A",
+    "area": "ウルティマ・トゥーレ"
+  },
+  "forgiven_pedantry": {
+    "mobNo": 40211,
+    "name": "フォーギヴン・ペダントリー",
+    "rank": "S",
+    "area": "コルシア島"
+  },
+  "formidable": {
+    "mobNo": 40261,
+    "name": "激闘フォーミダブル：切り札起動",
+    "rank": "F",
+    "area": "コルシア島"
+  },
+  "funa_yurei": {
+    "mobNo": 30431,
+    "name": "船幽霊",
+    "rank": "A",
+    "area": "紅玉海"
+  },
+  "gajasura": {
+    "mobNo": 30531,
+    "name": "ガジャースラ",
+    "rank": "A",
+    "area": "ヤンサ"
+  },
+  "gamma": {
+    "mobNo": 30511,
+    "name": "ガンマ",
+    "rank": "S",
+    "area": "ヤンサ"
+  },
+  "gandarewa": {
+    "mobNo": 20311,
+    "name": "ガンダルヴァ",
+    "rank": "S",
+    "area": "ドラヴァニア雲海"
+  },
+  "girimekhala": {
+    "mobNo": 30631,
+    "name": "ギリメカラ",
+    "rank": "A",
+    "area": "アジムステップ"
+  },
+  "grassman": {
+    "mobNo": 40541,
+    "name": "グラスマン",
+    "rank": "A",
+    "area": "ラケティカ大森林"
+  },
+  "gunitt": {
+    "mobNo": 40611,
+    "name": "グニット",
+    "rank": "S",
+    "area": "テンペスト"
+  },
+  "gurangatch": {
+    "mobNo": 50541,
+    "name": "グランガチ",
+    "rank": "A",
+    "area": "エルピス"
+  },
+  "hellsclaw": {
+    "mobNo": 10331,
+    "name": "魔導ヘルズクロー",
+    "rank": "A",
+    "area": "東ラノシア"
+  },
+  "heshuala": {
+    "mobNo": 60531,
+    "name": "ヘシュワラ",
+    "rank": "A",
+    "area": "ヘリテージファウンド"
+  },
+  "hulder": {
+    "mobNo": 50131,
+    "name": "フルドラ",
+    "rank": "A",
+    "area": "ラヴィリンソス"
+  },
+  "huracan": {
+    "mobNo": 40241,
+    "name": "フラカン",
+    "rank": "A",
+    "area": "コルシア島"
+  },
+  "ihnuxokiy": {
+    "mobNo": 60211,
+    "name": "イヌショキー",
+    "rank": "S",
+    "area": "コザマル・カ"
+  },
+  "ixion": {
+    "mobNo": 30361,
+    "name": "伝説の雷馬「イクシオン」",
+    "rank": "F",
+    "area": "ギラバニア湖畔地帯"
+  },
+  "ixtab": {
+    "mobNo": 40511,
+    "name": "イシュタム",
+    "rank": "S",
+    "area": "ラケティカ大森林"
+  },
+  "kaiser_behemoth": {
+    "mobNo": 20111,
+    "name": "カイザーベヒーモス",
+    "rank": "S",
+    "area": "クルザス西部高地"
+  },
+  "keheniheyamewi": {
+    "mobNo": 60441,
+    "name": "ケヘニヘヤメウィ",
+    "rank": "A",
+    "area": "シャーローニ荒野"
+  },
+  "kirlirger_the_abhorrent": {
+    "mobNo": 60111,
+    "name": "厭忌のキーリーゲー",
+    "rank": "S",
+    "area": "オルコ・パチャ"
+  },
+  "kurrea": {
+    "mobNo": 11731,
+    "name": "クーレア",
+    "rank": "A",
+    "area": "モードゥナ"
+  },
+  "laideronnette": {
+    "mobNo": 10711,
+    "name": "レドロネット",
+    "rank": "S",
+    "area": "中央森林"
+  },
+  "lampalagua": {
+    "mobNo": 11311,
+    "name": "バルウール",
+    "rank": "S",
+    "area": "東ザナラーン"
+  },
+  "leucrotta": {
+    "mobNo": 20611,
+    "name": "レウクロッタ",
+    "rank": "S",
+    "area": "アジス・ラー"
+  },
+  "lil_murderer": {
+    "mobNo": 40231,
+    "name": "リルマーダー",
+    "rank": "A",
+    "area": "コルシア島"
+  },
+  "lord_of_the_wyverns": {
+    "mobNo": 20441,
+    "name": "ワイバーンロード",
+    "rank": "A",
+    "area": "高地ドラヴァニア"
+  },
+  "luminare": {
+    "mobNo": 30341,
+    "name": "ルミナーレ",
+    "rank": "A",
+    "area": "ギラバニア湖畔地帯"
+  },
+  "lunatender_queen": {
+    "mobNo": 50441,
+    "name": "ルナテンダー・クイーン",
+    "rank": "A",
+    "area": "嘆きの海"
+  },
+  "lyuba": {
+    "mobNo": 20141,
+    "name": "リューバ",
+    "rank": "A",
+    "area": "クルザス西部高地"
+  },
+  "mahisha": {
+    "mobNo": 30331,
+    "name": "マヒシャ",
+    "rank": "A",
+    "area": "ギラバニア湖畔地帯"
+  },
+  "maliktender": {
+    "mobNo": 40331,
+    "name": "マリクテンダー",
+    "rank": "A",
+    "area": "アム・アレーン"
+  },
+  "marberry": {
+    "mobNo": 10531,
+    "name": "マーベリー",
+    "rank": "A",
+    "area": "高地ラノシア"
+  },
+  "mica_the_magical_mu": {
+    "mobNo": 60661,
+    "name": "マイカ・ザ・ムー：大団円",
+    "rank": "F",
+    "area": "リビング・メモリー"
+  },
+  "mindflayer": {
+    "mobNo": 10911,
+    "name": "マインドフレア",
+    "rank": "S",
+    "area": "南部森林"
+  },
+  "minerva": {
+    "mobNo": 50341,
+    "name": "ミネルウァ",
+    "rank": "A",
+    "area": "ガレマルド"
+  },
+  "minhocao": {
+    "mobNo": 11511,
+    "name": "ミニョーカオン",
+    "rank": "S",
+    "area": "北ザナラーン"
+  },
+  "mirka": {
+    "mobNo": 20131,
+    "name": "ミルカ",
+    "rank": "A",
+    "area": "クルザス西部高地"
+  },
+  "mousse_princess": {
+    "mobNo": 50431,
+    "name": "ムースプリンセス",
+    "rank": "A",
+    "area": "嘆きの海"
+  },
+  "nahn": {
+    "mobNo": 10431,
+    "name": "ナン",
+    "rank": "A",
+    "area": "西ラノシア"
+  },
+  "nandi": {
+    "mobNo": 10511,
+    "name": "ナンディ",
+    "rank": "S",
+    "area": "高地ラノシア"
+  },
+  "nariphon": {
+    "mobNo": 40141,
+    "name": "ナリーポン",
+    "rank": "A",
+    "area": "レイクランド"
+  },
+  "narrow_rift": {
+    "mobNo": 50611,
+    "name": "ナロー＝リフト",
+    "rank": "S",
+    "area": "ウルティマ・トゥーレ"
+  },
+  "nechuciho": {
+    "mobNo": 60141,
+    "name": "ネチュキホ",
+    "rank": "A",
+    "area": "オルコ・パチャ"
+  },
+  "neyoozoteel": {
+    "mobNo": 60311,
+    "name": "ネヨーゾテール",
+    "rank": "S",
+    "area": "ヤクテル樹海"
+  },
+  "noctilucale": {
+    "mobNo": 20661,
+    "name": "太古の脅威：ノクチルカ撃滅戦",
+    "rank": "F",
+    "area": "アジス・ラー"
+  },
+  "nuckelavee": {
+    "mobNo": 40131,
+    "name": "ナックラヴィー",
+    "rank": "A",
+    "area": "レイクランド"
+  },
+  "nunyunuwi": {
+    "mobNo": 11411,
+    "name": "ヌニュヌウィ",
+    "rank": "S",
+    "area": "南ザナラーン"
+  },
+  "o_poorest_pauldia": {
+    "mobNo": 40441,
+    "name": "ポールディア",
+    "rank": "A",
+    "area": "イル・メグ"
+  },
+  "odin": {
+    "mobNo": 11861,
+    "name": "古の闘神「オーディン」",
+    "rank": "F",
+    "area": "黒衣森全域"
+  },
+  "okina": {
+    "mobNo": 30411,
+    "name": "オキナ",
+    "rank": "S",
+    "area": "紅玉海"
+  },
+  "oni_yumemi": {
+    "mobNo": 30441,
+    "name": "オニユメミ",
+    "rank": "A",
+    "area": "紅玉海"
+  },
+  "ophioneus": {
+    "mobNo": 50511,
+    "name": "オピオネウス",
+    "rank": "S",
+    "area": "エルピス"
+  },
+  "orcus": {
+    "mobNo": 30131,
+    "name": "オルクス",
+    "rank": "A",
+    "area": "ギラバニア辺境地帯"
+  },
+  "orghana": {
+    "mobNo": 30611,
+    "name": "オルガナ",
+    "rank": "S",
+    "area": "アジムステップ"
+  },
+  "petalodus": {
+    "mobNo": 50531,
+    "name": "ペタロドゥス",
+    "rank": "A",
+    "area": "エルピス"
+  },
+  "pkuucha": {
+    "mobNo": 60241,
+    "name": "プクーチャ",
+    "rank": "A",
+    "area": "コザマル・カ"
+  },
+  "queen_hawk": {
+    "mobNo": 60131,
+    "name": "クイーンホーク",
+    "rank": "A",
+    "area": "オルコ・パチャ"
+  },
+  "rrax_yitya": {
+    "mobNo": 60341,
+    "name": "ラシュイチャ",
+    "rank": "A",
+    "area": "ヤクテル樹海"
+  },
+  "ruminator": {
+    "mobNo": 50411,
+    "name": "ルミネイター",
+    "rank": "S",
+    "area": "嘆きの海"
+  },
+  "rusalka": {
+    "mobNo": 40631,
+    "name": "ルサルカ",
+    "rank": "A",
+    "area": "テンペスト"
+  },
+  "sabotender_bailarina": {
+    "mobNo": 11231,
+    "name": "サボテンダー・バイラリーナ",
+    "rank": "A",
+    "area": "中央ザナラーン"
+  },
+  "safat": {
+    "mobNo": 11611,
+    "name": "サファト",
+    "rank": "S",
+    "area": "クルザス中央高地"
+  },
+  "sally_the_sweeper": {
+    "mobNo": 60631,
+    "name": "サリー・ザ・スイーパー",
+    "rank": "A",
+    "area": "リビング・メモリー"
+  },
+  "salt_and_light": {
+    "mobNo": 30311,
+    "name": "ソルト・アンド・ライト",
+    "rank": "S",
+    "area": "ギラバニア湖畔地帯"
+  },
+  "sansheya": {
+    "mobNo": 60411,
+    "name": "サンシェヤ",
+    "rank": "S",
+    "area": "シャーローニ荒野"
+  },
+  "senmurv": {
+    "mobNo": 20411,
+    "name": "セーンムルウ",
+    "rank": "S",
+    "area": "高地ドラヴァニア"
+  },
+  "sisiutl": {
+    "mobNo": 20241,
+    "name": "シシウトゥル",
+    "rank": "A",
+    "area": "アバラシア雲海"
+  },
+  "sphatika": {
+    "mobNo": 50211,
+    "name": "スパティカ",
+    "rank": "S",
+    "area": "サベネア島"
+  },
+  "starcrier": {
+    "mobNo": 60331,
+    "name": "幻煌鳥",
+    "rank": "A",
+    "area": "ヤクテル樹海"
+  },
+  "storsie": {
+    "mobNo": 50141,
+    "name": "ストーシー",
+    "rank": "A",
+    "area": "ラヴィリンソス"
+  },
+  "sugaar": {
+    "mobNo": 40341,
+    "name": "シュガール",
+    "rank": "A",
+    "area": "アム・アレーン"
+  },
+  "sugriva": {
+    "mobNo": 50231,
+    "name": "スグリーヴァ",
+    "rank": "A",
+    "area": "サベネア島"
+  },
+  "sum": {
+    "mobNo": 30641,
+    "name": "ソム",
+    "rank": "A",
+    "area": "アジムステップ"
+  },
+  "supay": {
+    "mobNo": 40531,
+    "name": "スペイ",
+    "rank": "A",
+    "area": "ラケティカ大森林"
+  },
+  "tamamo_gozen": {
+    "mobNo": 30561,
+    "name": "九尾の妖狐「玉藻御前」",
+    "rank": "F",
+    "area": "ヤンサ"
+  },
+  "tarchia": {
+    "mobNo": 40311,
+    "name": "タルキア",
+    "rank": "S",
+    "area": "アム・アレーン"
+  },
+  "the_forecaster": {
+    "mobNo": 60611,
+    "name": "ウェザーリポーター",
+    "rank": "S",
+    "area": "リビング・メモリー"
+  },
+  "the_garlok": {
+    "mobNo": 10311,
+    "name": "ガーロック",
+    "rank": "S",
+    "area": "東ラノシア"
+  },
+  "the_mudman": {
+    "mobNo": 40431,
+    "name": "泥人",
+    "rank": "A",
+    "area": "イル・メグ"
+  },
+  "the_pale_rider": {
+    "mobNo": 20511,
+    "name": "ペイルライダー",
+    "rank": "S",
+    "area": "低地ドラヴァニア"
+  },
+  "the_raintriller": {
+    "mobNo": 60231,
+    "name": "レイントリラー",
+    "rank": "A",
+    "area": "コザマル・カ"
+  },
+  "thousand_cast_theda": {
+    "mobNo": 11011,
+    "name": "サウザンドキャスト・セダ",
+    "rank": "S",
+    "area": "北部森林"
+  },
+  "ttokrrone": {
+    "mobNo": 60461,
+    "name": "トクローネ：荒野の死闘",
+    "rank": "F",
+    "area": "シャーローニ荒野"
+  },
+  "tyger": {
+    "mobNo": 40111,
+    "name": "ティガー",
+    "rank": "S",
+    "area": "レイクランド"
+  },
+  "udumbara": {
+    "mobNo": 30111,
+    "name": "ウドンゲ",
+    "rank": "S",
+    "area": "ギラバニア辺境地帯"
+  },
+  "urna_variabilis": {
+    "mobNo": 60541,
+    "name": "ヴァリアポッド",
+    "rank": "A",
+    "area": "ヘリテージファウンド"
+  },
+  "vochstein": {
+    "mobNo": 30231,
+    "name": "バックスタイン",
+    "rank": "A",
+    "area": "ギラバニア山岳地帯"
+  },
+  "vogaal_ja": {
+    "mobNo": 10131,
+    "name": "醜男のヴォガージャ",
+    "rank": "A",
+    "area": "中央ラノシア"
+  },
+  "wulgaru": {
+    "mobNo": 10811,
+    "name": "ウルガル",
+    "rank": "S",
+    "area": "東部森林"
+  },
+  "yehehetoauapyo": {
+    "mobNo": 60431,
+    "name": "エヘヘトーワポ",
+    "rank": "A",
+    "area": "シャーローニ荒野"
+  },
+  "yilan": {
+    "mobNo": 50241,
+    "name": "ユラン",
+    "rank": "A",
+    "area": "サベネア島"
+  },
+  "zona_seeker": {
+    "mobNo": 11111,
+    "name": "ゾーナ・シーカー",
+    "rank": "S",
+    "area": "西ザナラーン"
+  }
+}
