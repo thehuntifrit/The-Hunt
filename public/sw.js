@@ -48,16 +48,31 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+  const hostname = url.hostname;
 
-  // API通信やリアルタイム通信、FirestoreはSWキャッシュの対象外
-  if (
-    url.hostname.includes('firestore.googleapis.com') ||
-    url.hostname.includes('firebase') ||
-    url.hostname.includes('identitytoolkit') ||
-    url.hostname.includes('securetoken') ||
-    url.hostname.includes('workers.dev') ||
-    event.request.method !== 'GET'
-  ) {
+  // SWキャッシュ対象外にするホスト
+  const excludedHosts = new Set([
+    'firestore.googleapis.com',
+    'identitytoolkit.googleapis.com',
+    'securetoken.googleapis.com',
+    'firebasestorage.googleapis.com',
+    'firebaseinstallations.googleapis.com'
+  ]);
+
+  // サブドメインも含めて除外するドメイン
+  const excludedDomains = [
+    'firebaseio.com',
+    'firebaseapp.com',
+    'workers.dev'
+  ];
+
+  const isExcludedHost =
+    excludedHosts.has(hostname) ||
+    excludedDomains.some(domain =>
+      hostname === domain || hostname.endsWith(`.${domain}`)
+    );
+
+  if (isExcludedHost || event.request.method !== 'GET') {
     return;
   }
 
@@ -68,7 +83,7 @@ self.addEventListener('fetch', (event) => {
         if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache).catch(() => {});
+            cache.put(event.request, responseToCache).catch(() => { });
           });
         }
         return networkResponse;
@@ -78,7 +93,6 @@ self.addEventListener('fetch', (event) => {
         if (cachedResponse) {
           return cachedResponse;
         }
-        // HTMLフォールバック
         if (event.request.headers.get('accept')?.includes('text/html')) {
           return caches.match('./index.html');
         }
