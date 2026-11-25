@@ -3,7 +3,7 @@ name: Fal Data Fetch
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "50 7 * * *"
   workflow_dispatch:
 
 permissions:
