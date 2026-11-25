@@ -99,6 +99,37 @@ export function initModal(): void {
         });
     }
 
+    if (DOM.modalTimeInput) {
+        const timeInput = DOM.modalTimeInput;
+        timeInput.setAttribute("lang", "en");
+        timeInput.setAttribute("inputmode", "numeric");
+        timeInput.setAttribute("autocomplete", "off");
+
+        timeInput.addEventListener("focus", () => {
+            timeInput.setAttribute("lang", "en");
+        });
+
+        // 全角数字・記号のペースト時、自動で半角数字・有効な日時形式にサニタイズ
+        timeInput.addEventListener("paste", (e) => {
+            const pasteData = e.clipboardData?.getData("text") || "";
+            if (!pasteData) return;
+
+            const half = pasteData
+                .replace(/[０-９]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+                .replace(/[／]/g, '-')
+                .replace(/[：]/g, ':')
+                .trim();
+
+            const match = half.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})[ T](\d{1,2}):(\d{2})/);
+            if (match) {
+                e.preventDefault();
+                const [_, y, m, d, h, min] = match;
+                const iso = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T${h.padStart(2, '0')}:${min.padStart(2, '0')}`;
+                timeInput.value = iso;
+            }
+        });
+    }
+
     if (DOM.authCancelBtn) {
         DOM.authCancelBtn.addEventListener("click", closeAuthModal);
     }
