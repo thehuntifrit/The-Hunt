@@ -18,10 +18,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  # ビルドジョブ: ソースコードをビルドし、公開用アーティファクトを作成
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -48,6 +46,14 @@ jobs:
         with:
           path: './dist'
 
+  # デプロイジョブ: ビルド完了後に実行され、GitHub Pages へデプロイ
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
