@@ -354,7 +354,7 @@
 }
 
 .appnav-panel.is-docked .js-appnav-panel-item:not(.hidden) {
-  padding: 14px 20px 18px;
+  padding: 12px clamp(10px, 3vw, 20px) 16px;
 }
 
 /* 3-3. 共通の装飾 */
@@ -552,15 +552,15 @@
 .appnav-rank-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: clamp(3px, 1vw, 8px);
   width: 100%;
 }
 
 .appnav-rank-tab {
-  --tip: 9px;
-  height: 38px;
-  padding-inline: 14px;
-  font-size: 15px;
+  --tip: clamp(5px, 1.5vw, 9px);
+  height: clamp(34px, 8vw, 38px);
+  padding-inline: clamp(6px, 2vw, 14px);
+  font-size: clamp(12px, 3.2vw, 15px);
   clip-path: polygon(
     var(--tip) 0, calc(100% - var(--tip)) 0,
     100% 50%,
@@ -597,29 +597,14 @@
   mask-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 10,5 5,10 0,5'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 10,5 5,10 0,5'/%3E%3C/svg%3E");
-  -webkit-mask-position: left 9px center, right 9px center;
-  mask-position: left 9px center, right 9px center;
-  -webkit-mask-size: 6px 6px, 6px 6px;
-  mask-size: 6px 6px, 6px 6px;
+  -webkit-mask-position: left clamp(4px, 1.4vw, 9px) center, right clamp(4px, 1.4vw, 9px) center;
+  mask-position: left clamp(4px, 1.4vw, 9px) center, right clamp(4px, 1.4vw, 9px) center;
+  -webkit-mask-size: clamp(4px, 1vw, 6px) clamp(4px, 1vw, 6px), clamp(4px, 1vw, 6px) clamp(4px, 1vw, 6px);
+  mask-size: clamp(4px, 1vw, 6px) clamp(4px, 1vw, 6px), clamp(4px, 1vw, 6px) clamp(4px, 1vw, 6px);
   -webkit-mask-repeat: no-repeat, no-repeat;
   mask-repeat: no-repeat, no-repeat;
   filter: drop-shadow(0 0 3px var(--rk));
   transition: opacity 0.15s ease;
-}
-
-@media (max-width: 420px) {
-  .appnav-rank-tab {
-    --tip: 7px;
-    padding-inline: 10px;
-    font-size: 13px;
-  }
-
-  .appnav-rank-tab::after {
-    -webkit-mask-position: left 7px center, right 7px center;
-    mask-position: left 7px center, right 7px center;
-    -webkit-mask-size: 5px 5px, 5px 5px;
-    mask-size: 5px 5px, 5px 5px;
-  }
 }
 
 .appnav-rank-tab[data-rank="ALL"] {
@@ -644,11 +629,11 @@
 
 /* 5-3. エリアボタン（平行四辺形 + 下線発光） */
 .area-filter-btn {
-  --cut: 5px;
-  height: 32px;
-  padding: 1px 8px;
+  --cut: clamp(3px, 0.8vw, 5px);
+  height: clamp(28px, 7vw, 32px);
+  padding: 1px clamp(3px, 1vw, 8px);
   line-height: 1;
-  font-size: 13px;
+  font-size: clamp(11px, 2.8vw, 13px);
   color: #aebbd2;
   outline: none;
   white-space: nowrap;
@@ -665,8 +650,8 @@
   content: "";
   position: absolute;
   bottom: 1px;
-  left: 8px;
-  right: 8px;
+  left: clamp(4px, 1.2vw, 8px);
+  right: clamp(4px, 1.2vw, 8px);
   height: 2px;
   background: var(--rk);
   opacity: 0;
@@ -685,8 +670,8 @@
 
 /* 1ページに最大6個 */
 .area-grid-container.appnav-area-carousel-track .area-filter-btn {
-  flex: 0 0 calc((100% - (5 * 6px)) / 6);
-  min-width: 48px;
+  flex: 0 0 calc((100% - (5 * var(--area-gap, 6px))) / 6);
+  min-width: 40px;
   scroll-snap-align: start;
 }
 
@@ -728,6 +713,7 @@
   position: relative;
   display: flex;
   align-items: center;
+  --area-gap: clamp(2px, 0.8vw, 6px);
   /* 左右5pxずつ広げて、ボタンの端を Rank タブの端に揃える(選択中の光が切れない余白にもなる) */
   width: calc(100% + 10px);
   margin-inline: -5px;
@@ -765,7 +751,7 @@
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  gap: 6px;
+  gap: var(--area-gap, 6px);
   width: 100%;
   padding: 5px 5px 6px;
 }
