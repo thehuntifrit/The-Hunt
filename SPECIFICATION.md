@@ -89,9 +89,11 @@ The-Hunt/
 │   ├── js/lib/                # 外部ライブラリ (marked, DOMPurify)
 │   └── sw.js                  # Service Worker (本番用キャッシュ)
 │
+├── scripts/                   # 運用・連携スクリプト
+│   └── faloop.py              # Faloop WebSocket → Firestoreブリッジ
+│
 ├── server/                    # サーバーサイドコンポーネント
 │   ├── cloudflare-worker.js   # Lodestone認証プロキシ・時刻取得
-│   ├── faloop.py              # Faloop WebSocket → Firestoreブリッジ
 │   └── firestore.rules        # Firestoreセキュリティルール
 │
 └── old/                       # 旧版（JS版バックアップ + specification.md）
@@ -551,7 +553,7 @@ Sモブは以下の条件の組み合わせで出現する:
 - 機能: Lodestoneキャラクターページの取得（CORS回避）
 - セキュリティ: Firebase Token検証 / 国制限(JP) / Bot UA拒否
 
-### 16.2 Faloop ブリッジ (`server/faloop.py`)
+### 16.2 Faloop ブリッジ (`scripts/faloop.py`)
 
 - Faloop (モブハント情報サービス) のWebSocketをリッスン
 - Ifritサーバーの討伐報告を抽出

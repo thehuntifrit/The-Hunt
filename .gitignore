@@ -13,3 +13,10 @@ service-account.json
 faloop-output/
 gaia-response.json
 ifrit-kills.json
+
+# Python
+__pycache__/
+*.pyc
+
+# Server
+server/

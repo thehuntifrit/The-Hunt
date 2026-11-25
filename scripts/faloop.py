@@ -1,3 +1,4 @@
+import os
 import json
 import websocket
 import firebase_admin
@@ -5,11 +6,33 @@ from firebase_admin import credentials, firestore
 from datetime import datetime
 
 # ---------------------------
+# パス解決
+# ---------------------------
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# ---------------------------
 # Firebase 初期化
 # ---------------------------
-# serviceAccountKey.json は The-Hunt プロジェクトの Firebase Console から取得したものを配置してください
-cred = credentials.Certificate("serviceAccountKey.json")
-firebase_admin.initialize_app(cred)
+# serviceAccountKey.json または service-account.json を探索
+SERVICE_ACCOUNT_CANDIDATES = [
+    os.environ.get("FIREBASE_SERVICE_ACCOUNT_PATH", ""),
+    os.path.join(BASE_DIR, "serviceAccountKey.json"),
+    os.path.join(BASE_DIR, "service-account.json"),
+    "serviceAccountKey.json",
+    "service-account.json",
+]
+
+cred_path = next((p for p in SERVICE_ACCOUNT_CANDIDATES if p and os.path.exists(p)), None)
+if cred_path:
+    cred = credentials.Certificate(cred_path)
+    firebase_admin.initialize_app(cred)
+else:
+    # デフォルト認証（GCP環境等）を試行
+    try:
+        firebase_admin.initialize_app()
+    except Exception as e:
+        print(f"Warning: Firebase credentials not found. {e}")
+
 db = firestore.client()
 
 # ---------------------------
@@ -18,13 +41,37 @@ db = firestore.client()
 TARGET_WORLD = "ifrit"
 
 # mob_data.json を読み込んでランクや名称を特定できるようにする
-try:
-    with open("json/mob_data.json", "r", encoding="utf-8") as f:
-        MOB_DATA_ROOT = json.load(f)
-        MOB_DATA = MOB_DATA_ROOT.get("mobs", {})
-except Exception as e:
-    print(f"Error loading mob_data.json: {e}")
-    MOB_DATA = {}
+MOB_DATA = {}
+mob_data_candidates = [
+    os.path.join(BASE_DIR, "public", "json", "mob_data.json"),
+    os.path.join(BASE_DIR, "json", "mob_data.json"),
+    "public/json/mob_data.json",
+    "json/mob_data.json"
+]
+for p in mob_data_candidates:
+    if os.path.exists(p):
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                MOB_DATA_ROOT = json.load(f)
+                MOB_DATA = MOB_DATA_ROOT.get("mobs", {})
+                break
+        except Exception as e:
+            print(f"Error loading {p}: {e}")
+
+# faloop-mob-map.json があれば全モブ対応マップを自動ロード
+FALOOP_MAP_DATA = {}
+map_candidates = [
+    os.path.join(BASE_DIR, "public", "json", "faloop-mob-map.json"),
+    "public/json/faloop-mob-map.json"
+]
+for p in map_candidates:
+    if os.path.exists(p):
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                FALOOP_MAP_DATA = json.load(f)
+                break
+        except Exception as e:
+            print(f"Error loading {p}: {e}")
 
 # Faloop Mob ID (mobId2: 英語名) -> このサイトの管理番号(No) へのマッピング
 # websocket の mobId2 に含まれる小文字の英語名と mob_data.json のキーを対応させます
@@ -57,7 +104,13 @@ FALOOP_TO_NO_MAP = {
 def save_to_firestore(data):
     # mobId2 (英語名) を優先して取得し、小文字でマッチング
     faloop_mob_id = str(data.get("mobId2") or data.get("mobId")).lower()
-    mob_no = FALOOP_TO_NO_MAP.get(faloop_mob_id)
+    
+    # 1. faloop-mob-map.json から取得、なければフォールバック
+    mob_no = None
+    if faloop_mob_id in FALOOP_MAP_DATA:
+        mob_no = FALOOP_MAP_DATA[faloop_mob_id].get("mobNo")
+    if not mob_no:
+        mob_no = FALOOP_TO_NO_MAP.get(faloop_mob_id)
     
     if not mob_no:
         # マッピングがない場合はスキップ
@@ -65,11 +118,9 @@ def save_to_firestore(data):
         return
 
     mob_no_str = str(mob_no)
-    mob_info = MOB_DATA.get(mob_no_str)
-    if not mob_info:
-        return
+    mob_info = MOB_DATA.get(mob_no_str, {})
+    rank = mob_info.get("r") or mob_info.get("rank") or (FALOOP_MAP_DATA.get(faloop_mob_id, {}).get("rank"))
 
-    rank = mob_info.get("rank")
     # ランクに応じて保存先のドキュメントを決定
     doc_id = "s_latest"
     if rank == "A":
