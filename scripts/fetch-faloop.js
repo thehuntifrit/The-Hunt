@@ -11,7 +11,7 @@ fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 const context = await chromium.launchPersistentContext(
   PROFILE_DIR,
   {
-    headless: false,
+    headless: process.env.CI === "true",
   }
 );
 
