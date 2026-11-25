@@ -517,34 +517,26 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  border: none;
+  padding: 1px;
   font-family: var(--font-ui);
   font-weight: 600;
   letter-spacing: 0.04em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
-  border: 1px solid #5c5035;
-  border-radius: 3px;
-  background: linear-gradient(180deg, #1d2a47 0%, #111b30 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.45);
-  transition: transform 0.08s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  transition: transform 0.08s ease, filter 0.15s ease, color 0.15s ease;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
 
-/* 選択中に面を染める層 */
+/* 内側の面（外枠の1px内側を clip-path で抜く） */
 :is(.appnav-rank-tab, .area-filter-btn)::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: 1px;
   z-index: -1;
-  border-radius: inherit;
-  background: var(--rk);
-  opacity: 0;
+  clip-path: inherit;
   pointer-events: none;
-}
-
-:is(.appnav-rank-tab:not(.is-active), .area-filter-btn:not(.is-selected)):hover {
-  border-color: #a8965f;
-  background: linear-gradient(180deg, #27385c 0%, #16233e 100%);
+  transition: background 0.15s ease;
 }
 
 :is(.appnav-rank-tab, .area-filter-btn):active {
@@ -552,11 +544,11 @@
 }
 
 :is(.appnav-rank-tab, .area-filter-btn):focus-visible {
-  outline: 2px solid var(--c-cyan);
-  outline-offset: 2px;
+  outline: none;
+  filter: drop-shadow(0 0 4px var(--c-cyan));
 }
 
-/* 5-2. ランクタブ */
+/* 5-2. ランクタブ（クリスタル六角形 + 選択時◆オーナメント） */
 .appnav-rank-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -565,8 +557,69 @@
 }
 
 .appnav-rank-tab {
+  --tip: 9px;
   height: 38px;
+  padding-inline: 14px;
   font-size: 15px;
+  clip-path: polygon(
+    var(--tip) 0, calc(100% - var(--tip)) 0,
+    100% 50%,
+    calc(100% - var(--tip)) 100%, var(--tip) 100%,
+    0 50%
+  );
+  background: linear-gradient(180deg, #8b784a 0%, #2b3c5e 38%, #2b3c5e 62%, #6b5d3b 100%);
+}
+
+.appnav-rank-tab::before {
+  background: linear-gradient(180deg, #162644 0%, #0b1426 50%, #101d36 100%);
+}
+
+.appnav-rank-tab:not(.is-active):hover {
+  background: linear-gradient(180deg, #d8c48a 0%, #5c6f94 40%, #5c6f94 60%, #a8965f 100%);
+}
+
+.appnav-rank-tab:not(.is-active):hover::before {
+  background: linear-gradient(180deg, #213760 0%, #111f38 50%, #16284a 100%);
+}
+
+/* 選択中の左右ひし形オーナメント */
+.appnav-rank-tab::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  background: #f7ebc3;
+  -webkit-mask-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 10,5 5,10 0,5'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 10,5 5,10 0,5'/%3E%3C/svg%3E");
+  mask-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 10,5 5,10 0,5'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 10,5 5,10 0,5'/%3E%3C/svg%3E");
+  -webkit-mask-position: left 9px center, right 9px center;
+  mask-position: left 9px center, right 9px center;
+  -webkit-mask-size: 6px 6px, 6px 6px;
+  mask-size: 6px 6px, 6px 6px;
+  -webkit-mask-repeat: no-repeat, no-repeat;
+  mask-repeat: no-repeat, no-repeat;
+  filter: drop-shadow(0 0 3px var(--rk));
+  transition: opacity 0.15s ease;
+}
+
+@media (max-width: 420px) {
+  .appnav-rank-tab {
+    --tip: 7px;
+    padding-inline: 10px;
+    font-size: 13px;
+  }
+
+  .appnav-rank-tab::after {
+    -webkit-mask-position: left 7px center, right 7px center;
+    mask-position: left 7px center, right 7px center;
+    -webkit-mask-size: 5px 5px, 5px 5px;
+    mask-size: 5px 5px, 5px 5px;
+  }
 }
 
 .appnav-rank-tab[data-rank="ALL"] {
@@ -589,21 +642,45 @@
   color: var(--c-f);
 }
 
-/* 5-3. エリアボタン */
+/* 5-3. エリアボタン（平行四辺形 + 下線発光） */
 .area-filter-btn {
+  --cut: 5px;
   height: 32px;
-  padding: 0 4px;
+  padding: 1px 8px;
   line-height: 1;
   font-size: 13px;
-  border-radius: 2px;
   color: #aebbd2;
   outline: none;
   white-space: nowrap;
   box-sizing: border-box;
+  clip-path: polygon(var(--cut) 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%);
+  background: #2b456e;
+}
+
+.area-filter-btn::before {
+  background: #0a1529;
+}
+
+.area-filter-btn::after {
+  content: "";
+  position: absolute;
+  bottom: 1px;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  background: var(--rk);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
 }
 
 .area-filter-btn:not(.is-selected):hover {
   color: #fff;
+  background: #6c8ab8;
+}
+
+.area-filter-btn:not(.is-selected):hover::before {
+  background: #122342;
 }
 
 /* 1ページに最大6個 */
@@ -614,16 +691,36 @@
 }
 
 /* 選択中(上のランク色・エリアボタンの指定より後ろに置くこと) */
-.appnav-rank-tab.is-active,
-.area-filter-btn.is-selected {
-  border-color: var(--rk);
+.appnav-rank-tab.is-active {
+  background: var(--rk);
   color: #fff;
-  box-shadow: inset 0 0 0 1px var(--rk), 0 0 6px -1px var(--rk);
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--rk) 50%, transparent));
 }
 
-.appnav-rank-tab.is-active::before,
+.appnav-rank-tab.is-active::before {
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--rk) 16%, #0d192e) 0%,
+    color-mix(in srgb, var(--rk) 42%, #16294a) 50%,
+    color-mix(in srgb, var(--rk) 16%, #0d192e) 100%
+  );
+}
+
+.appnav-rank-tab.is-active::after {
+  opacity: 1;
+}
+
+.area-filter-btn.is-selected {
+  background: var(--rk);
+  color: #fff;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--rk) 45%, transparent));
+}
+
 .area-filter-btn.is-selected::before {
-  opacity: 0.4;
+  background: linear-gradient(180deg, #0d1c36 0%, color-mix(in srgb, var(--rk) 34%, #0c1930) 100%);
+}
+
+.area-filter-btn.is-selected::after {
+  opacity: 1;
 }
 
 /* 5-4. エリアのスクロール領域 */
