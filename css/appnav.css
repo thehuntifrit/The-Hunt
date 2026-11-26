@@ -209,8 +209,7 @@
 }
 
 .appnav-panel.is-open,
-.appnav-panel.expanded,
-#appnav.expanded .appnav-panel {
+.appnav-panel.expanded {
   display: flex;
 }
 
@@ -268,7 +267,7 @@
 
 
 /* 3. パネルの種類 */
-.appnav-panel:is(.is-popup, .is-docked) {
+.appnav-panel:is(.is-popup, .is-docked, .is-floating) {
   overflow: visible;
   background: linear-gradient(180deg, rgba(13, 56, 117, .97) 0%, rgba(5, 20, 46, .98) 100%);
 }
@@ -357,10 +356,74 @@
   padding: 12px clamp(10px, 3vw, 20px) 16px;
 }
 
+/* 3-2b. フローティング窓(PC用RANKオーバーレイ) */
+@media (min-width: 900px) {
+  .appnav-panel.is-floating {
+    top: 0;
+    left: 0;
+    right: auto;
+    bottom: auto;
+    transform: none;
+    width: 400px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - var(--footer-safe) - 24px);
+    border: 1px solid #9a8a5c;
+    border-radius: 3px;
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, .7),
+      0 12px 36px rgba(0, 0, 0, .72),
+      inset 0 0 40px rgba(56, 189, 248, .05);
+  }
+
+  .appnav-panel.is-floating .js-appnav-panel-item:not(.hidden) {
+    padding: 12px 14px 16px;
+  }
+
+  .appnav-panel.is-floating #sidebar-panel-rank .appnav-section-header {
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .appnav-panel.is-floating.is-dragging #sidebar-panel-rank .appnav-section-header {
+    cursor: grabbing;
+  }
+
+  /* モバイルと同等の引き締まったボタンサイズ感に合わせる */
+  .appnav-panel.is-floating .appnav-rank-tabs {
+    gap: 4px;
+  }
+
+  .appnav-panel.is-floating .appnav-rank-tab {
+    --tip: 7px;
+    height: 35px;
+    padding-inline: 8px;
+    font-size: 13.5px;
+  }
+
+  .appnav-panel.is-floating .appnav-rank-tab::after {
+    -webkit-mask-position: left 6px center, right 6px center;
+    mask-position: left 6px center, right 6px center;
+    -webkit-mask-size: 5px 5px, 5px 5px;
+    mask-size: 5px 5px, 5px 5px;
+  }
+
+  .appnav-panel.is-floating .appnav-area-carousel-wrapper {
+    --area-gap: 4px;
+  }
+
+  .appnav-panel.is-floating .area-filter-btn {
+    --cut: 4px;
+    height: 31px;
+    padding: 1px 5px;
+    font-size: 12.5px;
+  }
+}
+
 /* 3-3. 共通の装飾 */
 
 /* 二重枠の内側の線(上は上端の帯の下に3pxあける) */
-.appnav-panel:is(.is-popup, .is-docked)::before {
+.appnav-panel:is(.is-popup, .is-docked, .is-floating)::before {
   content: "";
   position: absolute;
   inset: 6px 3px 3px;
@@ -373,7 +436,7 @@
   display: none;
 }
 
-.appnav-panel:is(.is-popup, .is-docked) .appnav-popup-close {
+.appnav-panel:is(.is-popup, .is-docked, .is-floating) .appnav-popup-close {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -394,8 +457,8 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.appnav-panel:is(.is-popup, .is-docked) .appnav-popup-close:hover,
-.appnav-panel:is(.is-popup, .is-docked) .appnav-popup-close:focus-visible {
+.appnav-panel:is(.is-popup, .is-docked, .is-floating) .appnav-popup-close:hover,
+.appnav-panel:is(.is-popup, .is-docked, .is-floating) .appnav-popup-close:focus-visible {
   color: #fff;
   border-color: var(--c-cyan);
   box-shadow: 0 0 8px rgba(34, 211, 238, .6);
@@ -403,7 +466,7 @@
 }
 
 /* 四隅のひし形 */
-.appnav-panel:is(.is-popup, .is-docked) .ff-corner {
+.appnav-panel:is(.is-popup, .is-docked, .is-floating) .ff-corner {
   display: block;
   position: absolute;
   width: 7px;
@@ -414,22 +477,22 @@
   pointer-events: none;
 }
 
-.appnav-panel:is(.is-popup, .is-docked) .ff-corner.tl {
+.appnav-panel:is(.is-popup, .is-docked, .is-floating) .ff-corner.tl {
   top: -4px;
   left: -4px;
 }
 
-.appnav-panel:is(.is-popup, .is-docked) .ff-corner.tr {
+.appnav-panel:is(.is-popup, .is-docked, .is-floating) .ff-corner.tr {
   top: -4px;
   right: -4px;
 }
 
-.appnav-panel:is(.is-popup, .is-docked) .ff-corner.bl {
+.appnav-panel:is(.is-popup, .is-docked, .is-floating) .ff-corner.bl {
   bottom: -4px;
   left: -4px;
 }
 
-.appnav-panel:is(.is-popup, .is-docked) .ff-corner.br {
+.appnav-panel:is(.is-popup, .is-docked, .is-floating) .ff-corner.br {
   bottom: -4px;
   right: -4px;
 }
@@ -504,7 +567,7 @@
 .appnav-filter-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 7px;
   width: 100%;
 }
 
@@ -520,21 +583,22 @@
   border: none;
   padding: 1px;
   font-family: var(--font-ui);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
   transition: transform 0.08s ease, filter 0.15s ease, color 0.15s ease;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
 
-/* 内側の面（外枠の1px内側を clip-path で抜く） */
+/* 内側の面（外枠の1px内側を clip-path で抜き、立体ベゼル質感を与える） */
 :is(.appnav-rank-tab, .area-filter-btn)::before {
   content: "";
   position: absolute;
   inset: 1px;
   z-index: -1;
   clip-path: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -2px 0 rgba(0, 0, 0, 0.45);
   pointer-events: none;
   transition: background 0.15s ease;
 }
@@ -552,26 +616,26 @@
 .appnav-rank-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: clamp(3px, 1vw, 8px);
+  gap: clamp(2px, 0.6vw, 4px);
   width: 100%;
 }
 
 .appnav-rank-tab {
-  --tip: clamp(5px, 1.5vw, 9px);
-  height: clamp(34px, 8vw, 38px);
+  --tip: clamp(6px, 1.5vw, 9px);
+  height: clamp(35px, 8vw, 38px);
   padding-inline: clamp(6px, 2vw, 14px);
-  font-size: clamp(12px, 3.2vw, 15px);
+  font-size: clamp(13px, 3.2vw, 15.5px);
   clip-path: polygon(
     var(--tip) 0, calc(100% - var(--tip)) 0,
     100% 50%,
     calc(100% - var(--tip)) 100%, var(--tip) 100%,
     0 50%
   );
-  background: linear-gradient(180deg, #8b784a 0%, #2b3c5e 38%, #2b3c5e 62%, #6b5d3b 100%);
+  background: linear-gradient(180deg, #9a8654 0%, #314469 40%, #243454 60%, #75653f 100%);
 }
 
 .appnav-rank-tab::before {
-  background: linear-gradient(180deg, #162644 0%, #0b1426 50%, #101d36 100%);
+  background: linear-gradient(180deg, #1d3157 0%, #12213d 48%, #0b1529 52%, #132342 100%);
 }
 
 .appnav-rank-tab:not(.is-active):hover {
@@ -579,7 +643,7 @@
 }
 
 .appnav-rank-tab:not(.is-active):hover::before {
-  background: linear-gradient(180deg, #213760 0%, #111f38 50%, #16284a 100%);
+  background: linear-gradient(180deg, #274173 0%, #172b4f 48%, #101e38 52%, #1a3057 100%);
 }
 
 /* 選択中の左右ひし形オーナメント */
@@ -597,8 +661,8 @@
   mask-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 10,5 5,10 0,5'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 10,5 5,10 0,5'/%3E%3C/svg%3E");
-  -webkit-mask-position: left clamp(4px, 1.4vw, 9px) center, right clamp(4px, 1.4vw, 9px) center;
-  mask-position: left clamp(4px, 1.4vw, 9px) center, right clamp(4px, 1.4vw, 9px) center;
+  -webkit-mask-position: left clamp(5px, 1.4vw, 10px) center, right clamp(5px, 1.4vw, 10px) center;
+  mask-position: left clamp(5px, 1.4vw, 10px) center, right clamp(5px, 1.4vw, 10px) center;
   -webkit-mask-size: clamp(4px, 1vw, 6px) clamp(4px, 1vw, 6px), clamp(4px, 1vw, 6px) clamp(4px, 1vw, 6px);
   mask-size: clamp(4px, 1vw, 6px) clamp(4px, 1vw, 6px), clamp(4px, 1vw, 6px) clamp(4px, 1vw, 6px);
   -webkit-mask-repeat: no-repeat, no-repeat;
@@ -629,29 +693,30 @@
 
 /* 5-3. エリアボタン（平行四辺形 + 下線発光） */
 .area-filter-btn {
-  --cut: clamp(3px, 0.8vw, 5px);
-  height: clamp(28px, 7vw, 32px);
-  padding: 1px clamp(3px, 1vw, 8px);
+  --cut: clamp(4px, 0.8vw, 6px);
+  height: clamp(31px, 7.5vw, 35px);
+  padding: 1px clamp(4px, 1vw, 8px);
   line-height: 1;
-  font-size: clamp(11px, 2.8vw, 13px);
+  font-size: clamp(12px, 3vw, 14px);
+  font-weight: 600;
   color: #aebbd2;
   outline: none;
   white-space: nowrap;
   box-sizing: border-box;
   clip-path: polygon(var(--cut) 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%);
-  background: #2b456e;
+  background: linear-gradient(180deg, #436291 0%, #243a5e 100%);
 }
 
 .area-filter-btn::before {
-  background: #0a1529;
+  background: linear-gradient(180deg, #162847 0%, #0d1930 50%, #091324 100%);
 }
 
 .area-filter-btn::after {
   content: "";
   position: absolute;
   bottom: 1px;
-  left: clamp(4px, 1.2vw, 8px);
-  right: clamp(4px, 1.2vw, 8px);
+  left: clamp(4px, 1vw, 7px);
+  right: clamp(4px, 1vw, 7px);
   height: 2px;
   background: var(--rk);
   opacity: 0;
@@ -661,16 +726,16 @@
 
 .area-filter-btn:not(.is-selected):hover {
   color: #fff;
-  background: #6c8ab8;
+  background: linear-gradient(180deg, #7e9ec9 0%, #4b6a99 100%);
 }
 
 .area-filter-btn:not(.is-selected):hover::before {
-  background: #122342;
+  background: linear-gradient(180deg, #1d355e 0%, #122342 50%, #0e1b33 100%);
 }
 
 /* 1ページに最大6個 */
 .area-grid-container.appnav-area-carousel-track .area-filter-btn {
-  flex: 0 0 calc((100% - (5 * var(--area-gap, 6px))) / 6);
+  flex: 0 0 calc((100% - (5 * var(--area-gap, 4px))) / 6);
   min-width: 40px;
   scroll-snap-align: start;
 }
@@ -683,10 +748,11 @@
 }
 
 .appnav-rank-tab.is-active::before {
-  background: linear-gradient(90deg,
-    color-mix(in srgb, var(--rk) 16%, #0d192e) 0%,
-    color-mix(in srgb, var(--rk) 42%, #16294a) 50%,
-    color-mix(in srgb, var(--rk) 16%, #0d192e) 100%
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--rk) 48%, #1d3157) 0%,
+    color-mix(in srgb, var(--rk) 30%, #111f38) 48%,
+    color-mix(in srgb, var(--rk) 18%, #0a1426) 52%,
+    color-mix(in srgb, var(--rk) 32%, #132342) 100%
   );
 }
 
@@ -701,7 +767,10 @@
 }
 
 .area-filter-btn.is-selected::before {
-  background: linear-gradient(180deg, #0d1c36 0%, color-mix(in srgb, var(--rk) 34%, #0c1930) 100%);
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--rk) 24%, #142645) 0%,
+    color-mix(in srgb, var(--rk) 38%, #0e1c36) 100%
+  );
 }
 
 .area-filter-btn.is-selected::after {
@@ -713,7 +782,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  --area-gap: clamp(2px, 0.8vw, 6px);
+  --area-gap: clamp(2px, 0.5vw, 4px);
   /* 左右5pxずつ広げて、ボタンの端を Rank タブの端に揃える(選択中の光が切れない余白にもなる) */
   width: calc(100% + 10px);
   margin-inline: -5px;

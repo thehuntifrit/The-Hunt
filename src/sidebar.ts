@@ -16,12 +16,188 @@ let currentPanel: string | null = null;
 (window as any).errorLog = (window as any).errorLog || [];
 const MAX_ERROR_LOG = 50;
 
-// ─── ポップアップ表示(告知/メンテ/エラー) ───────────────
+// ─── ポップアップ表示(告知/メンテ/エラー) & PCフローティング窓 ───
 const POPUP_PANELS = new Set(["telop", "maintenance", "error"]);
+const desktopMq = window.matchMedia("(min-width: 900px)");
 let popupBackdrop: HTMLElement | null = null;
+let floatingInitialized = false;
+let isRankOpen = false;
+
+function getMainPanelEl(): HTMLElement | null {
+    return (document.getElementById("appnav-panel") || DOM.appNav?.querySelector(".appnav-panel")) as HTMLElement | null;
+}
+
+function getRankPanelEl(): HTMLElement | null {
+    return document.getElementById("appnav-rank-panel") as HTMLElement | null;
+}
+
+function attachPanelChrome(panelEl: HTMLElement | null, onClose: () => void): void {
+    if (!panelEl || panelEl.dataset.chromeAttached === "1") return;
+    panelEl.dataset.chromeAttached = "1";
+
+    ["tl", "tr", "bl", "br"].forEach(pos => {
+        const corner = document.createElement("i");
+        corner.className = `ff-corner ${pos}`;
+        panelEl.appendChild(corner);
+    });
+
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "appnav-popup-close";
+    closeBtn.setAttribute("aria-label", "閉じる");
+    closeBtn.textContent = "✕";
+    closeBtn.addEventListener("click", onClose);
+    panelEl.appendChild(closeBtn);
+}
+
+function getDefaultFloatingPos(panelArea: HTMLElement): { x: number; y: number } {
+    const rect = panelArea.getBoundingClientRect();
+    return {
+        x: Math.round((window.innerWidth - rect.width) / 2),
+        y: Math.round(window.innerHeight - rect.height - 58)
+    };
+}
+
+function clampFloatingPos(x: number, y: number, panelArea: HTMLElement): { x: number; y: number } {
+    const rect = panelArea.getBoundingClientRect();
+    const margin = 8;
+    const maxX = Math.max(margin, window.innerWidth - rect.width - margin);
+    const maxY = Math.max(margin, window.innerHeight - rect.height - margin);
+    return {
+        x: Math.min(Math.max(margin, Math.round(x)), maxX),
+        y: Math.min(Math.max(margin, Math.round(y)), maxY)
+    };
+}
+
+function applyFloatingPosition(panelArea: HTMLElement): void {
+    if (!panelArea.classList.contains("is-floating")) return;
+    const stored = loadSidebarState();
+    const pos = stored.rankWindowPos;
+    const raw = (pos && typeof pos.x === "number" && typeof pos.y === "number")
+        ? pos
+        : getDefaultFloatingPos(panelArea);
+    const clamped = clampFloatingPos(raw.x, raw.y, panelArea);
+    panelArea.style.left = `${clamped.x}px`;
+    panelArea.style.top = `${clamped.y}px`;
+}
+
+function applyRankPanelMode(): void {
+    const rankPanel = getRankPanelEl();
+    if (!rankPanel) return;
+
+    const isFloating = isRankOpen && desktopMq.matches;
+    const isDocked = isRankOpen && !desktopMq.matches;
+
+    rankPanel.classList.toggle("expanded", isRankOpen);
+    rankPanel.classList.toggle("is-floating", isFloating);
+    rankPanel.classList.toggle("is-docked", isDocked);
+
+    if (isFloating) {
+        applyFloatingPosition(rankPanel);
+        requestAnimationFrame(() => applyFloatingPosition(rankPanel));
+    } else {
+        rankPanel.style.left = "";
+        rankPanel.style.top = "";
+    }
+
+    const rankSection = document.getElementById("sidebar-panel-rank");
+    rankSection?.classList.toggle("hidden", !isRankOpen);
+    if (isRankOpen) {
+        renderSidebarFilterAccordion();
+    }
+
+    // モバイルのドック時のみ本文余白を確保（他のパネルが開いていない場合）
+    if (isDocked) {
+        DOM.appNav?.classList.add("expanded");
+        DOM.body.classList.add("sidebar-expanded");
+    } else if (!currentPanel || POPUP_PANELS.has(currentPanel)) {
+        DOM.appNav?.classList.remove("expanded");
+        DOM.body.classList.remove("sidebar-expanded");
+    }
+}
+
+function openRankPanel(): void {
+    isRankOpen = true;
+    saveState("rankOpen", true);
+    applyRankPanelMode();
+    setActiveNavItem(currentPanel || "home");
+}
+
+function closeRankPanel(): void {
+    isRankOpen = false;
+    saveState("rankOpen", false);
+    applyRankPanelMode();
+    setActiveNavItem(currentPanel || "home");
+}
+
+function initFloatingRankWindow(): void {
+    if (floatingInitialized) return;
+    const panelArea = getRankPanelEl();
+    const header = document.querySelector("#sidebar-panel-rank .appnav-section-header") as HTMLElement | null;
+    if (!panelArea || !header) return;
+    floatingInitialized = true;
+
+    header.addEventListener("pointerdown", (e: PointerEvent) => {
+        if (e.button !== 0 || !panelArea.classList.contains("is-floating")) return;
+        if ((e.target as HTMLElement).closest(".appnav-popup-close")) return;
+        e.preventDefault();
+
+        const rect = panelArea.getBoundingClientRect();
+        const offsetX = e.clientX - rect.left;
+        const offsetY = e.clientY - rect.top;
+        panelArea.classList.add("is-dragging");
+
+        const onMove = (ev: PointerEvent) => {
+            const next = clampFloatingPos(ev.clientX - offsetX, ev.clientY - offsetY, panelArea);
+            panelArea.style.left = `${next.x}px`;
+            panelArea.style.top = `${next.y}px`;
+        };
+
+        const onEnd = () => {
+            window.removeEventListener("pointermove", onMove);
+            window.removeEventListener("pointerup", onEnd);
+            window.removeEventListener("pointercancel", onEnd);
+            panelArea.classList.remove("is-dragging");
+            const x = parseFloat(panelArea.style.left);
+            const y = parseFloat(panelArea.style.top);
+            if (!Number.isNaN(x) && !Number.isNaN(y)) {
+                saveState("rankWindowPos", { x, y });
+            }
+        };
+
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onEnd);
+        window.addEventListener("pointercancel", onEnd);
+    });
+
+    header.addEventListener("dblclick", () => {
+        if (!panelArea.classList.contains("is-floating")) return;
+        saveState("rankWindowPos", null);
+        const def = getDefaultFloatingPos(panelArea);
+        const clamped = clampFloatingPos(def.x, def.y, panelArea);
+        panelArea.style.left = `${clamped.x}px`;
+        panelArea.style.top = `${clamped.y}px`;
+    });
+
+    desktopMq.addEventListener("change", () => {
+        if (isRankOpen) {
+            if (!desktopMq.matches && currentPanel) {
+                closePanel();
+            }
+            applyRankPanelMode();
+        }
+    });
+
+    window.addEventListener("resize", () => {
+        if (panelArea.classList.contains("is-floating")) {
+            applyFloatingPosition(panelArea);
+        }
+    });
+}
 
 function ensurePopupChrome(): void {
-    const panelArea = DOM.appNav?.querySelector(".appnav-panel") as HTMLElement | null;
+    const panelArea = getMainPanelEl();
+    const rankPanel = getRankPanelEl();
     if (!panelArea || popupBackdrop) return;
 
     popupBackdrop = document.createElement("div");
@@ -30,19 +206,8 @@ function ensurePopupChrome(): void {
     popupBackdrop.addEventListener("wheel", (e) => e.preventDefault(), { passive: false });
     document.body.appendChild(popupBackdrop);
 
-    ["tl", "tr", "bl", "br"].forEach(pos => {
-        const corner = document.createElement("i");
-        corner.className = `ff-corner ${pos}`;
-        panelArea.appendChild(corner);
-    });
-
-    const closeBtn = document.createElement("button");
-    closeBtn.type = "button";
-    closeBtn.className = "appnav-popup-close";
-    closeBtn.setAttribute("aria-label", "閉じる");
-    closeBtn.textContent = "✕";
-    closeBtn.addEventListener("click", closePanel);
-    panelArea.appendChild(closeBtn);
+    attachPanelChrome(panelArea, closePanel);
+    attachPanelChrome(rankPanel, closeRankPanel);
 
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape" && currentPanel && POPUP_PANELS.has(currentPanel)) closePanel();
@@ -51,11 +216,12 @@ function ensurePopupChrome(): void {
 
 function applyPanelMode(panelName: string | null): void {
     const nav = DOM.appNav;
-    const panelArea = nav?.querySelector(".appnav-panel") as HTMLElement | null;
+    const panelArea = getMainPanelEl();
     const isPopup = !!panelName && POPUP_PANELS.has(panelName);
 
     panelArea?.classList.toggle("is-popup", isPopup);
     panelArea?.classList.toggle("is-docked", !!panelName && !isPopup);
+
     if (panelArea) {
         if (isPopup) {
             panelArea.setAttribute("role", "dialog");
@@ -565,17 +731,19 @@ export function initAppNav(): void {
 
     captureErrors();
     ensurePopupChrome();
+    initFloatingRankWindow();
 
     const stored = loadSidebarState();
-    // ポップアップ系のパネルは、リロード時に勝手に開かないよう復元しない
-    if (stored.panel && stored.panel !== "manual" && !POPUP_PANELS.has(stored.panel)) {
-        currentPanel = stored.panel;
-        nav.classList.add("expanded");
-        document.body.classList.add("sidebar-expanded");
-        showPanel(currentPanel!);
-        setActiveNavItem(currentPanel!);
+    const shouldRestoreRank = stored.rankOpen === true || stored.panel === "rank";
+    if (stored.panel === "rank") {
+        saveState("panel", null);
+        saveState("rankOpen", true);
+    }
+
+    if (shouldRestoreRank) {
+        openRankPanel();
     } else {
-        setActiveNavItem(null);
+        setActiveNavItem('home');
     }
 
     initNotification();
@@ -590,7 +758,7 @@ export function initAppNav(): void {
         }
     });
 
-    if (currentPanel !== "rank") {
+    if (!isRankOpen) {
         renderSidebarFilterAccordion();
     }
 }
@@ -598,17 +766,38 @@ export function initAppNav(): void {
 export function setActiveNavItem(id: string | null): void {
     document.querySelectorAll(".appnav-btn[data-nav-id]").forEach(btn => {
         const htmlBtn = btn as HTMLElement;
-        htmlBtn.classList.toggle("appnav-active", htmlBtn.dataset.navId === id);
+        const navId = htmlBtn.dataset.navId;
+        const isActive = navId === id || (navId === "rank" && isRankOpen);
+        htmlBtn.classList.toggle("appnav-active", isActive);
     });
 }
 
 export async function togglePanel(panelName: string): Promise<void> {
     closeVolumePopup();
+
+    // RANKフィルターはPC時は独立窓として他のボタンと独立して開閉する
+    if (panelName === "rank") {
+        if (!desktopMq.matches) {
+            closePanel();
+        }
+        if (isRankOpen) {
+            closeRankPanel();
+        } else {
+            openRankPanel();
+        }
+        return;
+    }
+
+    // モバイル時は画面が狭いため、他パネルを開く前にランクドックを閉じる
+    if (!desktopMq.matches && isRankOpen) {
+        closeRankPanel();
+    }
+
     if (panelName === "manual") {
         const modal = DOM.manualModal;
         if (modal && !modal.classList.contains('hidden')) {
             closeUserManual();
-            setActiveNavItem(null);
+            setActiveNavItem('home');
         } else {
             closePanel();
             if (typeof openUserManual === "function") await openUserManual();
@@ -643,30 +832,35 @@ export function closePanel(): void {
     closeVolumePopup();
     closeUserManual();
 
+    if (!desktopMq.matches && isRankOpen) {
+        closeRankPanel();
+    }
+
     const nav = DOM.appNav;
     if (!nav) return;
 
-    nav.classList.remove("expanded");
-    DOM.body.classList.remove("sidebar-expanded");
+    if (!isRankOpen || desktopMq.matches) {
+        nav.classList.remove("expanded");
+        DOM.body.classList.remove("sidebar-expanded");
+    }
     applyPanelMode(null);
 
-    const panelArea = nav.querySelector(".appnav-panel") as HTMLElement | null;
+    const panelArea = getMainPanelEl();
     if (panelArea) {
         panelArea.classList.remove("expanded");
+        panelArea.querySelectorAll<HTMLElement>(".js-appnav-panel-item").forEach(p => p.classList.add("hidden"));
     }
 
     currentPanel = null;
     setActiveNavItem('home');
     saveState("panel", null);
-
-    DOM.appNavPanelItems.forEach(p => p.classList.add("hidden"));
 }
 function showPanel(panelName: string): void {
     const nav = DOM.appNav;
     if (!nav) return;
-    const panelArea = nav.querySelector(".appnav-panel") as HTMLElement | null;
+    const panelArea = getMainPanelEl();
 
-    DOM.appNavPanelItems.forEach(p => p.classList.add("hidden"));
+    panelArea?.querySelectorAll<HTMLElement>(".js-appnav-panel-item").forEach(p => p.classList.add("hidden"));
     const target = document.getElementById(`sidebar-panel-${panelName}`);
     if (target) {
         target.classList.remove("hidden");
@@ -844,6 +1038,10 @@ function renderSidebarFilterAccordion(): void {
 
     requestAnimationFrame(() => {
         updateCarouselArrows();
+        const panelArea = getRankPanelEl();
+        if (panelArea?.classList.contains("is-floating")) {
+            applyFloatingPosition(panelArea);
+        }
     });
 }
 
