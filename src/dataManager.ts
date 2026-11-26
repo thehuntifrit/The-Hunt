@@ -1,4 +1,4 @@
-import { Mob, RepopInfo, CullStatus, SpawnCache } from "./types/mob";
+import { Mob, RepopInfo, CullStatus } from "./types/mob";
 import { AppState, FilterState } from "./types/state";
 import { calculateRepop } from "./cal";
 import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos, subscribeMaintenance } from "./server";
@@ -27,10 +27,6 @@ const WORKER_TYPES = {
 const MOB_DATA_URL = "./json/mob_data.json";
 const MOB_LOCATIONS_URL = "./json/mob_locations.json";
 const MAINTENANCE_URL = "./json/maintenance.json";
-const MOB_DATA_CACHE_KEY = "mobDataCache_v2";
-const MOB_STATUS_CACHE_KEY = "mobStatusCache_v2";
-const SPAWN_CACHE_KEY = "spawnConditionCache_v2";
-const LOCATIONS_CACHE_KEY = "mobLocationsCache";
 
 // 設定値
 export const CONFIG = {
@@ -48,7 +44,6 @@ export const CONFIG = {
     REPORT_FUTURE_THRESHOLD: 600000,
     REPORT_EARLY_THRESHOLD: 300000,
     MEMO_MAX_LENGTH: 30,
-    IDB_SAVE_DEBOUNCE: 2000,
     FIRESTORE_LOAD_TIMEOUT: 8000
 };
 
@@ -324,88 +319,8 @@ export function setTelopRead(): void {
     window.dispatchEvent(new CustomEvent('maintenanceUpdated', { detail: { maintenance: state.maintenance } }));
 }
 
-// IndexedDB Cache
-const idb = {
-    db: null as IDBDatabase | null,
-    _initPromise: null as Promise<IDBDatabase> | null,
-    async init(): Promise<IDBDatabase> {
-        if (this.db) return this.db;
-        if (this._initPromise) return this._initPromise;
-        this._initPromise = new Promise((resolve, reject) => {
-            try {
-                const req = indexedDB.open("HuntDB", 1);
-                req.onupgradeneeded = (e: any) => {
-                    e.target.result.createObjectStore("cache");
-                };
-                req.onsuccess = (e: any) => { this.db = e.target.result; resolve(this.db!); };
-                req.onerror = () => reject(req.error);
-            } catch (err) {
-                handleAppError(err, "IndexedDB初期化失敗", false);
-                reject(err);
-            }
-        });
-        return this._initPromise;
-    },
-    async get(key: string): Promise<any> {
-        try {
-            const db = await this.init();
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction("cache", "readonly");
-                const store = tx.objectStore("cache");
-                const req = store.get(key);
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => reject(req.error);
-            });
-        } catch (e) {
-            handleAppError(e, "IDB取得失敗", false);
-            return null;
-        }
-    },
-    async set(key: string, val: any): Promise<any> {
-        try {
-            const db = await this.init();
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction("cache", "readwrite");
-                const store = tx.objectStore("cache");
-                const req = store.put(val, key);
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => reject(req.error);
-            });
-        } catch (e) {
-            handleAppError(e, "IDB保存失敗", false);
-        }
-    }
-};
-
-// Worker
-let memorySpawnCache: Record<number, SpawnCache> | null = null;
-
 // mobNoごとの境界タイマーを管理するMap
 const repopTimers = new Map<number, any>();
-
-const saveSpawnCacheDebounced = (() => {
-    let timeout: any;
-    return (cache: Record<number, SpawnCache>) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-            idb.set(SPAWN_CACHE_KEY, cache);
-        }, CONFIG.IDB_SAVE_DEBOUNCE);
-    };
-})();
-
-const saveStatusCacheDebounced = (() => {
-    let timeout: any;
-    return () => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-            const statusToCache = state.mobs.reduce((acc: Record<number, any>, m) => {
-                acc[m.No] = { last_kill_time: m.last_kill_time, prev_kill_time: m.prev_kill_time };
-                return acc;
-            }, {});
-            idb.set(MOB_STATUS_CACHE_KEY, statusToCache);
-        }, CONFIG.IDB_SAVE_DEBOUNCE);
-    };
-})();
 
 /**
  * repopInfoのnextBoundarySecに基づいてタイマーをセットし、
@@ -456,17 +371,11 @@ function initWorker() {
                 if (repopInfo.conditionWindowEnd) repopInfo.conditionWindowEnd = new Date(repopInfo.conditionWindowEnd);
 
                 current[idx].repopInfo = repopInfo;
-                if (spawnCache && memorySpawnCache) {
+                if (spawnCache) {
                     current[idx]._spawnCache = spawnCache;
-                    memorySpawnCache[mobNo] = spawnCache;
-                    saveSpawnCacheDebounced(memorySpawnCache);
                 }
 
                 scheduleRepopTimer(mobNo, repopInfo);
-
-                if (!state.initialLoadComplete && state.pendingCalculationMobs.size === 0 && initialCalculationStarted) {
-                    checkInitialLoadComplete();
-                }
 
                 window.dispatchEvent(new CustomEvent('mobUpdated', { detail: { mobNo, mob: current[idx] } }));
             }
@@ -543,22 +452,23 @@ export function recalcIfStale(mob: Mob, nowSec: number): void {
 }
 
 // データ加工
-function processMobData(rawMobData: any, maintenance: any, options: { skipConditionCalc?: boolean } = {}): Mob[] {
-    const { skipConditionCalc = false } = options;
+function processMobData(rawMobData: any, locationsData?: any): Mob[] {
     return Object.entries(rawMobData.mobs).map(([no, mobVal]: [string, any]) => {
+        const area = mobVal.a;
+        const locInfo = locationsData?.[area];
         const mappedMob: Mob = {
             ...mobVal,
             No: parseInt(no, 10),
             rank: mobVal.r,
             name: mobVal.n,
-            area: mobVal.a,
+            area,
             repopSeconds: mobVal.min,
             maxRepopSeconds: mobVal.max,
             condition: mobVal.cond || "",
             Expansion: EXPANSION_MAP[Math.floor(parseInt(no, 10) / 10000)] || "Unknown",
             ExpansionId: Math.floor(parseInt(no, 10) / 10000),
-            mapImage: "",
-            locations: [],
+            mapImage: locInfo?.mapImage || "",
+            locations: locInfo?.locations || [],
             last_kill_time: 0,
             prev_kill_time: 0,
             spawn_cull_status: {},
@@ -572,7 +482,6 @@ function processMobData(rawMobData: any, maintenance: any, options: { skipCondit
         delete (mappedMob as any).max;
         delete (mappedMob as any).cond;
 
-        mappedMob.repopInfo = calculateRepop({ ...mappedMob, last_kill_time: 0 }, maintenance, { skipConditionCalc });
         return mappedMob;
     });
 }
@@ -592,116 +501,40 @@ async function loadMaintenance(): Promise<any> {
     }
 }
 
-async function loadLocationData(): Promise<void> {
-    try {
-        const cachedLocsStr = await idb.get(LOCATIONS_CACHE_KEY);
-        const cachedLocs = safeJsonParse(cachedLocsStr);
-        if (cachedLocs) {
-            applyLocationsToState(cachedLocs);
-        }
-
-        const res = await fetch(MOB_LOCATIONS_URL);
-        if (!res.ok) throw new Error("Location data failed to load.");
-        const locationsData = await res.json();
-        const freshLocsStr = JSON.stringify(locationsData);
-
-        if (freshLocsStr !== cachedLocsStr) {
-            await idb.set(LOCATIONS_CACHE_KEY, freshLocsStr);
-            applyLocationsToState(locationsData);
-        }
-    } catch (e) {
-        handleAppError(e, "位置データ読み込み失敗", false);
-    }
-}
-
-function applyLocationsToState(locationsData: any): void {
-    state.mobs.forEach(mob => {
-        const locInfo = locationsData[mob.area];
-        if (locInfo) {
-            mob.locations = locInfo.locations || [];
-            mob.mapImage = locInfo.mapImage || "";
-        }
-    });
-
-    window.dispatchEvent(new CustomEvent('locationDataReady'));
-}
-
 export async function loadBaseMobData(): Promise<void> {
-    const maintenance = null;
-    const cachedDataStr = await idb.get(MOB_DATA_CACHE_KEY);
-    let cachedData = null;
+    try {
+        const [mobRes, locRes] = await Promise.all([
+            fetch(MOB_DATA_URL),
+            fetch(MOB_LOCATIONS_URL).catch(() => null)
+        ]);
 
-    memorySpawnCache = await idb.get(SPAWN_CACHE_KEY) || {};
+        if (!mobRes.ok) throw new Error("Mob data failed to load.");
+        const freshData = await mobRes.json();
 
-    cachedData = safeJsonParse(cachedDataStr);
-
-    if (cachedData) {
-        const processed = processMobData(cachedData, maintenance, { skipConditionCalc: true });
-        const cachedStatus = await idb.get(MOB_STATUS_CACHE_KEY);
-        if (cachedStatus) {
-            processed.forEach(m => {
-                const s = cachedStatus[m.No];
-                if (s) {
-                    m.last_kill_time = s.last_kill_time || 0;
-                    m.prev_kill_time = s.prev_kill_time || 0;
-                }
-            });
+        let locationsData: any = null;
+        if (locRes && locRes.ok) {
+            locationsData = await locRes.json();
+        } else {
+            handleAppError(new Error("Location data failed to load."), "位置データ読み込み失敗", false);
         }
 
-        processed.forEach(mob => {
-            if (memorySpawnCache && memorySpawnCache[mob.No]) {
-                mob._spawnCache = memorySpawnCache[mob.No];
-            }
-            mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
-        });
-
+        const processed = processMobData(freshData, locationsData);
         state.baseMobData = processed;
         setMobs([...processed]);
-        scheduleConditionCalculation(processed, maintenance);
-    }
 
-    try {
-        const mobRes = await fetch(MOB_DATA_URL);
-        if (!mobRes.ok) throw new Error("Mob data failed to load.");
-
-        const freshData = await mobRes.json();
-        const freshDataStr = JSON.stringify(freshData);
-
-        if (freshDataStr !== cachedDataStr) {
-            await idb.set(MOB_DATA_CACHE_KEY, freshDataStr);
-
-            const processed = processMobData(freshData, maintenance, { skipConditionCalc: true });
-            processed.forEach(mob => {
-                if (memorySpawnCache && memorySpawnCache[mob.No]) {
-                    mob._spawnCache = memorySpawnCache[mob.No];
-                    mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
-                }
-            });
-
-            state.baseMobData = processed;
-            setMobs([...processed]);
-            scheduleConditionCalculation(processed, maintenance);
+        if (locationsData) {
+            window.dispatchEvent(new CustomEvent('locationDataReady'));
         }
-
-        await loadLocationData();
 
         if (state.baseMobData.length > 0) {
             applyPendingRealtimeData();
         }
-
     } catch (e) {
         handleAppError(e, "基礎データ読み込み失敗");
-        if (!cachedData) {
-            console.error("データの読み込みに失敗しました。");
-            window.dispatchEvent(new CustomEvent('criticalDataLoadError', {
-                detail: { message: "基礎データの読み込みに失敗しました。\nアプリをファイルから直接開いている場合は、VS CodeのLive Serverなどを使って開いてください。" }
-            }));
-        } else {
-            await loadLocationData();
-            if (state.baseMobData.length > 0) {
-                applyPendingRealtimeData();
-            }
-        }
+        console.error("データの読み込みに失敗しました。");
+        window.dispatchEvent(new CustomEvent('criticalDataLoadError', {
+            detail: { message: "基礎データの読み込みに失敗しました。\nアプリをファイルから直接開いている場合は、VS CodeのLive Serverなどを使って開いてください。" }
+        }));
     }
 }
 
@@ -713,19 +546,21 @@ const initialLoadState = {
     maintenance: false
 };
 
-let initialCalculationStarted = false;
+let hasPendingMaintenance = false;
+let pendingStatusAllLoaded = false;
 let initialLoadTimer: any = null;
 let unsubscribes: (() => void)[] = [];
 
 function applyPendingRealtimeData(): void {
     const current = state.mobs;
 
-    if (state.pendingMaintenanceData !== undefined) {
-        const maintenanceData = state.pendingMaintenanceData;
-        if (maintenanceData) {
-            state.maintenance = maintenanceData;
+    if (hasPendingMaintenance) {
+        if (state.pendingMaintenanceData) {
+            state.maintenance = state.pendingMaintenanceData;
+            checkTelopUnread(state.pendingMaintenanceData.message);
         }
         initialLoadState.maintenance = true;
+        hasPendingMaintenance = false;
     }
 
     if (state.pendingStatusMap) {
@@ -747,7 +582,10 @@ function applyPendingRealtimeData(): void {
                 m.prev_kill_time = dyn.prev_kill_time;
             }
         });
-        initialLoadState.status = true;
+        if (pendingStatusAllLoaded) {
+            initialLoadState.status = true;
+            pendingStatusAllLoaded = false;
+        }
         state.pendingStatusMap = null;
     }
 
@@ -779,62 +617,30 @@ function applyPendingRealtimeData(): void {
         state.pendingMemoData = null;
     }
 
-    const maintenance = state.maintenance;
-    current.forEach(mob => {
-        mob.repopInfo = calculateRepop(mob, maintenance, { skipConditionCalc: true });
-    });
-
     setMobs([...current]);
 
     checkInitialLoadComplete();
 }
 
-function scheduleConditionCalculation(mobs: Mob[], maintenance: any): void {
-    const conditionMobs = mobs.filter(mob =>
-        mob.moonPhase || mob.timeRange || mob.timeRanges ||
-        mob.weatherSeedRange || mob.weatherSeedRanges || mob.conditions
-    );
-
-    if (conditionMobs.length === 0) return;
-
-    conditionMobs.forEach(mob => {
-        requestWorkerCalculation(mob, maintenance);
-    });
-}
-
 function checkInitialLoadComplete(): void {
-    if (state.mobs.length === 0) return;
+    if (state.mobs.length === 0 || state.initialLoadComplete) return;
 
     if (initialLoadState.status && initialLoadState.maintenance) {
-        if (!state.initialLoadComplete) {
-            const current = state.mobs;
-            const maintenance = state.maintenance;
-
-            if (!initialCalculationStarted) {
-                initialCalculationStarted = true;
-                scheduleConditionCalculation(current, maintenance);
-                if (state.pendingCalculationMobs.size > 0) {
-                    return;
-                }
-            }
-
-            if (state.pendingCalculationMobs.size > 0) {
-                return;
-            }
-
-            state.initialLoadComplete = true;
-            if (initialLoadTimer) {
-                clearTimeout(initialLoadTimer);
-                initialLoadTimer = null;
-            }
-
-            current.forEach(mob => {
-                mob.repopInfo = calculateRepop(mob, maintenance);
-            });
-            setMobs([...current]);
-
-            window.dispatchEvent(new CustomEvent('initialDataLoaded'));
+        state.initialLoadComplete = true;
+        if (initialLoadTimer) {
+            clearTimeout(initialLoadTimer);
+            initialLoadTimer = null;
         }
+
+        const current = state.mobs;
+        const maintenance = state.maintenance;
+        current.forEach(mob => {
+            mob.repopInfo = calculateRepop(mob, maintenance);
+            scheduleRepopTimer(mob.No, mob.repopInfo);
+        });
+        setMobs([...current]);
+
+        window.dispatchEvent(new CustomEvent('initialDataLoaded'));
     }
 }
 
@@ -881,7 +687,6 @@ export function startRealtime(options: { resume?: boolean } = {}): void {
                     }
                 }
                 // 応答の返らないワーカー計算で初期ロードが止まらないようにする
-                initialCalculationStarted = true;
                 state.pendingCalculationMobs.clear();
                 pendingSince.clear();
                 checkInitialLoadComplete();
@@ -889,9 +694,10 @@ export function startRealtime(options: { resume?: boolean } = {}): void {
         }, CONFIG.FIRESTORE_LOAD_TIMEOUT);
     }
 
-    const unsubStatus = subscribeMobStatusDocs((mobStatusDataMap: any) => {
+    const unsubStatus = subscribeMobStatusDocs((mobStatusDataMap: any, isAllLoaded: boolean) => {
         if (state.mobs.length === 0) {
             state.pendingStatusMap = mobStatusDataMap;
+            pendingStatusAllLoaded = isAllLoaded;
             return;
         }
 
@@ -910,7 +716,10 @@ export function startRealtime(options: { resume?: boolean } = {}): void {
                 if (mob.last_kill_time !== newLastKill || mob.prev_kill_time !== newPrevKill) {
                     mob.last_kill_time = newLastKill;
                     mob.prev_kill_time = newPrevKill;
-                    requestWorkerCalculation(mob, state.maintenance, { forceRecalc: true });
+                    if (state.initialLoadComplete) {
+                        mob.repopInfo = calculateRepop(mob, state.maintenance, { forceRecalc: true });
+                        scheduleRepopTimer(mob.No, mob.repopInfo);
+                    }
                     anyChanges = true;
                     updatedMobNos.add(parseInt(mobId, 10));
                 }
@@ -918,14 +727,14 @@ export function startRealtime(options: { resume?: boolean } = {}): void {
         });
 
         if (!state.initialLoadComplete) {
-            initialLoadState.status = true;
-            checkInitialLoadComplete();
+            if (isAllLoaded) {
+                initialLoadState.status = true;
+                checkInitialLoadComplete();
+            }
         }
 
         if (anyChanges) {
             if (state.initialLoadComplete) {
-                saveStatusCacheDebounced();
-
                 window.dispatchEvent(new CustomEvent('mobsBatchUpdated', {
                     detail: {
                         mobNos: Array.from(updatedMobNos),
@@ -1040,6 +849,7 @@ export function startRealtime(options: { resume?: boolean } = {}): void {
         const normalized = (maintenanceData && maintenanceData.maintenance) ? maintenanceData.maintenance : maintenanceData;
 
         if (state.mobs.length === 0) {
+            hasPendingMaintenance = true;
             state.pendingMaintenanceData = normalized;
             if (!normalized) {
                 const fallback = await loadMaintenance();

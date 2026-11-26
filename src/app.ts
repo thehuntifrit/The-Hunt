@@ -59,8 +59,9 @@ async function initApp(): Promise<void> {
     onTimeSynced(() => { updateHeaderTime(); scheduleHeaderClock(); });
     startTimeSync();
 
-    await loadBaseMobData();
-    preloadMapImages(getState().mobs);
+    void loadBaseMobData().then(() => {
+      preloadMapImages(getState().mobs);
+    });
 
     initializeAuth().then(async (userId) => {
       if (userId) {
@@ -751,10 +752,6 @@ export function filterAndRender(options: { isInitialLoad?: boolean } = {}): void
   renderDetailPane();
 
   if (isInitialLoad) {
-    setTimeout(() => {
-      sortAndRedistribute();
-    }, 100);
-
     isInitialLoading = false;
     const overlay = document.getElementById("loading-overlay");
     if (overlay) overlay.classList.add("hidden");
@@ -1221,6 +1218,7 @@ function initAppEventListeners(): void {
   });
 
   window.addEventListener('initialDataLoaded', () => {
+    if (loadingTimeout) clearTimeout(loadingTimeout);
     try {
       renderMaintenanceStatus();
       updateErrorPanel();
@@ -1229,8 +1227,16 @@ function initAppEventListeners(): void {
       lastTierBTime = 0;
       lastTierCTime = 0;
       updateProgressBarsOptimized();
+      showColumnContainer();
+
+      const isFirstVisit = !localStorage.getItem("has_visited");
+      if (isFirstVisit) {
+        localStorage.setItem("has_visited", "true");
+        if ((window as any).openUserManual) (window as any).openUserManual();
+      }
     } catch (e) {
       console.error("初期ロード処理失敗:", e);
+      showColumnContainer();
     }
   }, { once: true });
 
@@ -1245,23 +1251,6 @@ function initAppEventListeners(): void {
         text.classList.add('u-pre-wrap', 'u-text-error');
         text.textContent = e.detail.message;
       }
-    }
-  }, { once: true });
-
-  window.addEventListener('initialSortComplete', () => {
-    if (loadingTimeout) clearTimeout(loadingTimeout);
-    try {
-      renderMaintenanceStatus();
-      showColumnContainer();
-
-      const isFirstVisit = !localStorage.getItem("has_visited");
-      if (isFirstVisit) {
-        localStorage.setItem("has_visited", "true");
-        if ((window as any).openUserManual) (window as any).openUserManual();
-      }
-    } catch (e) {
-      console.error("初回描画失敗:", e);
-      showColumnContainer();
     }
   }, { once: true });
 
@@ -1418,5 +1407,5 @@ document.addEventListener('visibilitychange', () => {
 if (document.readyState === "loading") {
   document.addEventListener('DOMContentLoaded', initApp);
 } else {
-  initApp();
+  queueMicrotask(initApp);
 }

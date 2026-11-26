@@ -71,6 +71,7 @@ export function getOrCreateGroupSection(groupKey: "MAINTENANCE" | "MAX_OVER" | "
 }
 
 let filterCacheVersion = -1;
+let cachedMobsRef: Mob[] | null = null;
 let cachedFilteredMobs: Mob[] | null = null;
 let cachedSortedMobs: Mob[] | null = null;
 let sortCacheValid = false;
@@ -129,11 +130,12 @@ export function getFilteredMobs(): Mob[] {
   const state = getState() as AppState;
   const version = state._filterVersion || 0;
 
-  if (filterCacheVersion === version && cachedFilteredMobs) {
+  if (filterCacheVersion === version && cachedMobsRef === state.mobs && cachedFilteredMobs) {
     return cachedFilteredMobs;
   }
 
   filterCacheVersion = version;
+  cachedMobsRef = state.mobs;
   cachedFilteredMobs = filterMobsByRankAndArea(state.mobs);
   sortCacheValid = false;
   return cachedFilteredMobs;
@@ -150,6 +152,7 @@ export function getSortedFilteredMobs(): Mob[] {
 
 export function invalidateFilterCache(): void {
   filterCacheVersion = -1;
+  cachedMobsRef = null;
   cachedFilteredMobs = null;
   cachedSortedMobs = null;
   sortCacheValid = false;

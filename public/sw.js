@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hunt-cache-v5';
+const CACHE_NAME = 'hunt-cache-v6';
 const STATIC_ASSETS = [
   './json/maintenance.json',
   './json/mob_data.json',
@@ -76,30 +76,83 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network-First with Cache fallback strategy
-  event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache).catch(() => { });
-          });
-        }
-        return networkResponse;
+  const pathname = url.pathname;
+  const isImmutableAsset =
+    pathname.includes('/maps/') ||
+    pathname.includes('/icon/') ||
+    pathname.includes('/sound/') ||
+    /\.(webp|png|jpg|jpeg|svg|mp3|woff2?)$/i.test(pathname);
+
+  const isHtmlRequest =
+    event.request.mode === 'navigate' ||
+    event.request.headers.get('accept')?.includes('text/html');
+
+  // 1. 不変アセット(画像・音声等): Cache-First
+  if (isImmutableAsset) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache).catch(() => { });
+            });
+          }
+          return networkResponse;
+        });
       })
-      .catch(async () => {
-        const cachedResponse = await caches.match(event.request);
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        if (event.request.headers.get('accept')?.includes('text/html')) {
-          return caches.match('./index.html');
-        }
-        return new Response('Network error and no cache available', {
+    );
+    return;
+  }
+
+  // 2. HTML: Network-First (オフライン時のみキャッシュ)
+  if (isHtmlRequest) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache).catch(() => { });
+            });
+          }
+          return networkResponse;
+        })
+        .catch(async () => {
+          const cachedResponse = await caches.match(event.request);
+          return cachedResponse || caches.match('./index.html') || new Response('Offline', { status: 408 });
+        })
+    );
+    return;
+  }
+
+  // 3. JSON / CSS / JS 等: Stale-While-Revalidate (キャッシュを即返し、裏で更新)
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache).catch(() => { });
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => null);
+
+      if (cachedResponse) {
+        event.waitUntil(fetchPromise);
+        return cachedResponse;
+      }
+
+      return fetchPromise.then((res) => {
+        return res || new Response('Network error and no cache available', {
           status: 408,
           headers: { 'Content-Type': 'text/plain' }
         });
-      })
+      });
+    })
   );
 });

@@ -1,11 +1,7 @@
-// @ts-ignore
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-// @ts-ignore
-import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, getDoc, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-// @ts-ignore
-import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-// @ts-ignore
-import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken as getAppCheckToken } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app-check.js";
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, getDoc, Timestamp } from "firebase/firestore";
+import { getAuth, onAuthStateChanged, signInAnonymously } from "firebase/auth";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken as getAppCheckToken } from "firebase/app-check";
 
 import { getState, DOM, CONFIG, handleAppError } from "./dataManager";
 import { closeReportModal } from "./modal";
@@ -111,16 +107,18 @@ function listenWithRetry(
     };
 }
 
-export function subscribeMobStatusDocs(onUpdate: (data: any) => void): () => void {
+export function subscribeMobStatusDocs(onUpdate: (data: any, isAllLoaded: boolean) => void): () => void {
     const docIds = ["s_latest", "a_latest", "f_latest"];
     const mobStatusDataMap: Record<string, any> = {};
+    const receivedIds = new Set<string>();
     const unsubs = docIds.map(id =>
         listenWithRetry((onOk, onError) =>
             onSnapshot(doc(db, "mob_status", id), (snap: any) => {
                 onOk();
+                receivedIds.add(id);
                 const data = snap.data();
                 if (data) mobStatusDataMap[id] = data;
-                onUpdate(mobStatusDataMap);
+                onUpdate(mobStatusDataMap, receivedIds.size === docIds.length);
             }, onError)
         )
     );
