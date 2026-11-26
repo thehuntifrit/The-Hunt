@@ -408,14 +408,9 @@
     mask-size: 5px 5px, 5px 5px;
   }
 
-  .appnav-panel.is-floating .appnav-area-carousel-wrapper {
-    --area-gap: 4px;
-  }
-
   .appnav-panel.is-floating .area-filter-btn {
-    --cut: 4px;
-    height: 31px;
-    padding: 1px 5px;
+    height: 32px;
+    padding: 0 4px;
     font-size: 12.5px;
   }
 }
@@ -581,30 +576,12 @@
   justify-content: center;
   cursor: pointer;
   border: none;
-  padding: 1px;
   font-family: var(--font-ui);
   font-weight: 700;
   letter-spacing: 0.05em;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
-  transition: transform 0.08s ease, filter 0.15s ease, color 0.15s ease;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-}
-
-/* 内側の面（外枠の1px内側を clip-path で抜き、立体ベゼル質感を与える） */
-:is(.appnav-rank-tab, .area-filter-btn)::before {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  z-index: -1;
-  clip-path: inherit;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -2px 0 rgba(0, 0, 0, 0.45);
-  pointer-events: none;
-  transition: background 0.15s ease;
-}
-
-:is(.appnav-rank-tab, .area-filter-btn):active {
-  transform: translateY(1px);
 }
 
 :is(.appnav-rank-tab, .area-filter-btn):focus-visible {
@@ -623,7 +600,7 @@
 .appnav-rank-tab {
   --tip: clamp(6px, 1.5vw, 9px);
   height: clamp(35px, 8vw, 38px);
-  padding-inline: clamp(6px, 2vw, 14px);
+  padding: 1px clamp(6px, 2vw, 14px);
   font-size: clamp(13px, 3.2vw, 15.5px);
   clip-path: polygon(
     var(--tip) 0, calc(100% - var(--tip)) 0,
@@ -632,10 +609,24 @@
     0 50%
   );
   background: linear-gradient(180deg, #9a8654 0%, #314469 40%, #243454 60%, #75653f 100%);
+  transition: transform 0.08s ease, filter 0.15s ease, color 0.15s ease;
 }
 
+/* 内側の面（外枠の1px内側を clip-path で抜き、立体ベゼル質感を与える） */
 .appnav-rank-tab::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  clip-path: inherit;
   background: linear-gradient(180deg, #1d3157 0%, #12213d 48%, #0b1529 52%, #132342 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -2px 0 rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  transition: background 0.15s ease;
+}
+
+.appnav-rank-tab:active {
+  transform: translateY(1px);
 }
 
 .appnav-rank-tab:not(.is-active):hover {
@@ -691,51 +682,63 @@
   color: var(--c-f);
 }
 
-/* 5-3. エリアボタン（平行四辺形 + 下線発光） */
+/* 5-3. エリアボタン（FF7R シームレス・バー形式） */
 .area-filter-btn {
-  --cut: clamp(4px, 0.8vw, 6px);
-  height: clamp(31px, 7.5vw, 35px);
-  padding: 1px clamp(4px, 1vw, 8px);
+  height: clamp(32px, 7.5vw, 35px);
+  padding: 0 clamp(4px, 1vw, 8px);
   line-height: 1;
-  font-size: clamp(12px, 3vw, 14px);
+  font-size: clamp(12px, 3vw, 13.5px);
   font-weight: 600;
-  color: #aebbd2;
+  color: rgba(174, 187, 210, 0.68);
   outline: none;
   white-space: nowrap;
   box-sizing: border-box;
-  clip-path: polygon(var(--cut) 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%);
-  background: linear-gradient(180deg, #436291 0%, #243a5e 100%);
+  background: rgba(6, 16, 36, 0.78);
+  border-top: 1px solid rgba(101, 185, 216, 0.35);
+  border-bottom: 1px solid rgba(101, 185, 216, 0.35);
+  transition: color 0.22s ease, background 0.22s ease, text-shadow 0.22s ease;
 }
 
-.area-filter-btn::before {
-  background: linear-gradient(180deg, #162847 0%, #0d1930 50%, #091324 100%);
+/* 項目間の縦仕切り線 */
+.area-filter-btn + .area-filter-btn::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 24%;
+  bottom: 24%;
+  width: 1px;
+  background: rgba(148, 180, 219, 0.22);
+  pointer-events: none;
 }
 
+/* 下辺の発光ライン（伸縮アニメーション） */
 .area-filter-btn::after {
   content: "";
   position: absolute;
-  bottom: 1px;
-  left: clamp(4px, 1vw, 7px);
-  right: clamp(4px, 1vw, 7px);
+  bottom: -1px;
+  left: 12%;
+  right: 12%;
   height: 2px;
   background: var(--rk);
+  box-shadow: 0 0 8px var(--rk);
+  transform: scaleX(0);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.15s ease;
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
 }
 
 .area-filter-btn:not(.is-selected):hover {
-  color: #fff;
-  background: linear-gradient(180deg, #7e9ec9 0%, #4b6a99 100%);
+  color: #e4f5ff;
+  background: rgba(101, 185, 216, 0.08);
 }
 
-.area-filter-btn:not(.is-selected):hover::before {
-  background: linear-gradient(180deg, #1d355e 0%, #122342 50%, #0e1b33 100%);
+.area-filter-btn:active {
+  filter: brightness(1.15);
 }
 
 /* 1ページに最大6個 */
 .area-grid-container.appnav-area-carousel-track .area-filter-btn {
-  flex: 0 0 calc((100% - (5 * var(--area-gap, 4px))) / 6);
+  flex: 0 0 calc(100% / 6);
   min-width: 40px;
   scroll-snap-align: start;
 }
@@ -761,19 +764,17 @@
 }
 
 .area-filter-btn.is-selected {
-  background: var(--rk);
   color: #fff;
-  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--rk) 45%, transparent));
-}
-
-.area-filter-btn.is-selected::before {
+  text-shadow: 0 0 8px color-mix(in srgb, var(--rk) 60%, transparent);
   background: linear-gradient(180deg,
-    color-mix(in srgb, var(--rk) 24%, #142645) 0%,
-    color-mix(in srgb, var(--rk) 38%, #0e1c36) 100%
+    rgba(6, 16, 36, 0.78) 0%,
+    color-mix(in srgb, var(--rk) 18%, rgba(6, 16, 36, 0.78)) 55%,
+    color-mix(in srgb, var(--rk) 34%, rgba(6, 16, 36, 0.78)) 100%
   );
 }
 
 .area-filter-btn.is-selected::after {
+  transform: scaleX(1);
   opacity: 1;
 }
 
@@ -782,7 +783,6 @@
   position: relative;
   display: flex;
   align-items: center;
-  --area-gap: clamp(2px, 0.5vw, 4px);
   /* 左右5pxずつ広げて、ボタンの端を Rank タブの端に揃える(選択中の光が切れない余白にもなる) */
   width: calc(100% + 10px);
   margin-inline: -5px;
@@ -820,9 +820,9 @@
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  gap: var(--area-gap, 6px);
+  gap: 0;
   width: 100%;
-  padding: 5px 5px 6px;
+  padding: 4px 5px 6px;
 }
 
 /* 5-5. 矢印ボタン */

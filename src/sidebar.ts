@@ -777,10 +777,11 @@ export async function togglePanel(panelName: string): Promise<void> {
 
     // RANKフィルターはPC時は独立窓として他のボタンと独立して開閉する
     if (panelName === "rank") {
+        const wasOpen = isRankOpen;
         if (!desktopMq.matches) {
             closePanel();
         }
-        if (isRankOpen) {
+        if (wasOpen) {
             closeRankPanel();
         } else {
             openRankPanel();
