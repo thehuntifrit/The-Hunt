@@ -380,22 +380,22 @@ textarea {
 .mobile-top-clocks {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   line-height: 1;
 }
 
 .mobile-clock-label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #646a75;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   line-height: 1;
   font-family: var(--font-ui);
 }
 
 .mobile-clock-val {
   font-family: var(--font-mono);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--c-gold);
   font-variant-numeric: tabular-nums;
@@ -403,7 +403,58 @@ textarea {
 }
 
 .mobile-clock-val:not(:last-child) {
-  margin-inline-end: 14px;
+  margin-inline-end: 6px;
+}
+
+.mobile-clock-moon-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: 2px;
+}
+
+.mobile-clock-moon {
+  background: none;
+  border: none;
+  padding: 2px;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: transform 0.15s ease;
+}
+
+.mobile-clock-moon:hover,
+.mobile-clock-moon:focus-visible {
+  transform: scale(1.1);
+  outline: none;
+}
+
+.mobile-moon-tooltip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--c-text-hi);
+  background: rgba(5, 20, 46, 0.96);
+  border: 1px solid rgba(216, 196, 138, 0.65);
+  border-radius: 3px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  z-index: 60;
+  pointer-events: none;
+}
+
+.mobile-clock-moon-wrap:hover .mobile-moon-tooltip,
+.mobile-moon-tooltip.is-open {
+  display: block;
 }
 
 .u-msg {

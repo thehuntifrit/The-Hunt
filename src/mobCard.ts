@@ -1,4 +1,4 @@
-import { getDurationDHMParts, formatDurationDHM, formatMMDDHHmm, DHMParts } from "./cal";
+import { getDurationDHMParts, formatDurationDHM, formatMMDDHHmm, formatMMDDHHmmss, DHMParts } from "./cal";
 import { getState, isCulled, getStatusLabel, RANKS, DOM, CONFIG } from "./dataManager";
 import { now as serverNow } from "./servertime";
 import { Mob, SpawnPoint, CullStatus, RepopInfo } from "./types/mob";
@@ -20,7 +20,8 @@ export function cloneTemplate(id: string): HTMLElement | null {
 }
 
 // ─── ユーティリティ ─────────────────────────────────────
-const formatOrPlaceholder = (val: any): string => val ? formatMMDDHHmm(val) : "--/-- --:--";
+const EMPTY_DATETIME_TEXT = "--/-- --:--:--";
+const formatOrPlaceholder = (val: any): string => val ? formatMMDDHHmmss(val) : EMPTY_DATETIME_TEXT;
 
 const ESCAPE_MAP: Record<string, string> = {
   '&': '&amp;',
@@ -641,12 +642,12 @@ export function updateExpandablePanel(card: HTMLElement, mob: Mob): void {
 
   if (elNext && mob.repopInfo) {
     if (mob.repopInfo.nextConditionSpawnDate) {
-      const val = formatMMDDHHmm(mob.repopInfo.nextConditionSpawnDate);
+      const val = formatMMDDHHmmss(mob.repopInfo.nextConditionSpawnDate);
       if (elNext.textContent !== val) elNext.textContent = val;
       elNext.classList.add('text-yellow');
       elNext.classList.remove('text-secondary');
     } else {
-      if (elNext.textContent !== "--/-- --:--") elNext.textContent = "--/-- --:--";
+      if (elNext.textContent !== EMPTY_DATETIME_TEXT) elNext.textContent = EMPTY_DATETIME_TEXT;
       elNext.classList.remove('text-yellow');
       elNext.classList.add('text-secondary');
     }
@@ -657,7 +658,7 @@ export function updateExpandablePanel(card: HTMLElement, mob: Mob): void {
     if (elLast.textContent !== val) elLast.textContent = val;
   }
   [elMin, elMax, elNext, elLast].forEach(el => {
-    if (el) el.classList.toggle('is-empty', el.textContent === "--/-- --:--");
+    if (el) el.classList.toggle('is-empty', el.textContent === EMPTY_DATETIME_TEXT);
   });
 
   const elMemoInput = getEl(card, ".mobcard-memo-input", "memoInput") as (HTMLInputElement | HTMLTextAreaElement) | null;

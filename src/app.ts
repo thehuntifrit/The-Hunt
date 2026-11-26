@@ -1,5 +1,5 @@
 import { getState, loadBaseMobData, startRealtime, setOpenMobCardNo, setUserId, setLodestoneId, setCharacterName, setVerified, CONFIG, DOM, handleAppError, recalcIfStale } from "./dataManager";
-import { calculateRepop, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, EORZEA_MINUTE_MS } from "./cal";
+import { calculateRepop, formatDurationColon, formatMMDDHHmm, debounce, getEorzeaTime, getEorzeaMoonInfo, EORZEA_MINUTE_MS } from "./cal";
 import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initGlobalMagnifier, adjustMemoHeight, preloadMapImages } from "./mobCard";
 import { getGroupKey, GROUP_LABELS, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, hasMobSortKeyChanged, rememberMobSortKeys } from "./mobSorter";
 import { closeReportModal, openAuthModal, openReportModal, initModal } from "./modal";
@@ -93,6 +93,7 @@ async function initApp(): Promise<void> {
     updateHeaderTime();
     scheduleHeaderClock();
     initAppNav();
+    initMoonTooltip();
     attachLocationEvents();
     attachGlobalEventListeners();
     (window as any).renderMaintenanceStatus = renderMaintenanceStatus;
@@ -238,9 +239,40 @@ export function renderMaintenanceStatus(): void {
 }
 
 // ヘッダー時刻
-let headerClocks: { lt: Element[]; et: Element[] } | null = null;
+let headerClocks: { lt: Element[]; et: Element[]; moon: HTMLElement[]; moonTooltip: HTMLElement[] } | null = null;
 let lastLtStr = "";
 let lastEtStr = "";
+let lastMoonIcon = "";
+let lastMoonName = "";
+
+function initMoonTooltip(): void {
+  const btns = document.querySelectorAll<HTMLElement>('.js-moon-clock');
+  const tooltips = document.querySelectorAll<HTMLElement>('.js-moon-tooltip');
+  if (btns.length === 0 || tooltips.length === 0) return;
+
+  const closeAll = () => {
+    tooltips.forEach(t => t.classList.remove('is-open'));
+  };
+
+  btns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wrap = btn.closest('.mobile-clock-moon-wrap');
+      const tip = wrap?.querySelector('.js-moon-tooltip');
+      if (!tip) return;
+      const willOpen = !tip.classList.contains('is-open');
+      closeAll();
+      if (willOpen) tip.classList.add('is-open');
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (!target.closest('.mobile-clock-moon-wrap')) {
+      closeAll();
+    }
+  });
+}
 
 // ヘッダー時計を、LT/ETの「分」が切り替わる瞬間に合わせて更新する
 const ET_MINUTE_MS_EXACT = 175000 / 60;
@@ -264,23 +296,38 @@ export function updateHeaderTime(): void {
 
   const now = new Date(serverNow());
   const et = getEorzeaTime(now);
+  const moon = getEorzeaMoonInfo(now);
   const ltStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   const etStr = `${et.hours}:${et.minutes}`;
 
-  if (ltStr === lastLtStr && etStr === lastEtStr) return;
+  if (ltStr === lastLtStr && etStr === lastEtStr && moon.icon === lastMoonIcon && moon.fullName === lastMoonName) return;
 
   lastLtStr = ltStr;
   lastEtStr = etStr;
+  lastMoonIcon = moon.icon;
+  lastMoonName = moon.fullName;
 
   if (!headerClocks) {
     headerClocks = {
       lt: Array.from(document.querySelectorAll('.js-lt-clock')),
-      et: Array.from(document.querySelectorAll('.js-et-clock'))
+      et: Array.from(document.querySelectorAll('.js-et-clock')),
+      moon: Array.from(document.querySelectorAll<HTMLElement>('.js-moon-clock')),
+      moonTooltip: Array.from(document.querySelectorAll<HTMLElement>('.js-moon-tooltip'))
     };
   }
 
   headerClocks.lt.forEach(el => { if (el.textContent !== ltStr) el.textContent = ltStr; });
   headerClocks.et.forEach(el => { if (el.textContent !== etStr) el.textContent = etStr; });
+  headerClocks.moon.forEach(el => {
+    if (el.textContent !== moon.icon) el.textContent = moon.icon;
+    if (el.getAttribute('title') !== moon.fullName) {
+      el.setAttribute('title', moon.fullName);
+      el.setAttribute('aria-label', `月齢: ${moon.fullName}`);
+    }
+  });
+  headerClocks.moonTooltip.forEach(el => {
+    if (el.textContent !== moon.fullName) el.textContent = moon.fullName;
+  });
 }
 
 // ソート＆描画

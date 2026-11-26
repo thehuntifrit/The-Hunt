@@ -22,6 +22,14 @@ const desktopMq = window.matchMedia("(min-width: 900px)");
 let popupBackdrop: HTMLElement | null = null;
 let floatingInitialized = false;
 let isRankOpen = false;
+let searchQuery = "";
+
+function normalizeSearchText(str: string): string {
+    return str
+        .trim()
+        .replace(/[\u3041-\u3096]/g, ch => String.fromCharCode(ch.charCodeAt(0) + 0x60))
+        .toLowerCase();
+}
 
 function getMainPanelEl(): HTMLElement | null {
     return (document.getElementById("appnav-panel") || DOM.appNav?.querySelector(".appnav-panel")) as HTMLElement | null;
@@ -672,6 +680,12 @@ export function filterMobsByRankAndArea(mobs: Mob[]): Mob[] {
     };
 
     return mobs.filter(m => {
+        if (searchQuery) {
+            if (!normalizeSearchText(m.name).includes(searchQuery)) {
+                return false;
+            }
+        }
+
         const mobRank = m.rank;
         const mobExpansion = m.Expansion;
         const mobRankKey = getMobRankKey(mobRank);
@@ -761,6 +775,35 @@ export function initAppNav(): void {
     if (!isRankOpen) {
         renderSidebarFilterAccordion();
     }
+
+    initSearchPanel();
+}
+
+function initSearchPanel(): void {
+    const input = document.getElementById("sidebar-search-input") as HTMLInputElement | null;
+    const clearBtn = document.getElementById("sidebar-search-clear");
+    const searchNavBtns = document.querySelectorAll('.appnav-btn[data-nav-id="search"]');
+    if (!input) return;
+
+    const applySearch = () => {
+        searchQuery = normalizeSearchText(input.value);
+        clearBtn?.classList.toggle("hidden", input.value.length === 0);
+        searchNavBtns.forEach(btn => btn.classList.toggle("has-alert", searchQuery.length > 0));
+        window.dispatchEvent(new CustomEvent("filterChanged"));
+    };
+
+    input.addEventListener("input", applySearch);
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            input.blur();
+        }
+    });
+
+    clearBtn?.addEventListener("click", () => {
+        input.value = "";
+        applySearch();
+        input.focus();
+    });
 }
 
 export function setActiveNavItem(id: string | null): void {
@@ -824,6 +867,12 @@ export async function togglePanel(panelName: string): Promise<void> {
     currentPanel = panelName;
     if (panelName === "telop") {
         setTelopRead();
+    }
+    if (panelName === "search") {
+        const input = document.getElementById("sidebar-search-input") as HTMLInputElement | null;
+        if (input) {
+            requestAnimationFrame(() => input.focus());
+        }
     }
     setActiveNavItem(panelName);
     saveState("panel", panelName);

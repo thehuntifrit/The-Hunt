@@ -93,17 +93,45 @@ function alignToWeatherCycle(realSec: number): number {
   return Math.floor(realSec / WEATHER_CYCLE_SEC) * WEATHER_CYCLE_SEC;
 }
 
-function getEorzeaMoonInfo(date: Date = new Date()): { phase: number; label: string | null } {
+export function getEorzeaMoonInfo(date: Date = new Date()): { phase: number; label: string | null; icon: string; fullName: string } {
   const unixSeconds = date.getTime() / 1000;
   const EORZEA_SPEED_RATIO = 20.57142857142857;
   const eorzeaTotalDays = (unixSeconds * EORZEA_SPEED_RATIO) / 86400;
   const phase = (eorzeaTotalDays % 32) + 1;
 
   let label: string | null = null;
-  if (phase >= 32.5 || phase < 4.5) label = "新月";
-  else if (phase >= 16.5 && phase < 20.5) label = "満月";
+  let icon = "🌑";
+  let fullName = "新月";
 
-  return { phase, label };
+  if (phase >= 32.5 || phase < 4.5) {
+    label = "新月";
+    icon = "🌑";
+    fullName = "新月";
+  } else if (phase < 8.5) {
+    icon = "🌒";
+    fullName = "三日月";
+  } else if (phase < 12.5) {
+    icon = "🌓";
+    fullName = "上弦の月";
+  } else if (phase < 16.5) {
+    icon = "🌔";
+    fullName = "十三夜";
+  } else if (phase < 20.5) {
+    label = "満月";
+    icon = "🌕";
+    fullName = "満月";
+  } else if (phase < 24.5) {
+    icon = "🌖";
+    fullName = "十六夜";
+  } else if (phase < 28.5) {
+    icon = "🌗";
+    fullName = "下弦の月";
+  } else {
+    icon = "🌘";
+    fullName = "二十六夜";
+  }
+
+  return { phase, label, icon, fullName };
 }
 
 function getEorzeaWeatherSeed(date: Date = new Date()): number {
@@ -597,6 +625,20 @@ export function formatMMDDHHmm(input: any): string {
   const hh = String(date.getHours()).padStart(2, "0");
   const mm = String(date.getMinutes()).padStart(2, "0");
   return `${m}/${d} ${hh}:${mm}`;
+}
+
+export function formatMMDDHHmmss(input: any): string {
+  if (!input) return "--/-- --:--:--";
+  let date: Date;
+  if (input instanceof Date) date = input;
+  else if (typeof input === "string") date = new Date(input);
+  else date = new Date(input * 1000);
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  const ss = String(date.getSeconds()).padStart(2, "0");
+  return `${m}/${d} ${hh}:${mm}:${ss}`;
 }
 
 function baseResult(status?: string): RepopInfo {

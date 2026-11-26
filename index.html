@@ -46,6 +46,10 @@
                         <span class="appnav-icon">📊</span>
                         <span class="appnav-label">RANK</span>
                     </button>
+                    <button class="appnav-btn" data-nav-id="search" aria-label="検索">
+                        <span class="appnav-icon">🔍</span>
+                        <span class="appnav-label">検索</span>
+                    </button>
                     <button class="appnav-btn" data-nav-id="telop" aria-label="告知">
                         <span class="appnav-icon">📢</span>
                         <span class="appnav-label">告知</span>
@@ -99,6 +103,17 @@
                     </div>
                     <div id="sidebar-maintenance-content" class="appnav-alert js-maintenance-content"></div>
                 </div>
+                <div id="sidebar-panel-search" class="js-appnav-panel-item hidden">
+                    <div class="appnav-section-header">
+                        <div class="appnav-section-title">Search</div>
+                    </div>
+                    <div class="appnav-search-box">
+                        <input type="search" id="sidebar-search-input" class="appnav-search-input"
+                            placeholder="モブ名（ひらがな・カタカナ）" autocomplete="off" aria-label="モブ名検索">
+                        <button type="button" id="sidebar-search-clear" class="appnav-search-clear hidden"
+                            aria-label="検索をクリア">✕</button>
+                    </div>
+                </div>
             </div>
             <div id="appnav-rank-panel" class="appnav-panel">
                 <div class="appnav-panel-top-border"></div>
@@ -122,6 +137,10 @@
             <span class="mobile-clock-val js-et-clock">--:--</span>
             <span class="mobile-clock-label">LT</span>
             <span class="mobile-clock-val js-lt-clock">--:--</span>
+            <div class="mobile-clock-moon-wrap">
+                <button type="button" class="mobile-clock-moon js-moon-clock" aria-label="月齢" title="新月">🌑</button>
+                <div class="mobile-moon-tooltip js-moon-tooltip" role="tooltip">新月</div>
+            </div>
         </div>
     </div>
 
@@ -268,19 +287,19 @@
                         <div class="mobcard-grid">
                             <div class="mobcard-info-item">
                                 <div class="mobcard-label">最短日時：</div>
-                                <div class="mobcard-value" data-min-repop>--/-- --:--</div>
+                                <div class="mobcard-value" data-min-repop>--/-- --:--:--</div>
                             </div>
                             <div class="mobcard-info-item">
                                 <div class="mobcard-label">最大日時：</div>
-                                <div class="mobcard-value" data-max-repop>--/-- --:--</div>
+                                <div class="mobcard-value" data-max-repop>--/-- --:--:--</div>
                             </div>
                             <div class="mobcard-info-item mobcard-highlight">
                                 <div class="mobcard-label">次回出現：</div>
-                                <div class="mobcard-value" data-next-possible>--/-- --:--</div>
+                                <div class="mobcard-value" data-next-possible>--/-- --:--:--</div>
                             </div>
                             <div class="mobcard-info-item">
                                 <div class="mobcard-label">前回討伐：</div>
-                                <div class="mobcard-value" data-last-kill>--/-- --:--</div>
+                                <div class="mobcard-value" data-last-kill>--/-- --:--:--</div>
                             </div>
                         </div>
 
