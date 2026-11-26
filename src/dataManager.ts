@@ -2,7 +2,7 @@ import { Mob, RepopInfo, CullStatus } from "./types/mob";
 import { AppState, FilterState } from "./types/state";
 import { calculateRepop } from "./cal";
 import { subscribeMobStatusDocs, subscribeMobLocations, subscribeMobMemos, subscribeMaintenance } from "./server";
-import { now as serverNow, getServerTimeOffset } from "./servertime";
+import { now as serverNow } from "./servertime";
 
 // 定数
 export const EXPANSION_MAP: Record<number, string> = { 1: "新生", 2: "蒼天", 3: "紅蓮", 4: "漆黒", 5: "暁月", 6: "黄金" };
@@ -16,12 +16,6 @@ export const RANKS = {
     A_RANK: "A rank",
     FATE: "FATE",
     FATE_FULL: "F.A.T.E."
-};
-
-const WORKER_TYPES = {
-    CALCULATE: "CALCULATE",
-    RESULT: "RESULT",
-    ERROR: "ERROR"
 };
 
 const MOB_DATA_URL = "./json/mob_data.json";
@@ -58,11 +52,8 @@ export const STATUS_LABELS: Record<string, string | { S: string; others: string 
 };
 
 export const DOM = {
-    colContainer: document.getElementById('column-container'),
     pcLeftList: document.getElementById('moblist-container'),
     pcRightDetail: document.getElementById('mobcard-detail'),
-    mobileDetailOverlay: document.getElementById('mobcard-overlay'),
-    cardOverlayBackdrop: document.getElementById('mobcard-overlay-backdrop'),
     reportModal: document.getElementById('report-modal'),
     reportForm: document.getElementById('report-form') as HTMLFormElement | null,
     modalMobName: document.getElementById('modal-mob-name'),
@@ -84,7 +75,6 @@ export const DOM = {
     globalMagnifier: document.getElementById('global-magnifier'),
     authCopyCodeBtn: document.getElementById('auth-copy-code'),
     authVerifyBtn: document.getElementById('auth-verify') as HTMLButtonElement | null,
-    readmeAuthSession: document.getElementById('readme-auth-session'),
     closeManualModalBtn: document.getElementById('close-manual-modal'),
     notificationToggle: document.getElementById('appnav-notification-toggle') as HTMLInputElement | null,
     notifyPopup: document.querySelector('.js-notify-popup') as HTMLElement | null,
@@ -137,11 +127,9 @@ export const state: AppState = {
     lodestoneId: localStorage.getItem("lodestone_id") || null,
     characterName: localStorage.getItem("character_name") || null,
     isVerified: localStorage.getItem("is_verified") === "true",
-    baseMobData: [],
     mobs: [],
     maintenance: null,
     initialLoadComplete: false,
-    worker: null,
 
     filter: ((): FilterState => {
         const val = localStorage.getItem("huntFilterState");
@@ -202,7 +190,6 @@ export const state: AppState = {
     openMobCardNo: null,
     notificationEnabled: localStorage.getItem("huntNotificationEnabled") === "true",
     notificationVolume: parseInt(localStorage.getItem("huntNotificationVolume") ?? "80", 10),
-    pendingCalculationMobs: new Set<number>(),
     pendingStatusMap: null,
     pendingMaintenanceData: null,
     pendingLocationsMap: null,
@@ -324,7 +311,7 @@ const repopTimers = new Map<number, any>();
 
 /**
  * repopInfoのnextBoundarySecに基づいてタイマーをセットし、
- * 境界到達時にforceRecalc: trueで再計算を投げる。
+ * 境界到達時にforceRecalc: trueで再計算する。
  */
 function scheduleRepopTimer(mobNo: number, repopInfo: RepopInfo) {
     if (repopTimers.has(mobNo)) {
@@ -344,96 +331,24 @@ function scheduleRepopTimer(mobNo: number, repopInfo: RepopInfo) {
         repopTimers.delete(mobNo);
         const mob = state.mobsMap.get(String(mobNo));
         if (mob) {
-            requestWorkerCalculation(mob, state.maintenance, { forceRecalc: true });
+            recalcMob(mob, state.maintenance, { forceRecalc: true });
         }
     }, delayMs);
 
     repopTimers.set(mobNo, timer);
 }
 
-const WORKER_PENDING_TIMEOUT_MS = 10000;
-const pendingSince = new Map<number, number>();
-const rerunAfterPending = new Set<number>();
-
-function initWorker() {
-    if (state.worker) return;
-    state.worker = new Worker(new URL("./workers/calWorker.ts", import.meta.url), { type: "module" });
-    state.worker.onmessage = (e) => {
-        const { type, mobNo, repopInfo, spawnCache, error } = e.data;
-        if (type === WORKER_TYPES.RESULT) {
-            const current = state.mobs;
-            const idx = current.findIndex(m => m.No === mobNo);
-            state.pendingCalculationMobs.delete(mobNo);
-            pendingSince.delete(mobNo);
-            if (idx !== -1) {
-                if (repopInfo.nextMinRepopDate) repopInfo.nextMinRepopDate = new Date(repopInfo.nextMinRepopDate);
-                if (repopInfo.nextConditionSpawnDate) repopInfo.nextConditionSpawnDate = new Date(repopInfo.nextConditionSpawnDate);
-                if (repopInfo.conditionWindowEnd) repopInfo.conditionWindowEnd = new Date(repopInfo.conditionWindowEnd);
-
-                current[idx].repopInfo = repopInfo;
-                if (spawnCache) {
-                    current[idx]._spawnCache = spawnCache;
-                }
-
-                scheduleRepopTimer(mobNo, repopInfo);
-
-                window.dispatchEvent(new CustomEvent('mobUpdated', { detail: { mobNo, mob: current[idx] } }));
-            }
-        } else if (type === WORKER_TYPES.ERROR) {
-            state.pendingCalculationMobs.delete(mobNo);
-            pendingSince.delete(mobNo);
-            console.error(`時間計算エラー (Mob ${mobNo}):`, error);
-        }
-
-        // 計算中に届いた強制再計算要求を、完了後に最新データでやり直す
-        if (mobNo !== undefined && rerunAfterPending.delete(mobNo)) {
-            const m = state.mobsMap.get(String(mobNo));
-            if (m) requestWorkerCalculation(m, state.maintenance, { forceRecalc: true });
-        }
-    };
-}
-
-export function requestWorkerCalculation(mob: Mob, maintenance: any, options: { forceRecalc?: boolean } = {}): void {
-    if (state.pendingCalculationMobs.has(mob.No)) {
-        const since = pendingSince.get(mob.No) || 0;
-        if (Date.now() - since < WORKER_PENDING_TIMEOUT_MS) {
-            if (options.forceRecalc) rerunAfterPending.add(mob.No);
-            return;
-        }
-        // 応答が返らないまま残っているpendingは破棄して再計算する
-    }
-    if (!state.worker) initWorker();
-    state.pendingCalculationMobs.add(mob.No);
-    pendingSince.set(mob.No, Date.now());
-
-    // spawn_cull_status は時間計算に使わない。楽観更新で関数(toMillis)が入ると
-    // structured clone に失敗するため、ワーカーには送らない
-    const { spawn_cull_status, ...mobForWorker } = mob as any;
-
+function recalcMob(mob: Mob, maintenance: any, options: { forceRecalc?: boolean } = {}): void {
     try {
-        state.worker!.postMessage({
-            type: WORKER_TYPES.CALCULATE,
-            mob: mobForWorker,
-            maintenance,
-            options,
-            timeOffset: getServerTimeOffset()
-        });
-    } catch (e) {
-        state.pendingCalculationMobs.delete(mob.No);
-        pendingSince.delete(mob.No);
-        handleAppError(e, `計算要求の送信失敗 (Mob ${mob.No})`, false);
-
-        // ワーカーが使えなくてもメインスレッドで計算して反映する
-        try {
-            mob.repopInfo = calculateRepop(mob, maintenance, options);
-            window.dispatchEvent(new CustomEvent('mobUpdated', { detail: { mobNo: mob.No, mob } }));
-        } catch (err) {
-            handleAppError(err, `メインスレッド計算失敗 (Mob ${mob.No})`, false);
-        }
+        mob.repopInfo = calculateRepop(mob, maintenance, options);
+        scheduleRepopTimer(mob.No, mob.repopInfo);
+        window.dispatchEvent(new CustomEvent('mobUpdated', { detail: { mobNo: mob.No, mob } }));
+    } catch (err) {
+        handleAppError(err, `時間計算失敗 (Mob ${mob.No})`, false);
     }
 }
 
-// 境界を過ぎているのに状態が進んでいないモブを、ワーカーで再計算させる
+// 境界を過ぎているのに状態が進んでいないモブを再計算させる
 const lastStaleRecalc = new Map<number, number>();
 const STALE_RECALC_INTERVAL_MS = 15000;
 
@@ -448,7 +363,7 @@ export function recalcIfStale(mob: Mob, nowSec: number): void {
     if (nowMs - (lastStaleRecalc.get(mob.No) || 0) < STALE_RECALC_INTERVAL_MS) return;
     lastStaleRecalc.set(mob.No, nowMs);
 
-    requestWorkerCalculation(mob, state.maintenance, { forceRecalc: true });
+    recalcMob(mob, state.maintenance, { forceRecalc: true });
 }
 
 // データ加工
@@ -519,14 +434,13 @@ export async function loadBaseMobData(): Promise<void> {
         }
 
         const processed = processMobData(freshData, locationsData);
-        state.baseMobData = processed;
-        setMobs([...processed]);
+        setMobs(processed);
 
         if (locationsData) {
             window.dispatchEvent(new CustomEvent('locationDataReady'));
         }
 
-        if (state.baseMobData.length > 0) {
+        if (state.mobs.length > 0) {
             applyPendingRealtimeData();
         }
     } catch (e) {
@@ -617,8 +531,6 @@ function applyPendingRealtimeData(): void {
         state.pendingMemoData = null;
     }
 
-    setMobs([...current]);
-
     checkInitialLoadComplete();
 }
 
@@ -638,7 +550,6 @@ function checkInitialLoadComplete(): void {
             mob.repopInfo = calculateRepop(mob, maintenance);
             scheduleRepopTimer(mob.No, mob.repopInfo);
         });
-        setMobs([...current]);
 
         window.dispatchEvent(new CustomEvent('initialDataLoaded'));
     }
@@ -686,9 +597,6 @@ export function startRealtime(options: { resume?: boolean } = {}): void {
                         });
                     }
                 }
-                // 応答の返らないワーカー計算で初期ロードが止まらないようにする
-                state.pendingCalculationMobs.clear();
-                pendingSince.clear();
                 checkInitialLoadComplete();
             }
         }, CONFIG.FIRESTORE_LOAD_TIMEOUT);
@@ -880,9 +788,9 @@ export function startRealtime(options: { resume?: boolean } = {}): void {
 
             const current = state.mobs;
             current.forEach(mob => {
-                requestWorkerCalculation(mob, normalized);
+                mob.repopInfo = calculateRepop(mob, normalized);
+                scheduleRepopTimer(mob.No, mob.repopInfo);
             });
-            setMobs([...current]);
             window.dispatchEvent(new CustomEvent('filterChanged'));
             window.dispatchEvent(new CustomEvent('mobsUpdated'));
             window.dispatchEvent(new CustomEvent('maintenanceUpdated'));
@@ -957,8 +865,5 @@ document.addEventListener('visibilitychange', () => {
     if (awayMs < RESUME_REFRESH_THRESHOLD_MS) return;
     if (state.mobs.length === 0) return;
 
-    state.pendingCalculationMobs.clear();
-    pendingSince.clear();
-    rerunAfterPending.clear();
     startRealtime({ resume: true });
 });

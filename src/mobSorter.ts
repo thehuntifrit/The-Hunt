@@ -1,7 +1,6 @@
 import { AppState } from "./types/state";
 import { Mob } from "./types/mob";
-import { getState, RANKS, DOM } from "./dataManager";
-import { cloneTemplate } from "./mobCard";
+import { getState, RANKS } from "./dataManager";
 import { filterMobsByRankAndArea } from "./sidebar";
 
 const mobIdPartsCache = new Map<number, { mobNo: number; instance: number }>();
@@ -20,55 +19,6 @@ export const GROUP_LABELS = {
   NEXT: "Cooldown",
   MAINTENANCE: "Maintenance"
 };
-
-const groupSectionCache = new Map<string, { section: HTMLElement; cols: HTMLElement[] }>();
-
-export function getOrCreateGroupSection(groupKey: "MAINTENANCE" | "MAX_OVER" | "WINDOW" | "NEXT"): { section: HTMLElement; cols: HTMLElement[] } {
-  if (groupSectionCache.has(groupKey)) return groupSectionCache.get(groupKey)!;
-
-  const section = cloneTemplate('status-group-template') as HTMLElement;
-  if (!section) return { section: document.createElement('section'), cols: [] };
-
-  section.dataset.groupKey = groupKey;
-  const separator = section.querySelector(".status-group-separator") as HTMLElement | null;
-  const labelEl = section.querySelector(".status-group-label");
-  if (labelEl) labelEl.textContent = GROUP_LABELS[groupKey];
-
-  if (separator) {
-    separator.setAttribute("role", "button");
-    separator.setAttribute("tabindex", "0");
-    separator.title = "クリックで折りたたみ / 展開";
-    const chevron = document.createElement("span");
-    chevron.className = "status-group-toggle-icon";
-    chevron.textContent = "▼";
-    separator.appendChild(chevron);
-
-    const toggleCollapse = () => {
-      section.classList.toggle("is-collapsed");
-    };
-
-    separator.addEventListener("click", toggleCollapse);
-    separator.addEventListener("keydown", (e: KeyboardEvent) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        toggleCollapse();
-      }
-    });
-  }
-
-  const cols = [
-    section.querySelector(".col-1") as HTMLElement,
-    section.querySelector(".col-2") as HTMLElement,
-    section.querySelector(".col-3") as HTMLElement
-  ].filter(Boolean);
-
-  const result = { section, cols };
-  groupSectionCache.set(groupKey, result);
-  if (DOM.colContainer) {
-    DOM.colContainer.appendChild(section);
-  }
-  return result;
-}
 
 let filterCacheVersion = -1;
 let cachedMobsRef: Mob[] | null = null;

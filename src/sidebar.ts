@@ -872,7 +872,7 @@ function showPanel(panelName: string): void {
     if (panelArea) panelArea.classList.add("expanded");
 }
 
-async function syncPanelContents(panelName: string): Promise<void> {
+function syncPanelContents(panelName: string): void {
     if (panelName === "rank") renderSidebarFilterAccordion();
     else if (panelName === "error") updateErrorPanel();
     else if (panelName === "telop" || panelName === "maintenance") {

@@ -13,16 +13,6 @@ export function now(): number {
     return Date.now() + offset;
 }
 
-/** 現在のずれ(ms)。calWorker へ渡すために使う */
-export function getServerTimeOffset(): number {
-    return offset;
-}
-
-/** ずれを直接セットする。calWorker が、メインスレッドから受け取った値を反映するために使う */
-export function setServerTimeOffset(ms: number): void {
-    if (Number.isFinite(ms)) offset = ms;
-}
-
 const syncListeners: Array<() => void> = [];
 
 /** 同期でオフセットが更新されるたびに呼ばれるコールバックを登録する(メインスレッド用) */

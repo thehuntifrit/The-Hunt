@@ -12,16 +12,13 @@ export interface AppState {
   lodestoneId: string | null;
   characterName: string | null;
   isVerified: boolean;
-  baseMobData: Mob[];
   mobs: Mob[];
   maintenance: any | null; // メンテナンス情報オブジェクト
   initialLoadComplete: boolean;
-  worker: Worker | null;
   filter: FilterState;
   openMobCardNo: number | null;
   notificationEnabled: boolean;
   notificationVolume: number;
-  pendingCalculationMobs: Set<number>;
   pendingStatusMap: any | null;
   pendingMaintenanceData: any | null;
   pendingLocationsMap: any | null;

@@ -23,7 +23,6 @@ const UNCULLED_CLASS_MAP: Record<string, string> = {
   "color-b2-culled": "color-b2",
 };
 
-let isInitialLoading = false;
 let lastClickTime = 0;
 let lastClickLocationId: string | null = null;
 let locationEventsAttached = false;
@@ -91,7 +90,6 @@ async function initApp(): Promise<void> {
     startRealtime();
     setOpenMobCardNo(null);
     initModal();
-    renderMaintenanceStatus();
     updateHeaderTime();
     scheduleHeaderClock();
     initAppNav();
@@ -106,7 +104,6 @@ async function initApp(): Promise<void> {
         if (!getState().initialLoadComplete) {
           window.dispatchEvent(new CustomEvent('initialDataLoaded'));
         }
-        showColumnContainer();
         overlay.classList.add("hidden");
         showToast("データ同期がタイムアウトしました。既存のデータで表示します。", "info");
       }
@@ -114,23 +111,8 @@ async function initApp(): Promise<void> {
 
   } catch (e) {
     handleAppError(e, "アプリ初期化致命的エラー");
-    showColumnContainer();
+    DOM.loadingOverlay?.classList.add("hidden");
   }
-}
-
-export function showColumnContainer(): void {
-  if (!DOM.colContainer) return;
-
-  requestAnimationFrame(() => {
-    DOM.colContainer!.classList.add("is-ready");
-
-    requestAnimationFrame(() => {
-      const overlay = document.getElementById("loading-overlay");
-      if (overlay) {
-        overlay.classList.add("hidden");
-      }
-    });
-  });
 }
 
 // メンテナンス表示
@@ -142,7 +124,7 @@ interface MaintStatus {
   message: string;
 }
 
-async function getMaintenanceStatus(): Promise<MaintStatus> {
+function getMaintenanceStatus(): MaintStatus {
   const state = getState();
   const maintenance = state.maintenance;
 
@@ -181,9 +163,9 @@ async function getMaintenanceStatus(): Promise<MaintStatus> {
   return status;
 }
 
-export async function renderMaintenanceStatus(): Promise<void> {
+export function renderMaintenanceStatus(): void {
   const state = getState();
-  const maintenance = await getMaintenanceStatus();
+  const maintenance = getMaintenanceStatus();
 
   const maintPanels = document.querySelectorAll(".js-maintenance-content");
   const telopPanels = document.querySelectorAll(".js-telop-content");
@@ -524,15 +506,6 @@ export function updateVisibleDetailCard(mobMap: Map<string, Mob>): void {
     const mob = mobMap.get(rightPane.dataset.renderedMobNo);
     if (detailCard && mob) updateCardFull(detailCard, mob);
   }
-
-  const mobileOverlay = DOM.mobileDetailOverlay || document.getElementById("mobcard-overlay");
-  if (mobileOverlay && (mobileOverlay as HTMLElement).offsetParent !== null && mobileOverlay.dataset.renderedMobNo && mobileOverlay.dataset.renderedMobNo !== "none") {
-    const detailCard = mobileOverlay.querySelector('.mobcard-card') as HTMLElement | null;
-    const mob = mobMap.get(mobileOverlay.dataset.renderedMobNo);
-    if (detailCard && mob) {
-      updateCardFull(detailCard, mob);
-    }
-  }
 }
 
 const debouncedSortAndRedistribute = debounce(() => {
@@ -541,20 +514,8 @@ const debouncedSortAndRedistribute = debounce(() => {
 
 export const sortAndRedistribute = (options: { immediate?: boolean } = {}): void => {
   const { immediate = false } = options;
-  const run = () => {
-    filterAndRender();
-    if (isInitialLoading) {
-      isInitialLoading = false;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          window.dispatchEvent(new CustomEvent('initialSortComplete'));
-        });
-      });
-    }
-  };
-
   if (immediate) {
-    run();
+    filterAndRender();
   } else {
     debouncedSortAndRedistribute();
   }
@@ -725,10 +686,6 @@ export function filterAndRender(options: { isInitialLoad?: boolean } = {}): void
     return;
   }
 
-  if (isInitialLoad) {
-    isInitialLoading = true;
-  }
-
   const activeElement = document.activeElement as HTMLElement | null;
   let focusedMobNo: string | null = null;
   let focusedAction: string | null = null;
@@ -752,7 +709,6 @@ export function filterAndRender(options: { isInitialLoad?: boolean } = {}): void
   renderDetailPane();
 
   if (isInitialLoad) {
-    isInitialLoading = false;
     const overlay = document.getElementById("loading-overlay");
     if (overlay) overlay.classList.add("hidden");
   }
@@ -1079,11 +1035,6 @@ export function attachLocationEvents(): void {
     mobcardDetail.addEventListener("click", handleCrushToggle);
   }
 
-  const mobcardOverlay = document.getElementById("mobcard-overlay");
-  if (mobcardOverlay) {
-    mobcardOverlay.addEventListener("click", handleCrushToggle);
-  }
-
   locationEventsAttached = true;
 }
 
@@ -1128,11 +1079,6 @@ function attachGlobalEventListeners(): void {
     if (target.closest('.appnav-logo')) {
       window.location.reload();
       return;
-    }
-
-    if (target === DOM.cardOverlayBackdrop) {
-      setOpenMobCardNo(null);
-      showDetailOnly();
     }
   });
 
@@ -1227,7 +1173,6 @@ function initAppEventListeners(): void {
       lastTierBTime = 0;
       lastTierCTime = 0;
       updateProgressBarsOptimized();
-      showColumnContainer();
 
       const isFirstVisit = !localStorage.getItem("has_visited");
       if (isFirstVisit) {
@@ -1236,7 +1181,7 @@ function initAppEventListeners(): void {
       }
     } catch (e) {
       console.error("初期ロード処理失敗:", e);
-      showColumnContainer();
+      DOM.loadingOverlay?.classList.add("hidden");
     }
   }, { once: true });
 

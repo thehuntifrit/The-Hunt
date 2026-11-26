@@ -1,6 +1,6 @@
-import { getState, setLodestoneId, setCharacterName, setVerified, extractLodestoneId, DOM } from "./dataManager";
-import { verifyLodestoneCharacter } from "./server";
+import { DOM } from "./dataManager";
 import { cloneTemplate } from "./mobCard";
+import { setActiveNavItem } from "./sidebar";
 import readmeContent from "../README.md?raw";
 
 // グローバルロードされる marked, DOMPurify の定義
@@ -8,7 +8,6 @@ declare const marked: any;
 declare const DOMPurify: any;
 
 let isLoaded = false;
-let currentVCode = "";
 
 export const openUserManual = async (): Promise<void> => {
     const modal = DOM.manualModal;
@@ -34,7 +33,6 @@ export const openUserManual = async (): Promise<void> => {
                 container.textContent = text;
             }
             isLoaded = true;
-            updateAuthUI();
         } catch (error) {
             console.error(error);
             const errorMsg = cloneTemplate('ui-message-template');
@@ -64,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         closeUserManual();
         const activeNav = document.querySelector(".appnav-btn[data-nav-id='manual'].appnav-active");
         if (activeNav) {
-            import("./sidebar").then(m => m.setActiveNavItem("home"));
+            setActiveNavItem("home");
         }
     };
 
@@ -81,87 +79,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-
-window.addEventListener('characterNameSet', () => {
-    if (isLoaded) updateAuthUI();
-});
-
-async function updateAuthUI(): Promise<void> {
-    const authContainer = DOM.readmeAuthSession;
-    if (!authContainer) return;
-
-    const state = getState();
-    authContainer.innerHTML = "";
-
-    if (state.isVerified) {
-        const verifiedEl = cloneTemplate('auth-verified-template');
-        if (verifiedEl) authContainer.appendChild(verifiedEl);
-        return;
-    }
-
-    if (!currentVCode) {
-        const arr = new Uint8Array(6);
-        crypto.getRandomValues(arr);
-        const code = Array.from(arr).map(b => b.toString(36).toUpperCase()).join('').substring(0, 8);
-        currentVCode = "HUNT-" + code;
-    }
-
-    const formEl = cloneTemplate('auth-form-template');
-    if (!formEl) return;
-
-    const vcodeDisplay = formEl.querySelector('.auth-vcode-display');
-    const copyBtn = formEl.querySelector('.auth-copy-btn') as HTMLElement | null;
-    const verifyBtn = formEl.querySelector('.auth-verify-btn') as HTMLButtonElement | null;
-    const idInput = formEl.querySelector('.auth-id-input') as HTMLInputElement | null;
-    const statusEl = formEl.querySelector('.auth-status-msg');
-
-    if (vcodeDisplay) vcodeDisplay.textContent = currentVCode;
-
-    copyBtn?.addEventListener('click', () => {
-        navigator.clipboard.writeText(currentVCode);
-        const original = copyBtn.textContent;
-        copyBtn.textContent = "Done!";
-        setTimeout(() => {
-            if (copyBtn) copyBtn.textContent = original;
-        }, 2000);
-    });
-
-    verifyBtn?.addEventListener('click', async () => {
-        if (!idInput || !statusEl || !verifyBtn) return;
-        const raw = idInput.value.trim();
-        const lodestoneId = extractLodestoneId(raw);
-
-        if (!lodestoneId) {
-            statusEl.textContent = "正しいIDまたはURLを入力してください";
-            statusEl.className = "text-xs text-red-400";
-            return;
-        }
-
-        statusEl.textContent = "検証中...";
-        statusEl.className = "text-xs text-cyan-400 auth-status-msg";
-        verifyBtn.disabled = true;
-
-        try {
-            const result = await verifyLodestoneCharacter(lodestoneId);
-            verifyBtn.disabled = false;
-
-            if (result.success && result.characterName) {
-                statusEl.textContent = "検証成功！登録しています...";
-                setLodestoneId(lodestoneId);
-                setCharacterName(result.characterName);
-                setVerified(true);
-                updateAuthUI();
-            } else {
-                statusEl.textContent = result.error || "検証失敗";
-                statusEl.className = "text-xs text-red-400 auth-status-msg";
-                verifyBtn.disabled = false;
-            }
-        } catch (err: any) {
-            statusEl.textContent = `エラー: ${err.message || "通信失敗"}`;
-            statusEl.className = "text-xs text-red-400 auth-status-msg";
-            verifyBtn.disabled = false;
-        }
-    });
-
-    authContainer.appendChild(formEl);
-}
