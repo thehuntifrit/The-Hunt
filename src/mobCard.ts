@@ -848,7 +848,9 @@ export function updateMapOverlay(card: HTMLElement, mob: Mob): void {
           if (p.uncull_at && (p.uncull_at as any).seconds) latest = Math.max(latest, (p.uncull_at as any).seconds);
         });
       }
-      timeEl.textContent = latest > 0 ? `更新: ${formatMMDDHHmm(latest)}` : "更新: --/-- --:--";
+      timeEl.innerHTML = latest > 0
+        ? `<span class="map-update-label">更新：</span>${formatMMDDHHmm(latest)}`
+        : `<span class="map-update-label">更新：</span>--/-- --:--`;
     }
 
     const myId = getState().lodestoneId || "";
