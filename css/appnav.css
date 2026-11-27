@@ -400,8 +400,8 @@
     cursor: grabbing;
   }
 
-  #appnav-search-panel.is-floating {
-    min-height: 96px;
+  #appnav-search-panel.is-floating .appnav-search-input {
+    height: 35px;
   }
 
   .appnav-panel.is-floating .area-filter-btn {
@@ -727,6 +727,10 @@
   color: var(--c-f);
 }
 
+  .appnav-panel.is-floating .appnav-rank-tab {
+    height: 32px;
+  }
+
 /* 5-3. エリアボタン（FF7R シームレス・バー形式） */
 .area-filter-btn {
   height: clamp(32px, 7.5vw, 35px);
@@ -734,7 +738,9 @@
   line-height: 1;
   font-size: clamp(12px, 3vw, 13.5px);
   font-weight: 600;
-  color: rgba(174, 187, 210, 0.68);
+  color: rgba(174, 187, 210, 0.68);  .appnav-panel.is-floating .appnav-rank-tab {
+    height: 32px;
+  }
   outline: none;
   white-space: nowrap;
   box-sizing: border-box;
