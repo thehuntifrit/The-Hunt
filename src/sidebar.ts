@@ -541,41 +541,41 @@ export function initNotification(): void {
         }
     });
 
-// 音量スライダー操作
-volSlider?.addEventListener('input', () => {
-    const newVol = parseInt(volSlider.value, 10);
-    const valEl = popup?.querySelector('.js-volume-value') as HTMLElement | null;
-    if (valEl) valEl.textContent = String(newVol);
-    setNotificationVolume(newVol);
-    if (gainNode) gainNode.gain.value = newVol / 100;
-});
+    // 音量スライダー操作
+    volSlider?.addEventListener('input', () => {
+        const newVol = parseInt(volSlider.value, 10);
+        const valEl = popup?.querySelector('.js-volume-value') as HTMLElement | null;
+        if (valEl) valEl.textContent = String(newVol);
+        setNotificationVolume(newVol);
+        if (gainNode) gainNode.gain.value = newVol / 100;
+    });
 
-// スライダー変更確定時にテスト再生
-volSlider?.addEventListener('change', () => {
-    playNotificationSound();
-});
+    // スライダー変更確定時にテスト再生
+    volSlider?.addEventListener('change', () => {
+        playNotificationSound();
+    });
 
-// ポップアップ外タップ/クリックで閉じる（capture: true で他の要素の stopPropagation をすり抜ける）
-const handleOutside = (e: Event) => {
-    if (!popup?.classList.contains('is-open')) return;
-    const target = e.target as Node | null;
-    if (!target) return;
-    if (popup.contains(target) || (label && label.contains(target))) {
-        return;
-    }
-    closeVolumePopup();
-};
-
-document.addEventListener('pointerdown', handleOutside, true);
-document.addEventListener('touchstart', handleOutside, true);
-document.addEventListener('click', handleOutside, true);
-
-// 画面スクロール時にも閉じる
-window.addEventListener('scroll', () => {
-    if (popup?.classList.contains('is-open')) {
+    // ポップアップ外タップ/クリックで閉じる（capture: true で他の要素の stopPropagation をすり抜ける）
+    const handleOutside = (e: Event) => {
+        if (!popup?.classList.contains('is-open')) return;
+        const target = e.target as Node | null;
+        if (!target) return;
+        if (popup.contains(target) || (label && label.contains(target))) {
+            return;
+        }
         closeVolumePopup();
-    }
-}, { passive: true });
+    };
+
+    document.addEventListener('pointerdown', handleOutside, true);
+    document.addEventListener('touchstart', handleOutside, true);
+    document.addEventListener('click', handleOutside, true);
+
+    // 画面スクロール時にも閉じる
+    window.addEventListener('scroll', () => {
+        if (popup?.classList.contains('is-open')) {
+            closeVolumePopup();
+        }
+    }, { passive: true });
 }
 
 async function requestNotificationPermission(): Promise<void> {
@@ -827,12 +827,12 @@ export function filterMobsByRankAndArea(mobs: Mob[]): Mob[] {
         if (searchQuery) {
             const normalizedName = normalizeSearchText(m.name);
             // モブ名自体にヒット
-            if (normalizedName.startsWith(searchQuery)) {
-                // OK（前方一致）
+            if (normalizedName.includes(searchQuery)) {
+                // OK（部分一致）
             } else {
                 // エイリアス辞書も検索
                 const aliases = mobAliasMap.get(m.name) || [];
-                const aliasHit = aliases.some(alias => normalizeSearchText(alias).startsWith(searchQuery));
+                const aliasHit = aliases.some(alias => normalizeSearchText(alias).includes(searchQuery));
                 if (!aliasHit) return false;
             }
         }
