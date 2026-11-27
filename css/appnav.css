@@ -389,6 +389,22 @@
     cursor: grabbing;
   }
 
+  /* 検索窓もドラッグ可能 */
+  .appnav-panel.is-floating #sidebar-panel-search .appnav-section-header {
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .appnav-panel.is-floating.is-dragging #sidebar-panel-search .appnav-section-header {
+    cursor: grabbing;
+  }
+
+  /* 検索窓はランク窓より少し幅を狭く */
+  #appnav-search-panel.is-floating {
+    width: 320px;
+  }
+
   /* モバイルと同等の引き締まったボタンサイズ感に合わせる */
   .appnav-panel.is-floating .appnav-rank-tabs {
     gap: 4px;

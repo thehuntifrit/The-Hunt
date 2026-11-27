@@ -3,7 +3,7 @@ import { calculateRepop, formatDurationColon, formatMMDDHHmm, debounce, getEorze
 import { createMobCard, updateProgressBar, updateProgressText, updateExpandablePanel, updateMemoIcon, updateMobCount, updateMapOverlay, createSimpleMobItem, updateSimpleMobItem, escapeHtml, initGlobalMagnifier, adjustMemoHeight, preloadMapImages } from "./mobCard";
 import { getGroupKey, GROUP_LABELS, getSortedFilteredMobs, getFilteredMobs, invalidateFilterCache, invalidateSortCache, hasMobSortKeyChanged, rememberMobSortKeys } from "./mobSorter";
 import { closeReportModal, openAuthModal, openReportModal, initModal } from "./modal";
-import { handleAreaFilterClick, initAppNav, togglePanel, closePanel, setActiveNavItem, checkAndNotify, updateErrorPanel } from "./sidebar";
+import { handleAreaFilterClick, initAppNav, togglePanel, closePanel, setActiveNavItem, checkAndNotify, updateErrorPanel, dismissSearch } from "./sidebar";
 import { initializeAuth, getUserData, submitReport, submitMemo, toggleCrushStatus } from "./server";
 import { now as serverNow, startTimeSync, onTimeSynced } from "./servertime";
 import { Mob, RepopInfo } from "./types/mob";
@@ -1377,6 +1377,8 @@ function handleGeneralClick(e: Event): void {
 
   if (target.closest(".moblist-item") || target.classList.contains('mobcard-card')) {
     closePanel();
+    // モブカードを開く際、検索を終了（PC窓は維持＆クリア、スマホはパネルも閉じる）
+    dismissSearch();
     const currentOpen = getState().openMobCardNo;
     setOpenMobCardNo(currentOpen === mobNo ? null : mobNo);
     showDetailOnly();

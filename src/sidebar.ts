@@ -1,4 +1,4 @@
-import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled, setNotificationVolume, safeJsonParse, RANKS, CONFIG, DOM, handleAppError, setTelopRead } from "./dataManager";
+import { getState, setFilter, EXPANSION_MAP, setNotificationEnabled, setNotificationVolume, safeJsonParse, RANKS, CONFIG, DOM, handleAppError, setTelopRead, mobAliasMap } from "./dataManager";
 import { filterAndRender } from "./app";
 import { openUserManual, closeUserManual } from "./readme";
 import { cloneTemplate } from "./mobCard";
@@ -21,7 +21,9 @@ const POPUP_PANELS = new Set(["telop", "maintenance", "error"]);
 const desktopMq = window.matchMedia("(min-width: 900px)");
 let popupBackdrop: HTMLElement | null = null;
 let floatingInitialized = false;
+let searchFloatingInitialized = false;
 let isRankOpen = false;
+let isSearchOpen = false;
 let searchQuery = "";
 
 function normalizeSearchText(str: string): string {
@@ -37,6 +39,10 @@ function getMainPanelEl(): HTMLElement | null {
 
 function getRankPanelEl(): HTMLElement | null {
     return document.getElementById("appnav-rank-panel") as HTMLElement | null;
+}
+
+function getSearchPanelEl(): HTMLElement | null {
+    return document.getElementById("appnav-search-panel") as HTMLElement | null;
 }
 
 function attachPanelChrome(panelEl: HTMLElement | null, onClose: () => void): void {
@@ -77,10 +83,10 @@ function clampFloatingPos(x: number, y: number, panelArea: HTMLElement): { x: nu
     };
 }
 
-function applyFloatingPosition(panelArea: HTMLElement): void {
+function applyFloatingPosition(panelArea: HTMLElement, posKey: "rankWindowPos" | "searchWindowPos" = "rankWindowPos"): void {
     if (!panelArea.classList.contains("is-floating")) return;
     const stored = loadSidebarState();
-    const pos = stored.rankWindowPos;
+    const pos = stored[posKey];
     const raw = (pos && typeof pos.x === "number" && typeof pos.y === "number")
         ? pos
         : getDefaultFloatingPos(panelArea);
@@ -101,8 +107,8 @@ function applyRankPanelMode(): void {
     rankPanel.classList.toggle("is-docked", isDocked);
 
     if (isFloating) {
-        applyFloatingPosition(rankPanel);
-        requestAnimationFrame(() => applyFloatingPosition(rankPanel));
+        applyFloatingPosition(rankPanel, "rankWindowPos");
+        requestAnimationFrame(() => applyFloatingPosition(rankPanel, "rankWindowPos"));
     } else {
         rankPanel.style.left = "";
         rankPanel.style.top = "";
@@ -198,7 +204,144 @@ function initFloatingRankWindow(): void {
 
     window.addEventListener("resize", () => {
         if (panelArea.classList.contains("is-floating")) {
-            applyFloatingPosition(panelArea);
+            applyFloatingPosition(panelArea, "rankWindowPos");
+        }
+    });
+}
+
+// ─── 検索パネル（ランクフィルターと対称） ──────────────────
+function applySearchPanelMode(): void {
+    const searchPanel = getSearchPanelEl();
+    if (!searchPanel) return;
+
+    const isFloating = isSearchOpen && desktopMq.matches;
+    const isDocked = isSearchOpen && !desktopMq.matches;
+
+    searchPanel.classList.toggle("expanded", isSearchOpen);
+    searchPanel.classList.toggle("is-floating", isFloating);
+    searchPanel.classList.toggle("is-docked", isDocked);
+
+    if (isFloating) {
+        applyFloatingPosition(searchPanel, "searchWindowPos");
+        requestAnimationFrame(() => applyFloatingPosition(searchPanel, "searchWindowPos"));
+    } else {
+        searchPanel.style.left = "";
+        searchPanel.style.top = "";
+    }
+
+    const searchSection = document.getElementById("sidebar-panel-search");
+    searchSection?.classList.toggle("hidden", !isSearchOpen);
+
+    // モバイルのドック時のみ本文余白を確保
+    if (isDocked) {
+        DOM.appNav?.classList.add("expanded");
+        DOM.body.classList.add("sidebar-expanded");
+    } else if (!currentPanel || POPUP_PANELS.has(currentPanel)) {
+        DOM.appNav?.classList.remove("expanded");
+        DOM.body.classList.remove("sidebar-expanded");
+    }
+}
+
+export function openSearchPanel(): void {
+    isSearchOpen = true;
+    applySearchPanelMode();
+    setActiveNavItem(currentPanel || "home");
+    // 入力フォーカス
+    const input = document.getElementById("sidebar-search-input") as HTMLInputElement | null;
+    if (input) requestAnimationFrame(() => input.focus());
+}
+
+export function closeSearchPanel(): void {
+    isSearchOpen = false;
+    applySearchPanelMode();
+    setActiveNavItem(currentPanel || "home");
+}
+
+/** モブカードを開いた時など「検索を終了」させる処理。
+ *  PC: 窓は維持しつつ検索クエリだけクリア
+ *  モバイル: パネルも閉じる + クリア
+ */
+export function dismissSearch(): void {
+    clearSearch();
+    if (!desktopMq.matches) {
+        closeSearchPanel();
+    }
+}
+
+export function clearSearch(): void {
+    searchQuery = "";
+    const input = document.getElementById("sidebar-search-input") as HTMLInputElement | null;
+    const clearBtn = document.getElementById("sidebar-search-clear");
+    const searchNavBtns = document.querySelectorAll('.appnav-btn[data-nav-id="search"]');
+    if (input) input.value = "";
+    clearBtn?.classList.add("hidden");
+    searchNavBtns.forEach(btn => btn.classList.remove("has-alert"));
+    window.dispatchEvent(new CustomEvent("filterChanged"));
+}
+
+function initFloatingSearchWindow(): void {
+    if (searchFloatingInitialized) return;
+    const panelArea = getSearchPanelEl();
+    const header = document.querySelector("#sidebar-panel-search .appnav-section-header") as HTMLElement | null;
+    if (!panelArea || !header) return;
+    searchFloatingInitialized = true;
+
+    attachPanelChrome(panelArea, closeSearchPanel);
+
+    header.addEventListener("pointerdown", (e: PointerEvent) => {
+        if (e.button !== 0 || !panelArea.classList.contains("is-floating")) return;
+        if ((e.target as HTMLElement).closest(".appnav-popup-close")) return;
+        e.preventDefault();
+
+        const rect = panelArea.getBoundingClientRect();
+        const offsetX = e.clientX - rect.left;
+        const offsetY = e.clientY - rect.top;
+        panelArea.classList.add("is-dragging");
+
+        const onMove = (ev: PointerEvent) => {
+            const next = clampFloatingPos(ev.clientX - offsetX, ev.clientY - offsetY, panelArea);
+            panelArea.style.left = `${next.x}px`;
+            panelArea.style.top = `${next.y}px`;
+        };
+
+        const onEnd = () => {
+            window.removeEventListener("pointermove", onMove);
+            window.removeEventListener("pointerup", onEnd);
+            window.removeEventListener("pointercancel", onEnd);
+            panelArea.classList.remove("is-dragging");
+            const x = parseFloat(panelArea.style.left);
+            const y = parseFloat(panelArea.style.top);
+            if (!Number.isNaN(x) && !Number.isNaN(y)) {
+                saveState("searchWindowPos", { x, y });
+            }
+        };
+
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onEnd);
+        window.addEventListener("pointercancel", onEnd);
+    });
+
+    header.addEventListener("dblclick", () => {
+        if (!panelArea.classList.contains("is-floating")) return;
+        saveState("searchWindowPos", null);
+        const def = getDefaultFloatingPos(panelArea);
+        const clamped = clampFloatingPos(def.x, def.y, panelArea);
+        panelArea.style.left = `${clamped.x}px`;
+        panelArea.style.top = `${clamped.y}px`;
+    });
+
+    desktopMq.addEventListener("change", () => {
+        if (isSearchOpen) {
+            if (!desktopMq.matches && currentPanel) {
+                closePanel();
+            }
+            applySearchPanelMode();
+        }
+    });
+
+    window.addEventListener("resize", () => {
+        if (panelArea.classList.contains("is-floating")) {
+            applyFloatingPosition(panelArea, "searchWindowPos");
         }
     });
 }
@@ -216,6 +359,7 @@ function ensurePopupChrome(): void {
 
     attachPanelChrome(panelArea, closePanel);
     attachPanelChrome(rankPanel, closeRankPanel);
+    // 検索パネルのchrome（ドラッグ用ヘッダーなど）はinitFloatingSearchWindowで初期化
 
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape" && currentPanel && POPUP_PANELS.has(currentPanel)) closePanel();
@@ -681,8 +825,15 @@ export function filterMobsByRankAndArea(mobs: Mob[]): Mob[] {
 
     return mobs.filter(m => {
         if (searchQuery) {
-            if (!normalizeSearchText(m.name).includes(searchQuery)) {
-                return false;
+            const normalizedName = normalizeSearchText(m.name);
+            // モブ名自体にヒット
+            if (normalizedName.startsWith(searchQuery)) {
+                // OK（前方一致）
+            } else {
+                // エイリアス辞書も検索
+                const aliases = mobAliasMap.get(m.name) || [];
+                const aliasHit = aliases.some(alias => normalizeSearchText(alias).startsWith(searchQuery));
+                if (!aliasHit) return false;
             }
         }
 
@@ -746,6 +897,7 @@ export function initAppNav(): void {
     captureErrors();
     ensurePopupChrome();
     initFloatingRankWindow();
+    initFloatingSearchWindow();
 
     const stored = loadSidebarState();
     const shouldRestoreRank = stored.rankOpen === true || stored.panel === "rank";
@@ -810,7 +962,7 @@ export function setActiveNavItem(id: string | null): void {
     document.querySelectorAll(".appnav-btn[data-nav-id]").forEach(btn => {
         const htmlBtn = btn as HTMLElement;
         const navId = htmlBtn.dataset.navId;
-        const isActive = navId === id || (navId === "rank" && isRankOpen);
+        const isActive = navId === id || (navId === "rank" && isRankOpen) || (navId === "search" && isSearchOpen);
         htmlBtn.classList.toggle("appnav-active", isActive);
     });
 }
@@ -830,6 +982,26 @@ export async function togglePanel(panelName: string): Promise<void> {
             openRankPanel();
         }
         return;
+    }
+
+    // 検索もPC時は独立窓として他のボタンと独立して開閉する
+    if (panelName === "search") {
+        const wasOpen = isSearchOpen;
+        if (!desktopMq.matches) {
+            closePanel();
+        }
+        if (wasOpen) {
+            closeSearchPanel();
+        } else {
+            openSearchPanel();
+        }
+        setActiveNavItem(isSearchOpen ? "search" : (currentPanel || "home"));
+        return;
+    }
+
+    // 他のパネルを開く場合、検索はモバイルのみ閉じる（PC窓は維持）
+    if (!desktopMq.matches && isSearchOpen) {
+        closeSearchPanel();
     }
 
     // モバイル時は画面が狭いため、他パネルを開く前にランクドックを閉じる
@@ -868,12 +1040,6 @@ export async function togglePanel(panelName: string): Promise<void> {
     if (panelName === "telop") {
         setTelopRead();
     }
-    if (panelName === "search") {
-        const input = document.getElementById("sidebar-search-input") as HTMLInputElement | null;
-        if (input) {
-            requestAnimationFrame(() => input.focus());
-        }
-    }
     setActiveNavItem(panelName);
     saveState("panel", panelName);
 }
@@ -885,11 +1051,14 @@ export function closePanel(): void {
     if (!desktopMq.matches && isRankOpen) {
         closeRankPanel();
     }
+    if (!desktopMq.matches && isSearchOpen) {
+        closeSearchPanel();
+    }
 
     const nav = DOM.appNav;
     if (!nav) return;
 
-    if (!isRankOpen || desktopMq.matches) {
+    if ((!isRankOpen && !isSearchOpen) || desktopMq.matches) {
         nav.classList.remove("expanded");
         DOM.body.classList.remove("sidebar-expanded");
     }

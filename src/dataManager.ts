@@ -20,7 +20,11 @@ export const RANKS = {
 
 const MOB_DATA_URL = "./json/mob_data.json";
 const MOB_LOCATIONS_URL = "./json/mob_locations.json";
+const MOB_ALIASES_URL = "./json/mob_aliases.json";
 const MAINTENANCE_URL = "./json/maintenance.json";
+
+// モブ名略称辞書：カタカナ名 → 略称配列（sidebar.tsから参照）
+export let mobAliasMap: Map<string, string[]> = new Map();
 
 // 設定値
 export const CONFIG = {
@@ -418,9 +422,10 @@ async function loadMaintenance(): Promise<any> {
 
 export async function loadBaseMobData(): Promise<void> {
     try {
-        const [mobRes, locRes] = await Promise.all([
+        const [mobRes, locRes, aliasRes] = await Promise.all([
             fetch(MOB_DATA_URL),
-            fetch(MOB_LOCATIONS_URL).catch(() => null)
+            fetch(MOB_LOCATIONS_URL).catch(() => null),
+            fetch(MOB_ALIASES_URL).catch(() => null)
         ]);
 
         if (!mobRes.ok) throw new Error("Mob data failed to load.");
@@ -431,6 +436,20 @@ export async function loadBaseMobData(): Promise<void> {
             locationsData = await locRes.json();
         } else {
             handleAppError(new Error("Location data failed to load."), "位置データ読み込み失敗", false);
+        }
+
+        // エイリアス辞書を読み込み
+        if (aliasRes && aliasRes.ok) {
+            try {
+                const aliasData: Record<string, string[]> = await aliasRes.json();
+                mobAliasMap = new Map(
+                    Object.entries(aliasData)
+                        .filter(([k]) => !k.startsWith("_"))
+                        .map(([k, v]) => [k, v])
+                );
+            } catch {
+                // エイリアス辞書の読み込み失敗は致命的でない
+            }
         }
 
         const processed = processMobData(freshData, locationsData);
