@@ -429,7 +429,7 @@
   color: var(--c-text-lo);
   margin-left: auto;
   line-height: 1;
-  margin-right: 12px;
+  margin-right: 6px;
 }
 
 .map-update-time .map-update-label {
