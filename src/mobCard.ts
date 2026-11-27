@@ -21,7 +21,11 @@ export function cloneTemplate(id: string): HTMLElement | null {
 
 // ─── ユーティリティ ─────────────────────────────────────
 const EMPTY_DATETIME_TEXT = "--/-- --:--:--";
+const EMPTY_DATETIME_NOSEC_TEXT = "--/-- --:--";
 const formatOrPlaceholder = (val: any): string => val ? formatMMDDHHmmss(val) : EMPTY_DATETIME_TEXT;
+// 秒なし版(最短POP・最大POP・前回討伐用)。末尾の ":ss" を落とす
+const formatOrPlaceholderNoSec = (val: any): string =>
+  val ? formatMMDDHHmmss(val).replace(/:\d{2}$/, "") : EMPTY_DATETIME_NOSEC_TEXT;
 
 const ESCAPE_MAP: Record<string, string> = {
   '&': '&amp;',
@@ -454,10 +458,10 @@ export function renderMobCard(mob: Mob): HTMLElement {
 
   updateEl(card, '.mobcard-rank', { textContent: rank }, { rank });
 
-  updateEl(card, '[data-min-repop]', { textContent: formatOrPlaceholder(minRepop) });
-  updateEl(card, '[data-max-repop]', { textContent: formatOrPlaceholder(maxRepop) });
-  updateEl(card, '[data-next-possible]', { textContent: nextConditionSpawnDate ? formatOrPlaceholder(nextConditionSpawnDate) : "--/-- --:--" });
-  updateEl(card, '[data-last-kill]', { textContent: formatOrPlaceholder(mob.last_kill_time) });
+  updateEl(card, '[data-min-repop]', { textContent: formatOrPlaceholderNoSec(minRepop) });
+  updateEl(card, '[data-max-repop]', { textContent: formatOrPlaceholderNoSec(maxRepop) });
+  updateEl(card, '[data-next-possible]', { textContent: nextConditionSpawnDate ? formatOrPlaceholder(nextConditionSpawnDate) : EMPTY_DATETIME_NOSEC_TEXT });
+  updateEl(card, '[data-last-kill]', { textContent: formatOrPlaceholderNoSec(mob.last_kill_time) });
 
   updateEl(card, '.condition-text', { innerHTML: processText(mob.condition || "特別な出現条件はありません。") });
 
@@ -637,8 +641,8 @@ export function updateExpandablePanel(card: HTMLElement, mob: Mob): void {
   const elNext = getEl(card, "[data-next-possible]", "nextPossible");
   const elLast = getEl(card, "[data-last-kill]", "lastKill");
 
-  if (elMin) elMin.textContent = formatOrPlaceholder(minRepop);
-  if (elMax) elMax.textContent = formatOrPlaceholder(maxRepop);
+  if (elMin) elMin.textContent = formatOrPlaceholderNoSec(minRepop);
+  if (elMax) elMax.textContent = formatOrPlaceholderNoSec(maxRepop);
 
   if (elNext && mob.repopInfo) {
     if (mob.repopInfo.nextConditionSpawnDate) {
@@ -647,18 +651,18 @@ export function updateExpandablePanel(card: HTMLElement, mob: Mob): void {
       elNext.classList.add('text-yellow');
       elNext.classList.remove('text-secondary');
     } else {
-      if (elNext.textContent !== EMPTY_DATETIME_TEXT) elNext.textContent = EMPTY_DATETIME_TEXT;
+      if (elNext.textContent !== EMPTY_DATETIME_NOSEC_TEXT) elNext.textContent = EMPTY_DATETIME_NOSEC_TEXT;
       elNext.classList.remove('text-yellow');
       elNext.classList.add('text-secondary');
     }
   }
 
   if (elLast) {
-    const val = formatOrPlaceholder(mob.last_kill_time);
+    const val = formatOrPlaceholderNoSec(mob.last_kill_time);
     if (elLast.textContent !== val) elLast.textContent = val;
   }
   [elMin, elMax, elNext, elLast].forEach(el => {
-    if (el) el.classList.toggle('is-empty', el.textContent === EMPTY_DATETIME_TEXT);
+    if (el) el.classList.toggle('is-empty', el.textContent === EMPTY_DATETIME_TEXT || el.textContent === EMPTY_DATETIME_NOSEC_TEXT);
   });
 
   const elMemoInput = getEl(card, ".mobcard-memo-input", "memoInput") as (HTMLInputElement | HTMLTextAreaElement) | null;

@@ -1,9 +1,14 @@
-/* 0. 変数 */
+/* ============================================================
+   0. 変数
+   ============================================================ */
 :root {
   --mobcard-top-gap: 0px;
 }
 
-/* 1. カード枠 */
+
+/* ============================================================
+   1. カード枠
+   ============================================================ */
 .mobcard-card {
   --mc-from: var(--c-a);
   --mc-to: #248aec;
@@ -61,14 +66,14 @@
 /* 上端の帯: ランク色の同系色内で変化させる(A=シアン→青 / S=橙→淡い黄 / FATE=紫→フューシャ) */
 .mobcard-card:has(.mobcard-rank[data-rank="S"]) {
   --mc-from: var(--c-s);
-  --mc-to: #facf57;
   /* #f59e0b 40% + #fef08a 60% */
+  --mc-to: #facf57;
 }
 
 .mobcard-card:has(.mobcard-rank[data-rank="F"]) {
   --mc-from: var(--c-f);
-  --mc-to: #ce6bf8;
   /* #a855f7 40% + #e879f9 60% */
+  --mc-to: #ce6bf8;
 }
 
 .mobcard-card::before {
@@ -155,7 +160,10 @@
   text-shadow: none;
 }
 
-/* 2. ヘッダー */
+
+/* ============================================================
+   2. ヘッダー
+   ============================================================ */
 .mobcard-header {
   flex-shrink: 0;
   padding: 13px 16px 10px;
@@ -183,12 +191,12 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 2px;
-  padding: 0 52px 0 4px;
   /* 左右を4pxずつ内側へ寄せる。右はリング(40px)と隙間のぶん広くあける */
+  padding: 0 52px 0 4px;
   line-height: 1;
   position: relative;
-  top: 2px;
   /* ランクとモブ名を2px下げる(レイアウトは動かないので、エリア行との余白が2px狭くなる) */
+  top: 2px;
 }
 
 .header-left {
@@ -201,14 +209,15 @@
 
 .mobcard-rank {
   --rk-glow: rgba(34, 211, 238, 0.4);
+
   flex-shrink: 0;
   position: relative;
-  top: 10px;
   /* モブ名の行とエリア名の行の中間あたりに置く(モブ名は動かさない) */
+  top: 10px;
   width: 30px;
   height: 30px;
-  margin: -2px 0;
   /* 箱は30pxに大きくしつつ、行の高さは従来の26pxぶんのままにする */
+  margin: -2px 0;
   border-radius: 3px;
   display: flex;
   align-items: center;
@@ -270,8 +279,8 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
-  padding-left: 42px;
   /* エリア名をモブ名の下から始める(寄せ4px + ランク30px + 隙間8px) */
+  padding-left: 42px;
   padding-right: 52px;
   margin-bottom: 0;
   line-height: 1;
@@ -308,17 +317,18 @@
 .percent {
   --ring-size: 40px;
   --ring-w: 4px;
+
   position: absolute;
   right: 20px;
   top: 18px;
   font-size: 15px;
   padding-top: 1px;
-  padding-left: 0px;
+  padding-left: 0;
 }
 
 .percent[data-digits="3"] {
   padding-top: 1px;
-  padding-left: 0px;
+  padding-left: 0;
 }
 
 .percent[data-pct-tier="green"]:not(.max-over):not(.pct-0) {
@@ -334,7 +344,9 @@
 }
 
 
-/* 3. 内容領域(スクロール) */
+/* ============================================================
+   3. 内容領域(スクロール)
+   ============================================================ */
 .mobcard-content {
   flex: 1 1 auto;
   overflow-y: auto;
@@ -419,7 +431,10 @@
   line-height: 1;
 }
 
-/* 4. メモ */
+
+/* ============================================================
+   4. メモ
+   ============================================================ */
 .mobcard-memo-box {
   display: flex;
   align-items: center;
@@ -501,7 +516,9 @@
 }
 
 
-/* 5. 時刻グリッドと出現条件 */
+/* ============================================================
+   5. 時刻グリッドと出現条件
+   ============================================================ */
 .mobcard-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -531,7 +548,7 @@
 
 .mobcard-label {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--c-text-lo);
   text-transform: uppercase;
@@ -546,7 +563,7 @@
 
 .mobcard-value {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--c-text-hi);
   line-height: 1;
@@ -559,7 +576,7 @@
   min-width: 0;
 }
 
-/* データがないときの「--/-- --:--:--」: 時刻の幅に近づけ、色は薄くする */
+/* データがないときの「--/-- --:--」: 字間を少し広げて時刻の幅に近づけ、色は薄くする */
 .mobcard-value.is-empty {
   letter-spacing: 0.06em;
   color: var(--c-text-off);
@@ -571,17 +588,17 @@
 }
 
 .mobcard-value .mobcard-timer-num {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   line-height: 1;
 }
 
 .mobcard-value .mobcard-timer-unit {
-  font-size: 11px;
+  font-size: 16px;
   line-height: 1;
 }
 
-/* PC: 文字を少し大きく */
+/* PC: 文字サイズはスマホと共通。余白と字間だけ変える */
 @media (min-width: 900px) {
   .mobcard-info-item {
     padding: 5px 11px;
@@ -589,20 +606,7 @@
   }
 
   .mobcard-label {
-    font-size: 13px;
     letter-spacing: 0.05em;
-  }
-
-  .mobcard-value {
-    font-size: 16px;
-  }
-
-  .mobcard-value .mobcard-timer-num {
-    font-size: 16px;
-  }
-
-  .mobcard-value .mobcard-timer-unit {
-    font-size: 13px;
   }
 }
 
@@ -638,7 +642,9 @@
 }
 
 
-/* 6. 下部ボタン(REPORT / CLOSE) */
+/* ============================================================
+   6. 下部ボタン(REPORT / CLOSE)
+   ============================================================ */
 .mobcard-mobile-actions {
   flex-shrink: 0;
   display: flex;
@@ -722,7 +728,9 @@
 }
 
 
-/* 7. 出現マップ */
+/* ============================================================
+   7. 出現マップ
+   ============================================================ */
 .map-container {
   border-radius: 2px;
   overflow: hidden;
@@ -798,7 +806,10 @@
   pointer-events: none;
 }
 
-/* 8. スポーンポイント */
+
+/* ============================================================
+   8. スポーンポイント
+   ============================================================ */
 .spawn-point {
   position: absolute;
   left: var(--point-x);
@@ -899,7 +910,10 @@
   height: 10px;
 }
 
-/* 9. 拡大鏡 */
+
+/* ============================================================
+   9. 拡大鏡
+   ============================================================ */
 .map-magnifier {
   position: fixed;
   top: 0;
