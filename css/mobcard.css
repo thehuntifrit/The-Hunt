@@ -548,11 +548,11 @@
 
 .mobcard-label {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--c-text-lo);
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
   margin-bottom: 0;
   line-height: 1;
   padding-right: 0;
@@ -578,7 +578,7 @@
 
 /* データがないときの「--/-- --:--」: 字間を少し広げて時刻の幅に近づけ、色は薄くする */
 .mobcard-value.is-empty {
-  letter-spacing: 0.06em;
+  letter-spacing: 0.13em;
   color: var(--c-text-off);
 }
 
@@ -601,8 +601,8 @@
 /* PC: 文字サイズはスマホと共通。余白と字間だけ変える */
 @media (min-width: 900px) {
   .mobcard-info-item {
-    padding: 5px 11px;
-    gap: 6px;
+    padding: 4px 8px;
+    gap: 4px;
   }
 
   .mobcard-label {
