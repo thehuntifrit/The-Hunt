@@ -379,7 +379,6 @@
 .memo-icon {
   position: relative;
   top: -1px;
-  /* [調整] 名前の文字より下に見えるぶんを補正 */
   font-size: 12px;
   line-height: 1;
   display: inline-flex;
@@ -565,7 +564,6 @@
 
 
 /* 6. 経過%(リング) */
-/* 外側のリングが進み具合を表し、中に整数の%(記号なし)を置く。進み具合は --prog-percent(0〜1)をJSが渡す */
 .moblist-percent,
 .percent {
   --ring-size: 32px;
@@ -596,7 +594,6 @@
   inset: 0;
   border-radius: 50%;
   background: conic-gradient(var(--ring-color) calc(var(--prog-percent, 0) * 360deg), var(--ring-track) calc(var(--prog-percent, 0) * 360deg + 0.8deg));
-  /* 縁のギザギザ対策: 内側と外側の縁を1pxぼかす */
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--ring-w) - 1px), #000 calc(100% - var(--ring-w)), #000 calc(100% - 1px), transparent 100%);
   mask: radial-gradient(farthest-side, transparent calc(100% - var(--ring-w) - 1px), #000 calc(100% - var(--ring-w)), #000 calc(100% - 1px), transparent 100%);
 }
@@ -607,7 +604,6 @@
   padding-left: 0px;
 }
 
-/* 3桁(100)だけ、数字が右に寄って見えるぶん862770を補正する(中身が左へ0.5px動く)。2桁は補正なし */
 .moblist-item .moblist-percent[data-digits="3"] {
   padding-top: 0px;
   padding-left: 0px;
