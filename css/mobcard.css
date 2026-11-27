@@ -3,6 +3,7 @@
    ============================================================ */
 :root {
   --mobcard-top-gap: 0px;
+  --mobcard-map-w: 500px;
 }
 
 
@@ -129,6 +130,8 @@
     right: auto;
     z-index: auto;
     height: 100%;
+    width: calc(var(--mobcard-map-w) + 32px + 2px);
+    max-width: 100%;
     max-height: 100%;
     transform: none !important;
     transition: none;
@@ -429,7 +432,7 @@
   color: var(--c-text-lo);
   margin-left: auto;
   line-height: 1;
-  margin-right: 6px;
+  margin-right: 4px;
 }
 
 .map-update-time .map-update-label {
