@@ -559,6 +559,8 @@
   border-right: none;
   white-space: nowrap;
   flex-shrink: 0;
+  position: relative;
+  top: -1px;
 }
 
 .mobcard-value {
@@ -606,7 +608,7 @@
   }
 
   .mobcard-label {
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
   }
 }
 
