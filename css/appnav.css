@@ -400,9 +400,8 @@
     cursor: grabbing;
   }
 
-  /* 検索窓はランク窓より少し幅を狭く */
   #appnav-search-panel.is-floating {
-    width: 320px;
+    min-height: 96px;
   }
 
   .appnav-panel.is-floating .area-filter-btn {

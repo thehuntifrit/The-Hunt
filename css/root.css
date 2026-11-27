@@ -43,7 +43,7 @@
   --c-ring-green: #25ad5e;
   --c-ring-yellow: #bb8c26;
   --c-ring-orange: #bb5f2a;
-  --c-ring-red: #c7262c;
+  --c-ring-red: #b10d12;
 
   /* status */
   --c-offline-bg: #3b1313;
@@ -452,7 +452,6 @@ textarea {
   pointer-events: none;
 }
 
-.mobile-clock-moon-wrap:hover .mobile-moon-tooltip,
 .mobile-moon-tooltip.is-open {
   display: block;
 }

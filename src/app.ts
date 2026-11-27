@@ -245,6 +245,28 @@ let lastEtStr = "";
 let lastMoonIcon = "";
 let lastMoonName = "";
 
+// PC用: ツールチップをマウスの右側に表示する
+function positionTooltipAtMouse(tip: HTMLElement, e: MouseEvent): void {
+  const OFFSET = 14;
+  tip.style.position = 'fixed';
+  tip.style.right = 'auto';
+  tip.style.bottom = 'auto';
+  tip.style.transform = 'none';
+  tip.style.pointerEvents = 'none'; // ツールチップ自体がマウスを受けないようにする
+
+  let left = e.clientX + OFFSET;
+  let top = e.clientY - tip.offsetHeight / 2;
+
+  // 画面の右端からはみ出す場合だけ、マウスの左側に出す
+  if (left + tip.offsetWidth > window.innerWidth - 8) {
+    left = e.clientX - OFFSET - tip.offsetWidth;
+  }
+  top = Math.max(8, Math.min(top, window.innerHeight - tip.offsetHeight - 8));
+
+  tip.style.left = `${left}px`;
+  tip.style.top = `${top}px`;
+}
+
 function initMoonTooltip(): void {
   const btns = document.querySelectorAll<HTMLElement>('.js-moon-clock');
   const tooltips = document.querySelectorAll<HTMLElement>('.js-moon-tooltip');
@@ -254,12 +276,33 @@ function initMoonTooltip(): void {
     tooltips.forEach(t => t.classList.remove('is-open'));
   };
 
+  const canHover = window.matchMedia('(hover: hover)');
+
   btns.forEach(btn => {
+    const wrap = btn.closest('.mobile-clock-moon-wrap');
+    const tip = wrap?.querySelector<HTMLElement>('.js-moon-tooltip');
+    if (!tip) return;
+
+    // PC: マウスを乗せている間だけ、マウスの右側に表示して追従させる
+    btn.addEventListener('mouseenter', (e) => {
+      if (!canHover.matches) return;
+      closeAll();
+      tip.classList.add('is-open');
+      positionTooltipAtMouse(tip, e);
+    });
+    btn.addEventListener('mousemove', (e) => {
+      if (!canHover.matches || !tip.classList.contains('is-open')) return;
+      positionTooltipAtMouse(tip, e);
+    });
+    btn.addEventListener('mouseleave', () => {
+      if (!canHover.matches) return;
+      tip.classList.remove('is-open');
+    });
+
+    // スマホ: 従来どおりタップで開閉
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const wrap = btn.closest('.mobile-clock-moon-wrap');
-      const tip = wrap?.querySelector('.js-moon-tooltip');
-      if (!tip) return;
+      if (canHover.matches) return;
       const willOpen = !tip.classList.contains('is-open');
       closeAll();
       if (willOpen) tip.classList.add('is-open');
@@ -320,10 +363,11 @@ export function updateHeaderTime(): void {
   headerClocks.et.forEach(el => { if (el.textContent !== etStr) el.textContent = etStr; });
   headerClocks.moon.forEach(el => {
     if (el.textContent !== moon.icon) el.textContent = moon.icon;
-    if (el.getAttribute('title') !== moon.fullName) {
-      el.setAttribute('title', moon.fullName);
-      el.setAttribute('aria-label', `月齢: ${moon.fullName}`);
+    const label = `月齢: ${moon.fullName}`;
+    if (el.getAttribute('aria-label') !== label) {
+      el.setAttribute('aria-label', label);
     }
+    if (el.hasAttribute('title')) el.removeAttribute('title');
   });
   headerClocks.moonTooltip.forEach(el => {
     if (el.textContent !== moon.fullName) el.textContent = moon.fullName;
