@@ -405,25 +405,6 @@
     width: 320px;
   }
 
-  /* モバイルと同等の引き締まったボタンサイズ感に合わせる */
-  .appnav-panel.is-floating .appnav-rank-tabs {
-    gap: 4px;
-  }
-
-  .appnav-panel.is-floating .appnav-rank-tab {
-    --tip: 7px;
-    height: 35px;
-    padding-inline: 8px;
-    font-size: 13.5px;
-  }
-
-  .appnav-panel.is-floating .appnav-rank-tab::after {
-    -webkit-mask-position: left 6px center, right 6px center;
-    mask-position: left 6px center, right 6px center;
-    -webkit-mask-size: 5px 5px, 5px 5px;
-    mask-size: 5px 5px, 5px 5px;
-  }
-
   .appnav-panel.is-floating .area-filter-btn {
     height: 32px;
     padding: 0 4px;
@@ -631,7 +612,7 @@
 .appnav-filter-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 0;
   width: 100%;
 }
 
@@ -658,27 +639,44 @@
   filter: drop-shadow(0 0 4px var(--c-cyan));
 }
 
-/* 5-2. ランクタブ（クリスタル六角形 + 選択時◆オーナメント） */
+/* 5-2. ランクタブ（エリアボタンと同じシームレス・バー形式） */
 .appnav-rank-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: clamp(2px, 0.6vw, 4px);
+  gap: 0;
   width: 100%;
 }
 
 .appnav-rank-tab {
-  --tip: clamp(6px, 1.5vw, 9px);
-  height: clamp(35px, 8vw, 38px);
-  padding: 1px clamp(6px, 2vw, 14px);
+  height: clamp(32px, 7.5vw, 35px);
+  padding: 0 clamp(4px, 1vw, 8px);
+  line-height: 1;
   font-size: clamp(13px, 3.2vw, 15.5px);
-  clip-path: polygon(
-    var(--tip) 0, calc(100% - var(--tip)) 0,
-    100% 50%,
-    calc(100% - var(--tip)) 100%, var(--tip) 100%,
-    0 50%
-  );
-  background: linear-gradient(180deg, #9a8654 0%, #314469 40%, #243454 60%, #75653f 100%);
-  transition: transform 0.08s ease, filter 0.15s ease, color 0.15s ease;
+  box-sizing: border-box;
+  background: rgba(6, 16, 36, 0.78);
+  border-top: 1px solid rgba(101, 185, 216, 0.35);
+  border-bottom: 1px solid rgba(101, 185, 216, 0.35);
+  transition: color 0.22s ease, background 0.22s ease, filter 0.15s ease;
+}
+
+/* 項目間の縦仕切り線 */
+.appnav-rank-tab + .appnav-rank-tab::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 24%;
+  bottom: 24%;
+  width: 1px;
+  background: rgba(148, 180, 219, 0.22);
+  pointer-events: none;
+}
+
+.appnav-rank-tab:not(.is-active):hover {
+  background: rgba(101, 185, 216, 0.08);
+}
+
+.appnav-rank-tab:active {
+  filter: brightness(1.15);
 }
 
 /* 内側の面（外枠の1px内側を clip-path で抜き、立体ベゼル質感を与える） */
@@ -814,8 +812,15 @@
 
 /* 選択中(上のランク色・エリアボタンの指定より後ろに置くこと) */
 .appnav-rank-tab.is-active {
-  background: var(--rk);
   color: #fff;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--rk) 48%, #1d3157) 0%,
+    color-mix(in srgb, var(--rk) 30%, #111f38) 48%,
+    color-mix(in srgb, var(--rk) 18%, #0a1426) 52%,
+    color-mix(in srgb, var(--rk) 32%, #132342) 100%
+  );
+  border-top-color: var(--rk);
+  border-bottom-color: var(--rk);
   filter: drop-shadow(0 0 5px color-mix(in srgb, var(--rk) 50%, transparent));
 }
 
