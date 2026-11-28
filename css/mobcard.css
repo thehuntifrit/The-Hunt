@@ -575,7 +575,7 @@
 .mobcard-value {
   font-family: var(--font-mono);
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--c-text-hi);
   line-height: 1;
   text-align: left;
@@ -599,7 +599,7 @@
 
 .mobcard-value .mobcard-timer-num {
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1;
 }
 
@@ -634,7 +634,7 @@
 }
 
 .mobcard-grid .mobcard-value.is-empty {
-  letter-spacing: 0.15em;
+  letter-spacing: 0.18em;
 }
 
 /* 次回出現: 金枠と金色の文字で強調 */

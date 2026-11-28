@@ -360,7 +360,7 @@ textarea {
     max-width: none;
     width: 100%;
     margin-inline: 0;
-    padding: 0 max(14px, calc((100vw - var(--layout-w)) / 2 + 14px));
+    padding: 0 max(32px, calc((100vw - var(--layout-w)) / 2 + 36px)) 0 max(14px, calc((100vw - var(--layout-w)) / 2 + 14px)); /* 変更: 右を +36px に、下限を 14px→32px に */
     border-left: none;
     border-right: none;
   }
@@ -380,7 +380,7 @@ textarea {
 .mobile-top-clocks {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   line-height: 1;
 }
 
