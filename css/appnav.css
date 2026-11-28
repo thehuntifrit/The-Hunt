@@ -302,11 +302,24 @@
   margin: auto;
   border: 1px solid #9a8a5c;
   border-radius: 3px;
+  transition: none;
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, .7),
     0 12px 40px rgba(0, 0, 0, .65),
     inset 0 0 40px rgba(56, 189, 248, .05);
   animation: appnav-pop .18s ease-out backwards;
+}
+
+@keyframes appnav-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(.96);
+  }
+
+  100% {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .appnav-panel.is-popup .js-appnav-panel-item:not(.hidden) {
@@ -320,18 +333,6 @@
 
   100% {
     opacity: 1;
-  }
-}
-
-@keyframes appnav-pop {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, calc(-50% + 8px)) scale(.96);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
   }
 }
 
