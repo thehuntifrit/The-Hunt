@@ -447,7 +447,7 @@
 .mobcard-memo-box {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0px;
   background: rgba(5, 16, 36, 0.65);
   border: 1px solid rgba(216, 196, 138, 0.35);
   border-radius: 2px;
