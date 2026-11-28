@@ -546,7 +546,7 @@
   display: flex;
   flex-direction: row;
   align-items: baseline;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 4px;
   min-height: auto;
   line-height: 1;
@@ -578,8 +578,7 @@
   font-weight: 500;
   color: var(--c-text-hi);
   line-height: 1;
-  margin-left: auto;
-  text-align: right;
+  text-align: left;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
   display: inline-flex;
@@ -609,6 +608,10 @@
   line-height: 1;
 }
 
+.mobcard-value .mobcard-sec {
+  font-size: 14px;
+}
+
 /* PC: 文字サイズはスマホと共通。余白と字間だけ変える */
 @media (min-width: 900px) {
   .mobcard-info-item {
@@ -617,8 +620,21 @@
   }
 
   .mobcard-label {
-    letter-spacing: 0.04em;
+    letter-spacing: 0.08em;
   }
+
+  /* 追加: 4種の時刻のPC用フォントサイズ */
+  .mobcard-grid .mobcard-value {
+    font-size: 18px;
+  }
+
+  .mobcard-grid .mobcard-value .mobcard-sec {
+    font-size: 15px;
+  }
+}
+
+.mobcard-grid .mobcard-value.is-empty {
+  letter-spacing: 0.15em;
 }
 
 /* 次回出現: 金枠と金色の文字で強調 */

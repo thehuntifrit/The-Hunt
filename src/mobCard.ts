@@ -26,6 +26,9 @@ const formatOrPlaceholder = (val: any): string => val ? formatMMDDHHmmss(val) : 
 // 秒なし版(最短POP・最大POP・前回討伐用)。末尾の ":ss" を落とす
 const formatOrPlaceholderNoSec = (val: any): string =>
   val ? formatMMDDHHmmss(val).replace(/:\d{2}$/, "") : EMPTY_DATETIME_NOSEC_TEXT;
+// 末尾の秒(ss)だけを span で包む。CSS 側で文字を小さくする
+const withSmallSec = (text: string): string =>
+  text.replace(/:(\d{2})$/, ':<span class="mobcard-sec">$1</span>');
 
 const ESCAPE_MAP: Record<string, string> = {
   '&': '&amp;',
@@ -460,7 +463,7 @@ export function renderMobCard(mob: Mob): HTMLElement {
 
   updateEl(card, '[data-min-repop]', { textContent: formatOrPlaceholderNoSec(minRepop) });
   updateEl(card, '[data-max-repop]', { textContent: formatOrPlaceholderNoSec(maxRepop) });
-  updateEl(card, '[data-next-possible]', { textContent: nextConditionSpawnDate ? formatOrPlaceholder(nextConditionSpawnDate) : EMPTY_DATETIME_NOSEC_TEXT });
+  updateEl(card, '[data-next-possible]', { innerHTML: nextConditionSpawnDate ? withSmallSec(formatOrPlaceholder(nextConditionSpawnDate)) : EMPTY_DATETIME_NOSEC_TEXT });
   updateEl(card, '[data-last-kill]', { textContent: formatOrPlaceholderNoSec(mob.last_kill_time) });
 
   updateEl(card, '.condition-text', { innerHTML: processText(mob.condition || "特別な出現条件はありません。") });
@@ -646,8 +649,8 @@ export function updateExpandablePanel(card: HTMLElement, mob: Mob): void {
 
   if (elNext && mob.repopInfo) {
     if (mob.repopInfo.nextConditionSpawnDate) {
-      const val = formatMMDDHHmmss(mob.repopInfo.nextConditionSpawnDate);
-      if (elNext.textContent !== val) elNext.textContent = val;
+      const html = withSmallSec(formatMMDDHHmmss(mob.repopInfo.nextConditionSpawnDate));
+      if (elNext.innerHTML !== html) elNext.innerHTML = html;
       elNext.classList.add('text-yellow');
       elNext.classList.remove('text-secondary');
     } else {
