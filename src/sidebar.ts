@@ -247,9 +247,6 @@ export function openSearchPanel(): void {
     if (desktopMq.matches) saveState("searchOpen", true);
     applySearchPanelMode();
     setActiveNavItem(currentPanel || "home");
-    // 入力フォーカス
-    const input = document.getElementById("sidebar-search-input") as HTMLInputElement | null;
-    if (input) requestAnimationFrame(() => input.focus());
 }
 
 export function closeSearchPanel(): void {

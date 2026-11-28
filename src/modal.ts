@@ -109,6 +109,28 @@ export function initModal(): void {
             timeInput.setAttribute("lang", "en");
         });
 
+        // 数字以外のキー入力を拒否（Tab・矢印・Backspace・Delete・Ctrl/Cmd系は通す）
+        timeInput.addEventListener("keydown", (e: KeyboardEvent) => {
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            // IME入力中（全角入力）は拒否
+            if (e.isComposing || e.key === "Process") {
+                e.preventDefault();
+                return;
+            }
+            if (e.key.length === 1 && !/^[0-9]$/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+
+        // IME確定・直接挿入など、keydownをすり抜ける入力も拒否
+        timeInput.addEventListener("beforeinput", (e: InputEvent) => {
+            if (e.inputType === "insertText" || e.inputType === "insertCompositionText") {
+                if (e.data && /[^0-9]/.test(e.data)) {
+                    e.preventDefault();
+                }
+            }
+        });
+
         // 全角数字・記号のペースト時、自動で半角数字・有効な日時形式にサニタイズ
         timeInput.addEventListener("paste", (e) => {
             const pasteData = e.clipboardData?.getData("text") || "";
