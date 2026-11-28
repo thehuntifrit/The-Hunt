@@ -547,7 +547,7 @@
   flex-direction: row;
   align-items: baseline;
   justify-content: flex-start;
-  gap: 4px;
+  gap: 2px;
   min-height: auto;
   line-height: 1;
   min-width: 0;
