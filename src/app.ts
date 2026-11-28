@@ -179,6 +179,8 @@ export function renderMaintenanceStatus(): void {
 
   maintPanels.forEach(p => {
     p.innerHTML = "";
+    p.classList.toggle("is-maint-time", hasMaintenance);
+    p.classList.toggle("is-maint-empty", !hasMaintenance);
     if (!hasMaintenance) {
       p.textContent = "現在予定されているメンテナンスはありません";
       return;

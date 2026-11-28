@@ -244,6 +244,7 @@ function applySearchPanelMode(): void {
 
 export function openSearchPanel(): void {
     isSearchOpen = true;
+    if (desktopMq.matches) saveState("searchOpen", true);
     applySearchPanelMode();
     setActiveNavItem(currentPanel || "home");
     // 入力フォーカス
@@ -253,6 +254,7 @@ export function openSearchPanel(): void {
 
 export function closeSearchPanel(): void {
     isSearchOpen = false;
+    if (desktopMq.matches) saveState("searchOpen", false);
     applySearchPanelMode();
     setActiveNavItem(currentPanel || "home");
 }
@@ -912,6 +914,12 @@ export function initAppNav(): void {
         setActiveNavItem('home');
     }
 
+    if (stored.searchOpen === true && desktopMq.matches) {
+        isSearchOpen = true;
+        applySearchPanelMode();
+        setActiveNavItem(currentPanel || "home");
+    }
+
     initNotification();
 
     nav.addEventListener('click', (e) => {
@@ -1137,7 +1145,7 @@ export function updateErrorPanel(): void {
     const fragment = document.createDocumentFragment();
     if (!(window as any).errorLog || (window as any).errorLog.length === 0) {
         const emptyMsg = document.createElement("div");
-        emptyMsg.className = "text-center u-text-sm text-gray-500 mt-10";
+        emptyMsg.className = "u-text-base text-gray-500 mt-10";
         emptyMsg.textContent = "現在エラーはありません";
         fragment.appendChild(emptyMsg);
     } else {

@@ -289,28 +289,28 @@
 }
 
 .appnav-panel.is-popup {
-  top: calc(50% - var(--footer-safe) / 2);
-  bottom: auto;
-  left: 50%;
-  right: auto;
-  transform: translate(-50%, -50%);
+  top: 0;
+  bottom: var(--footer-safe);
+  left: 0;
+  right: 0;
+  transform: none;
   width: min(440px, calc(100vw - 32px));
   max-width: none;
+  height: fit-content;
   max-height: calc(100vh - var(--footer-safe) - 32px);
   max-height: calc(100dvh - var(--footer-safe) - 32px);
-  margin: 0;
+  margin: auto;
   border: 1px solid #9a8a5c;
   border-radius: 3px;
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, .7),
     0 12px 40px rgba(0, 0, 0, .65),
     inset 0 0 40px rgba(56, 189, 248, .05);
-  animation: appnav-pop .18s ease-out both;
-  will-change: transform, opacity;
+  animation: appnav-pop .18s ease-out backwards;
 }
 
 .appnav-panel.is-popup .js-appnav-panel-item:not(.hidden) {
-  padding: 14px 20px 20px;
+  padding: 14px 20px 14px;
 }
 
 @keyframes appnav-fade {
@@ -563,6 +563,18 @@
   line-height: 1.6;
 }
 
+/* メンテ: 時間あり → 窓の中央 */
+.js-maintenance-content.is-maint-time {
+  font-size: 18px;
+  text-align: center;
+}
+
+/* メンテ: 時間なし → 左寄せ・グレー */
+.js-maintenance-content.is-maint-empty {
+  text-align: left;
+  color: var(--c-text-lo);
+}
+
 .sidebar-welcome-area {
   margin-bottom: 0;
   min-width: 0;
@@ -727,9 +739,9 @@
   color: var(--c-f);
 }
 
-  .appnav-panel.is-floating .appnav-rank-tab {
-    height: 32px;
-  }
+.appnav-panel.is-floating .appnav-rank-tab {
+  height: 32px;
+}
 
 /* 5-3. エリアボタン（FF7R シームレス・バー形式） */
 .area-filter-btn {
@@ -738,16 +750,21 @@
   line-height: 1;
   font-size: clamp(13px, 3vw, 16px);
   font-weight: 500;
-  color: rgba(174, 187, 210, 0.68);  .appnav-panel.is-floating .appnav-rank-tab {
+  color: rgba(174, 187, 210, 0.68);
+
+  .appnav-panel.is-floating .appnav-rank-tab {
     height: 32px;
   }
+
   outline: none;
   white-space: nowrap;
   box-sizing: border-box;
   background: rgba(6, 16, 36, 0.78);
   border-top: 1px solid rgba(101, 185, 216, 0.35);
   border-bottom: 1px solid rgba(101, 185, 216, 0.35);
-  transition: color 0.22s ease, background 0.22s ease, text-shadow 0.22s ease;
+  transition: color 0.22s ease,
+  background 0.22s ease,
+  text-shadow 0.22s ease;
 }
 
 /* 項目間の縦仕切り線 */
