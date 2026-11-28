@@ -588,7 +588,7 @@
 
 /* データがないときの「--/-- --:--」: 字間を少し広げて時刻の幅に近づけ、色は薄くする */
 .mobcard-value.is-empty {
-  letter-spacing: 0.13em;
+  letter-spacing: 0.12em;
   color: var(--c-text-off);
 }
 
