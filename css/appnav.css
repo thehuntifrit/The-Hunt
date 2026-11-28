@@ -663,7 +663,7 @@
   height: clamp(32px, 7.5vw, 35px);
   padding: 0 clamp(4px, 1vw, 8px);
   line-height: 1;
-  font-size: clamp(15px, 3.2vw, 18px);
+  font-size: clamp(15px, 3.2vw, 16px);
   box-sizing: border-box;
   background: rgba(6, 16, 36, 0.78);
   border-top: 1px solid rgba(101, 185, 216, 0.35);
@@ -710,14 +710,29 @@
   mask-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 10,5 5,10 0,5'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 10,5 5,10 0,5'/%3E%3C/svg%3E");
-  -webkit-mask-position: left clamp(5px, 1.4vw, 10px) center, right clamp(5px, 1.4vw, 10px) center;
-  mask-position: left clamp(5px, 1.4vw, 10px) center, right clamp(5px, 1.4vw, 10px) center;
-  -webkit-mask-size: clamp(4px, 1vw, 6px) clamp(4px, 1vw, 6px), clamp(4px, 1vw, 6px) clamp(4px, 1vw, 6px);
-  mask-size: clamp(4px, 1vw, 6px) clamp(4px, 1vw, 6px), clamp(4px, 1vw, 6px) clamp(4px, 1vw, 6px);
+  -webkit-mask-position: clamp(8px, 2.2vw, 11px) 50%, calc(100% - clamp(8px, 2.2vw, 11px)) 50%;
+  mask-position: clamp(8px, 2.2vw, 11px) 50%, calc(100% - clamp(8px, 2.2vw, 11px)) 50%;
+  -webkit-mask-size: clamp(5px, 1.4vw, 7px) clamp(5px, 1.4vw, 7px), clamp(5px, 1.4vw, 7px) clamp(5px, 1.4vw, 7px);
+  mask-size: clamp(5px, 1.4vw, 7px) clamp(5px, 1.4vw, 7px), clamp(5px, 1.4vw, 7px) clamp(5px, 1.4vw, 7px);
   -webkit-mask-repeat: no-repeat, no-repeat;
   mask-repeat: no-repeat, no-repeat;
   filter: drop-shadow(0 0 3px var(--rk));
   transition: opacity 0.15s ease;
+}
+
+/* PC: タブ幅が狭いので、ひし形を端に寄せて文字との間隔を確保 */
+@media (min-width: 900px) {
+  .appnav-panel.is-floating .appnav-rank-tab {
+    font-size: 16px;
+    padding: 0 14px;
+  }
+
+  .appnav-panel.is-floating .appnav-rank-tab::after {
+    -webkit-mask-position: 4px 50%, calc(100% - 4px) 50%;
+    mask-position: 4px 50%, calc(100% - 4px) 50%;
+    -webkit-mask-size: 6px 6px, 6px 6px;
+    mask-size: 6px 6px, 6px 6px;
+  }
 }
 
 .appnav-rank-tab[data-rank="ALL"] {
@@ -749,7 +764,7 @@
   height: clamp(32px, 7.5vw, 35px);
   padding: 0 clamp(4px, 1vw, 8px);
   line-height: 1;
-  font-size: clamp(13px, 3vw, 16px);
+  font-size: clamp(15px, 3vw, 16px);
   font-weight: 500;
   color: rgba(174, 187, 210, 0.68);
 
@@ -810,6 +825,13 @@
   flex: 0 0 calc(100% / 6);
   min-width: 40px;
   scroll-snap-align: start;
+}
+
+/* エリアボタンが3個だけのとき: 幅を倍(1/3)にして横いっぱいに広げる */
+.area-grid-container.appnav-area-carousel-track .area-filter-btn:first-child:nth-last-child(3),
+.area-grid-container.appnav-area-carousel-track .area-filter-btn:first-child:nth-last-child(3)~.area-filter-btn {
+  flex-basis: calc(100% / 3);
+  font-size: clamp(15px, 3.2vw, 16px);
 }
 
 /* 選択中(上のランク色・エリアボタンの指定より後ろに置くこと) */
